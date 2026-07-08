@@ -1,0 +1,418 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------
+// 1. UTILISATEURS & PROFILS
+// ---------------------------------------------------------
+
+enum AccountStatus {
+  nouveau
+  en_entretien
+  actif
+  en_parcours
+  suspendu
+}
+
+enum Gender {
+  H
+  F
+  AUTRE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                String           @id @default(uuid())
+  email             String           @unique
+  telephone         String?          @unique
+  passwordHash      String
+  hashedRefreshToken String?
+  firstName         String
+  lastName          String
+  birthDate         DateTime
+  gender            Gender
+  city              String?
+  role              UserRole         @default(USER)
+  accountStatus     AccountStatus    @default(nouveau)
+  creditBalance     Int              @default(0)
+  isVerified        Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  lastLogin         DateTime?
+  pushToken         String?
+  verificationCode  String?
+
+  profile           Profile?
+  interviews        InterviewIA[]
+  mentalMaps        MentalMap[]
+  receivedProposals MatchProposal[]  @relation("ReceivedProposals")
+  targetedProposals MatchProposal[]  @relation("TargetedProposals")
+  journeysA         Journey[]        @relation("UserA")
+  journeysB         Journey[]        @relation("UserB")
+  transactions      CreditTransaction[]
+  sentMessages      Message[]
+  sentReports       Report[]         @relation("Reporter")
+  receivedReports   Report[]         @relation("Reported")
+  notifications     Notification[]
+  responses         HarmonyResponse[]
+}
+
+enum ProfileStatus {
+  incomplet
+  complet
+  actif
+  masque
+}
+
+model Profile {
+  id                String        @id @default(uuid())
+  userId            String        @unique
+  user              User          @relation(fields: [userId], references: [id])
+  mainPhoto         String?
+  secondaryPhotos   Json?         // Array of URLs
+  description       String?       @db.Text
+  displayedCity     String?
+  profession        String?
+  profileStatus     ProfileStatus @default(incomplet)
+}
+
+// ---------------------------------------------------------
+// 2. ENTRETIEN IA & CARTE MENTALE
+// ---------------------------------------------------------
+
+enum InterviewStatus {
+  en_cours
+  termine
+  abandonne
+}
+
+model InterviewIA {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  startDate     DateTime          @default(now())
+  endDate       DateTime?
+  status        InterviewStatus   @default(en_cours)
+  version       Int               @default(1)
+  responses     ModuleResponse[]
+  mentalMap     MentalMap?
+}
+
+model ModuleResponse {
+  id               String      @id @default(uuid())
+  interviewId      String
+  interview        InterviewIA @relation(fields: [interviewId], references: [id])
+  moduleNumber     Int         // 0 to 10
+  moduleName       String
+  rawResponses     Json        // The answers A, B, C, D...
+  iaAnalysis       Json?       // AI feedback
+  moduleScore      Float?
+  completedAt      DateTime    @default(now())
+}
+
+model MentalMap {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  interviewId     String      @unique
+  interview       InterviewIA @relation(fields: [interviewId], references: [id])
+  generatedAt     DateTime    @default(now())
+  synthesis       String?     @db.Text
+  bio             String?     @db.Text
+  needsList       Json?       // Values, project, family, etc.
+  redFlags        Json?
+  keyValues       Json?
+  maturityScore   Float?
+  alchemyScore    Float?
+  signals         Json?       // All algorithmic signals (Red, Orange, etc.)
+  version         Int         @default(1)
+}
+
+// ---------------------------------------------------------
+// 3. MATCHING & PARCOURS
+// ---------------------------------------------------------
+
+enum ProposalStatus {
+  en_attente
+  acceptee
+  refusee
+  sauvegardee
+  expiree
+}
+
+model MatchProposal {
+  id                  String         @id @default(uuid())
+  sourceUserId        String
+  sourceUser          User           @relation("ReceivedProposals", fields: [sourceUserId], references: [id])
+  targetUserId        String
+  targetUser          User           @relation("TargetedProposals", fields: [targetUserId], references: [id])
+  compatibilityScore  Float
+  iaExplanation       String?        @db.Text
+  proposedAt          DateTime       @default(now())
+  expiresAt           DateTime
+  status              ProposalStatus @default(en_attente)
+  weekNumber          Int
+  journey             Journey?
+}
+
+enum JourneyStep {
+  phase_harmonie
+  chat_libre
+  video
+  echange_contacts
+  termine
+}
+
+enum JourneyResult {
+  en_cours
+  reussi
+  echoue
+  abandonne
+}
+
+model Journey {
+  id                String          @id @default(uuid())
+  proposalId        String          @unique
+  proposal          MatchProposal   @relation(fields: [proposalId], references: [id])
+  userAId           String
+  userA             User            @relation("UserA", fields: [userAId], references: [id])
+  userBId           String
+  userB             User            @relation("UserB", fields: [userBId], references: [id])
+  createdAt         DateTime        @default(now())
+  currentStep       JourneyStep     @default(phase_harmonie)
+  stepStartDate     DateTime        @default(now())
+  endDate           DateTime?
+  result            JourneyResult   @default(en_cours)
+  closingReason     String?         @db.Text
+
+  harmonyQuestions  HarmonyQuestion[]
+  messages          Message[]
+  videoSession      VideoSession?
+  contactExchange   ContactExchange?
+  creditTransactions CreditTransaction[]
+  alumniCouple      AlumniCouple?
+}
+
+// ---------------------------------------------------------
+// 4. PHASE HARMONIE (3 JOURS)
+// ---------------------------------------------------------
+
+model HarmonyQuestion {
+  id            String            @id @default(uuid())
+  journeyId     String
+  journey       Journey           @relation(fields: [journeyId], references: [id])
+  day           Int               // 1, 2, 3
+  theme         String
+  emoji         String?
+  questionText  String            @db.Text
+  options       Json?             // QCM options (dont "Autre...")
+  sentAt        DateTime          @default(now())
+  responses     HarmonyResponse[]
+}
+
+model HarmonyResponse {
+  id              String          @id @default(uuid())
+  questionId      String
+  question        HarmonyQuestion @relation(fields: [questionId], references: [id])
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  responseText    String          @db.Text
+  respondedAt     DateTime        @default(now())
+  delayHours      Float?
+}
+
+// ---------------------------------------------------------
+// 5. COMMUNICATION & MODÉRATION
+// ---------------------------------------------------------
+
+enum MessageType {
+  texte
+  emoji
+  vocal
+}
+
+enum ModerationStatus {
+  ok
+  en_verification
+  bloque
+}
+
+model Message {
+  id                String           @id @default(uuid())
+  journeyId         String
+  journey           Journey          @relation(fields: [journeyId], references: [id])
+  senderId          String
+  sender            User             @relation(fields: [senderId], references: [id])
+  content           String           @db.Text
+  type              MessageType      @default(texte)
+  sentAt            DateTime         @default(now())
+  isRead            Boolean          @default(false)
+  moderationStatus  ModerationStatus @default(ok)
+  report            Report?
+}
+
+enum ReportReason {
+  insulte
+  harcelement
+  faux_profil
+  spam
+  autre
+}
+
+enum ReportStatus {
+  en_attente
+  traite
+  rejete
+}
+
+model Report {
+  id              String       @id @default(uuid())
+  reporterId      String
+  reporter        User         @relation("Reporter", fields: [reporterId], references: [id])
+  reportedId      String
+  reported        User         @relation("Reported", fields: [reportedId], references: [id])
+  messageId       String?      @unique
+  message         Message?     @relation(fields: [messageId], references: [id])
+  reason          ReportReason
+  description     String?      @db.Text
+  reportedAt      DateTime     @default(now())
+  status          ReportStatus @default(en_attente)
+}
+
+// ---------------------------------------------------------
+// 6. CRÉDITS & PAIEMENT
+// ---------------------------------------------------------
+
+enum TransactionType {
+  achat
+  consommation
+  remboursement_justice
+}
+
+model CreditTransaction {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  journeyId       String?
+  journey         Journey?        @relation(fields: [journeyId], references: [id])
+  type            TransactionType
+  creditAmount    Int
+  euroAmount      Float?
+  paymentRef      String?
+  date            DateTime        @default(now())
+  description     String?
+}
+
+// ---------------------------------------------------------
+// 7. VIDÉO & CONTACTS
+// ---------------------------------------------------------
+
+enum VideoStatus {
+  planifiee
+  en_cours
+  terminee
+  annulee
+}
+
+model VideoSession {
+  id              String      @id @default(uuid())
+  journeyId       String      @unique
+  journey         Journey     @relation(fields: [journeyId], references: [id])
+  plannedDate     DateTime?
+  startDate       DateTime?
+  endDate         DateTime?
+  durationMinutes Int?
+  status          VideoStatus @default(planifiee)
+  consentA        Boolean     @default(false)
+  consentB        Boolean     @default(false)
+  dailyRoomName   String?
+  dailyRoomUrl    String?
+}
+
+model ContactExchange {
+  id              String    @id @default(uuid())
+  journeyId       String    @unique
+  journey         Journey   @relation(fields: [journeyId], references: [id])
+  consentA        Boolean   @default(false)
+  consentB        Boolean   @default(false)
+  phoneShared     Boolean   @default(false)
+  emailShared     Boolean   @default(false)
+  exchangedAt     DateTime?
+}
+
+// ---------------------------------------------------------
+// 8. SUIVI & SYSTÈME
+// ---------------------------------------------------------
+
+model AlumniCouple {
+  id              String    @id @default(uuid())
+  journeyId       String    @unique
+  journey         Journey   @relation(fields: [journeyId], references: [id])
+  validatedAt     DateTime  @default(now())
+  testimony       String?   @db.Text
+  status          String    @default("actif") // e.g., actif, archive
+}
+
+enum NotificationType {
+  nouveau_match
+  message
+  question_harmonie
+  rappel_reponse
+  credit
+  systeme
+}
+
+model Notification {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  type            NotificationType
+  title           String
+  content         String           @db.Text
+  sentAt          DateTime         @default(now())
+  isRead          Boolean          @default(false)
+}
+
+// ---------------------------------------------------------
+// 9. RECRUTEMENT & OFFRES D'EMPLOI
+// ---------------------------------------------------------
+
+model JobOffer {
+  id           String           @id @default(uuid())
+  title        String
+  description  String           @db.Text
+  requirements String           @db.Text
+  location     String           // Ex: Paris, Abidjan, Télétravail
+  type         String           // Ex: CDI, CDD, Stage, Alternance, Freelance
+  department   String?          // Ex: Tech, Operations, Marketing
+  salary       String?          // Ex: 40k-50k
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id           String     @id @default(uuid())
+  jobId        String
+  job          JobOffer   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String
+  email        String
+  telephone    String?
+  coverLetter  String?    @db.Text
+  cvUrl        String?    // Chemin local ou URL externe du CV
+  cvFilename   String?    // Nom d'origine du fichier CV
+  createdAt    DateTime   @default(now())
+}
+
