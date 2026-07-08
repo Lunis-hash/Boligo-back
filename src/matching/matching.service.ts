@@ -1,0 +1,434 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { computeCompatibility } from './compatibility.scorer';
+import { NotificationService } from '../notifications/notification.service';
+
+@Injectable()
+export class MatchingService {
+  constructor(
+    private prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
+
+  async getDiscoverProfiles(userId: string) {
+    // 1. Récupérer l'utilisateur actuel pour ses préférences
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 },
+      },
+    });
+
+    if (!currentUser) return [];
+
+    const viewerMentalMap = currentUser.mentalMaps[0] ?? null;
+
+    // 1.5 RÈGLE D'OR BOLIGO : Pas de multi-match. 
+    // Si l'utilisateur a déjà un match actif OU une invitation envoyée en attente,
+    // on ne lui propose plus rien dans Découverte.
+    const activeMatch = await this.prisma.matchProposal.findFirst({
+      where: {
+        OR: [
+          { sourceUserId: userId, status: 'en_attente' },
+          { sourceUserId: userId, status: 'acceptee' },
+          { targetUserId: userId, status: 'acceptee' },
+        ],
+      },
+    });
+
+    if (activeMatch) {
+      console.log(`🚫 [Discover] Blocage pour ${userId} : match ou invitation déjà en cours.`);
+      return [];
+    }
+
+    // 2. Récupérer les IDs des utilisateurs déjà matchés (dans les deux sens)
+    const existingMatches = await this.prisma.matchProposal.findMany({
+      where: {
+        OR: [
+          { sourceUserId: userId }, // Déjà liké par moi
+          { AND: [{ targetUserId: userId }, { status: { in: ['acceptee', 'refusee', 'expiree'] } }] }, // Déjà traité par moi
+        ],
+      },
+      select: { sourceUserId: true, targetUserId: true },
+    });
+
+    const matchedUserIds = new Set<string>();
+    matchedUserIds.add(userId); // Exclure soi-même
+    existingMatches.forEach((m) => {
+      matchedUserIds.add(m.sourceUserId);
+      matchedUserIds.add(m.targetUserId);
+    });
+
+    // 3. Chercher les profils du sexe opposé avec une carte mentale
+    // (Simplification pour le test : tout le monde sauf soi et déjà matchés)
+    const targetGender = currentUser.gender === 'H' ? 'F' : 'H';
+
+    const matches = await this.prisma.user.findMany({
+      where: {
+        id: { notIn: Array.from(matchedUserIds) },
+        gender: targetGender,
+        mentalMaps: { some: {} }, // Doit avoir au moins une carte mentale
+      },
+      include: {
+        mentalMaps: {
+          orderBy: { generatedAt: 'desc' },
+          take: 1,
+        },
+        profile: true,
+      },
+    });
+
+    const scored = matches.map((m) => {
+      const mentalMap = m.mentalMaps[0];
+      const compat = computeCompatibility(viewerMentalMap, mentalMap);
+      return {
+        id: m.id,
+        firstName: m.firstName,
+        profession: m.profile?.profession || 'Profession non renseignée',
+        compatibility: compat.percent,
+        compatibilitySummary: compat.summary,
+        slogan: mentalMap?.bio || compat.summary,
+        mentalMap: this.formatMentalMap(mentalMap, compat),
+        _sortScore: compat.score,
+      };
+    });
+
+    scored.sort((a, b) => b._sortScore - a._sortScore);
+
+    return scored.map(({ _sortScore, compatibilitySummary, ...rest }) => rest);
+  }
+
+  // Auto-réparer les journeys en phase_harmonie où un utilisateur a tout répondu
+  // Et aussi faire avancer chat_libre → video après 3 jours
+  private async autoAdvanceStaleJourneys(userId: string) {
+    const journeys = await this.prisma.journey.findMany({
+      where: {
+        OR: [{ userAId: userId }, { userBId: userId }],
+        currentStep: { in: ['phase_harmonie', 'chat_libre'] },
+      },
+      include: {
+        harmonyQuestions: { include: { responses: true } },
+      },
+    });
+
+    for (const journey of journeys) {
+      // phase_harmonie → chat_libre : si un utilisateur a répondu à toutes les questions
+      if (journey.currentStep === 'phase_harmonie') {
+        const allQuestions = journey.harmonyQuestions;
+        if (allQuestions.length === 0) continue;
+
+        const userAHasAll = allQuestions.every(q =>
+          q.responses.some(r => r.userId === journey.userAId),
+        );
+        const userBHasAll = allQuestions.every(q =>
+          q.responses.some(r => r.userId === journey.userBId),
+        );
+
+        if (userAHasAll && userBHasAll) {
+          await this.prisma.journey.update({
+            where: { id: journey.id },
+            data: { currentStep: 'chat_libre', stepStartDate: new Date() },
+          });
+        }
+      }
+
+      // chat_libre → video : si 3 jours de chat sont passés
+      if (journey.currentStep === 'chat_libre') {
+        const chatStart = journey.stepStartDate.getTime();
+        const daysSinceChat = (Date.now() - chatStart) / (1000 * 60 * 60 * 24);
+
+        if (daysSinceChat >= 3) {
+          await this.prisma.journey.update({
+            where: { id: journey.id },
+            data: { currentStep: 'video', stepStartDate: new Date() },
+          });
+        }
+      }
+    }
+  }
+
+  private formatMentalMap(
+    mentalMap: any,
+    compat?: ReturnType<typeof computeCompatibility>,
+  ) {
+    if (!mentalMap) return [];
+
+    const valuesPct = compat
+      ? Math.round(compat.breakdown.valuesAlignment * 100)
+      : Math.round((mentalMap.maturityScore || 0.85) * 100);
+    const needsPct = compat
+      ? Math.round(compat.breakdown.needsAlignment * 100)
+      : 88;
+    const harmonyPct = compat
+      ? Math.round(compat.breakdown.vibeScore * 100)
+      : Math.round((mentalMap.alchemyScore || 0.8) * 100);
+
+    return [
+      { id: 'valeurs', label: 'Valeurs', emoji: '💎', value: valuesPct, color: '#FF4D67' },
+      { id: 'besoins', label: 'Besoins', emoji: '🌱', value: needsPct, color: '#FF9F43' },
+      { id: 'harmonie', label: 'Harmonie', emoji: '✨', value: harmonyPct, color: '#A155B9' },
+    ];
+  }
+
+  private async resolveCompatibilityScore(userId: string, targetUserId: string) {
+    const [viewer, candidate] = await Promise.all([
+      this.prisma.mentalMap.findFirst({
+        where: { userId },
+        orderBy: { generatedAt: 'desc' },
+      }),
+      this.prisma.mentalMap.findFirst({
+        where: { userId: targetUserId },
+        orderBy: { generatedAt: 'desc' },
+      }),
+    ]);
+    return computeCompatibility(viewer, candidate);
+  }
+
+  // Récupérer tous les matches actifs de l'utilisateur
+  async getMyMatches(userId: string) {
+    // Auto-réparer : si un journey est en phase_harmonie mais un utilisateur a répondu
+    // à toutes les questions, avancer à chat_libre (corrige les données périmées)
+    await this.autoAdvanceStaleJourneys(userId);
+
+    const proposals = await this.prisma.matchProposal.findMany({
+      where: {
+        OR: [
+          { status: 'acceptee', OR: [{ sourceUserId: userId }, { targetUserId: userId }] }, // Match mutuel
+          { status: 'en_attente', sourceUserId: userId }, // Like envoyé (en attente)
+        ],
+      },
+      include: {
+        sourceUser: { include: { profile: true, mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 } } },
+        targetUser: { include: { profile: true, mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 } } },
+        journey: true,
+      },
+    });
+
+    const mapped = proposals.map((p) => {
+      // Le partenaire est l'autre utilisateur (pas soi-même)
+      const partner = p.sourceUserId === userId ? p.targetUser : p.sourceUser;
+      const step = p.journey?.currentStep ?? (p.status === 'en_attente' ? 'attente' : 'phase_harmonie');
+      const partnerMentalMap = partner.mentalMaps?.[0];
+
+      // Mapper le step du Journey vers la phase frontend
+      const phaseMap: Record<string, string> = {
+        attente: 'attente',
+        phase_harmonie: 'sondeur',
+        chat_libre: 'chat',
+        video: 'video',
+        echange_contacts: 'contacts',
+        termine: 'contacts',
+      };
+
+      const isVideoUnlockEnv = process.env.VIDEO_TEST_UNLOCK?.trim().toLowerCase();
+      const testUnlock = isVideoUnlockEnv === 'true' || isVideoUnlockEnv === '1' || (isVideoUnlockEnv === undefined && process.env.NODE_ENV !== 'production');
+      const videoEnabled = step === 'video' || (testUnlock && step === 'chat_libre');
+
+      return {
+        id: partner.id,
+        name: partner.firstName,
+        compatibility: Math.round(p.compatibilityScore * 100),
+        profession: partner.profile?.profession || 'Profession non renseignée',
+        location: partner.profile?.displayedCity || partner.city || '',
+        phase: phaseMap[step] ?? 'sondeur',
+        journeyId: p.journey?.id ?? null,
+        proposalStatus: p.status,
+        videoEnabled,
+        testUnlock,
+        // Données enrichies pour l'affichage Discover focus
+        slogan: partnerMentalMap?.bio || "Une âme qui partage ce qui compte vraiment.",
+        mentalMap: this.formatMentalMap(partnerMentalMap),
+      };
+    });
+
+    // Parcours actif (accepté + journey) avant une simple invitation en attente
+    mapped.sort((a, b) => {
+      const rank = (m: (typeof mapped)[0]) => {
+        if (m.journeyId && m.phase !== 'attente') return 3;
+        if (m.phase === 'sondeur') return 2;
+        if (m.phase === 'attente') return 0;
+        return 1;
+      };
+      return rank(b) - rank(a);
+    });
+
+    return mapped;
+  }
+
+  // Créer un like (proposition de match)
+  async createMatch(userId: string, targetUserId: string) {
+    // Vérifier si un match existe déjà (dans les deux sens)
+    const existingMatch = await this.prisma.matchProposal.findFirst({
+      where: {
+        OR: [
+          { AND: [{ sourceUserId: userId }, { targetUserId: targetUserId }] },
+          { AND: [{ sourceUserId: targetUserId }, { targetUserId: userId }] },
+        ],
+      },
+    });
+
+    if (existingMatch) {
+      // Si l'autre utilisateur a déjà liké, accepter le match et créer le journey
+      if (existingMatch.sourceUserId === targetUserId && existingMatch.targetUserId === userId && existingMatch.status === 'en_attente') {
+        return this.acceptMatch(existingMatch.id, userId);
+      }
+      return { success: false, message: 'Match déjà existant' };
+    }
+
+    const compat = await this.resolveCompatibilityScore(userId, targetUserId);
+
+    const match = await this.prisma.matchProposal.create({
+      data: {
+        sourceUserId: userId,
+        targetUserId: targetUserId,
+        compatibilityScore: compat.score,
+        iaExplanation: compat.summary,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        status: 'en_attente',
+        weekNumber: 1,
+      },
+    });
+
+    // Envoyer une notification push au destinataire du like
+    try {
+      await this.notificationService.sendPushNotification(
+        targetUserId,
+        'nouveau_match',
+        'Nouveau profil compatible ! 💍',
+        "Quelqu'un s'intéresse à votre profil. Découvrez sa compatibilité !",
+      );
+    } catch (err) {
+      console.error('⚠️ [Matching Service] Failed to send push notification for like:', err);
+    }
+
+    return {
+      success: true,
+      match,
+      message: 'Like envoyé avec succès',
+    };
+  }
+
+  // Récupérer les likes reçus (pending matches)
+  async getReceivedLikes(userId: string) {
+    const proposals = await this.prisma.matchProposal.findMany({
+      where: {
+        targetUserId: userId,
+        status: 'en_attente',
+      },
+      include: {
+        sourceUser: { 
+          include: { 
+            profile: true, 
+            mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 } 
+          } 
+        },
+      },
+    });
+
+    return proposals.map((p) => {
+      const partnerMentalMap = p.sourceUser.mentalMaps?.[0];
+      return {
+        id: p.id,
+        userId: p.sourceUser.id,
+        name: p.sourceUser.firstName,
+        firstName: p.sourceUser.firstName,
+        compatibility: Math.round(p.compatibilityScore * 100),
+        profession: p.sourceUser.profile?.profession || 'Profession non renseignée',
+        location: p.sourceUser.profile?.displayedCity || p.sourceUser.city || '',
+        slogan: partnerMentalMap?.bio || "Une âme qui partage ce qui compte vraiment.",
+        mentalMap: this.formatMentalMap(partnerMentalMap),
+        createdAt: p.proposedAt,
+      };
+    });
+  }
+
+  // Accepter un like (créer le match et le journey)
+  async acceptMatch(proposalId: string, userId: string) {
+    const proposal = await this.prisma.matchProposal.findUnique({
+      where: { id: proposalId },
+    });
+
+    if (!proposal) {
+      return { success: false, message: 'Proposition non trouvée' };
+    }
+
+    if (proposal.targetUserId !== userId) {
+      return { success: false, message: 'Vous ne pouvez pas accepter cette proposition' };
+    }
+
+    if (proposal.status !== 'en_attente') {
+      return { success: false, message: 'Cette proposition a déjà été traitée' };
+    }
+
+    // Mettre à jour le statut du match
+    const match = await this.prisma.matchProposal.update({
+      where: { id: proposalId },
+      data: {
+        status: 'acceptee',
+        iaExplanation: 'Match mutuel accepté',
+      },
+    });
+
+    // Créer le Journey (Parcours Harmonie)
+    const journey = await this.prisma.journey.create({
+      data: {
+        proposalId: match.id,
+        userAId: match.sourceUserId,
+        userBId: match.targetUserId,
+        currentStep: 'phase_harmonie',
+      },
+    });
+
+    // RÈGLE DE JUSTICE : Lier les transactions de consommation de crédits récentes au journey
+    try {
+      await this.prisma.creditTransaction.updateMany({
+        where: {
+          userId: { in: [match.sourceUserId, match.targetUserId] },
+          type: 'consommation',
+          journeyId: null,
+          date: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // dernières 24 heures
+        },
+        data: {
+          journeyId: journey.id,
+        },
+      });
+      console.log(`🔗 [Match] Crédits récents liés au journey ${journey.id}`);
+    } catch (err) {
+      console.error(`⚠️ [Match] Échec de la liaison des crédits au journey ${journey.id}`, err);
+    }
+
+    // Questions créées au premier GET /journey/:id/questions (évite doublons si 2 appels simultanés)
+
+    // Envoyer des notifications push pour le match mutuel
+    try {
+      const [userA, userB] = await Promise.all([
+        this.prisma.user.findUnique({ where: { id: match.sourceUserId }, select: { firstName: true } }),
+        this.prisma.user.findUnique({ where: { id: match.targetUserId }, select: { firstName: true } }),
+      ]);
+
+      await Promise.all([
+        this.notificationService.sendPushNotification(
+          match.sourceUserId,
+          'nouveau_match',
+          'Match mutuel ! 💍',
+          `Félicitations ! ${userB?.firstName || 'Votre partenaire'} a accepté votre invitation. Votre parcours commence !`,
+        ),
+        this.notificationService.sendPushNotification(
+          match.targetUserId,
+          'nouveau_match',
+          'Match mutuel ! 💍',
+          `Félicitations ! Votre parcours d'Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
+        ),
+      ]);
+    } catch (err) {
+      console.error('⚠️ [Matching Service] Failed to send push notifications for mutual match:', err);
+    }
+
+    return {
+      success: true,
+      match,
+      journey,
+      message: 'Match accepté avec succès',
+    };
+  }
+}

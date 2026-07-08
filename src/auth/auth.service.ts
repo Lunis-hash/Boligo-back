@@ -1,0 +1,280 @@
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
+
+  async register(dto: RegisterDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        passwordHash: hashedPassword,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        birthDate: new Date(dto.birthDate),
+        gender: dto.gender,
+        city: dto.city,
+        telephone: dto.telephone,
+        profile: {
+          create: {}, // Automatiquement créer un profil vide
+        },
+      },
+    });
+
+    return this.signToken(user.id, user.email);
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return this.signToken(user.id, user.email);
+  }
+
+  async signToken(userId: string, email: string) {
+    const payload = { sub: userId, email };
+    
+    // Access token court (ex: 1 heure)
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1h',
+      secret: process.env.JWT_SECRET,
+    });
+
+    // Refresh token long (ex: 30 jours)
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '30d',
+      secret: process.env.JWT_SECRET + '_REFRESH',
+    });
+
+    // Hacher le refresh token et le stocker en DB
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken },
+    });
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      userId,
+    };
+  }
+
+  async refreshTokens(refreshToken: string) {
+    let payload;
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_SECRET + '_REFRESH',
+      });
+    } catch (e) {
+      throw new UnauthorizedException('Refresh token expired or invalid');
+    }
+
+    const userId = payload.sub;
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.hashedRefreshToken) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const rtMatches = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
+    if (!rtMatches) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    return this.signToken(user.id, user.email);
+  }
+
+  async deleteAccount(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Récupérer tous les journeys liés à l'utilisateur
+    const journeys = await this.prisma.journey.findMany({
+      where: {
+        OR: [{ userAId: userId }, { userBId: userId }],
+      },
+      select: { id: true, proposalId: true },
+    });
+
+    const journeyIds = journeys.map(j => j.id);
+    const proposalIds = journeys.map(j => j.proposalId);
+
+    // Récupérer toutes les interviews de l'utilisateur
+    const interviews = await this.prisma.interviewIA.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    const interviewIds = interviews.map(i => i.id);
+
+    // Démarrer une transaction Prisma pour tout supprimer dans l'ordre
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Supprimer les signalements (Reports) liés
+      await tx.report.deleteMany({
+        where: {
+          OR: [
+            { reporterId: userId },
+            { reportedId: userId },
+            { message: { journeyId: { in: journeyIds } } },
+          ],
+        },
+      });
+
+      // 2. Supprimer les messages de chat
+      await tx.message.deleteMany({
+        where: {
+          OR: [
+            { senderId: userId },
+            { journeyId: { in: journeyIds } },
+          ],
+        },
+      });
+
+      // 3. Supprimer les réponses d'Harmonie (HarmonyResponse)
+      await tx.harmonyResponse.deleteMany({
+        where: {
+          OR: [
+            { userId },
+            { question: { journeyId: { in: journeyIds } } },
+          ],
+        },
+      });
+
+      // 4. Supprimer les questions d'Harmonie (HarmonyQuestion)
+      await tx.harmonyQuestion.deleteMany({
+        where: {
+          journeyId: { in: journeyIds },
+        },
+      });
+
+      // 5. Supprimer les sessions vidéo et échanges de contact
+      await tx.videoSession.deleteMany({
+        where: {
+          journeyId: { in: journeyIds },
+        },
+      });
+
+      await tx.contactExchange.deleteMany({
+        where: {
+          journeyId: { in: journeyIds },
+        },
+      });
+
+      await tx.alumniCouple.deleteMany({
+        where: {
+          journeyId: { in: journeyIds },
+        },
+      });
+
+      // 6. Supprimer les transactions de crédit
+      await tx.creditTransaction.deleteMany({
+        where: {
+          OR: [
+            { userId },
+            { journeyId: { in: journeyIds } },
+          ],
+        },
+      });
+
+      // 7. Supprimer les Journeys
+      await tx.journey.deleteMany({
+        where: {
+          id: { in: journeyIds },
+        },
+      });
+
+      // 8. Supprimer toutes les MatchProposals associées
+      await tx.matchProposal.deleteMany({
+        where: {
+          OR: [
+            { sourceUserId: userId },
+            { targetUserId: userId },
+            { id: { in: proposalIds } },
+          ],
+        },
+      });
+
+      // 9. Supprimer les réponses aux modules de l'entretien IA
+      await tx.moduleResponse.deleteMany({
+        where: {
+          interviewId: { in: interviewIds },
+        },
+      });
+
+      // 10. Supprimer les cartes mentales (MentalMap)
+      await tx.mentalMap.deleteMany({
+        where: {
+          OR: [
+            { userId },
+            { interviewId: { in: interviewIds } },
+          ],
+        },
+      });
+
+      // 11. Supprimer les entretiens (InterviewIA)
+      await tx.interviewIA.deleteMany({
+        where: {
+          userId,
+        },
+      });
+
+      // 12. Supprimer les notifications de l'utilisateur
+      await tx.notification.deleteMany({
+        where: {
+          userId,
+        },
+      });
+
+      // 13. Supprimer le profil utilisateur
+      await tx.profile.deleteMany({
+        where: {
+          userId,
+        },
+      });
+
+      // 14. Supprimer l'utilisateur lui-même
+      await tx.user.delete({
+        where: {
+          id: userId,
+        },
+      });
+    });
+
+    return { success: true, message: 'Compte supprimé avec succès' };
+  }
+}
