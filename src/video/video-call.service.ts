@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { DailyService } from './daily.service';
+import { NotificationService } from '../notifications/notification.service';
 
 export const VIDEO_CALL_MAX_SECONDS = 2 * 60;
 
@@ -33,6 +34,7 @@ export class VideoCallService {
   constructor(
     private prisma: PrismaService,
     private daily: DailyService,
+    private notificationService: NotificationService,
   ) {
     this.daily.logConfigurationHint();
   }
@@ -68,7 +70,7 @@ export class VideoCallService {
       currentStep: journey.currentStep,
       canJoin: canAccessVideoStep(journey.currentStep),
       testUnlock: isVideoTestUnlock(),
-      dailyConfigured: this.daily.isConfigured(),
+      dailyConfigured: true,
       maxDurationSec: VIDEO_CALL_MAX_SECONDS,
       partnerName: partner.firstName,
       videoSession: journey.videoSession
@@ -92,11 +94,7 @@ export class VideoCallService {
       );
     }
 
-    if (!this.daily.isConfigured()) {
-      throw new ServiceUnavailableException(
-        'Appels vidéo non configurés sur le serveur (DAILY_API_KEY)',
-      );
-    }
+
 
     const user =
       journey.userAId === userId ? journey.userA : journey.userB;
@@ -107,37 +105,80 @@ export class VideoCallService {
     let roomUrl = journey.videoSession?.dailyRoomUrl ?? null;
     let effectiveRoomName =
       journey.videoSession?.dailyRoomName ?? roomName;
+    let isJitsi = roomUrl?.includes('meet.jit.si') ?? false;
 
     if (!roomUrl) {
-      let room = await this.daily.getRoom(roomName);
-      if (!room) {
-        room = await this.daily.createRoom(roomName, VIDEO_CALL_MAX_SECONDS);
+      if (this.daily.isConfigured()) {
+        try {
+          let room = await this.daily.getRoom(roomName);
+          if (!room) {
+            room = await this.daily.createRoom(roomName, VIDEO_CALL_MAX_SECONDS);
+          }
+          roomUrl = room.url;
+          effectiveRoomName = room.name;
+        } catch (err: any) {
+          console.warn(`[Video] Daily API failed, falling back to Jitsi Meet:`, err.message);
+          roomUrl = `https://meet.jit.si/boligo-${journeyId.replace(/-/g, '')}`;
+          effectiveRoomName = roomName;
+          isJitsi = true;
+        }
+      } else {
+        roomUrl = `https://meet.jit.si/boligo-${journeyId.replace(/-/g, '')}`;
+        effectiveRoomName = roomName;
+        isJitsi = true;
       }
-      roomUrl = room.url;
-      effectiveRoomName = room.name;
 
       await this.prisma.videoSession.upsert({
         where: { journeyId },
         create: {
           journeyId,
-          dailyRoomName: room.name,
-          dailyRoomUrl: room.url,
+          dailyRoomName: effectiveRoomName,
+          dailyRoomUrl: roomUrl,
           status: 'planifiee',
         },
         update: {
-          dailyRoomName: room.name,
-          dailyRoomUrl: room.url,
+          dailyRoomName: effectiveRoomName,
+          dailyRoomUrl: roomUrl,
         },
       });
     }
 
-    const token = await this.daily.createMeetingToken(
-      effectiveRoomName,
-      user.firstName?.trim() || 'Participant',
-      VIDEO_CALL_MAX_SECONDS,
-    );
+    let meetingUrl = '';
+    let provider = 'daily';
 
-    const meetingUrl = this.daily.buildMeetingUrl(roomUrl, token);
+    if (isJitsi) {
+      meetingUrl = `${roomUrl}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
+      provider = 'jitsi';
+    } else {
+      try {
+        const token = await this.daily.createMeetingToken(
+          effectiveRoomName,
+          user.firstName?.trim() || 'Participant',
+          VIDEO_CALL_MAX_SECONDS,
+        );
+        meetingUrl = this.daily.buildMeetingUrl(roomUrl, token);
+      } catch (err: any) {
+        console.warn(`[Video] Daily token failed, falling back to Jitsi Meet:`, err.message);
+        meetingUrl = `https://meet.jit.si/boligo-${journeyId.replace(/-/g, '')}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
+        provider = 'jitsi';
+      }
+    }
+
+    // Trigger Notification push if first participant
+    const isFirstParticipant = !journey.videoSession || journey.videoSession.status !== 'en_cours';
+    if (isFirstParticipant) {
+      try {
+        await this.notificationService.sendPushNotification(
+          partner.id,
+          'systeme',
+          'Appel vidéo entrant 🎥',
+          `${user.firstName} vous appelle en vidéo. Rejoignez l'appel !`,
+        );
+        console.log(`[Video] Push call notification sent to partner ${partner.id}`);
+      } catch (pushErr) {
+        console.error(`[Video] Failed to send push call notification:`, pushErr);
+      }
+    }
 
     const isUserA = journey.userAId === userId;
     await this.prisma.videoSession.upsert({
@@ -162,7 +203,7 @@ export class VideoCallService {
       roomName,
       partnerName: partner.firstName,
       maxDurationSec: VIDEO_CALL_MAX_SECONDS,
-      provider: 'daily',
+      provider,
     };
   }
 
@@ -187,9 +228,11 @@ export class VideoCallService {
     }
 
     let advanced = false;
+    const isRealCall = durationSec == null || durationSec >= 10;
     if (
-      journey.currentStep === 'video' ||
-      journey.currentStep === 'chat_libre'
+      isRealCall &&
+      (journey.currentStep === 'video' ||
+        journey.currentStep === 'chat_libre')
     ) {
       await this.prisma.journey.update({
         where: { id: journeyId },
