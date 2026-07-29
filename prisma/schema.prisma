@@ -35,7 +35,9 @@ model User {
   id                String           @id @default(uuid())
   email             String           @unique
   telephone         String?          @unique
-  passwordHash      String
+  passwordHash      String?          // Optionnel pour l'Auth sociale
+  googleId          String?          @unique
+  facebookId        String?          @unique
   hashedRefreshToken String?
   firstName         String
   lastName          String

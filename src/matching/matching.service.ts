@@ -235,6 +235,7 @@ export class MatchingService {
         proposalStatus: p.status,
         videoEnabled,
         testUnlock,
+        contactsExchanged: step === 'termine',
         // Données enrichies pour l'affichage Discover focus
         slogan: partnerMentalMap?.bio || "Une âme qui partage ce qui compte vraiment.",
         mentalMap: this.formatMentalMap(partnerMentalMap),

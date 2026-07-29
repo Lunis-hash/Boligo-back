@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Hash manuel pour éviter les problèmes de dépendance bcrypt dans le script direct
-  const passwordHash = '$2b$10$YourMockedHashHere...JustABoxForTest';
+  const passwordHash = await bcrypt.hash('password123', 10);
 
   console.log('🌱 Début du seed...');
 

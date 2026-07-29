@@ -52,7 +52,7 @@ export class AdminService {
     if (!user || user.role !== UserRole.ADMIN) {
       throw new UnauthorizedException('Identifiants invalides');
     }
-    const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
+    const isMatch = await bcrypt.compare(dto.password, user.passwordHash || '');
     if (!isMatch) {
       throw new UnauthorizedException('Identifiants invalides');
     }

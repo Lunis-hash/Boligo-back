@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { SocialLoginDto } from './dto/social-login.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Auth')
@@ -35,6 +36,15 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid refresh token.' })
   async refresh(@Body() dto: RefreshDto) {
     return this.authService.refreshTokens(dto.refreshToken);
+  }
+
+  @Post('social-login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Social login with Google or Facebook' })
+  @ApiResponse({ status: 200, description: 'Social login successful, returns JWT token.' })
+  @ApiResponse({ status: 401, description: 'Invalid social token.' })
+  async socialLogin(@Body() dto: SocialLoginDto) {
+    return this.authService.socialLogin(dto.provider, dto.token, dto.profile);
   }
 
   @Delete('delete-account')

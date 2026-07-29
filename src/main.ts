@@ -32,6 +32,7 @@ async function bootstrap() {
       'http://127.0.0.1:3001',
       'http://localhost:3002',
       'http://127.0.0.1:3002',
+      'https://boligo-admin.vercel.app',
       process.env.ADMIN_URL,
       process.env.WEBSITE_URL,
     ].filter(Boolean) as string[],
