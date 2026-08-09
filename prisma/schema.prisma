@@ -53,6 +53,8 @@ model User {
   lastLogin         DateTime?
   pushToken         String?
   verificationCode  String?
+  resetCode         String?
+  resetCodeExpires  DateTime?
 
   profile           Profile?
   interviews        InterviewIA[]

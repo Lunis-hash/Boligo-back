@@ -41,4 +41,9 @@ export class RegisterDto {
   @ApiProperty({ example: '+2250102030405', required: false })
   @IsString()
   telephone?: string;
+
+  @ApiProperty({ example: 'Développeur' })
+  @IsString()
+  @IsNotEmpty()
+  job: string;
 }
