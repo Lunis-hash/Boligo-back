@@ -5,6 +5,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { SocialLoginDto } from './dto/social-login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Auth')
@@ -45,6 +47,24 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid social token.' })
   async socialLogin(@Body() dto: SocialLoginDto) {
     return this.authService.socialLogin(dto.provider, dto.token, dto.profile);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset code via email' })
+  @ApiResponse({ status: 200, description: 'Reset code sent via email.' })
+  @ApiResponse({ status: 404, description: 'User with email not found.' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password using OTP code received via email' })
+  @ApiResponse({ status: 200, description: 'Password reset successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid code or expired token.' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @Delete('delete-account')

@@ -20,10 +20,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Parse clean error message
     let message = 'Internal server error';
+    let originalMessage: any = null;
+    
     if (typeof responseBody === 'string') {
       message = responseBody;
+      originalMessage = responseBody;
     } else if (typeof responseBody === 'object' && responseBody !== null) {
-      message = (responseBody as any).message || (responseBody as any).error || JSON.stringify(responseBody);
+      originalMessage = (responseBody as any).message || (responseBody as any).error;
+      
+      if (Array.isArray(originalMessage)) {
+        message = originalMessage.join('\n');
+      } else if (typeof originalMessage === 'string') {
+        message = originalMessage;
+      } else {
+        message = JSON.stringify(responseBody);
+      }
     }
 
     const errorResponse = {

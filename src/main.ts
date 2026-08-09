@@ -25,17 +25,9 @@ async function bootstrap() {
   }));
 
 
-  // CORS Config supporting Admin dashboard and Front-end website
+  // CORS Config supporting Admin dashboard, Front-end website & Mobile App
   app.enableCors({
-    origin: [
-      'http://localhost:3001',
-      'http://127.0.0.1:3001',
-      'http://localhost:3002',
-      'http://127.0.0.1:3002',
-      'https://boligo-admin.vercel.app',
-      process.env.ADMIN_URL,
-      process.env.WEBSITE_URL,
-    ].filter(Boolean) as string[],
+    origin: true,
     credentials: true,
   });
 
