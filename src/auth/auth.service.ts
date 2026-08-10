@@ -49,14 +49,14 @@ export class AuthService {
         email: dto.email,
         passwordHash: hashedPassword,
         firstName: dto.firstName,
-        lastName: dto.lastName,
+        lastName: dto.lastName || '',
         birthDate: new Date(dto.birthDate),
         gender: dto.gender,
         city: dto.city,
         telephone: dto.telephone,
         profile: {
           create: {
-            profession: dto.job, // Sauvegarde le job dans le profil s'il est fourni
+            profession: dto.job || null,
           }, 
         },
       },
