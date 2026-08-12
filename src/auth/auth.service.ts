@@ -56,7 +56,7 @@ export class AuthService {
         telephone: dto.telephone,
         profile: {
           create: {
-            profession: dto.job || null,
+            profession: dto.profession || dto.job || null,
           }, 
         },
       },

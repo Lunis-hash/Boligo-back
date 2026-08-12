@@ -48,4 +48,9 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   job?: string;
+
+  @ApiProperty({ example: 'Développeur', required: false })
+  @IsString()
+  @IsOptional()
+  profession?: string;
 }
