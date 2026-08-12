@@ -16,7 +16,7 @@ export class PaymentService {
   ) {
     const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(stripeSecretKey || 'sk_test_dummy', {
-      apiVersion: '2023-10-16' as any,
+      apiVersion: '2024-06-20' as any,
     });
   }
 
@@ -68,7 +68,7 @@ export class PaymentService {
       // 2. Create Ephemeral Key for the customer to save cards
       const ephemeralKey = await this.stripe.ephemeralKeys.create(
         { customer: customerId },
-        { apiVersion: '2023-10-16' }
+        { apiVersion: '2024-06-20' }
       );
 
       // 3. Create PaymentIntent

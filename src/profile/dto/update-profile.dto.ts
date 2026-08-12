@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
   // ── Champs Profile ──
@@ -21,6 +21,7 @@ export class UpdateProfileDto {
   @ApiProperty({ example: 'Développeur', required: false })
   @IsOptional()
   @IsString()
+  @MinLength(2)
   profession?: string;
 
   // ── Champs User ──
