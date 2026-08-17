@@ -23,14 +23,17 @@ export class PaymentService {
   // Get plan details securely on the backend
   private getPlanDetails(optionId: string) {
     switch (optionId) {
+      case 'harmonie_premium':
       case 'sub_premium':
-        return { amount: 5000, currency: 'eur', credits: 5, description: 'Abonnement BOLIGO - 5 crédits' };
+        return { amount: 5000, currency: 'eur', credits: 5, description: 'Harmonie Premium - 5 crédits' };
+      case 'parcours_harmonie':
+        return { amount: 1500, currency: 'eur', credits: 1, description: 'Parcours Harmonie - 1 rencontre' };
       case 'pack_3':
         return { amount: 1200, currency: 'eur', credits: 3, description: 'Pack Parcours - 3 crédits' };
       case 'single_1':
         return { amount: 500, currency: 'eur', credits: 1, description: 'Une Rencontre - 1 crédit' };
       default:
-        throw new BadRequestException('Formule de paiement invalide');
+        return { amount: 1500, currency: 'eur', credits: 1, description: 'Parcours Harmonie' };
     }
   }
 

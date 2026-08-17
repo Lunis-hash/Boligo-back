@@ -236,15 +236,19 @@ export class MatchingService {
       : Math.round((mentalMap.maturityScore || 0.85) * 100);
     const needsPct = compat
       ? Math.round(compat.breakdown.needsAlignment * 100)
-      : 88;
+      : 85;
     const harmonyPct = compat
       ? Math.round(compat.breakdown.vibeScore * 100)
       : Math.round((mentalMap.alchemyScore || 0.8) * 100);
+    const vecuPct = Math.round((valuesPct + harmonyPct) / 2);
+    const lifestylePct = Math.round((needsPct + harmonyPct) / 2);
 
     return [
-      { id: 'valeurs', label: 'Valeurs', emoji: '💎', value: valuesPct, color: '#FF4D67' },
-      { id: 'besoins', label: 'Besoins', emoji: '🌱', value: needsPct, color: '#FF9F43' },
-      { id: 'harmonie', label: 'Harmonie', emoji: '✨', value: harmonyPct, color: '#A155B9' },
+      { id: 'valeurs', label: '💎 Valeurs & Culture', emoji: '💎', value: Math.max(50, Math.min(99, valuesPct)), color: '#10B981' },
+      { id: 'attachement', label: '🤝 Attachement & Émotions', emoji: '🤝', value: Math.max(50, Math.min(99, needsPct)), color: '#10B981' },
+      { id: 'projet', label: '🌱 Projet de Vie & Famille', emoji: '🌱', value: Math.max(50, Math.min(99, harmonyPct)), color: '#F59E0B' },
+      { id: 'vecu', label: '⚖️ Vécu & Maturité', emoji: '⚖️', value: Math.max(50, Math.min(99, vecuPct)), color: '#F59E0B' },
+      { id: 'mode_de_vie', label: '💼 Mode de vie & Finances', emoji: '💼', value: Math.max(50, Math.min(99, lifestylePct)), color: '#EF4444' },
     ];
   }
 
