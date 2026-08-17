@@ -40,6 +40,18 @@ export class InterviewController {
     return this.interviewService.saveModule(req.user.id, dto);
   }
 
+  @Get('summary')
+  @ApiOperation({ summary: 'Get generated mental map and dynamic pillars' })
+  async getSummary(@Req() req: any) {
+    return this.interviewService.getMentalMap(req.user.id);
+  }
+
+  @Get('mental-map')
+  @ApiOperation({ summary: 'Get generated mental map and dynamic pillars (alias)' })
+  async getMentalMap(@Req() req: any) {
+    return this.interviewService.getMentalMap(req.user.id);
+  }
+
   // Alias de compatibilite pour le frontend existant.
   @Post('save-module')
   async saveModule(@Req() req: any, @Body() dto: SaveModuleDto) {
