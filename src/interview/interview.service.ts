@@ -11,7 +11,7 @@ export class InterviewService {
   ) {}
 
   async getStatus(userId: string) {
-    const interview = await this.prisma.interviewIA.findFirst({
+    let interview = await this.prisma.interviewIA.findFirst({
       where: { userId, status: 'en_cours' },
       include: { responses: true },
     });
@@ -30,15 +30,24 @@ export class InterviewService {
           isCompleted: true,
         };
       }
-      return { status: 'none', currentModule: 0, isCompleted: false };
+      // Démarrer automatiquement l'entretien pour les nouveaux utilisateurs
+      const newInterview = await this.startInterview(userId);
+      return {
+        interviewId: newInterview.id,
+        status: 'en_cours',
+        completedModules: [],
+        currentModule: 0,
+        isCompleted: false,
+      };
     }
 
     const completedModules = interview.responses.map(r => r.moduleNumber);
+    const maxCompleted = completedModules.length > 0 ? Math.max(...completedModules) : -1;
     return {
       interviewId: interview.id,
       status: interview.status,
       completedModules,
-      currentModule: Math.max(...completedModules, -1) + 1,
+      currentModule: maxCompleted + 1,
       isCompleted: interview.status === 'termine',
     };
   }
