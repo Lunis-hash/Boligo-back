@@ -356,7 +356,7 @@ export class MatchingService {
       };
 
       const isVideoUnlockEnv = process.env.VIDEO_TEST_UNLOCK?.trim().toLowerCase();
-      const testUnlock = isVideoUnlockEnv === 'true' || isVideoUnlockEnv === '1' || (isVideoUnlockEnv === undefined && process.env.NODE_ENV !== 'production');
+      const testUnlock = isVideoUnlockEnv === 'true' || isVideoUnlockEnv === '1';
       const videoEnabled = step === 'video' || (testUnlock && step === 'chat_libre');
 
       return {

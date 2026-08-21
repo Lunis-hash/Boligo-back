@@ -275,51 +275,6 @@ Retourne UNIQUEMENT un JSON valide avec cette structure exacte :
     }
   }
 
-  async selectHarmonyQuestions(
-    userAMentalMap: any,
-    userBMentalMap: any,
-    questionBank: any[],
-    excludeIds: string[] = [],
-  ) {
-    console.log('🤖 [AI] Groq - Selecting harmony questions from bank (fallback)');
-
-    const available = questionBank.filter((q) => !excludeIds.includes(q.id));
-    const bankSummary = (available.length >= 6 ? available : questionBank).map((q) => ({
-      id: q.id,
-      theme: q.theme,
-      text: q.text,
-    }));
-
-    const prompt = `
-Tu es l'Expert en Relations de BOLIGO. Sélectionne les 6 questions HARD MODE les plus pertinentes pour ce couple.
-Répartition: 2 lignes rouges (limites/fidélité), 2 valeurs profondes (famille/religion/argent), 2 futur+intimité (dont au moins 1 angle intimité/sexualité du couple, formulation respectueuse).
-
-${this.formatMentalMapBlock('PROFIL A', userAMentalMap)}
-
-${this.formatMentalMapBlock('PROFIL B', userBMentalMap)}
-
-BANQUE (utilise uniquement ces IDs):
-${JSON.stringify(bankSummary, null, 2)}
-
-Retourne UNIQUEMENT un tableau JSON de 6 IDs distincts:
-["id_1", "id_2", "id_3", "id_4", "id_5", "id_6"]
-`;
-
-    try {
-      const text = await this.chat(prompt);
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      const ids: string[] = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
-      const unique = [...new Set(ids)].filter((id) =>
-        bankSummary.some((q) => q.id === id),
-      );
-      if (unique.length >= 4) return unique.slice(0, 6);
-      return null;
-    } catch (error) {
-      console.error('❌ [AI] Erreur sélection questions:', error);
-      return null;
-    }
-  }
-
   /**
    * Modération IA des messages chat (rencontres sérieuses, pas contenu pornographique).
    * En cas d'erreur API → allowed: true (le filtre local a déjà passé).
