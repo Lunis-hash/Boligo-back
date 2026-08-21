@@ -18,33 +18,22 @@ export class EmailService {
         const cleanPass = smtpPass.replace(/\s+/g, '');
         const isGmail = (smtpHost && smtpHost.includes('gmail')) || (smtpUser && smtpUser.includes('@gmail.com'));
 
-        const transporter = nodemailer.createTransport(
-          isGmail
-            ? {
-                service: 'gmail',
-                auth: {
-                  user: smtpUser,
-                  pass: cleanPass,
-                },
-                tls: { rejectUnauthorized: false },
-                connectionTimeout: 8000,
-                greetingTimeout: 8000,
-                socketTimeout: 10000,
-              }
-            : {
-                host: smtpHost,
-                port: smtpPort || 587,
-                secure: smtpPort === 465,
-                auth: {
-                  user: smtpUser,
-                  pass: cleanPass,
-                },
-                tls: { rejectUnauthorized: false },
-                connectionTimeout: 8000,
-                greetingTimeout: 8000,
-                socketTimeout: 10000,
-              }
-        );
+        const transporter = nodemailer.createTransport({
+          host: smtpHost || 'smtp.gmail.com',
+          port: smtpPort || 465,
+          secure: Number(smtpPort) === 465 || !smtpPort,
+          family: 4, // Force IPv4 (évite l'erreur ENETUNREACH sur Render)
+          auth: {
+            user: smtpUser,
+            pass: cleanPass,
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 15000,
+        });
 
         const fromAddress = process.env.EMAIL_FROM || `BOLIGO <${smtpUser}>`;
         await transporter.sendMail({
