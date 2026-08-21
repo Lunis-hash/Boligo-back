@@ -67,17 +67,6 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M0_Q02',
-    moduleNumber: 0,
-    text: 'Votre périmètre de recherche :',
-    options: [
-      { key: 'A', text: 'Même ville / département' },
-      { key: 'B', text: 'Même région' },
-      { key: 'C', text: 'Même pays' },
-      { key: 'D', text: 'International' },
-    ],
-  },
-  {
     id: 'M0_Q03',
     moduleNumber: 0,
     text: 'Êtes-vous prêt(e) à déménager pour votre partenaire ?',
