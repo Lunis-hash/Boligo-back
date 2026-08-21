@@ -161,6 +161,25 @@ export class AuthService {
       throw new UnauthorizedException('Adresse e-mail ou mot de passe incorrect.');
     }
 
+    if (!user.isVerified) {
+      const verificationCode = user.verificationCode || Math.floor(1000 + Math.random() * 9000).toString();
+      if (!user.verificationCode) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { verificationCode },
+        });
+      }
+      this.emailService.sendVerificationEmail(user.email, verificationCode).catch((e) => {
+        console.error('[AUTH] Erreur renvoi OTP lors du login:', e);
+      });
+
+      return {
+        isVerified: false,
+        message: 'Votre compte doit être validé. Un code de vérification a été envoyé par e-mail.',
+        email: user.email,
+      };
+    }
+
     return this.signToken(user.id, user.email);
   }
 
