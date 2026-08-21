@@ -82,12 +82,10 @@ export class AuthService {
       },
     });
 
-    // Envoyer l'email OTP de validation
-    try {
-      await this.emailService.sendVerificationEmail(user.email, verificationCode);
-    } catch (e) {
+    // Envoyer l'email OTP de validation de façon asynchrone (sans bloquer la réponse)
+    this.emailService.sendVerificationEmail(user.email, verificationCode).catch((e) => {
       console.error('[AUTH] Erreur d\'envoi d\'email OTP:', e);
-    }
+    });
 
     return {
       success: true,
