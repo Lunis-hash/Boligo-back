@@ -43,6 +43,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 12);
+    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
 
     const user = await this.prisma.user.create({
       data: {
@@ -54,8 +55,11 @@ export class AuthService {
         gender: dto.gender,
         city: dto.city,
         telephone: dto.telephone,
+        isVerified: false,
+        verificationCode: verificationCode,
         profile: {
           create: {
+            displayedCity: dto.city || null,
             profession: dto.profession || dto.job || null,
           }, 
         },
@@ -68,7 +72,71 @@ export class AuthService {
       },
     });
 
+    // Envoyer l'email OTP de validation
+    try {
+      await this.emailService.sendVerificationEmail(user.email, verificationCode);
+    } catch (e) {
+      console.error('[AUTH] Erreur d\'envoi d\'email OTP:', e);
+    }
+
+    return {
+      success: true,
+      message: 'Compte créé avec succès. Un code de vérification à 4 chiffres a été envoyé par e-mail.',
+      email: user.email,
+    };
+  }
+
+  async verifyEmail(email: string, code: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé.');
+    }
+
+    if (user.isVerified) {
+      return this.signToken(user.id, user.email);
+    }
+
+    if (!user.verificationCode || user.verificationCode !== code) {
+      throw new BadRequestException('Code de vérification incorrect.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        verificationCode: null,
+      },
+    });
+
     return this.signToken(user.id, user.email);
+  }
+
+  async resendVerificationOtp(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé.');
+    }
+
+    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { verificationCode },
+    });
+
+    try {
+      await this.emailService.sendVerificationEmail(user.email, verificationCode);
+    } catch (e) {
+      console.error('[AUTH] Erreur d\'envoi d\'email OTP:', e);
+    }
+
+    return { success: true, message: 'Un nouveau code de vérification a été envoyé par e-mail.' };
   }
 
   async login(dto: LoginDto) {

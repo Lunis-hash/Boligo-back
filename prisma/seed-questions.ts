@@ -77,7 +77,7 @@ async function main() {
     });
   }
 
-  let questionsToCreate = [];
+  const questionsToCreate: any[] = [];
   for (const day of SONDEUR_DAYS) {
     for (const q of day.questions) {
       questionsToCreate.push({

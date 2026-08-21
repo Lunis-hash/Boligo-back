@@ -23,9 +23,11 @@ export class ProfileService {
     }
 
     const mentalMap = user.mentalMaps[0] || null;
+    const displayedCity = user.profile.displayedCity || user.city || null;
 
     return {
       ...user.profile,
+      displayedCity,
       user: {
         id: user.id,
         email: user.email,
@@ -34,7 +36,7 @@ export class ProfileService {
         lastName: user.lastName,
         gender: user.gender,
         birthDate: user.birthDate,
-        city: user.city,
+        city: user.city || displayedCity,
         accountStatus: user.accountStatus,
         creditBalance: user.creditBalance,
         isVerified: user.isVerified,
@@ -64,6 +66,13 @@ export class ProfileService {
       } else {
         profileData[key] = value;
       }
+    }
+
+    if (dto.city && !profileData.displayedCity) {
+      profileData.displayedCity = dto.city;
+    }
+    if (profileData.displayedCity && !userData.city) {
+      userData.city = profileData.displayedCity;
     }
 
     // Mettre à jour User si nécessaire

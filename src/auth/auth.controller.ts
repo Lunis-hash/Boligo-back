@@ -7,6 +7,8 @@ import { RefreshDto } from './dto/refresh.dto';
 import { SocialLoginDto } from './dto/social-login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Auth')
@@ -20,6 +22,23 @@ export class AuthController {
   @ApiResponse({ status: 409, description: 'Email already exists.' })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify email with OTP code received after registration' })
+  @ApiResponse({ status: 200, description: 'Email verified, returns JWT tokens.' })
+  @ApiResponse({ status: 400, description: 'Invalid code.' })
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(dto.email, dto.code);
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend verification OTP code via email' })
+  @ApiResponse({ status: 200, description: 'New verification OTP code sent via email.' })
+  async resendVerification(@Body() dto: ResendVerificationDto) {
+    return this.authService.resendVerificationOtp(dto.email);
   }
 
   @Post('login')
