@@ -1,4 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import * as dns from 'dns';
+
+// Force Node.js à privilégier l'IPv4 pour éviter tout ENETUNREACH sur Render
+if (typeof (dns as any).setDefaultResultOrder === 'function') {
+  (dns as any).setDefaultResultOrder('ipv4first');
+}
 
 @Injectable()
 export class EmailService {
@@ -6,13 +12,13 @@ export class EmailService {
     const smtpHost = process.env.SMTP_HOST;
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
-    const smtpPort = Number(process.env.SMTP_PORT) || 465;
+    const smtpPort = Number(process.env.SMTP_PORT) || 587;
     const resendKey = process.env.RESEND_API_KEY;
     const sendgridKey = process.env.SENDGRID_API_KEY;
 
     // 1. SMTP / Nodemailer (Gmail, Brevo, SendGrid SMTP, OVH, etc.)
     if ((smtpHost || smtpUser) && smtpPass) {
-      console.log(`[EMAIL] Sending real email to ${to} via SMTP...`);
+      console.log(`[EMAIL] Sending real email to ${to} via SMTP (port ${smtpPort})...`);
       try {
         const nodemailer = require('nodemailer');
         const cleanPass = smtpPass.replace(/\s+/g, '');
@@ -20,15 +26,16 @@ export class EmailService {
 
         const transporter = nodemailer.createTransport({
           host: smtpHost || 'smtp.gmail.com',
-          port: smtpPort || 465,
-          secure: Number(smtpPort) === 465 || !smtpPort,
-          family: 4, // Force IPv4 (évite l'erreur ENETUNREACH sur Render)
+          port: isGmail ? 587 : smtpPort,
+          secure: isGmail ? false : smtpPort === 465,
+          requireTLS: isGmail ? true : false,
           auth: {
             user: smtpUser,
             pass: cleanPass,
           },
           tls: {
             rejectUnauthorized: false,
+            servername: isGmail ? 'smtp.gmail.com' : undefined,
           },
           connectionTimeout: 10000,
           greetingTimeout: 10000,
