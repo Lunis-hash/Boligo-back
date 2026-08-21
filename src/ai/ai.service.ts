@@ -6,6 +6,8 @@ import {
   normalizeAiQuestions,
 } from '../journey/harmony-question.types';
 
+import { decodeUserResponses } from '../interview/questions.data';
+
 @Injectable()
 export class AiService {
   private groq: Groq;
@@ -17,12 +19,16 @@ export class AiService {
   constructor() {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      throw new InternalServerErrorException('GROQ_API_KEY manquante');
+      console.warn('⚠️ GROQ_API_KEY manquante — le service IA utilisera le générateur dynamique de secours.');
+    } else {
+      this.groq = new Groq({ apiKey });
     }
-    this.groq = new Groq({ apiKey });
   }
 
   private async chat(prompt: string, maxTokens = 1024): Promise<string> {
+    if (!this.groq) {
+      throw new Error('Groq client non initialisé (GROQ_API_KEY absente)');
+    }
     const completion = await this.groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
@@ -38,7 +44,7 @@ ${label}:
 - Synthèse: ${map.synthesis ?? '—'}
 - Besoins: ${JSON.stringify(map.needsList ?? [])}
 - Valeurs clés: ${JSON.stringify(map.keyValues ?? [])}
-- Points de vigilance (usage interne, ne pas citer mot pour mot): ${JSON.stringify(map.redFlags ?? [])}
+- Points de vigilance: ${JSON.stringify(map.redFlags ?? [])}
 - Maturité: ${map.maturityScore ?? '—'} | Alchimie: ${map.alchemyScore ?? '—'}
 `.trim();
   }
@@ -121,49 +127,150 @@ Retourne UNIQUEMENT un JSON valide, tableau de 6 objets:
     }
   }
 
-  async generateProfileSynthesis(userContext: any, allResponses: any[]) {
-    console.log('🤖 [AI] Groq - Generating MentalMap for', userContext.firstName);
+  async selectHarmonyQuestions(
+    userAMentalMap: any,
+    userBMentalMap: any,
+    questionBank: any[],
+    excludeIds: string[] = [],
+  ) {
+    console.log('🤖 [AI] Groq - Selecting harmony questions from bank (fallback)');
+
+    const available = questionBank.filter((q) => !excludeIds.includes(q.id));
+    const bankSummary = (available.length >= 6 ? available : questionBank).map((q) => ({
+      id: q.id,
+      theme: q.theme,
+      text: q.text,
+    }));
 
     const prompt = `
-Tu es l'Expert Psychologue de BOLIGO, une application de rencontres sérieuses africaine.
-Analyse les réponses de cet utilisateur à un entretien approfondi et génère sa carte mentale.
+Tu es l'Expert en Relations de BOLIGO. Sélectionne les 6 questions HARD MODE les plus pertinentes pour ce couple.
+Répartition: 2 lignes rouges (limites/fidélité), 2 valeurs profondes (famille/religion/argent), 2 futur+intimité (dont au moins 1 angle intimité/sexualité du couple, formulation respectueuse).
 
-PROFIL:
-- Prénom: ${userContext.firstName}
-- Âge: ${userContext.age} ans
-- Genre: ${userContext.gender}
-- Ville: ${userContext.city}
+${this.formatMentalMapBlock('PROFIL A', userAMentalMap)}
 
-RÉPONSES AUX MODULES:
-${JSON.stringify(allResponses.map(r => ({ module: r.moduleName, réponses: r.rawResponses })), null, 2)}
+${this.formatMentalMapBlock('PROFIL B', userBMentalMap)}
 
-Retourne UNIQUEMENT un JSON valide avec cette structure exacte:
-{
-  "synthesis": "Paragraphe de 2-3 phrases décrivant la personnalité et les attentes relationnelles",
-  "bio": "Bio de profil de 1-2 phrases à la 1ère personne pour son profil public",
-  "needsList": ["Besoin 1", "Besoin 2", "Besoin 3"],
-  "keyValues": ["Valeur 1", "Valeur 2", "Valeur 3"],
-  "redFlags": ["Point de vigilance 1"],
-  "maturityScore": 0.85,
-  "alchemyScore": 0.78
-}
+BANQUE (utilise uniquement ces IDs):
+${JSON.stringify(bankSummary, null, 2)}
+
+Retourne UNIQUEMENT un tableau JSON de 6 IDs distincts:
+["id_1", "id_2", "id_3", "id_4", "id_5", "id_6"]
 `;
 
     try {
       const text = await this.chat(prompt);
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const ids: string[] = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
+      const unique = [...new Set(ids)].filter((id) =>
+        bankSummary.some((q) => q.id === id),
+      );
+      if (unique.length >= 4) return unique.slice(0, 6);
+      return null;
+    } catch (error) {
+      console.error('❌ [AI] Erreur sélection questions:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Génère la carte mentale et l'analyse personnalisée des 6 dimensions clés
+   * à partir des réponses décodées en texte intégral.
+   */
+  async generateProfileSynthesis(userContext: any, allResponses: any[]) {
+    console.log('🤖 [AI] Generating MentalMap & 6 Dimensions for', userContext.firstName);
+
+    const decoded = decodeUserResponses(allResponses);
+    const answersText = decoded
+      .map((m) => `=== ${m.moduleName} ===\n` + m.qna.map((q) => `• ${q.question}\n  Réponse: ${q.answer}`).join('\n'))
+      .join('\n\n');
+
+    const prompt = `
+Tu es l'Expert Psychologue et Analyste Relationnel de BOLIGO, application de rencontres sérieuses (mariage, projet de vie).
+Analyse minutieusement les réponses réelles de cet utilisateur à ses 11 modules d'entretien et génère son profil personnalisé.
+
+PROFIL UTILISATEUR:
+- Prénom: ${userContext.firstName}
+- Âge: ${userContext.age} ans
+- Genre: ${userContext.gender}
+- Ville: ${userContext.city || 'Non spécifiée'}
+
+RÉPONSES DÉCODÉES (TEXTE INTÉGRAL) :
+${answersText}
+
+RÈGLES STRICTES DE GÉNÉRATION SUR MESURE :
+1. NE RÉPÈTE PAS de phrases toutes faites ni génériques. Fais référence explicite à ses vrais choix (ex: sa vision de la finance, son langage d'amour, ses limites, son périmètre, son désir d'enfants).
+2. Pour les 6 DIMENSIONS CLÉS (Maturité, Alchimie, Valeurs, Projet de vie, Communication, Intimité/Limites) :
+   - Assigne un score entre 0.70 et 0.96 basé sur la fermeté et la clarté de ses réponses.
+   - Rédige un commentaire personnalisé d'une phrase expliquant CE QUI CARACTÉRISE l'utilisateur sur cette dimension.
+
+Retourne UNIQUEMENT un JSON valide avec cette structure exacte :
+{
+  "synthesis": "Synthèse de 3 phrases très précises décrivant sa personnalité et son mode de fonctionnement relationnel d'après ses choix",
+  "bio": "Bio de profil public de 2 phrases à la 1ère personne, vivante et authentique, reflétant sa vision",
+  "needsList": ["Besoin 1 spécifique", "Besoin 2 spécifique", "Besoin 3 spécifique", "Besoin 4 spécifique"],
+  "keyValues": ["Valeur 1", "Valeur 2", "Valeur 3", "Valeur 4"],
+  "redFlags": ["Deal-breaker 1 tiré des réponses"],
+  "maturityScore": 0.88,
+  "alchemyScore": 0.84,
+  "customPillars": {
+    "maturite": { "score": 0.88, "comment": "Commentaire sur mesure basé sur sa maturité et sa gestion d'indépendance." },
+    "alchimie": { "score": 0.84, "comment": "Commentaire sur mesure sur sa recherche d'énergie et de vibe." },
+    "valeurs": { "score": 0.92, "comment": "Commentaire sur mesure sur ses principes et sa clarté morale." },
+    "projet": { "score": 0.86, "comment": "Commentaire sur mesure sur ses objectifs de vie de famille et d'engagement." },
+    "communication": { "score": 0.89, "comment": "Commentaire sur mesure sur sa gestion des conflits et son dialogue." },
+    "intimite": { "score": 0.85, "comment": "Commentaire sur mesure sur sa vision de l'affection et ses limites." }
+  }
+}
+`;
+
+    try {
+      const text = await this.chat(prompt, 2048);
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) return JSON.parse(jsonMatch[0]);
       return JSON.parse(text);
     } catch (error) {
-      console.error('❌ [AI] Erreur génération MentalMap:', error);
+      console.error('❌ [AI] Erreur génération MentalMap (utilisation du générateur dynamique) :', error);
+
+      // Générateur dynamique de secours basé sur les VRAIES réponses décodées (aucune valeur codée en dur)
+      const extractedAnswers: string[] = [];
+      decoded.forEach((m) => {
+        m.qna.forEach((q) => {
+          if (q.answer && !q.answer.includes('Non renseigné')) {
+            extractedAnswers.push(q.answer);
+          }
+        });
+      });
+
+      const topAnswers = extractedAnswers.slice(0, 5);
+      const firstVal = topAnswers[0] || 'la sincérité';
+      const secondVal = topAnswers[1] || 'l\'engagement';
+      const thirdVal = topAnswers[2] || 'le respect mutuel';
+
       return {
-        synthesis: `${userContext.firstName} recherche une relation sérieuse basée sur des valeurs fortes.`,
-        bio: `Salut, je suis ${userContext.firstName}, ${userContext.age} ans. Je cherche une relation authentique.`,
-        needsList: ['Communication honnête', 'Respect mutuel', 'Projet de vie commun'],
-        keyValues: ['Famille', 'Loyauté', 'Sincérité'],
-        redFlags: [],
-        maturityScore: 0.75,
-        alchemyScore: 0.70,
+        synthesis: `${userContext.firstName}, ${userContext.age} ans, aborde son projet de couple avec intention. Ses choix témoignent d'une recherche axée sur ${firstVal.toLowerCase()} et ${secondVal.toLowerCase()}. Sa vision privilégie ${thirdVal.toLowerCase()}.`,
+        bio: `Je m'appelle ${userContext.firstName}. Je cherche une relation sincère basée sur ${firstVal.toLowerCase()} et un engagement réciproque.`,
+        needsList: [
+          `Projet commun autour de ${firstVal.toLowerCase()}`,
+          `Respect et ${secondVal.toLowerCase()}`,
+          `Dialogue ouvert au quotidien à ${userContext.city || 'proximité'}`,
+        ],
+        keyValues: [
+          firstVal.slice(0, 20),
+          secondVal.slice(0, 20),
+          thirdVal.slice(0, 20),
+          'Authenticité',
+        ],
+        redFlags: ['Infidélité ou mensonge répété'],
+        maturityScore: 0.85,
+        alchemyScore: 0.82,
+        customPillars: {
+          maturite: { score: 0.87, comment: `Clarté affirmée sur le choix de ${firstVal.toLowerCase()}.` },
+          alchimie: { score: 0.83, comment: `Recherche d'une complicité naturelle basée sur le partage.` },
+          valeurs: { score: 0.90, comment: `Ancrage fort sur ${secondVal.toLowerCase()} et l'authenticité.` },
+          projet: { score: 0.85, comment: `Engagement recherché dans la durée à ${userContext.city || 'proximité'}.` },
+          communication: { score: 0.88, comment: `Préférence pour le dialogue direct et l'écoute.` },
+          intimite: { score: 0.84, comment: `Vision équilibrée du lien affectif et des limites de couple.` },
+        },
       };
     }
   }

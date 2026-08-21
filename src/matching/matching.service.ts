@@ -66,6 +66,20 @@ export class MatchingService {
     // 3. Chercher les profils du sexe opposé non occupés avec une carte mentale
     const targetGender = currentUser.gender === 'H' ? 'F' : 'H';
 
+    // Extraire les réponses du Module 0 pour l'utilisateur connecté
+    const userInterview = await this.prisma.interviewIA.findFirst({
+      where: { userId, status: { in: ['en_cours', 'termine'] } },
+      include: { responses: { where: { moduleNumber: 0 } } },
+    });
+
+    const m0Responses = (userInterview?.responses[0]?.rawResponses as Record<string, string>) || {};
+    const agePrefOption = m0Responses.M0_Q01; // A: ±5 ans, B: plus jeune, C: plus âgé, D: peu importe
+    const scopePrefOption = m0Responses.M0_Q02; // A: même ville, B: même région, C: même pays, D: international
+
+    const currentUserBirthYear = currentUser.birthDate ? new Date(currentUser.birthDate).getFullYear() : new Date().getFullYear() - 30;
+    const currentUserAge = new Date().getFullYear() - currentUserBirthYear;
+    const currentUserCity = (currentUser.city || '').toLowerCase().trim();
+
     const matches = await this.prisma.user.findMany({
       where: {
         id: { notIn: Array.from(unavailableUserIds) },
@@ -81,7 +95,46 @@ export class MatchingService {
       },
     });
 
-    const scored = matches.map((m, index) => {
+    // Application stricte des filtres du Module 0
+    const filteredMatches = matches.filter((candidate) => {
+      const candidateBirthYear = candidate.birthDate ? new Date(candidate.birthDate).getFullYear() : 0;
+      const candidateAge = candidateBirthYear ? new Date().getFullYear() - candidateBirthYear : 0;
+      const candidateCity = (candidate.profile?.displayedCity || candidate.city || '').toLowerCase().trim();
+
+      // 1. Filtre Tranche d'âge
+      if (candidateAge > 0 && currentUserAge > 0) {
+        if (agePrefOption === 'A') {
+          // Même génération (±5 ans)
+          if (Math.abs(candidateAge - currentUserAge) > 5) {
+            return false;
+          }
+        } else if (agePrefOption === 'B') {
+          // Plus jeune
+          if (candidateAge >= currentUserAge) {
+            return false;
+          }
+        } else if (agePrefOption === 'C') {
+          // Plus âgé(e)
+          if (candidateAge <= currentUserAge) {
+            return false;
+          }
+        }
+      }
+
+      // 2. Filtre Périmètre & Ville
+      if (scopePrefOption === 'A' && currentUserCity && candidateCity) {
+        const isSameCity = candidateCity.includes(currentUserCity) || currentUserCity.includes(candidateCity);
+        if (!isSameCity) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    const candidatesToScore = filteredMatches.length > 0 ? filteredMatches : matches;
+
+    const scored = candidatesToScore.map((m, index) => {
       const mentalMap = m.mentalMaps[0];
       const compat = computeCompatibility(viewerMentalMap, mentalMap);
       
