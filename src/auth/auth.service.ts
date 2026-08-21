@@ -34,12 +34,22 @@ export class AuthService {
       throw new BadRequestException('Date de naissance invalide.');
     }
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: dto.email },
+          dto.telephone ? { telephone: dto.telephone } : undefined,
+        ].filter(Boolean) as any,
+      },
     });
 
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      if (existingUser.email.toLowerCase() === dto.email.toLowerCase()) {
+        throw new ConflictException('Email already exists');
+      }
+      if (dto.telephone && existingUser.telephone === dto.telephone) {
+        throw new ConflictException('Ce numéro de téléphone est déjà associé à un compte.');
+      }
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 12);

@@ -75,41 +75,139 @@ export class EmailService {
   }
 
   async sendVerificationEmail(email: string, code: string) {
-    const subject = 'Confirmez votre adresse email - BOLIGO';
+    const subject = `${code} est votre code de confirmation BOLIGO`;
     const html = `
-      <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
-        <h2 style="color: #FF4D67; text-align: center;">Bienvenue sur BOLIGO</h2>
-        <p>Bonjour,</p>
-        <p>Merci de vous être inscrit sur BOLIGO. Pour finaliser la création de votre compte, veuillez saisir le code de vérification ci-dessous dans l'application :</p>
-        <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #333; margin: 20px 0; border-radius: 5px; border: 1px dashed #FF4D67;">
-          ${code}
-        </div>
-        <p>Ce code est valable pendant 15 minutes.</p>
-        <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #999; text-align: center;">L'équipe BOLIGO</p>
-      </div>
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Code de confirmation BOLIGO</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #F8F6F4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F8F6F4; padding: 40px 16px;">
+          <tr>
+            <td align="center">
+              <table width="100%" max-width="520" border="0" cellspacing="0" cellpadding="0" style="max-width: 520px; background-color: #FFFFFF; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(20, 16, 14, 0.06); border: 1px solid rgba(20, 16, 14, 0.05);">
+                <!-- Header Gradient -->
+                <tr>
+                  <td align="center" style="padding: 40px 30px 24px; background: linear-gradient(135deg, #FFF5F4 0%, #FFFFFF 100%);">
+                    <div style="display: inline-block; padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(232, 64, 58, 0.25); background-color: rgba(232, 64, 58, 0.05); margin-bottom: 14px;">
+                      <span style="font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #E8403A; text-transform: uppercase;">Sécurité & Vérification</span>
+                    </div>
+                    <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: 3px; color: #E8403A; line-height: 1;">BOLIGO</h1>
+                    <p style="margin: 6px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #918780; text-transform: uppercase;">Rencontres par affinité réelle</p>
+                  </td>
+                </tr>
+
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 10px 36px 36px;">
+                    <h2 style="margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #14100E; text-align: center;">
+                      Validez votre compte
+                    </h2>
+                    <p style="margin: 0 0 24px; font-size: 14.5px; line-height: 1.6; color: #5C534C; text-align: center;">
+                      Merci de rejoindre l'aventure BOLIGO. Pour finaliser votre inscription et accéder à votre entretien IA, saisissez ce code à 4 chiffres :
+                    </p>
+
+                    <!-- OTP Code Box -->
+                    <div style="background: linear-gradient(135deg, rgba(232,64,58,0.06), rgba(124,92,232,0.06)); border: 1.5px dashed rgba(232,64,58,0.35); border-radius: 16px; padding: 22px 16px; text-align: center; margin: 0 0 24px;">
+                      <span style="font-family: monospace, Courier; font-size: 38px; font-weight: 800; letter-spacing: 12px; color: #E8403A; padding-left: 12px;">
+                        ${code}
+                      </span>
+                    </div>
+
+                    <p style="margin: 0 0 8px; font-size: 12.5px; color: #918780; text-align: center;">
+                      ⏱️ Ce code expire dans <strong style="color: #5C534C;">15 minutes</strong>.
+                    </p>
+                    <p style="margin: 0; font-size: 12px; color: #A8A099; text-align: center;">
+                      Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail en toute sécurité.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 20px 30px; background-color: #FAF9F8; border-top: 1px solid rgba(20, 16, 14, 0.05); text-align: center;">
+                    <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; color: #5C534C;">
+                      BOLIGO — Société HARMONIE
+                    </p>
+                    <p style="margin: 0; font-size: 10px; color: #918780;">
+                      45 rue Cécile Duparc, 95870 Bezons, France · Données 100% sécurisées
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `;
 
     await this.dispatchEmail(email, subject, html);
   }
 
   async sendPasswordResetEmail(email: string, code: string) {
-    const subject = 'Réinitialisation de votre mot de passe - BOLIGO';
+    const subject = `${code} est votre code de réinitialisation BOLIGO`;
     const html = `
-      <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
-        <h2 style="color: #FF4D67; text-align: center;">Réinitialisation de votre mot de passe</h2>
-        <p>Bonjour,</p>
-        <p>Vous avez demandé la réinitialisation de votre mot de passe sur l'application BOLIGO.</p>
-        <p>Veuillez utiliser le code à 6 chiffres ci-dessous pour créer un nouveau mot de passe :</p>
-        <div style="background-color: #f9f9f9; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #FF4D67; margin: 20px 0; border-radius: 5px; border: 1px dashed #FF4D67;">
-          ${code}
-        </div>
-        <p>Ce code expire dans <strong>15 minutes</strong>.</p>
-        <p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email en toute sécurité. Votre mot de passe actuel restera inchangé.</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #999; text-align: center;">L'équipe BOLIGO</p>
-      </div>
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Réinitialisation de mot de passe</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #F8F6F4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F8F6F4; padding: 40px 16px;">
+          <tr>
+            <td align="center">
+              <table width="100%" max-width="520" border="0" cellspacing="0" cellpadding="0" style="max-width: 520px; background-color: #FFFFFF; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(20, 16, 14, 0.06); border: 1px solid rgba(20, 16, 14, 0.05);">
+                <!-- Header Gradient -->
+                <tr>
+                  <td align="center" style="padding: 40px 30px 24px; background: linear-gradient(135deg, #FFF5F4 0%, #FFFFFF 100%);">
+                    <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: 3px; color: #E8403A; line-height: 1;">BOLIGO</h1>
+                    <p style="margin: 6px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #918780; text-transform: uppercase;">Sécurité du compte</p>
+                  </td>
+                </tr>
+
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 10px 36px 36px;">
+                    <h2 style="margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #14100E; text-align: center;">
+                      Nouveau mot de passe
+                    </h2>
+                    <p style="margin: 0 0 24px; font-size: 14.5px; line-height: 1.6; color: #5C534C; text-align: center;">
+                      Vous avez demandé la réinitialisation de votre mot de passe. Utilisez le code suivant pour sécuriser votre compte :
+                    </p>
+
+                    <!-- Code Box -->
+                    <div style="background: linear-gradient(135deg, rgba(232,64,58,0.06), rgba(124,92,232,0.06)); border: 1.5px dashed rgba(232,64,58,0.35); border-radius: 16px; padding: 22px 16px; text-align: center; margin: 0 0 24px;">
+                      <span style="font-family: monospace, Courier; font-size: 38px; font-weight: 800; letter-spacing: 12px; color: #E8403A; padding-left: 12px;">
+                        ${code}
+                      </span>
+                    </div>
+
+                    <p style="margin: 0 0 8px; font-size: 12.5px; color: #918780; text-align: center;">
+                      ⏱️ Ce code expire dans <strong style="color: #5C534C;">15 minutes</strong>.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 20px 30px; background-color: #FAF9F8; border-top: 1px solid rgba(20, 16, 14, 0.05); text-align: center;">
+                    <p style="margin: 0; font-size: 10px; color: #918780;">
+                      BOLIGO — 45 rue Cécile Duparc, 95870 Bezons, France
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `;
 
     await this.dispatchEmail(email, subject, html);
