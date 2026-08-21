@@ -3,10 +3,44 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class EmailService {
   private async dispatchEmail(to: string, subject: string, html: string) {
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpPort = Number(process.env.SMTP_PORT) || 465;
     const resendKey = process.env.RESEND_API_KEY;
     const sendgridKey = process.env.SENDGRID_API_KEY;
 
-    // 1. Resend API
+    // 1. SMTP / Nodemailer (Gmail, Brevo, SendGrid SMTP, OVH, etc.)
+    if (smtpHost && smtpUser && smtpPass) {
+      console.log(`[EMAIL] Sending real email to ${to} via SMTP (${smtpHost})...`);
+      try {
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        });
+
+        const fromAddress = process.env.EMAIL_FROM || `BOLIGO <${smtpUser}>`;
+        await transporter.sendMail({
+          from: fromAddress,
+          to,
+          subject,
+          html,
+        });
+
+        console.log(`[EMAIL] Email sent successfully via SMTP to ${to}`);
+        return;
+      } catch (error) {
+        console.error('[EMAIL] Failed to send email via SMTP:', error);
+      }
+    }
+
+    // 2. Resend API
     if (resendKey && resendKey !== 'placeholder' && !resendKey.includes('placeholder')) {
       console.log(`[EMAIL] Sending real email to ${to} via Resend...`);
       try {
