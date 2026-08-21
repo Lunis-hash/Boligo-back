@@ -497,7 +497,7 @@ export const QUESTIONS: Question[] = [
     ],
   },
 
-  // --- MODULE 6 : QUOTIDIEN, COMMUNICATION & LIMITES ---
+  // --- MODULE 6 : QUOTIDIEN, COMMUNICATION RÉELLE & LIMITES ---
   {
     id: 'M6_Q01',
     moduleNumber: 6,
@@ -554,7 +554,7 @@ export const QUESTIONS: Question[] = [
     ],
   },
 
-  // --- MODULE 7 : TRAJECTOIRE DE VIE ---
+  // --- MODULE 7 : TRAJECTOIRE DE VIE & PERSONNALITÉ ---
   {
     id: 'M7_Q01',
     moduleNumber: 7,
