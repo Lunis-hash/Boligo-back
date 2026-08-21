@@ -21,6 +21,38 @@ export interface Question {
   rules?: QuestionRules;
 }
 
+export function decodeUserResponses(responses: Array<{ moduleName?: string; rawResponses: Record<string, string> }>): Array<{ moduleName: string; qna: Array<{ question: string; answer: string }> }> {
+  const questionMap = new Map<string, Question>();
+  QUESTIONS.forEach((q) => questionMap.set(q.id, q));
+
+  return responses.map((r, idx) => {
+    const raw = r.rawResponses || {};
+    const qna: Array<{ question: string; answer: string }> = [];
+
+    for (const [qId, optionKey] of Object.entries(raw)) {
+      const qObj = questionMap.get(qId);
+      if (qObj) {
+        const optObj = qObj.options.find((o) => o.key === optionKey);
+        const answerText = optObj ? optObj.text : String(optionKey);
+        qna.push({
+          question: qObj.text,
+          answer: answerText,
+        });
+      } else {
+        qna.push({
+          question: qId,
+          answer: String(optionKey),
+        });
+      }
+    }
+
+    return {
+      moduleName: r.moduleName || `Module ${idx}`,
+      qna,
+    };
+  });
+}
+
 export const QUESTIONS: Question[] = [
   // --- MODULE 0 : FILTRES NON-NÉGOCIABLES ---
   {

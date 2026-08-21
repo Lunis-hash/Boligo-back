@@ -185,7 +185,7 @@ export class InterviewService {
         percentage: Math.min(99, Math.max(75, maturityScore + 4)),
         color: '#E8403A',
         pastel: 'rgba(232, 64, 58, 0.08)',
-        description: `Votre profil accorde une importance majeure à ${keyValues.slice(0, 2).join(' et ')}. Cette clarté morale est le socle d\'une alliance stable.`,
+        description: `Vos principes cardinaux : ${keyValues.slice(0, 3).join(', ')}. Cette clarté morale fonde la stabilité de votre couple.`,
         metrics: keyValues.slice(0, 3).map((val: any) => ({ label: String(val), value: Math.floor(88 + Math.random() * 10) })),
       },
       {
@@ -196,7 +196,7 @@ export class InterviewService {
         percentage: Math.min(99, Math.max(70, alchemyScore + 3)),
         color: '#10B981',
         pastel: 'rgba(16, 185, 129, 0.08)',
-        description: `Vos attentes majeures sont orientées vers : ${needsList.slice(0, 2).join(', ')}. Vous recherchez un engagement concret.`,
+        description: `Vos priorités de foyer : ${needsList.slice(0, 3).join(', ')}. Vous recherchez un engagement concret.`,
         metrics: needsList.slice(0, 3).map((need: any) => ({ label: String(need), value: Math.floor(85 + Math.random() * 12) })),
       },
       {
@@ -207,11 +207,11 @@ export class InterviewService {
         percentage: Math.min(99, Math.max(72, maturityScore - 2)),
         color: '#7C5CE8',
         pastel: 'rgba(124, 92, 232, 0.08)',
-        description: 'Vous privilégiez l\'écoute constructive et le dialogue direct, en évitant les non-dits et le silence destructeur.',
+        description: `Dialogue et résolution : vous privilégiez une communication franche basée sur ${keyValues[0] || 'la sincérité'} et ${needsList[0] || 'l\'écoute'}.`,
         metrics: [
-          { label: 'Écoute active', value: 92 },
-          { label: 'Transparence', value: 95 },
-          { label: 'Résolution calme', value: 88 },
+          { label: 'Écoute active', value: Math.min(98, maturityScore + 2) },
+          { label: 'Transparence', value: Math.min(98, maturityScore + 5) },
+          { label: 'Résolution calme', value: Math.min(98, maturityScore - 2) },
         ],
       },
       {
@@ -222,11 +222,11 @@ export class InterviewService {
         percentage: Math.min(99, Math.max(70, alchemyScore - 4)),
         color: '#D9AE3C',
         pastel: 'rgba(217, 174, 60, 0.08)',
-        description: 'Vous envisagez la gestion financière du foyer avec réalisme, équité et responsabilité partagée.',
+        description: `Organisation financière : vous recherchez l'équité, la transparence et un modèle clair autour de ${keyValues[1] || 'la responsabilité'}.`,
         metrics: [
-          { label: 'Transparence budget', value: 90 },
-          { label: 'Équité & soutien', value: 89 },
-          { label: 'Projets communs', value: 93 },
+          { label: 'Transparence budget', value: Math.min(96, alchemyScore + 4) },
+          { label: 'Équité & soutien', value: Math.min(96, alchemyScore + 2) },
+          { label: 'Projets communs', value: Math.min(96, alchemyScore + 6) },
         ],
       },
       {
@@ -237,11 +237,11 @@ export class InterviewService {
         percentage: Math.min(99, Math.max(75, alchemyScore + 2)),
         color: '#F97316',
         pastel: 'rgba(249, 115, 22, 0.08)',
-        description: 'L\'expression de l\'affection et la complicité émotionnelle sont fondamentales pour nourrir la flamme de votre couple.',
+        description: `Affection & Vibe : la complicité émotionnelle et la présence affective sont essentielles à votre épanouissement.`,
         metrics: [
-          { label: 'Complicité', value: 94 },
-          { label: 'Disponibilité', value: 90 },
-          { label: 'Affection', value: 92 },
+          { label: 'Complicité', value: Math.min(98, alchemyScore + 6) },
+          { label: 'Disponibilité', value: Math.min(98, alchemyScore + 2) },
+          { label: 'Affection', value: Math.min(98, alchemyScore + 4) },
         ],
       },
       {
@@ -252,7 +252,7 @@ export class InterviewService {
         percentage: Math.min(99, Math.max(80, maturityScore + 6)),
         color: '#E8403A',
         pastel: 'rgba(232, 64, 58, 0.08)',
-        description: `Vous avez identifié clairement vos limites : ${redFlags.slice(0, 2).join(', ') || 'manque de respect et trahison'}. Cela vous protège des relations toxiques.`,
+        description: `Vos lignes rouges non négociables : ${redFlags.join(', ') || 'infidélité et manque de respect'}.`,
         metrics: [
           { label: 'Tolérance zéro toxicité', value: 98 },
           { label: 'Clarté des limites', value: 96 },
