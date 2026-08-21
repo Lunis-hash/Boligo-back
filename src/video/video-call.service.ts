@@ -14,12 +14,10 @@ export const VIDEO_CALL_MAX_SECONDS = 2 * 60;
 /** Étapes où l’appel vidéo est autorisé (prod). */
 const VIDEO_STEPS_PROD = ['video'] as const;
 
-/** En dev / VIDEO_TEST_UNLOCK=true : autoriser aussi pendant le chat libre. */
+/** En dev / VIDEO_TEST_UNLOCK=true : autoriser uniquement si explicitement demandé. */
 function isVideoTestUnlock(): boolean {
   const flag = process.env.VIDEO_TEST_UNLOCK?.trim().toLowerCase();
-  if (flag === 'true' || flag === '1') return true;
-  if (flag === 'false' || flag === '0') return false;
-  return process.env.NODE_ENV !== 'production';
+  return flag === 'true' || flag === '1';
 }
 
 function canAccessVideoStep(currentStep: string): boolean {
