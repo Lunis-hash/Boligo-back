@@ -11,19 +11,40 @@ export class EmailService {
     const sendgridKey = process.env.SENDGRID_API_KEY;
 
     // 1. SMTP / Nodemailer (Gmail, Brevo, SendGrid SMTP, OVH, etc.)
-    if (smtpHost && smtpUser && smtpPass) {
-      console.log(`[EMAIL] Sending real email to ${to} via SMTP (${smtpHost})...`);
+    if ((smtpHost || smtpUser) && smtpPass) {
+      console.log(`[EMAIL] Sending real email to ${to} via SMTP...`);
       try {
         const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: smtpPort,
-          secure: smtpPort === 465,
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-        });
+        const cleanPass = smtpPass.replace(/\s+/g, '');
+        const isGmail = (smtpHost && smtpHost.includes('gmail')) || (smtpUser && smtpUser.includes('@gmail.com'));
+
+        const transporter = nodemailer.createTransport(
+          isGmail
+            ? {
+                service: 'gmail',
+                auth: {
+                  user: smtpUser,
+                  pass: cleanPass,
+                },
+                tls: { rejectUnauthorized: false },
+                connectionTimeout: 8000,
+                greetingTimeout: 8000,
+                socketTimeout: 10000,
+              }
+            : {
+                host: smtpHost,
+                port: smtpPort || 587,
+                secure: smtpPort === 465,
+                auth: {
+                  user: smtpUser,
+                  pass: cleanPass,
+                },
+                tls: { rejectUnauthorized: false },
+                connectionTimeout: 8000,
+                greetingTimeout: 8000,
+                socketTimeout: 10000,
+              }
+        );
 
         const fromAddress = process.env.EMAIL_FROM || `BOLIGO <${smtpUser}>`;
         await transporter.sendMail({
