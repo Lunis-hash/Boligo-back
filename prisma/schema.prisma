@@ -167,6 +167,9 @@ model MatchProposal {
   status              ProposalStatus @default(en_attente)
   weekNumber          Int
   journey             Journey?
+
+  @@index([sourceUserId, status])
+  @@index([targetUserId, status])
 }
 
 enum JourneyStep {
@@ -263,6 +266,8 @@ model Message {
   isRead            Boolean          @default(false)
   moderationStatus  ModerationStatus @default(ok)
   report            Report?
+
+  @@index([journeyId, sentAt])
 }
 
 enum ReportReason {
@@ -385,6 +390,8 @@ model Notification {
   content         String           @db.Text
   sentAt          DateTime         @default(now())
   isRead          Boolean          @default(false)
+
+  @@index([userId, isRead])
 }
 
 // ---------------------------------------------------------

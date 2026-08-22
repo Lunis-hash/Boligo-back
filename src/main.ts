@@ -3,11 +3,15 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import compression from 'compression';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
   app.setGlobalPrefix('api');
+
+  // HTTP Response Compression
+  app.use(compression());
 
   // Global Exception Filter
   app.useGlobalFilters(new AllExceptionsFilter());
