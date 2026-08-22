@@ -53,7 +53,7 @@ export class EmailService {
         console.log(`[EMAIL] Email sent successfully via SMTP to ${to}`);
         return;
       } catch (error) {
-        console.error('[EMAIL] Failed to send email via SMTP:', error);
+        console.error('[EMAIL] Failed to send email via SMTP, trying Resend API fallback...', error);
       }
     }
 
