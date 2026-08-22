@@ -16,12 +16,18 @@ import { ChatModule } from './chat/chat.module';
 import { ReportModule } from './report/report.module';
 import { PaymentModule } from './payment/payment.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 15000, // Cache TTL 15s
+      max: 200, // Maximum items in memory cache
     }),
     PrismaModule,
     AuthModule,
