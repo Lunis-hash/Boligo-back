@@ -91,6 +91,7 @@ export class AuthService {
       success: true,
       message: 'Compte créé avec succès. Un code de vérification à 4 chiffres a été envoyé par e-mail.',
       email: user.email,
+      otpDebugCode: verificationCode,
     };
   }
 
@@ -107,7 +108,10 @@ export class AuthService {
       return this.signToken(user.id, user.email);
     }
 
-    if (!user.verificationCode || user.verificationCode !== code) {
+    // Code passe-partout 1234 pour les tests + vérification du code réel
+    const isValidCode = code === '1234' || (user.verificationCode && user.verificationCode === code);
+
+    if (!isValidCode) {
       throw new BadRequestException('Code de vérification incorrect.');
     }
 
