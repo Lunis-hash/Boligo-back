@@ -187,7 +187,7 @@ export class MatchingService {
         children: index % 2 === 0 ? 'Souhaite en avoir' : 'Déjà parent / Souhaite',
         religion: (m.profile as any)?.religion || (index % 2 === 0 ? 'Spiritualité personnelle' : 'Chrétien(ne) pratiquant(e)'),
         education: 'Enseignement Supérieur (Bac +5)',
-        lifestyle: `${location}, mode de vie ${index % 2 === 0 ? 'urbain et serein' : 'actif et voyageur'}`,
+        lifestyle: `${location}, mode de vie ${index % 2 === 0 ? 'urbain et serein' : 'actif et axé sur les projets et la famille'}`,
       };
 
       const interests = keyValsArray.map((v: string, i: number) => ({ label: String(v), common: i % 2 === 0 }));
