@@ -10,9 +10,18 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async createPaymentIntent(
     @Request() req,
-    @Body() body: { optionId: string }
+    @Body() body: { optionId?: string; packId?: string }
   ) {
-    return this.paymentService.createPaymentSheet(req.user.id, body.optionId);
+    return this.paymentService.createPaymentSheet(req.user.id, body.optionId || body.packId || 'harmonie_premium');
+  }
+
+  @Post('create-intent')
+  @UseGuards(AuthGuard('jwt'))
+  async createIntent(
+    @Request() req,
+    @Body() body: { optionId?: string; packId?: string }
+  ) {
+    return this.paymentService.createPaymentSheet(req.user.id, body.optionId || body.packId || 'harmonie_premium');
   }
 
   @Post('webhook')
