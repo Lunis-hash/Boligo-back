@@ -91,7 +91,7 @@ export class EmailService {
       }
     }
 
-    // 2. SendGrid API Fallback
+    // 3. SendGrid API Fallback
     if (sendgridKey && sendgridKey !== 'placeholder' && !sendgridKey.includes('placeholder')) {
       console.log(`[EMAIL] Sending real email to ${to} via SendGrid...`);
       try {
@@ -118,6 +118,38 @@ export class EmailService {
         }
       } catch (error) {
         console.error('[EMAIL] Failed to send email via SendGrid:', error);
+      }
+    }
+
+    // 4. Brevo (Sendinblue) HTTP API (Port 443 - Toujours autorisé sur Render)
+    const brevoKey = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY;
+    if (brevoKey && brevoKey !== 'placeholder' && !brevoKey.includes('placeholder')) {
+      console.log(`[EMAIL] Sending real email to ${to} via Brevo API...`);
+      try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': brevoKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: 'BOLIGO', email: process.env.EMAIL_FROM || 'contact@boligo.app' },
+            to: [{ email: to }],
+            subject: subject,
+            htmlContent: html,
+          }),
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error(`[EMAIL] Brevo API error: ${response.status} - ${errText}`);
+        } else {
+          console.log(`[EMAIL] Email sent successfully via Brevo API to ${to}`);
+          return;
+        }
+      } catch (error) {
+        console.error('[EMAIL] Failed to send email via Brevo API:', error);
       }
     }
 
