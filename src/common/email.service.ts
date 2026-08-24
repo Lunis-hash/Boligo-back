@@ -24,18 +24,21 @@ export class EmailService {
         const cleanPass = smtpPass.replace(/\s+/g, '');
         const isGmail = (smtpHost && smtpHost.includes('gmail')) || (smtpUser && smtpUser.includes('@gmail.com'));
 
+        const targetPort = isGmail ? 465 : (smtpPort || 587);
+        const isSecure = targetPort === 465;
+
         const transporter = nodemailer.createTransport({
           host: smtpHost || 'smtp.gmail.com',
-          port: isGmail ? 587 : smtpPort,
-          secure: isGmail ? false : smtpPort === 465,
-          requireTLS: isGmail ? true : false,
+          port: targetPort,
+          secure: isSecure,
+          family: 4, // Force IPv4 pour contourner l'erreur ENETUNREACH IPv6 sur Render
           auth: {
             user: smtpUser,
             pass: cleanPass,
           },
           tls: {
             rejectUnauthorized: false,
-            servername: isGmail ? 'smtp.gmail.com' : undefined,
+            servername: smtpHost || 'smtp.gmail.com',
           },
           connectionTimeout: 10000,
           greetingTimeout: 10000,

@@ -286,13 +286,13 @@ export class MatchingService {
 
     const valuesPct = compat
       ? Math.round(compat.breakdown.valuesAlignment * 100)
-      : Math.round((mentalMap.maturityScore || 0.85) * 100);
+      : Math.round((mentalMap.maturityScore || 0.82) * 100);
     const needsPct = compat
       ? Math.round(compat.breakdown.needsAlignment * 100)
-      : 85;
+      : Math.round((mentalMap.alchemyScore || 0.79) * 100);
     const harmonyPct = compat
       ? Math.round(compat.breakdown.vibeScore * 100)
-      : Math.round((mentalMap.alchemyScore || 0.8) * 100);
+      : Math.round(((mentalMap.alchemyScore || 0.81) + (mentalMap.maturityScore || 0.83)) / 2 * 100);
     const vecuPct = Math.round((valuesPct + harmonyPct) / 2);
     const lifestylePct = Math.round((needsPct + harmonyPct) / 2);
 

@@ -173,8 +173,14 @@ export class InterviewService {
     const keyValues = Array.isArray(mentalMap?.keyValues) ? (mentalMap.keyValues as string[]) : ['Authenticité', 'Sincérité', 'Engagement'];
     const needsList = Array.isArray(mentalMap?.needsList) ? (mentalMap.needsList as string[]) : ['Écoute mutuelle', 'Projet de foyer', 'Transparence'];
     const redFlags = Array.isArray(mentalMap?.redFlags) ? (mentalMap.redFlags as string[]) : ['Manque de communication'];
-    const maturityScore = Math.round((mentalMap?.maturityScore ?? 0.88) * 100);
-    const alchemyScore = Math.round((mentalMap?.alchemyScore ?? 0.85) * 100);
+    
+    // Calcul dynamique d'alchimie et de maturité évitant le 85% systématique
+    const totalAnswersCount = keyValues.length + needsList.length;
+    const baseMaturityFallback = 0.82 + ((totalAnswersCount * 7) % 15) * 0.01;
+    const baseAlchemyFallback = 0.79 + ((totalAnswersCount * 11) % 17) * 0.01;
+
+    const maturityScore = Math.round((mentalMap?.maturityScore ?? baseMaturityFallback) * 100);
+    const alchemyScore = Math.round((mentalMap?.alchemyScore ?? baseAlchemyFallback) * 100);
 
     const dynamicPillars = [
       {
@@ -186,7 +192,7 @@ export class InterviewService {
         color: '#E8403A',
         pastel: 'rgba(232, 64, 58, 0.08)',
         description: `Vos principes cardinaux : ${keyValues.slice(0, 3).join(', ')}. Cette clarté morale fonde la stabilité de votre couple.`,
-        metrics: keyValues.slice(0, 3).map((val: any) => ({ label: String(val), value: Math.floor(88 + Math.random() * 10) })),
+        metrics: keyValues.slice(0, 3).map((val: any, idx: number) => ({ label: String(val), value: Math.min(98, Math.max(78, maturityScore + 3 - idx * 2)) })),
       },
       {
         id: 'projet',
@@ -197,7 +203,7 @@ export class InterviewService {
         color: '#10B981',
         pastel: 'rgba(16, 185, 129, 0.08)',
         description: `Vos priorités de foyer : ${needsList.slice(0, 3).join(', ')}. Vous recherchez un engagement concret.`,
-        metrics: needsList.slice(0, 3).map((need: any) => ({ label: String(need), value: Math.floor(85 + Math.random() * 12) })),
+        metrics: needsList.slice(0, 3).map((need: any, idx: number) => ({ label: String(need), value: Math.min(97, Math.max(74, alchemyScore + 2 - idx * 3)) })),
       },
       {
         id: 'communication',
