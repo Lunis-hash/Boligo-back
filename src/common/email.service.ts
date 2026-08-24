@@ -61,57 +61,7 @@ export class EmailService {
       }
     }
 
-    // 2. Resend API
-    if (resendKey && resendKey !== 'placeholder' && !resendKey.includes('placeholder')) {
-      console.log(`[EMAIL] Sending real email to ${to} via Resend...`);
-      try {
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'BOLIGO <onboarding@resend.dev>',
-            to: [to],
-            subject: subject,
-            html: html,
-          }),
-        });
 
-        if (!response.ok) {
-          const errText = await response.text();
-          console.error(`[EMAIL] Resend API error: ${response.status} - ${errText}`);
-          if (errText.includes('You can only send testing emails') || errText.includes('validation_error')) {
-            console.log(`[EMAIL] Resend Test Mode: Routing code delivery to account owner (stevebandama@gmail.com)...`);
-            const fallbackRes = await fetch('https://api.resend.com/emails', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${resendKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                from: 'BOLIGO <onboarding@resend.dev>',
-                to: ['stevebandama@gmail.com'],
-                subject: `[Destinataire: ${to}] ${subject}`,
-                html: html,
-              }),
-            });
-            if (fallbackRes.ok) {
-              const fallbackData = await fallbackRes.json();
-              console.log(`[EMAIL] Test mode email successfully delivered to stevebandama@gmail.com. ID: ${fallbackData.id}`);
-              return;
-            }
-          }
-        } else {
-          const data = await response.json();
-          console.log(`[EMAIL] Email sent successfully via Resend to ${to}. ID: ${data.id}`);
-          return;
-        }
-      } catch (error) {
-        console.error('[EMAIL] Failed to send email via Resend:', error);
-      }
-    }
 
     // 3. SendGrid API Fallback
     if (sendgridKey && sendgridKey !== 'placeholder' && !sendgridKey.includes('placeholder')) {
