@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { VideoCallService } from './video-call.service';
 
 @Controller('video')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
 export class VideoController {
   constructor(private readonly videoCallService: VideoCallService) {}
 
