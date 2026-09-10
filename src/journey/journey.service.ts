@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { QUESTIONS_BANK, BankQuestion } from './questions.bank';
 import {
-  assignDaysTwoPerDay,
+  assignDaysSevenPerDay,
   bankToPayload,
   HarmonyQuestionPayload,
 } from './harmony-question.types';
@@ -140,7 +140,7 @@ export class JourneyService {
     };
   }
 
-  /** Génère les 6 questions (3 jours × 2) une seule fois par parcours — IA par défaut. */
+  /** Génère les 21 questions (3 jours × 7) une seule fois par parcours — IA par défaut. */
   async ensureHarmonyQuestions(journeyId: string) {
     const journey = await this.prisma.journey.findUnique({
       where: { id: journeyId },
@@ -149,8 +149,8 @@ export class JourneyService {
     if (!journey) throw new NotFoundException('Parcours non trouvé');
 
     const count = journey.harmonyQuestions.length;
-    if (count >= 6) {
-      if (count > 6) {
+    if (count >= 21) {
+      if (count > 21) {
         try {
           await this.trimDuplicateHarmonyQuestions(journeyId);
         } catch (err) {
@@ -173,7 +173,7 @@ export class JourneyService {
     JourneyService.harmonyGenLocks.set(journeyId, lock);
 
     try {
-      if (count > 0 && count < 6) {
+      if (count > 0 && count < 21) {
         await this.clearHarmonyQuestionsForJourney(journeyId);
       }
       await this.generateHarmonyQuestions(journeyId);
@@ -197,7 +197,7 @@ export class JourneyService {
     await this.prisma.harmonyQuestion.deleteMany({ where: { journeyId } });
   }
 
-  /** Garde 6 questions canoniques ; supprime les doublons (réponses liées d'abord). */
+  /** Garde 21 questions canoniques ; supprime les doublons (réponses liées d'abord). */
   private async trimDuplicateHarmonyQuestions(journeyId: string) {
     const all = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
@@ -211,7 +211,7 @@ export class JourneyService {
 
     for (const q of all) {
       const key = `${q.day}:${this.normalizeQuestionKey(q.questionText)}`;
-      if (!seenKeys.has(key) && keepIds.size < 6) {
+      if (!seenKeys.has(key) && keepIds.size < 21) {
         seenKeys.add(key);
         keepIds.add(q.id);
       } else {
@@ -230,7 +230,7 @@ export class JourneyService {
     console.log(`🧹 [Journey] ${toDelete.length} questions doublons supprimées pour ${journeyId}`);
   }
 
-  /** Au plus 6 questions uniques renvoyées à l'app (filet si la base en contient plus). */
+  /** Au plus 21 questions uniques renvoyées à l'app (filet si la base en contient plus). */
   private pickCanonicalHarmonyQuestions<T extends { day: number; questionText: string }>(
     questions: T[],
   ): T[] {
@@ -238,7 +238,7 @@ export class JourneyService {
     const seen = new Set<string>();
     for (const q of questions) {
       const key = `${q.day}:${this.normalizeQuestionKey(q.questionText)}`;
-      if (seen.has(key) || keep.length >= 6) continue;
+      if (seen.has(key) || keep.length >= 21) continue;
       seen.add(key);
       keep.push(q);
     }
@@ -333,12 +333,12 @@ export class JourneyService {
     );
 
     if (payloads?.length) {
-      payloads = assignDaysTwoPerDay(payloads);
+      payloads = assignDaysSevenPerDay(payloads);
       payloads = this.filterFreshPayloads(payloads, avoidTexts);
     }
 
-    if (payloads && payloads.length >= 6) {
-      return payloads.slice(0, 6);
+    if (payloads && payloads.length >= 21) {
+      return payloads.slice(0, 21);
     }
 
     const usedKeys = new Set(avoidTexts.map((t) => this.normalizeQuestionKey(t)));
@@ -359,19 +359,19 @@ export class JourneyService {
       : [];
 
     const padded = this.padBankQuestions(fromBank, excludeIds);
-    payloads = assignDaysTwoPerDay(
-      padded.map((q, i) => bankToPayload(q, Math.floor(i / 2) + 1)),
+    payloads = assignDaysSevenPerDay(
+      padded.map((q, i) => bankToPayload(q, Math.floor(i / 7) + 1)),
     );
     payloads = this.filterFreshPayloads(payloads, avoidTexts);
 
-    return payloads.length >= 6 ? payloads.slice(0, 6) : null;
+    return payloads.length >= 21 ? payloads.slice(0, 21) : null;
   }
 
   private buildBankPayloads(excludeIds: string[] = []): HarmonyQuestionPayload[] {
     const pool = QUESTIONS_BANK.filter((q) => !excludeIds.includes(q.id));
-    const picked = this.padBankQuestions(pool.slice(0, 12), excludeIds);
-    return assignDaysTwoPerDay(
-      picked.map((q, i) => bankToPayload(q, Math.floor(i / 2) + 1)),
+    const picked = this.padBankQuestions(pool.slice(0, 42), excludeIds);
+    return assignDaysSevenPerDay(
+      picked.map((q, i) => bankToPayload(q, Math.floor(i / 7) + 1)),
     );
   }
 
@@ -404,7 +404,7 @@ export class JourneyService {
       payloads = await this.buildAiPayloads(mapA, mapB, avoidTexts);
     }
 
-    if (!payloads || payloads.length < 6) {
+    if (!payloads || payloads.length < 21) {
       console.log('📋 [Journey] Complément banque (IA indisponible ou cartes manquantes)');
       const usedKeys = new Set([
         ...avoidTexts.map((t) => this.normalizeQuestionKey(t)),
@@ -418,24 +418,24 @@ export class JourneyService {
         [...(payloads ?? []), ...bankPart],
         avoidTexts,
       );
-      payloads = assignDaysTwoPerDay(merged).slice(0, 6);
+      payloads = assignDaysSevenPerDay(merged).slice(0, 6);
     }
 
-    if (!payloads || payloads.length < 6) {
+    if (!payloads || payloads.length < 21) {
       payloads = this.buildBankPayloads();
     }
 
-    await this.persistHarmonyQuestions(journeyId, payloads.slice(0, 6));
+    await this.persistHarmonyQuestions(journeyId, payloads.slice(0, 21));
   }
 
   private padBankQuestions(selected: BankQuestion[], excludeIds: string[] = []): BankQuestion[] {
     const result = [...selected];
     const pool = QUESTIONS_BANK.filter((q) => !excludeIds.includes(q.id));
     for (const d of pool) {
-      if (result.length >= 6) break;
+      if (result.length >= 21) break;
       if (!result.find((s) => s.id === d.id)) result.push(d);
     }
-    return result.slice(0, 6);
+    return result.slice(0, 21);
   }
 
   private async persistHarmonyQuestions(
@@ -462,15 +462,13 @@ export class JourneyService {
   }
 
   private getDefaultQuestions(): BankQuestion[] {
-    return QUESTIONS_BANK.filter(q =>
-      ['lr_01', 'lr_02', 'val_01', 'val_02', 'fut_01', 'fut_02'].includes(q.id)
-    );
+    return [...QUESTIONS_BANK].slice(0, 21);
   }
 
   private async generateFallbackQuestions(journeyId: string) {
-    const payloads = assignDaysTwoPerDay(
+    const payloads = assignDaysSevenPerDay(
       this.getDefaultQuestions().map((q, i) =>
-        bankToPayload(q, Math.floor(i / 2) + 1),
+        bankToPayload(q, Math.floor(i / 7) + 1),
       ),
     );
     await this.persistHarmonyQuestions(journeyId, payloads);

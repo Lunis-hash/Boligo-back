@@ -77,6 +77,26 @@ export class AuthService {
           create: {
             status: 'en_cours',
             version: 1,
+            ...(dto.meetingScope
+              ? {
+                  responses: {
+                    create: {
+                      moduleNumber: 0,
+                      moduleName: 'Filtres non-négociables',
+                      rawResponses: {
+                        M0_Q02:
+                          dto.meetingScope === 'local'
+                            ? 'A'
+                            : dto.meetingScope === 'national'
+                            ? 'C'
+                            : dto.meetingScope === 'international'
+                            ? 'D'
+                            : 'A',
+                      },
+                    },
+                  },
+                }
+              : {}),
           },
         },
       },

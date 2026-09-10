@@ -121,12 +121,35 @@ export class MatchingService {
         }
       }
 
-      // 2. Filtre Périmètre & Ville
-      if (scopePrefOption === 'A' && currentUserCity && candidateCity) {
-        const isSameCity = candidateCity.includes(currentUserCity) || currentUserCity.includes(candidateCity);
-        if (!isSameCity) {
-          return false;
+      // 2. Filtre Périmètre Géographique (A: Local, B: Régional, C: National, D: International)
+      if (currentUserCity && candidateCity) {
+        const userParts = currentUserCity.split(',').map((p) => p.trim());
+        const candidateParts = candidateCity.split(',').map((p) => p.trim());
+
+        if (scopePrefOption === 'A') {
+          // Local (Même ville)
+          const isSameCity =
+            userParts[0] && candidateParts[0] &&
+            (candidateParts[0].includes(userParts[0]) || userParts[0].includes(candidateParts[0]));
+          if (!isSameCity) return false;
+        } else if (scopePrefOption === 'B') {
+          // Régional (Même région ou même ville)
+          const userRegion = userParts[1] || userParts[0];
+          const candidateRegion = candidateParts[1] || candidateParts[0];
+          const isSameRegion =
+            userRegion && candidateRegion &&
+            (candidateRegion.includes(userRegion) || userRegion.includes(candidateRegion));
+          if (!isSameRegion) return false;
+        } else if (scopePrefOption === 'C') {
+          // National (Même pays)
+          const userCountry = userParts[userParts.length - 1];
+          const candidateCountry = candidateParts[candidateParts.length - 1];
+          const isSameCountry =
+            userCountry && candidateCountry &&
+            (candidateCountry.includes(userCountry) || userCountry.includes(candidateCountry));
+          if (!isSameCountry) return false;
         }
+        // scopePrefOption === 'D' -> International (tous les profils autorisés)
       }
 
       return true;

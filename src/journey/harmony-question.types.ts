@@ -77,13 +77,13 @@ export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | n
   }
 
   if (unique.length < 4) return null;
-  return unique.slice(0, 6);
+  return unique.slice(0, 21);
 }
 
-/** Répartit 6 questions : 2 par jour (indices 0-1 → jour 1, etc.). */
-export function assignDaysTwoPerDay(questions: HarmonyQuestionPayload[]): HarmonyQuestionPayload[] {
-  return questions.slice(0, 6).map((q, i) => ({
+/** Répartit 21 questions : 7 par jour (indices 0-6 → jour 1, etc.). */
+export function assignDaysSevenPerDay(questions: HarmonyQuestionPayload[]): HarmonyQuestionPayload[] {
+  return questions.slice(0, 21).map((q, i) => ({
     ...q,
-    day: Math.floor(i / 2) + 1,
+    day: Math.floor(i / 7) + 1,
   }));
 }

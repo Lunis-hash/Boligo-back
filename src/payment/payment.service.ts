@@ -23,22 +23,15 @@ export class PaymentService {
   // Get plan details securely on the backend
   private getPlanDetails(optionId: string) {
     switch (optionId) {
-      case 'harmonie_premium':
-      case 'sub_premium':
-        return { amount: 5000, currency: 'eur', credits: 5, description: 'Harmonie Premium - 5 crédits' };
       case 'parcours_harmonie':
         return { amount: 1500, currency: 'eur', credits: 1, description: 'Parcours Harmonie - 1 rencontre' };
-      case 'pack_3':
-        return { amount: 1200, currency: 'eur', credits: 3, description: 'Pack Parcours - 3 crédits' };
-      case 'single_1':
-        return { amount: 500, currency: 'eur', credits: 1, description: 'Une Rencontre - 1 crédit' };
       default:
         return { amount: 1500, currency: 'eur', credits: 1, description: 'Parcours Harmonie' };
     }
   }
 
   // Create payment sheet parameters for Stripe mobile integration
-  async createPaymentSheet(userId: string, optionId: string) {
+  async createPaymentSheet(userId: string, optionId: string, promoCode?: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -48,6 +41,22 @@ export class PaymentService {
     }
 
     const plan = this.getPlanDetails(optionId);
+    let finalAmount = plan.amount;
+
+    if (promoCode) {
+      const code = promoCode.trim().toUpperCase();
+      if (['BOLIGO100', 'HARMONIE', 'WELCOME'].includes(code)) {
+        finalAmount = 0;
+      } else if (code === 'BOLIGO50') {
+        finalAmount = Math.floor(plan.amount * 0.5);
+      } else if (code === 'BIENVENUE5') {
+        finalAmount = Math.max(0, plan.amount - 500);
+      }
+    }
+
+    if (finalAmount <= 0) {
+      throw new BadRequestException('Le montant est gratuit, aucun paiement Stripe requis.');
+    }
 
     try {
       // 1. Find or create Stripe Customer
@@ -76,7 +85,7 @@ export class PaymentService {
 
       // 3. Create PaymentIntent
       const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: plan.amount,
+        amount: finalAmount,
         currency: plan.currency,
         customer: customerId,
         description: plan.description,
@@ -161,5 +170,44 @@ export class PaymentService {
     }
 
     return { received: true };
+  }
+
+  async applyPromoCode(userId: string, code: string, optionId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new BadRequestException('Utilisateur non trouvé');
+
+    const plan = this.getPlanDetails(optionId);
+    const normalizedCode = code.trim().toUpperCase();
+    let isFree = false;
+    let finalAmount = plan.amount;
+
+    if (['BOLIGO100', 'HARMONIE', 'WELCOME'].includes(normalizedCode)) {
+      isFree = true;
+      finalAmount = 0;
+    } else if (normalizedCode === 'BOLIGO50') {
+      finalAmount = Math.floor(plan.amount * 0.5);
+    } else if (normalizedCode === 'BIENVENUE5') {
+      finalAmount = Math.max(0, plan.amount - 500);
+    } else {
+      throw new BadRequestException('Code promotionnel invalide ou expiré');
+    }
+
+    if (isFree || finalAmount === 0) {
+      await this.creditService.addCredits(
+        userId,
+        plan.credits,
+        `Code Promo : ${normalizedCode}`,
+        0,
+        `PROMO_${normalizedCode}_${Date.now()}`
+      );
+      return { success: true, isFree: true, newAmount: 0, message: 'Code appliqué. Offre gratuite activée !' };
+    }
+
+    return {
+      success: true,
+      isFree: false,
+      newAmount: finalAmount,
+      message: `Code appliqué. Nouveau montant : ${finalAmount / 100}€`
+    };
   }
 }

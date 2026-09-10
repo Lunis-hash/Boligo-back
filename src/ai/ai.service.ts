@@ -83,7 +83,7 @@ ${label}:
     userBMentalMap: any,
     avoidTexts: string[] = [],
   ): Promise<HarmonyQuestionPayload[] | null> {
-    this.logger.log('🧠 [SONDEUR IA] Génération des 6 questions Hard Mode via OpenRouter/Claude 3.5');
+    this.logger.log('🧠 [SONDEUR IA] Génération des 21 questions Hard Mode via OpenRouter/Claude 3.5');
 
     const avoidBlock =
       avoidTexts.length > 0
@@ -93,27 +93,27 @@ ${label}:
     const systemPrompt = `Tu es l'Expert Psychologue et Analyste de Couples de Harmonie (rencontres sérieuses, mariage, valeurs profondes). Tu conduis le "Sondeur IA".`;
 
     const prompt = `
-Tu génères 6 questions HARD MODE personnalisées pour CE couple à partir de leurs cartes mentales respectives.
+Tu génères 21 questions HARD MODE personnalisées pour CE couple à partir de leurs cartes mentales respectives.
 But : faire émerger les vraies limites et zones de friction potentielles AVANT le chat.
 
 RÈGLES STRICTES:
-- 6 questions exactement, 2 par jour (day: 1, 2 ou 3).
+- 21 questions exactement, 7 par jour (day: 1, 2 ou 3).
 - Chaque question: 4 options concrètes + "Autre..." en dernier.
 - Formule en "tu", scénario réaliste ("si ton/ton partenaire…", "comment réagirais-tu si…").
 - Ton direct, mature, respectueux.
 - Ne cite pas les red flags mot pour mot ; exploite-les pour choisir L'ANGLE le plus risqué entre ces deux profils.
 
 RÉPARTITION OBLIGATOIRE:
-- JOUR 1 — "Lignes rouges" (2 questions) : limites non négociables (fidélité, respect, jalousie).
-- JOUR 2 — "Valeurs profondes" (2 questions) : famille, spiritualité/religion, argent, rôles.
-- JOUR 3 — "Futur & intimité" (2 questions) : au moins 1 question explicite sur le couple intime/sexuel (désir, consentement, attentes) et 1 sur le projet de vie.
+- JOUR 1 — "Lignes rouges" (7 questions) : limites non négociables (fidélité, respect, jalousie).
+- JOUR 2 — "Valeurs profondes" (7 questions) : famille, spiritualité/religion, argent, rôles.
+- JOUR 3 — "Futur & intimité" (7 questions) : au moins 1 question explicite sur le couple intime/sexuel (désir, consentement, attentes) et plusieurs sur le projet de vie.
 
 ${avoidBlock}
 
 ${this.formatMentalMapBlock('PROFIL A', userAMentalMap)}
 ${this.formatMentalMapBlock('PROFIL B', userBMentalMap)}
 
-Retourne UNIQUEMENT un tableau JSON de 6 objets:
+Retourne UNIQUEMENT un tableau JSON de 21 objets:
 [
   {
     "day": 1,
@@ -131,7 +131,7 @@ Retourne UNIQUEMENT un tableau JSON de 6 objets:
       const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
       const normalized = normalizeAiQuestions(parsed);
       if (normalized) {
-        this.logger.log(`✅ [SONDEUR IA] 6 questions générées avec succès (${normalized.length} valides)`);
+        this.logger.log(`✅ [SONDEUR IA] 21 questions générées avec succès (${normalized.length} valides)`);
         return normalized;
       }
       return null;
@@ -150,15 +150,15 @@ Retourne UNIQUEMENT un tableau JSON de 6 objets:
     this.logger.log('🧠 [SONDEUR IA] Sélection des questions dans la banque (fallback)');
 
     const available = questionBank.filter((q) => !excludeIds.includes(q.id));
-    const bankSummary = (available.length >= 6 ? available : questionBank).map((q) => ({
+    const bankSummary = (available.length >= 21 ? available : questionBank).map((q) => ({
       id: q.id,
       theme: q.theme,
       text: q.text,
     }));
 
     const prompt = `
-Tu es l'Expert en Relations de Harmonie. Sélectionne les 6 questions HARD MODE les plus pertinentes pour ce couple.
-Répartition: 2 lignes rouges (limites/fidélité), 2 valeurs profondes (famille/religion/argent), 2 futur+intimité (dont au moins 1 angle intimité/sexualité du couple).
+Tu es l'Expert en Relations de Harmonie. Sélectionne les 21 questions HARD MODE les plus pertinentes pour ce couple.
+Répartition: 7 lignes rouges (limites/fidélité), 7 valeurs profondes (famille/religion/argent), 7 futur+intimité (dont au moins 1 angle intimité/sexualité du couple).
 
 ${this.formatMentalMapBlock('PROFIL A', userAMentalMap)}
 ${this.formatMentalMapBlock('PROFIL B', userBMentalMap)}
@@ -166,8 +166,8 @@ ${this.formatMentalMapBlock('PROFIL B', userBMentalMap)}
 BANQUE (utilise uniquement ces IDs):
 ${JSON.stringify(bankSummary, null, 2)}
 
-Retourne UNIQUEMENT un tableau JSON de 6 IDs distincts:
-["id_1", "id_2", "id_3", "id_4", "id_5", "id_6"]
+Retourne UNIQUEMENT un tableau JSON de 21 IDs distincts:
+["id_1", "id_2", "...", "id_21"]
 `;
 
     try {
@@ -177,7 +177,7 @@ Retourne UNIQUEMENT un tableau JSON de 6 IDs distincts:
       const unique = [...new Set(ids)].filter((id) =>
         bankSummary.some((q) => q.id === id),
       );
-      if (unique.length >= 4) return unique.slice(0, 6);
+      if (unique.length >= 21) return unique.slice(0, 21);
       return null;
     } catch (error) {
       this.logger.error('❌ [SONDEUR IA] Erreur sélection questions:', error);

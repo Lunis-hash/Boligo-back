@@ -54,4 +54,9 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   profession?: string;
+
+  @ApiProperty({ example: 'local', required: false })
+  @IsString()
+  @IsOptional()
+  meetingScope?: string;
 }
