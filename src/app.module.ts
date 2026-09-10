@@ -15,6 +15,7 @@ import { AdminModule } from './admin/admin.module';
 import { ChatModule } from './chat/chat.module';
 import { ReportModule } from './report/report.module';
 import { PaymentModule } from './payment/payment.module';
+import { VideoModule } from './video/video.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
@@ -42,6 +43,7 @@ import { APP_GUARD } from '@nestjs/core';
     ChatModule,
     ReportModule,
     PaymentModule,
+    VideoModule,
     ThrottlerModule.forRoot([{
       ttl: 60000, // 1 minute
       limit: 120, // max 120 requêtes par minute

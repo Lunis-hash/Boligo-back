@@ -67,6 +67,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: 'M0_Q02',
+    moduleNumber: 0,
+    text: 'Le périmètre géographique de vos rencontres :',
+    options: [
+      { key: 'A', text: 'Même ville ou proximité (Local)' },
+      { key: 'B', text: 'Même région' },
+      { key: 'C', text: 'Tout mon pays (National)' },
+      { key: 'D', text: 'International (Sans frontières)' },
+    ],
+  },
+  {
     id: 'M0_Q03',
     moduleNumber: 0,
     text: 'Êtes-vous prêt(e) à déménager pour votre partenaire ?',
