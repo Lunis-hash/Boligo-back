@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, ReportStatus, UserRole } from '@prisma/client';
+import { Prisma, ReportStatus, UserRole, DiscountType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
@@ -145,6 +146,13 @@ export class AdminService {
       where: { role: UserRole.USER },
     });
 
+    // Promo codes stats
+    const [promoCodesTotal, promoCodesActive, promoUsagesTotal] = await Promise.all([
+      this.prisma.promoCode.count(),
+      this.prisma.promoCode.count({ where: { isActive: true } }),
+      this.prisma.promoUsage.count(),
+    ]);
+
     return {
       users: {
         total: totalUsers,
@@ -173,6 +181,11 @@ export class AdminService {
       },
       credits: { totalBalance: creditsSum._sum.creditBalance ?? 0 },
       video: { sessionsCompleted: videoSessionsDone },
+      promoCodes: {
+        total: promoCodesTotal,
+        active: promoCodesActive,
+        totalUsages: promoUsagesTotal,
+      },
     };
   }
 
@@ -670,5 +683,249 @@ export class AdminService {
     });
 
     return [header, ...rows].join('\n');
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // GESTION DES CODES PROMO
+  // ════════════════════════════════════════════════════════════════════════════
+
+  async listPromoCodes(params: { page?: number; limit?: number; isActive?: string }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(100, Math.max(1, params.limit ?? 20));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.PromoCodeWhereInput = {};
+    if (params.isActive === 'true') where.isActive = true;
+    if (params.isActive === 'false') where.isActive = false;
+
+    const [data, total] = await Promise.all([
+      this.prisma.promoCode.findMany({
+        where,
+        include: {
+          _count: { select: { usages: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.promoCode.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async getPromoCode(id: string) {
+    const promo = await this.prisma.promoCode.findUnique({
+      where: { id },
+      include: {
+        usages: {
+          include: {
+            promoCode: { select: { code: true } },
+          },
+          orderBy: { usedAt: 'desc' },
+          take: 50,
+        },
+        _count: { select: { usages: true } },
+      },
+    });
+    if (!promo) throw new NotFoundException('Code promo introuvable');
+    return promo;
+  }
+
+  async createPromoCode(dto: {
+    code: string;
+    discountType: string;
+    discountValue: number;
+    maxUses?: number | null;
+    expiresAt?: string | null;
+    isActive?: boolean;
+    description?: string;
+  }) {
+    const existing = await this.prisma.promoCode.findUnique({
+      where: { code: dto.code.trim().toUpperCase() },
+    });
+    if (existing) throw new BadRequestException(`Le code "${dto.code}" existe déjà.`);
+
+    const discountTypeMap: Record<string, DiscountType> = {
+      percent: DiscountType.percent,
+      fixed: DiscountType.fixed,
+      free: DiscountType.free,
+    };
+
+    const discountType = discountTypeMap[dto.discountType];
+    if (!discountType) throw new BadRequestException('discountType invalide (percent | fixed | free)');
+
+    return this.prisma.promoCode.create({
+      data: {
+        code: dto.code.trim().toUpperCase(),
+        discountType,
+        discountValue: dto.discountValue ?? 0,
+        maxUses: dto.maxUses ?? null,
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+        isActive: dto.isActive !== false,
+        description: dto.description ?? null,
+      },
+    });
+  }
+
+  async updatePromoCode(id: string, dto: {
+    discountType?: string;
+    discountValue?: number;
+    maxUses?: number | null;
+    expiresAt?: string | null;
+    isActive?: boolean;
+    description?: string;
+  }) {
+    const promo = await this.prisma.promoCode.findUnique({ where: { id } });
+    if (!promo) throw new NotFoundException('Code promo introuvable');
+
+    const discountTypeMap: Record<string, DiscountType> = {
+      percent: DiscountType.percent,
+      fixed: DiscountType.fixed,
+      free: DiscountType.free,
+    };
+
+    return this.prisma.promoCode.update({
+      where: { id },
+      data: {
+        ...(dto.discountType ? { discountType: discountTypeMap[dto.discountType] } : {}),
+        ...(dto.discountValue !== undefined ? { discountValue: dto.discountValue } : {}),
+        ...(dto.maxUses !== undefined ? { maxUses: dto.maxUses } : {}),
+        ...(dto.expiresAt !== undefined ? { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null } : {}),
+        ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+        ...(dto.description !== undefined ? { description: dto.description } : {}),
+      },
+    });
+  }
+
+  async togglePromoCode(id: string) {
+    const promo = await this.prisma.promoCode.findUnique({ where: { id } });
+    if (!promo) throw new NotFoundException('Code promo introuvable');
+    return this.prisma.promoCode.update({
+      where: { id },
+      data: { isActive: !promo.isActive },
+    });
+  }
+
+  async deletePromoCode(id: string) {
+    const promo = await this.prisma.promoCode.findUnique({
+      where: { id },
+      include: { _count: { select: { usages: true } } },
+    });
+    if (!promo) throw new NotFoundException('Code promo introuvable');
+    if (promo._count.usages > 0) {
+      // Désactiver plutôt que supprimer si déjà utilisé
+      return this.prisma.promoCode.update({
+        where: { id },
+        data: { isActive: false },
+      });
+    }
+    await this.prisma.promoCode.delete({ where: { id } });
+    return { deleted: true };
+  }
+
+  async getPromoStats() {
+    const [total, active, expired, topCodes] = await Promise.all([
+      this.prisma.promoCode.count(),
+      this.prisma.promoCode.count({ where: { isActive: true } }),
+      this.prisma.promoCode.count({
+        where: { expiresAt: { lt: new Date() }, isActive: true },
+      }),
+      this.prisma.promoCode.findMany({
+        orderBy: { usedCount: 'desc' },
+        take: 5,
+        select: { code: true, usedCount: true, discountType: true, discountValue: true, maxUses: true },
+      }),
+    ]);
+
+    const totalUsages = await this.prisma.promoUsage.count();
+    const freeActivations = await this.prisma.promoUsage.count({
+      where: { promoCode: { discountType: 'free' } },
+    });
+
+    return {
+      total,
+      active,
+      expired,
+      totalUsages,
+      freeActivations,
+      topCodes,
+    };
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // GESTION DES SESSIONS VIDÉO
+  // ════════════════════════════════════════════════════════════════════════════
+
+  async listVideoSessions(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(50, Math.max(1, params.limit ?? 20));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.VideoSessionWhereInput = {};
+    if (params.status) {
+      where.status = params.status as Prisma.EnumVideoStatusFilter['equals'];
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.videoSession.findMany({
+        where,
+        include: {
+          journey: {
+            include: {
+              userA: { select: { id: true, firstName: true, lastName: true, email: true } },
+              userB: { select: { id: true, firstName: true, lastName: true, email: true } },
+              proposal: { select: { compatibilityScore: true } },
+            },
+          },
+        },
+        orderBy: { startDate: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.videoSession.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async getVideoStats() {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [total, completed, inProgress, planned, thisWeek, thisMonth, avgDuration] =
+      await Promise.all([
+        this.prisma.videoSession.count(),
+        this.prisma.videoSession.count({ where: { status: 'terminee' } }),
+        this.prisma.videoSession.count({ where: { status: 'en_cours' } }),
+        this.prisma.videoSession.count({ where: { status: 'planifiee' } }),
+        this.prisma.videoSession.count({ where: { startDate: { gte: weekAgo } } }),
+        this.prisma.videoSession.count({ where: { startDate: { gte: monthStart } } }),
+        this.prisma.videoSession.aggregate({
+          where: { status: 'terminee', durationMinutes: { not: null } },
+          _avg: { durationMinutes: true },
+        }),
+      ]);
+
+    return {
+      total,
+      completed,
+      inProgress,
+      planned,
+      thisWeek,
+      thisMonth,
+      avgDurationMinutes: avgDuration._avg.durationMinutes ?? 0,
+    };
   }
 }
