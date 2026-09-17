@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { DailyService } from './daily.service';
 import { NotificationService } from '../notifications/notification.service';
+import { ChatGateway } from '../chat/chat.gateway';
 
 export const VIDEO_CALL_MAX_SECONDS = 2 * 60;
 
@@ -33,6 +34,7 @@ export class VideoCallService {
     private prisma: PrismaService,
     private daily: DailyService,
     private notificationService: NotificationService,
+    private chatGateway: ChatGateway,
   ) {
     this.daily.logConfigurationHint();
   }
@@ -162,9 +164,15 @@ export class VideoCallService {
       }
     }
 
-    // Trigger Notification push if first participant
+    // Trigger Notification & WebSocket if first participant
     const isFirstParticipant = !journey.videoSession || journey.videoSession.status !== 'en_cours';
     if (isFirstParticipant) {
+      try {
+        this.chatGateway.broadcastIncomingCall(journeyId, userId, user.firstName);
+        console.log(`[Video] WebSocket incomingCall broadcasted for journey ${journeyId}`);
+      } catch (wsErr) {
+        console.error(`[Video] Failed to broadcast WS incomingCall:`, wsErr);
+      }
       try {
         await this.notificationService.sendPushNotification(
           partner.id,
