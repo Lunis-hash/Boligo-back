@@ -9,21 +9,25 @@ export class VideoController {
 
   @Get('session/:journeyId')
   async getSession(@Param('journeyId') journeyId: string, @Request() req) {
-    return this.videoCallService.getSession(journeyId, req.user.userId);
+    const userId = (req.user as any)?.id || (req.user as any)?.userId;
+    return this.videoCallService.getSession(journeyId, userId);
   }
 
   @Post('join/:journeyId')
   async joinCall(@Param('journeyId') journeyId: string, @Request() req) {
-    return this.videoCallService.joinCall(journeyId, req.user.userId);
+    const userId = (req.user as any)?.id || (req.user as any)?.userId;
+    return this.videoCallService.joinCall(journeyId, userId);
   }
 
   @Post('call-token')
   async getCallToken(@Body() body: { journeyId: string }, @Request() req) {
-    return this.videoCallService.joinCall(body.journeyId, req.user.userId);
+    const userId = (req.user as any)?.id || (req.user as any)?.userId;
+    return this.videoCallService.joinCall(body.journeyId, userId);
   }
 
   @Post('end')
   async endCall(@Body() body: { journeyId: string; durationSec?: number }, @Request() req) {
-    return this.videoCallService.endCall(body.journeyId, req.user.userId, body.durationSec);
+    const userId = (req.user as any)?.id || (req.user as any)?.userId;
+    return this.videoCallService.endCall(body.journeyId, userId, body.durationSec);
   }
 }
