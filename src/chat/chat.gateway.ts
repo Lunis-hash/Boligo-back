@@ -190,4 +190,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isTyping: data.isTyping,
     });
   }
+
+  /** Diffusion d'un appel vidéo entrant */
+  broadcastIncomingCall(journeyId: string, callerId: string, callerName: string) {
+    this.server.to(`journey:${journeyId}`).emit('incomingCall', {
+      journeyId,
+      callerId,
+      callerName,
+    });
+  }
+
+  @SubscribeMessage('callUser')
+  handleCallUser(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { journeyId: string; callerName: string },
+  ) {
+    const callerId = client.data.userId;
+    console.log(`📞 [Video Call] User ${callerId} (${data.callerName}) calling in journey ${data.journeyId}`);
+    client.to(`journey:${data.journeyId}`).emit('incomingCall', {
+      journeyId: data.journeyId,
+      callerId,
+      callerName: data.callerName,
+    });
+  }
+
+  @SubscribeMessage('rejectCall')
+  handleRejectCall(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { journeyId: string },
+  ) {
+    console.log(`❌ [Video Call] Call rejected in journey ${data.journeyId}`);
+    this.server.to(`journey:${data.journeyId}`).emit('callRejected', {
+      journeyId: data.journeyId,
+      userId: client.data.userId,
+    });
+  }
 } 
