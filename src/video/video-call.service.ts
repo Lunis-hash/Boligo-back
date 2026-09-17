@@ -145,7 +145,7 @@ export class VideoCallService {
     let provider = 'daily';
 
     if (isJitsi) {
-      meetingUrl = `${roomUrl}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
+      meetingUrl = `${roomUrl}#config.deepLinking.enabled=false&config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&interfaceConfig.MOBILE_APP_PROMO=false`;
       provider = 'jitsi';
     } else {
       try {
@@ -157,7 +157,7 @@ export class VideoCallService {
         meetingUrl = this.daily.buildMeetingUrl(roomUrl, token);
       } catch (err: any) {
         console.warn(`[Video] Daily token failed, falling back to Jitsi Meet:`, err.message);
-        meetingUrl = `https://meet.jit.si/boligo-${journeyId.replace(/-/g, '')}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
+        meetingUrl = `https://meet.jit.si/boligo-${journeyId.replace(/-/g, '')}#config.deepLinking.enabled=false&config.disableDeepLinking=true&config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&interfaceConfig.MOBILE_APP_PROMO=false`;
         provider = 'jitsi';
       }
     }
