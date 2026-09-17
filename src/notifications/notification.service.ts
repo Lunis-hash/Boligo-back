@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../common/email.service';
 
 @Injectable()
 export class NotificationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async registerPushToken(userId: string, pushToken: string) {
     console.log(`[PUSH] Registering push token for user ${userId}: ${pushToken}`);
@@ -67,12 +71,68 @@ export class NotificationService {
     return dbNotification;
   }
 
+  // ─── Vidéo débloquée : push + email ────────────────────────────────────────
   async notifyVideoUnlock(userId: string, partnerName: string) {
-    return this.sendPushNotification(
+    // 1. Push notification
+    await this.sendPushNotification(
       userId,
       'systeme',
       'Appel vidéo débloqué ! 🎥',
-      `Félicitations ! Vous avez terminé les 3 jours d'échange avec ${partnerName}. L'appel vidéo est maintenant disponible.`,
+      `Félicitations ! Vous avez terminé les échanges avec ${partnerName}. L'appel vidéo est maintenant disponible.`,
     );
+
+    // 2. Email de notification vidéo débloquée
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, firstName: true },
+      });
+
+      if (user) {
+        await this.emailService.sendVideoUnlockEmail(
+          user.email,
+          user.firstName,
+          partnerName,
+        );
+        console.log(`[NOTIF] Email vidéo débloquée envoyé à ${user.email}`);
+      }
+    } catch (err: any) {
+      console.error(`[NOTIF] Erreur envoi email vidéo débloquée : ${err.message}`);
+    }
+  }
+
+  // ─── Nouveau match : push + email ──────────────────────────────────────────
+  async notifyNewMatch(
+    userId: string,
+    compatibilityScore: number,
+    expiresInDays: number = 7,
+  ) {
+    // 1. Push notification
+    await this.sendPushNotification(
+      userId,
+      'nouveau_match',
+      'Un match exceptionnel vous attend ! 💍',
+      `L'IA BOLIGO a trouvé un profil compatible à ${Math.round(compatibilityScore)}%. Consultez votre match dès maintenant !`,
+    );
+
+    // 2. Email de nouveau match
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, firstName: true },
+      });
+
+      if (user) {
+        await this.emailService.sendNewMatchEmail(
+          user.email,
+          user.firstName,
+          compatibilityScore,
+          expiresInDays,
+        );
+        console.log(`[NOTIF] Email nouveau match envoyé à ${user.email}`);
+      }
+    } catch (err: any) {
+      console.error(`[NOTIF] Erreur envoi email nouveau match : ${err.message}`);
+    }
   }
 }

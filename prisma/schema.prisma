@@ -314,12 +314,50 @@ model CreditTransaction {
   user            User            @relation(fields: [userId], references: [id])
   journeyId       String?
   journey         Journey?        @relation(fields: [journeyId], references: [id])
+  promoCodeId     String?
+  promoCode       PromoCode?      @relation(fields: [promoCodeId], references: [id])
   type            TransactionType
   creditAmount    Int
   euroAmount      Float?
   paymentRef      String?
   date            DateTime        @default(now())
   description     String?
+}
+
+// ---------------------------------------------------------
+// 6b. CODES PROMO
+// ---------------------------------------------------------
+
+enum DiscountType {
+  percent   // % de réduction (discountValue = %)
+  fixed     // Réduction fixe (discountValue = centimes)
+  free      // Gratuit (discountValue ignoré)
+}
+
+model PromoCode {
+  id            String        @id @default(uuid())
+  code          String        @unique
+  discountType  DiscountType
+  discountValue Int           @default(0)  // 50 = 50%, 500 = 5€, ou 0 si free
+  maxUses       Int?                       // null = illimité
+  usedCount     Int           @default(0)
+  expiresAt     DateTime?                  // null = pas d'expiration
+  isActive      Boolean       @default(true)
+  description   String?
+  createdAt     DateTime      @default(now())
+  usages        PromoUsage[]
+  transactions  CreditTransaction[]
+}
+
+model PromoUsage {
+  id          String     @id @default(uuid())
+  promoCodeId String
+  promoCode   PromoCode  @relation(fields: [promoCodeId], references: [id])
+  userId      String
+  usedAt      DateTime   @default(now())
+
+  @@unique([promoCodeId, userId]) // Un user = un seul usage par code
+  @@index([userId])
 }
 
 // ---------------------------------------------------------

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -162,6 +163,104 @@ export class AdminController {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       type,
+    });
+  }
+
+  // ═══════════════════════════════════════════════
+  // CODES PROMO
+  // ═══════════════════════════════════════════════
+
+  @Get('promo/stats')
+  @UseGuards(AdminGuard)
+  getPromoStats() {
+    return this.adminService.getPromoStats();
+  }
+
+  @Get('promo/codes')
+  @UseGuards(AdminGuard)
+  listPromoCodes(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('isActive') isActive?: string,
+  ) {
+    return this.adminService.listPromoCodes({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      isActive,
+    });
+  }
+
+  @Get('promo/codes/:id')
+  @UseGuards(AdminGuard)
+  getPromoCode(@Param('id') id: string) {
+    return this.adminService.getPromoCode(id);
+  }
+
+  @Post('promo/codes')
+  @UseGuards(AdminGuard)
+  createPromoCode(
+    @Body() body: {
+      code: string;
+      discountType: string;
+      discountValue: number;
+      maxUses?: number | null;
+      expiresAt?: string | null;
+      isActive?: boolean;
+      description?: string;
+    }
+  ) {
+    return this.adminService.createPromoCode(body);
+  }
+
+  @Patch('promo/codes/:id')
+  @UseGuards(AdminGuard)
+  updatePromoCode(
+    @Param('id') id: string,
+    @Body() body: {
+      discountType?: string;
+      discountValue?: number;
+      maxUses?: number | null;
+      expiresAt?: string | null;
+      isActive?: boolean;
+      description?: string;
+    }
+  ) {
+    return this.adminService.updatePromoCode(id, body);
+  }
+
+  @Patch('promo/codes/:id/toggle')
+  @UseGuards(AdminGuard)
+  togglePromoCode(@Param('id') id: string) {
+    return this.adminService.togglePromoCode(id);
+  }
+
+  @Delete('promo/codes/:id')
+  @UseGuards(AdminGuard)
+  deletePromoCode(@Param('id') id: string) {
+    return this.adminService.deletePromoCode(id);
+  }
+
+  // ═══════════════════════════════════════════════
+  // SESSIONS VIDÉO
+  // ═══════════════════════════════════════════════
+
+  @Get('video/stats')
+  @UseGuards(AdminGuard)
+  getVideoStats() {
+    return this.adminService.getVideoStats();
+  }
+
+  @Get('video/sessions')
+  @UseGuards(AdminGuard)
+  listVideoSessions(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.adminService.listVideoSessions({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      status,
     });
   }
 }
