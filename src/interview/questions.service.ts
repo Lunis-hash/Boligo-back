@@ -38,6 +38,9 @@ export class QuestionsService {
       // 1b. Si la question a déjà été répondue (ex: pré-remplie lors de l'onboarding), ne pas la reposer
       if (allRawResponses[q.id]) return false;
 
+      // 1c. Périmètre géographique : déjà défini à l'inscription (onboarding étape 3)
+      if (q.id === 'M0_Q02') return false;
+
       // 2. Vérifier les règles (Age, Genre, etc.)
       if (q.rules) {
         if (q.rules.maxAge && age >= q.rules.maxAge) return false;

@@ -84,10 +84,14 @@ export class InterviewService {
     });
 
     if (existingResponse) {
+      const mergedAnswers = {
+        ...((existingResponse.rawResponses as Record<string, any>) || {}),
+        ...dto.answers,
+      };
       await this.prisma.moduleResponse.update({
         where: { id: existingResponse.id },
         data: {
-          rawResponses: dto.answers,
+          rawResponses: mergedAnswers,
           completedAt: new Date(),
         },
       });
