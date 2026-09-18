@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { JwtStrategy } from '../auth/strategies/jwt.strategy';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '8h' },
     }),
+    NotificationModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, JwtStrategy],

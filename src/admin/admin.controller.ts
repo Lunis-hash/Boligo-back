@@ -263,4 +263,36 @@ export class AdminController {
       status,
     });
   }
+
+  // ═══════════════════════════════════════════════
+  // NOTIFICATIONS PUSH (ADMIN)
+  // ═══════════════════════════════════════════════
+
+  @Post('notifications/broadcast')
+  @UseGuards(AdminGuard)
+  broadcastPushNotification(
+    @Body()
+    body: {
+      title: string;
+      content: string;
+      type: 'nouveau_match' | 'message' | 'question_harmonie' | 'rappel_reponse' | 'credit' | 'systeme';
+      targetUserId?: string;
+    },
+  ) {
+    return this.adminService.broadcastPushNotification(body);
+  }
+
+  @Get('notifications/history')
+  @UseGuards(AdminGuard)
+  getNotificationHistory(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('userId') userId?: string,
+  ) {
+    return this.adminService.getNotificationHistory({
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      userId,
+    });
+  }
 }
