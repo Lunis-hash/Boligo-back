@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
+import { NotificationService } from '../notifications/notification.service';
 
 const userListSelect = {
   id: true,
@@ -44,6 +45,7 @@ export class AdminService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private notificationService: NotificationService,
   ) {}
 
   async login(dto: AdminLoginDto) {
@@ -918,14 +920,89 @@ export class AdminService {
         }),
       ]);
 
-    return {
-      total,
-      completed,
-      inProgress,
-      planned,
-      thisWeek,
-      thisMonth,
+      totalDurationMinutes: avgDuration._avg.durationMinutes ?? 0,
       avgDurationMinutes: avgDuration._avg.durationMinutes ?? 0,
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // NOTIFICATIONS PUSH (ADMIN)
+  // ═══════════════════════════════════════════════════════════════════
+
+  /**
+   * Envoyer une notification push à tous les utilisateurs actifs
+   * ou à un utilisateur spécifique.
+   */
+  async broadcastPushNotification(dto: {
+    title: string;
+    content: string;
+    type: 'nouveau_match' | 'message' | 'question_harmonie' | 'rappel_reponse' | 'credit' | 'systeme';
+    targetUserId?: string;
+  }) {
+    const { title, content, type, targetUserId } = dto;
+
+    if (targetUserId) {
+      // Envoi ciblé à un utilisateur
+      await this.notificationService.sendPushNotification(targetUserId, type, title, content);
+      return { sent: 1, targetUserId };
+    }
+
+    // Envoi broadcast : tous les utilisateurs avec un pushToken valide
+    const users = await this.prisma.user.findMany({
+      where: {
+        pushToken: { not: null },
+        accountStatus: { not: 'BANNED' },
+      },
+      select: { id: true },
+    });
+
+    let sent = 0;
+    for (const user of users) {
+      try {
+        await this.notificationService.sendPushNotification(user.id, type, title, content);
+        sent++;
+      } catch (e) {
+        // Continuer même si un envoi échoue
+      }
+    }
+
+    return { sent, total: users.length };
+  }
+
+  /**
+   * Historique des notifications envoyées (paginé).
+   */
+  async getNotificationHistory(params: { page?: number; limit?: number; userId?: string }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(100, params.limit ?? 20);
+    const skip = (page - 1) * limit;
+
+    const where = params.userId ? { userId: params.userId } : {};
+
+    const [total, notifications] = await Promise.all([
+      this.prisma.notification.count({ where }),
+      this.prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          content: true,
+          isRead: true,
+          createdAt: true,
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      data: notifications,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 }
