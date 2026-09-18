@@ -107,7 +107,7 @@ export class VideoCallService {
       journey.videoSession?.dailyRoomName ?? roomName;
     let isJitsi = roomUrl?.includes('meet.jit.si') ?? false;
 
-    if (!roomUrl) {
+    if (!roomUrl || (isJitsi && this.daily.isConfigured())) {
       if (this.daily.isConfigured()) {
         try {
           let room = await this.daily.getRoom(roomName);
@@ -116,6 +116,7 @@ export class VideoCallService {
           }
           roomUrl = room.url;
           effectiveRoomName = room.name;
+          isJitsi = false;
         } catch (err: any) {
           console.warn(`[Video] Daily API failed, falling back to Jitsi Meet:`, err.message);
           roomUrl = `https://meet.jit.si/boligo-${journeyId.replace(/-/g, '')}`;
