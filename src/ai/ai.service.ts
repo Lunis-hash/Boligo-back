@@ -196,7 +196,7 @@ Retourne UNIQUEMENT un tableau JSON de 21 IDs distincts:
 
     const prompt = `
 Tu es l'Expert Psychologue et Analyste Relationnel d'Harmonie.
-Analyse les réponses de cet utilisateur à ses modules d'entretien et génère son profil personnalisé 6D.
+Analyse en profondeur les réponses de cet utilisateur à l'ensemble de ses modules d'entretien et génère son profil personnalisé 6D.
 
 PROFIL UTILISATEUR:
 - Prénom: ${userContext.firstName}
@@ -204,25 +204,33 @@ PROFIL UTILISATEUR:
 - Genre: ${userContext.gender}
 - Ville: ${userContext.city || 'Non spécifiée'}
 
-RÉPONSES DÉCODÉES :
+RÉPONSES DÉCODÉES DE L'UTILISATEUR AUX MODULES :
 ${answersText}
+
+DIRECTIVES DE RÉDACTION STRICTES POUR LA BIO ("À PROPOS") :
+- Rédige une Bio complète d'environ 8 à 10 lignes (130 à 180 mots), à la première personne ("Je..."), fluide, vivante, mature et élégante.
+- Elle doit être ULTRA-PERSONNALISÉE en exploitant les détails spécifiques de ses réponses ci-dessus :
+  1. Sa personnalité et sa vision profonde du couple (Module 1).
+  2. Ses piliers de vie, ses valeurs clés et la place de la famille/spiritualité (Module 2).
+  3. Sa façon concrète de communiquer, d'écouter et de traverser les désaccords (Module 3).
+  4. Ce qu'elle recherche intimement chez son partenaire pour construire un engagement solide dans la durée (Module 4).
 
 Retourne UNIQUEMENT un JSON valide :
 {
-  "synthesis": "Synthèse de 3 phrases très précises décrivant sa personnalité relationnelle",
-  "bio": "Bio de profil public de 2 phrases à la 1ère personne, vivante et authentique",
-  "needsList": ["Besoin 1", "Besoin 2", "Besoin 3", "Besoin 4"],
-  "keyValues": ["Valeur 1", "Valeur 2", "Valeur 3", "Valeur 4"],
-  "redFlags": ["Deal-breaker principal"],
+  "synthesis": "Synthèse psychologique Gestalt détaillée de 5-6 phrases décrivant sa posture amoureuse, ses forces et sa sensibilité relationnelle.",
+  "bio": "Bio détaillée et authentique d'environ 8 à 10 lignes rédigée à la première personne, synthétisant fidèlement ses réponses aux modules.",
+  "needsList": ["Besoin fondamental 1", "Besoin fondamental 2", "Besoin fondamental 3", "Besoin fondamental 4"],
+  "keyValues": ["Valeur clé 1", "Valeur clé 2", "Valeur clé 3", "Valeur clé 4"],
+  "redFlags": ["Ligne rouge / Deal-breaker principal"],
   "maturityScore": 0.88,
   "alchemyScore": 0.84,
   "customPillars": {
-    "maturite": { "score": 0.88, "comment": "Commentaire sur mesure" },
-    "alchimie": { "score": 0.84, "comment": "Commentaire sur mesure" },
-    "valeurs": { "score": 0.92, "comment": "Commentaire sur mesure" },
-    "projet": { "score": 0.86, "comment": "Commentaire sur mesure" },
-    "communication": { "score": 0.89, "comment": "Commentaire sur mesure" },
-    "intimite": { "score": 0.85, "comment": "Commentaire sur mesure" }
+    "maturite": { "score": 0.88, "comment": "Commentaire clinique précis sur sa maturité affective" },
+    "alchimie": { "score": 0.84, "comment": "Commentaire sur sa capacité de connexion et d'alchimie" },
+    "valeurs": { "score": 0.92, "comment": "Commentaire sur la cohérence de ses valeurs de vie" },
+    "projet": { "score": 0.86, "comment": "Commentaire sur sa vision de l'engagement et du futur" },
+    "communication": { "score": 0.89, "comment": "Commentaire sur son style d'expression et gestion de conflits" },
+    "intimite": { "score": 0.85, "comment": "Commentaire sur son rapport à la tendresse et la vulnérabilité" }
   }
 }
 `;
@@ -462,9 +470,9 @@ Retourne UNIQUEMENT un JSON:
     const thirdVal = extractedAnswers[2] || 'le respect mutuel';
 
     return {
-      synthesis: `${userContext.firstName}, ${userContext.age} ans, aborde son projet de couple avec intention. Ses choix témoignent d'une recherche axée sur ${firstVal.toLowerCase()} et ${secondVal.toLowerCase()}.`,
-      bio: `Je m'appelle ${userContext.firstName}. Je cherche une relation sincère basée sur ${firstVal.toLowerCase()} et un engagement réciproque.`,
-      needsList: [`Projet commun autour de ${firstVal.toLowerCase()}`, `Respect et ${secondVal.toLowerCase()}`, `Dialogue ouvert au quotidien`],
+      synthesis: `${userContext.firstName}, ${userContext.age} ans, aborde sa démarche relationnelle avec une profonde authenticité et une volonté affirmée de construire. Ses réponses aux modules démontrent un attachement prioritaire à ${firstVal.toLowerCase()}, complété par un besoin essentiel de ${secondVal.toLowerCase()}. Sa maturité affective se manifeste par une recherche de transparence et un refus clair des relations superficielles.`,
+      bio: `Moi, c'est ${userContext.firstName}. À travers cette démarche sur Harmonie, je cherche à bâtir une relation sincère, sereine et résolument tournée vers l'avenir.\n\nCe qui compte le plus pour moi au quotidien, c'est ${firstVal.toLowerCase()} et le partage d'une vision commune fondée sur ${secondVal.toLowerCase()}.\n\nDans un couple, j'accorde une importance capitale à l'écoute mutuelle, à la bienveillance et à la capacité de dialoguer sereinement, même lors des désaccords.\n\nJe souhaite rencontrer une personne authentique, investie, avec qui faire grandir une complicité naturelle et un projet de vie partagé dans le respect mutuel.`,
+      needsList: [`Projet commun autour de ${firstVal.toLowerCase()}`, `Respect et ${secondVal.toLowerCase()}`, `Dialogue ouvert au quotidien`, `Complicité et soutien mutuel`],
       keyValues: [firstVal.slice(0, 20), secondVal.slice(0, 20), thirdVal.slice(0, 20), 'Authenticité'],
       redFlags: ['Infidélité ou mensonge répété'],
       maturityScore: 0.85,
