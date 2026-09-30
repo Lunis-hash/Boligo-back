@@ -78,8 +78,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await shot('02-slides');
   for (let i = 0; i < 5; i++) { await clickText('Suivant →'); await page.waitForTimeout(500); }
   await shot('03-slides-cgu');
-  const cguDisabled = !(await text('Créer mon compte gratuitement').isVisible()) ? false : true;
-  record('Slides : 6 écrans parcourus, CGU à cocher sur le dernier', cguDisabled);
+  const ctaDisabled = (await page.locator('[aria-disabled="true"]', { hasText: 'Créer mon compte gratuitement' }).count()) > 0;
+  record('Slides : 6 écrans parcourus, CTA désactivé tant que les CGU ne sont pas cochées', ctaDisabled);
   await clickText("J'ai lu et j'accepte les");
   await page.waitForTimeout(300);
   await clickText('Créer mon compte gratuitement');
