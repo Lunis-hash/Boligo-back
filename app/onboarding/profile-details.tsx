@@ -37,9 +37,13 @@ import {
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { PROFESSIONS_DATA, ALL_PROFESSIONS } from '@/constants/professions';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 import { COUNTRIES, Country, detectUserCountry } from '@/constants/countries';
+
+// ─── Écran principal ───────────────────────────────────────────────
+import { useAuth } from '@/context/auth';
+import { AuthService } from '@/services/auth';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Options de préférences rencontre ─────────────────────────────
 const MEETING_SCOPES = [
@@ -109,10 +113,6 @@ function ProgressHeader({
     </View>
   );
 }
-
-// ─── Écran principal ───────────────────────────────────────────────
-import { useAuth } from '@/context/auth';
-import { AuthService } from '@/services/auth';
 
 // ... (reste des constantes)
 

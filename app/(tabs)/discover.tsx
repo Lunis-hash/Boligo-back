@@ -63,13 +63,13 @@ interface MatchProfile {
   interests?: { label: string; common: boolean }[];
   threeWords?: string[];
   expectations?: { icon: string; text: string }[];
-  mentalMap: Array<{
+  mentalMap: {
     id: string;
     label: string;
     emoji: string;
     value: number;
     color: string;
-  }>;
+  }[];
 }
 
 interface ActiveMatch {

@@ -1,16 +1,14 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Platform, Alert , ActivityIndicator } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { Settings, MapPin, Edit3, Briefcase, Globe, ShieldCheck, Sparkles, TrendingUp, User, ChevronRight, Activity, Radar, Phone, Mail, Calendar, Heart, CreditCard, Tag } from 'lucide-react-native';
+import { Settings, MapPin, Edit3, Briefcase, Globe, ShieldCheck, Sparkles, TrendingUp, User, ChevronRight, Activity, Radar, Phone, Mail, Calendar, Heart, CreditCard, Tag , LogOut, Trash2 } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAuth } from '@/context/auth';
 import client from '@/services/api';
 import cacheService from '@/services/cacheService';
-import { ActivityIndicator } from 'react-native';
-import { LogOut, Trash2 } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
