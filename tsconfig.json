@@ -15,9 +15,6 @@
     "expo-env.d.ts"
   ],
   "exclude": [
-    "node_modules",
-    "src",
-    "next.config.ts",
-    "tailwind.config.ts"
+    "node_modules"
   ]
 }
