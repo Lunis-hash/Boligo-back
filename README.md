@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Boligo - STEVE — application mobile BOLIGO (Expo / React Native)
 
-## Getting Started
+Copie de travail **indépendante** de l'application mobile BOLIGO, extraite du
+dépôt `Lunis-hash/oweke` (racine Expo `harmonie-expo-starter`, commit `432b66d`).
+L'historique Git d'origine est conservé ; le remote `origin` a été retiré pour
+qu'aucune commande ne puisse pousser vers le dépôt d'origine.
 
-First, run the development server:
+- Stack : Expo SDK 54 · React Native 0.81 · React 19 · expo-router 6 · TypeScript 5.9
+- Backend : `Boligo-back` (NestJS + Prisma), préfixe `/api`, WebSocket Socket.IO
+- Documentation : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md),
+  [`docs/JOURNAL_RECETTE.md`](docs/JOURNAL_RECETTE.md),
+  [`docs/API_AUDIT.md`](docs/API_AUDIT.md),
+  [`docs/BACKEND_ISSUES.md`](docs/BACKEND_ISSUES.md),
+  [`docs/E2E_RESULTATS.md`](docs/E2E_RESULTATS.md)
+
+## Démarrer
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci                      # installation reproductible (registre npmjs.org)
+npm run typecheck           # tsc --noEmit
+npm run lint                # expo lint (eslint-config-expo)
+npm test                    # tests unitaires Jest (jest-expo)
+npm start                   # Expo dev server (Expo Go / dev build)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Backend ciblé
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Rôle |
+|---|---|
+| `EXPO_PUBLIC_API_URL` | URL de l'API (ex. `https://boligo-back.onrender.com/api`). Sur le web elle est utilisée telle quelle ; sur mobile, une URL `localhost` est remplacée par l'IP du poste qui sert le bundle (`:3000/api`). Sans variable : production. |
+| `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Clé publiable Stripe (PaymentSheet natif). |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Les profils EAS (`eas.json`) fixent ces variables par environnement.
 
-## Learn More
+### Recette
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# API : scénario d'acceptation complet contre un backend de TEST (jamais la production)
+API_URL=http://localhost:3000/api npm run test:api
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Navigateur : parcours complet rejoué dans Chromium sur l'export web (voir e2e/README.md)
+EXPO_PUBLIC_API_URL=http://localhost:3000/api npx expo export --platform web --output-dir /tmp/boligo-web
+node e2e/static-server.js /tmp/boligo-web 8081 &
+APP_URL=http://localhost:8081 API_URL=http://localhost:3000/api node e2e/journey.e2e.js
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure
 
-## Deploy on Vercel
+```
+app/                 écrans expo-router (file-based routing)
+  (auth)/            login, verify (OTP), forgot-password, reset-password
+  onboarding/        value-slides, profile-details (inscription 4 étapes), payment
+  interview/         [moduleNumber] (11 modules), generation, summary
+  (tabs)/            discover, index (Matchs / Sondeur), messages, profile
+  profile/edit       édition du profil
+  video-call         appel vidéo (WebView Daily/Jitsi)
+components/          ErrorBoundary, ui/Button, ui/Input
+context/             auth (session, tokens), AppContext (crédits, matchs)
+services/            api (axios + refresh JWT), storage (SecureStore/localStorage),
+                     auth, interview, payment, video, notifications, chatSocket,
+                     cacheService, chatModeration, soundService, webAlert, stripe(.web)
+constants/           thème, métiers, pays
+scripts/             backend-flow-smoke.js (recette API)
+e2e/                 recette navigateur Playwright
+docs/                audit, journal de recette, résultats, captures
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Règles de sécurité de la recette
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Aucun test contre la base de production ; la recette API/E2E cible un backend
+  local avec une base PostgreSQL vide.
+- Aucun paiement réel : le code promo `BOLIGO100` (100 %) ou le mode mock sont
+  utilisés ; Stripe n'est appelé qu'en mode TEST.
+- Aucun secret versionné : les clés vivent dans les variables d'environnement
+  EAS / `.env` local (ignoré par Git).
