@@ -1,50 +1,64 @@
 import client from './api';
 
-export async function startVideoCall(journeyId: string) {
-  try {
-    const res = await client.post('/video/call-token', { journeyId });
-    return res.data;
-  } catch (error) {
-    console.error('Failed to start video call', error);
-    throw error;
-  }
+/**
+ * Appels vidéo (backend : VideoController + JourneyController).
+ *
+ * Contrats backend :
+ *  - GET  /video/session/:journeyId → { journeyId, currentStep, canJoin, testUnlock,
+ *         dailyConfigured, maxDurationSec, partnerName, videoSession }
+ *  - POST /video/call-token { journeyId } → { meetingUrl, roomName, partnerName,
+ *         maxDurationSec, provider }
+ *  - POST /video/end { journeyId, durationSec } → { success, advanced, currentStep }
+ */
+export interface VideoSessionInfo {
+  journeyId: string;
+  currentStep: string;
+  canJoin: boolean;
+  testUnlock: boolean;
+  dailyConfigured: boolean;
+  maxDurationSec: number;
+  partnerName: string;
+  videoSession: { status: string; startDate: string | null; endDate: string | null } | null;
 }
 
-export async function endVideoCall(callId: string, durationOrReason?: number | string) {
-  try {
-    const res = await client.post('/video/end', { callId, durationOrReason });
-    return res.data;
-  } catch (error) {
-    console.error('Failed to end video call', error);
-    throw error;
-  }
+export interface VideoJoinInfo {
+  meetingUrl: string;
+  roomName: string;
+  partnerName: string;
+  maxDurationSec: number;
+  provider: 'daily' | 'jitsi' | string;
 }
 
-export async function getSession(sessionId: string) {
-  try {
-    const res = await client.get(`/video/session/${sessionId}`);
-    return res.data;
-  } catch (error) {
-    return { id: sessionId, token: 'mock-token' };
-  }
+export interface VideoEndInfo {
+  success: boolean;
+  advanced: boolean;
+  currentStep: string;
 }
 
-export async function joinVideoSession(sessionId: string) {
-  try {
-    const res = await client.post(`/video/join/${sessionId}`);
-    return res.data;
-  } catch (error) {
-    return { token: 'mock-token' };
-  }
+export async function getSession(journeyId: string): Promise<VideoSessionInfo> {
+  const res = await client.get<VideoSessionInfo>(`/video/session/${journeyId}`);
+  return res.data;
+}
+
+export async function joinVideoSession(journeyId: string): Promise<VideoJoinInfo> {
+  const res = await client.post<VideoJoinInfo>('/video/call-token', { journeyId });
+  return res.data;
+}
+
+export async function endVideoCall(journeyId: string, durationSec?: number): Promise<VideoEndInfo> {
+  const res = await client.post<VideoEndInfo>('/video/end', {
+    journeyId,
+    ...(typeof durationSec === 'number' ? { durationSec: Math.max(0, Math.round(durationSec)) } : {}),
+  });
+  return res.data;
 }
 
 export const VideoService = {
-  startVideoCall,
-  endVideoCall,
-  end: endVideoCall,
-  getCallToken: startVideoCall,
   getSession,
   join: joinVideoSession,
+  joinVideoSession,
+  end: endVideoCall,
+  endVideoCall,
 };
 
 export default VideoService;
