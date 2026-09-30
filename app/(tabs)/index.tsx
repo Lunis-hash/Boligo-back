@@ -10,7 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   KeyboardAvoidingView,
-  Dimensions,
+  Alert,
 } from 'react-native';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { useAppContext } from '@/context/AppContext';
 import { useAuth } from '@/context/auth';
-import client from '@/services/api';
+import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 import {
@@ -32,111 +32,13 @@ import {
   Lock,
 } from 'lucide-react-native';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// ─── Questions Sondeur 3 jours — HARD MODE ─────────────────────────
+// ─── Thèmes par défaut des 3 jours (affichage uniquement) ──────────
+// Les questions réelles sont générées par le backend (GET /journey/:id/questions).
 const SONDEUR_DAYS = [
-  {
-    day: 1,
-    theme: 'Lignes rouges',
-    emoji: '🚩',
-    questions: [
-      {
-        key: 'infidelite',
-        question: 'L\'infidélité est-elle un point de non-retour pour toi ?',
-        options: [
-          'Jamais pardonnable, c\'est terminé',
-          'Une seule erreur peut être comprise',
-          'Ça dépend du contexte et de la sincérité',
-          'Autre...',
-        ],
-      },
-      {
-        key: 'mensonge',
-        question: 'Quel mensonge ne pardonnerais-tu jamais dans le couple ?',
-        options: [
-          'Mentir sur ses sentiments',
-          'Cacher des dettes / mensonges financiers',
-          'Mentir sur son passé (enfants, mariage)',
-          'Autre...',
-        ],
-      },
-    ],
-  },
-  {
-    day: 2,
-    theme: 'Valeurs profondes',
-    emoji: '⚖️',
-    questions: [
-      {
-        key: 'religion',
-        question: 'Si ton partenaire change de religion ou devient athée, tu fais quoi ?',
-        options: [
-          'Ça ne change rien, je l\'aime pour qui il/elle est',
-          'C\'est difficile mais on peut discuter',
-          'C\'est un problème grave pour notre avenir',
-          'Autre...',
-        ],
-      },
-      {
-        key: 'famille_ingerence',
-        question: 'Ta belle-mère / beau-père déteste ton conjoint. Tu choisis qui ?',
-        options: [
-          'Mon conjoint, toujours. On construit notre vie ensemble',
-          'J\'essaie de concilier les deux sans trahir personne',
-          'La famille avant tout, même si ça fait mal',
-          'Autre...',
-        ],
-      },
-    ],
-  },
-  {
-    day: 3,
-    theme: 'Futur & Sacrifices',
-    emoji: '🔮',
-    questions: [
-      {
-        key: 'enfants',
-        question: 'Ton partenaire te dit qu\'il/elle ne veut plus d\'enfants après 2 ans de relation. Réaction ?',
-        options: [
-          'C\'est un dealbreaker, je veux fonder une famille',
-          'On discute pour comprendre le pourquoi',
-          'L\'amour passe avant tout, même sans enfants',
-          'Autre...',
-        ],
-      },
-      {
-        key: 'carriere_couple',
-        question: 'Pour la carrière de ton conjoint, tu dois quitter ton pays, tes amis, ta famille. Tu acceptes ?',
-        options: [
-          'Sans hésiter, l\'amour est plus fort',
-          'Seulement si on en discute et que c\'s réciproque',
-          'Non, je ne sacrifierai jamais ma vie pour quelqu\'un',
-          'Autre...',
-        ],
-      },
-    ],
-  },
+  { day: 1, theme: 'Lignes rouges', emoji: '🚩' },
+  { day: 2, theme: 'Valeurs profondes', emoji: '⚖️' },
+  { day: 3, theme: 'Futur & Sacrifices', emoji: '🔮' },
 ];
-
-// ─── Réponses simulées du match (Amina) ────────────────────────────
-const MATCH_ANSWERS: Record<string, string> = {
-  infidelite: 'Jamais pardonnable, c\'est terminé',
-  mensonge: 'Mentir sur son passé (enfants, mariage)',
-  religion: 'C\'est difficile mais on peut discuter',
-  famille_ingerence: 'Mon conjoint, toujours. On construit notre vie ensemble',
-  enfants: 'On discute pour comprendre le pourquoi',
-  carriere_couple: 'Seulement si on en discute et que c\'s réciproque',
-};
-
-const COMPAT_NOTES: Record<string, { note: string; positive: boolean }> = {
-  infidelite: { note: 'Alignés — tous deux intolérants à l\'infidélité', positive: true },
-  mensonge: { note: 'Amina valorise la transparence totale', positive: true },
-  religion: { note: 'Amina est ouverte, point à creuser ensemble', positive: false },
-  famille_ingerence: { note: 'Valeur clé partagée : le couple avant la famille', positive: true },
-  enfants: { note: 'Approche similaire : communication avant décision', positive: true },
-  carriere_couple: { note: 'Amina veut un choix réfléchi, pas un sacrifice aveugle', positive: false },
-};
 
 // ─── Composant étape jour ──────────────────────────────────────────
 function DayStep({
@@ -411,27 +313,17 @@ export default function MatchesScreen() {
   const currentDbQ = dayDbQuestions[qIndex];
   const dayData = SONDEUR_DAYS[currentDay - 1];
   const dayThemeMeta = dayThemes.find((d) => d.day === currentDay);
-  
-  // Toujours disponible immédiatement (Zéro écran blanc)
-  const questionsForDay =
-    dayDbQuestions.length > 0
-      ? dayDbQuestions
-      : dayData?.questions ?? [];
-  const totalQuestionsToday = questionsForDay.length;
-  const currentQ =
-    currentDbQ
-      ? {
+
+  // Seules les questions du backend sont proposées : une réponse à une
+  // question locale ne serait jamais enregistrée ni comparée.
+  const totalQuestionsToday = dayDbQuestions.length;
+  const currentQ = currentDbQ
+    ? {
         key: currentDbQ.id,
         question: currentDbQ.questionText,
         options: (currentDbQ.options as string[]) ?? [],
       }
-      : dayData?.questions[qIndex]
-        ? {
-          key: dayData.questions[qIndex].key,
-          question: dayData.questions[qIndex].question,
-          options: dayData.questions[qIndex].options,
-        }
-        : null;
+    : null;
 
   const sondeurInProgress =
     firstMatch?.phase === 'sondeur' || firstMatch?.phase === 'harmonie';
@@ -454,28 +346,27 @@ export default function MatchesScreen() {
   const handleAnswer = async () => {
     const answer = customText.trim();
     if (!answer || submittingAnswer) return;
+
+    const dbQ = dayDbQuestions[qIndex];
+    if (!dbQ?.id || !journeyId) {
+      Alert.alert('Questions indisponibles', 'Les questions du Sondeur ne sont pas encore prêtes. Réessayez dans un instant.');
+      return;
+    }
+
     setSubmittingAnswer(true);
     soundService.playOptionSelect();
 
-    // Trouver la question courante dans dbQuestions
-    const dayDbQuestions = dbQuestions.filter((q: any) => q.day === currentDay);
-    const dbQ = dayDbQuestions[qIndex];
-
-    // Sauvegarder en local
-    setUserAnswers(prev => ({ ...prev, [dbQ?.id || currentQ?.key || 'q']: answer }));
-
-    // Sauvegarder en DB
-    if (dbQ?.id && journeyId) {
-      try {
-        await client.post('/journey/respond', {
-          questionId: dbQ.id,
-          text: answer,
-        });
-      } catch (e) {
-        console.error('Failed to save response:', e);
-      }
+    try {
+      await client.post('/journey/respond', { questionId: dbQ.id, text: answer });
+    } catch (e) {
+      setSubmittingAnswer(false);
+      // 400 = réponse refusée par la modération BOLIGO : on garde le texte
+      // pour que l'utilisateur puisse le reformuler.
+      Alert.alert('Réponse non enregistrée', getReadableError(e, 'Vérifiez votre connexion et réessayez.'));
+      return;
     }
 
+    setUserAnswers(prev => ({ ...prev, [dbQ.id]: answer }));
     setSubmittingAnswer(false);
 
     const countToday = totalQuestionsToday;
@@ -491,8 +382,9 @@ export default function MatchesScreen() {
         setCustomText('');
         if (currentDay < 3) setCurrentDay(d => d + 1);
 
-        // Recharger les matches pour mettre à jour la phase
-        await loadMatches();
+        // Recharger le parcours et les matches pour mettre à jour la phase
+        if (journeyId) loadJourney(journeyId, true);
+        await loadMatches(true);
       }, 400);
     }
   };
