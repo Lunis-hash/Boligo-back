@@ -1,34 +1,45 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { storage, STORAGE_KEYS } from './storage';
 
 declare const __DEV__: boolean;
 
+export const PRODUCTION_API_URL = 'https://boligo-back.onrender.com/api';
+
+const isLoopback = (value: string) => /(^|[/@.])(localhost|127\.0\.0\.1)(:|\/|$)/.test(value);
+
 /**
- * Résolution de l'URL de l'API.
- * 1. EXPO_PUBLIC_API_URL si elle pointe vers un serveur distant.
- * 2. En développement (Expo Go / dev build), l'IP du poste qui sert le bundle,
- *    port 3000 — pratique pour un backend lancé en local.
+ * Résolution de l'URL de l'API (fonction pure, testée unitairement).
+ * 1. EXPO_PUBLIC_API_URL si elle pointe vers un serveur distant — ou, sur le
+ *    web, quelle qu'elle soit (le navigateur atteint « localhost »).
+ * 2. En développement natif (Expo Go / dev build), l'hôte qui sert le bundle,
+ *    port 3000 — pratique pour un backend lancé sur le poste de dev.
  * 3. Sinon le backend de production.
  */
-function getDynamicApiUrl(): string {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl && !envUrl.includes('127.0.0.1') && !envUrl.includes('localhost')) {
+export function resolveApiUrl(opts: { envUrl?: string; hostUri?: string; platform: string }): string {
+  const envUrl = opts.envUrl?.trim() || undefined;
+  if (envUrl && (opts.platform === 'web' || !isLoopback(envUrl))) {
     return envUrl;
   }
 
-  const hostUri = Constants.expoConfig?.hostUri || (Constants as any).experienceUrl;
-  if (hostUri && typeof hostUri === 'string') {
-    const ip = hostUri.split(':')[0];
-    if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
-      return `http://${ip}:3000/api`;
+  if (opts.platform !== 'web' && opts.hostUri) {
+    // hostUri peut être « 192.168.1.10:8081 », « exp://192.168.1.10:8081 » ou
+    // « http://localhost:8081 » : on ne garde que le nom d'hôte.
+    const host = opts.hostUri.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').split('/')[0].split(':')[0];
+    if (host && !isLoopback(host)) {
+      return `http://${host}:3000/api`;
     }
   }
 
-  return envUrl || 'https://boligo-back.onrender.com/api';
+  return envUrl || PRODUCTION_API_URL;
 }
 
-export const API_URL = getDynamicApiUrl();
+export const API_URL = resolveApiUrl({
+  envUrl: process.env.EXPO_PUBLIC_API_URL,
+  hostUri: Constants.expoConfig?.hostUri || (Constants as any).experienceUrl,
+  platform: Platform.OS,
+});
 export const SOCKET_URL = API_URL.replace(/\/api\/?$/, '');
 
 const isDev = typeof __DEV__ !== 'undefined' && __DEV__;
