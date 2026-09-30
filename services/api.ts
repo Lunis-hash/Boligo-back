@@ -1,15 +1,22 @@
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import Constants from 'expo-constants';
+import { storage, STORAGE_KEYS } from './storage';
 
+declare const __DEV__: boolean;
+
+/**
+ * Résolution de l'URL de l'API.
+ * 1. EXPO_PUBLIC_API_URL si elle pointe vers un serveur distant.
+ * 2. En développement (Expo Go / dev build), l'IP du poste qui sert le bundle,
+ *    port 3000 — pratique pour un backend lancé en local.
+ * 3. Sinon le backend de production.
+ */
 function getDynamicApiUrl(): string {
   const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  // Si une URL personnalisée ou distante Render est configurée et n'est pas localhost
   if (envUrl && !envUrl.includes('127.0.0.1') && !envUrl.includes('localhost')) {
     return envUrl;
   }
 
-  // Détecter l'IP du PC hôte depuis Expo Go (ex: 192.168.100.8:3000)
   const hostUri = Constants.expoConfig?.hostUri || (Constants as any).experienceUrl;
   if (hostUri && typeof hostUri === 'string') {
     const ip = hostUri.split(':')[0];
@@ -23,64 +30,55 @@ function getDynamicApiUrl(): string {
 
 export const API_URL = getDynamicApiUrl();
 export const SOCKET_URL = API_URL.replace(/\/api\/?$/, '');
-console.log('🎯 [API Config] Resolved API URL:', API_URL);
+
+const isDev = typeof __DEV__ !== 'undefined' && __DEV__;
+const debug = (...args: unknown[]) => {
+  if (isDev) console.log(...args);
+};
+
+debug('🎯 [API Config] URL API résolue :', API_URL);
 
 const client = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
   timeout: 60000,
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (token: string | null) => void;
-  reject: (reason?: any) => void;
-}> = [];
+/** Erreur axios enrichie d'un message lisible par l'utilisateur. */
+export type ApiError = AxiosError<{ message?: string | string[]; error?: string; statusCode?: number }> & {
+  readableMessage?: string;
+};
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
+type RetriableConfig = AxiosRequestConfig & { _retry?: boolean };
+
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string | null) => void; reject: (reason?: unknown) => void }[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => (error ? prom.reject(error) : prom.resolve(token)));
   failedQueue = [];
 };
 
-// Helper pour assigner un token dans les headers Axios v1.x compatible
 const setAuthHeader = (headers: any, token: string) => {
   if (!headers) return;
-  if (typeof headers.set === 'function') {
-    headers.set('Authorization', `Bearer ${token}`);
-  } else {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+  if (typeof headers.set === 'function') headers.set('Authorization', `Bearer ${token}`);
+  else headers['Authorization'] = `Bearer ${token}`;
 };
 
-// Intercepteur pour les requêtes
+const AUTH_ROUTES_WITHOUT_REFRESH = ['/auth/refresh', '/auth/login', '/auth/register', '/auth/verify-email'];
+
 client.interceptors.request.use(
   async (config) => {
-    console.log('📤 [API Request]', config.method?.toUpperCase(), (config.baseURL || '') + (config.url || ''));
-    const token = await SecureStore.getItemAsync('userToken');
-    if (token) {
-      setAuthHeader(config.headers, token);
-      console.log('🔑 [API Request] Token attached (first 30 chars):', token.substring(0, 30) + '...');
-    } else {
-      console.log('⚠️  [API Request] No token found');
-    }
+    debug('📤 [API]', config.method?.toUpperCase(), (config.baseURL || '') + (config.url || ''));
+    const token = await storage.getItem(STORAGE_KEYS.accessToken);
+    if (token) setAuthHeader(config.headers, token);
     return config;
   },
-  (error) => {
-    console.error('❌ [API Request Error]', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
-// Extrait un message d'erreur lisible par l'utilisateur
-const extractErrorMessage = (data: any, defaultMsg: string) => {
+/** Traduit une réponse d'erreur backend en message compréhensible. */
+export const extractErrorMessage = (data: any, defaultMsg: string): string => {
   if (!data) return defaultMsg;
   let rawMsg = '';
   if (typeof data.message === 'string') rawMsg = data.message;
@@ -92,7 +90,7 @@ const extractErrorMessage = (data: any, defaultMsg: string) => {
   if (lower.includes('invalid credentials') || lower.includes('unauthorized') || lower.includes('bad credentials')) {
     return 'Adresse e-mail ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
   }
-  if (lower.includes('user already exists') || lower.includes('email already exists') || lower.includes('unique constraint')) {
+  if (lower.includes('already exists') || lower.includes('unique constraint')) {
     return 'Un compte existe déjà avec cette adresse e-mail ou ce numéro.';
   }
   if (lower.includes('user not found')) {
@@ -101,125 +99,99 @@ const extractErrorMessage = (data: any, defaultMsg: string) => {
   return rawMsg;
 };
 
-// Intercepteur pour les réponses
+/** Message utilisateur pour n'importe quelle erreur (réseau, timeout, HTTP). */
+export function getReadableError(error: unknown, fallback = 'Une erreur est survenue.'): string {
+  const err = error as ApiError;
+  if (err?.readableMessage) return err.readableMessage;
+  if (err?.response?.data) return extractErrorMessage(err.response.data, fallback);
+  if (err?.code === 'ECONNABORTED') return 'Le serveur met trop de temps à répondre. Veuillez réessayer.';
+  if (err?.message === 'Network Error' || err?.code === 'ERR_NETWORK') {
+    return 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
+  }
+  return err?.message || fallback;
+}
+
 client.interceptors.response.use(
   (response) => {
-    console.log('✅ [API Response]', response.status, response.config.url);
+    debug('✅ [API]', response.status, response.config.url);
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: ApiError) => {
+    const originalRequest = error.config as RetriableConfig | undefined;
 
-    // Attacher un message lisible par l'utilisateur
     if (!error.readableMessage) {
       if (!error.response) {
-        if (error.code === 'ECONNABORTED') {
-          error.readableMessage = 'Le serveur met trop de temps à répondre. Veuillez réessayer.';
-        } else {
-          error.readableMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
-        }
+        error.readableMessage =
+          error.code === 'ECONNABORTED'
+            ? 'Le serveur met trop de temps à répondre. Veuillez réessayer.'
+            : 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
+      } else if (error.response.status === 429) {
+        error.readableMessage = 'Trop de requêtes. Patientez quelques secondes puis réessayez.';
+      } else if (error.response.status >= 500) {
+        error.readableMessage = 'Le serveur rencontre un problème. Veuillez réessayer dans un instant.';
       } else {
-        error.readableMessage = extractErrorMessage(
-          error.response?.data,
-          error.message || 'Une erreur de connexion est survenue.'
-        );
+        error.readableMessage = extractErrorMessage(error.response.data, error.message || 'Une erreur de connexion est survenue.');
       }
     }
 
     if (error.response) {
       const status = error.response.status;
-
-      // Détecter si c'est un 401 transparent qui peut être rafraîchi sans polluer les logs d'erreur
+      const url = originalRequest?.url || '';
       const isRefreshable401 =
-        status === 401 &&
-        originalRequest &&
-        !originalRequest._retry &&
-        originalRequest.url !== '/auth/refresh' &&
-        originalRequest.url !== '/auth/login' &&
-        originalRequest.url !== '/auth/register';
+        status === 401 && !!originalRequest && !originalRequest._retry && !AUTH_ROUTES_WITHOUT_REFRESH.includes(url);
 
       if (isRefreshable401) {
-        console.log('🔄 [API 401] Token expiré, tentative de rafraîchissement en arrière-plan pour:', originalRequest?.url);
-
         if (isRefreshing) {
           return new Promise<string | null>((resolve, reject) => {
             failedQueue.push({ resolve, reject });
-          })
-            .then((token) => {
-              if (token) setAuthHeader(originalRequest.headers, token);
-              return client(originalRequest);
-            })
-            .catch((err) => {
-              return Promise.reject(err);
-            });
+          }).then((token) => {
+            if (token) setAuthHeader(originalRequest.headers, token);
+            return client(originalRequest);
+          });
         }
 
         originalRequest._retry = true;
         isRefreshing = true;
 
         try {
-          const refreshToken = await SecureStore.getItemAsync('refreshToken');
-          if (!refreshToken) {
-            throw new Error('Aucun token de rafraîchissement disponible');
-          }
+          const refreshToken = await storage.getItem(STORAGE_KEYS.refreshToken);
+          if (!refreshToken) throw new Error('Aucun token de rafraîchissement disponible');
 
           const { AuthService } = require('./auth');
           const result = await AuthService.refresh(refreshToken);
+          const newToken: string = result.access_token;
 
-          const newToken = result.access_token;
-          const newRefreshToken = result.refresh_token;
-
-          await SecureStore.setItemAsync('userToken', newToken);
-          if (newRefreshToken) {
-            await SecureStore.setItemAsync('refreshToken', newRefreshToken);
-          }
+          await storage.setItem(STORAGE_KEYS.accessToken, newToken);
+          if (result.refresh_token) await storage.setItem(STORAGE_KEYS.refreshToken, result.refresh_token);
 
           setAuthHeader(client.defaults.headers.common, newToken);
           setAuthHeader(originalRequest.headers, newToken);
-
           processQueue(null, newToken);
-
-          console.log('✅ [API 401] Token rafraîchi avec succès');
+          debug('🔄 [API] Session rafraîchie');
           return client(originalRequest);
-        } catch (err: any) {
+        } catch (err) {
           processQueue(err, null);
-          console.warn('🔐 [API] Échec du rafraîchissement de la session. Déconnexion automatique.');
-
+          debug('🔐 [API] Rafraîchissement impossible : déconnexion.');
           try {
-            await SecureStore.deleteItemAsync('userToken').catch(() => {});
-            await SecureStore.deleteItemAsync('userId').catch(() => {});
-            await SecureStore.deleteItemAsync('refreshToken').catch(() => {});
-
+            await storage.clearSession();
             const { triggerGlobalSignOut } = require('../context/auth');
             await triggerGlobalSignOut();
-
-            const { router } = require('expo-router');
-            if (router) {
-              router.replace('/(auth)/login');
-            }
           } catch (e) {
-            console.error('❌ [API] Erreur lors de la déconnexion d\'urgence:', e);
+            debug('❌ [API] Erreur lors de la déconnexion forcée :', e);
           }
-
           return Promise.reject(err);
         } finally {
           isRefreshing = false;
         }
       }
 
-      // Si ce n'est pas un 401 silencieux (erreur 400, 403, 404, 500, ou 401 sur login/refresh), on log l'erreur normalement
-      console.error('❌ [API Error]', status, originalRequest?.url, error.response.data);
-    } else if (error.code === 'ECONNABORTED') {
-      console.error('⏰ [API Timeout]', error.config?.baseURL + error.config?.url);
-    } else if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.error('🌐 [API Network Error]', error.config?.baseURL + error.config?.url);
+      debug('❌ [API]', status, url, error.response.data);
     } else {
-      console.error('❌ [API Unknown Error]', error.message);
+      debug('🌐 [API] Erreur réseau', error.code, (error.config?.baseURL || '') + (error.config?.url || ''));
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default client;
-

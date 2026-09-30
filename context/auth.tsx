@@ -1,7 +1,10 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import client from '@/services/api';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { storage, STORAGE_KEYS } from '@/services/storage';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
+import { disconnectChatSocket } from '@/services/chatSocket';
+import cacheService from '@/services/cacheService';
+
+declare const __DEV__: boolean;
 
 interface AuthContextType {
   token: string | null;
@@ -15,11 +18,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 let globalSignOut: (() => Promise<void>) | null = null;
 
+/** Déconnexion déclenchée hors React (intercepteur API sur refresh impossible). */
 export const triggerGlobalSignOut = async () => {
-  if (globalSignOut) {
-    await globalSignOut();
-  }
+  if (globalSignOut) await globalSignOut();
 };
+
+const toStr = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (!value) return '';
+  if (typeof value === 'object') {
+    const v = value as any;
+    return v.id ? String(v.id) : v._id ? String(v._id) : '';
+  }
+  return String(value);
+};
+
+function schedulePushRegistration(delayMs: number) {
+  setTimeout(() => {
+    registerForPushNotificationsAsync().catch((err: unknown) => {
+      if (typeof __DEV__ !== 'undefined' && __DEV__) console.log('🔔 [Auth] Push non enregistré :', err);
+    });
+  }, delayMs);
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
@@ -27,91 +47,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Charger le token au démarrage
-    const loadToken = async () => {
+    let mounted = true;
+    (async () => {
       try {
-        const storedToken = await SecureStore.getItemAsync('userToken');
-        const storedId = await SecureStore.getItemAsync('userId');
-        console.log('🔐 [Auth Context] Loading token from storage...');
-        console.log('🔐 [Auth Context] Token found:', storedToken ? 'YES (' + storedToken.substring(0, 20) + '...)' : 'NO');
-        console.log('🔐 [Auth Context] UserId found:', storedId ? 'YES (' + storedId + ')' : 'NO');
-        
+        const [storedToken, storedId] = await Promise.all([
+          storage.getItem(STORAGE_KEYS.accessToken),
+          storage.getItem(STORAGE_KEYS.userId),
+        ]);
+        if (!mounted) return;
         if (storedToken) {
           setToken(storedToken);
           setUserId(storedId);
-          console.log('✅ [Auth Context] Auth state restored');
-          
-          // Enregistrer le push token de l'appareil
-          setTimeout(() => {
-            registerForPushNotificationsAsync().catch((err: any) => {
-              console.error('❌ [Auth Context] Failed to register push notifications:', err);
-            });
-          }, 1000);
-        } else {
-          console.log('⚠️  [Auth Context] No token found - user not authenticated');
+          schedulePushRegistration(1000);
         }
       } catch (e) {
-        console.error('❌ [Auth Context] Failed to load token', e);
+        if (typeof __DEV__ !== 'undefined' && __DEV__) console.log('❌ [Auth] Lecture session impossible', e);
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
+    })();
+    return () => {
+      mounted = false;
     };
-    loadToken();
   }, []);
 
-  const signIn = async (newToken: any, newId: any, newRefreshToken?: any) => {
-    const tokenStr = typeof newToken === 'string' ? newToken : (newToken ? String(newToken) : '');
-    const idStr = typeof newId === 'string' ? newId : (newId ? (typeof newId === 'object' ? (newId.id ? String(newId.id) : String(newId._id || '')) : String(newId)) : '');
+  const signIn = useCallback(async (newToken: unknown, newId: unknown, newRefreshToken?: unknown) => {
+    const tokenStr = toStr(newToken);
+    const idStr = toStr(newId);
+    const refreshStr = toStr(newRefreshToken);
+
+    // Nouvelle session : on repart sans données de l'utilisateur précédent.
+    cacheService.clear();
+    disconnectChatSocket();
 
     if (tokenStr) {
-      await SecureStore.setItemAsync('userToken', tokenStr);
+      await storage.setItem(STORAGE_KEYS.accessToken, tokenStr);
       setToken(tokenStr);
     }
     if (idStr) {
-      await SecureStore.setItemAsync('userId', idStr);
+      await storage.setItem(STORAGE_KEYS.userId, idStr);
       setUserId(idStr);
     }
-    if (newRefreshToken) {
-      const refreshStr = typeof newRefreshToken === 'string' ? newRefreshToken : String(newRefreshToken);
-      if (refreshStr) {
-        await SecureStore.setItemAsync('refreshToken', refreshStr);
-      }
+    if (refreshStr) {
+      await storage.setItem(STORAGE_KEYS.refreshToken, refreshStr);
     }
 
-    // Enregistrer le push token de l'appareil après la connexion
-    setTimeout(() => {
-      registerForPushNotificationsAsync().catch((err: any) => {
-        console.error('❌ [Auth Context] Failed to register push notifications after signin:', err);
-      });
-    }, 500);
-  };
+    schedulePushRegistration(500);
+  }, []);
 
-  const signOut = async () => {
-    await SecureStore.deleteItemAsync('userToken').catch(() => {});
-    await SecureStore.deleteItemAsync('userId').catch(() => {});
-    await SecureStore.deleteItemAsync('refreshToken').catch(() => {});
+  const signOut = useCallback(async () => {
+    disconnectChatSocket();
+    cacheService.clear();
+    await storage.clearSession();
     setToken(null);
     setUserId(null);
     try {
       const { router } = require('expo-router');
       router.replace('/(auth)/login');
     } catch (e) {
-      console.log('⚠️ [Auth Context] Redirection login impossible:', e);
+      if (typeof __DEV__ !== 'undefined' && __DEV__) console.log('⚠️ [Auth] Redirection login impossible :', e);
     }
-  };
+  }, []);
 
   useEffect(() => {
     globalSignOut = signOut;
     return () => {
-      globalSignOut = null;
+      if (globalSignOut === signOut) globalSignOut = null;
     };
   }, [signOut]);
 
-  return (
-    <AuthContext.Provider value={{ token, userId, isLoading, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ token, userId, isLoading, signIn, signOut }),
+    [token, userId, isLoading, signIn, signOut],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {
