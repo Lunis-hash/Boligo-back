@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,6 +22,7 @@ import { AuthService } from '@/services/auth';
 import { useAuth } from '@/context/auth';
 
 export default function VerifyScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email?: string }>();
   const userEmail = email || '';
@@ -136,7 +138,7 @@ export default function VerifyScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Soft Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => router.back()}
@@ -287,7 +289,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 56 : 36,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.sm,
     backgroundColor: '#FAF9F8',

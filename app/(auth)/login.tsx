@@ -14,6 +14,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -68,6 +69,7 @@ function Particle({ size, top, left, right, color, opacity, duration }: any) {
 }
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
@@ -199,7 +201,7 @@ export default function LoginScreen() {
 
       {/* Floating Back Button */}
       <TouchableOpacity
-        style={styles.floatingBackBtn}
+        style={[styles.floatingBackBtn, { top: insets.top + 8 }]}
         onPress={() => router.replace('/')}
         activeOpacity={0.75}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -386,7 +388,6 @@ const styles = StyleSheet.create({
 
   floatingBackBtn: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 52 : 36,
     left: 20,
     zIndex: 100,
     width: 38,

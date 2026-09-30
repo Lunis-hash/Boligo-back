@@ -15,6 +15,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -80,8 +81,9 @@ function ProgressHeader({
   onBack: () => void;
   onSkip?: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.navHeader}>
+    <View style={[styles.navHeader, { paddingTop: insets.top + 12 }]}>
       <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
         <ChevronLeft size={26} color={Colors.text.primary100} />
       </TouchableOpacity>
@@ -1187,7 +1189,6 @@ const styles = StyleSheet.create({
   navHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
   },

@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
@@ -8,6 +9,7 @@ import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 
 export default function EditProfileScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -100,7 +102,7 @@ export default function EditProfileScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.main}>
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
           <ArrowLeft size={22} color={Colors.text.primary100} />
         </TouchableOpacity>
@@ -271,7 +273,7 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: Colors.neutral.white },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.neutral.white },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16 },
   backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.neutral.backgroundLight, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 20, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100 },
   scroll: { paddingHorizontal: 20, paddingBottom: 120, gap: 16 },

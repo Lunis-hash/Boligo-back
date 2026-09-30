@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Dimensions, ActivityIndicator, Alert, Platform, StatusBar } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
@@ -33,6 +34,7 @@ interface Message {
 }
 
 export default function DynamicInterviewScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signOut } = useAuth();
   const { moduleNumber } = useLocalSearchParams<{ moduleNumber: string }>();
@@ -226,7 +228,7 @@ export default function DynamicInterviewScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
       
       {/* ── En-tête d'accompagnement ── */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerTopRow}>
           <View style={styles.moduleBadge}>
             <Text style={styles.moduleBadgeIcon}>{currentModuleInfo.icon}</Text>
@@ -425,7 +427,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Platform.OS === 'ios' ? 56 : 42,
     paddingBottom: Spacing.md,
     backgroundColor: Colors.neutral.white,
     borderBottomWidth: 1,

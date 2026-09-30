@@ -12,6 +12,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -231,6 +232,7 @@ function PillarCard({
 
 // ─── Écran principal ───────────────────────────────────────────────
 export default function InterviewSummaryScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [showIntro, setShowIntro]       = useState(true);
   const [activeIndex, setActiveIndex]   = useState(0);
@@ -370,7 +372,7 @@ export default function InterviewSummaryScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View style={{ opacity: contentFade, transform: [{ translateY: contentSlide }] }}>
@@ -649,7 +651,7 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4 },
 
   // Scroll
-  scrollContent: { paddingTop: Platform.OS === 'ios' ? 60 : 48, paddingBottom: 48 },
+  scrollContent: { paddingBottom: 48 },
 
   // Header
   header: { paddingHorizontal: Spacing.xl, marginBottom: Spacing.lg, alignItems: 'center' },

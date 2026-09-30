@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Platform, Alert , ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,7 @@ import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { userId, signOut } = useAuth();
 
@@ -166,7 +168,7 @@ export default function ProfileScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* ═══ HEADER ═══ */}
-        <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <Animated.View style={[styles.header, { paddingTop: insets.top + 16, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <View style={styles.avatarWrapper}>
             <LinearGradient colors={[Colors.primary.red, Colors.primary.orange]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.abstractAvatar}>
               <User size={60} color={Colors.neutral.white} opacity={0.9} />
@@ -471,7 +473,7 @@ const styles = StyleSheet.create({
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.neutral.white },
 
   // Header
-  header: { alignItems: 'center', paddingTop: 60, paddingBottom: 20 },
+  header: { alignItems: 'center', paddingBottom: 20 },
   avatarWrapper: { width: 150, height: 150, justifyContent: 'center', alignItems: 'center', position: 'relative' },
   abstractAvatar: { width: 120, height: 120, borderRadius: 60, justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: Colors.neutral.white, elevation: 5, shadowColor: Colors.primary.red, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10 },
   orbitBorder: { position: 'absolute', top: 0, left: 0 },

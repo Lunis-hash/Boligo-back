@@ -14,6 +14,7 @@ import {
   Alert,
   Linking,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -196,6 +197,7 @@ function PhaseBadge({ phase }: { phase: Phase }) {
 
 // ─── Vue : Liste des conversations ───────────────────────────────
 function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match) => void }) {
+  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<'all' | 'harmonie' | 'chat'>('all');
 
   const filtered = matches.filter(m => {
@@ -209,7 +211,7 @@ function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match
       <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
 
       {/* Header */}
-      <View style={styles.listHeader}>
+      <View style={[styles.listHeader, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.listTitle}>Messages</Text>
       </View>
 
@@ -645,7 +647,7 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
         <TouchableOpacity style={styles.micBtn} activeOpacity={0.7}>
           <Mic size={18} color={Colors.primary.red} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={send} activeOpacity={0.8} style={[styles.sendBtn, !text.trim() && { opacity: 0.4 }]} disabled={!text.trim()}>
+        <TouchableOpacity onPress={send} activeOpacity={0.8} style={[styles.sendBtn, !text.trim() && { opacity: 0.4 }]} disabled={!text.trim()} testID="chat-send">
           <LinearGradient colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.sendBtnGrad}>
             <Send size={16} color={Colors.neutral.white} />
           </LinearGradient>
@@ -825,6 +827,7 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
 
 // ─── Écran principal ──────────────────────────────────────────────
 export default function MessagesScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { userId } = useAuth();
   const [selected, setSelected] = useState<Match | null>(null);
@@ -914,7 +917,7 @@ export default function MessagesScreen() {
         <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
         
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <Text style={styles.headerTitle}>Messages</Text>
         </View>
 
@@ -995,7 +998,7 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   // ── LIST ──
   listContainer: { flex: 1, backgroundColor: Colors.neutral.white },
-  listHeader: { paddingTop: Platform.OS === 'ios' ? 58 : 48, paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  listHeader: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   listTitle: { fontSize: 28, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100, letterSpacing: -0.5 },
 
   tabsScroll: { flexGrow: 0 },
@@ -1183,7 +1186,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.white,
   },
   header: {
-    paddingTop: 60,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
   },

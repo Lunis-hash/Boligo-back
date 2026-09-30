@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
@@ -37,6 +38,7 @@ type CallState =
   | 'ended';
 
 export default function VideoCallScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { journeyId = '', name = 'Utilisateur' } = useLocalSearchParams<{
     journeyId: string;
@@ -303,7 +305,7 @@ export default function VideoCallScreen() {
         </View>
       )}
 
-      <View style={styles.timerBar} pointerEvents="box-none">
+      <View style={[styles.timerBar, { top: insets.top + 12 }]} pointerEvents="box-none">
         <View style={styles.timerPill}>
           <Clock size={13} color="#fff" />
           <Text style={styles.timerPillText}>{fmt(timeLeft)}</Text>
@@ -311,7 +313,7 @@ export default function VideoCallScreen() {
       </View>
 
       {callState === 'warning' && (
-        <View style={styles.warningBar} pointerEvents="none">
+        <View style={[styles.warningBar, { top: insets.top + 56 }]} pointerEvents="none">
           <AlertTriangle size={16} color={Colors.primary.orange} />
           <Text style={styles.warningBarText}>
             Plus que {timeLeft}s — concluez votre échange.
@@ -385,7 +387,6 @@ const styles = StyleSheet.create({
   },
   timerBar: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 56 : 40,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -406,7 +407,6 @@ const styles = StyleSheet.create({
   },
   warningBar: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 100 : 84,
     left: 16,
     right: 16,
     flexDirection: 'row',

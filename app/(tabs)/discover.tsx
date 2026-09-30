@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect, Component, ReactNode, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -423,6 +424,7 @@ export default function DiscoverScreenWrapper() {
 }
 
 function DiscoverScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { credits, spendCredit, refreshCredits } = useAppContext();
 
@@ -788,7 +790,7 @@ function DiscoverScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <View>
             <Text style={styles.headerTitle}>Découverte</Text>
             <Text style={styles.headerSub}>Profils compatibles pour vous</Text>
@@ -821,7 +823,7 @@ function DiscoverScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
 
       {/* ── Header ───────────────────────────────────────────────── */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View>
           <Text style={styles.headerTitle}>Découverte</Text>
           <Text style={styles.headerSub}>
@@ -1267,7 +1269,6 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 58 : 48,
     paddingHorizontal: Spacing.xl, paddingBottom: Spacing.md,
     backgroundColor: Colors.neutral.white,
     borderBottomWidth: 1, borderBottomColor: Colors.neutral.border,
