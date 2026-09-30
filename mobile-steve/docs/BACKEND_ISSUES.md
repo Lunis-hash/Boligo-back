@@ -16,8 +16,10 @@ Les corrections proposées sont à valider séparément par l'équipe backend.
 | **P0** | `src/admin/admin.service.ts` `getNotificationHistory` | `orderBy: { createdAt }` / `select: { createdAt }` : le modèle `Notification` n'a que `sentAt`. | `nest build` (2 erreurs restantes après correction du `return`) | Remplacer `createdAt` par `sentAt`. |
 
 > Pour la recette locale, ces trois corrections ont été appliquées **uniquement
-> dans la copie de travail locale non commitée** du conteneur de test, afin de
-> pouvoir démarrer le backend. Elles ne sont ni commitées ni poussées.
+> dans la copie de travail locale** du conteneur de test, afin de pouvoir démarrer
+> le backend. Elles ne sont pas commitées dans `Boligo-back` ; le diff est fourni
+> à titre de proposition dans `docs/backend-admin-service-build-fix.patch`
+> (`git apply docs/backend-admin-service-build-fix.patch` depuis `Boligo-back`).
 
 ## 1. Sécurité
 
