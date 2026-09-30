@@ -1,9 +1,20 @@
-import React from 'react';
-import { Stack } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Stack, useRouter } from 'expo-router';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { StripeProvider } from '@stripe/stripe-react-native';
+import { StripeProvider } from '@/services/stripe';
+import { addNotificationResponseListener, configureNotificationHandler } from '@/services/notifications';
+
+/** Ouvre l'écran pertinent quand l'utilisateur touche une notification. */
+function NotificationRouter() {
+  const router = useRouter();
+  useEffect(() => {
+    configureNotificationHandler();
+    return addNotificationResponseListener((route) => router.push(route as any));
+  }, [router]);
+  return null;
+}
 
 const publishableKey = 
   process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 
@@ -15,6 +26,7 @@ export default function RootLayout() {
       <StripeProvider publishableKey={publishableKey}>
         <AuthProvider>
           <AppProvider>
+          <NotificationRouter />
           <Stack
             screenOptions={{
               headerShown: false,
@@ -25,7 +37,6 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="interview" options={{ headerShown: false }} />
             <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="sondeur" options={{ headerShown: false }} />
             <Stack.Screen name="video-call" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
