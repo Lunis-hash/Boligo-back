@@ -172,11 +172,22 @@ export default function ValueSlidesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(0);
   const [cguAccepted, setCguAccepted] = useState(false);
   const [showCguModal, setShowCguModal] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
+
+  // L'index courant est dérivé de la position de défilement : onMomentumScrollEnd
+  // n'existe pas sur le web et n'est pas déclenché par scrollToIndex sur toutes les
+  // plateformes, ce qui bloquait le bouton « Suivant » sur le premier écran.
+  const syncIndexFromOffset = (offsetX: number) => {
+    const idx = Math.max(0, Math.min(SLIDES.length - 1, Math.round(offsetX / SCREEN_WIDTH)));
+    if (idx !== currentIndexRef.current) {
+      currentIndexRef.current = idx;
+      setCurrentIndex(idx);
+    }
+  };
 
   // ─── ANIMATIONS FLUIDES CONTINUES ─────────────────────────────────
   const breatheAnim = useRef(new Animated.Value(1)).current;
@@ -327,11 +338,13 @@ export default function ValueSlidesScreen() {
   }, []);
 
   const handleNext = () => {
-    if (currentIndex < SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: currentIndex + 1,
-        animated: true,
-      });
+    const index = currentIndexRef.current;
+    if (index < SLIDES.length - 1) {
+      const nextIndex = index + 1;
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      // Sur le web, aucun événement de fin de défilement n'est garanti : on
+      // synchronise l'index tout de suite pour que le bouton suive.
+      syncIndexFromOffset(nextIndex * SCREEN_WIDTH);
     } else {
       if (cguAccepted) {
         router.replace('/onboarding/profile-details');
@@ -1214,10 +1227,9 @@ export default function ValueSlidesScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
-        onMomentumScrollEnd={(e) => {
-          const newIndex = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-          setCurrentIndex(newIndex);
-        }}
+        getItemLayout={(_, index) => ({ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index })}
+        onScroll={(e) => syncIndexFromOffset(e.nativeEvent.contentOffset.x)}
+        onMomentumScrollEnd={(e) => syncIndexFromOffset(e.nativeEvent.contentOffset.x)}
         scrollEventThrottle={16}
       />
 
