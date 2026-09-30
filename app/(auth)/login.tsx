@@ -19,7 +19,8 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { AuthService } from '@/services/auth';
-import { InterviewService } from '@/services/interview';
+import { getReadableError } from '@/services/api';
+import { InterviewService, getResumeModule } from '@/services/interview';
 import { useAuth } from '@/context/auth';
 import { Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
 
@@ -73,7 +74,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'facebook' | null>(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [focusedInput, setFocusedInput] = useState<'email' | 'password' | null>(null);
 
@@ -161,56 +161,21 @@ export default function LoginScreen() {
         if (status.isCompleted) {
           router.replace('/(tabs)/discover');
         } else {
-          const mod = typeof status.currentModule === 'number' ? status.currentModule : 0;
-          router.replace(`/interview/${mod}`);
+          router.replace(`/interview/${getResumeModule(status)}` as any);
         }
       } catch {
-        router.replace('/interview/0');
+        // L'écran d'accueil reprend la main et proposera de réessayer.
+        router.replace('/');
       }
     } catch (error: any) {
-      const serverMessage = error?.response?.data?.message;
-      let readableMessage = Array.isArray(serverMessage) ? serverMessage.join('\n') : (serverMessage || error?.readableMessage);
-      if (!readableMessage || readableMessage.toLowerCase().includes('invalid credentials')) {
-        readableMessage = 'Adresse e-mail ou mot de passe incorrect. Veuillez vérifier vos identifiants.';
-      }
+      const status = error?.response?.status;
+      const readableMessage =
+        status === 401
+          ? 'Adresse e-mail ou mot de passe incorrect. Veuillez vérifier vos identifiants.'
+          : getReadableError(error, 'Connexion impossible pour le moment.');
       Alert.alert('Connexion impossible', readableMessage);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    setSocialLoading(provider);
-    try {
-      const socialId = `user_${provider}_official`;
-      const mockProfile = {
-        email: `${provider}.user@boligo.com`,
-        firstName: provider === 'google' ? 'Google' : 'Facebook',
-        lastName: 'Membre',
-        id: socialId,
-      };
-
-      const result = await AuthService.socialLogin(provider, `token_${socialId}`, mockProfile);
-      await signIn(result.access_token, result.userId, result.refresh_token);
-
-      try {
-        const status = await InterviewService.getStatus();
-        if (status.isCompleted) {
-          router.replace('/(tabs)/discover');
-        } else {
-          const mod = typeof status.currentModule === 'number' ? status.currentModule : 0;
-          router.replace(`/interview/${mod}`);
-        }
-      } catch {
-        router.replace('/interview/0');
-      }
-    } catch (error: any) {
-      console.error(error);
-      const message = error?.readableMessage || error?.response?.data?.message;
-      const readableMessage = Array.isArray(message) ? message.join('\n') : (message || `Connexion via ${provider} échouée.`);
-      Alert.alert('Erreur', readableMessage);
-    } finally {
-      setSocialLoading(null);
     }
   };
 
@@ -346,7 +311,7 @@ export default function LoginScreen() {
 
             {/* Mot de passe oublié */}
             <TouchableOpacity
-              onPress={() => router.push('/(auth)/forgot-password' as any)}
+              onPress={() => router.push({ pathname: '/(auth)/forgot-password', params: email.trim() ? { email: email.trim() } : {} })}
               style={styles.forgotPasswordContainer}
               activeOpacity={0.7}
             >
@@ -358,7 +323,7 @@ export default function LoginScreen() {
               onPress={handleLogin}
               activeOpacity={0.85}
               style={styles.btnWrapper}
-              disabled={isLoading || socialLoading !== null}
+              disabled={isLoading}
             >
               <LinearGradient
                 colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
@@ -372,60 +337,6 @@ export default function LoginScreen() {
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
-
-            {/* Séparateur pour Auth Sociale */}
-            <View style={styles.separator}>
-              <View style={styles.sepLine} />
-              <Text style={styles.sepText}>ou continuer avec</Text>
-              <View style={styles.sepLine} />
-            </View>
-
-            {/* Boutons Sociaux */}
-            <View style={styles.socialButtonsContainer}>
-              <TouchableOpacity 
-                onPress={() => handleSocialLogin('google')} 
-                style={styles.socialButton}
-                activeOpacity={0.8}
-                disabled={isLoading || socialLoading !== null}
-              >
-                {socialLoading === 'google' ? (
-                  <>
-                    <ActivityIndicator color={Colors.text.primary70} />
-                    <Text style={styles.socialButtonText}>Connexion...</Text>
-                  </>
-                ) : (
-                  <>
-                    <Image 
-                      source={{ uri: 'https://cdn-icons-png.flaticon.com/512/300/300221.png' }} 
-                      style={styles.socialIcon} 
-                    />
-                    <Text style={styles.socialButtonText}>Google</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                onPress={() => handleSocialLogin('facebook')} 
-                style={styles.socialButton}
-                activeOpacity={0.8}
-                disabled={isLoading || socialLoading !== null}
-              >
-                {socialLoading === 'facebook' ? (
-                  <>
-                    <ActivityIndicator color={Colors.text.primary70} />
-                    <Text style={styles.socialButtonText}>Connexion...</Text>
-                  </>
-                ) : (
-                  <>
-                    <Image 
-                      source={{ uri: 'https://cdn-icons-png.flaticon.com/512/124/124010.png' }} 
-                      style={styles.socialIcon} 
-                    />
-                    <Text style={styles.socialButtonText}>Facebook</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
 
             {/* Séparateur */}
             <View style={styles.separator}>
@@ -640,34 +551,6 @@ const styles = StyleSheet.create({
     color: Colors.text.primary40,
   },
 
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  socialButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.neutral.white,
-    borderWidth: 1,
-    borderColor: Colors.neutral.border,
-    borderRadius: BorderRadius.lg,
-    paddingVertical: 12,
-    gap: Spacing.sm,
-  },
-  socialIcon: {
-    width: 20,
-    height: 20,
-    resizeMode: 'contain',
-  },
-  socialButtonText: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: 14,
-    color: Colors.text.primary70,
-  },
 
   // Inscription
   signupRow: {

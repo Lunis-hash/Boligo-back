@@ -11,6 +11,8 @@ export interface RegisterData {
   telephone?: string;
   job?: string;
   profession?: string;
+  /** Périmètre de rencontre choisi à l'onboarding (local | national | international). */
+  meetingScope?: 'local' | 'national' | 'international';
 }
 
 export const AuthService = {
@@ -25,17 +27,11 @@ export const AuthService = {
   },
 
   refresh: async (refreshToken: string) => {
-    // Note: We use axios directly or a separate client without interceptors 
-    // here if we want to avoid interceptor loops, but since interceptor checks 
-    // for config.url !== '/auth/refresh', it's safe to use client.
+    // L'intercepteur ignore volontairement /auth/refresh : pas de boucle.
     const response = await client.post('/auth/refresh', { refreshToken });
     return response.data;
   },
 
-  socialLogin: async (provider: 'google' | 'facebook', token: string, profile?: { email: string; firstName: string; lastName?: string; id?: string }) => {
-    const response = await client.post('/auth/social-login', { provider, token, profile });
-    return response.data;
-  },
 
   forgotPassword: async (email: string) => {
     const response = await client.post('/auth/forgot-password', { email });
