@@ -53,13 +53,17 @@ async function createPartner(gender) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Diagnostic partagé avec le gestionnaire d'erreur final.
+const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
+
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'fr-FR' });
   const page = await ctx.newPage();
-  const pageErrors = [];
-  const dialogs = [];
+  const { pageErrors, dialogs } = diag;
+  diag.page = page;
   page.on('pageerror', (e) => pageErrors.push(e.message));
+  page.on('console', (m) => { if (m.type() === 'error') diag.consoleErrors.push(m.text().slice(0, 300)); });
   page.on('dialog', async (d) => { dialogs.push(d.message()); await d.accept(); });
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
   const text = (t, opts = {}) => page.getByText(t, { exact: false, ...opts }).first();
@@ -374,4 +378,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   fs.writeFileSync(path.resolve(__dirname, '..', 'docs', 'E2E_RESULTATS.md'), md + '\n');
   await browser.close();
   process.exit(0);
-})().catch((e) => { console.error('E2E error', e); process.exit(1); });
+})().catch(async (e) => {
+  console.error('E2E error', e);
+  console.error('URL courante :', diag.page ? diag.page.url() : '(pas de page)');
+  console.error('Dialogues :', JSON.stringify(diag.dialogs.slice(-5)));
+  console.error('Erreurs JS :', JSON.stringify(diag.pageErrors.slice(-5)));
+  console.error('Console (error) :', JSON.stringify(diag.consoleErrors.slice(-5)));
+  if (diag.page) { try { await diag.page.screenshot({ path: path.join(SHOTS, 'zz-echec.png') }); } catch {} }
+  process.exit(1);
+});
