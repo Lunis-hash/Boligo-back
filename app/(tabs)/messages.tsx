@@ -29,8 +29,11 @@ import {
   connectChatSocket,
   joinJourneyRoom,
   leaveJourneyRoom,
+  markJourneyAsRead,
+  SOCKET_EVENTS,
   type ChatSocketMessage,
 } from '@/services/chatSocket';
+import { getReadableError } from '@/services/api';
 
 /** Débloque l’appel vidéo en phase chat pour les tests (à désactiver en prod). */
 const VIDEO_TEST_UNLOCK = __DEV__;
@@ -299,177 +302,6 @@ function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match
   );
 }
 
-// ─── Vue : Phase Harmonie ─────────────────────────────────────────
-function HarmonieView({ match, onBack }: { match: Match; onBack: () => void }) {
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [submitted, setSubmitted] = useState<Record<number, boolean>>({});
-
-  return (
-    <KeyboardAvoidingView
-      style={styles.detailContainer}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-    >
-      {/* Header */}
-      <View style={styles.detHeader}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
-          <ChevronLeft size={24} color={Colors.text.primary100} />
-        </TouchableOpacity>
-        <Avatar letter={match.avatarLetter} gradColors={PHASE_CONFIG.harmonie.gradColors} size={44} />
-        <View style={styles.detInfo}>
-          <Text style={styles.detName}>{match.name}</Text>
-          <Text style={[styles.detSub, { color: Colors.primary.purple }]}>
-            Phase Harmonie · Jour {match.phaseDay} / {match.totalDays}
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.moreBtn} activeOpacity={0.7}>
-          <MoreVertical size={20} color={Colors.text.primary40} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.harmonieScroll}>
-
-        {/* Progression */}
-        <View style={styles.progressCard}>
-          <View style={styles.progressTop}>
-            <Text style={styles.progressTitle}>Progression Harmonie</Text>
-            <Text style={styles.progressTime}>⏱ {match.timeRemaining} restants</Text>
-          </View>
-          <View style={styles.progressDots}>
-            {[1, 2, 3].map(day => (
-              <LinearGradient
-                key={day}
-                colors={day < match.phaseDay + 1
-                  ? [Colors.primary.red, Colors.primary.purple]
-                  : day === match.phaseDay + 1
-                    ? [Colors.primary.purple + '50', Colors.primary.red + '50']
-                    : ['#E0E0E0', '#E0E0E0']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.progressDot}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Score + thème */}
-        <View style={styles.scoreRow}>
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreNum}>{match.harmonyScore}%</Text>
-            <Text style={styles.scoreLbl}>Score d'harmonie</Text>
-          </View>
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreNum}>J{match.phaseDay}</Text>
-            <Text style={styles.scoreLbl}>{match.harmonieQuestions?.[match.phaseDay - 1]?.theme}</Text>
-          </View>
-        </View>
-
-        {/* Pourquoi ce match */}
-        <View style={styles.whyCard}>
-          <LinearGradient colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.whyIcon}>
-            <Sparkles size={14} color={Colors.neutral.white} />
-          </LinearGradient>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.whyTitle}>Pourquoi ce match ?</Text>
-            <Text style={styles.whyText}>{match.whyMatch}</Text>
-          </View>
-        </View>
-
-        {/* Questions */}
-        {match.harmonieQuestions?.map(q => {
-          if (q.status === 'answered') {
-            return (
-              <View key={q.day} style={styles.revealedCard}>
-                <View style={styles.revealedDayBadge}>
-                  <Text style={styles.revealedDayText}>Jour {q.day} · {q.theme}</Text>
-                </View>
-
-                {/* Réponse de l'autre */}
-                <View style={styles.revealedBlock}>
-                  <View style={styles.revealedHeader}>
-                    <Avatar letter={match.avatarLetter} gradColors={PHASE_CONFIG.harmonie.gradColors} size={28} />
-                    <View>
-                      <Text style={styles.revealedName}>Réponse de {match.name}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.revealedText}>"{q.otherAnswer}"</Text>
-                </View>
-
-                <View style={styles.revealedDivider} />
-
-                {/* Ma réponse */}
-                <Text style={styles.myRevLabel}>Ta réponse</Text>
-                <Text style={styles.myRevText}>"{q.myAnswer}"</Text>
-              </View>
-            );
-          }
-
-          if (q.status === 'pending') {
-            const ans = answers[q.day] || '';
-            const done = submitted[q.day];
-            return (
-              <View key={q.day} style={styles.questionCard}>
-                <View style={styles.qDayBadge}>
-                  <View style={styles.qDayDot} />
-                  <Text style={styles.qDayText}>Jour {q.day} · {q.theme}</Text>
-                </View>
-                <Text style={styles.qText}>{q.question}</Text>
-                <View style={styles.qHint}>
-                  <View style={styles.qHintDot} />
-                  <Text style={styles.qHintText}>{match.name} n'a pas encore répondu — vos réponses se révèleront ensemble.</Text>
-                </View>
-                {!done ? (
-                  <>
-                    <TextInput
-                      style={styles.answerInput}
-                      placeholder={`Exprime-toi librement, ${match.name} ne verra ta réponse qu'après avoir écrit la sienne…`}
-                      placeholderTextColor={Colors.text.primary40}
-                      value={ans}
-                      onChangeText={v => setAnswers(prev => ({ ...prev, [q.day]: v }))}
-                      multiline
-                      maxLength={300}
-                    />
-                    <View style={styles.qFooter}>
-                      <Text style={styles.charCount}>{ans.length} / 300</Text>
-                      <TouchableOpacity
-                        onPress={() => ans.trim().length > 10 && setSubmitted(prev => ({ ...prev, [q.day]: true }))}
-                        activeOpacity={0.8}
-                      >
-                        <LinearGradient colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.sendAnswerBtn, ans.trim().length < 10 && { opacity: 0.4 }]}>
-                          <Text style={styles.sendAnswerText}>Envoyer ma réponse</Text>
-                        </LinearGradient>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                ) : (
-                  <View style={styles.waitingCard}>
-                    <Text style={styles.waitingIcon}>🕐</Text>
-                    <Text style={styles.waitingText}>
-                      <Text style={{ color: Colors.primary.purple, fontFamily: Typography.fontFamily.bold }}>Réponse envoyée !</Text>
-                      {' '}En attente de la réponse de {match.name}…
-                    </Text>
-                  </View>
-                )}
-              </View>
-            );
-          }
-
-          // locked
-          return (
-            <View key={q.day} style={styles.lockedCard}>
-              <Lock size={16} color={Colors.text.primary40} />
-              <Text style={styles.lockedText}>
-                <Text style={{ fontFamily: Typography.fontFamily.bold }}>Jour {q.day}</Text> se débloque après vos réponses du Jour {q.day - 1}.
-              </Text>
-            </View>
-          );
-        })}
-
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
-}
-
 // ─── Vue : Chat libre ─────────────────────────────────────────────
 function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
   const router = useRouter();
@@ -530,6 +362,8 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
           const incoming = mapApiMessageToUi(raw, userId);
           if (incoming.senderId !== 'me') {
             soundService.playMessageReceived();
+            // La conversation est ouverte : on accuse réception immédiatement.
+            if (match.journeyId) markJourneyAsRead(match.journeyId);
           }
           setMessages((prev) => {
             const withoutPending = prev.filter(
@@ -542,13 +376,14 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
           setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
         };
 
-        socket.on('messageHistory', onHistory);
-        socket.on('newMessage', onNew);
+        socket.on(SOCKET_EVENTS.messageHistory, onHistory);
+        socket.on(SOCKET_EVENTS.newMessage, onNew);
         await fetchMessages();
+        markJourneyAsRead(match.journeyId!);
 
         return () => {
-          socket.off('messageHistory', onHistory);
-          socket.off('newMessage', onNew);
+          socket.off(SOCKET_EVENTS.messageHistory, onHistory);
+          socket.off(SOCKET_EVENTS.newMessage, onNew);
         };
       } catch (e) {
         console.error('❌ [Chat WS]', e);
@@ -830,35 +665,44 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
     if (!journeyId) return;
     client.get(`/journey/${journeyId}/contact-exchange`)
       .then(res => {
-        const data = res.data || res;
-        if (data.myConsent) {
-          if (data.partnerConsent) {
-            setExchangeState('revealed');
-            setPartnerInfo(data.partner);
-          } else {
-            setExchangeState('accepted');
-          }
+        const data = res.data || {};
+        if (data.myConsent && data.partnerConsent && data.bothAccepted) {
+          setExchangeState('revealed');
+          setPartnerInfo(data.partner ?? null);
+        } else if (data.myConsent) {
+          setExchangeState('accepted');
         }
       })
-      .catch(e => console.error('❌ Contact exchange status:', e));
+      .catch(() => {
+        /* statut indisponible : on reste sur l'invitation à partager */
+      });
   }, [journeyId]);
 
+  const [accepting, setAccepting] = useState(false);
+
   const handleAccept = async () => {
-    if (!journeyId) return;
+    if (!journeyId || accepting) return;
+    setAccepting(true);
     try {
       const res = await client.post(`/journey/${journeyId}/exchange-contact`, {
         sharePhone: true,
         shareEmail: true,
       });
-      const data = res.data || res;
-      // TEST : simuler que le partenaire a aussi accepté
-      // En production: if (data.bothAccepted)
-      setExchangeState('revealed');
-      const statusRes = await client.get(`/journey/${journeyId}/contact-exchange`);
-      setPartnerInfo((statusRes.data || statusRes).partner);
-      onExchanged();
+      const data = res.data || {};
+      // Les coordonnées ne sont révélées qu'après le consentement des deux
+      // membres : jamais avant (confidentialité).
+      if (data.bothAccepted) {
+        const statusRes = await client.get(`/journey/${journeyId}/contact-exchange`);
+        setPartnerInfo((statusRes.data || {}).partner ?? null);
+        setExchangeState('revealed');
+        onExchanged();
+      } else {
+        setExchangeState('accepted');
+      }
     } catch (e) {
-      console.error('❌ Contact exchange failed:', e);
+      Alert.alert('Échange impossible', getReadableError(e));
+    } finally {
+      setAccepting(false);
     }
   };
 
@@ -878,10 +722,10 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
           <Text style={styles.exchangeSub}>
             Votre appel vidéo s'est bien terminé. {partnerName} souhaite peut-être vous recontacter.
           </Text>
-          <TouchableOpacity onPress={handleAccept} activeOpacity={0.85} style={styles.exchangeBtnWrap}>
+          <TouchableOpacity onPress={handleAccept} disabled={accepting} activeOpacity={0.85} style={[styles.exchangeBtnWrap, accepting && { opacity: 0.6 }]} testID="contact-exchange-accept">
             <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.exchangeBtn}>
               <UserCheck size={18} color="#fff" />
-              <Text style={styles.exchangeBtnText}>Oui, partager mes contacts</Text>
+              <Text style={styles.exchangeBtnText}>{accepting ? 'Enregistrement…' : 'Oui, partager mes contacts'}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </LinearGradient>
@@ -1129,13 +973,22 @@ export default function MessagesScreen() {
   }
 
   if (selected) {
-    if (selected.phase === 'harmonie') {
-      return <HarmonieView match={selected} onBack={() => setSelected(null)} />;
-    }
     return <ChatView match={selected} onBack={() => setSelected(null)} />;
   }
 
-  return <ListView matches={realMatches} onSelect={setSelected} />;
+  return (
+    <ListView
+      matches={realMatches}
+      onSelect={(m) => {
+        // La phase Harmonie (Sondeur) se joue dans l'onglet « Mes matchs ».
+        if (m.phase === 'harmonie') {
+          router.push('/(tabs)');
+          return;
+        }
+        setSelected(m);
+      }}
+    />
+  );
 }
 
 // ─── Styles ────────────────────────────────────────────────────────
