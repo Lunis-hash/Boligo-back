@@ -1,0 +1,29 @@
+{
+  "cli": {
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51Tsn1y1n8AkKHpjmTxILfV3IUz9gohe14j4J5lDTLxie03bWa5mEY3dLJ2daF7GlifDjQwvKogZYhCIMYk3Y31FF00cS5Fv7ve",
+        "EXPO_PUBLIC_API_URL": "https://boligo-back.onrender.com/api"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51Tsn1y1n8AkKHpjmTxILfV3IUz9gohe14j4J5lDTLxie03bWa5mEY3dLJ2daF7GlifDjQwvKogZYhCIMYk3Y31FF00cS5Fv7ve",
+        "EXPO_PUBLIC_API_URL": "https://boligo-back.onrender.com/api"
+      }
+    }
+  }
+}
