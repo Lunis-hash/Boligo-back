@@ -24,6 +24,27 @@ export interface InterviewStatus {
   completedModules?: number[];
 }
 
+export const LAST_MODULE = 10;
+
+/**
+ * Module à afficher pour reprendre l'entretien.
+ * Le backend calcule `currentModule` = dernier module complété + 1 ; on
+ * préfère le premier module jamais enregistré (un module 0 pré-rempli à
+ * l'inscription ne doit pas faire sauter les autres questions du module 0).
+ */
+export function getResumeModule(status: Partial<InterviewStatus> | null | undefined): number {
+  if (!status || status.isCompleted) return LAST_MODULE + 1;
+  const current = typeof status.currentModule === 'number' ? status.currentModule : 0;
+  if (!Array.isArray(status.completedModules)) {
+    return Math.min(Math.max(current, 0), LAST_MODULE);
+  }
+  const completed = new Set(status.completedModules);
+  for (let m = 0; m <= LAST_MODULE; m++) {
+    if (!completed.has(m)) return m;
+  }
+  return Math.min(Math.max(current, 0), LAST_MODULE);
+}
+
 export const InterviewService = {
   getStatus: async () => {
     const response = await client.get<InterviewStatus>('/interview/status');
@@ -77,8 +98,9 @@ export const InterviewService = {
   },
 
   completeInterview: async () => {
-    // L'interview se complète automatiquement quand tous les modules sont sauvegardés
-    // On utilise save-module avec le dernier module (Module 10) pour trigger la complétion
+    // Filet de sécurité : si le module 10 n'a pas été enregistré (ancienne
+    // version de l'app), un enregistrement vide déclenche la complétion côté
+    // backend. Les réponses déjà présentes sont conservées (fusion serveur).
     const moduleNames = [
       'Filtres non-négociables',
       'Identité & Culture',

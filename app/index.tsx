@@ -11,13 +11,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { getReadableError } from '@/services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { useAuth } from '@/context/auth';
-import { InterviewService } from '@/services/interview';
-import client from '@/services/api';
+import { InterviewService, getResumeModule } from '@/services/interview';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -43,7 +43,9 @@ export default function WelcomeScreen() {
   const topPadding = Math.max(insets.top + 28, 52);
   const bottomPadding = Math.max(insets.bottom + 28, 44);
 
-  const { token, isLoading: authLoading } = useAuth();
+  const { token, isLoading: authLoading, signOut } = useAuth();
+  const [resumeError, setResumeError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Animation de fond
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -52,18 +54,21 @@ export default function WelcomeScreen() {
     let isMounted = true;
     const checkUserNavigation = async () => {
       if (!authLoading && token) {
+        setResumeError(null);
         try {
           const status = await InterviewService.getStatus();
           if (isMounted) {
             if (status.isCompleted) {
               router.replace('/(tabs)/discover');
             } else {
-              const moduleToLoad = typeof status.currentModule === 'number' ? status.currentModule : 0;
-              router.replace(`/interview/${moduleToLoad}` as any);
+              router.replace(`/interview/${getResumeModule(status)}` as any);
             }
           }
         } catch (e) {
-          if (isMounted) router.replace('/interview/0');
+          // Session invalide → l'intercepteur API a déjà déconnecté l'utilisateur.
+          // Autre erreur (réseau, serveur) → on propose de réessayer plutôt que
+          // d'envoyer l'utilisateur au début de l'entretien.
+          if (isMounted) setResumeError(getReadableError(e, 'Impossible de charger votre session.'));
         }
       }
     };
@@ -79,7 +84,8 @@ export default function WelcomeScreen() {
     return () => {
       isMounted = false;
     };
-  }, [token, authLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, authLoading, retryCount]);
 
   // Si l'utilisateur est déjà connecté ou en cours d'authentification, afficher un écran de transition fluide
   if (authLoading || token) {
@@ -91,7 +97,21 @@ export default function WelcomeScreen() {
         </View>
         <Text style={[styles.splashLogo, { marginTop: 16, marginBottom: 6 }]}>BOLIGO</Text>
         <Text style={[styles.splashSub, { marginBottom: 32 }]}>Ton BOLIGO, c'est la bonne personne</Text>
-        <ActivityIndicator size="small" color={COLORS.red} />
+        {resumeError ? (
+          <View style={{ alignItems: 'center', gap: 14, paddingHorizontal: 12 }}>
+            <Text style={styles.resumeErrorText}>{resumeError}</Text>
+            <TouchableOpacity onPress={() => setRetryCount((c) => c + 1)} activeOpacity={0.85} style={styles.ctaWrapper} testID="resume-retry">
+              <LinearGradient colors={[COLORS.red, COLORS.orange]} style={styles.ctaButton}>
+                <Text style={styles.ctaText}>Réessayer</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => signOut()} activeOpacity={0.7}>
+              <Text style={styles.loginLink}>Se déconnecter</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <ActivityIndicator size="small" color={COLORS.red} />
+        )}
       </View>
     );
   }
@@ -353,5 +373,12 @@ const styles = StyleSheet.create({
     color: COLORS.red,
     textDecorationLine: 'underline',
     marginTop: 12,
+  },
+  resumeErrorText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 13,
+    color: COLORS.ink2,
+    textAlign: 'center',
+    lineHeight: 19,
   },
 });

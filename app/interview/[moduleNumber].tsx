@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Dimensi
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { InterviewService, Question } from '@/services/interview';
+import { InterviewService, Question, LAST_MODULE } from '@/services/interview';
+import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Brain, ShieldCheck, CheckCircle2, LogOut, ArrowRight } from 'lucide-react-native';
@@ -55,6 +56,14 @@ export default function DynamicInterviewScreen() {
     loadQuestions();
   }, [moduleNumber]);
 
+  const goToNextStep = () => {
+    if (modNum < LAST_MODULE) {
+      router.replace(`/interview/${modNum + 1}` as any);
+    } else {
+      router.replace('/interview/generation');
+    }
+  };
+
   const loadQuestions = async () => {
     setIsLoading(true);
     try {
@@ -62,14 +71,23 @@ export default function DynamicInterviewScreen() {
       setQuestions(data);
       setMessages([]);
       setCurrentQuestionIndex(0);
-      
+      setAnswers({});
+
       if (data.length > 0) {
         const firstQ = data[0];
         addAIMessage(firstQ.text, firstQ.options, firstQ.id);
+      } else {
+        // Aucune question applicable (déjà répondues, filtres d'âge/genre…) :
+        // on enregistre le module tel quel et on passe au suivant.
+        await InterviewService.saveModule(modNum, {});
+        goToNextStep();
+        return;
       }
     } catch (error) {
-      console.error('Failed to load questions:', error);
-      Alert.alert('Erreur', 'Impossible de charger les questions de ce module.');
+      Alert.alert('Erreur', getReadableError(error, 'Impossible de charger les questions de ce module.'), [
+        { text: 'Réessayer', onPress: () => loadQuestions() },
+        { text: 'Annuler', style: 'cancel' },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -132,22 +150,19 @@ export default function DynamicInterviewScreen() {
     setIsSaving(true);
     try {
       await InterviewService.saveModule(modNum, finalAnswers);
-      
-      if (modNum < 9) {
+
+      if (modNum < LAST_MODULE) {
         setTimeout(() => {
-          addAIMessage("✨ Excellent ! Vos réponses sont enregistrées. Passons au module suivant...");
-          setTimeout(() => {
-            router.replace(`/interview/${modNum + 1}`);
-          }, 1400);
+          addAIMessage('✨ Excellent ! Vos réponses sont enregistrées. Passons au module suivant...');
+          setTimeout(() => goToNextStep(), 1400);
         }, 800);
       } else {
-        router.replace('/interview/generation');
+        goToNextStep();
       }
     } catch (error) {
-      console.error('Failed to save module:', error);
       Alert.alert(
-        'Erreur de connexion',
-        'La connexion avec le serveur a été interrompue. Voulez-vous réessayer la sauvegarde ?',
+        'Sauvegarde impossible',
+        `${getReadableError(error, 'La connexion avec le serveur a été interrompue.')}\nVoulez-vous réessayer la sauvegarde ?`,
         [
           { text: 'Annuler', style: 'cancel', onPress: () => setIsAnswering(false) },
           { text: 'Réessayer', onPress: () => handleModuleComplete(finalAnswers) },

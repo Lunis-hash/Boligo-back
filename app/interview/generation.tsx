@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Animated, TouchableOpacity } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { InterviewService } from '@/services/interview';
+import { getReadableError } from '@/services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Brain, Sparkles, CheckCircle2 } from 'lucide-react-native';
 
@@ -10,6 +11,7 @@ export default function GenerationScreen() {
   const router = useRouter();
   const [status, setStatus] = useState('Analyse de vos réponses...');
   const [isDone, setIsDone] = useState(false);
+  const [hasError, setHasError] = useState(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -24,14 +26,18 @@ export default function GenerationScreen() {
   }, []);
 
   const generateProfile = async () => {
+    setHasError(false);
     try {
       // Étape 1 : Analyse
       setStatus('Cartographie de votre personnalité...');
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Étape 2 : Appel backend (Gemini)
+      // Étape 2 : complétion côté backend (génère la carte mentale IA)
       setStatus('Génération de votre Bio Harmonie par l\'IA...');
-      await InterviewService.completeInterview();
+      const current = await InterviewService.getStatus();
+      if (!current.isCompleted) {
+        await InterviewService.completeInterview();
+      }
 
       // Étape 3 : Finalisation
       setStatus('Finalisation de votre profil...');
@@ -44,8 +50,8 @@ export default function GenerationScreen() {
         router.replace('/interview/summary');
       }, 1800);
     } catch (error) {
-      console.error('Generation failed:', error);
-      setStatus('Oups, une erreur est survenue.');
+      setHasError(true);
+      setStatus(getReadableError(error, 'Oups, une erreur est survenue.'));
     }
   };
 
@@ -80,8 +86,13 @@ export default function GenerationScreen() {
         </Text>
 
         <View style={styles.statusBox}>
-          {!isDone && <ActivityIndicator color={Colors.primary.red} style={{ marginBottom: 10 }} />}
+          {!isDone && !hasError && <ActivityIndicator color={Colors.primary.red} style={{ marginBottom: 10 }} />}
           <Text style={styles.statusText}>{status}</Text>
+          {hasError && (
+            <TouchableOpacity onPress={generateProfile} style={styles.retryBtn} activeOpacity={0.8} testID="generation-retry">
+              <Text style={styles.retryText}>Réessayer</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Animated.View>
     </LinearGradient>
@@ -150,5 +161,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Typography.fontFamily.medium,
     color: Colors.text.primary100,
+    textAlign: 'center',
+  },
+  retryBtn: {
+    marginTop: Spacing.md,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.primary.red,
+  },
+  retryText: {
+    color: Colors.neutral.white,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 14,
   },
 });

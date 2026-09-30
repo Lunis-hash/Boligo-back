@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Heart, MessageCircle, User, Layers } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/context/auth';
-import { InterviewService } from '@/services/interview';
+import { InterviewService, getResumeModule } from '@/services/interview';
 
 export default function TabLayout() {
   const router = useRouter();
@@ -23,16 +23,15 @@ export default function TabLayout() {
           const status = await InterviewService.getStatus();
           if (isMounted) {
             if (!status.isCompleted) {
-              const mod = typeof status.currentModule === 'number' ? status.currentModule : 0;
-              router.replace(`/interview/${mod}`);
+              router.replace(`/interview/${getResumeModule(status)}` as any);
               return;
             }
             setChecking(false);
           }
         } catch {
-          if (isMounted) {
-            router.replace('/interview/0');
-          }
+          // Erreur réseau ou session expirée (gérée par l'intercepteur) :
+          // on laisse l'écran d'accueil proposer un nouvel essai.
+          if (isMounted) router.replace('/');
         }
       }
     };
