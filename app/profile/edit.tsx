@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { Save, ArrowLeft, Briefcase, MapPin, FileText, Heart, User, Phone, Mail, Calendar, ShieldCheck } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import client from '@/services/api';
+import client, { getReadableError } from '@/services/api';
+import cacheService from '@/services/cacheService';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function EditProfileScreen() {
     firstName: '', lastName: '', telephone: '', city: '',
     description: '', profession: '', displayedCity: '',
   });
+  const [initialForm, setInitialForm] = useState(form);
   const [readOnly, setReadOnly] = useState<any>({});
 
   useEffect(() => { loadProfile(); }, []);
@@ -24,12 +26,14 @@ export default function EditProfileScreen() {
       const resp = await client.get('/profile/me');
       const d = resp.data;
       const u = d.user || {};
-      setForm({
+      const loaded = {
         firstName: u.firstName || '', lastName: u.lastName || '',
         telephone: u.telephone || '', city: u.city || '',
         description: d.description || '', profession: d.profession || '',
         displayedCity: d.displayedCity || '',
-      });
+      };
+      setForm(loaded);
+      setInitialForm(loaded);
       setReadOnly({
         email: u.email || '',
         gender: u.gender || '',
@@ -39,7 +43,10 @@ export default function EditProfileScreen() {
         accountStatus: u.accountStatus || '',
       });
     } catch (e) {
-      console.error('Failed to load profile', e);
+      Alert.alert('Profil indisponible', getReadableError(e), [
+        { text: 'Réessayer', onPress: () => loadProfile() },
+        { text: 'Retour', style: 'cancel', onPress: () => router.back() },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -51,22 +58,34 @@ export default function EditProfileScreen() {
       return;
     }
 
+    if (!form.firstName.trim()) {
+      Alert.alert('Prénom requis', 'Le prénom ne peut pas être vide.');
+      return;
+    }
+
+    // Seuls les champs modifiés et non vides sont envoyés : le backend
+    // refuse une profession vide (400) et une chaîne vide pour le téléphone
+    // viole l'unicité dès qu'un autre membre n'a pas de numéro (500).
+    const payload: Record<string, string> = {};
+    (Object.keys(form) as (keyof typeof form)[]).forEach((key) => {
+      const value = form[key].trim();
+      if (value && value !== (initialForm[key] || '').trim()) payload[key] = value;
+    });
+
+    if (Object.keys(payload).length === 0) {
+      Alert.alert('Aucune modification', 'Rien à enregistrer.');
+      return;
+    }
+
     setSaving(true);
     try {
-      await client.patch('/profile/me', {
-        firstName: form.firstName.trim(), 
-        lastName: form.lastName.trim(),
-        telephone: form.telephone.trim(), 
-        city: form.city.trim(),
-        description: form.description.trim(), 
-        profession: form.profession.trim(),
-        displayedCity: form.displayedCity.trim(),
-      });
+      await client.patch('/profile/me', payload);
+      cacheService.invalidate('user_profile_me');
       Alert.alert('Profil mis à jour ✨', 'Tes modifications ont été enregistrées.', [
-        { text: 'OK', onPress: () => router.back() },
+        { text: 'OK', onPress: () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/profile')) },
       ]);
     } catch (e: any) {
-      Alert.alert('Erreur', e.response?.data?.message || 'Mise à jour impossible');
+      Alert.alert('Erreur', getReadableError(e, 'Mise à jour impossible'));
     } finally {
       setSaving(false);
     }

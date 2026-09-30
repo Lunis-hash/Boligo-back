@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Platform, Alert , ActivityIndicator } from 'react-native';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { Settings, MapPin, Edit3, Briefcase, Globe, ShieldCheck, Sparkles, TrendingUp, User, ChevronRight, Activity, Radar, Phone, Mail, Calendar, Heart, CreditCard, Tag , LogOut, Trash2 } from 'lucide-react-native';
@@ -7,7 +8,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { useAuth } from '@/context/auth';
-import client from '@/services/api';
+import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 
 export default function ProfileScreen() {
@@ -22,12 +23,20 @@ export default function ProfileScreen() {
   const slideAnim = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
-    fetchProfile();
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       Animated.spring(slideAnim, { toValue: 0, friction: 8, useNativeDriver: true }),
     ]).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Rechargé à chaque retour sur l'onglet (ex. après « Modifier le profil »).
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   const fetchProfile = async () => {
     const cached = cacheService.get<any>('user_profile_me', 30000);
@@ -41,7 +50,7 @@ export default function ProfileScreen() {
       setProfileData(resp.data);
       cacheService.set('user_profile_me', resp.data);
     } catch (error) {
-      console.error('Failed to fetch profile', error);
+      if (!cached) Alert.alert('Profil indisponible', getReadableError(error));
     } finally {
       setLoading(false);
     }
@@ -360,7 +369,7 @@ export default function ProfileScreen() {
               <View style={styles.kpiCell}>
                 <Text style={styles.kpiLabel}>ALIGNEMENT</Text>
                 <Text style={styles.kpiValue}>{mentalMap.maturityScore != null ? `Score ${Math.round(mentalMap.maturityScore * 100)}%` : '—'}</Text>
-                <View style={styles.kpiTrend}><TrendingUp size={12} color={Colors.primary.orange} /><Text style={styles.kpiTrendText}>+2.4%</Text></View>
+                <View style={styles.kpiTrend}><TrendingUp size={12} color={Colors.primary.orange} /><Text style={styles.kpiTrendText}>Maturité</Text></View>
               </View>
               <View style={styles.kpiDivider} />
               <View style={styles.kpiCell}>
