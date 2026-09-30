@@ -89,7 +89,9 @@ export default function LoginScreen() {
 
   useEffect(() => {
     // Préchargement images
-    BG_IMAGES.forEach(url => Image.prefetch(url));
+    // Photos d'ambiance servies par un CDN externe : un échec (hors ligne,
+    // CDN bloqué) ne doit pas remonter en rejet de promesse non géré.
+    BG_IMAGES.forEach((url) => Image.prefetch(url).catch(() => {}));
 
     // Animation d'entrée
     Animated.parallel([
