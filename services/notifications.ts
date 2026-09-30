@@ -1,8 +1,18 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsModule from 'expo-notifications';
 import client from './api';
+
+/** expo-notifications n'est chargé que sur iOS / Android (inutile et bruyant sur le web). */
+function loadNotifications(): typeof NotificationsModule | null {
+  if (Platform.OS === 'web') return null;
+  try {
+    return require('expo-notifications') as typeof NotificationsModule;
+  } catch {
+    return null;
+  }
+}
 
 declare const __DEV__: boolean;
 
@@ -15,7 +25,8 @@ let handlerConfigured = false;
 
 /** Affiche les notifications reçues quand l'app est au premier plan. */
 export function configureNotificationHandler() {
-  if (handlerConfigured || Platform.OS === 'web') return;
+  const Notifications = loadNotifications();
+  if (handlerConfigured || !Notifications) return;
   handlerConfigured = true;
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -36,7 +47,8 @@ export function configureNotificationHandler() {
  * build ou une build EAS. Toute erreur est absorbée : l'app continue sans push.
  */
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
-  if (Platform.OS === 'web' || !Device.isDevice) {
+  const Notifications = loadNotifications();
+  if (!Notifications || !Device.isDevice) {
     debug('🔔 [Push] Non supporté sur cet environnement (web / simulateur).');
     return null;
   }
@@ -99,7 +111,8 @@ export function routeForNotificationData(data: Record<string, unknown> | undefin
  * de nettoyage à appeler au démontage.
  */
 export function addNotificationResponseListener(onRoute: (route: NotificationRoute) => void): () => void {
-  if (Platform.OS === 'web') return () => {};
+  const Notifications = loadNotifications();
+  if (!Notifications) return () => {};
   const sub = Notifications.addNotificationResponseReceivedListener((response) => {
     const data = response.notification.request.content.data as Record<string, unknown> | undefined;
     onRoute(routeForNotificationData(data));
@@ -108,7 +121,8 @@ export function addNotificationResponseListener(onRoute: (route: NotificationRou
 }
 
 export async function scheduleLocalNotification(title: string, body: string) {
-  if (Platform.OS === 'web') return;
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
   try {
     await Notifications.scheduleNotificationAsync({ content: { title, body }, trigger: null });
   } catch (e) {

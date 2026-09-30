@@ -5,6 +5,9 @@ import { AuthProvider } from '@/context/auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { StripeProvider } from '@/services/stripe';
 import { addNotificationResponseListener, configureNotificationHandler } from '@/services/notifications';
+import { installWebAlert } from '@/services/webAlert';
+
+installWebAlert();
 
 /** Ouvre l'écran pertinent quand l'utilisateur touche une notification. */
 function NotificationRouter() {
