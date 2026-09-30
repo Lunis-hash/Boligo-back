@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
+  TextInput,
   Platform,
   Dimensions,
   Alert,
@@ -15,12 +15,12 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useStripe } from '@stripe/stripe-react-native';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Check, ShieldCheck, Sparkles, ChevronLeft, Lock } from 'lucide-react-native';
+import { useStripe } from '@/services/stripe';
+import { Check, ShieldCheck, Sparkles, ChevronLeft, Tag } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
-import { PaymentService } from '@/services/payment';
-import { Typography, Spacing } from '@/constants/theme';
+import { PaymentService, PaymentPlan, PromoCheckResult } from '@/services/payment';
+import { getReadableError } from '@/services/api';
+import { Typography } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -44,151 +44,179 @@ const COLORS = {
   line: 'rgba(20,16,14,0.10)',
 };
 
-interface PaymentOption {
-  id: string;
-  name: string;
-  price: string;
-  priceValue: number;
-  period: string;
-  credits: number;
-  description: string;
-  features: { text: string; strong: string; prefix?: string; suffix?: string }[];
-  isHero?: boolean;
-  tag?: string;
-  extraTitle?: string;
-}
+/** Délai maximal d'attente du webhook Stripe avant de rendre la main (ms). */
+const CREDIT_SYNC_TIMEOUT_MS = 12000;
+const CREDIT_SYNC_INTERVAL_MS = 1500;
 
+/**
+ * Écran de paiement.
+ * Les formules sont lues depuis le backend (GET /payment/plans) : le backend
+ * ne connaît qu'un seul plan et applique 15 € / 1 crédit à tout identifiant
+ * inconnu, donc aucune offre n'est définie en dur ici.
+ * Le solde de crédits n'est jamais modifié localement : il est relu depuis
+ * GET /credit/balance une fois le paiement (ou le code promo) confirmé.
+ */
 export default function PaymentScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { addCredits } = useAppContext();
+  const { credits, refreshCredits } = useAppContext();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-  const [selectedOption, setSelectedOption] = useState<PaymentOption | null>(null);
+  const [plans, setPlans] = useState<PaymentPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [plansError, setPlansError] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PaymentPlan | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoResult, setPromoResult] = useState<PromoCheckResult | null>(null);
+  const [promoChecking, setPromoChecking] = useState(false);
+  const processingRef = useRef(false);
 
-  const topPadding = Platform.OS === 'ios' ? insets.top + 4 : (insets.top > 0 ? insets.top + 6 : 14);
+  const topPadding = Platform.OS === 'ios' ? insets.top + 4 : insets.top > 0 ? insets.top + 6 : 14;
   const bottomPadding = Math.max(insets.bottom + 20, 24);
 
-  const options: PaymentOption[] = [
-    {
-      id: 'parcours_harmonie',
-      name: 'Parcours Harmonie',
-      price: '15 €',
-      priceValue: 15,
-      period: 'le parcours',
-      credits: 1,
-      description: "L'essentiel, pour rencontrer sans perdre de temps.",
-      features: [
-        { prefix: 'Profils compatibles à ', strong: '80 % minimum', text: '', suffix: '' },
-        { prefix: '', strong: '3 jours', text: '', suffix: " de questions guidées par l'IA" },
-        { prefix: '', strong: '3 jours', text: '', suffix: " d'échanges libres" },
-        { prefix: 'Appel vidéo de ', strong: '7 minutes', text: '', suffix: '' },
-        { prefix: 'Protection ', strong: 'anti-ghosting', text: '', suffix: '' },
-      ],
-      isHero: false,
-    },
-    {
-      id: 'harmonie_premium',
-      name: 'Harmonie Premium',
-      tag: 'Le plus choisi',
-      price: '50 €',
-      priceValue: 50,
-      period: 'le parcours',
-      credits: 5,
-      description: "Aucune limite. Tu choisis qui tu veux — et tu ne paies que si c'est réciproque.",
-      extraTitle: 'Tout le parcours, plus :',
-      features: [
-        { prefix: '', strong: 'Tous les profils', text: '', suffix: ', de 0 à 100 % de compatibilité' },
-        { prefix: '', strong: "L'invitation exclusive", text: '', suffix: ' : tu offres le crédit à la personne de ton choix' },
-        { prefix: '', strong: 'Elle refuse ? Tu ne paies rien.', text: '', suffix: ' Ton crédit revient automatiquement' },
-        { prefix: 'Appel vidéo prolongé à ', strong: '30 minutes', text: '', suffix: '' },
-      ],
-      isHero: true,
-    },
-  ];
+  const loadPlans = useCallback(async () => {
+    setPlansLoading(true);
+    setPlansError(null);
+    try {
+      const list = await PaymentService.getPlans();
+      setPlans(list);
+      if (list.length === 0) setPlansError('Aucune formule disponible pour le moment.');
+    } catch (e) {
+      setPlansError(getReadableError(e, 'Impossible de charger les formules.'));
+    } finally {
+      setPlansLoading(false);
+    }
+  }, []);
 
-  const handleSelectOption = (option: PaymentOption) => {
-    setSelectedOption(option);
+  useEffect(() => {
+    loadPlans();
+  }, [loadPlans]);
+
+  const goBackToApp = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)');
+  };
+
+  const finishWithSuccess = async (message: string, expectedMinimum: number) => {
+    setPaymentSuccess(true);
+    setSuccessMessage(message);
+    // Le crédit est ajouté par le backend (webhook Stripe ou code promo) :
+    // on attend qu'il apparaisse dans le solde avant de rendre la main.
+    const started = Date.now();
+    let balance = await refreshCredits();
+    while (balance < expectedMinimum && Date.now() - started < CREDIT_SYNC_TIMEOUT_MS) {
+      await new Promise((r) => setTimeout(r, CREDIT_SYNC_INTERVAL_MS));
+      balance = await refreshCredits();
+    }
+    setTimeout(() => router.replace('/(tabs)'), 1200);
+  };
+
+  const handleSelectPlan = (plan: PaymentPlan) => {
+    setSelectedPlan(plan);
+    setPromoResult(null);
     setShowCheckout(true);
   };
 
+  const handleCheckPromo = async () => {
+    if (!selectedPlan || !promoCode.trim()) return;
+    setPromoChecking(true);
+    try {
+      const result = await PaymentService.checkPromoCode(promoCode.trim(), selectedPlan.id);
+      setPromoResult(result);
+      if (!result.isValid) {
+        Alert.alert('Code promo', result.message || 'Code promotionnel invalide ou expiré.');
+      }
+    } catch (e) {
+      setPromoResult(null);
+      Alert.alert('Code promo', getReadableError(e));
+    } finally {
+      setPromoChecking(false);
+    }
+  };
+
   const handleConfirmPayment = async () => {
-    if (!selectedOption) return;
+    if (!selectedPlan || processingRef.current) return;
+    processingRef.current = true;
     setIsProcessing(true);
 
-    try {
-      const response = await PaymentService.createPaymentIntent(selectedOption.id);
+    const expectedMinimum = credits + selectedPlan.credits;
 
-      // Si mode Web, ou Mock fallback de test
-      if (Platform.OS === 'web' || response.isMock) {
-        console.log('⚠️ [Payment] Mode Web ou Simulation détecté.');
-        setPaymentSuccess(true);
-        await addCredits(selectedOption.credits);
-        setTimeout(() => {
-          router.replace('/(tabs)');
-        }, 1800);
+    try {
+      // 1. Offre gratuite via code promo : le backend crédite directement.
+      if (promoResult?.isValid && promoResult.isFree) {
+        const applied = await PaymentService.applyPromoCode(promoCode.trim(), selectedPlan.id);
+        await finishWithSuccess(applied.message || 'Votre code promo a été appliqué.', expectedMinimum);
         return;
       }
 
-      // Initialiser la feuille de paiement native Stripe
-      const { error: initError } = await initPaymentSheet({
-        paymentIntentClientSecret: response.paymentIntent,
-        customerId: response.customer,
-        customerEphemeralKeySecret: response.ephemeralKey,
-        merchantDisplayName: 'BOLIGO',
-        defaultBillingDetails: {
-          name: 'Client BOLIGO',
-        },
-      });
+      // 2. Paiement Stripe (PaymentSheet native).
+      const sheet = await PaymentService.createPaymentIntent(
+        selectedPlan.id,
+        promoResult?.isValid ? promoCode.trim() : undefined,
+      );
 
+      if (sheet.isMock || Platform.OS === 'web') {
+        Alert.alert(
+          'Paiement indisponible',
+          Platform.OS === 'web'
+            ? "Le paiement par carte n'est disponible que dans l'application mobile."
+            : "Le paiement n'est pas encore activé sur ce serveur (Stripe non configuré). Aucun crédit n'a été ajouté.",
+        );
+        return;
+      }
+
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: sheet.paymentIntent,
+        customerId: sheet.customer,
+        customerEphemeralKeySecret: sheet.ephemeralKey,
+        merchantDisplayName: 'BOLIGO',
+        defaultBillingDetails: { name: 'Client BOLIGO' },
+      });
       if (initError) {
-        Alert.alert('Mode dégradé', `Erreur d'initialisation Stripe : ${initError.message}. Simulation activée.`);
-        setPaymentSuccess(true);
-        await addCredits(selectedOption.credits);
-        setTimeout(() => router.replace('/(tabs)'), 1800);
+        Alert.alert('Paiement impossible', initError.message);
         return;
       }
 
       const { error: presentError } = await presentPaymentSheet();
-
       if (presentError) {
         if (presentError.code !== 'Canceled') {
           Alert.alert('Paiement échoué', presentError.message);
         }
-        setIsProcessing(false);
-      } else {
-        setPaymentSuccess(true);
-        await addCredits(selectedOption.credits);
-        setTimeout(() => {
-          router.replace('/(tabs)');
-        }, 1800);
+        return;
       }
-    } catch (err: any) {
-      console.error(err);
-      const message = err?.readableMessage || err?.response?.data?.message || err?.message || 'Erreur inconnue';
-      Alert.alert('Erreur', `Impossible d'initier le paiement : ${message}`);
+
+      await finishWithSuccess('Votre paiement a été confirmé par Stripe.', expectedMinimum);
+    } catch (err) {
+      Alert.alert('Erreur', `Impossible d'initier le paiement : ${getReadableError(err)}`);
+    } finally {
+      processingRef.current = false;
       setIsProcessing(false);
     }
   };
 
+  const amountDisplay = (cents: number) => `${(cents / 100).toFixed(2).replace('.', ',')} €`;
+  const checkoutTotal =
+    promoResult?.isValid && selectedPlan ? amountDisplay(promoResult.finalAmount) : selectedPlan?.priceDisplay ?? '';
+
   // ═════════════════════════════════════════════════════════════════════
   // VUE RÉCAPITULATIF & CONFIRMATION STRIPE
   // ═════════════════════════════════════════════════════════════════════
-  if (showCheckout) {
+  if (showCheckout && selectedPlan) {
     return (
       <View style={styles.container}>
         <StatusBar style="dark" />
 
-        {/* Top bar */}
         <View style={[styles.checkoutHeader, { paddingTop: topPadding }]}>
           <TouchableOpacity
             onPress={() => setShowCheckout(false)}
             style={styles.backButton}
             disabled={isProcessing}
             activeOpacity={0.7}
+            accessibilityLabel="Retour aux formules"
           >
             <ChevronLeft size={24} color={COLORS.ink} />
           </TouchableOpacity>
@@ -196,7 +224,7 @@ export default function PaymentScreen() {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView contentContainerStyle={[styles.checkoutBody, { paddingBottom: bottomPadding }]}>
+        <ScrollView contentContainerStyle={[styles.checkoutBody, { paddingBottom: bottomPadding }]} keyboardShouldPersistTaps="handled">
           {paymentSuccess ? (
             <View style={styles.successContainer}>
               <View style={styles.successCircle}>
@@ -204,35 +232,71 @@ export default function PaymentScreen() {
               </View>
               <Text style={styles.successTitle}>Paiement Confirmé !</Text>
               <Text style={styles.successSubtitle}>
-                Votre formule {selectedOption?.name} est maintenant active. Vos crédits ont été ajoutés avec succès.
+                {successMessage} Votre solde est de {credits} crédit{credits > 1 ? 's' : ''}.
               </Text>
               <ActivityIndicator size="small" color={COLORS.goldDark} style={{ marginTop: 24 }} />
             </View>
           ) : (
             <View style={styles.formContainer}>
-              {/* Carte Récapitulative stylisée Onboarding */}
-              <View style={[styles.orderSummaryCard, selectedOption?.isHero && styles.orderSummaryHero]}>
-                {selectedOption?.isHero && (
+              <View style={styles.orderSummaryCard}>
+                {selectedPlan.badge ? (
                   <View style={styles.orderBadge}>
-                    <Text style={styles.orderBadgeText}>PREMIUM</Text>
+                    <Text style={styles.orderBadgeText}>{selectedPlan.badge.toUpperCase()}</Text>
                   </View>
-                )}
+                ) : null}
                 <Text style={styles.summarySub}>FORMULE SÉLECTIONNÉE</Text>
-                <Text style={styles.summaryTitle}>{selectedOption?.name}</Text>
-                <Text style={styles.summaryDesc}>{selectedOption?.description}</Text>
+                <Text style={styles.summaryTitle}>{selectedPlan.name}</Text>
+                <Text style={styles.summaryDesc}>{selectedPlan.description}</Text>
 
                 <View style={styles.summaryDivider} />
 
                 <View style={styles.summaryTotalRow}>
                   <Text style={styles.totalLabel}>Total à régler</Text>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={styles.totalAmount}>{selectedOption?.price}</Text>
-                    <Text style={styles.totalPeriod}>Paiement unique · Sans abonnement</Text>
+                    <Text style={styles.totalAmount}>{checkoutTotal}</Text>
+                    <Text style={styles.totalPeriod}>
+                      {selectedPlan.credits} crédit{selectedPlan.credits > 1 ? 's' : ''} · Paiement unique · Sans abonnement
+                    </Text>
                   </View>
                 </View>
               </View>
 
-              {/* Bloc Réassurance Stripe */}
+              {/* Code promo */}
+              <View style={styles.promoBox}>
+                <View style={styles.promoHeader}>
+                  <Tag size={16} color={COLORS.goldDark} />
+                  <Text style={styles.promoTitle}>{selectedPlan.promoCodes?.hint || 'Avez-vous un code promotionnel ?'}</Text>
+                </View>
+                <View style={styles.promoRow}>
+                  <TextInput
+                    style={styles.promoInput}
+                    value={promoCode}
+                    onChangeText={(v) => {
+                      setPromoCode(v.toUpperCase());
+                      setPromoResult(null);
+                    }}
+                    placeholder="CODE"
+                    placeholderTextColor={COLORS.ink3}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    editable={!isProcessing}
+                    testID="promo-input"
+                  />
+                  <TouchableOpacity
+                    onPress={handleCheckPromo}
+                    disabled={!promoCode.trim() || promoChecking || isProcessing}
+                    style={[styles.promoBtn, (!promoCode.trim() || promoChecking) && { opacity: 0.5 }]}
+                    activeOpacity={0.8}
+                    testID="promo-apply"
+                  >
+                    {promoChecking ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.promoBtnText}>Appliquer</Text>}
+                  </TouchableOpacity>
+                </View>
+                {promoResult?.isValid ? (
+                  <Text style={styles.promoOk}>{promoResult.message}</Text>
+                ) : null}
+              </View>
+
               <View style={styles.securityBox}>
                 <View style={styles.securityIconCircle}>
                   <ShieldCheck size={28} color={COLORS.green} />
@@ -245,52 +309,23 @@ export default function PaymentScreen() {
                 </View>
               </View>
 
-              {/* Bouton de paiement principal */}
-              {selectedOption?.isHero ? (
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={handleConfirmPayment}
-                  disabled={isProcessing}
-                  style={{ marginBottom: 14 }}
-                >
-                  <LinearGradient
-                    colors={['#D9AE3C', '#A87C1C']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.ctaPrimaryGradient}
-                  >
-                    {isProcessing ? (
-                      <ActivityIndicator size="small" color="#FFF" />
-                    ) : (
-                      <Text style={styles.ctaPrimaryText}>
-                        Payer {selectedOption?.price} avec Stripe →
-                      </Text>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={handleConfirmPayment}
-                  disabled={isProcessing}
-                  style={styles.ctaRegularBtn}
-                >
-                  {isProcessing ? (
-                    <ActivityIndicator size="small" color={COLORS.ink} />
-                  ) : (
-                    <Text style={styles.ctaRegularText}>
-                      Payer {selectedOption?.price} avec Stripe
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              )}
-
               <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setShowCheckout(false)}
+                activeOpacity={0.85}
+                onPress={handleConfirmPayment}
                 disabled={isProcessing}
-                activeOpacity={0.7}
+                style={styles.ctaRegularBtn}
+                testID="pay-submit"
               >
+                {isProcessing ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.ctaRegularText}>
+                    {promoResult?.isValid && promoResult.isFree ? 'Activer mon accès gratuit' : `Payer ${checkoutTotal} avec Stripe`}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowCheckout(false)} disabled={isProcessing} activeOpacity={0.7}>
                 <Text style={styles.cancelBtnText}>Modifier mon choix</Text>
               </TouchableOpacity>
             </View>
@@ -301,165 +336,99 @@ export default function PaymentScreen() {
   }
 
   // ═════════════════════════════════════════════════════════════════════
-  // VUE PRINCIPALE — ÉCRAN DES TARIFS (STYLE EXACT ONBOARDING)
+  // VUE PRINCIPALE — ÉCRAN DES TARIFS
   // ═════════════════════════════════════════════════════════════════════
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* ── ARRIÈRE-PLAN MESH GRADIENT BLOBS ── */}
       <View style={styles.meshBackground} pointerEvents="none">
         <View style={[styles.blob, styles.blobGold]} />
         <View style={[styles.blob, styles.blobRed]} />
       </View>
 
-      {/* ── TOP BAR ONBOARDING ── */}
       <View style={[styles.topbar, { paddingTop: topPadding }]}>
         <View style={styles.topbarLeft}>
-          <TouchableOpacity
-            onPress={() => {
-              if (router.canGoBack()) router.back();
-              else router.replace('/(tabs)');
-            }}
-            style={styles.backBtn}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity onPress={goBackToApp} style={styles.backBtn} activeOpacity={0.7} accessibilityLabel="Retour">
             <ChevronLeft size={22} color={COLORS.ink} />
           </TouchableOpacity>
           <Text style={styles.logoText}>BOLIGO</Text>
         </View>
 
-        <TouchableOpacity onPress={() => router.replace('/(tabs)')} activeOpacity={0.7}>
+        <TouchableOpacity onPress={goBackToApp} activeOpacity={0.7}>
           <Text style={styles.skipText}>Plus tard</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
-      >
-        {/* ── EN-TÊTE DU CHOIX DU PARCOURS ── */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
         <View style={styles.headerSection}>
           <View style={styles.badgePill}>
             <Text style={styles.badgePillText}>CHOISIS TON PARCOURS</Text>
           </View>
-
           <Text style={styles.pageTitle}>
             Un parcours. <Text style={styles.pageTitleItalic}>Sept jours. Une vraie rencontre.</Text>
           </Text>
+          <Text style={styles.balanceText}>Solde actuel : {credits} crédit{credits > 1 ? 's' : ''}</Text>
         </View>
 
-        {/* ── GRILLE DES OFFRES / PACKS ── */}
-        <View style={styles.packGrid}>
-          {options.map((option) => {
-            if (option.isHero) {
-              // ── CARTE HERO PREMIUM (OR) ──
-              return (
-                <View key={option.id} style={styles.packHeroCard}>
-                  {/* Badge top "Le plus choisi" */}
+        {plansLoading ? (
+          <View style={styles.stateBox}>
+            <ActivityIndicator color={COLORS.red} />
+            <Text style={styles.stateText}>Chargement des formules…</Text>
+          </View>
+        ) : plansError ? (
+          <View style={styles.stateBox}>
+            <Text style={styles.stateText}>{plansError}</Text>
+            <TouchableOpacity onPress={loadPlans} style={styles.standardCtaBtn} activeOpacity={0.8}>
+              <Text style={styles.standardCtaText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.packGrid}>
+            {plans.map((plan) => (
+              <View key={plan.id} style={[styles.packStandardCard, plan.badge ? styles.packHighlightCard : null]}>
+                {plan.badge ? (
                   <View style={styles.heroTagBadge}>
-                    <LinearGradient
-                      colors={['#D9AE3C', '#A87C1C']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.heroTagGradient}
-                    >
-                      <Text style={styles.heroTagText}>{option.tag || 'LE PLUS CHOISI'}</Text>
+                    <LinearGradient colors={['#D9AE3C', '#A87C1C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroTagGradient}>
+                      <Text style={styles.heroTagText}>{plan.badge}</Text>
                     </LinearGradient>
                   </View>
-
-                  <Text style={styles.heroPackName}>{option.name.toUpperCase()}</Text>
-
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceAmount}>{option.price}</Text>
-                    <Text style={styles.pricePeriod}>{option.period}</Text>
-                  </View>
-
-                  <Text style={styles.packDesc}>{option.description}</Text>
-
-                  {option.extraTitle && (
-                    <View style={styles.plusDividerRow}>
-                      <Text style={styles.plusTitleText}>{option.extraTitle.toUpperCase()}</Text>
-                    </View>
-                  )}
-
-                  {/* Liste des bénéfices Premium */}
-                  <View style={styles.featureList}>
-                    {option.features.map((feat, index) => (
-                      <View key={index} style={styles.featureRow}>
-                        <View style={styles.tickmarkGold}>
-                          <Check size={11} color={COLORS.goldDark} strokeWidth={3.5} />
-                        </View>
-                        <Text style={styles.featureText}>
-                          {feat.prefix}
-                          <Text style={styles.featureStrong}>{feat.strong}</Text>
-                          {feat.suffix}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  {/* CTA Passer en Premium */}
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    onPress={() => handleSelectOption(option)}
-                    style={styles.heroCtaWrapper}
-                  >
-                    <LinearGradient
-                      colors={['#D9AE3C', '#A87C1C']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.heroCtaBtn}
-                    >
-                      <Text style={styles.heroCtaText}>Passer en Premium →</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              );
-            }
-
-            // ── CARTE PARCOURS HARMONIE (STANDARD) ──
-            return (
-              <View key={option.id} style={styles.packStandardCard}>
-                <Text style={styles.standardPackName}>{option.name.toUpperCase()}</Text>
+                ) : null}
+                <Text style={styles.standardPackName}>{plan.name.toUpperCase()}</Text>
 
                 <View style={styles.priceRow}>
-                  <Text style={styles.priceAmount}>{option.price}</Text>
-                  <Text style={styles.pricePeriod}>{option.period}</Text>
+                  <Text style={styles.priceAmount}>{plan.priceDisplay}</Text>
+                  <Text style={styles.pricePeriod}>
+                    le parcours · {plan.credits} crédit{plan.credits > 1 ? 's' : ''}
+                  </Text>
                 </View>
 
-                <Text style={styles.packDesc}>{option.description}</Text>
+                <Text style={styles.packDesc}>{plan.description}</Text>
 
-                {/* Liste des bénéfices Standard */}
                 <View style={styles.featureList}>
-                  {option.features.map((feat, index) => (
+                  {plan.features.map((feat, index) => (
                     <View key={index} style={styles.featureRow}>
                       <View style={styles.tickmarkGreen}>
                         <Check size={11} color={COLORS.green} strokeWidth={3.5} />
                       </View>
                       <Text style={styles.featureText}>
-                        {feat.prefix}
-                        <Text style={styles.featureStrong}>{feat.strong}</Text>
-                        {feat.suffix}
+                        <Text style={styles.featureStrong}>{feat.label}</Text>
+                        {feat.detail ? ` — ${feat.detail}` : ''}
                       </Text>
                     </View>
                   ))}
                 </View>
 
-                {/* Bouton Choisir ce parcours */}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => handleSelectOption(option)}
-                  style={styles.standardCtaBtn}
-                >
+                {plan.guarantee ? <Text style={styles.guaranteeText}>🛡️ {plan.guarantee}</Text> : null}
+
+                <TouchableOpacity activeOpacity={0.8} onPress={() => handleSelectPlan(plan)} style={styles.standardCtaBtn} testID={`plan-${plan.id}`}>
                   <Text style={styles.standardCtaText}>Choisir ce parcours</Text>
                 </TouchableOpacity>
               </View>
-            );
-          })}
-        </View>
+            ))}
+          </View>
+        )}
 
-        {/* ── LIGNE DE RÉASSURANCE ONBOARDING ── */}
         <View style={styles.reassureLine}>
           <Text style={styles.reassureItem}>Paiement unique</Text>
           <Text style={styles.reassureDot}>●</Text>
@@ -966,66 +935,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // Styles Hybrides Région & Mobile Money
-  regionToggleBox: {
-    flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 14,
-    padding: 4,
-    marginBottom: 16,
-  },
-  regionTab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-  },
-  regionTabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  regionTabText: {
-    fontSize: 11.5,
+  // Ajouts : solde, états, code promo, mise en avant
+  balanceText: {
+    marginTop: 10,
+    fontSize: 12.5,
     fontWeight: '600',
     color: COLORS.ink3,
   },
-  regionTabTextActive: {
-    fontWeight: '800',
-    color: COLORS.ink,
-  },
-  mobileMoneyBox: {
-    marginBottom: 16,
-  },
-  mobileMoneyTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.ink,
-    marginBottom: 10,
-  },
-  mobileMoneyGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  mobileMoneyItem: {
-    flexDirection: 'row',
+  stateBox: {
     alignItems: 'center',
-    gap: 8,
-    width: (SCREEN_WIDTH - 64) / 2,
-    padding: 12,
-    backgroundColor: '#FAFAF8',
+    gap: 12,
+    padding: 24,
+    borderWidth: 1.5,
+    borderColor: COLORS.line,
+    borderRadius: 16,
+    marginBottom: 20,
+  },
+  stateText: {
+    fontSize: 13.5,
+    color: COLORS.ink2,
+    textAlign: 'center',
+  },
+  packHighlightCard: {
+    borderColor: COLORS.gold,
+    backgroundColor: 'rgba(200,154,46,0.03)',
+  },
+  guaranteeText: {
+    fontSize: 12,
+    color: COLORS.ink2,
+    marginBottom: 14,
+    lineHeight: 17,
+  },
+  promoBox: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(200,154,46,0.35)',
+    backgroundColor: 'rgba(200,154,46,0.04)',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 20,
+  },
+  promoHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  promoTitle: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
+  promoRow: { flexDirection: 'row', gap: 10 },
+  promoInput: {
+    flex: 1,
     borderWidth: 1.5,
     borderColor: COLORS.line,
     borderRadius: 12,
-  },
-  mobileMoneyName: {
-    fontSize: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
     fontWeight: '700',
+    letterSpacing: 1.5,
     color: COLORS.ink,
+    backgroundColor: '#FFFFFF',
   },
+  promoBtn: {
+    backgroundColor: COLORS.goldDark,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  promoBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+  promoOk: { marginTop: 10, fontSize: 12.5, fontWeight: '600', color: COLORS.greenDark },
 });
