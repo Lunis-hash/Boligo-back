@@ -9,6 +9,7 @@ import {
   StatusBar,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useState, useRef, useEffect, Component, ReactNode, useCallback } from 'react';
 import { useRouter } from 'expo-router';
@@ -17,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertTriangle, ShieldCheck, Link2 } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
-import client from '@/services/api';
+import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 
@@ -423,7 +424,7 @@ export default function DiscoverScreenWrapper() {
 
 function DiscoverScreen() {
   const router = useRouter();
-  const { credits, spendCredit, addMatch } = useAppContext();
+  const { credits, spendCredit, refreshCredits } = useAppContext();
 
   const [profiles, setProfiles] = useState<MatchProfile[]>([]);
   const [profileIndex, setProfileIndex] = useState(0);
@@ -541,6 +542,7 @@ function DiscoverScreen() {
       if (!silent && profiles.length === 0 && !activeMatch) {
         setLoading(true);
       }
+      refreshCredits();
 
       const matchRes = await client.get('/matching/my-matches');
       const matches: ActiveMatch[] = matchRes.data ?? [];
@@ -656,33 +658,51 @@ function DiscoverScreen() {
 
   const handleConnect = async () => {
     if (!currentMatch || connecting) return;
-    setConnecting(true);
-    soundService.playLikeSent();
 
     if (acceptingProposal) {
+      setConnecting(true);
       await performAcceptLike(acceptingProposal.id, acceptingProposal.name);
       return;
     }
-    const ok = await spendCredit(1, `Connexion avec ${currentMatch.firstName}`);
-    if (!ok) {
-      setConnecting(false);
+
+    if (credits < 1) {
       setOverlayMode('no_credit');
       return;
     }
 
+    setConnecting(true);
+    soundService.playLikeSent();
+
     try {
       const response = await client.post('/matching/connect', { targetUserId: currentMatch.id });
-      if (response.data.success && response.data.journey) {
+      if (!response.data?.success) {
+        closeOverlay();
+        Alert.alert('Connexion impossible', response.data?.message || 'Ce profil n\'est plus disponible.');
+        initScreen(true);
+        return;
+      }
+
+      // HYPOTHÈSE TEMPORAIRE : le backend n'enregistre pas encore lui-même la
+      // consommation du crédit lors de la connexion ; l'app débite le crédit
+      // (POST /credit/spend) une fois la connexion effectivement enregistrée,
+      // pour ne jamais facturer une connexion qui a échoué.
+      const spend = await spendCredit(1, `Connexion avec ${currentMatch.firstName}`);
+      if (!spend.ok && !spend.insufficient) {
+        Alert.alert('Crédits', spend.reason || 'Le débit du crédit n\'a pas pu être enregistré.');
+      }
+
+      if (response.data.journey) {
         const matchRes = await client.get('/matching/my-matches');
         if (matchRes.data.length > 0) setActiveMatch(matchRes.data[0]);
         soundService.playMatchCelebration();
         setOverlayMode('success');
       } else {
         closeOverlay();
-        initScreen();
+        initScreen(true);
       }
     } catch (error) {
       closeOverlay();
+      Alert.alert('Connexion impossible', getReadableError(error));
     } finally {
       setConnecting(false);
     }
@@ -694,26 +714,48 @@ function DiscoverScreen() {
   };
 
   const performAcceptLike = async (proposalId: string, likeName: string) => {
-    const ok = await spendCredit(1, `Acceptation du match avec ${likeName}`);
-    if (!ok) {
+    if (credits < 1) {
       setAcceptingProposal(null);
       setOverlayMode('no_credit');
       setConnecting(false);
       return;
     }
 
+    // Le crédit est débité avant l'acceptation : le backend rattache les
+    // consommations récentes au parcours créé (règle de justice / remboursement
+    // anti-ghosting).
+    const spend = await spendCredit(1, `Acceptation du match avec ${likeName}`);
+    if (!spend.ok) {
+      setAcceptingProposal(null);
+      setConnecting(false);
+      if (spend.insufficient) {
+        setOverlayMode('no_credit');
+      } else {
+        closeOverlay();
+        Alert.alert('Crédits', spend.reason || 'Le débit du crédit a échoué.');
+      }
+      return;
+    }
+
     try {
-      await client.post('/matching/accept', { proposalId });
+      const res = await client.post('/matching/accept', { proposalId });
+      if (!res.data?.success) {
+        closeOverlay();
+        Alert.alert('Match', res.data?.message || 'Cette invitation n\'est plus valide.');
+        await refreshCredits();
+        initScreen(true);
+        return;
+      }
       const matchRes = await client.get('/matching/my-matches');
       if (matchRes.data.length > 0) setActiveMatch(matchRes.data[0]);
       soundService.playMatchCelebration();
       setOverlayMode('success');
-      setAcceptingProposal(null);
-      initScreen();
+      initScreen(true);
     } catch (error) {
       closeOverlay();
-      setAcceptingProposal(null);
+      Alert.alert('Match impossible', getReadableError(error));
     } finally {
+      setAcceptingProposal(null);
       setConnecting(false);
     }
   };
@@ -1066,6 +1108,11 @@ function DiscoverScreen() {
                   <>
                     <TouchableOpacity
                       onPress={() => {
+                        if (credits < 1) {
+                          setAcceptingProposal(null);
+                          openOverlay('no_credit');
+                          return;
+                        }
                         if (hasLikedMe && existingLike) {
                           setAcceptingProposal({ id: existingLike.id, name: existingLike.name ?? existingLike.firstName ?? currentMatch.firstName });
                         } else {
@@ -1073,6 +1120,7 @@ function DiscoverScreen() {
                         }
                         openOverlay('connect');
                       }}
+                      testID="discover-like"
                       activeOpacity={0.85}
                       style={styles.likeBtnWrap}
                     >
