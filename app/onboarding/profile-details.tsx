@@ -209,6 +209,7 @@ export default function ProfileDetailsScreen() {
           city: `${region}, ${country?.name || ''}`,
           telephone: formattedPhone,
           job: profession.trim(),
+          meetingScope: (meetingScope as 'local' | 'national' | 'international' | null) ?? undefined,
         });
 
         // Vérifier si le token est fourni ou si une vérification OTP est requise
