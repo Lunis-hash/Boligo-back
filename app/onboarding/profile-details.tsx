@@ -178,16 +178,28 @@ export default function ProfileDetailsScreen() {
   const fadeAnim  = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
+  const isFirstStepRender = useRef(true);
+
   const animateTransition = (nextStep: number) => {
     Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }).start(() => {
       setStep(nextStep);
-      slideAnim.setValue(24);
-      Animated.parallel([
-        Animated.timing(fadeAnim, { toValue: 1, duration: 320, useNativeDriver: true }),
-        Animated.spring(slideAnim, { toValue: 0, friction: 8, tension: 55, useNativeDriver: true }),
-      ]).start();
     });
   };
+
+  // L'entrée de l'étape est animée une fois la nouvelle vue montée : lancer
+  // l'animation dans le callback ci-dessus, avant le rendu de l'étape, laissait
+  // l'écran invisible (opacité 0) sur le web.
+  useEffect(() => {
+    if (isFirstStepRender.current) {
+      isFirstStepRender.current = false;
+      return;
+    }
+    slideAnim.setValue(24);
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 320, useNativeDriver: true }),
+      Animated.spring(slideAnim, { toValue: 0, friction: 8, tension: 55, useNativeDriver: true }),
+    ]).start();
+  }, [step, fadeAnim, slideAnim]);
 
   const handleNext = async () => {
     if (step < 4) animateTransition(step + 1);
