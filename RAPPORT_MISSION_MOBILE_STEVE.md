@@ -82,3 +82,26 @@ Détail, preuves et corrections proposées : `mobile-steve/docs/BACKEND_ISSUES.m
 
 Listées dans `mobile-steve/docs/JOURNAL_RECETTE.md` § 4 (débit du crédit au like côté app tant que le backend
 ne le fait pas ; crédit débité avant d'accepter un like reçu ; paiement carte et vidéo indisponibles sur le web).
+
+---
+
+## 7. Phase 2 — Produit fini, hébergement bas coût et flux métier (2026-10-01)
+
+Cahier des charges « BOLIGO (Mobile & Web) », six jalons. Détail : `mobile-steve/docs/DEPLOIEMENT.md`
+(architecture et mode d'emploi), `mobile-steve/docs/AUDIT_METIER.md` (entretien, découverte, tunnel
+relationnel, modération, vidéo, modèle économique), `mobile-steve/docs/backend-proposals/` (patchs).
+
+| Jalon | Fait | Reste à faire (humain) |
+|---|---|---|
+| 1. Hébergement | **RLS activé sur les 20 tables Supabase** (migration `enable_rls_boligo_tables`, backend non affecté : rôle propriétaire). Base Render bannie, tout repose sur Supabase. Cold start : réveil du serveur au lancement de l'app + message d'attente. Arborescence : `mobile-steve/` + README. | Créer le Static Site Render `boligo-web` (réglages prêts, § 3.2 de DEPLOIEMENT.md ; la création par API a été refusée par la politique de permissions). Appliquer `admin-service-build-fix.patch` pour que `main` redéploie. |
+| 2. Grand Entretien | 69 questions / 11 modules auditées : bonne couverture valeurs, projet, communication, lignes rouges. 7 questions ciblées proposées (substances, polygamie, dettes, confiance/téléphone, réconciliation, temps ensemble, gestion des divergences) + coquille. | Relire et appliquer `interview-questions-enrichment.patch` (décision produit sur la question polygamie). |
+| 3. Découverte | Score et filtres audités : like/match reposent sur les cartes mentales issues de l'entretien. App : nouveau bloc **« Sujets à aborder »** (piliers faibles → questions d'ouverture), distance inventée supprimée. | Appliquer `discover-strict-filters-real-details.patch` (fin du repli hors périmètre, fin des données inventées). Décider des critères durs (enfants, religion, fidélité). |
+| 4. Modèle économique | Formule unique « Parcours Harmonie » 15 € / 1 crédit verrouillée côté app ; crédit validé par le serveur ; dépendance Supabase inutile retirée ; `pk_test` dans les profils de test. | Renseigner `STRIPE_SECRET_KEY` (`sk_test`) et `STRIPE_WEBHOOK_SECRET` sur Render ; clé live en production via EAS. |
+| 5. Tunnel relationnel | **7 questions par jour pendant 3 jours appliqué dans l'app** (ouverture calendaire, « Disponible demain »), chat libre après réponses des deux, chat → vidéo après 3 jours, règle de justice, double consentement : vérifiés. Questions de scénarios : IA personnalisée à partir des deux profils quand `OPENROUTER_API_KEY` est configurée. | Appliquer `sondeur-day-gating.patch` (le serveur acceptait les 21 réponses d'une traite). |
+| 6. Modération & vidéo | Filtrage avant envoi, modération serveur, signalement : testés. **Un compte suspendu peut encore se connecter** (prouvé) → patch `account-status-enforcement.patch`, message clair dans l'app. Vidéo : 2 minutes, Daily éphémère avec éjection à 120 s, repli Jitsi, tempo vérifié. | Créer le compte Daily.co et renseigner `DAILY_API_KEY` sur Render (inscription humaine requise). |
+
+Recette de non-régression après cette phase : typecheck 0 erreur, lint 0 erreur, Jest 10 suites / 44 tests,
+recette navigateur **47/47 étapes OK** (`mobile-steve/docs/E2E_RESULTATS.md`).
+
+Commits de la phase (dans `mobile-steve/`) : `25b1bad` paiement, `8b94648` Sondeur calendaire,
+`1ce0065` sujets à aborder, `dc86921` réveil du serveur, puis tests, documentation et patchs.
