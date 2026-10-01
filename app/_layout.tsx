@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { StripeProvider } from '@/services/stripe';
 import { addNotificationResponseListener, configureNotificationHandler } from '@/services/notifications';
 import { installWebAlert } from '@/services/webAlert';
+import { warmUpBackend } from '@/services/api';
 
 installWebAlert();
 
@@ -16,6 +17,14 @@ function NotificationRouter() {
     configureNotificationHandler();
     return addNotificationResponseListener((route) => router.push(route as any));
   }, [router]);
+  return null;
+}
+
+/** Réveille le backend dès l'ouverture de l'app (cold start des instances gratuites). */
+function BackendWarmUp() {
+  useEffect(() => {
+    warmUpBackend();
+  }, []);
   return null;
 }
 
@@ -30,6 +39,7 @@ export default function RootLayout() {
         <AuthProvider>
           <AppProvider>
           <NotificationRouter />
+          <BackendWarmUp />
           <Stack
             screenOptions={{
               headerShown: false,

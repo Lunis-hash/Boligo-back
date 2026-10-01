@@ -46,6 +46,15 @@ export default function WelcomeScreen() {
   const { token, isLoading: authLoading, signOut } = useAuth();
   const [resumeError, setResumeError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  // Instance gratuite Render : le premier appel peut attendre le réveil du serveur.
+  const [slowServer, setSlowServer] = useState(false);
+
+  useEffect(() => {
+    if (authLoading || !token) return;
+    setSlowServer(false);
+    const timer = setTimeout(() => setSlowServer(true), 4000);
+    return () => clearTimeout(timer);
+  }, [authLoading, token, retryCount]);
 
   // Animation de fond
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -110,7 +119,14 @@ export default function WelcomeScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <ActivityIndicator size="small" color={COLORS.red} />
+          <View style={{ alignItems: 'center', gap: 12, paddingHorizontal: 24 }}>
+            <ActivityIndicator size="small" color={COLORS.red} />
+            {slowServer && (
+              <Text style={styles.resumeHintText} testID="resume-slow-hint">
+                Le serveur se réveille, cela peut prendre jusqu'à une minute…
+              </Text>
+            )}
+          </View>
         )}
       </View>
     );
@@ -373,6 +389,12 @@ const styles = StyleSheet.create({
     color: COLORS.red,
     textDecorationLine: 'underline',
     marginTop: 12,
+  },
+  resumeHintText: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    color: 'rgba(20,16,14,0.55)',
   },
   resumeErrorText: {
     fontFamily: Typography.fontFamily.regular,

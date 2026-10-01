@@ -107,6 +107,9 @@ export const extractErrorMessage = (data: any, defaultMsg: string): string => {
   if (lower.includes('user not found')) {
     return 'Aucun compte associé à cette adresse e-mail.';
   }
+  if (lower.includes('suspendu') || lower.includes('suspended') || lower.includes('banni') || lower.includes('banned')) {
+    return 'Votre compte est suspendu. Contactez le support BOLIGO pour en savoir plus.';
+  }
   return rawMsg;
 };
 
@@ -206,3 +209,17 @@ client.interceptors.response.use(
 );
 
 export default client;
+
+/**
+ * Réveil du serveur (instance gratuite Render : mise en veille après 15 min
+ * d'inactivité, redémarrage en 30 à 60 s). Appelé au lancement de l'app pour
+ * que le serveur soit prêt quand l'utilisateur agit. Ne lève jamais d'erreur.
+ */
+export async function warmUpBackend(): Promise<boolean> {
+  try {
+    await client.get('/', { timeout: 90_000, headers: { 'x-warmup': '1' } });
+    return true;
+  } catch {
+    return false;
+  }
+}
