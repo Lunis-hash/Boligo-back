@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Harmonie",
-    "slug": "harmonie-expo",
+    "name": "Oweke",
+    "slug": "oweke",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "harmonie",
+    "scheme": "oweke",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -17,8 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.harmonie.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "BOLIGO utilise la caméra pour les appels vidéo entre matches.",
-        "NSMicrophoneUsageDescription": "BOLIGO utilise le micro pour les appels vidéo entre matches."
+        "NSCameraUsageDescription": "Oweke utilise la caméra pour les appels vidéo entre matchs.",
+        "NSMicrophoneUsageDescription": "Oweke utilise le micro pour les appels vidéo entre matchs."
       }
     },
     "android": {
@@ -36,7 +36,9 @@
       ]
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-router",
@@ -56,14 +58,8 @@
     "extra": {
       "router": {
         "root": "app"
-      },
-      "eas": {
-        "projectId": "9d9d1852-5877-4452-a4dd-fdc15652b037"
       }
     },
-    "runtimeVersion": "1.0.0",
-    "updates": {
-      "url": "https://u.expo.dev/9d9d1852-5877-4452-a4dd-fdc15652b037"
-    }
+    "runtimeVersion": "1.0.0"
   }
 }
