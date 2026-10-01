@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-09-30T22:46:40.668Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-01T19:28:32.002Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -17,6 +17,7 @@ Date : 2026-09-30T22:46:40.668Z · App : http://localhost:8081 · API : http://l
 | Login API du compte créé via l'UI | ✅ |  |
 | Découverte : état vide géré | ✅ |  |
 | Découverte : profil compatible affiché | ✅ |  |
+| Découverte : bloc « Sujets à aborder » (selon les piliers du profil) | ✅ | affiché |
 | Like sans crédit → « Plus de crédits disponibles » | ✅ |  |
 | Formule chargée depuis le backend (15,00 €) | ✅ |  |
 | Code promo validé | ✅ |  |
@@ -26,9 +27,11 @@ Date : 2026-09-30T22:46:40.668Z · App : http://localhost:8081 · API : http://l
 | Crédit débité après la connexion | ✅ | {"credits":0} |
 | Partenaire accepte (API) → parcours créé | ✅ |  |
 | Onglet Matchs : parcours Harmonie visible | ✅ |  |
+| Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
+| Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"c834dcf7-e6 |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"c834dcf7-e63c-4bef-98fd-7c2828db5dac","currentStep":"chat_libre","currentDay":1,"partnerName":"Nadia","isCompleted":true} |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"02401823-21 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"02401823-212f-4ca0-a501-30a3bdbbcb04","currentStep":"chat_libre","currentDay":3,"partnerName":"Nadia","isCompleted":true} |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |

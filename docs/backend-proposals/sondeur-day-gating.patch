@@ -1,0 +1,40 @@
+--- a/src/journey/journey.service.ts	2026-10-01 19:19:08.753637092 +0000
++++ b/src/journey/journey.service.ts	2026-10-01 19:19:08.787036686 +0000
+@@ -474,7 +474,37 @@
+     await this.persistHarmonyQuestions(journeyId, payloads);
+   }
+ 
++  /** Jour calendaire courant d'un parcours (1..3), même règle que getStatus(). */
++  private currentJourneyDay(stepStartDate: Date): number {
++    const diffTime = Math.abs(Date.now() - stepStartDate.getTime());
++    return Math.min(3, Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))));
++  }
++
+   async respondToQuestion(questionId: string, userId: string, text: string) {
++    const question = await this.prisma.harmonyQuestion.findUnique({
++      where: { id: questionId },
++      include: { journey: true, responses: { where: { userId } } },
++    });
++    if (!question) throw new NotFoundException('Question introuvable');
++    const journey = question.journey;
++    if (journey.userAId !== userId && journey.userBId !== userId) {
++      throw new ForbiddenException('Vous ne faites pas partie de ce parcours');
++    }
++    if (journey.currentStep !== 'phase_harmonie') {
++      throw new BadRequestException('La phase Harmonie de ce parcours est terminée.');
++    }
++    if (question.responses.length > 0) {
++      throw new BadRequestException('Vous avez déjà répondu à cette question.');
++    }
++    // Règle BOLIGO : 7 questions par jour pendant 3 jours — une journée ne
++    // s'ouvre que lorsque le jour calendaire est atteint.
++    const today = this.currentJourneyDay(journey.stepStartDate);
++    if (question.day > today) {
++      throw new BadRequestException(
++        `Cette question fait partie du jour ${question.day} : elle sera disponible ${question.day - today === 1 ? 'demain' : `dans ${question.day - today} jours`}.`,
++      );
++    }
++
+     const trimmed = text.trim();
+     const local = moderateMessageLocally(trimmed);
+     if (!local.allowed) {

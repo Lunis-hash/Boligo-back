@@ -44,6 +44,14 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 | 20 | P2 | Web | `Alert.alert` sans effet sur react-native-web (erreurs invisibles) ; `expo-notifications` chargé sur le web (avertissement) | export web | ✅ | `daa89b1` |
 | 21 | P3 | Code | `scrollX` inutilisé, mocks de compatibilité locaux, logs de debug hors `__DEV__` | lint | ✅ | `cd80bd9`, `225b685`, `806ebcf` |
 | 22 | P2 | Tests | Aucun test automatisé dans le dépôt d'origine | — | ✅ 8 suites / 33 tests Jest, script d'acceptation API (60/64, 4 bugs backend attendus), recette navigateur | `59fe0e0`, `82d1dfd`, `daa89b1`, `0275522` |
+| 23 | P0 sécu | Supabase | RLS désactivé sur les 20 tables BOLIGO (API REST Supabase ouverte) | linter Supabase | ✅ RLS activé (migration `enable_rls_boligo_tables`), backend non affecté (rôle propriétaire) | infra |
+| 24 | P1 | Sondeur | Les 21 questions pouvaient être répondues en une seule session alors que la règle est 7 par jour sur 3 jours ; le serveur ne vérifie ni le jour ni l'appartenance au parcours | E2E (21 réponses en 2 min), lecture `respondToQuestion` | ✅ app : ouverture calendaire (`services/sondeur.ts`) · 📝 backend : `backend-proposals/sondeur-day-gating.patch` | `8b94648` |
+| 25 | P1 | Découverte | Repli sur tous les profils hors périmètre quand les filtres ne laissent personne ; données inventées (situation, enfants, études, distance, « nuance de rythme ») ; aucune aide au dialogue sur les divergences | lecture `matching.service.ts`, écran Découverte | ✅ app : bloc « Sujets à aborder », distance supprimée · 📝 backend : `discover-strict-filters-real-details.patch` | `1ce0065` |
+| 26 | P0 sécu | Modération | Un compte `suspendu` se connecte et utilise l'API | backend local : login 200, `/profile/me` 200 | ✅ app : message explicite · 📝 backend : `account-status-enforcement.patch` | `dc86921` |
+| 27 | P2 | Cold start | Instance Render gratuite endormie : premier appel 30–60 s sans explication pour l'utilisateur | mesure Render | ✅ réveil au lancement + message d'attente après 4 s | `dc86921` |
+| 28 | P2 | Paiement | L'app affichait toute formule renvoyée par le backend ; dépendance `@supabase/supabase-js` inutilisée embarquée | `package.json`, `payment.tsx` | ✅ formule unique `parcours_harmonie`, dépendance retirée | `25b1bad` |
+| 29 | P2 | Entretien | Couverture incomplète : substances, polygamie, dettes, confiance/téléphone, réconciliation, temps ensemble, gestion des divergences ; coquille « m'excluser » | audit `questions.data.ts` (69 questions) | 📝 `backend-proposals/interview-questions-enrichment.patch` (+7 questions) | docs |
+| 30 | P1 | Déploiement | Pas d'hébergement web ; création du Static Site Render refusée par la politique de permissions de la session | Render | 📝 configuration prête à cliquer (`docs/DEPLOIEMENT.md` § 3.2) | docs |
 
 ## 2. Recette exécutée
 
@@ -51,9 +59,9 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 |---|---|---|
 | Typage | `npm run typecheck` | 0 erreur |
 | Lint | `npm run lint` | 0 erreur, 69 avertissements (variables inutilisées héritées, `exhaustive-deps`) |
-| Unitaires | `npm test` | 8 suites, 33 tests OK |
+| Unitaires | `npm test` | 10 suites, 44 tests OK |
 | API | `API_URL=http://localhost:3000/api npm run test:api` | 60/64 — les 4 échecs sont des bugs backend documentés (`docs/BACKEND_ISSUES.md`) |
-| Navigateur | `node e2e/journey.e2e.js` (Chromium 390×844 + 360×640 + 768×1024) | **44/44 étapes OK** — détail dans `docs/E2E_RESULTATS.md`, captures dans `docs/screenshots/` |
+| Navigateur | `node e2e/journey.e2e.js` (Chromium 390×844 + 360×640 + 768×1024, `E2E_PSQL` pour simuler les jours) | **47/47 étapes OK** (dont jours 2 et 3 du Sondeur verrouillés jusqu'au lendemain) — détail dans `docs/E2E_RESULTATS.md`, captures dans `docs/screenshots/` |
 | Export web | `npx expo export --platform web` | OK (bundle unique) |
 
 Parcours rejoué de bout en bout dans le navigateur : accueil → slides + CGU → inscription 4 étapes → OTP →

@@ -1,0 +1,137 @@
+--- a/src/interview/questions.data.ts	2026-10-01 19:13:54.277645438 +0000
++++ b/src/interview/questions.data.ts	2026-10-01 19:15:34.289831454 +0000
+@@ -133,6 +133,17 @@
+       { key: 'D', text: 'Bac +5 et plus' },
+     ],
+   },
++  {
++    id: 'M0_Q08',
++    moduleNumber: 0,
++    text: 'Le tabac, l\'alcool ou d\'autres substances chez votre partenaire :',
++    options: [
++      { key: 'A', text: 'Rédhibitoire — je ne pourrais pas vivre avec' },
++      { key: 'B', text: 'Acceptable avec modération et sans excès' },
++      { key: 'C', text: 'Je consomme moi-même occasionnellement' },
++      { key: 'D', text: 'Sans importance pour moi' },
++    ],
++  },
+ 
+   // --- MODULE 1 : IDENTITÉ & CULTURE ---
+   {
+@@ -229,6 +240,17 @@
+       { key: 'D', text: 'Nos décisions ne concernent que notre couple' },
+     ],
+   },
++  {
++    id: 'M1_Q11',
++    moduleNumber: 1,
++    text: 'Votre position sur la polygamie :',
++    options: [
++      { key: 'A', text: 'Inacceptable — monogamie exclusive, sans discussion' },
++      { key: 'B', text: 'Je la respecte chez les autres, mais pas pour mon couple' },
++      { key: 'C', text: 'Envisageable dans un cadre religieux, consenti et transparent' },
++      { key: 'D', text: 'Je préfère en parler en personne' },
++    ],
++  },
+ 
+   // --- MODULE 2 : ATTACHEMENT & RÉGULATION ÉMOTIONNELLE ---
+   {
+@@ -294,7 +316,7 @@
+       { key: 'A', text: 'Oui — l\'harmonie passe avant mon ego' },
+       { key: 'B', text: 'Oui si je réalise avoir commis une erreur' },
+       { key: 'C', text: 'Difficilement — mon ego résiste' },
+-      { key: 'D', text: 'Non — je n\'ai pas à m\'excluser si j\'avais raison' },
++      { key: 'D', text: 'Non — je n\'ai pas à m\'excuser si j\'avais raison' },
+     ],
+   },
+   {
+@@ -460,6 +482,17 @@
+       { key: 'D', text: 'Je ne suis pas à l\'aise pour épargner ensemble' },
+     ],
+   },
++  {
++    id: 'M4_Q09',
++    moduleNumber: 4,
++    text: 'Les dettes ou crédits en cours de votre partenaire :',
++    options: [
++      { key: 'A', text: 'Tout doit être dit avant de s\'engager' },
++      { key: 'B', text: 'On en parle au moment de vivre ensemble' },
++      { key: 'C', text: 'Ça reste personnel tant que ça n\'impacte pas le couple' },
++      { key: 'D', text: 'Je ne me suis jamais posé la question' },
++    ],
++  },
+ 
+   // --- MODULE 5 : DYNAMIQUE SOCIALE & FAMILIALE ---
+   {
+@@ -528,6 +561,17 @@
+       { key: 'D', text: 'Jamais ou très rarement' },
+     ],
+   },
++  {
++    id: 'M5_Q08',
++    moduleNumber: 5,
++    text: 'L\'accès au téléphone et aux messages de votre partenaire :',
++    options: [
++      { key: 'A', text: 'Transparence totale — chacun a accès à tout' },
++      { key: 'B', text: 'Confiance sans contrôle — chacun garde son intimité' },
++      { key: 'C', text: 'Accès possible seulement en cas de doute sérieux' },
++      { key: 'D', text: 'Je ne me suis jamais posé la question' },
++    ],
++  },
+ 
+   // --- MODULE 6 : QUOTIDIEN, COMMUNICATION RÉELLE & LIMITES ---
+   {
+@@ -585,6 +629,17 @@
+       { key: 'D', text: 'Je définis la fidélité différemment selon le contexte' },
+     ],
+   },
++  {
++    id: 'M6_Q11',
++    moduleNumber: 6,
++    text: 'Après une dispute, la réconciliation idéale pour vous :',
++    options: [
++      { key: 'A', text: 'On en reparle calmement et on se demande pardon' },
++      { key: 'B', text: 'Un geste tendre vaut mieux qu\'une longue discussion' },
++      { key: 'C', text: 'Chacun prend du recul, puis on tourne la page' },
++      { key: 'D', text: 'J\'ai besoin que l\'autre fasse le premier pas' },
++    ],
++  },
+ 
+   // --- MODULE 7 : TRAJECTOIRE DE VIE & PERSONNALITÉ ---
+   {
+@@ -642,6 +697,17 @@
+       { key: 'D', text: 'Je suis ouvert(e) — ça dépend du projet de vie' },
+     ],
+   },
++  {
++    id: 'M7_Q08',
++    moduleNumber: 7,
++    text: 'Le temps passé ensemble dans la semaine, idéalement :',
++    options: [
++      { key: 'A', text: 'Le plus possible — on partage presque tout' },
++      { key: 'B', text: 'Les soirées et les week-ends, avec des moments à soi' },
++      { key: 'C', text: 'Quelques rendez-vous de qualité — chacun sa vie' },
++      { key: 'D', text: 'Ça dépend des périodes et des projets' },
++    ],
++  },
+ 
+   // --- MODULE 8 : PROJET DE COUPLE ---
+   {
+@@ -711,6 +777,17 @@
+       { key: 'D', text: 'L\'absence de projet commun' },
+     ],
+   },
++  {
++    id: 'M8_Q09',
++    moduleNumber: 8,
++    text: 'Si vos projets de vie divergent sur un point clé (ville, enfants, religion), vous :',
++    options: [
++      { key: 'A', text: 'J\'en parle tôt et je tranche vite si ce n\'est pas compatible' },
++      { key: 'B', text: 'Je laisse la relation grandir avant d\'aborder le sujet' },
++      { key: 'C', text: 'Je cherche un compromis, quel qu\'en soit le prix' },
++      { key: 'D', text: 'Je fais confiance à l\'amour pour trouver une solution' },
++    ],
++  },
+ 
+   // --- MODULE 9 : POUVOIR, EFFORT & CAPACITÉ À AIMER ---
+   {
