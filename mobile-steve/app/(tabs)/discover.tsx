@@ -20,6 +20,7 @@ import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertTriangle, ShieldCheck, Link2 } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
 import client, { getReadableError } from '@/services/api';
+import { getDiscussionTopics, hasMajorDivergence } from '@/services/compatibility';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 
@@ -526,6 +527,9 @@ function DiscoverScreen() {
         }
         : null;
 
+  const discussionTopics = currentMatch ? getDiscussionTopics(currentMatch.compatibility, currentMatch.mentalMap) : [];
+  const majorDivergence = currentMatch ? hasMajorDivergence(currentMatch.compatibility, currentMatch.mentalMap) : false;
+
   const hasLikedMe = receivedLikes.length > 0 && currentMatch?.id === receivedLikes[0].userId;
   const existingLike = receivedLikes[0];
   const hasLoadedRef = useRef(false);
@@ -585,7 +589,7 @@ function DiscoverScreen() {
             firstName: name,
             age: p.age ?? (25 + (idx * 3) % 15),
             location: p.location ?? p.city ?? (idx % 2 === 0 ? 'Paris' : 'Lyon'),
-            distance: p.distance ?? `~${(idx + 1) * 4} km`,
+            distance: undefined, // l'app ne géolocalise pas : aucune distance inventée
             profession: p.profession ?? p.job ?? (idx % 2 === 0 ? 'Architecte / Designer' : 'Cadre / Ingénieur(e)'),
             compatibility: compatScore,
             slogan: p.slogan ?? p.bio ?? `« Rechercher une belle complicité fondée sur la sincérité et le soutien à ${p.location ?? p.city ?? 'Lyon'}. »`,
@@ -977,6 +981,29 @@ function DiscoverScreen() {
                     <Text style={styles.warningTitle}>À ABORDER ENSEMBLE</Text>
                   </View>
                   <Text style={styles.warningText}>{renderFormattedText(currentMatch.warningPoint)}</Text>
+                </View>
+              </View>
+              )}
+
+              {/* 7bis. Sujets à aborder (divergences → dialogue, pas de swipe) */}
+              {discussionTopics.length > 0 && (
+              <View style={styles.sectionBlock} testID="discussion-topics">
+                <View style={styles.sectionHeader}>
+                  <View style={[styles.iconCircle, { backgroundColor: '#6366F115' }]}><Text style={{fontSize:15}}>💬</Text></View>
+                  <Text style={styles.sectionTitle}>SUJETS À ABORDER</Text>
+                </View>
+                <Text style={styles.topicsIntro}>
+                  {majorDivergence
+                    ? `Vos profils divergent nettement sur ${discussionTopics.length > 1 ? 'ces points' : 'ce point'}. BOLIGO ne cache pas les différences : parlez-en franchement dès le Sondeur.`
+                    : 'Quelques différences à explorer ensemble pendant les 3 jours du Sondeur.'}
+                </Text>
+                <View style={{ gap: Spacing.sm }}>
+                  {discussionTopics.map((topic) => (
+                    <View key={topic.id} style={styles.topicCard}>
+                      <Text style={styles.topicTitle}>{topic.title}</Text>
+                      <Text style={styles.topicPrompt}>{topic.prompt}</Text>
+                    </View>
+                  ))}
                 </View>
               </View>
               )}
@@ -1404,6 +1431,10 @@ const styles = StyleSheet.create({
 
   // Sections Génériques
   sectionBlock: { gap: Spacing.sm },
+  topicsIntro: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Colors.text.primary70, marginBottom: 2 },
+  topicCard: { padding: 14, borderRadius: 16, backgroundColor: '#6366F10D', borderWidth: 1, borderColor: '#6366F126', gap: 4 },
+  topicTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 14, color: Colors.text.primary100 },
+  topicPrompt: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Colors.text.primary70 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: 2 },
   iconCircle: {
     width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.neutral.border,

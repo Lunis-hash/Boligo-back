@@ -21,6 +21,7 @@ import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { useAppContext } from '@/context/AppContext';
 import { useAuth } from '@/context/auth';
 import client, { getReadableError } from '@/services/api';
+import { clampDay, getSondeurDayState, getSondeurDayStatus, getSondeurLockedLabel } from '@/services/sondeur';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 import {
@@ -48,6 +49,7 @@ function DayStep({
   emoji,
   isLast,
   onPressActive,
+  lockedLabel,
 }: {
   day: number;
   status: 'done' | 'active' | 'locked';
@@ -55,6 +57,7 @@ function DayStep({
   emoji: string;
   isLast: boolean;
   onPressActive?: () => void;
+  lockedLabel?: string;
 }) {
   const content = (
     <View style={styles.dayStepWrap}>
@@ -118,7 +121,7 @@ function DayStep({
         </View>
         {status === 'done' && <Text style={styles.dayDoneLabel}>Réponses comparées ✓</Text>}
         {status === 'active' && <Text style={styles.dayActiveLabel}>En cours — 2 questions</Text>}
-        {status === 'locked' && <Text style={styles.dayLockedLabel}>Disponible après le jour précédent</Text>}
+        {status === 'locked' && <Text style={styles.dayLockedLabel}>{lockedLabel ?? 'Disponible après le jour précédent'}</Text>}
       </View>
     </View>
   );
@@ -164,6 +167,8 @@ export default function MatchesScreen() {
   const [loading, setLoading] = useState(true);
 
   const [currentDay, setCurrentDay] = useState(1);
+  // Jour calendaire du parcours (1..3) fourni par GET /journey/:id/status.
+  const [calendarDay, setCalendarDay] = useState(1);
   const [answeredDays, setAnsweredDays] = useState<number[]>([]);
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<'overview' | 'question'>('overview');
@@ -188,6 +193,7 @@ export default function MatchesScreen() {
   // Appliquer les données du parcours instantanément
   const applyJourneyData = (status: any, questions: any[]) => {
     setDbQuestions(questions);
+    setCalendarDay(clampDay(status?.currentDay));
 
     // Si le parcours est fini (chat_libre ou plus)
     if (status.currentStep !== 'phase_harmonie') {
@@ -233,8 +239,9 @@ export default function MatchesScreen() {
           daysAnswered.add(day);
         }
       }
-      setAnsweredDays(Array.from(daysAnswered).sort());
-      setCurrentDay(Math.min(3, Array.from(daysAnswered).length + 1));
+      const answeredList = Array.from(daysAnswered).sort();
+      setAnsweredDays(answeredList);
+      setCurrentDay(getSondeurDayState(answeredList, status?.currentDay).currentDay);
 
       // Révéler les réponses du partenaire pour les jours déjà répondus
       setRevealedKeys(Object.keys(partnerAns));
@@ -330,18 +337,20 @@ export default function MatchesScreen() {
   const allDone =
     answeredDays.length === 3 ||
     (firstMatch?.phase === 'chat' || firstMatch?.phase === 'video' || firstMatch?.phase === 'contacts');
+  // Règle BOLIGO : 7 questions par jour, pendant 3 jours. Une journée ne
+  // s'ouvre que si la précédente est répondue ET si le jour calendaire est atteint.
+  const dayState = getSondeurDayState(answeredDays, calendarDay);
   const canAnswerToday =
     sondeurInProgress &&
     !!firstMatch?.journeyId &&
     !allDone &&
+    dayState.canAnswer &&
     !answeredDays.includes(currentDay) &&
     totalQuestionsToday > 0;
+  const waitingForNextDay = sondeurInProgress && !allDone && dayState.waitingForNextDay;
 
-  const getDayStatus = (day: number): 'done' | 'active' | 'locked' => {
-    if (answeredDays.includes(day)) return 'done';
-    if (day === currentDay) return 'active';
-    return 'locked';
-  };
+  const getDayStatus = (day: number): 'done' | 'active' | 'locked' =>
+    getSondeurDayStatus(day, answeredDays, dayState);
 
   const handleAnswer = async () => {
     const answer = customText.trim();
@@ -696,9 +705,18 @@ export default function MatchesScreen() {
                       emoji={d.emoji}
                       isLast={i === dayThemes.length - 1}
                       onPressActive={openQuestionFlow}
+                      lockedLabel={getSondeurLockedLabel(d.day, dayState)}
                     />
                   ))}
                 </View>
+                {waitingForNextDay && (
+                  <View style={styles.nextDayNotice} testID="sondeur-next-day">
+                    <Text style={styles.nextDayNoticeText}>
+                      Vos 7 questions du jour sont faites. La prochaine série s'ouvre{' '}
+                      {dayState.daysUntilUnlock <= 1 ? 'demain' : `dans ${dayState.daysUntilUnlock} jours`}.
+                    </Text>
+                  </View>
+                )}
               </View>
 
               {/* ── Question du jour ────────────────────────────────── */}
@@ -1034,6 +1052,8 @@ const styles = StyleSheet.create({
   dayDoneLabel: { fontFamily: Typography.fontFamily.regular, fontSize: 11, color: Colors.primary.red },
   dayActiveLabel: { fontFamily: Typography.fontFamily.medium, fontSize: 11, color: Colors.primary.purple },
   dayLockedLabel: { fontFamily: Typography.fontFamily.regular, fontSize: 11, color: Colors.text.primary40 },
+  nextDayNotice: { marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: 'rgba(16,185,129,0.08)' },
+  nextDayNoticeText: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Colors.text.primary70 },
 
   // Question du jour
   questionDayCard: { borderRadius: BorderRadius.xl, overflow: 'hidden' },

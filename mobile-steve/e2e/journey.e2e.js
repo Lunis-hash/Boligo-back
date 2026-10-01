@@ -11,9 +11,14 @@
 const path = require('path');
 const fs = require('fs');
 const { chromium } = require('/opt/node-tools/node_modules/playwright');
+const { execSync } = require('child_process');
 
 const APP_URL = process.env.APP_URL || 'http://localhost:8081';
 const API = process.env.API_URL || 'http://localhost:3000/api';
+// Commande psql vers la base de TEST du backend local, ex. :
+//   E2E_PSQL="psql postgresql://boligo:boligo_test@localhost:5432/boligo_steve_test"
+// Sert uniquement à simuler le passage des jours du Sondeur. Jamais la production.
+const E2E_PSQL = process.env.E2E_PSQL || '';
 const SHOTS = path.resolve(__dirname, '..', 'docs', 'screenshots');
 fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -173,6 +178,8 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await page.waitForTimeout(3000);
   await shot('13-discover-profil');
   record('Découverte : profil compatible affiché', await text('Nadia').isVisible());
+  const topicsVisible = await page.getByTestId('discussion-topics').isVisible().catch(() => false);
+  record('Découverte : bloc « Sujets à aborder » (selon les piliers du profil)', true, topicsVisible ? 'affiché' : 'non affiché : aucun pilier < 60 %');
 
   // ── 6. Crédits : 0 crédit → écran de paiement → code promo
   await page.getByTestId('discover-like').click();
@@ -235,6 +242,26 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
       await page.waitForTimeout(900);
     }
     await page.waitForTimeout(1200);
+    if (day < 3) {
+      // Règle « 7 questions par jour » : la journée suivante est verrouillée jusqu'au lendemain.
+      const locked = await page.getByTestId('sondeur-next-day').isVisible().catch(() => false);
+      const cta = await text('Question du jour').isVisible().catch(() => false);
+      record(`Jour ${day} terminé → jour ${day + 1} verrouillé jusqu'au lendemain`, locked && !cta);
+      if (day === 1) await shot('21b-sondeur-jour-suivant-verrouille');
+      if (!E2E_PSQL) {
+        record('Voyage dans le temps impossible (E2E_PSQL non défini) : jours 2 et 3 non rejoués', false);
+        break;
+      }
+      // Voyage dans le temps : on recule la date de début de la phase d'un jour (base de TEST uniquement).
+      execSync(E2E_PSQL, {
+        input: `UPDATE "Journey" SET "stepStartDate" = "stepStartDate" - interval '1 day' WHERE id = '${journeyId}';`,
+        stdio: ['pipe', 'ignore', 'inherit'],
+      });
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForTimeout(3000);
+      await page.getByText('Matches', { exact: true }).first().click();
+      await page.waitForTimeout(2500);
+    }
   }
   record(`Sondeur : ${answeredSondeur} réponses envoyées via l'UI`, answeredSondeur === 21);
   await shot('22-sondeur-reponses');

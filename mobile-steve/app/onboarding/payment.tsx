@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStripe } from '@/services/stripe';
 import { Check, ShieldCheck, Sparkles, ChevronLeft, Tag } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
-import { PaymentService, PaymentPlan, PromoCheckResult } from '@/services/payment';
+import { PaymentService, PaymentPlan, PromoCheckResult, selectHarmoniePlan } from '@/services/payment';
 import { getReadableError } from '@/services/api';
 import { Typography } from '@/constants/theme';
 
@@ -82,9 +82,9 @@ export default function PaymentScreen() {
     setPlansLoading(true);
     setPlansError(null);
     try {
-      const list = await PaymentService.getPlans();
+      const list = selectHarmoniePlan(await PaymentService.getPlans());
       setPlans(list);
-      if (list.length === 0) setPlansError('Aucune formule disponible pour le moment.');
+      if (list.length === 0) setPlansError('La formule Parcours Harmonie est indisponible pour le moment.');
     } catch (e) {
       setPlansError(getReadableError(e, 'Impossible de charger les formules.'));
     } finally {

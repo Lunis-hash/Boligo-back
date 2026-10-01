@@ -7,11 +7,13 @@ qu'aucune commande ne puisse pousser vers le dépôt d'origine.
 
 - Stack : Expo SDK 54 · React Native 0.81 · React 19 · expo-router 6 · TypeScript 5.9
 - Backend : `Boligo-back` (NestJS + Prisma), préfixe `/api`, WebSocket Socket.IO
-- Documentation : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md),
-  [`docs/JOURNAL_RECETTE.md`](docs/JOURNAL_RECETTE.md),
-  [`docs/API_AUDIT.md`](docs/API_AUDIT.md),
-  [`docs/BACKEND_ISSUES.md`](docs/BACKEND_ISSUES.md),
-  [`docs/E2E_RESULTATS.md`](docs/E2E_RESULTATS.md)
+- Documentation :
+  - [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md) — hébergement bas coût (Supabase + Render + Expo), variables, mode d'emploi de test
+  - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — navigation, état, API, temps réel, flux métier
+  - [`docs/AUDIT_METIER.md`](docs/AUDIT_METIER.md) — Grand Entretien, Découverte, tunnel relationnel, modération, vidéo, modèle économique
+  - [`docs/JOURNAL_RECETTE.md`](docs/JOURNAL_RECETTE.md) — constats, priorités, preuves, commits correctifs
+  - [`docs/API_AUDIT.md`](docs/API_AUDIT.md), [`docs/BACKEND_ISSUES.md`](docs/BACKEND_ISSUES.md), [`docs/backend-proposals/`](docs/backend-proposals/README.md) — écarts backend et patchs proposés
+  - [`docs/E2E_RESULTATS.md`](docs/E2E_RESULTATS.md) — recette navigateur, captures dans `docs/screenshots/`
 
 ## Démarrer
 
@@ -41,8 +43,17 @@ API_URL=http://localhost:3000/api npm run test:api
 # Navigateur : parcours complet rejoué dans Chromium sur l'export web (voir e2e/README.md)
 EXPO_PUBLIC_API_URL=http://localhost:3000/api npx expo export --platform web --output-dir /tmp/boligo-web
 node e2e/static-server.js /tmp/boligo-web 8081 &
-APP_URL=http://localhost:8081 API_URL=http://localhost:3000/api node e2e/journey.e2e.js
+APP_URL=http://localhost:8081 API_URL=http://localhost:3000/api \
+E2E_PSQL="psql postgresql://boligo:boligo_test@localhost:5432/boligo_steve_test" \
+node e2e/journey.e2e.js   # E2E_PSQL simule le passage des jours du Sondeur (base de test)
 ```
+
+### Règles métier portées par l'app
+
+- Formule unique « Parcours Harmonie » (15 €, 1 crédit = 1 parcours), solde tenu par le serveur.
+- Sondeur : 7 questions par jour pendant 3 jours, une journée s'ouvre le lendemain de la précédente.
+- Découverte : les divergences deviennent des « Sujets à aborder », jamais un motif de swipe.
+- Coordonnées révélées uniquement après le consentement explicite des deux membres.
 
 ## Structure
 

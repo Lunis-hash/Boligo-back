@@ -18,8 +18,8 @@ Les corrections proposées sont à valider séparément par l'équipe backend.
 > Pour la recette locale, ces trois corrections ont été appliquées **uniquement
 > dans la copie de travail locale** du conteneur de test, afin de pouvoir démarrer
 > le backend. Elles ne sont pas commitées dans `Boligo-back` ; le diff est fourni
-> à titre de proposition dans `docs/backend-admin-service-build-fix.patch`
-> (`git apply docs/backend-admin-service-build-fix.patch` depuis `Boligo-back`).
+> à titre de proposition dans `docs/backend-proposals/admin-service-build-fix.patch`
+> (`git apply docs/backend-proposals/admin-service-build-fix.patch` depuis `Boligo-back`).
 
 ## 1. Sécurité
 

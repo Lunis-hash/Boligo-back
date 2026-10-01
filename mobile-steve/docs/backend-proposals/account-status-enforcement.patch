@@ -1,0 +1,40 @@
+--- a/src/auth/strategies/jwt.strategy.ts	2026-10-01 19:19:08.732663598 +0000
++++ b/src/auth/strategies/jwt.strategy.ts	2026-10-01 19:19:08.785496557 +0000
+@@ -1,4 +1,4 @@
+-import { Injectable, UnauthorizedException } from '@nestjs/common';
++import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+ import { PassportStrategy } from '@nestjs/passport';
+ import { ExtractJwt, Strategy } from 'passport-jwt';
+ import { PrismaService } from '../../prisma/prisma.service';
+@@ -21,6 +21,12 @@
+       throw new UnauthorizedException();
+     }
+ 
++    // Un compte suspendu par la modération ne peut plus utiliser l'API,
++    // même avec un token encore valide.
++    if (user.accountStatus === 'suspendu') {
++      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
++    }
++
+     const { passwordHash, ...result } = user;
+     return result;
+   }
+--- a/src/auth/auth.service.ts	2026-10-01 19:19:08.743919308 +0000
++++ b/src/auth/auth.service.ts	2026-10-01 19:19:08.786410909 +0000
+@@ -1,4 +1,4 @@
+-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
++import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+ import { PrismaService } from '../prisma/prisma.service';
+ import { RegisterDto } from './dto/register.dto';
+ import { LoginDto } from './dto/login.dto';
+@@ -185,6 +185,10 @@
+       throw new UnauthorizedException('Adresse e-mail ou mot de passe incorrect.');
+     }
+ 
++    if (user.accountStatus === 'suspendu') {
++      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
++    }
++
+     if (!user.isVerified) {
+       const verificationCode = user.verificationCode || Math.floor(1000 + Math.random() * 9000).toString();
+       if (!user.verificationCode) {
