@@ -5,6 +5,17 @@ import client from './api';
  * Le backend n'expose qu'un seul plan (`parcours_harmonie`, 15 €, 1 crédit) ;
  * la liste est toujours lue depuis l'API pour rester alignée.
  */
+/**
+ * Formule unique BOLIGO : « Parcours Harmonie », 15 €, 1 crédit = 1 parcours.
+ * Le montant et le crédit sont fixés et validés par le serveur ; l'app n'affiche
+ * aucune autre offre, même si le backend en exposait d'autres.
+ */
+export const HARMONIE_PLAN_ID = 'parcours_harmonie';
+
+export function selectHarmoniePlan<T extends { id: string }>(plans: T[]): T[] {
+  return plans.filter((plan) => plan.id === HARMONIE_PLAN_ID);
+}
+
 export interface PaymentPlanFeature {
   icon: string;
   label: string;
