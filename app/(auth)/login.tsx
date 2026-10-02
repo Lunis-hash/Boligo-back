@@ -372,6 +372,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#111',
+    // La photo de fond est agrandie (scale 1.15) : sans ce clip, le web
+    // affiche une barre de défilement horizontale.
+    overflow: 'hidden',
   },
 
   // Fond flouté
