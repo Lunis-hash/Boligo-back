@@ -192,8 +192,14 @@ function waitFor(socket, event, ms = 4000) {
   record('message insultant → 400', insult.status === 400, `status ${insult.status}`);
   const msgs = await call('GET', `/journey/${journeyId}/messages`, { token: B.token });
   record('GET journey messages (B)', msgs.status === 200 && msgs.data.length === 1, `messages=${msgs.data?.length}`);
-  const unread = await call('GET', '/chat/unread-count', { token: B.token });
-  record('chat/unread-count B (attendu 1)', unread.data === 1, `reçu=${JSON.stringify(unread.data)} (bug backend req.user.userId si 0)`);
+  // B est connecté au salon : ses messages sont marqués lus à la réception. Le compteur
+  // de non-lus se mesure donc côté A (sans socket) après un message de B.
+  await call('POST', '/journey/message', { token: B.token, body: { journeyId, content: 'Message de Bob pour tester les non-lus.', type: 'texte' } });
+  const unread = await call('GET', '/chat/unread-count', { token: A.token });
+  record('chat/unread-count A après un message de B (attendu 1)', unread.data === 1, `reçu=${JSON.stringify(unread.data)}`);
+  const markRead = await call('POST', `/chat/journeys/${journeyId}/read`, { token: A.token });
+  const unreadAfter = await call('GET', '/chat/unread-count', { token: A.token });
+  record('chat/journeys/:id/read → compteur à 0', markRead.status < 300 && unreadAfter.data === 0, `status ${markRead.status}, reçu=${JSON.stringify(unreadAfter.data)}`);
   socketB.close();
 
   // ── Vidéo
