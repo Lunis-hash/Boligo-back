@@ -1,0 +1,87 @@
+# Politique de confidentialité — BOLIGO
+
+Version du 2026-10-02.
+
+Cette politique explique quelles données BOLIGO collecte, pourquoi, combien de temps, avec qui elles sont partagées et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.
+
+## 1. Responsable du traitement
+
+[À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : adresse du siège social]. Contact pour la protection des données : [À COMPLÉTER : adresse e-mail du délégué à la protection des données].
+
+## 2. Données collectées
+
+Identité et contact : prénom, nom, adresse e-mail, numéro de téléphone, date de naissance, genre, ville ou pays, profession.
+
+Entretien et profil : vos réponses aux onze modules du Grand Entretien, la carte mentale générée (synthèse, biographie, valeurs, besoins, lignes rouges, scores), vos réponses au Sondeur.
+
+Certaines réponses peuvent révéler des convictions religieuses ou philosophiques, votre origine culturelle, votre vie sexuelle ou votre état de santé psychologique. Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli à l'inscription, et uniquement pour établir votre compatibilité.
+
+Échanges : messages du chat, réponses comparées, consentements à l'échange de contacts, métadonnées des appels vidéo (date, durée). Le contenu audio et vidéo des appels n'est ni enregistré ni conservé.
+
+Paiement : montant, date, identifiant de transaction Stripe, codes promotionnels utilisés. Les numéros de carte ne transitent jamais par nos serveurs.
+
+Technique : identifiant d'appareil pour les notifications, journaux de connexion et d'erreur, signalements et décisions de modération.
+
+## 3. Finalités et bases légales
+
+Fournir le service de mise en relation (création du compte, entretien, compatibilité, parcours, messagerie, vidéo) : exécution du contrat.
+
+Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment en supprimant votre compte.
+
+Assurer la sécurité, prévenir les fraudes et modérer les contenus : intérêt légitime de BOLIGO et de ses membres.
+
+Gérer les paiements et la comptabilité : exécution du contrat et obligation légale.
+
+Envoyer les e-mails de service (vérification, réinitialisation, notifications de parcours) : exécution du contrat. Aucune prospection commerciale n'est réalisée sans consentement distinct.
+
+## 4. Traitements automatisés et intelligence artificielle
+
+BOLIGO utilise des modèles d'intelligence artificielle pour rédiger votre carte mentale, calculer un score de compatibilité, générer les questions du Sondeur et assister la modération. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.
+
+Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et associées à votre prénom et à votre âge, jamais à votre adresse e-mail ni à votre téléphone. Vous pouvez demander une explication des éléments ayant conduit à un score et une intervention humaine en écrivant à l'adresse de contact.
+
+## 5. Destinataires et sous-traitants
+
+Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
+
+Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.
+
+Votre interlocuteur dans un parcours voit votre prénom, votre âge, votre ville, votre profession, votre carte mentale, vos réponses au Sondeur et vos messages. Votre téléphone et votre e-mail ne lui sont révélés qu'après votre consentement explicite.
+
+Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale.
+
+## 6. Durées de conservation
+
+Compte et profil : pendant toute la durée du compte, puis suppression dans les 30 jours suivant la demande de suppression.
+
+Messages et réponses au Sondeur : durée du parcours, puis 12 mois en archive restreinte à des fins de modération et de preuve, puis suppression.
+
+Données de paiement et factures : 10 ans (obligation comptable). Journaux techniques et de sécurité : 12 mois. Signalements et décisions de modération : 3 ans.
+
+Les données d'un compte suspendu pour manquement grave peuvent être conservées en liste restreinte pendant 3 ans afin d'empêcher une réinscription.
+
+## 7. Vos droits
+
+Vous disposez des droits d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition, ainsi que du droit de retirer votre consentement à tout moment et de définir des directives post-mortem.
+
+Exercice des droits : depuis l'application (modification du profil, suppression du compte) ou par e-mail à [À COMPLÉTER : adresse e-mail du délégué à la protection des données]. Une réponse vous sera apportée dans un délai d'un mois. Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr).
+
+## 8. Sécurité
+
+Mots de passe hachés, communications chiffrées (HTTPS et WebSocket sécurisé), jetons de session à durée limitée stockés dans l'espace sécurisé de l'appareil, cloisonnement de la base de données (politiques de sécurité par ligne), modération automatisée et signalement intégré. En cas de violation de données présentant un risque pour vous, vous en serez informé conformément à la loi.
+
+## 9. Mineurs
+
+Le service est strictement réservé aux personnes majeures. Tout compte identifié comme appartenant à un mineur est supprimé sans délai.
+
+## 10. Cookies et stockage local
+
+L'application mobile n'utilise pas de cookies. La version web conserve dans le stockage local du navigateur les jetons de session nécessaires à votre connexion ; aucun traceur publicitaire ni outil de mesure d'audience n'est installé.
+
+## 11. Modifications
+
+La présente politique peut être mise à jour. La date de version figure en tête du document ; toute modification substantielle vous sera notifiée dans l'application.
+
+---
+
+> Les mentions entre crochets « [À COMPLÉTER : …] » doivent être renseignées par l'éditeur avant publication. Ce texte est un projet rédigé pour BOLIGO ; il doit être validé par un conseil juridique.

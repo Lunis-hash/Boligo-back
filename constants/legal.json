@@ -1,0 +1,240 @@
+{
+  "version": "2026-10-02",
+  "company": {
+    "brand": "BOLIGO",
+    "legalName": "[À COMPLÉTER : raison sociale de l'éditeur]",
+    "legalForm": "[À COMPLÉTER : forme juridique et capital]",
+    "address": "[À COMPLÉTER : adresse du siège social]",
+    "registration": "[À COMPLÉTER : RCS / SIREN]",
+    "publicationDirector": "[À COMPLÉTER : directeur de la publication]",
+    "contactEmail": "[À COMPLÉTER : adresse e-mail de contact]",
+    "dpoEmail": "[À COMPLÉTER : adresse e-mail du délégué à la protection des données]",
+    "mediator": "[À COMPLÉTER : médiateur de la consommation (nom et site)]",
+    "jurisdiction": "France"
+  },
+  "cgu": {
+    "title": "Conditions Générales d'Utilisation et de Vente",
+    "shortTitle": "CGU",
+    "intro": "Les présentes Conditions Générales d'Utilisation et de Vente (« CGU ») régissent l'accès et l'utilisation de l'application BOLIGO (mobile et web), service de rencontre fondé sur la compatibilité profonde. En créant un compte, vous déclarez les avoir lues et les accepter sans réserve.",
+    "sections": [
+      {
+        "id": "objet",
+        "title": "1. Objet et acceptation",
+        "paragraphs": [
+          "BOLIGO est une application de rencontres sérieuses qui met en relation des personnes majeures sur la base d'un entretien approfondi et d'une analyse de compatibilité, sans photo de profil.",
+          "L'acceptation des CGU est matérialisée par la case cochée lors de l'inscription. Elle vaut pour toute la durée d'utilisation du service. Les CGU prévalent sur tout autre document."
+        ]
+      },
+      {
+        "id": "editeur",
+        "title": "2. Éditeur et hébergeurs",
+        "paragraphs": [
+          "Éditeur : [À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : forme juridique et capital], [À COMPLÉTER : adresse du siège social], [À COMPLÉTER : RCS / SIREN]. Directeur de la publication : [À COMPLÉTER : directeur de la publication]. Contact : [À COMPLÉTER : adresse e-mail de contact].",
+          "Hébergement de l'application et de l'API : Render Services, Inc. (États-Unis). Hébergement de la base de données : Supabase Inc., région Union européenne (Francfort, Allemagne). Paiements : Stripe Payments Europe Ltd. Appels vidéo : Daily.co (Daily, Inc.)."
+        ]
+      },
+      {
+        "id": "acces",
+        "title": "3. Conditions d'accès",
+        "paragraphs": [
+          "Le service est réservé aux personnes physiques âgées d'au moins 18 ans, célibataires ou libres de tout engagement, agissant à titre personnel et non professionnel.",
+          "Une seule inscription par personne est autorisée. Le compte est personnel et ne peut être cédé ni partagé. L'adresse e-mail est vérifiée par un code à usage unique ; le numéro de téléphone fourni doit être exact.",
+          "Vous vous engagez à fournir des informations sincères (identité, âge, situation, réponses à l'entretien) et à les tenir à jour. Toute fausse déclaration peut entraîner la suspension ou la suppression du compte."
+        ]
+      },
+      {
+        "id": "service",
+        "title": "4. Description du service",
+        "paragraphs": [
+          "Le Grand Entretien : un questionnaire en onze modules (valeurs, culture, attachement, vécu, vision économique, famille, communication, projet de vie, personnalité, alchimie) alimente une « carte mentale » établie avec l'aide d'une intelligence artificielle.",
+          "La Découverte : des profils compatibles vous sont proposés avec un score et des points de dialogue. Aucune photo n'est affichée. Un seul parcours peut être actif à la fois.",
+          "Le Parcours Harmonie se déroule en étapes : (1) le Sondeur, 21 questions réparties sur trois jours à raison de sept par jour, auxquelles les deux membres répondent ; (2) le chat libre en temps réel pendant trois jours ; (3) un appel vidéo d'une durée maximale de deux minutes ; (4) l'échange des coordonnées, uniquement si les deux membres y consentent expressément ; (5) la clôture du parcours.",
+          "BOLIGO est un service de mise en relation. Il ne garantit ni la réalisation d'une rencontre, ni la sincérité des membres, ni le résultat d'une relation."
+        ]
+      },
+      {
+        "id": "credits",
+        "title": "5. Crédits, prix et paiement",
+        "paragraphs": [
+          "L'accès à un Parcours Harmonie nécessite un crédit. La formule unique « Parcours Harmonie » est proposée au prix de 15 € TTC et donne droit à un crédit, soit un parcours avec un membre. Le prix est affiché avant toute validation ; le crédit est comptabilisé par nos serveurs.",
+          "Le paiement s'effectue par carte bancaire via Stripe. BOLIGO ne conserve aucune donnée de carte. Un code promotionnel peut réduire le prix ou offrir un crédit ; il est personnel et limité dans le temps ou en nombre d'utilisations.",
+          "Le crédit est débité lorsque vous engagez un parcours (envoi d'une invitation ou acceptation d'une invitation reçue). Il n'est pas remboursable en argent, sauf disposition légale impérative.",
+          "Règle de justice : si l'autre membre abandonne le parcours sans répondre pendant 48 heures (Sondeur, chat ou vidéo), le parcours est clôturé et votre crédit vous est restitué automatiquement sous forme de crédit.",
+          "Droit de rétractation : conformément à l'article L221-28 du Code de la consommation, vous reconnaissez que le service numérique commence dès l'achat du crédit à votre demande expresse et renoncez à votre droit de rétractation de 14 jours une fois le crédit utilisé. Tant que le crédit n'a pas été utilisé, vous pouvez demander son remboursement dans ce délai en écrivant à l'adresse de contact.",
+          "Une facture ou un reçu est disponible sur demande. Les prix peuvent être modifiés pour l'avenir ; le prix applicable est celui affiché au moment de l'achat."
+        ]
+      },
+      {
+        "id": "conduite",
+        "title": "6. Règles de conduite et modération",
+        "paragraphs": [
+          "Sont interdits : le harcèlement, les insultes, les menaces, les propos discriminatoires, les contenus à caractère sexuel non sollicités, les demandes d'argent ou arnaques, l'usurpation d'identité, la prostitution, la publicité, la diffusion de liens ou de coordonnées avant l'étape d'échange des contacts, et toute utilisation contraire à la loi.",
+          "Les messages et réponses sont filtrés automatiquement avant envoi, puis par un système de modération assisté par intelligence artificielle. Un message refusé n'est pas transmis. Tout membre peut signaler un autre membre depuis l'application.",
+          "En cas de manquement, BOLIGO peut, selon la gravité : avertir, refuser un contenu, suspendre temporairement le compte, clôturer un parcours sans restitution du crédit, ou supprimer définitivement le compte. Les faits susceptibles de constituer une infraction peuvent être signalés aux autorités."
+        ]
+      },
+      {
+        "id": "securite",
+        "title": "7. Sécurité et rencontres réelles",
+        "paragraphs": [
+          "BOLIGO vérifie l'adresse e-mail des membres mais ne procède à aucune vérification d'identité, de casier judiciaire ou de situation matrimoniale. Vous restez seul juge des informations que vous partagez et des rencontres que vous acceptez.",
+          "Recommandations : ne communiquez vos coordonnées qu'à l'étape prévue, ne versez jamais d'argent à un membre, organisez une première rencontre dans un lieu public et prévenez un proche. Signalez tout comportement suspect.",
+          "Les coordonnées d'un membre ne sont révélées qu'après le consentement explicite des deux membres. Ce consentement peut être refusé sans justification."
+        ]
+      },
+      {
+        "id": "propriete",
+        "title": "8. Propriété intellectuelle",
+        "paragraphs": [
+          "L'application, sa marque, ses textes, son questionnaire, ses algorithmes et ses contenus sont protégés. Toute reproduction, extraction ou réutilisation sans autorisation écrite est interdite.",
+          "Vous conservez la propriété des contenus que vous rédigez (réponses, messages) et accordez à BOLIGO une licence non exclusive, limitée à la fourniture du service, pour les stocker, les analyser et les présenter à votre interlocuteur."
+        ]
+      },
+      {
+        "id": "donnees",
+        "title": "9. Données personnelles",
+        "paragraphs": [
+          "Le traitement de vos données, y compris les réponses à l'entretien pouvant révéler des convictions religieuses ou des informations sur la vie intime, est décrit dans la Politique de confidentialité, qui fait partie intégrante des CGU. Vous y consentez de manière explicite lors de l'inscription et pouvez retirer ce consentement en supprimant votre compte."
+        ]
+      },
+      {
+        "id": "responsabilite",
+        "title": "10. Responsabilité et disponibilité",
+        "paragraphs": [
+          "BOLIGO est tenu d'une obligation de moyens. Le service est fourni « en l'état » ; des interruptions pour maintenance, incident ou mise à jour peuvent survenir. BOLIGO ne saurait être tenu responsable des dommages indirects, des pertes de chance, ni des agissements des membres entre eux.",
+          "Les analyses et scores produits par l'intelligence artificielle sont des aides à la décision et ne constituent ni un avis psychologique ni une garantie de compatibilité."
+        ]
+      },
+      {
+        "id": "resiliation",
+        "title": "11. Durée, suspension et suppression du compte",
+        "paragraphs": [
+          "Les CGU s'appliquent pour une durée indéterminée. Vous pouvez supprimer votre compte à tout moment depuis l'écran Profil ; les crédits non utilisés sont alors perdus, sauf demande de remboursement recevable au titre de l'article 5.",
+          "BOLIGO peut suspendre ou supprimer un compte en cas de violation des CGU, de fraude, de signalements répétés ou d'inactivité prolongée, après notification lorsque cela est possible."
+        ]
+      },
+      {
+        "id": "modifications",
+        "title": "12. Modification des CGU",
+        "paragraphs": [
+          "BOLIGO peut modifier les CGU. La version en vigueur est datée et consultable dans l'application. En cas de modification substantielle, vous en serez informé et devrez accepter la nouvelle version pour continuer à utiliser le service."
+        ]
+      },
+      {
+        "id": "droit",
+        "title": "13. Droit applicable et litiges",
+        "paragraphs": [
+          "Les CGU sont soumises au droit français. En cas de litige, vous pouvez recourir gratuitement au médiateur de la consommation suivant : [À COMPLÉTER : médiateur de la consommation (nom et site)], ou à la plateforme européenne de règlement en ligne des litiges. À défaut d'accord amiable, les tribunaux français sont compétents."
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "14. Contact",
+        "paragraphs": [
+          "Pour toute question relative aux CGU, à un paiement ou à un signalement : [À COMPLÉTER : adresse e-mail de contact]."
+        ]
+      }
+    ]
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "shortTitle": "Confidentialité",
+    "intro": "Cette politique explique quelles données BOLIGO collecte, pourquoi, combien de temps, avec qui elles sont partagées et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.",
+    "sections": [
+      {
+        "id": "responsable",
+        "title": "1. Responsable du traitement",
+        "paragraphs": [
+          "[À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : adresse du siège social]. Contact pour la protection des données : [À COMPLÉTER : adresse e-mail du délégué à la protection des données]."
+        ]
+      },
+      {
+        "id": "donnees",
+        "title": "2. Données collectées",
+        "paragraphs": [
+          "Identité et contact : prénom, nom, adresse e-mail, numéro de téléphone, date de naissance, genre, ville ou pays, profession.",
+          "Entretien et profil : vos réponses aux onze modules du Grand Entretien, la carte mentale générée (synthèse, biographie, valeurs, besoins, lignes rouges, scores), vos réponses au Sondeur.",
+          "Certaines réponses peuvent révéler des convictions religieuses ou philosophiques, votre origine culturelle, votre vie sexuelle ou votre état de santé psychologique. Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli à l'inscription, et uniquement pour établir votre compatibilité.",
+          "Échanges : messages du chat, réponses comparées, consentements à l'échange de contacts, métadonnées des appels vidéo (date, durée). Le contenu audio et vidéo des appels n'est ni enregistré ni conservé.",
+          "Paiement : montant, date, identifiant de transaction Stripe, codes promotionnels utilisés. Les numéros de carte ne transitent jamais par nos serveurs.",
+          "Technique : identifiant d'appareil pour les notifications, journaux de connexion et d'erreur, signalements et décisions de modération."
+        ]
+      },
+      {
+        "id": "finalites",
+        "title": "3. Finalités et bases légales",
+        "paragraphs": [
+          "Fournir le service de mise en relation (création du compte, entretien, compatibilité, parcours, messagerie, vidéo) : exécution du contrat.",
+          "Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment en supprimant votre compte.",
+          "Assurer la sécurité, prévenir les fraudes et modérer les contenus : intérêt légitime de BOLIGO et de ses membres.",
+          "Gérer les paiements et la comptabilité : exécution du contrat et obligation légale.",
+          "Envoyer les e-mails de service (vérification, réinitialisation, notifications de parcours) : exécution du contrat. Aucune prospection commerciale n'est réalisée sans consentement distinct."
+        ]
+      },
+      {
+        "id": "ia",
+        "title": "4. Traitements automatisés et intelligence artificielle",
+        "paragraphs": [
+          "BOLIGO utilise des modèles d'intelligence artificielle pour rédiger votre carte mentale, calculer un score de compatibilité, générer les questions du Sondeur et assister la modération. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.",
+          "Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et associées à votre prénom et à votre âge, jamais à votre adresse e-mail ni à votre téléphone. Vous pouvez demander une explication des éléments ayant conduit à un score et une intervention humaine en écrivant à l'adresse de contact."
+        ]
+      },
+      {
+        "id": "destinataires",
+        "title": "5. Destinataires et sous-traitants",
+        "paragraphs": [
+          "Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), et le prestataire d'envoi d'e-mails configuré par BOLIGO.",
+          "Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.",
+          "Votre interlocuteur dans un parcours voit votre prénom, votre âge, votre ville, votre profession, votre carte mentale, vos réponses au Sondeur et vos messages. Votre téléphone et votre e-mail ne lui sont révélés qu'après votre consentement explicite.",
+          "Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale."
+        ]
+      },
+      {
+        "id": "conservation",
+        "title": "6. Durées de conservation",
+        "paragraphs": [
+          "Compte et profil : pendant toute la durée du compte, puis suppression dans les 30 jours suivant la demande de suppression.",
+          "Messages et réponses au Sondeur : durée du parcours, puis 12 mois en archive restreinte à des fins de modération et de preuve, puis suppression.",
+          "Données de paiement et factures : 10 ans (obligation comptable). Journaux techniques et de sécurité : 12 mois. Signalements et décisions de modération : 3 ans.",
+          "Les données d'un compte suspendu pour manquement grave peuvent être conservées en liste restreinte pendant 3 ans afin d'empêcher une réinscription."
+        ]
+      },
+      {
+        "id": "droits",
+        "title": "7. Vos droits",
+        "paragraphs": [
+          "Vous disposez des droits d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition, ainsi que du droit de retirer votre consentement à tout moment et de définir des directives post-mortem.",
+          "Exercice des droits : depuis l'application (modification du profil, suppression du compte) ou par e-mail à [À COMPLÉTER : adresse e-mail du délégué à la protection des données]. Une réponse vous sera apportée dans un délai d'un mois. Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr)."
+        ]
+      },
+      {
+        "id": "securite",
+        "title": "8. Sécurité",
+        "paragraphs": [
+          "Mots de passe hachés, communications chiffrées (HTTPS et WebSocket sécurisé), jetons de session à durée limitée stockés dans l'espace sécurisé de l'appareil, cloisonnement de la base de données (politiques de sécurité par ligne), modération automatisée et signalement intégré. En cas de violation de données présentant un risque pour vous, vous en serez informé conformément à la loi."
+        ]
+      },
+      {
+        "id": "mineurs",
+        "title": "9. Mineurs",
+        "paragraphs": [
+          "Le service est strictement réservé aux personnes majeures. Tout compte identifié comme appartenant à un mineur est supprimé sans délai."
+        ]
+      },
+      {
+        "id": "cookies",
+        "title": "10. Cookies et stockage local",
+        "paragraphs": [
+          "L'application mobile n'utilise pas de cookies. La version web conserve dans le stockage local du navigateur les jetons de session nécessaires à votre connexion ; aucun traceur publicitaire ni outil de mesure d'audience n'est installé."
+        ]
+      },
+      {
+        "id": "modifications",
+        "title": "11. Modifications",
+        "paragraphs": [
+          "La présente politique peut être mise à jour. La date de version figure en tête du document ; toute modification substantielle vous sera notifiée dans l'application."
+        ]
+      }
+    ]
+  }
+}

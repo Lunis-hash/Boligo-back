@@ -12,7 +12,8 @@
     "test": "jest",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "test:api": "node scripts/backend-flow-smoke.js"
+    "test:api": "node scripts/backend-flow-smoke.js",
+    "legal:export": "node scripts/export-legal.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
