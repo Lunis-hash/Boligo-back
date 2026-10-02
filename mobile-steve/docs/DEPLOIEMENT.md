@@ -75,7 +75,8 @@ de production). Réglages à saisir sur <https://dashboard.render.com/static/new
 | Environment | `EXPO_PUBLIC_API_URL=https://boligo-back.onrender.com/api`, `NODE_VERSION=22` |
 | Redirects/Rewrites | `/*` → `/index.html` (Rewrite) — nécessaire pour les routes expo-router |
 
-La copie `dist/404.html` sert de filet si la règle de réécriture est oubliée. Limites connues du
+La copie `dist/404.html` sert de filet si la règle de réécriture est oubliée. Le fichier
+`mobile-steve/render.yaml` reprend ces réglages (Blueprint, « Root Directory = mobile-steve »). Limites connues du
 web : paiement carte natif (Stripe PaymentSheet) et appel vidéo (WebView) indisponibles, message
 explicite dans l'app ; le code promo fonctionne.
 
@@ -104,6 +105,23 @@ ou à un espace dédié.
 
 Aucune clé secrète (`sk_…`, Daily, JWT) ne doit apparaître dans l'app ni dans ce dépôt.
 
+## 4bis. Configuration Expo propre à BOLIGO (`app.json`, `eas.json`)
+
+| Champ | Valeur | Remarque |
+|---|---|---|
+| `name` / `slug` / `scheme` | `BOLIGO` / `boligo` / `boligo` | plus aucune référence à l'ancien nom de code « Harmonie » |
+| `ios.bundleIdentifier` / `android.package` | `com.boligo.app` | identifiants dédiés ; à réserver dans les stores avant publication |
+| Stripe (plugin) | `merchantIdentifier: merchant.com.boligo.app` | Apple Pay / Google Pay nécessitent un development build (non disponibles dans Expo Go) |
+| `extra.eas.projectId` | **retiré** | il appartenait à l'ancien projet EAS `harmonie-expo` ; `eas init` crée le projet `boligo` et le réécrit |
+| Profils EAS | `development` (dev client, APK), `preview` (APK interne), `production` (`autoIncrement`) | `EXPO_PUBLIC_API_URL` = API Render BOLIGO ; clé publiable Stripe de test dans `development`/`preview`, clé live à fournir en `production` via `eas env:create` |
+
+Compatibilité **Expo Go** (vérifiée sur la documentation Expo SDK 54 et `expo-doctor`, 16/18 contrôles —
+les 2 restants sont des accès réseau bloqués dans le conteneur de recette) : `@stripe/stripe-react-native`,
+`react-native-webview`, `expo-secure-store`, `expo-camera`, `expo-av`, `react-native-svg` sont inclus
+dans Expo Go. Les notifications **push distantes** ne fonctionnent pas dans Expo Go (SDK 53+) : l'app
+détecte l'échec et continue sans bloquer ; elles fonctionnent dans un development build. Apple Pay et
+Google Pay nécessitent aussi un development build ; le paiement par carte via PaymentSheet fonctionne.
+
 ## 5. Mode d'emploi de test
 
 ### 5.1 Mobile (Expo Go)
@@ -111,9 +129,13 @@ Aucune clé secrète (`sk_…`, Daily, JWT) ne doit apparaître dans l'app ni da
 ```bash
 cd mobile-steve
 npm ci
-EXPO_PUBLIC_API_URL=https://boligo-back.onrender.com/api npx expo start
-# scanner le QR code avec Expo Go (iOS/Android)
+cp .env.example .env            # EXPO_PUBLIC_API_URL + clé publiable Stripe (test)
+npx expo start                  # ou : npx expo start --tunnel si le téléphone n'est pas sur le même Wi-Fi
+# scanner le QR code avec Expo Go (iOS : appareil photo, Android : app Expo Go)
 ```
+
+Première fois sur ce compte Expo : `npm install -g eas-cli && eas login && eas init` (crée le projet EAS
+`boligo` et renseigne `extra.eas.projectId`, nécessaire aux notifications push des builds).
 
 Compte de test : inscription dans l'app, code OTP `1234` (code passe-partout du backend, à retirer
 en production, voir `docs/BACKEND_ISSUES.md`). Crédit de test : code promo `BOLIGO100` sur l'écran

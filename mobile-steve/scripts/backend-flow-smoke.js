@@ -13,6 +13,9 @@
 const API = process.env.API_URL || 'http://localhost:3000/api';
 const SOCKET_URL = API.replace(/\/api\/?$/, '');
 const { io } = require('socket.io-client');
+const { execSync } = require('child_process');
+// Commande psql vers la base de TEST (jamais la production) pour simuler le passage des jours du Sondeur.
+const E2E_PSQL = process.env.E2E_PSQL || '';
 
 const results = [];
 function record(step, ok, detail = '') {
@@ -137,12 +140,28 @@ function waitFor(socket, event, ms = 4000) {
   record('sondeur-progress', progress.status === 200 && progress.data?.totalQuestions === 21, JSON.stringify(progress.data));
   const moderated = await call('POST', '/journey/respond', { token: A.token, body: { questionId: qs.data[0].id, text: 'putain de question' } });
   record('respond avec grossièreté → 400 (modération locale)', moderated.status === 400, `status ${moderated.status}`);
-  for (const user of [A, B]) {
-    for (const q of qs.data) {
-      const r = await call('POST', '/journey/respond', { token: user.token, body: { questionId: q.id, text: `Réponse sincère de ${user.email.split('-')[2]}` } });
-      if (r.status !== 201) record(`respond ${q.id}`, false, `status ${r.status}`);
+  const byDay = (d) => (qs.data || []).filter((q) => q.day === d);
+  record(
+    'Sondeur : 3 jours × 7 questions, 7 thèmes fondamentaux chaque jour',
+    [1, 2, 3].every((d) => byDay(d).length === 7 && new Set(byDay(d).map((q) => q.emoji)).size === 7),
+    `jours=${[1, 2, 3].map((d) => byDay(d).length).join('/')} emojis=${[...new Set((qs.data || []).map((q) => q.emoji))].join('')}`,
+  );
+  const early = await call('POST', '/journey/respond', { token: A.token, body: { questionId: byDay(2)[0]?.id, text: 'Réponse trop tôt' } });
+  record('respond à une question du jour 2 pendant le jour 1 → 400 (règle 7/jour côté serveur)', early.status === 400, `status ${early.status}`);
+  for (let day = 1; day <= 3; day++) {
+    for (const user of [A, B]) {
+      for (const q of byDay(day)) {
+        const r = await call('POST', '/journey/respond', { token: user.token, body: { questionId: q.id, text: `Réponse sincère de ${user.email.split('-')[2]}` } });
+        if (r.status !== 201) record(`respond jour ${day} ${q.id}`, false, `status ${r.status}`);
+      }
+    }
+    if (day < 3) {
+      if (!E2E_PSQL) { record('Voyage dans le temps impossible (E2E_PSQL non défini) : jours 2 et 3 non rejoués', false); break; }
+      execSync(E2E_PSQL, { input: `UPDATE "Journey" SET "stepStartDate" = "stepStartDate" - interval '1 day' WHERE id = '${journeyId}';`, stdio: ['pipe', 'ignore', 'inherit'] });
     }
   }
+  const dupAnswer = await call('POST', '/journey/respond', { token: A.token, body: { questionId: byDay(1)[0]?.id, text: 'Deuxième réponse' } });
+  record('respond deux fois à la même question → 400', dupAnswer.status === 400, `status ${dupAnswer.status}`);
   const status = await call('GET', `/journey/${journeyId}/status`, { token: A.token });
   record('journey passe en chat_libre après 21 réponses × 2', status.data?.currentStep === 'chat_libre', JSON.stringify(status.data));
   const access = await call('GET', '/journey/chat-access', { token: A.token });
@@ -173,8 +192,14 @@ function waitFor(socket, event, ms = 4000) {
   record('message insultant → 400', insult.status === 400, `status ${insult.status}`);
   const msgs = await call('GET', `/journey/${journeyId}/messages`, { token: B.token });
   record('GET journey messages (B)', msgs.status === 200 && msgs.data.length === 1, `messages=${msgs.data?.length}`);
-  const unread = await call('GET', '/chat/unread-count', { token: B.token });
-  record('chat/unread-count B (attendu 1)', unread.data === 1, `reçu=${JSON.stringify(unread.data)} (bug backend req.user.userId si 0)`);
+  // B est connecté au salon : ses messages sont marqués lus à la réception. Le compteur
+  // de non-lus se mesure donc côté A (sans socket) après un message de B.
+  await call('POST', '/journey/message', { token: B.token, body: { journeyId, content: 'Message de Bob pour tester les non-lus.', type: 'texte' } });
+  const unread = await call('GET', '/chat/unread-count', { token: A.token });
+  record('chat/unread-count A après un message de B (attendu 1)', unread.data === 1, `reçu=${JSON.stringify(unread.data)}`);
+  const markRead = await call('POST', `/chat/journeys/${journeyId}/read`, { token: A.token });
+  const unreadAfter = await call('GET', '/chat/unread-count', { token: A.token });
+  record('chat/journeys/:id/read → compteur à 0', markRead.status < 300 && unreadAfter.data === 0, `status ${markRead.status}, reçu=${JSON.stringify(unreadAfter.data)}`);
   socketB.close();
 
   // ── Vidéo
@@ -189,7 +214,7 @@ function waitFor(socket, event, ms = 4000) {
 
   // ── Échange de contacts
   const ce0 = await call('GET', `/journey/${journeyId}/contact-exchange`, { token: A.token });
-  record('contact-exchange avant consentement expose déjà tel/email du partenaire (constat sécurité)', !!ce0.data?.partner?.telephone, JSON.stringify({ myConsent: ce0.data?.myConsent, partnerTel: !!ce0.data?.partner?.telephone }));
+  record('contact-exchange avant consentement ne révèle ni téléphone ni e-mail', ce0.status === 200 && ce0.data?.partner?.telephone == null && ce0.data?.partner?.email == null, JSON.stringify({ myConsent: ce0.data?.myConsent, partnerTel: ce0.data?.partner?.telephone ?? null }));
   const exA = await call('POST', `/journey/${journeyId}/exchange-contact`, { token: A.token, body: { sharePhone: true, shareEmail: true } });
   record('exchange-contact A', exA.status === 201 && exA.data?.consentA === true && exA.data?.bothAccepted === false, JSON.stringify(exA.data));
   const exB = await call('POST', `/journey/${journeyId}/exchange-contact`, { token: B.token, body: { sharePhone: true, shareEmail: true } });

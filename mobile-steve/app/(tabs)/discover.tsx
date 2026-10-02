@@ -56,6 +56,9 @@ interface MatchProfile {
   aiAnalysis?: string;
   positivePoints?: string[];
   warningPoint?: string;
+  /** Sujets calculés par le moteur de divergences du serveur (prioritaires). */
+  discussionTopics?: { id: string; title: string; prompt: string }[];
+  hardStop?: boolean;
   details?: {
     situation: string;
     children: string;
@@ -527,8 +530,16 @@ function DiscoverScreen() {
         }
         : null;
 
-  const discussionTopics = currentMatch ? getDiscussionTopics(currentMatch.compatibility, currentMatch.mentalMap) : [];
-  const majorDivergence = currentMatch ? hasMajorDivergence(currentMatch.compatibility, currentMatch.mentalMap) : false;
+  // Sujets à aborder : ceux du moteur de divergences serveur (réponses réelles aux
+  // entretiens) quand ils existent, sinon dérivés des piliers de compatibilité.
+  const discussionTopics = currentMatch
+    ? currentMatch.discussionTopics?.length
+      ? currentMatch.discussionTopics
+      : getDiscussionTopics(currentMatch.compatibility, currentMatch.mentalMap)
+    : [];
+  const majorDivergence = currentMatch
+    ? currentMatch.hardStop === true || hasMajorDivergence(currentMatch.compatibility, currentMatch.mentalMap)
+    : false;
 
   const hasLikedMe = receivedLikes.length > 0 && currentMatch?.id === receivedLikes[0].userId;
   const existingLike = receivedLikes[0];
@@ -599,6 +610,8 @@ function DiscoverScreen() {
               `Alignement fort sur la valeur de **transparence et d'écoute mutuelle**.`,
             ],
             warningPoint: p.warningPoint ?? `Vos rythmes de vie quotidiens méritent un échange direct pour s'harmoniser sereinement.`,
+            discussionTopics: Array.isArray(p.discussionTopics) ? p.discussionTopics : undefined,
+            hardStop: p.hardStop === true,
             details: p.details ?? {
               situation: 'Célibataire',
               children: idx % 2 === 0 ? 'Souhaite en avoir' : 'À discuter ensemble',
