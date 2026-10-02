@@ -1,0 +1,24 @@
+# Blueprint Render — site web statique BOLIGO (export Expo de mobile-steve/).
+# Ne déclare QUE le site web : le service API « Boligo-back » existant n'est pas modifié.
+# Création en un clic : https://dashboard.render.com/blueprint/new?repo=https://github.com/Lunis-hash/Boligo-back
+services:
+  - type: web
+    name: boligo-web
+    runtime: static
+    branch: main
+    rootDir: mobile-steve
+    buildCommand: npm ci && npx expo export --platform web && cp dist/index.html dist/404.html
+    staticPublishPath: dist
+    buildFilter:
+      paths:
+        - mobile-steve/**
+    envVars:
+      - key: EXPO_PUBLIC_API_URL
+        value: https://boligo-back.onrender.com/api
+      - key: NODE_VERSION
+        value: "22"
+    routes:
+      # Application monopage expo-router : toute route inconnue renvoie index.html.
+      - type: rewrite
+        source: /*
+        destination: /index.html

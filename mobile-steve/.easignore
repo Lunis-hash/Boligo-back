@@ -1,0 +1,31 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Expo & Build outputs
+.expo/
+dist/
+build/
+web-build/
+
+# Android build & cache
+android/.gradle/
+android/app/build/
+android/build/
+android/.idea/
+android/*.iml
+
+# iOS build & cache
+ios/Pods/
+ios/build/
+ios/*.xcworkspace
+ios/*.xcodeproj
+
+# OS & Temp
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+.cache/

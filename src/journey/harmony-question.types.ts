@@ -7,6 +7,8 @@ export interface HarmonyQuestionPayload {
   emoji: string;
   text: string;
   options: string[];
+  /** Thème fondamental BOLIGO (famille, argent, …) quand il est connu. */
+  themeKey?: string;
 }
 
 const DEFAULT_OPTIONS = [
@@ -56,12 +58,14 @@ export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | n
 
     if (![1, 2, 3].includes(day) || !theme || text.length < 12) continue;
 
+    const themeKey = String(o.themeKey ?? o.theme_key ?? '').trim();
     result.push({
       day,
       theme,
       emoji,
       text,
       options: ensureAutreOption(options),
+      ...(themeKey ? { themeKey } : {}),
     });
   }
 

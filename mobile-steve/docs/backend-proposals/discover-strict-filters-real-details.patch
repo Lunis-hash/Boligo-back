@@ -1,0 +1,93 @@
+--- a/src/matching/matching.service.ts	2026-10-01 19:19:08.762831990 +0000
++++ b/src/matching/matching.service.ts	2026-10-01 19:19:08.787328969 +0000
+@@ -1,6 +1,7 @@
+ import { Injectable } from '@nestjs/common';
+ import { PrismaService } from '../prisma/prisma.service';
+ import { computeCompatibility } from './compatibility.scorer';
++import { QUESTIONS } from '../interview/questions.data';
+ import { NotificationService } from '../notifications/notification.service';
+ 
+ @Injectable()
+@@ -155,7 +156,31 @@
+       return true;
+     });
+ 
+-    const candidatesToScore = filteredMatches.length > 0 ? filteredMatches : matches;
++    // Les filtres du Module 0 sont stricts : aucun repli sur des profils hors
++    // périmètre. L'app affiche alors son état vide (« aucun profil pour le moment »).
++    const candidatesToScore = filteredMatches;
++
++    // Réponses du Module 0 / 1 des candidats : les « détails » affichés doivent
++    // venir de l'entretien, jamais d'une valeur inventée.
++    const candidateInterviews = await this.prisma.interviewIA.findMany({
++      where: {
++        userId: { in: candidatesToScore.map((c) => c.id) },
++        status: { in: ['en_cours', 'termine'] },
++      },
++      include: { responses: { where: { moduleNumber: { in: [0, 1] } } } },
++    });
++    const interviewByUser = new Map<string, Record<string, string>>();
++    for (const itv of candidateInterviews) {
++      const merged: Record<string, string> = {};
++      for (const r of itv.responses) Object.assign(merged, (r.rawResponses as Record<string, string>) || {});
++      interviewByUser.set(itv.userId, merged);
++    }
++    const answerText = (answers: Record<string, string> | undefined, questionId: string): string | undefined => {
++      const key = answers?.[questionId];
++      if (!key) return undefined;
++      const q = QUESTIONS.find((qq) => qq.id === questionId);
++      return q?.options.find((o) => o.key === key)?.text;
++    };
+ 
+     const scored = candidatesToScore.map((m, index) => {
+       const mentalMap = m.mentalMaps[0];
+@@ -164,7 +189,7 @@
+       const birthYear = m.birthDate ? new Date(m.birthDate).getFullYear() : 29;
+       const age = Math.max(18, new Date().getFullYear() - birthYear);
+       const location = m.profile?.displayedCity || m.city || 'Lyon';
+-      const profession = m.profile?.profession || (m.gender === 'F' ? 'Cadre / Ingénieure' : 'Consultant / Architecte');
++      const profession = m.profile?.profession || 'Profession non renseignée';
+ 
+       const rawSynthesis = mentalMap?.synthesis;
+       const bioText = mentalMap?.bio || m.profile?.description;
+@@ -201,17 +226,24 @@
+         `Vision commune du soutien mutuel et de l'écoute à **${location}**.`,
+       ];
+ 
++      // Point de vigilance : lignes rouges de la carte mentale, sinon la lecture
++      // du score (valeurs / besoins) — jamais une phrase inventée.
+       const warningPoint = redFlagsArray.length > 0
+         ? `Point d'attention identifié : ${redFlagsArray.join(', ')}.`
+-        : `Nuance de rythme : ${m.firstName} privilégie un mode de vie ${index % 2 === 0 ? 'calme et posé' : 'très actif et dynamique'} à ${location}. Un échange direct permettra d'harmoniser vos agendas.`;
++        : compat.summary;
+ 
+-      const details = {
+-        situation: 'Célibataire',
+-        children: index % 2 === 0 ? 'Souhaite en avoir' : 'Déjà parent / Souhaite',
+-        religion: (m.profile as any)?.religion || (index % 2 === 0 ? 'Spiritualité personnelle' : 'Chrétien(ne) pratiquant(e)'),
+-        education: 'Enseignement Supérieur (Bac +5)',
+-        lifestyle: `${location}, mode de vie ${index % 2 === 0 ? 'urbain et serein' : 'actif et axé sur les projets et la famille'}`,
+-      };
++      // Détails issus de l'entretien (Module 0 et 1) ; une donnée absente est omise.
++      const answers = interviewByUser.get(m.id);
++      const details = Object.fromEntries(
++        Object.entries({
++          situation: answerText(answers, 'M0_Q04'),
++          children: answerText(answers, 'M0_Q05'),
++          childrenWish: answerText(answers, 'M0_Q06'),
++          religion: (m.profile as any)?.religion || answerText(answers, 'M1_Q05'),
++          education: answerText(answers, 'M0_Q07'),
++          lifestyle: location,
++        }).filter(([, v]) => typeof v === 'string' && v.length > 0),
++      );
+ 
+       const interests = keyValsArray.map((v: string, i: number) => ({ label: String(v), common: i % 2 === 0 }));
+ 
+@@ -230,7 +262,6 @@
+         firstName: m.firstName,
+         age,
+         location,
+-        distance: `~${(index + 1) * 3} km`,
+         profession,
+         compatibility: compat.percent,
+         compatibilitySummary: compat.summary,

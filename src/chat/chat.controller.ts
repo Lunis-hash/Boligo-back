@@ -14,7 +14,7 @@ export class ChatController {
 
   @Get('unread-count')
   async getUnreadCount(@Request() req) {
-    return this.chatService.getUnreadCount(req.user.userId);
+    return this.chatService.getUnreadCount(req.user.id);
   }
 
   @Get('journeys/:journeyId/last-message')
@@ -24,7 +24,7 @@ export class ChatController {
 
   @Post('journeys/:journeyId/read')
   async markAsRead(@Param('journeyId') journeyId: string, @Request() req) {
-    await this.chatService.markMessagesAsRead(journeyId, req.user.userId);
+    await this.chatService.markMessagesAsRead(journeyId, req.user.id);
     return { success: true };
   }
 }
