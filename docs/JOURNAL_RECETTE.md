@@ -58,6 +58,7 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 | 34 | P1 métier | Backend | Sondeur générique (banque de 21 questions identique pour tous) dès que l'IA manque ; aucune garantie de couverture des 7 thèmes | lecture `journey.service.ts` | ✅ générateur 3 × 7 ciblé sur les divergences, IA facultative validée par la grille | `4bd31c4` (Boligo-back) |
 | 35 | P0 sécu | Backend | `GET /journey/:id/questions` et `/messages` sans contrôle d'appartenance ; coordonnées du partenaire renvoyées avant double consentement | recette API | ✅ 403/404 + coordonnées masquées tant que les deux n'ont pas consenti | `4bd31c4` (Boligo-back) |
 | 36 | P2 | Backend | `chat/unread-count` toujours 0 (`req.user.userId` inexistant) | recette API | ✅ | `134833b` (Boligo-back) |
+| 37 | P2 | Web | `/login` : photo de fond agrandie (scale 1,15) non rognée ⇒ barre de défilement horizontale sur le web à toutes les largeurs | sonde Playwright (scrollWidth 419 > 390) | ✅ conteneur `overflow: hidden` | `9e15d66` |
 
 ## 2. Recette exécutée
 
