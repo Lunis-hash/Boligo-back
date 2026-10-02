@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-01T19:28:32.002Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-02T13:32:14.001Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -12,7 +12,7 @@ Date : 2026-10-01T19:28:32.002Z · App : http://localhost:8081 · API : http://l
 | Étape 3 (périmètre) validée | ✅ |  |
 | Compte créé → écran de vérification OTP | ✅ |  |
 | Code OTP accepté → entretien module 0 | ✅ |  |
-| Entretien : 61 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
+| Entretien : 67 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
 | Bilan de compatibilité affiché | ✅ |  |
 | Login API du compte créé via l'UI | ✅ |  |
 | Découverte : état vide géré | ✅ |  |
@@ -30,8 +30,8 @@ Date : 2026-10-01T19:28:32.002Z · App : http://localhost:8081 · API : http://l
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"02401823-21 |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"02401823-212f-4ca0-a501-30a3bdbbcb04","currentStep":"chat_libre","currentDay":3,"partnerName":"Nadia","isCompleted":true} |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"a2a54d22-a7 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"a2a54d22-a75d-422b-93f8-57f251310e15","currentStep":"chat_libre","currentDay":3,"partnerName":"Nadia","isCompleted":true} |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |
