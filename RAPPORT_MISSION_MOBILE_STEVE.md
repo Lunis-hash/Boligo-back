@@ -105,3 +105,67 @@ recette navigateur **47/47 étapes OK** (`mobile-steve/docs/E2E_RESULTATS.md`).
 
 Commits de la phase (dans `mobile-steve/`) : `25b1bad` paiement, `8b94648` Sondeur calendaire,
 `1ce0065` sujets à aborder, `dc86921` réveil du serveur, puis tests, documentation et patchs.
+
+---
+
+## 8. Phase 3 — Cœur de BOLIGO : moteur de compatibilité, Sondeur ciblé, cloisonnement (2026-10-02)
+
+Mission « Architecte Full-Stack & psychologie relationnelle ». Le code backend est commité sur **cette
+branche** (`claude/magical-keller-kw9t2c`), jamais sur `main` : aucun déploiement de production n'a eu lieu.
+Détail technique : `docs/BOLIGO_MOTEUR_COMPATIBILITE.md`.
+
+### Livré
+
+| Jalon | Réalisé | Commits |
+|---|---|---|
+| 1. Cloisonnement | **Constat** : le projet Supabase BOLIGO héberge aussi les schémas OWEKE (`oweke` 11 tables, `oweke_test` 29 tables) ; un seul compte Stripe connecté, celui d'OWEKE (live) ; aucun compte Daily. Aucune clé OWEKE n'a été utilisée pour BOLIGO. RLS déjà actif sur les tables BOLIGO. Variables documentées. | — |
+| 2. Moteur de divergences | `src/matching/divergence.engine.ts` : 60 règles sur 7 thèmes, gravité critique/majeure/modérée/mineure, convergences, pénalité ≤ 0,30, `hardStop` ; fiches « Ce qui vous rassemble / Votre point de vigilance » ; score cohérent Découverte ↔ like/acceptation ; 9 tests. | `16297e0` |
+| 3. Sondeur ciblé | `src/journey/sondeur.generator.ts` : 21 questions = 3 jours × 7 thèmes (grille vérifiée), ciblage des divergences réelles, 2 variantes de gabarits, couche IA facultative (OpenRouter gratuit puis Groq `llama-3.1-8b-instant`) validée par la grille ; plus jamais de banque générique ; 6 tests. | `4bd31c4` |
+| 4. Tunnel & sécurité | Comptes suspendus refusés (403), règle 7 questions/jour et appartenance au parcours côté serveur, coordonnées uniquement après double consentement, routes `/journey/:id/*` sous contrôle d'appartenance, Découverte sans repli ni données inventées, 7 questions d'entretien ajoutées. | `3e50a6e`, `384757f`, `d1262e5`, `73ec406`, `4bd31c4` |
+| Build | `main` ne compilait pas (`admin.service.ts`) et un cache `tsconfig.build.tsbuildinfo` versionné faisait sauter l'émission du module Prisma sur un clone frais : les deux corrigés. | `dde576a`, `6adbfb4`, `51831e4` |
+| Divers | `chat/unread-count` lisait un champ inexistant (toujours 0). | `134833b` |
+
+### Qualité
+
+| Vérification | Résultat |
+|---|---|
+| Backend `tsc -p tsconfig.build.json` | 0 erreur |
+| Backend Jest | 10 suites, 52 tests OK (dont moteur et Sondeur) |
+| Backend ESLint | nouveaux fichiers : 0 erreur ; le reste du dépôt porte 1 300+ erreurs de style préexistantes (prettier, `any`), non traitées |
+| App `tsc` / lint / Jest | 0 erreur / 0 erreur / 11 suites, 48 tests |
+| Recette API (`scripts/backend-flow-smoke.js`) | 64/67 — 2 écarts préexistants sur `interview/status` (module 0 pré-rempli par le périmètre) et `unread-count` corrigé après la mesure |
+| Recette navigateur | **47/47 étapes OK** contre le backend reconstruit (règle calendaire serveur, moteur, routes durcies) |
+
+### Reste à votre main
+
+1. Séparer les bases : déplacer les schémas `oweke*` hors du projet Supabase BOLIGO (ou BOLIGO vers un projet dédié) ; opération de production, non exécutée.
+2. Créer le compte Stripe BOLIGO (test) et le compte Daily.co BOLIGO ; renseigner `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `DAILY_API_KEY` sur Render. Créer une clé Groq gratuite (`GROQ_API_KEY`) pour la couche IA.
+3. Fusionner cette branche dans `main` quand vous le décidez : Render redéploiera (build corrigé). Créer le Static Site `boligo-web`.
+
+---
+
+## 9. Complément — Configuration Expo BOLIGO, Expo Go, export web (2026-10-02)
+
+| Point | Réalisé |
+|---|---|
+| Identité Expo | `app.json` : `BOLIGO` / slug `boligo` / scheme `boligo` / `com.boligo.app` (iOS et Android), marchand Stripe `merchant.com.boligo.app` ; plus aucune référence à « Harmonie » ni à un autre projet ; identifiant EAS de l'ancien projet retiré (`eas init` en crée un propre). `eas.json` : profils `development`, `preview`, `production` pointant vers l'API Render BOLIGO avec la clé publiable Stripe de test ; `.env.example` ; `render.yaml` pour le Static Site. Commit `982b776`. |
+| Expo Go | Dépendances natives vérifiées sur la documentation Expo SDK 54 : Stripe, WebView, SecureStore, Camera, AV, SVG inclus dans Expo Go (Apple Pay / Google Pay et notifications push distantes nécessitent un development build ; l'app ne bloque pas sans elles). `expo-doctor` : 16/18 contrôles, les 2 restants sont des accès réseau refusés par le conteneur. Le test physique sur téléphone reste à faire par vous (`npx expo start`, QR code). |
+| Routage et écrans | Export web validé : routes profondes `/`, `/login`, `/onboarding/value-slides`, `/legal/cgu`, `/legal/confidentialite`, `/forgot-password` servies avec le titre « BOLIGO », sans erreur JavaScript, sans débordement horizontal à 390, 768 et 1280 px (un débordement sur `/login` a été trouvé et corrigé : photo de fond agrandie non rognée). Parcours complet rejoué dans Chromium : **47/47 étapes OK** (bundle BOLIGO, backend reconstruit). |
+| Export statique | `npx expo export --platform web` → `dist/`, `404.html` de secours, règle de réécriture `/*` → `/index.html` documentée pour Render (`DEPLOIEMENT.md` § 3.2, `render.yaml`). |
+| Qualité | App : `tsc` 0 erreur, `expo lint` 0 erreur, Jest 11 suites / 48 tests. Backend : `tsc` 0 erreur, Jest 10 suites / 52 tests, recette API 66/68 (les 2 écarts restants : `interview/status` pré-remplit le module 0 avec le périmètre choisi à l'inscription, comportement voulu du backend). |
+
+### Lancer l'app sur votre téléphone (Expo Go)
+
+```bash
+git clone -b claude/magical-keller-kw9t2c https://github.com/Lunis-hash/Boligo-back
+cd Boligo-back/mobile-steve
+npm ci
+cp .env.example .env          # API Render BOLIGO + clé publiable Stripe de test
+npx expo start                # ou npx expo start --tunnel
+```
+
+Scanner le QR code avec Expo Go. Compte de test : inscription dans l'app, code OTP `1234` tant que le
+backend de production tourne avec le code passe-partout ; crédit via le code promo `BOLIGO100`.
+Attention : la production Render tourne encore sur l'ancien build (`0046ad8`) tant que cette branche
+n'est pas fusionnée dans `main` ; certains écrans (paiement, Sondeur ciblé, règles serveur) ne refléteront
+les correctifs qu'après fusion et redéploiement.
