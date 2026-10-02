@@ -1309,6 +1309,18 @@ export default function ValueSlidesScreen() {
               </Text>
             </ScrollView>
 
+            <View style={styles.sheetLinks}>
+              <TouchableOpacity
+                onPress={() => { setShowCguModal(false); router.push('/legal/cgu' as any); }}
+                testID="cgu-full-link"
+              >
+                <Text style={styles.sheetLink}>Lire les CGU complètes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setShowCguModal(false); router.push('/legal/confidentialite' as any); }}>
+                <Text style={styles.sheetLink}>Politique de confidentialité</Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Footer Modale */}
             <TouchableOpacity
               style={styles.sheetCta}
@@ -1635,6 +1647,20 @@ const styles = StyleSheet.create({
   sheetBold: {
     fontWeight: '700',
     color: '#14100E',
+  },
+  sheetLinks: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 10,
+  },
+  sheetLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#E8403A',
+    textDecorationLine: 'underline',
   },
   sheetCta: {
     backgroundColor: '#E8403A',

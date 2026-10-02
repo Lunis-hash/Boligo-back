@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import legal from '@/constants/legal.json';
 import { Settings, MapPin, Edit3, Briefcase, Globe, ShieldCheck, Sparkles, TrendingUp, User, ChevronRight, Activity, Radar, Phone, Mail, Calendar, Heart, CreditCard, Tag , LogOut, Trash2 } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -445,6 +446,19 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* ═══ INFORMATIONS LÉGALES ═══ */}
+        <View style={styles.legalSection}>
+          <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={() => router.push('/legal/cgu' as any)} testID="legal-cgu-link">
+            <Text style={styles.legalRowText}>Conditions Générales d'Utilisation et de Vente</Text>
+            <ChevronRight size={18} color={Colors.text.primary40} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={() => router.push('/legal/confidentialite' as any)} testID="legal-privacy-link">
+            <Text style={styles.legalRowText}>Politique de confidentialité</Text>
+            <ChevronRight size={18} color={Colors.text.primary40} />
+          </TouchableOpacity>
+          <Text style={styles.legalVersion}>Textes légaux — version du {legal.version}</Text>
+        </View>
+
         {/* LOGOUT & DELETE ACCOUNT */}
         <View style={styles.logoutSection}>
           <TouchableOpacity style={styles.logoutButton} activeOpacity={0.7} onPress={handleLogout}>
@@ -542,6 +556,10 @@ const styles = StyleSheet.create({
   secondaryAction: { paddingVertical: 18, borderRadius: BorderRadius.full, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, borderWidth: 2, borderColor: Colors.primary.red + '30', backgroundColor: Colors.primary.red + '05' },
   secondaryActionText: { color: Colors.primary.red, fontSize: 16, fontFamily: Typography.fontFamily.bold },
 
+  legalSection: { paddingHorizontal: 20, paddingBottom: 12 },
+  legalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.neutral.border },
+  legalRowText: { flex: 1, paddingRight: 12, fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Colors.text.primary70 },
+  legalVersion: { fontFamily: Typography.fontFamily.regular, fontSize: 11, color: Colors.text.primary40, marginTop: 10 },
   logoutSection: { paddingHorizontal: 20, paddingBottom: 40 },
   logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16, borderRadius: BorderRadius.full, borderWidth: 2, borderColor: Colors.primary.red + '30', backgroundColor: Colors.neutral.white },
   logoutText: { color: Colors.primary.red, fontSize: 16, fontFamily: Typography.fontFamily.bold },
