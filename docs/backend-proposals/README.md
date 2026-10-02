@@ -1,8 +1,14 @@
 # Propositions de correctifs backend (`Boligo-back`)
 
-Le périmètre de la mission est l'application mobile : **aucun de ces correctifs
-n'est appliqué dans `Boligo-back`**. Chaque fichier est un `git diff` prêt à être
-relu et appliqué par l'équipe backend depuis la racine de `Boligo-back` :
+> **Mise à jour (2026-10-02)** : sur demande explicite, ces cinq correctifs ont été
+> **appliqués sur la branche `claude/magical-keller-kw9t2c` de `Boligo-back`**
+> (commits `dde576a`, `3e50a6e`, `384757f`, `d1262e5`, `73ec406`), avec en plus le
+> moteur de divergences, le Sondeur ciblé et le durcissement des routes de parcours
+> (voir `docs/BOLIGO_MOTEUR_COMPATIBILITE.md` à la racine du dépôt). `main` reste intact :
+> la fusion vers `main`, donc le déploiement Render, reste une décision humaine.
+
+Les fichiers ci-dessous sont conservés comme trace. Pour appliquer sur `main`, depuis la
+racine de `Boligo-back` :
 
 ```bash
 git apply --check docs/backend-proposals/<fichier>.patch   # vérification

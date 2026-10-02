@@ -80,9 +80,13 @@ est proposé. Au-dessus de 55 % de score global et sans pilier ≤ 50 %, le ton 
 explorer » ; sinon « vos profils divergent nettement… parlez-en franchement dès le Sondeur ».
 Rien n'est masqué : BOLIGO montre la différence et propose d'en parler, à l'opposé du swipe.
 
-Proposition backend complémentaire (non livrée, à valider produit) : une couche de **critères durs**
-comparant les réponses brutes (`M0_Q06`, `M1_Q05`/`M1_Q06`, `M6_Q10`, `M8_Q01`–`M8_Q03`, `M4_Q01`)
-pour (a) pénaliser le score, (b) exposer `divergences[]` à l'app, (c) nourrir le prompt du Sondeur IA.
+**Livré ensuite côté backend (branche `claude/magical-keller-kw9t2c`)** : le moteur de divergences
+déterministe (`src/matching/divergence.engine.ts`, 60 règles sur 7 thèmes, gravité, convergences,
+pénalité de score, `hardStop`) alimente la Découverte (`compatibilitySheet`, `discussionTopics`),
+le score enregistré au like/acceptation, et le Sondeur ciblé (`src/journey/sondeur.generator.ts`,
+3 jours × 7 thèmes, IA Groq/OpenRouter facultative, gabarits personnalisés, plus jamais de banque
+générique). L'app affiche en priorité les sujets calculés par le serveur. Détail :
+`Boligo-back/docs/BOLIGO_MOTEUR_COMPATIBILITE.md`.
 
 ## 3. Jalon 5 — Tunnel relationnel
 
