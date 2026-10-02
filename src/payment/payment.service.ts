@@ -243,17 +243,37 @@ export class PaymentService {
 
   // ─── Webhook Stripe ────────────────────────────────────────────────────────
   async handleWebhook(rawBody: Buffer, signature: string) {
-    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
-    if (!webhookSecret) {
-      this.logger.warn('STRIPE_WEBHOOK_SECRET non configuré.');
+    const webhookSecret = this.configService.get<string>(
+      'STRIPE_WEBHOOK_SECRET',
+    );
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // En production, un événement non signé pourrait créditer n'importe quel compte :
+    // la signature Stripe est donc obligatoire. Hors production, on tolère les
+    // événements non signés pour les tests locaux tant qu'aucun secret n'est défini.
+    if (!webhookSecret && isProduction) {
+      this.logger.error(
+        'STRIPE_WEBHOOK_SECRET non configuré : webhook refusé.',
+      );
+      throw new BadRequestException('Webhook Stripe non configuré.');
+    }
+    if (webhookSecret && !signature) {
+      throw new BadRequestException('Signature Stripe manquante.');
     }
 
     let event: Stripe.Event;
 
     try {
-      if (webhookSecret && signature) {
-        event = this.stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+      if (webhookSecret) {
+        event = this.stripe.webhooks.constructEvent(
+          rawBody,
+          signature,
+          webhookSecret,
+        );
       } else {
+        this.logger.warn(
+          'STRIPE_WEBHOOK_SECRET non configuré (hors production) : événement non vérifié.',
+        );
         event = JSON.parse(rawBody.toString());
       }
     } catch (err) {
@@ -284,6 +304,18 @@ export class PaymentService {
     const planName = metadata.planName || 'Parcours Harmonie';
     const euroAmount = paymentIntent.amount / 100;
     const paymentRef = paymentIntent.id;
+
+    // Stripe peut renvoyer le même événement plusieurs fois : on ne crédite qu'une fois.
+    const alreadyCredited = await this.prisma.creditTransaction.findFirst({
+      where: { paymentRef, type: 'achat' },
+      select: { id: true },
+    });
+    if (alreadyCredited) {
+      this.logger.log(
+        `Paiement ${paymentRef} déjà crédité — événement ignoré.`,
+      );
+      return;
+    }
 
     this.logger.log(`Paiement réussi — user ${userId}, ${credits} crédit(s), ${euroAmount}€, ref: ${paymentRef}`);
 
