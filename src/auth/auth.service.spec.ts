@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { EmailService } from '../common/email.service';
+import { ConflictException, UnauthorizedException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Gender } from '@prisma/client';
 
@@ -19,7 +20,9 @@ describe('AuthService', () => {
   const mockPrismaService = {
     user: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
       delete: jest.fn(),
     },
     journey: {
@@ -56,6 +59,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: EmailService, useValue: { sendVerificationEmail: jest.fn().mockResolvedValue(undefined), sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 
@@ -74,6 +78,7 @@ describe('AuthService', () => {
     it('should throw ConflictException if email already exists', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({ id: 'existing-user' });
 
+      mockPrismaService.user.findFirst.mockResolvedValue({ id: 'existing-id', email: 'exists@example.com' });
       const dto = {
         email: 'exists@example.com',
         password: 'password',
@@ -90,7 +95,8 @@ describe('AuthService', () => {
 
     it('should successfully register a new user and return token', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
-      mockPrismaService.user.create.mockResolvedValue({ id: 'new-user-id', email: 'new@example.com' });
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+      mockPrismaService.user.create.mockResolvedValue({ id: 'new-user-id', email: 'new@example.com', verificationCode: '1234' });
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
       const dto = {
@@ -107,7 +113,8 @@ describe('AuthService', () => {
       const result = await service.register(dto);
 
       expect(prisma.user.create).toHaveBeenCalled();
-      expect(result).toEqual({ access_token: 'mock-jwt-token', userId: 'new-user-id' });
+      // Depuis la vérification par OTP, l'inscription ne renvoie plus de jeton.
+      expect(result).toEqual(expect.objectContaining({ success: true, email: 'new@example.com' }));
     });
   });
 
@@ -144,8 +151,12 @@ describe('AuthService', () => {
         id: 'user-id',
         email: 'user@example.com',
         passwordHash: 'correctHash',
+        isVerified: true,
+        accountStatus: 'actif',
       });
+      mockPrismaService.user.update.mockResolvedValue({});
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedRefresh');
 
       const dto = {
         email: 'user@example.com',
@@ -154,7 +165,20 @@ describe('AuthService', () => {
 
       const result = await service.login(dto);
 
-      expect(result).toEqual({ access_token: 'mock-jwt-token', userId: 'user-id' });
+      expect(result).toEqual(expect.objectContaining({ access_token: 'mock-jwt-token', userId: 'user-id' }));
+    });
+
+    it('should refuse a suspended account with ForbiddenException', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: 'user-id',
+        email: 'user@example.com',
+        passwordHash: 'correctHash',
+        isVerified: true,
+        accountStatus: 'suspendu',
+      });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await expect(service.login({ email: 'user@example.com', password: 'correctpassword' })).rejects.toThrow(ForbiddenException);
     });
   });
 
