@@ -991,7 +991,7 @@ export class AdminService {
       this.prisma.notification.count({ where }),
       this.prisma.notification.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { sentAt: 'desc' },
         skip,
         take: limit,
         select: {
@@ -1000,7 +1000,7 @@ export class AdminService {
           title: true,
           content: true,
           isRead: true,
-          createdAt: true,
+          sentAt: true,
           user: {
             select: { id: true, firstName: true, lastName: true, email: true },
           },
