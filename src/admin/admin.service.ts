@@ -917,10 +917,18 @@ export class AdminService {
         this.prisma.videoSession.aggregate({
           where: { status: 'terminee', durationMinutes: { not: null } },
           _avg: { durationMinutes: true },
+          _sum: { durationMinutes: true },
         }),
       ]);
 
-      totalDurationMinutes: avgDuration._avg.durationMinutes ?? 0,
+    return {
+      total,
+      completed,
+      inProgress,
+      planned,
+      thisWeek,
+      thisMonth,
+      totalDurationMinutes: avgDuration._sum.durationMinutes ?? 0,
       avgDurationMinutes: avgDuration._avg.durationMinutes ?? 0,
     };
   }
@@ -951,7 +959,7 @@ export class AdminService {
     const users = await this.prisma.user.findMany({
       where: {
         pushToken: { not: null },
-        accountStatus: { not: 'BANNED' },
+        accountStatus: { not: 'suspendu' },
       },
       select: { id: true },
     });
