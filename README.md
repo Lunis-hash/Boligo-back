@@ -5,7 +5,8 @@ dépôt `Lunis-hash/oweke` (racine Expo `harmonie-expo-starter`, commit `432b66d
 L'historique Git d'origine est conservé ; le remote `origin` a été retiré pour
 qu'aucune commande ne puisse pousser vers le dépôt d'origine.
 
-- Stack : Expo SDK 54 · React Native 0.81 · React 19 · expo-router 6 · TypeScript 5.9
+- Identité Expo : `BOLIGO` / slug `boligo` / scheme `boligo` / `com.boligo.app` (indépendante de tout autre projet)
+- Stack : Expo SDK 54 · React Native 0.81 · React 19 · expo-router 6 · TypeScript 5.9 — compatible Expo Go
 - Backend : `Boligo-back` (NestJS + Prisma), préfixe `/api`, WebSocket Socket.IO
 - Documentation :
   - [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md) — hébergement bas coût (Supabase + Render + Expo), variables, mode d'emploi de test
@@ -23,7 +24,8 @@ npm ci                      # installation reproductible (registre npmjs.org)
 npm run typecheck           # tsc --noEmit
 npm run lint                # expo lint (eslint-config-expo)
 npm test                    # tests unitaires Jest (jest-expo)
-npm start                   # Expo dev server (Expo Go / dev build)
+cp .env.example .env        # URL de l'API et clé publiable Stripe (test)
+npx expo start              # QR code à scanner avec Expo Go (--tunnel si Wi-Fi différent)
 ```
 
 ### Backend ciblé
