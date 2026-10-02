@@ -14,6 +14,7 @@ qu'aucune commande ne puisse pousser vers le dépôt d'origine.
   - [`docs/JOURNAL_RECETTE.md`](docs/JOURNAL_RECETTE.md) — constats, priorités, preuves, commits correctifs
   - [`docs/API_AUDIT.md`](docs/API_AUDIT.md), [`docs/BACKEND_ISSUES.md`](docs/BACKEND_ISSUES.md), [`docs/backend-proposals/`](docs/backend-proposals/README.md) — écarts backend et patchs proposés
   - [`docs/E2E_RESULTATS.md`](docs/E2E_RESULTATS.md) — recette navigateur, captures dans `docs/screenshots/`
+  - [`docs/legal/CGU.md`](docs/legal/CGU.md) et [`docs/legal/POLITIQUE_CONFIDENTIALITE.md`](docs/legal/POLITIQUE_CONFIDENTIALITE.md) — textes légaux (source : `constants/legal.json`, export `npm run legal:export`)
 
 ## Démarrer
 

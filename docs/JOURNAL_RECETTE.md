@@ -52,6 +52,7 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 | 28 | P2 | Paiement | L'app affichait toute formule renvoyée par le backend ; dépendance `@supabase/supabase-js` inutilisée embarquée | `package.json`, `payment.tsx` | ✅ formule unique `parcours_harmonie`, dépendance retirée | `25b1bad` |
 | 29 | P2 | Entretien | Couverture incomplète : substances, polygamie, dettes, confiance/téléphone, réconciliation, temps ensemble, gestion des divergences ; coquille « m'excluser » | audit `questions.data.ts` (69 questions) | 📝 `backend-proposals/interview-questions-enrichment.patch` (+7 questions) | docs |
 | 30 | P1 | Déploiement | Pas d'hébergement web ; création du Static Site Render refusée par la politique de permissions de la session | Render | 📝 configuration prête à cliquer (`docs/DEPLOIEMENT.md` § 3.2) | docs |
+| 31 | P1 produit | Légal | Aucune CGU complète ni politique de confidentialité : seule une courte modale dans l'onboarding ; aucun écran légal, aucune information RGPD (données sensibles de l'entretien, sous-traitants, durées, droits) | lecture `value-slides.tsx` | ✅ CGU/CGV (14 articles) et politique de confidentialité (11 sections) rédigées, source unique `constants/legal.json`, écrans `/legal/cgu` et `/legal/confidentialite` accessibles depuis l'onboarding et le profil, export Markdown `docs/legal/` ; mentions éditeur à compléter, validation juridique recommandée | `58a7c5d` |
 
 ## 2. Recette exécutée
 
