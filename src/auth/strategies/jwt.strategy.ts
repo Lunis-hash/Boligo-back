@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -19,6 +19,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     if (!user) {
       throw new UnauthorizedException();
+    }
+
+    // Un compte suspendu par la modération ne peut plus utiliser l'API,
+    // même avec un token encore valide.
+    if (user.accountStatus === 'suspendu') {
+      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
     }
 
     const { passwordHash, ...result } = user;
