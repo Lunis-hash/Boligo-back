@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "BOLIGO",
+    "slug": "boligo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "boligo",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.boligo.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "BOLIGO utilise la caméra pour les appels vidéo entre matches.",
+        "NSMicrophoneUsageDescription": "BOLIGO utilise le micro pour les appels vidéo entre matches."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.boligo.app",
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "INTERNET"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.boligo.app",
+          "enableGooglePay": true
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "root": "app"
+      }
+    },
+    "runtimeVersion": "1.0.0"
+  }
+}

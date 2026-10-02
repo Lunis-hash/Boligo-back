@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -183,6 +183,10 @@ export class AuthService {
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash || '');
     if (!isMatch) {
       throw new UnauthorizedException('Adresse e-mail ou mot de passe incorrect.');
+    }
+
+    if (user.accountStatus === 'suspendu') {
+      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
     }
 
     if (!user.isVerified) {

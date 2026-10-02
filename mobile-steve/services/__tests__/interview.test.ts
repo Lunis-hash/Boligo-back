@@ -1,0 +1,25 @@
+import { getResumeModule, LAST_MODULE } from '@/services/interview';
+
+describe('getResumeModule', () => {
+  it('starts at module 0 for a brand new interview', () => {
+    expect(getResumeModule({ currentModule: 0, isCompleted: false, completedModules: [] })).toBe(0);
+  });
+
+  it('resumes at the first module never saved even if the backend says otherwise', () => {
+    // Module 0 pre-filled at sign-up (meetingScope) → backend currentModule = 1,
+    // but modules 1..10 are not saved: first missing module is 1.
+    expect(getResumeModule({ currentModule: 1, isCompleted: false, completedModules: [0] })).toBe(1);
+    // Module 3 saved before module 2 (retry / reconnection): resume at 2.
+    expect(getResumeModule({ currentModule: 4, isCompleted: false, completedModules: [0, 1, 3] })).toBe(2);
+  });
+
+  it('falls back to currentModule when completedModules is missing', () => {
+    expect(getResumeModule({ currentModule: 5, isCompleted: false })).toBe(5);
+    expect(getResumeModule({ currentModule: 99, isCompleted: false })).toBe(LAST_MODULE);
+  });
+
+  it('returns LAST_MODULE + 1 for a completed interview or no status', () => {
+    expect(getResumeModule({ currentModule: 11, isCompleted: true, completedModules: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })).toBe(LAST_MODULE + 1);
+    expect(getResumeModule(null)).toBe(LAST_MODULE + 1);
+  });
+});

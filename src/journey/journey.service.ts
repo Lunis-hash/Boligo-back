@@ -10,6 +10,8 @@ import {
   bankToPayload,
   HarmonyQuestionPayload,
 } from './harmony-question.types';
+import { buildDivergenceReport, collectRawAnswers, THEMES, THEME_LIST, Theme } from '../matching/divergence.engine';
+import { AiSondeurQuestion, DAY_ANGLES, assembleSondeur, describeReportForAi } from './sondeur.generator';
 import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 
@@ -110,7 +112,7 @@ export class JourneyService {
   }
 
   async getStatus(journeyId: string, userId: string) {
-    const journey = await this.prisma.journey.findUnique({
+    const journeyRow = await this.prisma.journey.findUnique({
       where: { id: journeyId },
       include: {
         userA: true,
@@ -121,7 +123,7 @@ export class JourneyService {
       },
     });
 
-    if (!journey) throw new NotFoundException('Parcours non trouvé');
+    const journey = this.requireMember(journeyRow, userId);
 
     const isUserA = journey.userAId === userId;
     const partner = isUserA ? journey.userB : journey.userA;
@@ -245,13 +247,20 @@ export class JourneyService {
     return keep;
   }
 
-  async getDailyQuestions(journeyId: string) {
-    const journey = await this.prisma.journey.findUnique({
-      where: { id: journeyId },
-      include: { harmonyQuestions: true },
-    });
-
+  /** Vérifie que l'utilisateur fait partie du parcours (404 si absent, 403 sinon). */
+  private requireMember<T extends { userAId: string; userBId: string }>(journey: T | null, userId: string): T {
     if (!journey) throw new NotFoundException('Parcours non trouvé');
+    if (journey.userAId !== userId && journey.userBId !== userId) {
+      throw new ForbiddenException('Vous ne faites pas partie de ce parcours');
+    }
+    return journey;
+  }
+
+  async getDailyQuestions(journeyId: string, userId: string) {
+    this.requireMember(
+      await this.prisma.journey.findUnique({ where: { id: journeyId }, select: { userAId: true, userBId: true } }),
+      userId,
+    );
 
     await this.ensureHarmonyQuestions(journeyId);
 
@@ -382,50 +391,55 @@ export class JourneyService {
     const journey = await this.prisma.journey.findUnique({
       where: { id: journeyId },
       include: {
-        userA: { include: { mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 } } },
-        userB: { include: { mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 } } },
+        userA: { select: { id: true, firstName: true } },
+        userB: { select: { id: true, firstName: true } },
       },
     });
 
     if (!journey) return;
 
-    const avoidTexts = await this.getCouplePreviousQuestionTexts(
-      journey.userAId,
-      journey.userBId,
-      journeyId,
+    const [interviewA, interviewB] = await Promise.all(
+      [journey.userAId, journey.userBId].map((userId) =>
+        this.prisma.interviewIA.findFirst({
+          where: { userId, status: { in: ['en_cours', 'termine'] } },
+          orderBy: { startDate: 'desc' },
+          include: { responses: true },
+        }),
+      ),
     );
 
-    const mapA = journey.userA.mentalMaps[0];
-    const mapB = journey.userB.mentalMaps[0];
-    let payloads: HarmonyQuestionPayload[] | null = null;
+    // 1. Moteur de divergences déterministe sur les réponses brutes des deux entretiens.
+    const report = buildDivergenceReport(
+      collectRawAnswers(interviewA?.responses),
+      collectRawAnswers(interviewB?.responses),
+    );
+    const firstNames: [string, string] = [journey.userA.firstName, journey.userB.firstName];
+    const avoidTexts = await this.getCouplePreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
 
-    if (this.useAiHarmonyQuestions() && mapA && mapB) {
-      console.log('🤖 [Journey] Génération IA Sondeur (éviter répétitions:', avoidTexts.length, ')');
-      payloads = await this.buildAiPayloads(mapA, mapB, avoidTexts);
-    }
-
-    if (!payloads || payloads.length < 21) {
-      console.log('📋 [Journey] Complément banque (IA indisponible ou cartes manquantes)');
-      const usedKeys = new Set([
-        ...avoidTexts.map((t) => this.normalizeQuestionKey(t)),
-        ...(payloads ?? []).map((p) => this.normalizeQuestionKey(p.text)),
-      ]);
-      const excludeIds = QUESTIONS_BANK.filter((q) =>
-        usedKeys.has(this.normalizeQuestionKey(q.text)),
-      ).map((q) => q.id);
-      const bankPart = this.buildBankPayloads(excludeIds);
-      const merged = this.filterFreshPayloads(
-        [...(payloads ?? []), ...bankPart],
+    // 2. Couche IA facultative (Groq / OpenRouter) : formulations ciblées sur ces divergences.
+    let aiQuestions: HarmonyQuestionPayload[] | null = null;
+    if (this.useAiHarmonyQuestions()) {
+      aiQuestions = await this.aiService.generateTargetedHarmonyQuestions(
+        describeReportForAi(report, firstNames),
+        THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
+        [1, 2, 3].map((day) => ({ day, label: DAY_ANGLES[day].label, intent: DAY_ANGLES[day].intent })),
         avoidTexts,
       );
-      payloads = assignDaysSevenPerDay(merged).slice(0, 6);
     }
 
-    if (!payloads || payloads.length < 21) {
-      payloads = this.buildBankPayloads();
-    }
+    // 3. Assemblage : divergence réelle → IA conforme → gabarit du thème. Toujours 21 (3 × 7).
+    const questions = assembleSondeur({
+      report,
+      firstNames,
+      aiQuestions: (aiQuestions ?? []).filter((q): q is HarmonyQuestionPayload & { themeKey: Theme } =>
+        THEME_LIST.includes(q.themeKey as Theme),
+      ) as AiSondeurQuestion[],
+      avoidTexts,
+    });
+    const sources = questions.reduce<Record<string, number>>((acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }), {});
+    console.log(`🧭 [Journey] Sondeur assemblé pour ${journeyId} :`, sources, `(${report.divergences.length} divergences)`);
 
-    await this.persistHarmonyQuestions(journeyId, payloads.slice(0, 21));
+    await this.persistHarmonyQuestions(journeyId, questions);
   }
 
   private padBankQuestions(selected: BankQuestion[], excludeIds: string[] = []): BankQuestion[] {
@@ -474,7 +488,37 @@ export class JourneyService {
     await this.persistHarmonyQuestions(journeyId, payloads);
   }
 
+  /** Jour calendaire courant d'un parcours (1..3), même règle que getStatus(). */
+  private currentJourneyDay(stepStartDate: Date): number {
+    const diffTime = Math.abs(Date.now() - stepStartDate.getTime());
+    return Math.min(3, Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))));
+  }
+
   async respondToQuestion(questionId: string, userId: string, text: string) {
+    const question = await this.prisma.harmonyQuestion.findUnique({
+      where: { id: questionId },
+      include: { journey: true, responses: { where: { userId } } },
+    });
+    if (!question) throw new NotFoundException('Question introuvable');
+    const journey = question.journey;
+    if (journey.userAId !== userId && journey.userBId !== userId) {
+      throw new ForbiddenException('Vous ne faites pas partie de ce parcours');
+    }
+    if (journey.currentStep !== 'phase_harmonie') {
+      throw new BadRequestException('La phase Harmonie de ce parcours est terminée.');
+    }
+    if (question.responses.length > 0) {
+      throw new BadRequestException('Vous avez déjà répondu à cette question.');
+    }
+    // Règle BOLIGO : 7 questions par jour pendant 3 jours — une journée ne
+    // s'ouvre que lorsque le jour calendaire est atteint.
+    const today = this.currentJourneyDay(journey.stepStartDate);
+    if (question.day > today) {
+      throw new BadRequestException(
+        `Cette question fait partie du jour ${question.day} : elle sera disponible ${question.day - today === 1 ? 'demain' : `dans ${question.day - today} jours`}.`,
+      );
+    }
+
     const trimmed = text.trim();
     const local = moderateMessageLocally(trimmed);
     if (!local.allowed) {
@@ -562,7 +606,11 @@ export class JourneyService {
   }
 
   // Chat libre : récupérer les messages
-  async getMessages(journeyId: string) {
+  async getMessages(journeyId: string, userId: string) {
+    this.requireMember(
+      await this.prisma.journey.findUnique({ where: { id: journeyId }, select: { userAId: true, userBId: true } }),
+      userId,
+    );
     const rows = await this.prisma.message.findMany({
       where: { journeyId, moderationStatus: 'ok' },
       orderBy: { sentAt: 'asc' },
@@ -850,7 +898,7 @@ export class JourneyService {
 
   // Récupérer le statut d'échange de contacts
   async getContactExchange(journeyId: string, userId: string) {
-    const journey = await this.prisma.journey.findUnique({
+    const journeyRow = await this.prisma.journey.findUnique({
       where: { id: journeyId },
       include: {
         contactExchange: true,
@@ -859,26 +907,26 @@ export class JourneyService {
       },
     });
 
-    if (!journey) throw new Error('Parcours non trouvé');
-    if (journey.userAId !== userId && journey.userBId !== userId) {
-      throw new Error('Vous ne faites pas partie de ce parcours');
-    }
+    const journey = this.requireMember(journeyRow, userId);
 
     const isUserA = journey.userAId === userId;
     const partner = isUserA ? journey.userB : journey.userA;
     const myConsent = isUserA ? journey.contactExchange?.consentA : journey.contactExchange?.consentB;
     const partnerConsent = isUserA ? journey.contactExchange?.consentB : journey.contactExchange?.consentA;
+    const bothAccepted = Boolean(myConsent && partnerConsent);
 
+    // Double consentement : les coordonnées ne quittent le serveur que si les
+    // DEUX membres ont accepté l'échange.
     return {
       myConsent: myConsent ?? false,
       partnerConsent: partnerConsent ?? false,
-      bothAccepted: (myConsent && partnerConsent) ?? false,
+      bothAccepted,
       phoneShared: journey.contactExchange?.phoneShared ?? false,
       emailShared: journey.contactExchange?.emailShared ?? false,
       partner: {
         firstName: partner.firstName,
-        telephone: partner.telephone,
-        email: partner.email,
+        telephone: bothAccepted && (journey.contactExchange?.phoneShared ?? true) ? partner.telephone : null,
+        email: bothAccepted && (journey.contactExchange?.emailShared ?? true) ? partner.email : null,
         profession: partner.profile?.profession,
         displayedCity: partner.profile?.displayedCity || partner.city,
       },

@@ -17,8 +17,8 @@ export class JourneyController {
   }
 
   @Get(':id/questions')
-  async getDailyQuestions(@Param('id') id: string) {
-    return this.journeyService.getDailyQuestions(id);
+  async getDailyQuestions(@Param('id') id: string, @Request() req) {
+    return this.journeyService.getDailyQuestions(id, req.user.id);
   }
 
   @Post('respond')
@@ -47,8 +47,8 @@ export class JourneyController {
   }
 
   @Get(':id/messages')
-  async getMessages(@Param('id') id: string) {
-    return this.journeyService.getMessages(id);
+  async getMessages(@Param('id') id: string, @Request() req) {
+    return this.journeyService.getMessages(id, req.user.id);
   }
 
   @Get('chat-access')
