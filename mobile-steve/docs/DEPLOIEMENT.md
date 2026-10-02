@@ -76,7 +76,7 @@ de production). Réglages à saisir sur <https://dashboard.render.com/static/new
 | Redirects/Rewrites | `/*` → `/index.html` (Rewrite) — nécessaire pour les routes expo-router |
 
 La copie `dist/404.html` sert de filet si la règle de réécriture est oubliée. Le fichier
-`mobile-steve/render.yaml` reprend ces réglages (Blueprint, « Root Directory = mobile-steve »). Limites connues du
+`render.yaml` (racine du dépôt) reprend ces réglages : création en un clic via https://dashboard.render.com/blueprint/new?repo=https://github.com/Lunis-hash/Boligo-back. Limites connues du
 web : paiement carte natif (Stripe PaymentSheet) et appel vidéo (WebView) indisponibles, message
 explicite dans l'app ; le code promo fonctionne.
 
