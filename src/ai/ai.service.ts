@@ -49,7 +49,8 @@ export class AiService {
 
     if (this.groq) {
       const completion = await this.groq.chat.completions.create({
-        model: 'openai/gpt-oss-120b',
+        // Modèle ultra-léger par défaut (coût quasi nul) ; surchargeable par GROQ_MODEL.
+        model: process.env.GROQ_MODEL?.trim() || 'llama-3.1-8b-instant',
         messages: [
           ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
           { role: 'user' as const, content: prompt },
@@ -137,6 +138,53 @@ Retourne UNIQUEMENT un tableau JSON de 21 objets:
       return null;
     } catch (error) {
       this.logger.error('❌ [SONDEUR IA] Erreur lors de la génération des questions:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Sondeur ciblé : 21 questions (3 jours × 7 thèmes) formulées à partir du
+   * rapport de divergences déterministe. Le résultat est ensuite filtré par
+   * `assembleSondeur`, qui garantit la grille et complète par gabarits.
+   * Retourne null si aucun fournisseur d'IA n'est disponible.
+   */
+  async generateTargetedHarmonyQuestions(
+    reportSummary: string,
+    themeGrid: Array<{ key: string; label: string }>,
+    dayAngles: Array<{ day: number; label: string; intent: string }>,
+    avoidTexts: string[] = [],
+  ): Promise<HarmonyQuestionPayload[] | null> {
+    const avoidBlock = avoidTexts.length
+      ? `\nQUESTIONS DÉJÀ POSÉES À CE COUPLE (ne pas reformuler) :\n${avoidTexts.slice(0, 40).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`
+      : '';
+    const systemPrompt = `Tu es l'analyste de couples de BOLIGO (rencontres sérieuses, valeurs profondes, approche Gottman / attachement). Tu écris en français, en tutoyant, avec tact et précision.`;
+    const prompt = `
+Génère exactement ${dayAngles.length * themeGrid.length} questions pour le Sondeur d'un couple, à partir de l'analyse déterministe ci-dessous.
+
+GRILLE OBLIGATOIRE : pour chaque jour et chaque thème, UNE question.
+Jours : ${dayAngles.map((d) => `jour ${d.day} = ${d.label} (${d.intent})`).join(' ; ')}.
+Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).join(' ; ')}.
+
+RÈGLES :
+- Chaque question cible en priorité une divergence listée (cite les deux positions sans dire qui a répondu quoi : la même question est posée aux deux membres).
+- Pas de divergence sur un thème → question profonde sur ce thème, adaptée aux convergences connues.
+- 3 options concrètes + "Autre..." ; scénarios réalistes ; jamais de jugement ; aucune donnée de contact.
+${avoidBlock}
+ANALYSE DU COUPLE :
+${reportSummary}
+
+Retourne UNIQUEMENT un tableau JSON :
+[{ "day": 1, "themeKey": "famille", "theme": "Lignes rouges", "emoji": "👨‍👩‍👧", "text": "...", "options": ["...", "...", "...", "Autre..."] }]
+`;
+    try {
+      const text = await this.queryAiAgent('sondeur', prompt, systemPrompt);
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
+      const normalized = normalizeAiQuestions(parsed);
+      this.logger.log(`✅ [SONDEUR IA] ${normalized?.length ?? 0} questions ciblées proposées`);
+      return normalized;
+    } catch (error) {
+      this.logger.warn(`⚠️ [SONDEUR IA] Génération ciblée indisponible, gabarits déterministes utilisés : ${(error as Error).message}`);
       return null;
     }
   }
