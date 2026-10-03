@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { AiService } from '../ai/ai.service';
 import { buildSelfPillars, loadSelfPortrait } from '../portrait/self-portrait';
+import { collectRawAnswers } from '../matching/divergence.engine';
+import { ageFromBirthDate, pendingQuestions } from './questions.service';
 
 @Injectable()
 export class InterviewService {
@@ -42,15 +44,34 @@ export class InterviewService {
       };
     }
 
-    const completedModules = interview.responses.map(r => r.moduleNumber);
-    const maxCompleted = completedModules.length > 0 ? Math.max(...completedModules) : -1;
+    // Un module n'est terminé que si plus aucune question applicable n'y reste à
+    // poser : la réponse M0_Q02 enregistrée à l'inscription ne termine pas le module 0.
+    const completedModules = await this.completedModules(userId, interview.responses);
+    const firstPending = [...Array(11).keys()].find((m) => !completedModules.includes(m));
     return {
       interviewId: interview.id,
       status: interview.status,
       completedModules,
-      currentModule: maxCompleted + 1,
+      currentModule: firstPending ?? 11,
       isCompleted: interview.status === 'termine',
     };
+  }
+
+  /** Modules (0–10) enregistrés et sans question applicable restante. */
+  private async completedModules(
+    userId: string,
+    responses: Array<{ moduleNumber: number; rawResponses: unknown }>,
+  ): Promise<number[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { birthDate: true, gender: true },
+    });
+    const answers = collectRawAnswers(responses);
+    const age = ageFromBirthDate(user?.birthDate ?? null);
+    const saved = new Set(responses.map((r) => r.moduleNumber));
+    return [...Array(11).keys()].filter(
+      (m) => saved.has(m) && pendingQuestions(m, answers, age, user?.gender).length === 0,
+    );
   }
 
   async startInterview(userId: string) {
@@ -107,16 +128,18 @@ export class InterviewService {
       });
     }
 
-    // Check if interview is complete (0-10)
-    const responsesCount = await this.prisma.moduleResponse.count({
+    // Entretien terminé quand les 11 modules (0-10) n'ont plus de question applicable.
+    const responses = await this.prisma.moduleResponse.findMany({
       where: { interviewId: interview.id },
+      select: { moduleNumber: true, rawResponses: true },
     });
+    const allModulesCompleted = (await this.completedModules(userId, responses)).length === 11;
 
-    if (responsesCount === 11) {
+    if (allModulesCompleted) {
       await this.completeInterview(interview.id, userId);
     }
 
-    return { success: true, allModulesCompleted: responsesCount === 11 };
+    return { success: true, allModulesCompleted };
   }
 
   private async completeInterview(interviewId: string, userId: string) {
