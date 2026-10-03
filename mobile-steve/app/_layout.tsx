@@ -30,7 +30,7 @@ function BackendWarmUp() {
 
 const publishableKey = 
   process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 
-  'pk_test_51Tsn1y1n8AkKHpjmTxILfV3IUz9gohe14j4J5lDTLxie03bWa5mEY3dLJ2daF7GlifDjQwvKogZYhCIMYk3Y31FF00cS5Fv7ve';
+  'pk_test_51UMQWmLz8rnS1CBn3uNlIdylaIYPh5hlpznGOR8x9uJBZOhr4KGvIqHkblsi5uwoJ7K6WD4HJMTENfTtL0kN6b5a002jZ8dVZD';
 
 export default function RootLayout() {
   return (
