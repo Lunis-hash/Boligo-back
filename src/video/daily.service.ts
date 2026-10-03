@@ -22,6 +22,7 @@ export class DailyService {
   ): Promise<T> {
     const res = await fetch(`${this.apiBase}${path}`, {
       method,
+      signal: AbortSignal.timeout(10_000),
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',

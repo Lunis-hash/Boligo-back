@@ -58,8 +58,8 @@ export class EmailService implements OnModuleInit {
             user: smtpUser,
             pass: cleanPass,
           },
+          // Certificat du serveur SMTP vérifié (pas d'interception possible).
           tls: {
-            rejectUnauthorized: false,
             servername: smtpHost || 'smtp.gmail.com',
           },
           connectionTimeout: 5000,
@@ -90,13 +90,14 @@ export class EmailService implements OnModuleInit {
       try {
         const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
           method: 'POST',
+          signal: AbortSignal.timeout(10_000),
           headers: {
             'Authorization': `Bearer ${sendgridKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             personalizations: [{ to: [{ email: to }] }],
-            from: { email: 'no-reply@harmonie.app', name: 'BOLIGO' },
+            from: { email: process.env.EMAIL_FROM || 'contact@boligo.app', name: 'BOLIGO' },
             subject: subject,
             content: [{ type: 'text/html', value: html }],
           }),
@@ -121,6 +122,7 @@ export class EmailService implements OnModuleInit {
       try {
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
+          signal: AbortSignal.timeout(10_000),
           headers: {
             'api-key': brevoKey,
             'Content-Type': 'application/json',
