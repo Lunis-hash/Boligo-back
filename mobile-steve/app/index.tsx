@@ -204,7 +204,7 @@ export default function WelcomeScreen() {
             <View style={styles.journeyRow}>
               <View style={[styles.jDot, { backgroundColor: COLORS.green }]} />
               <Text style={styles.jText}>
-                <Text style={styles.jBold}>2 minutes</Text> de vidéo, puis vos contacts
+                <Text style={styles.jBold}>7 minutes</Text> de vidéo, puis vos contacts
               </Text>
             </View>
           </View>

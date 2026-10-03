@@ -43,7 +43,7 @@ async function api(method, p, { token, body } = {}) {
 async function createPartner(gender) {
   const email = `steve-e2e-partner-${Date.now()}@example.test`;
   await api('POST', '/auth/register', {
-    body: { email, password: 'Password12!', firstName: 'Nadia', lastName: 'Partenaire', birthDate: '2001-09-15T00:00:00.000Z', gender, city: 'Paris, France', telephone: `+3362${Math.floor(Math.random() * 1e7)}`, job: 'Architecte', meetingScope: 'international', acceptTerms: true, termsVersion: '2026-10-02' },
+    body: { email, password: 'Password12!', firstName: 'Nadia', lastName: 'Partenaire', birthDate: '2001-09-15T00:00:00.000Z', gender, city: 'Paris, France', telephone: `+3362${Math.floor(Math.random() * 1e7)}`, job: 'Architecte', meetingScope: 'international', acceptTerms: true, termsVersion: '2026-10-03' },
   });
   const ver = await api('POST', '/auth/verify-email', { body: { email, code: '1234' } });
   const token = ver.data.access_token;

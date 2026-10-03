@@ -174,7 +174,7 @@ export class PaymentService implements OnModuleInit {
             {
               icon: '🎥',
               label: 'Appel vidéo',
-              detail: 'Première rencontre visuelle sécurisée (2 min)',
+              detail: 'Première rencontre visuelle sécurisée (7 min)',
             },
             {
               icon: '📱',

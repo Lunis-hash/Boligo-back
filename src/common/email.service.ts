@@ -495,7 +495,7 @@ export class EmailService implements OnModuleInit {
                     <div style="background: linear-gradient(135deg, rgba(30,16,96,0.06), rgba(124,92,232,0.10)); border: 1.5px solid rgba(124,92,232,0.25); border-radius: 16px; padding: 24px; text-align: center; margin: 0 0 24px;">
                       <p style="margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #5A3AC7; text-transform: uppercase; letter-spacing: 1px;">Prochaine étape</p>
                       <p style="margin: 0; font-size: 18px; font-weight: 800; color: #14100E;">📞 Appelez ${partnerName} en vidéo</p>
-                      <p style="margin: 8px 0 0; font-size: 13px; color: #918780;">Durée maximum : 2 minutes pour cette première rencontre</p>
+                      <p style="margin: 8px 0 0; font-size: 13px; color: #918780;">Durée maximum : 7 minutes pour cette première rencontre</p>
                     </div>
 
                     <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #918780; text-align: center;">

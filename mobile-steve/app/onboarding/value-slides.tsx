@@ -168,10 +168,10 @@ const SLIDES = [
     badgeText: 'Rencontre réelle',
     badgeColor: '#158044',
     badgeBorder: 'rgba(30,158,90,0.4)',
-    titleMain: '2 minutes en vidéo.',
+    titleMain: '7 minutes en vidéo.',
     titleItalic: 'Puis vos contacts.',
     descLead: "L'appel se débloque : ",
-    descLeadBold: '2 minutes pour mettre une voix et un visage sur la complicité.',
+    descLeadBold: '7 minutes pour mettre une voix et un visage sur la complicité.',
     descBody: " Ensuite, l'application vous propose d'échanger vos contacts — ",
     descBodyBold: 'si vous dites oui tous les deux.',
     ctaText: 'Créer mon compte gratuitement →',
@@ -305,7 +305,7 @@ export default function ValueSlidesScreen() {
       ])
     ).start();
 
-    // 6. Aiguille chronomètre 2 min (tick)
+    // 6. Aiguille chronomètre 7 min (tick)
     Animated.loop(
       Animated.timing(clockTick, {
         toValue: 1,
@@ -985,7 +985,7 @@ export default function ValueSlidesScreen() {
         );
 
       case 5:
-        // Slide 6 : Vidéo 2 min avec aiguille d'horloge tournante
+        // Slide 6 : Vidéo 7 min avec aiguille d'horloge tournante
         return (
           <View style={styles.illusCenter}>
             <Animated.View
@@ -1026,9 +1026,9 @@ export default function ValueSlidesScreen() {
                 <Circle cx="100" cy="27" r="10" fill="rgba(232,131,74,0.35)" stroke="rgba(232,131,74,0.45)" strokeWidth="1" />
                 <Ellipse cx="100" cy="45" rx="14" ry="8" fill="rgba(232,131,74,0.18)" />
 
-                {/* Chronomètre 2 min */}
+                {/* Chronomètre 7 min */}
                 <Circle cx="74" cy="80" r="14" fill="rgba(30,158,90,0.10)" stroke="rgba(30,158,90,0.45)" strokeWidth="1.5" />
-                <SvgText x="64" y="104" fill="#158044" fontSize="9" fontWeight="700">2 min</SvgText>
+                <SvgText x="64" y="104" fill="#158044" fontSize="9" fontWeight="700">7 min</SvgText>
 
                 {/* Double consentement ✓ Oui */}
                 <Rect x="14" y="114" width="52" height="19" rx="9.5" fill="rgba(30,158,90,0.14)" stroke="rgba(30,158,90,0.5)" strokeWidth="1.2" />
@@ -1040,7 +1040,7 @@ export default function ValueSlidesScreen() {
                 <Line x1="66" y1="123" x2="82" y2="123" stroke="rgba(30,158,90,0.6)" strokeWidth="1.5" strokeLinecap="round" />
               </Svg>
 
-              {/* Aiguille rotative du chronomètre 2 min */}
+              {/* Aiguille rotative du chronomètre 7 min */}
               <Animated.View
                 style={{
                   position: 'absolute',

@@ -30,7 +30,7 @@ Le Grand Entretien : un questionnaire en onze modules (valeurs, culture, attache
 
 La Découverte : des profils compatibles vous sont proposés avec un score et des points de dialogue. Aucune photo n'est affichée. Un seul parcours peut être actif à la fois.
 
-Le Parcours Harmonie se déroule en étapes : (1) le Sondeur, 21 questions réparties sur trois jours à raison de sept par jour, auxquelles les deux membres répondent ; (2) le chat libre en temps réel pendant trois jours ; (3) un appel vidéo d'une durée maximale de deux minutes ; (4) l'échange des coordonnées, uniquement si les deux membres y consentent expressément ; (5) la clôture du parcours.
+Le Parcours Harmonie se déroule en étapes : (1) le Sondeur, 21 questions réparties sur trois jours à raison de sept par jour, auxquelles les deux membres répondent ; (2) le chat libre en temps réel pendant trois jours ; (3) un appel vidéo d'une durée maximale de sept minutes ; (4) l'échange des coordonnées, uniquement si les deux membres y consentent expressément ; (5) la clôture du parcours.
 
 BOLIGO est un service de mise en relation. Il ne garantit ni la réalisation d'une rencontre, ni la sincérité des membres, ni le résultat d'une relation.
 

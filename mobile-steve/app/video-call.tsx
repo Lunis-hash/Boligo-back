@@ -55,8 +55,8 @@ export default function VideoCallScreen() {
   const [errorMessage, setErrorMessage] = useState('');
   const [meetingUrl, setMeetingUrl] = useState<string | null>(null);
   const [partnerName, setPartnerName] = useState(name);
-  const [maxDurationSec, setMaxDurationSec] = useState(120);
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [maxDurationSec, setMaxDurationSec] = useState(420);
+  const [timeLeft, setTimeLeft] = useState(420);
   const [hasJoinedRoom, setHasJoinedRoom] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;

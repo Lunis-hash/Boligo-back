@@ -24,7 +24,7 @@ describe('Textes légaux (CGU et politique de confidentialité)', () => {
     const cgu = JSON.stringify(legal.cgu);
     expect(cgu).toMatch(/15 € TTC/);
     expect(cgu).toMatch(/sept par jour/);
-    expect(cgu).toMatch(/deux minutes/);
+    expect(cgu).toMatch(/sept minutes/);
     expect(cgu).toMatch(/consentent expressément/);
     expect(cgu).toMatch(/48 heures/);
     expect(cgu).toMatch(/18 ans/);

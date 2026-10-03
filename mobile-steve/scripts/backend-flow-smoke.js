@@ -45,7 +45,7 @@ async function registerAndVerify(tag, gender) {
       email, password: 'Password12!', firstName: tag, lastName: 'Test',
       birthDate: '1994-05-20T00:00:00.000Z', gender, city: 'Paris, France',
       telephone: `+3361${Math.floor(Math.random() * 1e7)}`, job: 'Testeur', meetingScope: 'international',
-      acceptTerms: true, termsVersion: '2026-10-02',
+      acceptTerms: true, termsVersion: '2026-10-03',
     },
   });
   record(`register ${tag}`, reg.status === 201, `status ${reg.status}, otpDebugCode présent=${!!reg.data?.otpDebugCode}`);
