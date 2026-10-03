@@ -1,4 +1,15 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Headers, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+  Headers,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentService } from './payment.service';
 
@@ -17,7 +28,7 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async checkPromo(
     @Request() req,
-    @Body() body: { code: string; optionId?: string }
+    @Body() body: { code: string; optionId?: string },
   ) {
     return this.paymentService.checkPromoCode(
       req.user.id,
@@ -31,7 +42,7 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async createPaymentIntent(
     @Request() req,
-    @Body() body: { optionId?: string; packId?: string; promoCode?: string }
+    @Body() body: { optionId?: string; packId?: string; promoCode?: string },
   ) {
     return this.paymentService.createPaymentSheet(
       req.user.id,
@@ -45,7 +56,7 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async createIntent(
     @Request() req,
-    @Body() body: { optionId?: string; packId?: string; promoCode?: string }
+    @Body() body: { optionId?: string; packId?: string; promoCode?: string },
   ) {
     return this.paymentService.createPaymentSheet(
       req.user.id,
@@ -54,12 +65,23 @@ export class PaymentController {
     );
   }
 
+  // ─── Confirmer un paiement après la feuille de paiement (app) ─────────────
+  @Post('confirm')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  async confirm(@Request() req, @Body() body: { paymentIntentId: string }) {
+    return this.paymentService.confirmPayment(
+      req.user.id,
+      body?.paymentIntentId,
+    );
+  }
+
   // ─── Webhook Stripe (sans auth, vérifié par signature) ────────────────────
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async webhook(
     @Headers('stripe-signature') signature: string,
-    @Req() req: any
+    @Req() req: any,
   ) {
     const rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
     return this.paymentService.handleWebhook(rawBody, signature);
@@ -70,7 +92,7 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async applyPromo(
     @Request() req,
-    @Body() body: { code: string; optionId?: string }
+    @Body() body: { code: string; optionId?: string },
   ) {
     return this.paymentService.applyPromoCode(
       req.user.id,
