@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { PaymentService } from './payment.service';
+import { PaymentService, stripeConfigIssues } from './payment.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreditService } from '../credit/credit.service';
 import { EmailService } from '../common/email.service';
@@ -244,5 +244,23 @@ describe('PaymentService — confirmation par l’app', () => {
       credited: false,
       alreadyCredited: true,
     });
+  });
+});
+
+describe('stripeConfigIssues', () => {
+  it('ne signale rien pour une configuration de test complète', () => {
+    expect(stripeConfigIssues('sk_test_a', 'pk_test_b', 'whsec_c')).toEqual([]);
+  });
+
+  it('signale des clés de modes différents', () => {
+    const issues = stripeConfigIssues('sk_live_a', 'pk_test_b', 'whsec_c');
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toContain('incohérentes');
+    expect(issues[0]).not.toContain('sk_live_a');
+  });
+
+  it('signale un webhook absent ou mal formé', () => {
+    expect(stripeConfigIssues('sk_test_a', 'pk_test_b', undefined)[0]).toContain('STRIPE_WEBHOOK_SECRET absent');
+    expect(stripeConfigIssues('sk_test_a', 'pk_test_b', 'abc')[0]).toContain('whsec_');
   });
 });

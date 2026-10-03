@@ -11,6 +11,41 @@ import { CreditService } from '../credit/credit.service';
 import { EmailService } from '../common/email.service';
 import Stripe from 'stripe';
 
+/**
+ * Cohérence de la configuration Stripe (jamais de valeur de clé dans les
+ * messages) : une clé publique et une clé secrète de modes différents font
+ * échouer chaque paiement ; sans secret de webhook, le filet de sécurité
+ * (paiement crédité même si l'app se ferme avant la confirmation) est absent.
+ */
+export function stripeConfigIssues(
+  secretKey?: string,
+  publishableKey?: string,
+  webhookSecret?: string,
+): string[] {
+  const issues: string[] = [];
+  const secretMode = secretKey?.startsWith('sk_live_') ? 'live' : 'test';
+  if (!publishableKey) {
+    issues.push(
+      'EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY absente : la feuille de paiement utilisera la clé intégrée à l’app.',
+    );
+  } else {
+    const publicMode = publishableKey.startsWith('pk_live_') ? 'live' : 'test';
+    if (publicMode !== secretMode) {
+      issues.push(
+        `Clés Stripe incohérentes : clé secrète en mode ${secretMode}, clé publique en mode ${publicMode}. Les paiements échoueront.`,
+      );
+    }
+  }
+  if (!webhookSecret) {
+    issues.push(
+      'STRIPE_WEBHOOK_SECRET absent : webhook Stripe désactivé (les paiements restent crédités par POST /payment/confirm).',
+    );
+  } else if (!webhookSecret.startsWith('whsec_')) {
+    issues.push('STRIPE_WEBHOOK_SECRET ne ressemble pas à un secret de webhook Stripe (whsec_…).');
+  }
+  return issues;
+}
+
 @Injectable()
 export class PaymentService implements OnModuleInit {
   private stripe: Stripe;
@@ -38,6 +73,13 @@ export class PaymentService implements OnModuleInit {
       return;
     }
     const mode = key.startsWith('sk_live_') ? 'RÉEL' : 'test';
+    for (const issue of stripeConfigIssues(
+      key,
+      this.configService.get<string>('EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY'),
+      this.configService.get<string>('STRIPE_WEBHOOK_SECRET'),
+    )) {
+      this.logger.warn(issue);
+    }
     try {
       const account = await this.stripe.accounts.retrieveCurrent();
       const name =
