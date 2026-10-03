@@ -132,13 +132,16 @@ export function buildMatchView(viewer: ViewerInput, candidate: CandidateInput) {
       : `Compatibilité estimée à **${percent} %** à partir de vos deux profils.`,
     ...sheet.rassemble.map((r) => `**${sentence(r).replace(/\.$/, '')}**.`),
   ];
-  for (const m of [...resolved.modules].sort((x, y) => y.value - x.value)) {
+  const scored = resolved.modules.filter(
+    (m): m is ModuleAffinity & { value: number } => m.value !== null,
+  );
+  for (const m of [...scored].sort((x, y) => y.value - x.value)) {
     if (positivePoints.length >= 5 || m.value < 80) break;
     positivePoints.push(sentence(m.verdict));
   }
 
   // Point de vigilance : divergence la plus grave, sinon module le plus faible.
-  const weakest = [...resolved.modules].sort((x, y) => x.value - y.value)[0];
+  const weakest = [...scored].sort((x, y) => x.value - y.value)[0];
   const warningPoint =
     sheet.vigilance ??
     (weakest && weakest.value < 65 ? sentence(weakest.verdict) : null);

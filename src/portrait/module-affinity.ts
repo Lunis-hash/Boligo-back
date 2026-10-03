@@ -22,6 +22,7 @@ import {
   Severity,
 } from '../matching/divergence.engine';
 import { MODULES, ModuleInfo } from './portrait.phrases';
+import { cleanText } from './portrait.text';
 
 const SEVERITY_SIMILARITY: Record<Severity, number> = {
   critique: 0,
@@ -74,8 +75,8 @@ export interface ModuleAffinity {
   module: number;
   label: string;
   emoji: string;
-  /** 0–100, calculé sur les réponses des deux membres. */
-  value: number;
+  /** 0–100, calculé sur les réponses des deux membres ; null si rien à comparer. */
+  value: number | null;
   color: string;
   /** Lecture humaine : « Alignement fort sur la vision de l'engagement ». */
   verdict: string;
@@ -106,6 +107,14 @@ function worstDivergenceFor(
 }
 
 export function moduleVerdict(
+  info: ModuleInfo,
+  value: number,
+  worst: Divergence | undefined,
+): string {
+  return cleanText(rawVerdict(info, value, worst));
+}
+
+function rawVerdict(
   info: ModuleInfo,
   value: number,
   worst: Divergence | undefined,
@@ -182,7 +191,7 @@ function similaritiesByModule(
   return byModule;
 }
 
-/** Affinités par module (seuls les modules comparables sont renvoyés). */
+/** Affinités des 11 modules (valeur null quand rien n'est comparable). */
 export function buildModuleAffinities(
   a: RawAnswers,
   b: RawAnswers,
@@ -192,7 +201,21 @@ export function buildModuleAffinities(
   const out: ModuleAffinity[] = [];
   for (const info of MODULES) {
     const sims = byModule.get(info.number);
-    if (!sims || sims.length === 0) continue;
+    if (!sims || sims.length === 0) {
+      // Rien de comparable (questions non posées à l'un des deux) : le module
+      // reste affiché, sans pourcentage inventé.
+      out.push({
+        id: info.id,
+        module: info.number,
+        label: info.label,
+        emoji: info.emoji,
+        value: null,
+        color: '#9CA3AF',
+        verdict: 'Pas encore de réponses communes sur ce module',
+        compared: 0,
+      });
+      continue;
+    }
     const worst = worstDivergenceFor(report, info.number);
     const mean = Math.round(
       (sims.reduce((s, x) => s + x, 0) / sims.length) * 100,
@@ -228,6 +251,7 @@ export function computeAnswerCompatibility(
   let weighted = 0;
   let weights = 0;
   for (const m of modules) {
+    if (m.value === null) continue;
     const info = MODULES[m.module];
     // Un module jugé sur une seule réponse pèse moitié moins.
     const w = info.weight * (m.compared >= 2 ? 1 : 0.5);

@@ -183,7 +183,7 @@ describe('Affinités par module et score global', () => {
     const m0 = res.modules.find((m) => m.id === 'm0')!;
     expect(m0.value).toBeLessThanOrEqual(35);
     expect(m0.color).toBe('#EF4444');
-    expect(m0.verdict).toBe("Incompatibilité déclarée : désir d'enfants");
+    expect(m0.verdict).toBe('Incompatibilité déclarée : désir d’enfants');
     expect(res.score!).toBeLessThanOrEqual(0.6);
   });
 
@@ -220,6 +220,18 @@ describe('Affinités par module et score global', () => {
       view.mentalMap.reduce((s, m) => s + m.value, 0) / view.mentalMap.length;
     if (view.hardStop) expect(view.compatibility).toBeLessThanOrEqual(60);
     else expect(Math.abs(mean - view.compatibility)).toBeLessThan(10);
+  });
+
+  it('garde les 11 modules, sans pourcentage inventé quand rien n’est comparable', () => {
+    const a = answersWith(1);
+    const b = { ...a };
+    for (const k of Object.keys(b)) if (k.startsWith('M3_')) delete b[k];
+    const res = computeAnswerCompatibility(a, b, buildDivergenceReport(a, b));
+    expect(res.modules).toHaveLength(11);
+    const m3 = res.modules.find((m) => m.id === 'm3')!;
+    expect(m3.value).toBeNull();
+    expect(m3.verdict).toBe('Pas encore de réponses communes sur ce module');
+    expect(res.score).not.toBeNull();
   });
 
   it('retombe sur la carte mentale quand trop peu de réponses sont comparables', () => {
