@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-03T13:10:40.671Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-03T16:22:51.941Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -37,8 +37,8 @@ Date : 2026-10-03T13:10:40.671Z · App : http://localhost:8081 · API : http://l
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"e8906337-07 |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"e8906337-07aa-4c0c-bf60-c9ac8af0be15","currentStep":"chat_libre","currentDay":1,"partnerName":"Nadia","isCompleted":true} |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"2e7f70de-97 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"2e7f70de-97fd-4e87-addf-eecab7ff5e55","currentStep":"chat_libre","currentDay":1,"partnerName":"Nadia","isCompleted":true} |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |
