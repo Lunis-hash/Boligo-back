@@ -1,4 +1,11 @@
-import { Controller, Get, Post, UseGuards, Request, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+  Body,
+} from '@nestjs/common';
 import { MatchingService } from './matching.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -22,7 +29,7 @@ export class MatchingController {
     @Request() req,
     @Body() body: { targetUserId: string },
   ) {
-    return this.matchingService.createMatch(req.user.id, body.targetUserId);
+    return this.matchingService.createMatch(req.user.id, body?.targetUserId);
   }
 
   @Get('received-likes')
@@ -31,10 +38,17 @@ export class MatchingController {
   }
 
   @Post('accept')
-  async acceptLike(
-    @Request() req,
-    @Body() body: { proposalId: string },
-  ) {
-    return this.matchingService.acceptMatch(body.proposalId, req.user.id);
+  async acceptLike(@Request() req, @Body() body: { proposalId: string }) {
+    return this.matchingService.acceptMatch(body?.proposalId, req.user.id);
+  }
+
+  @Post('decline')
+  async declineLike(@Request() req, @Body() body: { proposalId: string }) {
+    return this.matchingService.declineMatch(body?.proposalId, req.user.id);
+  }
+
+  @Post('cancel')
+  async cancelInvite(@Request() req, @Body() body: { proposalId: string }) {
+    return this.matchingService.cancelMatch(body?.proposalId, req.user.id);
   }
 }

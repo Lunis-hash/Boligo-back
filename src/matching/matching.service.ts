@@ -1,8 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { MatchProposal, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { collectRawAnswers, RawAnswers } from './divergence.engine';
 import { buildMatchView, resolveScore } from './match-view';
 import { NotificationService } from '../notifications/notification.service';
+import {
+  acceptRef,
+  blocksOwnInvites,
+  CONNECT_COST,
+  connectRef,
+  inLiveJourney,
+  makesUnavailable,
+  occupyingProposals,
+  PROPOSAL_TTL_MS,
+  refundRef,
+} from './proposal-rules';
+
+/** Plafonds de la Découverte : candidats évalués et fiches renvoyées. */
+const DISCOVER_CANDIDATES_MAX = 500;
+const DISCOVER_RESULTS_MAX = 50;
+/** Un parcours réussi reste visible (coordonnées échangées) pendant 30 jours. */
+const ENDED_VISIBLE_MS = 30 * 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class MatchingService {
@@ -21,20 +39,17 @@ export class MatchingService {
     });
 
     if (!currentUser) return [];
+    await this.expireStaleProposals();
 
     const viewerMentalMap = currentUser.mentalMaps[0] ?? null;
 
     // 1.5 RÈGLE D'OR BOLIGO : Pas de multi-match. 
     // Si l'utilisateur a déjà un match actif OU une invitation envoyée en attente,
     // on ne lui propose plus rien dans Découverte.
+    // Un parcours terminé (réussi ou non) ne bloque plus la Découverte.
     const activeMatch = await this.prisma.matchProposal.findFirst({
-      where: {
-        OR: [
-          { sourceUserId: userId, status: 'en_attente' },
-          { sourceUserId: userId, status: 'acceptee' },
-          { targetUserId: userId, status: 'acceptee' },
-        ],
-      },
+      where: blocksOwnInvites(userId),
+      select: { id: true },
     });
 
     if (activeMatch) {
@@ -51,7 +66,7 @@ export class MatchingService {
         OR: [
           { sourceUserId: userId }, // Déjà liké par moi
           { targetUserId: userId }, // Déjà interagi avec moi
-          { status: { in: ['en_attente', 'acceptee'] } }, // En parcours ou invitation active dans tout le système !
+          occupyingProposals(), // En parcours ou invitation active dans tout le système !
         ],
       },
       select: { sourceUserId: true, targetUserId: true },
@@ -88,8 +103,11 @@ export class MatchingService {
       where: {
         id: { notIn: Array.from(unavailableUserIds) },
         gender: targetGender,
+        role: UserRole.USER,
+        accountStatus: { not: 'suspendu' },
         mentalMaps: { some: {} },
       },
+      take: DISCOVER_CANDIDATES_MAX,
       include: {
         mentalMaps: {
           orderBy: { generatedAt: 'desc' },
@@ -184,7 +202,9 @@ export class MatchingService {
 
     scored.sort((a, b) => b._sortScore - a._sortScore);
 
-    return scored.map(({ _sortScore, ...rest }) => rest);
+    return scored
+      .slice(0, DISCOVER_RESULTS_MAX)
+      .map(({ _sortScore, ...rest }) => rest);
   }
 
   /** Dernier entretien (en cours ou terminé) de chaque membre → réponses brutes. */
@@ -274,12 +294,23 @@ export class MatchingService {
     // Auto-réparer : si un journey est en phase_harmonie mais un utilisateur a répondu
     // à toutes les questions, avancer à chat_libre (corrige les données périmées)
     await this.autoAdvanceStaleJourneys(userId);
+    await this.expireStaleProposals();
 
+    const now = new Date();
     const proposals = await this.prisma.matchProposal.findMany({
       where: {
         OR: [
-          { status: 'acceptee', OR: [{ sourceUserId: userId }, { targetUserId: userId }] }, // Match mutuel
-          { status: 'en_attente', sourceUserId: userId }, // Like envoyé (en attente)
+          inLiveJourney(userId), // Parcours en cours
+          {
+            // Parcours réussi récent : les coordonnées restent consultables.
+            status: 'acceptee',
+            OR: [{ sourceUserId: userId }, { targetUserId: userId }],
+            journey: {
+              result: 'reussi',
+              endDate: { gte: new Date(now.getTime() - ENDED_VISIBLE_MS) },
+            },
+          },
+          { status: 'en_attente', sourceUserId: userId, expiresAt: { gt: now } }, // Invitation envoyée
         ],
       },
       include: {
@@ -337,12 +368,16 @@ export class MatchingService {
         videoEnabled,
         testUnlock,
         contactsExchanged: step === 'termine',
+        ended: Boolean(p.journey && p.journey.result !== 'en_cours'),
+        journeyResult: p.journey?.result ?? null,
+        expiresAt: p.status === 'en_attente' ? p.expiresAt : null,
       };
     });
 
     // Parcours actif (accepté + journey) avant une simple invitation en attente
     mapped.sort((a, b) => {
       const rank = (m: (typeof mapped)[0]) => {
+        if (m.ended) return -1;
         if (m.journeyId && m.phase !== 'attente') return 3;
         if (m.phase === 'sondeur') return 2;
         if (m.phase === 'attente') return 0;
@@ -354,65 +389,279 @@ export class MatchingService {
     return mapped;
   }
 
-  // Créer un like (proposition de match)
+  // Inviter un profil : le serveur vérifie la règle d'or et débite 1 crédit.
   async createMatch(userId: string, targetUserId: string) {
-    // Vérifier si un match existe déjà (dans les deux sens)
-    const existingMatch = await this.prisma.matchProposal.findFirst({
-      where: {
-        OR: [
-          { AND: [{ sourceUserId: userId }, { targetUserId: targetUserId }] },
-          { AND: [{ sourceUserId: targetUserId }, { targetUserId: userId }] },
-        ],
-      },
-    });
-
-    if (existingMatch) {
-      // Si l'autre utilisateur a déjà liké, accepter le match et créer le journey
-      if (existingMatch.sourceUserId === targetUserId && existingMatch.targetUserId === userId && existingMatch.status === 'en_attente') {
-        return this.acceptMatch(existingMatch.id, userId);
-      }
-      return { success: false, message: 'Match déjà existant' };
+    if (typeof targetUserId !== 'string' || !targetUserId || targetUserId === userId) {
+      return { success: false, message: 'Profil invalide.' };
     }
+    await this.expireStaleProposals();
+
+    // Invitation croisée : l'autre membre m'a déjà invité → c'est une acceptation.
+    const reverse = await this.prisma.matchProposal.findFirst({
+      where: {
+        sourceUserId: targetUserId,
+        targetUserId: userId,
+        status: 'en_attente',
+        expiresAt: { gt: new Date() },
+      },
+      select: { id: true },
+    });
+    if (reverse) return this.acceptMatch(reverse.id, userId);
 
     const compat = await this.resolveCompatibilityScore(userId, targetUserId);
 
-    const match = await this.prisma.matchProposal.create({
-      data: {
-        sourceUserId: userId,
-        targetUserId: targetUserId,
-        compatibilityScore: compat.score,
-        iaExplanation: compat.summary,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        status: 'en_attente',
-        weekNumber: 1,
-      },
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      await this.lockMembers(tx, [userId, targetUserId]);
+      const now = new Date();
+      const [viewer, target] = await Promise.all([
+        tx.user.findUnique({
+          where: { id: userId },
+          select: { gender: true, accountStatus: true, _count: { select: { mentalMaps: true } } },
+        }),
+        tx.user.findUnique({
+          where: { id: targetUserId },
+          select: {
+            firstName: true,
+            gender: true,
+            role: true,
+            accountStatus: true,
+            _count: { select: { mentalMaps: true } },
+          },
+        }),
+      ]);
+      if (!viewer || viewer.accountStatus === 'suspendu') {
+        return { success: false, message: "Votre compte ne permet pas d'envoyer une invitation." };
+      }
+      if (viewer._count.mentalMaps === 0) {
+        return { success: false, message: "Terminez votre Grand Entretien avant d'inviter un profil." };
+      }
+      if (
+        !target ||
+        target.role !== UserRole.USER ||
+        target.accountStatus === 'suspendu' ||
+        target._count.mentalMaps === 0 ||
+        target.gender === viewer.gender
+      ) {
+        return { success: false, message: "Ce profil n'est plus disponible." };
+      }
+      const already = await tx.matchProposal.findFirst({
+        where: {
+          OR: [
+            { sourceUserId: userId, targetUserId },
+            { sourceUserId: targetUserId, targetUserId: userId },
+          ],
+        },
+        select: { id: true },
+      });
+      if (already) {
+        return { success: false, message: 'Vous avez déjà été mis en relation avec ce profil.' };
+      }
+      if (await tx.matchProposal.findFirst({ where: blocksOwnInvites(userId, now), select: { id: true } })) {
+        return {
+          success: false,
+          message: 'Vous avez déjà une invitation en attente ou un parcours en cours.',
+        };
+      }
+      if (await tx.matchProposal.findFirst({ where: makesUnavailable(targetUserId, now), select: { id: true } })) {
+        return { success: false, message: "Ce profil n'est plus disponible." };
+      }
+
+      const debited = await tx.user.updateMany({
+        where: { id: userId, creditBalance: { gte: CONNECT_COST } },
+        data: { creditBalance: { decrement: CONNECT_COST } },
+      });
+      if (debited.count !== 1) {
+        return {
+          success: false,
+          code: 'NO_CREDIT',
+          message: 'Il vous faut 1 crédit pour envoyer une invitation.',
+        };
+      }
+
+      const match = await tx.matchProposal.create({
+        data: {
+          sourceUserId: userId,
+          targetUserId,
+          compatibilityScore: compat.score,
+          iaExplanation: compat.summary,
+          expiresAt: new Date(now.getTime() + PROPOSAL_TTL_MS),
+          status: 'en_attente',
+          weekNumber: 1,
+        },
+      });
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          type: 'consommation',
+          creditAmount: -CONNECT_COST,
+          paymentRef: connectRef(match.id),
+          description: `Invitation envoyée à ${target.firstName}`,
+        },
+      });
+      return { success: true, match, message: 'Invitation envoyée' };
     });
 
-    // Envoyer une notification push au destinataire du like
-    try {
-      await this.notificationService.sendPushNotification(
+    if (outcome.success) {
+      await this.notify(
         targetUserId,
         'nouveau_match',
         'Nouveau profil compatible ! 💍',
         "Quelqu'un s'intéresse à votre profil. Découvrez sa compatibilité !",
       );
-    } catch (err) {
-      console.error('⚠️ [Matching Service] Failed to send push notification for like:', err);
     }
+    return outcome;
+  }
 
-    return {
-      success: true,
-      match,
-      message: 'Like envoyé avec succès',
-    };
+  /** La personne invitée décline : l'invitation se ferme, l'auteur récupère son crédit. */
+  async declineMatch(proposalId: string, userId: string) {
+    const proposal = await this.findProposal(proposalId);
+    if (!proposal || proposal.targetUserId !== userId) {
+      return { success: false, message: 'Proposition non trouvée' };
+    }
+    const closed = await this.closeProposal(proposal.id, 'refusee', 'Invitation déclinée');
+    if (!closed) return { success: false, message: "Cette invitation n'est plus valide." };
+    if (closed.refunded) {
+      await this.notify(
+        proposal.sourceUserId,
+        'credit',
+        'Invitation sans suite',
+        "Votre invitation n'a pas abouti. Votre crédit vous a été rendu : de nouveaux profils vous attendent.",
+      );
+    }
+    return { success: true, message: 'Invitation déclinée' };
+  }
+
+  /** L'auteur retire son invitation tant qu'elle n'est pas acceptée : crédit rendu. */
+  async cancelMatch(proposalId: string, userId: string) {
+    const proposal = await this.findProposal(proposalId);
+    if (!proposal || proposal.sourceUserId !== userId) {
+      return { success: false, message: 'Proposition non trouvée' };
+    }
+    const closed = await this.closeProposal(proposal.id, 'refusee', 'Invitation retirée par son auteur');
+    if (!closed) return { success: false, message: "Cette invitation n'est plus valide." };
+    return { success: true, refunded: closed.refunded, message: 'Invitation retirée' };
+  }
+
+  private async findProposal(proposalId: string) {
+    if (typeof proposalId !== 'string' || !proposalId) return null;
+    return this.prisma.matchProposal.findUnique({ where: { id: proposalId } });
+  }
+
+  /** Verrous par membre (ordre fixe) : deux invitations simultanées ne contournent pas la règle d'or. */
+  private async lockMembers(tx: Prisma.TransactionClient, userIds: string[]) {
+    for (const id of [...new Set(userIds)].sort()) {
+      await tx.$queryRaw`SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtext(${'member:' + id}))) AS lock`;
+    }
+  }
+
+  /** Ferme une invitation en attente et rend son crédit à l'auteur (une seule fois). */
+  private async closeProposal(
+    proposalId: string,
+    status: 'refusee' | 'expiree',
+    note: string,
+  ): Promise<{ refunded: boolean } | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const moved = await tx.matchProposal.updateMany({
+        where: { id: proposalId, status: 'en_attente' },
+        data: { status, iaExplanation: note },
+      });
+      if (moved.count !== 1) return null;
+      const proposal = await tx.matchProposal.findUniqueOrThrow({ where: { id: proposalId } });
+      return { refunded: await this.refundInviter(tx, proposal) };
+    });
+  }
+
+  private async refundInviter(tx: Prisma.TransactionClient, proposal: MatchProposal): Promise<boolean> {
+    const ref = refundRef(proposal.id);
+    await tx.$queryRaw`SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtext(${ref}))) AS lock`;
+    if (await tx.creditTransaction.findFirst({ where: { paymentRef: ref }, select: { id: true } })) {
+      return false;
+    }
+    const spent =
+      (await tx.creditTransaction.findFirst({
+        where: { paymentRef: connectRef(proposal.id), type: 'consommation' },
+      })) ?? (await this.legacyConnectSpend(tx, proposal));
+    if (!spent) return false;
+
+    const amount = Math.abs(spent.creditAmount);
+    await tx.user.update({
+      where: { id: proposal.sourceUserId },
+      data: { creditBalance: { increment: amount } },
+    });
+    await tx.creditTransaction.create({
+      data: {
+        userId: proposal.sourceUserId,
+        type: 'remboursement_justice',
+        creditAmount: amount,
+        paymentRef: ref,
+        description: 'Crédit rendu : invitation restée sans suite',
+      },
+    });
+    return true;
+  }
+
+  /**
+   * Invitations envoyées avant le débit côté serveur : l'app débitait elle-même
+   * « Connexion avec … » juste après l'envoi.
+   */
+  private legacyConnectSpend(tx: Prisma.TransactionClient, proposal: MatchProposal) {
+    return tx.creditTransaction.findFirst({
+      where: {
+        userId: proposal.sourceUserId,
+        type: 'consommation',
+        journeyId: null,
+        paymentRef: null,
+        description: { startsWith: 'Connexion avec' },
+        date: {
+          gte: proposal.proposedAt,
+          lte: new Date(proposal.proposedAt.getTime() + 10 * 60 * 1000),
+        },
+      },
+    });
+  }
+
+  /** Invitations restées 7 jours sans réponse : fermées, crédit rendu à l'auteur. */
+  private async expireStaleProposals() {
+    const stale = await this.prisma.matchProposal.findMany({
+      where: { status: 'en_attente', expiresAt: { lte: new Date() } },
+      select: { id: true, sourceUserId: true },
+      take: 50,
+    });
+    for (const p of stale) {
+      const closed = await this.closeProposal(p.id, 'expiree', 'Invitation expirée sans réponse');
+      if (closed?.refunded) {
+        await this.notify(
+          p.sourceUserId,
+          'credit',
+          'Invitation expirée',
+          "Votre invitation est restée sans réponse pendant 7 jours. Votre crédit vous a été rendu.",
+        );
+      }
+    }
+  }
+
+  private async notify(
+    userId: string,
+    type: 'nouveau_match' | 'credit',
+    title: string,
+    body: string,
+  ) {
+    try {
+      await this.notificationService.sendPushNotification(userId, type, title, body);
+    } catch (err) {
+      console.error('⚠️ [Matching] Notification non envoyée :', (err as Error)?.message);
+    }
   }
 
   // Récupérer les likes reçus (pending matches)
   async getReceivedLikes(userId: string) {
+    await this.expireStaleProposals();
     const proposals = await this.prisma.matchProposal.findMany({
       where: {
         targetUserId: userId,
         status: 'en_attente',
+        expiresAt: { gt: new Date() },
+        sourceUser: { accountStatus: { not: 'suspendu' } },
       },
       include: {
         sourceUser: { 
@@ -452,93 +701,141 @@ export class MatchingService {
     });
   }
 
-  // Accepter un like (créer le match et le journey)
+  // Accepter une invitation : 1 crédit débité, parcours créé, en une transaction.
   async acceptMatch(proposalId: string, userId: string) {
-    const proposal = await this.prisma.matchProposal.findUnique({
-      where: { id: proposalId },
-    });
-
-    if (!proposal) {
+    const head = await this.findProposal(proposalId);
+    if (!head) {
       return { success: false, message: 'Proposition non trouvée' };
     }
-
-    if (proposal.targetUserId !== userId) {
+    if (head.targetUserId !== userId) {
       return { success: false, message: 'Vous ne pouvez pas accepter cette proposition' };
     }
+    await this.expireStaleProposals();
 
-    if (proposal.status !== 'en_attente') {
-      return { success: false, message: 'Cette proposition a déjà été traitée' };
-    }
-
-    // Mettre à jour le statut du match
-    const match = await this.prisma.matchProposal.update({
-      where: { id: proposalId },
-      data: {
-        status: 'acceptee',
-        iaExplanation: 'Match mutuel accepté',
-      },
-    });
-
-    // Créer le Journey (Parcours Harmonie)
-    const journey = await this.prisma.journey.create({
-      data: {
-        proposalId: match.id,
-        userAId: match.sourceUserId,
-        userBId: match.targetUserId,
-        currentStep: 'phase_harmonie',
-      },
-    });
-
-    // RÈGLE DE JUSTICE : Lier les transactions de consommation de crédits récentes au journey
-    try {
-      await this.prisma.creditTransaction.updateMany({
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      await this.lockMembers(tx, [head.sourceUserId, head.targetUserId]);
+      const now = new Date();
+      const proposal = await tx.matchProposal.findUnique({ where: { id: head.id } });
+      if (!proposal || proposal.status !== 'en_attente' || proposal.expiresAt <= now) {
+        return { success: false, message: "Cette invitation n'est plus valide." };
+      }
+      const source = await tx.user.findUnique({
+        where: { id: proposal.sourceUserId },
+        select: { firstName: true, accountStatus: true },
+      });
+      if (!source || source.accountStatus === 'suspendu') {
+        return { success: false, message: "Ce profil n'est plus disponible." };
+      }
+      // Règle d'or : ni l'un ni l'autre ne vit déjà un autre parcours.
+      const busy = await tx.matchProposal.findFirst({
         where: {
-          userId: { in: [match.sourceUserId, match.targetUserId] },
-          type: 'consommation',
-          journeyId: null,
-          date: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // dernières 24 heures
+          id: { not: proposal.id },
+          OR: [inLiveJourney(proposal.sourceUserId), inLiveJourney(proposal.targetUserId)],
         },
+        select: { id: true },
+      });
+      if (busy) {
+        return { success: false, message: "Un parcours est déjà en cours pour l'un de vous deux." };
+      }
+
+      const debited = await tx.user.updateMany({
+        where: { id: userId, creditBalance: { gte: CONNECT_COST } },
+        data: { creditBalance: { decrement: CONNECT_COST } },
+      });
+      if (debited.count !== 1) {
+        return {
+          success: false,
+          code: 'NO_CREDIT',
+          message: 'Il vous faut 1 crédit pour accepter cette invitation.',
+        };
+      }
+
+      const match = await tx.matchProposal.update({
+        where: { id: proposal.id },
+        data: { status: 'acceptee', iaExplanation: 'Match mutuel accepté' },
+      });
+      const journey = await tx.journey.create({
         data: {
-          journeyId: journey.id,
+          proposalId: match.id,
+          userAId: match.sourceUserId,
+          userBId: match.targetUserId,
+          currentStep: 'phase_harmonie',
         },
       });
-      console.log(`🔗 [Match] Crédits récents liés au journey ${journey.id}`);
-    } catch (err) {
-      console.error(`⚠️ [Match] Échec de la liaison des crédits au journey ${journey.id}`, err);
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          type: 'consommation',
+          creditAmount: -CONNECT_COST,
+          journeyId: journey.id,
+          paymentRef: acceptRef(match.id),
+          description: `Parcours Harmonie avec ${source.firstName}`,
+        },
+      });
+      // RÈGLE DE JUSTICE : le crédit de l'auteur suit le parcours (remboursable).
+      const linked = await tx.creditTransaction.updateMany({
+        where: { paymentRef: connectRef(match.id), type: 'consommation' },
+        data: { journeyId: journey.id },
+      });
+      if (linked.count === 0) {
+        const legacy = await this.legacyConnectSpend(tx, proposal);
+        if (legacy) {
+          await tx.creditTransaction.update({
+            where: { id: legacy.id },
+            data: { journeyId: journey.id },
+          });
+        }
+      }
+      return { success: true, match, journey, message: 'Match accepté avec succès' };
+    });
+
+    if (!outcome.success || !('match' in outcome) || !outcome.match) return outcome;
+    const match = outcome.match;
+
+    // Les autres invitations en attente des deux membres se ferment (crédit rendu).
+    const others = await this.prisma.matchProposal.findMany({
+      where: {
+        status: 'en_attente',
+        id: { not: match.id },
+        OR: [
+          { sourceUserId: { in: [match.sourceUserId, match.targetUserId] } },
+          { targetUserId: { in: [match.sourceUserId, match.targetUserId] } },
+        ],
+      },
+      select: { id: true, sourceUserId: true },
+    });
+    for (const other of others) {
+      const closed = await this.closeProposal(other.id, 'expiree', 'Le membre a commencé un autre parcours');
+      if (closed?.refunded) {
+        await this.notify(
+          other.sourceUserId,
+          'credit',
+          'Invitation sans suite',
+          "Ce profil vient de commencer un autre parcours. Votre crédit vous a été rendu.",
+        );
+      }
     }
 
     // Questions créées au premier GET /journey/:id/questions (évite doublons si 2 appels simultanés)
+    const [userA, userB] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: match.sourceUserId }, select: { firstName: true } }),
+      this.prisma.user.findUnique({ where: { id: match.targetUserId }, select: { firstName: true } }),
+    ]);
+    await Promise.all([
+      this.notify(
+        match.sourceUserId,
+        'nouveau_match',
+        'Match mutuel ! 💍',
+        `Félicitations ! ${userB?.firstName || 'Votre partenaire'} a accepté votre invitation. Votre parcours commence !`,
+      ),
+      this.notify(
+        match.targetUserId,
+        'nouveau_match',
+        'Match mutuel ! 💍',
+        `Félicitations ! Votre Parcours Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
+      ),
+    ]);
 
-    // Envoyer des notifications push pour le match mutuel
-    try {
-      const [userA, userB] = await Promise.all([
-        this.prisma.user.findUnique({ where: { id: match.sourceUserId }, select: { firstName: true } }),
-        this.prisma.user.findUnique({ where: { id: match.targetUserId }, select: { firstName: true } }),
-      ]);
-
-      await Promise.all([
-        this.notificationService.sendPushNotification(
-          match.sourceUserId,
-          'nouveau_match',
-          'Match mutuel ! 💍',
-          `Félicitations ! ${userB?.firstName || 'Votre partenaire'} a accepté votre invitation. Votre parcours commence !`,
-        ),
-        this.notificationService.sendPushNotification(
-          match.targetUserId,
-          'nouveau_match',
-          'Match mutuel ! 💍',
-          `Félicitations ! Votre Parcours Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
-        ),
-      ]);
-    } catch (err) {
-      console.error('⚠️ [Matching Service] Failed to send push notifications for mutual match:', err);
-    }
-
-    return {
-      success: true,
-      match,
-      journey,
-      message: 'Match accepté avec succès',
-    };
+    return outcome;
   }
 }
