@@ -42,3 +42,21 @@ describe('Sujets à aborder (divergences → dialogue)', () => {
     expect(hasMajorDivergence(80, undefined)).toBe(false);
   });
 });
+
+describe('affinités par module du Grand Entretien (m0 … m10)', () => {
+  it('transforme un module faible en sujet à aborder et ignore les modules non comparables', () => {
+    const topics = getDiscussionTopics(72, [
+      { id: 'm4', label: 'Vision économique', value: 40 },
+      { id: 'm3', label: 'Vécu & maturité', value: null },
+      { id: 'm8', label: 'Projet de couple', value: 90 },
+    ]);
+    expect(topics).toEqual([
+      {
+        id: 'm4',
+        title: "L'argent dans le couple",
+        prompt: 'Comment imaginez-vous le partage des dépenses, de l’épargne et des projets à deux ?',
+      },
+    ]);
+    expect(hasMajorDivergence(72, [{ id: 'm3', label: 'Vécu', value: null }])).toBe(false);
+  });
+});

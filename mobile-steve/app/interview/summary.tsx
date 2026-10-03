@@ -18,7 +18,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { InterviewService } from '@/services/interview';
-import { ChevronRight, ChevronLeft, Check, Heart, Star, Sparkles, ShieldCheck } from 'lucide-react-native';
+import { ChevronRight, ChevronLeft, Check, Heart, Star } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -26,99 +26,34 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH - Spacing.lg * 2, 380);
 const CARD_GAP   = Spacing.md;
 
-// ─── Piliers par défaut en attendant la réponse API ────────────────
-const DEFAULT_PILLARS = [
-  {
-    id: 'valeurs',
-    emoji: '💎',
-    label: 'Vos valeurs & principes',
-    tagline: 'Ce qui guide vos décisions au quotidien',
-    percentage: 94,
-    color: Colors.primary.red,
-    pastel: 'rgba(233,64,87,0.08)',
-    description: 'Vous savez clairement ce qui compte pour vous. Cette clarté morale est le socle d\'une alliance stable et d\'une relation durable.',
-    metrics: [
-      { label: 'Authenticité', value: 98 },
-      { label: 'Loyauté', value: 92 },
-      { label: 'Respect', value: 95 },
-    ],
-  },
-  {
-    id: 'projet',
-    emoji: '🌱',
-    label: 'Projet de vie & Famille',
-    tagline: 'Votre vision du foyer et de l\'avenir',
-    percentage: 88,
-    color: '#10B981',
-    pastel: 'rgba(16, 185, 129, 0.08)',
-    description: 'Vous avancez avec intention et lucidité. Vous recherchez un partenaire qui partage votre engagement pour construire un foyer harmonieux.',
-    metrics: [
-      { label: 'Projet commun', value: 92 },
-      { label: 'Vision long terme', value: 88 },
-      { label: 'Harmonie du foyer', value: 90 },
-    ],
-  },
-  {
-    id: 'communication',
-    emoji: '💬',
-    label: 'Communication & Conflits',
-    tagline: 'Votre manière de dialoguer et désamorcer',
-    percentage: 91,
-    color: Colors.primary.purple,
-    pastel: 'rgba(124, 92, 232, 0.08)',
-    description: 'Vous privilégiez l\'écoute active et la sincérité, en évitant les non-dits et le silence pesant dans le couple.',
-    metrics: [
-      { label: 'Écoute active', value: 93 },
-      { label: 'Transparence', value: 94 },
-      { label: 'Résolution calme', value: 89 },
-    ],
-  },
-  {
-    id: 'finances',
-    emoji: '💰',
-    label: 'Économie & Responsabilités',
-    tagline: 'Votre rapport à l\'argent et au foyer',
-    percentage: 86,
-    color: '#D9AE3C',
-    pastel: 'rgba(217, 174, 60, 0.08)',
-    description: 'Vous abordez la gestion financière avec responsabilité, équité et transparence au sein du couple.',
-    metrics: [
-      { label: 'Transparence', value: 88 },
-      { label: 'Équité & soutien', value: 89 },
-      { label: 'Projets communs', value: 90 },
-    ],
-  },
-  {
-    id: 'intimite',
-    emoji: '🔥',
-    label: 'Tendresse & Intimité',
-    tagline: 'Votre vision de l\'affection affective',
-    percentage: 90,
-    color: '#F97316',
-    pastel: 'rgba(249, 115, 22, 0.08)',
-    description: 'L\'expression de l\'affection et la présence émotionnelle sont des moteurs clés de votre épanouissement relationnel.',
-    metrics: [
-      { label: 'Complicité', value: 92 },
-      { label: 'Présence', value: 88 },
-      { label: 'Affection', value: 94 },
-    ],
-  },
-  {
-    id: 'limites',
-    emoji: '🛡️',
-    label: 'Limites & Respect',
-    tagline: 'Ce que vous acceptez et refusez',
-    percentage: 96,
-    color: Colors.primary.red,
-    pastel: 'rgba(233,64,87,0.08)',
-    description: 'Vous avez une conscience aiguë de vos limites non-négociables, ce qui vous préserve de toute forme de toxicité.',
-    metrics: [
-      { label: 'Cadre sain', value: 98 },
-      { label: 'Respect mutuel', value: 100 },
-      { label: 'Clarté morale', value: 95 },
-    ],
-  },
-];
+// ─── Cartes du bilan : un module du Grand Entretien par carte ────────
+// Renvoyées par GET /interview/summary : pourcentage = clarté du module
+// (réponses tranchées / questions posées), metrics = vos réponses clés.
+interface SummaryMetric {
+  label: string;
+  answer?: string;
+  value?: number;
+}
+
+interface SummaryPillar {
+  id: string;
+  emoji: string;
+  label: string;
+  tagline: string;
+  percentage: number;
+  color: string;
+  pastel: string;
+  description: string;
+  metrics: SummaryMetric[];
+}
+
+const TOTAL_MODULES = 11;
+
+function clarityText(score: number): string {
+  if (score >= 85) return 'Vos réponses sont nettes et cohérentes : vos rencontres n’en seront que plus justes.';
+  if (score >= 65) return 'Votre profil est clair dans l’ensemble ; quelques points restent ouverts, et c’est normal.';
+  return 'Plusieurs réponses restent ouvertes : elles seront précisées au fil de vos échanges.';
+}
 
 // ─── Composant progress circulaire ────────────────────────────────
 function CircularProgress({
@@ -162,7 +97,7 @@ function PillarCard({
   pillar,
   onPress,
 }: {
-  pillar: typeof DEFAULT_PILLARS[0];
+  pillar: SummaryPillar;
   onPress: () => void;
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -198,31 +133,38 @@ function PillarCard({
           <View style={styles.cardText}>
             <Text style={styles.cardLabel}>{pillar.label}</Text>
             <Text style={styles.cardTagline}>{pillar.tagline}</Text>
-            <Text style={styles.cardDesc} numberOfLines={3}>{pillar.description}</Text>
+            <Text style={styles.cardDesc}>{pillar.description}</Text>
           </View>
         </View>
 
         {/* Métriques */}
         <View style={styles.cardMetrics}>
-          {pillar.metrics?.map((m) => (
-            <View key={m.label} style={styles.metricRow}>
-              <Text style={styles.metricLabel}>{m.label}</Text>
-              <View style={styles.metricTrack}>
-                <View
-                  style={[
-                    styles.metricFill,
-                    { width: `${m.value}%`, backgroundColor: pillar.color },
-                  ]}
-                />
+          {pillar.metrics?.map((m) =>
+            m.answer ? (
+              <View key={m.label} style={styles.answerRow}>
+                <Text style={styles.answerLabel}>{m.label}</Text>
+                <Text style={styles.answerText}>{m.answer}</Text>
               </View>
-              <Text style={[styles.metricVal, { color: pillar.color }]}>{m.value}%</Text>
-            </View>
-          ))}
+            ) : (
+              <View key={m.label} style={styles.metricRow}>
+                <Text style={styles.metricLabel}>{m.label}</Text>
+                <View style={styles.metricTrack}>
+                  <View
+                    style={[
+                      styles.metricFill,
+                      { width: `${m.value ?? 0}%`, backgroundColor: pillar.color },
+                    ]}
+                  />
+                </View>
+                <Text style={[styles.metricVal, { color: pillar.color }]}>{m.value ?? 0}%</Text>
+              </View>
+            ),
+          )}
         </View>
 
         {/* CTA détail */}
         <View style={[styles.cardCta, { borderTopColor: pillar.pastel?.replace('0.08', '0.2') || Colors.neutral.border }]}>
-          <Text style={[styles.cardCtaText, { color: pillar.color }]}>Explorer cette dimension</Text>
+          <Text style={[styles.cardCtaText, { color: pillar.color }]}>Voir le détail du module</Text>
           <ChevronRight size={14} color={pillar.color} />
         </View>
       </TouchableOpacity>
@@ -236,12 +178,12 @@ export default function InterviewSummaryScreen() {
   const router = useRouter();
   const [showIntro, setShowIntro]       = useState(true);
   const [activeIndex, setActiveIndex]   = useState(0);
-  const [pillars, setPillars]           = useState<any[]>(DEFAULT_PILLARS);
+  const [pillars, setPillars]           = useState<SummaryPillar[]>([]);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [modulesAnswered, setModulesAnswered] = useState(0);
   const [selectedPillar, setSelectedPillar] = useState<any | null>(null);
-  const [globalScore, setGlobalScore]   = useState(92);
+  const [globalScore, setGlobalScore]   = useState<number | null>(null);
   const [synthesisText, setSynthesisText] = useState('');
-  const [keyValues, setKeyValues]       = useState<string[]>([]);
-  const [needsList, setNeedsList]       = useState<string[]>([]);
 
   // Animations intro
   const introFade   = useRef(new Animated.Value(0)).current;
@@ -249,7 +191,6 @@ export default function InterviewSummaryScreen() {
   const contentFade = useRef(new Animated.Value(0)).current;
   const contentSlide = useRef(new Animated.Value(24)).current;
   const modalAnim   = useRef(new Animated.Value(0)).current;
-  const scoreAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Charger la vraie carte mentale depuis l'IA
@@ -260,21 +201,23 @@ export default function InterviewSummaryScreen() {
           if (Array.isArray(data.pillars) && data.pillars.length > 0) {
             setPillars(data.pillars);
           }
-          if (typeof data.maturityScore === 'number') {
-            setGlobalScore(data.maturityScore);
+          const clarity = typeof data.clarityScore === 'number' ? data.clarityScore : data.maturityScore;
+          if (typeof clarity === 'number') {
+            setGlobalScore(clarity);
+          }
+          if (typeof data.modulesAnswered === 'number') {
+            setModulesAnswered(data.modulesAnswered);
+          } else if (Array.isArray(data.pillars)) {
+            setModulesAnswered(data.pillars.length);
           }
           if (data.synthesis) {
             setSynthesisText(data.synthesis);
           }
-          if (Array.isArray(data.keyValues)) {
-            setKeyValues(data.keyValues);
-          }
-          if (Array.isArray(data.needsList)) {
-            setNeedsList(data.needsList);
-          }
         }
       } catch (e) {
-        console.log('Utilisation des données par défaut pour le bilan');
+        console.log('Bilan indisponible pour le moment');
+      } finally {
+        setLoadingSummary(false);
       }
     };
 
@@ -294,11 +237,6 @@ export default function InterviewSummaryScreen() {
           Animated.timing(contentFade,  { toValue: 1, duration: 700, useNativeDriver: true }),
           Animated.spring(contentSlide, { toValue: 0, friction: 8, tension: 50, useNativeDriver: true }),
         ]).start();
-        Animated.timing(scoreAnim, {
-          toValue: globalScore,
-          duration: 1400,
-          useNativeDriver: false,
-        }).start();
       });
     }, 2000);
 
@@ -385,7 +323,7 @@ export default function InterviewSummaryScreen() {
             </View>
             <Text style={styles.title}>Votre profil{'\n'}est prêt 🎉</Text>
             <Text style={styles.subtitle}>
-              Voici ce que votre parcours révèle sur vous. Ces 6 dimensions guident nos suggestions de rencontres.
+              Voici ce que votre Grand Entretien révèle sur vous. Ces {pillars.length || TOTAL_MODULES} modules guident nos suggestions de rencontres.
             </Text>
           </View>
 
@@ -399,32 +337,58 @@ export default function InterviewSummaryScreen() {
             >
               <View style={styles.scoreLeft}>
                 <View style={styles.scoreCircleWrap}>
-                  <CircularProgress size={72} percentage={globalScore} color={Colors.primary.red} strokeWidth={6} />
+                  <CircularProgress size={72} percentage={globalScore ?? 0} color={Colors.primary.red} strokeWidth={6} />
                   <View style={styles.scoreCenter}>
-                    <Text style={styles.scoreNumber}>{globalScore}</Text>
+                    <Text style={styles.scoreNumber}>
+                      {globalScore === null ? '…' : globalScore}
+                      {globalScore !== null && <Text style={styles.scorePercent}>%</Text>}
+                    </Text>
                   </View>
                 </View>
               </View>
               <View style={styles.scoreRight}>
                 <Text style={styles.scoreTitle}>Score de clarté</Text>
                 <Text style={styles.scoreDesc}>
-                  Vous avez un profil clair et cohérent. Cela facilite grandement les connexions authentiques.
+                  {globalScore === null ? 'Calcul en cours…' : clarityText(globalScore)}
                 </Text>
+                {globalScore !== null && globalScore >= 70 && (
                 <View style={styles.scoreBadge}>
                   <Star size={11} color={Colors.primary.orange} fill={Colors.primary.orange} />
-                  <Text style={styles.scoreBadgeText}>Profil de qualité</Text>
+                  <Text style={styles.scoreBadgeText}>Profil clair</Text>
                 </View>
+                )}
               </View>
             </LinearGradient>
           </View>
 
           {/* Titre section cards */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Vos 6 dimensions clés</Text>
+            <Text style={styles.sectionTitle}>Vos modules du Grand Entretien</Text>
+            {pillars.length > 0 && (
             <Text style={styles.sectionSub}>
               {activeIndex + 1} / {pillars.length}
             </Text>
+            )}
           </View>
+          {pillars.length > 0 && (
+            <Text style={styles.clarityNote}>
+              Le pourcentage indique la clarté de vos réponses dans chaque module.
+            </Text>
+          )}
+
+          {loadingSummary && pillars.length === 0 && (
+            <View style={styles.summaryLoading}>
+              <ActivityIndicator color={Colors.primary.red} />
+              <Text style={styles.summaryLoadingText}>Rédaction de votre bilan…</Text>
+            </View>
+          )}
+          {!loadingSummary && pillars.length === 0 && (
+            <View style={styles.summaryLoading}>
+              <Text style={styles.summaryLoadingText}>
+                Votre bilan apparaîtra dès que vos réponses au Grand Entretien seront enregistrées.
+              </Text>
+            </View>
+          )}
 
           {/* Cards swipeables */}
           <FlatList
@@ -498,8 +462,9 @@ export default function InterviewSummaryScreen() {
               end={{ x: 1, y: 0 }}
               style={styles.messageGrad}
             >
+              <Text style={styles.messageTitle}>✨ Comment BOLIGO vous présente</Text>
               <Text style={styles.messageText}>
-                ✨ {synthesisText || "Votre profil montre une belle cohérence entre vos valeurs fondamentales et votre projet de vie. L'algorithme BOLIGO analyse désormais les profils pour vous proposer des rencontres hautement compatibles."}
+                {synthesisText || 'Votre présentation sera rédigée à partir de vos réponses dès la fin de votre Grand Entretien.'}
               </Text>
             </LinearGradient>
           </View>
@@ -522,7 +487,7 @@ export default function InterviewSummaryScreen() {
               </LinearGradient>
             </TouchableOpacity>
             <Text style={styles.ctaNote}>
-              Profil complété à 100% · Matching activé
+              {modulesAnswered}/{TOTAL_MODULES} modules analysés · Matching activé
             </Text>
           </View>
 
@@ -576,7 +541,12 @@ export default function InterviewSummaryScreen() {
 
                 {/* Métriques */}
                 <View style={styles.modalMetrics}>
-                  {selectedPillar.metrics.map((m: any) => (
+                  {selectedPillar.metrics.map((m: SummaryMetric) => m.answer ? (
+                    <View key={m.label} style={styles.answerRow}>
+                      <Text style={styles.answerLabel}>{m.label}</Text>
+                      <Text style={styles.modalAnswerText}>{m.answer}</Text>
+                    </View>
+                  ) : (
                     <View key={m.label} style={styles.modalMetricRow}>
                       <View style={styles.modalMetricTop}>
                         <Text style={styles.modalMetricLabel}>{m.label}</Text>
@@ -696,6 +666,10 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.bold,
     fontSize: 20, color: Colors.primary.red,
   },
+  scorePercent: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 11,
+  },
   scoreRight: { flex: 1 },
   scoreTitle: {
     fontFamily: Typography.fontFamily.bold,
@@ -792,6 +766,33 @@ const styles = StyleSheet.create({
     color: Colors.text.primary70,
   },
   cardMetrics: { gap: Spacing.sm, marginBottom: Spacing.md },
+  answerRow: { gap: 2 },
+  answerLabel: {
+    fontFamily: Typography.fontFamily.medium,
+    fontSize: 11, color: Colors.text.primary40,
+    textTransform: 'uppercase', letterSpacing: 0.4,
+  },
+  answerText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 13, lineHeight: 18, color: Colors.text.primary100,
+  },
+  modalAnswerText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 15, lineHeight: 21, color: Colors.text.primary100,
+  },
+  summaryLoading: {
+    alignItems: 'center', gap: Spacing.sm,
+    paddingVertical: Spacing.xl, paddingHorizontal: Spacing.lg,
+  },
+  summaryLoadingText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 13, lineHeight: 19, color: Colors.text.primary70, textAlign: 'center',
+  },
+  clarityNote: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12, lineHeight: 17, color: Colors.text.primary70,
+    paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm,
+  },
   metricRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   metricLabel: {
     fontFamily: Typography.fontFamily.medium,
@@ -841,6 +842,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   messageGrad: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
+  messageTitle: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 13, color: Colors.text.primary100,
+    marginBottom: 6,
+  },
   messageText: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: 14, lineHeight: 22,

@@ -556,7 +556,7 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
         <View style={styles.rulesBannerInline}>
           <Shield size={12} color={Colors.text.primary40} />
           <Text style={styles.rulesInlineText}>
-            Sans contacts externes. Modération Harmonie : grossièretés masquées à l’écran et bloquées à l’envoi (aucune copie locale hors session).
+            Sans contacts externes. Modération BOLIGO : grossièretés masquées à l’écran et bloquées à l’envoi (aucune copie locale hors session).
           </Text>
         </View>
       </View>
