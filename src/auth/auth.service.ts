@@ -522,93 +522,94 @@ export class AuthService {
     if (!token || token.startsWith('mock_') || (provider !== 'google' && provider !== 'facebook')) {
       throw new UnauthorizedException('Connexion sociale invalide.');
     }
+    const identity = provider === 'google' ? await this.verifyGoogleToken(token) : await this.verifyFacebookToken(token);
+    const email = normalizeEmail(identity.email);
 
-    let email = '';
-    let firstName = provider === 'google' ? 'Membre Google' : 'Membre Facebook';
-    let lastName = '';
-    let providerId = '';
-    try {
-      if (provider === 'google') {
-        const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(token)}`, {
-          signal: AbortSignal.timeout(8000),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.email_verified === true || data.email_verified === 'true') email = data.email || '';
-          firstName = data.given_name || firstName;
-          lastName = data.family_name || '';
-          providerId = data.sub || '';
-        }
-      } else {
-        const res = await fetch(`https://graph.facebook.com/me?fields=id,email,first_name,last_name&access_token=${encodeURIComponent(token)}`, {
-          signal: AbortSignal.timeout(8000),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          email = data.email || '';
-          firstName = data.first_name || firstName;
-          lastName = data.last_name || '';
-          providerId = data.id || '';
-        }
-      }
-    } catch {
-      throw new UnauthorizedException('Vérification de la connexion sociale impossible.');
-    }
-
-    if (!providerId || !email) {
-      throw new UnauthorizedException('Connexion sociale invalide.');
-    }
-    email = normalizeEmail(email);
-
-    let user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: {
         OR: [
-          provider === 'google' ? { googleId: providerId } : { facebookId: providerId },
+          provider === 'google' ? { googleId: identity.providerId } : { facebookId: identity.providerId },
           { email: { equals: email, mode: 'insensitive' } },
         ],
       },
     });
 
-    if (user?.accountStatus === 'suspendu') {
+    // Pas de création de compte ici : l'inscription passe par le formulaire
+    // (date de naissance, genre, acceptation des CGU).
+    if (!user) {
+      throw new UnauthorizedException(
+        "Aucun compte BOLIGO n'est associé à cette adresse. Créez d'abord votre compte avec le formulaire d'inscription.",
+      );
+    }
+    if (user.accountStatus === 'suspendu') {
       throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
     }
 
-    if (user) {
-      const updateData: any = {};
-      if (provider === 'google' && !user.googleId) updateData.googleId = providerId;
-      if (provider === 'facebook' && !user.facebookId) updateData.facebookId = providerId;
-
-      if (Object.keys(updateData).length > 0) {
-        user = await this.prisma.user.update({
-          where: { id: user.id },
-          data: updateData,
-        });
-      }
-    } else {
-      user = await this.prisma.user.create({
-        data: {
-          email,
-          firstName,
-          lastName: lastName || '',
-          birthDate: new Date('1998-01-01'),
-          gender: 'H',
-          city: 'Abidjan',
-          googleId: provider === 'google' ? providerId : null,
-          facebookId: provider === 'facebook' ? providerId : null,
-          accountStatus: 'nouveau',
-          isVerified: true,
-          creditBalance: 0,
-          profile: {
-            create: {
-              profileStatus: 'incomplet',
-              description: `Membre inscrit via ${provider === 'google' ? 'Google' : 'Facebook'}.`,
-            },
-          },
-        },
-      });
+    const link: { googleId?: string; facebookId?: string } = {};
+    if (provider === 'google' && !user.googleId) link.googleId = identity.providerId;
+    if (provider === 'facebook' && !user.facebookId) link.facebookId = identity.providerId;
+    if (Object.keys(link).length > 0) {
+      await this.prisma.user.update({ where: { id: user.id }, data: link });
     }
 
     return this.signToken(user.id, user.email);
+  }
+
+  /**
+   * Jeton Google : il doit avoir été émis pour une application BOLIGO
+   * (GOOGLE_CLIENT_IDS) — sinon un jeton obtenu par une autre application
+   * permettrait de se connecter au compte de quelqu'un d'autre.
+   */
+  private async verifyGoogleToken(token: string) {
+    const allowed = (process.env.GOOGLE_CLIENT_IDS || '').split(',').map((s) => s.trim()).filter(Boolean);
+    if (allowed.length === 0) {
+      throw new UnauthorizedException('La connexion avec Google n’est pas disponible.');
+    }
+    try {
+      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(token)}`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      const info: any = res.ok ? await res.json() : null;
+      const audienceOk = info && (allowed.includes(info.aud) || allowed.includes(info.azp));
+      const verified = info && (info.email_verified === true || info.email_verified === 'true');
+      if (!audienceOk || !verified || !info.email || !info.sub) {
+        throw new UnauthorizedException('Connexion sociale invalide.');
+      }
+      return { providerId: String(info.sub), email: String(info.email) };
+    } catch (e) {
+      if (e instanceof UnauthorizedException) throw e;
+      throw new UnauthorizedException('Vérification de la connexion sociale impossible.');
+    }
+  }
+
+  /** Jeton Facebook : vérifié avec la clé de l'application BOLIGO (debug_token). */
+  private async verifyFacebookToken(token: string) {
+    const appId = process.env.FACEBOOK_APP_ID;
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
+    if (!appId || !appSecret) {
+      throw new UnauthorizedException('La connexion avec Facebook n’est pas disponible.');
+    }
+    try {
+      const debug = await fetch(
+        `https://graph.facebook.com/debug_token?input_token=${encodeURIComponent(token)}&access_token=${encodeURIComponent(`${appId}|${appSecret}`)}`,
+        { signal: AbortSignal.timeout(8000) },
+      );
+      const check: any = debug.ok ? await debug.json() : null;
+      if (!check?.data?.is_valid || String(check.data.app_id) !== String(appId)) {
+        throw new UnauthorizedException('Connexion sociale invalide.');
+      }
+      const me = await fetch(`https://graph.facebook.com/me?fields=id,email&access_token=${encodeURIComponent(token)}`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      const data: any = me.ok ? await me.json() : null;
+      if (!data?.id || !data?.email || String(data.id) !== String(check.data.user_id)) {
+        throw new UnauthorizedException('Connexion sociale invalide.');
+      }
+      return { providerId: String(data.id), email: String(data.email) };
+    } catch (e) {
+      if (e instanceof UnauthorizedException) throw e;
+      throw new UnauthorizedException('Vérification de la connexion sociale impossible.');
+    }
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {

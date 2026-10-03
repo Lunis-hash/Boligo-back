@@ -368,7 +368,7 @@ export class MatchingService {
         proposalStatus: p.status,
         videoEnabled,
         testUnlock,
-        contactsExchanged: step === 'termine',
+        contactsExchanged: p.journey?.result === 'reussi',
         ended: Boolean(p.journey && p.journey.result !== 'en_cours'),
         journeyResult: p.journey?.result ?? null,
         expiresAt: p.status === 'en_attente' ? p.expiresAt : null,

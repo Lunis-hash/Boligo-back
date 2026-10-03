@@ -372,6 +372,54 @@ describe('AuthService', () => {
       ).rejects.toThrow(UnauthorizedException);
       expect(mockPrismaService.user.findFirst).not.toHaveBeenCalled();
     });
+
+    describe('connexion Google', () => {
+      const realFetch = global.fetch;
+      const env = process.env.GOOGLE_CLIENT_IDS;
+      const tokenInfo = (over: Record<string, unknown> = {}) =>
+        jest.fn().mockResolvedValue({
+          ok: true,
+          json: async () => ({ aud: 'boligo-client', sub: 'g-1', email: 'Membre@Example.com', email_verified: 'true', ...over }),
+        });
+      beforeEach(() => {
+        process.env.GOOGLE_CLIENT_IDS = 'boligo-client';
+      });
+      afterEach(() => {
+        global.fetch = realFetch;
+        process.env.GOOGLE_CLIENT_IDS = env;
+      });
+
+      it('est indisponible tant que les identifiants BOLIGO ne sont pas configurés', async () => {
+        process.env.GOOGLE_CLIENT_IDS = '';
+        global.fetch = tokenInfo();
+        await expect(service.socialLogin('google', 'ya29.token')).rejects.toThrow(UnauthorizedException);
+        expect(global.fetch).not.toHaveBeenCalled();
+      });
+
+      it('refuse un jeton émis pour une autre application', async () => {
+        global.fetch = tokenInfo({ aud: 'autre-application', azp: 'autre-application' });
+        await expect(service.socialLogin('google', 'ya29.token')).rejects.toThrow(UnauthorizedException);
+        expect(mockPrismaService.user.findFirst).not.toHaveBeenCalled();
+      });
+
+      it('ne crée pas de compte : il faut d’abord s’inscrire', async () => {
+        global.fetch = tokenInfo();
+        mockPrismaService.user.findFirst.mockResolvedValue(null);
+        await expect(service.socialLogin('google', 'ya29.token')).rejects.toThrow(UnauthorizedException);
+        expect(mockPrismaService.user.create).not.toHaveBeenCalled();
+      });
+
+      it('connecte un membre existant et relie son identifiant Google', async () => {
+        global.fetch = tokenInfo();
+        mockPrismaService.user.findFirst.mockResolvedValue({ id: 'u9', email: 'membre@example.com', accountStatus: 'actif', googleId: null });
+        mockPrismaService.user.update.mockResolvedValue({});
+        const res = await service.socialLogin('google', 'ya29.token');
+        expect(res).toHaveProperty('access_token');
+        expect(mockPrismaService.user.update).toHaveBeenCalledWith(
+          expect.objectContaining({ where: { id: 'u9' }, data: { googleId: 'g-1' } }),
+        );
+      });
+    });
   });
 
   describe('deleteAccount', () => {

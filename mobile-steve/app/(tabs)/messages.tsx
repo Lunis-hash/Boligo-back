@@ -812,14 +812,17 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
   }, [journeyId]);
 
   const [accepting, setAccepting] = useState(false);
+  // Chaque canal se choisit séparément ; il n'est révélé que si les deux membres l'acceptent.
+  const [sharePhone, setSharePhone] = useState(true);
+  const [shareEmail, setShareEmail] = useState(true);
 
   const handleAccept = async () => {
-    if (!journeyId || accepting) return;
+    if (!journeyId || accepting || (!sharePhone && !shareEmail)) return;
     setAccepting(true);
     try {
       const res = await client.post(`/journey/${journeyId}/exchange-contact`, {
-        sharePhone: true,
-        shareEmail: true,
+        sharePhone,
+        shareEmail,
       });
       const data = res.data || {};
       // Les coordonnées ne sont révélées qu'après le consentement des deux
@@ -855,7 +858,30 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
           <Text style={styles.exchangeSub}>
             Votre appel vidéo s'est bien terminé. {partnerName} souhaite peut-être vous recontacter.
           </Text>
-          <TouchableOpacity onPress={handleAccept} disabled={accepting} activeOpacity={0.85} style={[styles.exchangeBtnWrap, accepting && { opacity: 0.6 }]} testID="contact-exchange-accept">
+          {([
+            { key: 'phone', label: 'Mon numéro de téléphone', value: sharePhone, set: setSharePhone, Icon: Phone },
+            { key: 'email', label: 'Mon adresse e-mail', value: shareEmail, set: setShareEmail, Icon: Mail },
+          ] as const).map(({ key, label, value, set, Icon }) => (
+            <TouchableOpacity
+              key={key}
+              onPress={() => set(!value)}
+              activeOpacity={0.7}
+              style={styles.shareChoice}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: value }}
+              testID={`contact-share-${key}`}
+            >
+              <View style={[styles.shareBox, value && styles.shareBoxOn]}>
+                {value ? <Text style={styles.shareTick}>✓</Text> : null}
+              </View>
+              <Icon size={16} color={Colors.text.primary70} />
+              <Text style={styles.shareLabel}>{label}</Text>
+            </TouchableOpacity>
+          ))}
+          <Text style={styles.shareHint}>
+            Un moyen de contact n'est révélé que si vous l'acceptez tous les deux.
+          </Text>
+          <TouchableOpacity onPress={handleAccept} disabled={accepting || (!sharePhone && !shareEmail)} activeOpacity={0.85} style={[styles.exchangeBtnWrap, (accepting || (!sharePhone && !shareEmail)) && { opacity: 0.6 }]} testID="contact-exchange-accept">
             <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.exchangeBtn}>
               <UserCheck size={18} color="#fff" />
               <Text style={styles.exchangeBtnText}>{accepting ? 'Enregistrement…' : 'Oui, partager mes contacts'}</Text>
@@ -1185,6 +1211,20 @@ const styles = StyleSheet.create({
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
   onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#22C55E' },
   chatHeaderActions: { flexDirection: 'row', gap: 8 },
+  shareChoice: { flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'stretch', paddingVertical: 8 },
+  shareBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.primary.red,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareBoxOn: { backgroundColor: Colors.primary.red },
+  shareTick: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  shareLabel: { fontSize: 14, color: Colors.text.primary100 },
+  shareHint: { fontSize: 12, color: Colors.text.primary40, alignSelf: 'stretch', marginTop: 4, marginBottom: 10 },
   sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: Colors.neutral.white,
