@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { CreditService } from './credit.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -15,26 +22,17 @@ export class CreditController {
   @Post('spend')
   async spendCredits(
     @Request() req,
-    @Body() body: { amount: number; description: string }
+    @Body() body: { amount: number; description: string },
   ) {
     return this.creditService.spendCredits(
       req.user.id,
       body.amount,
-      body.description
+      body.description,
     );
   }
 
-  @Post('add')
-  async addCredits(
-    @Request() req,
-    @Body() body: { amount: number; description: string }
-  ) {
-    return this.creditService.addCredits(
-      req.user.id,
-      body.amount,
-      body.description
-    );
-  }
+  // Pas de route « ajouter des crédits » : les crédits ne s'obtiennent que par
+  // un paiement Stripe vérifié ou un code promo (module paiement).
 
   @Get('history')
   async getHistory(@Request() req) {

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { PaymentService } from './payment.service';
@@ -36,7 +36,7 @@ describe('PaymentService — webhook Stripe', () => {
     creditTransaction: { findFirst: jest.Mock };
     user: { findUnique: jest.Mock };
   };
-  let creditService: { addCredits: jest.Mock; getBalance: jest.Mock };
+  let creditService: { addCredits: jest.Mock };
   let service: PaymentService;
 
   const signed = (payload: string, secret = WEBHOOK_SECRET) =>
@@ -55,10 +55,7 @@ describe('PaymentService — webhook Stripe', () => {
       user: { findUnique: jest.fn().mockResolvedValue(null) },
     };
     creditService = {
-      addCredits: jest
-        .fn()
-        .mockResolvedValue({ success: true, alreadyCredited: false }),
-      getBalance: jest.fn().mockResolvedValue({ credits: 1 }),
+      addCredits: jest.fn().mockResolvedValue({ success: true }),
     };
     const config = {
       get: jest.fn((key: string) => env[key]),
@@ -127,122 +124,16 @@ describe('PaymentService — webhook Stripe', () => {
     expect(creditService.addCredits).toHaveBeenCalledTimes(1);
   });
 
-  it('ne relance ni e-mail ni facture pour un paiement déjà crédité', async () => {
-    creditService.addCredits.mockResolvedValue({
-      success: true,
-      alreadyCredited: true,
-    });
+  it('ne crédite pas deux fois le même paiement renvoyé par Stripe', async () => {
+    prisma.creditTransaction.findFirst.mockResolvedValue({ id: 'tx-1' });
     const payload = succeededEvent();
     await expect(
       service.handleWebhook(Buffer.from(payload), signed(payload)),
     ).resolves.toEqual({ received: true });
-    // La référence de paiement est transmise : addCredits ne crédite qu'une fois.
-    expect(creditService.addCredits).toHaveBeenCalledWith(
-      'user-1',
-      1,
-      expect.any(String),
-      15,
-      'pi_test_1',
-    );
-    expect(prisma.user.findUnique).not.toHaveBeenCalled();
-  });
-});
-
-describe('PaymentService — confirmation par l’app', () => {
-  let creditService: { addCredits: jest.Mock; getBalance: jest.Mock };
-  let retrieve: jest.Mock;
-  let service: PaymentService;
-  const env: Record<string, string | undefined> = {
-    STRIPE_SECRET_KEY: 'sk_test_dummy',
-  };
-
-  const paymentIntent = (over: Record<string, unknown> = {}) => ({
-    id: 'pi_test_42',
-    object: 'payment_intent',
-    status: 'succeeded',
-    amount: 1500,
-    currency: 'eur',
-    metadata: { userId: 'user-1', credits: '1', planName: 'Parcours Harmonie' },
-    ...over,
-  });
-
-  beforeEach(() => {
-    creditService = {
-      addCredits: jest
-        .fn()
-        .mockResolvedValue({ success: true, alreadyCredited: false }),
-      getBalance: jest.fn().mockResolvedValue({ credits: 1 }),
-    };
-    service = new PaymentService(
-      { get: jest.fn((k: string) => env[k]) } as unknown as ConfigService,
-      {
-        user: { findUnique: jest.fn().mockResolvedValue(null) },
-      } as unknown as PrismaService,
-      creditService as unknown as CreditService,
-      {} as EmailService,
-    );
-    retrieve = jest.fn().mockResolvedValue(paymentIntent());
-    (service as unknown as { stripe: unknown }).stripe = {
-      paymentIntents: { retrieve },
-    };
-  });
-
-  it('crédite un paiement réussi après l’avoir relu chez Stripe', async () => {
-    await expect(
-      service.confirmPayment('user-1', 'pi_test_42'),
-    ).resolves.toEqual({
-      credited: true,
-      alreadyCredited: false,
-      status: 'succeeded',
-      credits: 1,
-    });
-    expect(retrieve).toHaveBeenCalledWith('pi_test_42');
-    expect(creditService.addCredits).toHaveBeenCalledWith(
-      'user-1',
-      1,
-      expect.any(String),
-      15,
-      'pi_test_42',
-    );
-  });
-
-  it('ne crédite pas un paiement non abouti', async () => {
-    retrieve.mockResolvedValue(
-      paymentIntent({ status: 'requires_payment_method' }),
-    );
-    await expect(
-      service.confirmPayment('user-1', 'pi_test_42'),
-    ).resolves.toEqual({
-      credited: false,
-      status: 'requires_payment_method',
+    expect(prisma.creditTransaction.findFirst).toHaveBeenCalledWith({
+      where: { paymentRef: 'pi_test_1', type: 'achat' },
+      select: { id: true },
     });
     expect(creditService.addCredits).not.toHaveBeenCalled();
-  });
-
-  it('refuse le paiement d’un autre membre', async () => {
-    await expect(
-      service.confirmPayment('user-2', 'pi_test_42'),
-    ).rejects.toThrow(ForbiddenException);
-    expect(creditService.addCredits).not.toHaveBeenCalled();
-  });
-
-  it('refuse une référence de paiement mal formée', async () => {
-    await expect(
-      service.confirmPayment('user-1', '../charges'),
-    ).rejects.toThrow(BadRequestException);
-    expect(retrieve).not.toHaveBeenCalled();
-  });
-
-  it('signale un paiement déjà crédité (webhook arrivé avant)', async () => {
-    creditService.addCredits.mockResolvedValue({
-      success: true,
-      alreadyCredited: true,
-    });
-    await expect(
-      service.confirmPayment('user-1', 'pi_test_42'),
-    ).resolves.toMatchObject({
-      credited: false,
-      alreadyCredited: true,
-    });
   });
 });

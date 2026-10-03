@@ -1,4 +1,10 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreditService } from '../credit/credit.service';
@@ -6,7 +12,7 @@ import { EmailService } from '../common/email.service';
 import Stripe from 'stripe';
 
 @Injectable()
-export class PaymentService {
+export class PaymentService implements OnModuleInit {
   private stripe: Stripe;
   private readonly logger = new Logger(PaymentService.name);
 
@@ -20,6 +26,59 @@ export class PaymentService {
     this.stripe = new Stripe(stripeSecretKey || 'sk_test_dummy', {
       apiVersion: '2024-06-20' as any,
     });
+  }
+
+  /** Indique au démarrage quel compte Stripe est branché (nom, mode) — jamais la clé. */
+  async onModuleInit() {
+    const key = this.configService.get<string>('STRIPE_SECRET_KEY');
+    if (!key) {
+      this.logger.warn('STRIPE_SECRET_KEY non configurée : paiements indisponibles.');
+      return;
+    }
+    const mode = key.startsWith('sk_live_') ? 'RÉEL' : 'test';
+    try {
+      const account = await this.stripe.accounts.retrieveCurrent();
+      const name =
+        account.settings?.dashboard?.display_name ||
+        account.business_profile?.name ||
+        'sans nom';
+      this.logger.log(`Stripe connecté : compte « ${name} » (${account.id}), mode ${mode}.`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Compte Stripe illisible (mode ${mode}) : ${message}`);
+    }
+  }
+
+  /**
+   * Confirmation d'un paiement par l'app, juste après la feuille de paiement :
+   * le serveur relit le PaymentIntent chez Stripe avec sa clé secrète (source de
+   * vérité), vérifie qu'il appartient bien au membre et qu'il est payé, puis
+   * crédite une seule fois. Le webhook, s'il est configuré, reste un filet.
+   */
+  async confirmPayment(userId: string, paymentIntentId: string) {
+    if (typeof paymentIntentId !== 'string' || !/^pi_[A-Za-z0-9_]+$/.test(paymentIntentId)) {
+      throw new BadRequestException('Référence de paiement invalide.');
+    }
+    if (!this.configService.get<string>('STRIPE_SECRET_KEY')) {
+      throw new BadRequestException('Paiement indisponible sur ce serveur.');
+    }
+
+    const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+    if (paymentIntent.metadata?.userId !== userId) {
+      throw new ForbiddenException('Ce paiement ne vous appartient pas.');
+    }
+    if (paymentIntent.status !== 'succeeded') {
+      return { credited: false, status: paymentIntent.status };
+    }
+
+    const credited = await this.handlePaymentSuccess(paymentIntent);
+    const balance = await this.creditService.getBalance(userId);
+    return {
+      credited,
+      alreadyCredited: !credited,
+      status: paymentIntent.status,
+      credits: balance.credits,
+    };
   }
 
   // ─── Détails du plan unique ────────────────────────────────────────────────
@@ -292,11 +351,12 @@ export class PaymentService {
   }
 
   // ─── Traitement du paiement réussi ────────────────────────────────────────
-  private async handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
+  /** Crédite le membre ; renvoie false si le paiement avait déjà été crédité. */
+  private async handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent): Promise<boolean> {
     const metadata = paymentIntent.metadata;
     if (!metadata?.userId || !metadata?.credits) {
       this.logger.warn(`Métadonnées manquantes dans PaymentIntent ${paymentIntent.id}`);
-      return;
+      return false;
     }
 
     const userId = metadata.userId;
@@ -305,28 +365,20 @@ export class PaymentService {
     const euroAmount = paymentIntent.amount / 100;
     const paymentRef = paymentIntent.id;
 
-    // Stripe peut renvoyer le même événement plusieurs fois : on ne crédite qu'une fois.
-    const alreadyCredited = await this.prisma.creditTransaction.findFirst({
-      where: { paymentRef, type: 'achat' },
-      select: { id: true },
-    });
-    if (alreadyCredited) {
-      this.logger.log(
-        `Paiement ${paymentRef} déjà crédité — événement ignoré.`,
-      );
-      return;
-    }
-
-    this.logger.log(`Paiement réussi — user ${userId}, ${credits} crédit(s), ${euroAmount}€, ref: ${paymentRef}`);
-
-    // 1. Ajouter les crédits
-    await this.creditService.addCredits(
+    // 1. Ajouter les crédits — une seule fois par paiement, même si le webhook
+    //    et la confirmation de l'app arrivent ensemble (verrou dans addCredits).
+    const added = await this.creditService.addCredits(
       userId,
       credits,
       `${planName} (Stripe: ${paymentRef})`,
       euroAmount,
       paymentRef,
     );
+    if (added.alreadyCredited) {
+      this.logger.log(`Paiement ${paymentRef} déjà crédité — ignoré.`);
+      return false;
+    }
+    this.logger.log(`Paiement réussi — user ${userId}, ${credits} crédit(s), ${euroAmount}€, ref: ${paymentRef}`);
 
     // 2. Récupérer l'utilisateur pour l'email
     const user = await this.prisma.user.findUnique({
@@ -336,7 +388,7 @@ export class PaymentService {
 
     if (!user) {
       this.logger.warn(`Utilisateur ${userId} introuvable pour email de confirmation.`);
-      return;
+      return true;
     }
 
     // 3. Tenter de créer une facture Stripe et l'envoyer
@@ -347,14 +399,10 @@ export class PaymentService {
       if (customers.data.length > 0) {
         const customerId = customers.data[0].id;
 
-        // Créer un InvoiceItem puis une Invoice finalisée
-        await this.stripe.invoiceItems.create({
-          customer: customerId,
-          amount: paymentIntent.amount,
-          currency: paymentIntent.currency,
-          description: planName,
-        });
-
+        // Facture de reçu : la ligne est rattachée à CETTE facture (sinon elle
+        // resterait en attente et serait reportée sur une prochaine facture),
+        // puis la facture est marquée payée hors Stripe — le paiement a déjà eu
+        // lieu via le PaymentIntent, rien n'est réclamé une seconde fois.
         const invoice = await this.stripe.invoices.create({
           customer: customerId,
           auto_advance: false,
@@ -363,8 +411,19 @@ export class PaymentService {
           metadata: { userId, paymentRef },
         });
 
+        await this.stripe.invoiceItems.create({
+          customer: customerId,
+          invoice: invoice.id,
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+          description: planName,
+        });
+
         const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id);
-        invoiceUrl = finalizedInvoice.invoice_pdf ?? undefined;
+        const paidInvoice = await this.stripe.invoices.pay(finalizedInvoice.id, {
+          paid_out_of_band: true,
+        });
+        invoiceUrl = paidInvoice.invoice_pdf ?? finalizedInvoice.invoice_pdf ?? undefined;
         this.logger.log(`Facture Stripe créée : ${invoice.id}, PDF: ${invoiceUrl}`);
       }
     } catch (invoiceErr: any) {
@@ -386,6 +445,7 @@ export class PaymentService {
     } catch (emailErr: any) {
       this.logger.error(`Erreur envoi email de confirmation : ${emailErr.message}`);
     }
+    return true;
   }
 
   // ─── Appliquer un code promo (endpoint dédié) ──────────────────────────────

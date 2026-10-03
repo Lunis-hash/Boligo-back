@@ -79,6 +79,27 @@ export async function createPaymentIntent(optionId: string, promoCode?: string):
   return res.data;
 }
 
+/** « pi_123_secret_abc » → « pi_123 » (le client ne reçoit que le secret client). */
+export function paymentIntentIdFromClientSecret(clientSecret: string): string {
+  return clientSecret.split('_secret_')[0];
+}
+
+export interface PaymentConfirmation {
+  credited: boolean;
+  alreadyCredited?: boolean;
+  status: string;
+  credits?: number;
+}
+
+/**
+ * Après la feuille de paiement : le serveur relit le paiement chez Stripe et
+ * crédite le compte (une seule fois, même si le webhook arrive aussi).
+ */
+export async function confirmPayment(paymentIntentId: string): Promise<PaymentConfirmation> {
+  const res = await client.post<PaymentConfirmation>('/payment/confirm', { paymentIntentId });
+  return res.data;
+}
+
 export async function checkPromoCode(code: string, optionId: string): Promise<PromoCheckResult> {
   const res = await client.post<PromoCheckResult>('/payment/check-promo', { code, optionId });
   return res.data;
@@ -104,6 +125,7 @@ export const PaymentService = {
   getPlans,
   createPaymentIntent,
   initStripePayment: createPaymentIntent,
+  confirmPayment,
   checkPromoCode,
   applyPromoCode,
   getCreditBalance,
