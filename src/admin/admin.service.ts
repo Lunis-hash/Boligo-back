@@ -320,8 +320,19 @@ export class AdminService {
       },
     });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
-    const { passwordHash, ...safe } = user;
-    return safe;
+    // Aucun secret ne quitte le serveur, même vers l'administration.
+    const safe: Partial<typeof user> = { ...user };
+    for (const field of [
+      'passwordHash',
+      'hashedRefreshToken',
+      'verificationCode',
+      'resetCode',
+      'resetCodeExpires',
+      'pushToken',
+    ] as const) {
+      delete safe[field];
+    }
+    return { ...safe, hasPushToken: Boolean(user.pushToken) };
   }
 
   async updateUser(id: string, dto: UpdateUserAdminDto) {

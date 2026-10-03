@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as dns from 'dns';
 
 // Force Node.js à privilégier l'IPv4 pour éviter tout ENETUNREACH sur Render
@@ -6,8 +6,29 @@ if (typeof (dns as any).setDefaultResultOrder === 'function') {
   (dns as any).setDefaultResultOrder('ipv4first');
 }
 
+const isRealKey = (key?: string) => Boolean(key && !key.includes('placeholder'));
+
+/** Canal d'envoi actif, sans jamais révéler de clé. */
+export function emailDeliveryMode(): 'smtp' | 'sendgrid' | 'brevo' | 'simulation' {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) return 'smtp';
+  if (isRealKey(process.env.SENDGRID_API_KEY)) return 'sendgrid';
+  if (isRealKey(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY)) return 'brevo';
+  return 'simulation';
+}
+
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
+  onModuleInit() {
+    const mode = emailDeliveryMode();
+    if (mode === 'simulation') {
+      console.warn(
+        "[EMAIL] Mode d'envoi : simulation — aucun e-mail réel n'est envoyé (codes de vérification et de réinitialisation non délivrés). Configurez SMTP_HOST/SMTP_USER/SMTP_PASS ou BREVO_API_KEY.",
+      );
+    } else {
+      console.log(`[EMAIL] Mode d'envoi : ${mode}`);
+    }
+  }
+
   private async dispatchEmail(to: string, subject: string, html: string) {
     const smtpHost = process.env.SMTP_HOST;
     const smtpUser = process.env.SMTP_USER;
@@ -128,7 +149,10 @@ export class EmailService {
     // 3. Mode Simulation dans la console
     console.log('\n==================================================');
     console.log(`✉️ [EMAIL SIMULATED] To: ${to}`);
-    console.log(`✉️ [EMAIL SIMULATED] Subject: ${subject}`);
+    // Le sujet contient le code de vérification : jamais dans les journaux de production.
+    console.log(
+      `✉️ [EMAIL SIMULATED] Subject: ${process.env.NODE_ENV === 'production' ? subject.replace(/\d/g, '•') : subject}`,
+    );
     console.log('==================================================\n');
   }
 
