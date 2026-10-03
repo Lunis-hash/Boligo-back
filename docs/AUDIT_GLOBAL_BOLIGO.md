@@ -9,7 +9,7 @@
 
 ## En bref
 
-- **Ce qui a été audité.** Tous les parcours de BOLIGO : slides, inscription en 4 étapes, code par e-mail, Grand Entretien (11 modules, environ 76 questions), bilan, Découverte, Parcours Harmonie (15 €, 1 crédit), Sondeur (3 jours × 7 questions), chat libre, appel vidéo de 2 minutes, échange de coordonnées. L'audit couvre aussi l'API, la base, le design et le bundle web.
+- **Ce qui a été audité.** Tous les parcours de BOLIGO : slides, inscription en 4 étapes, code par e-mail, Grand Entretien (11 modules, environ 76 questions), bilan, Découverte, Parcours Harmonie (15 €, 1 crédit), Sondeur (3 jours × 7 questions), chat libre, appel vidéo de 7 minutes, échange de coordonnées. L'audit couvre aussi l'API, la base, le design et le bundle web.
 - **102 constats distincts** après fusion des doublons (123 constats bruts dans les quatre rapports) : **15 bloquants, 63 majeurs, 24 mineurs**.
 - **Avancement** : **22 corrigés, 32 partiellement corrigés, 48 à faire**. Les failles les plus graves sont fermées :
   - prise de contrôle de compte par le code e-mail ;
@@ -110,7 +110,7 @@ Ces correctifs ont été vérifiés dans le code (commits `3a1735f` à `9ab1bc7`
 
 - Les CGU pouvaient être contournées (« Passer ») et leur acceptation n'était jamais enregistrée → **case non cochée par défaut à l'étape 4**. Le serveur exige `acceptTerms` et enregistre la date et la version (`User.termsAcceptedAt`, `User.termsVersion`).
 - Un mineur ou une date future pouvaient être saisis, et la date était décalée d'un jour → **âge de 18 à 99 ans contrôlé dans l'app et sur le serveur**, date envoyée au format AAAA-MM-JJ.
-- Promesses inexactes : 7 minutes de vidéo, 40 questions, compatibles à 80 %, profils vérifiés, messagerie chiffrée → **textes corrigés** : 2 minutes, environ 70 questions, profils classés par compatibilité, e-mail vérifié, messagerie modérée.
+- Promesses inexactes : 40 questions, compatibles à 80 %, profils vérifiés, messagerie chiffrée → **textes corrigés** : environ 70 questions, profils classés par compatibilité, e-mail vérifié, messagerie modérée. L'échange vidéo dure **7 minutes** (décision produit) : le serveur, qui coupait l'appel à 2 minutes, a été aligné sur 7 minutes.
 - La fiche CGU des slides était une copie divergente, avec une autre raison sociale → **générée depuis `constants/legal.json`**, la source unique.
 - Un téléphone déjà utilisé était annoncé comme un e-mail déjà utilisé → **deux messages distincts**.
 - Onglets « Discover / Matches » → **« Découverte / Matchs »**. Le bilan et le paiement mènent désormais à la Découverte.

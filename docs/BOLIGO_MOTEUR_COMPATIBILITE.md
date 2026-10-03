@@ -91,7 +91,7 @@ Grand Entretien (11 modules, 76 questions en banque, 60–70 posées)
 | Règle | Implémentation |
 |---|---|
 | Chat libre | `checkProgression` : ouverture quand **les deux** membres ont répondu aux 21 questions |
-| Vidéo 2 min | étape `video` (3 jours après le chat) ; salle Daily éphémère éjectant à 120 s ; `VIDEO_TEST_UNLOCK=true` uniquement pour la recette |
+| Vidéo 7 min | étape `video` (3 jours après le chat) ; salle Daily éphémère éjectant à 420 s ; `VIDEO_TEST_UNLOCK=true` uniquement pour la recette |
 | Coordonnées | `getContactExchange` ne renvoie téléphone/e-mail que si `consentA && consentB` |
 | Appartenance | `requireMember` sur statut, questions, messages, échange de contacts (404/403) |
 | Comptes suspendus | 403 au login et à chaque requête (`jwt.strategy`) |

@@ -147,7 +147,7 @@ function buildProfile(prenom: string, genre: 'MALE' | 'FEMALE') {
     telephone: `06${Math.floor(10000000 + Math.random() * 89999999)}`,
     profession: 'Développeur',
     acceptTerms: true,
-    termsVersion: '2026-10-02',
+    termsVersion: '2026-10-03',
   };
 }
 

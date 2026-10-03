@@ -10,7 +10,8 @@ import { DailyService } from './daily.service';
 import { NotificationService } from '../notifications/notification.service';
 import { ChatGateway } from '../chat/chat.gateway';
 
-export const VIDEO_CALL_MAX_SECONDS = 2 * 60;
+/** Durée de l'échange vidéo du Parcours Harmonie : 7 minutes. */
+export const VIDEO_CALL_MAX_SECONDS = 7 * 60;
 
 /** Étapes où l’appel vidéo est autorisé (prod). */
 const VIDEO_STEPS_PROD = ['video'] as const;
