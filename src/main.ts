@@ -38,7 +38,7 @@ async function bootstrap() {
   // Swagger Documentation
   const config = new DocumentBuilder()
     .setTitle('BOLIGO API')
-    .setDescription('Backend API for Project Harmonie (BOLIGO)')
+    .setDescription('API BOLIGO')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

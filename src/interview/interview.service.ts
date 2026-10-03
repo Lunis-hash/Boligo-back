@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { AiService } from '../ai/ai.service';
+import { buildSelfPillars, loadSelfPortrait } from '../portrait/self-portrait';
 
 @Injectable()
 export class InterviewService {
@@ -174,113 +175,28 @@ export class InterviewService {
       }
     }
 
-    const keyValues = Array.isArray(mentalMap?.keyValues) ? (mentalMap.keyValues as string[]) : ['Authenticité', 'Sincérité', 'Engagement'];
-    const needsList = Array.isArray(mentalMap?.needsList) ? (mentalMap.needsList as string[]) : ['Écoute mutuelle', 'Projet de foyer', 'Transparence'];
-    const redFlags = Array.isArray(mentalMap?.redFlags) ? (mentalMap.redFlags as string[]) : ['Manque de communication'];
-    
-    // Calcul dynamique d'alchimie et de maturité évitant le 85% systématique
-    const totalAnswersCount = keyValues.length + needsList.length;
-    const baseMaturityFallback = 0.82 + ((totalAnswersCount * 7) % 15) * 0.01;
-    const baseAlchemyFallback = 0.79 + ((totalAnswersCount * 11) % 17) * 0.01;
-
-    const maturityScore = Math.round((mentalMap?.maturityScore ?? baseMaturityFallback) * 100);
-    const alchemyScore = Math.round((mentalMap?.alchemyScore ?? baseAlchemyFallback) * 100);
-
-    const dynamicPillars = [
-      {
-        id: 'valeurs',
-        emoji: '💎',
-        label: 'Vos valeurs & principes',
-        tagline: 'Ce qui guide vos décisions au quotidien',
-        percentage: Math.min(99, Math.max(75, maturityScore + 4)),
-        color: '#E8403A',
-        pastel: 'rgba(232, 64, 58, 0.08)',
-        description: `Vos principes cardinaux : ${keyValues.slice(0, 3).join(', ')}. Cette clarté morale fonde la stabilité de votre couple.`,
-        metrics: keyValues.slice(0, 3).map((val: any, idx: number) => ({ label: String(val), value: Math.min(98, Math.max(78, maturityScore + 3 - idx * 2)) })),
-      },
-      {
-        id: 'projet',
-        emoji: '🌱',
-        label: 'Projet de vie & Famille',
-        tagline: 'Votre vision du foyer et de l\'avenir',
-        percentage: Math.min(99, Math.max(70, alchemyScore + 3)),
-        color: '#10B981',
-        pastel: 'rgba(16, 185, 129, 0.08)',
-        description: `Vos priorités de foyer : ${needsList.slice(0, 3).join(', ')}. Vous recherchez un engagement concret.`,
-        metrics: needsList.slice(0, 3).map((need: any, idx: number) => ({ label: String(need), value: Math.min(97, Math.max(74, alchemyScore + 2 - idx * 3)) })),
-      },
-      {
-        id: 'communication',
-        emoji: '💬',
-        label: 'Communication & Conflits',
-        tagline: 'Votre manière de dialoguer et désamorcer les tensions',
-        percentage: Math.min(99, Math.max(72, maturityScore - 2)),
-        color: '#7C5CE8',
-        pastel: 'rgba(124, 92, 232, 0.08)',
-        description: `Dialogue et résolution : vous privilégiez une communication franche basée sur ${keyValues[0] || 'la sincérité'} et ${needsList[0] || 'l\'écoute'}.`,
-        metrics: [
-          { label: 'Écoute active', value: Math.min(98, maturityScore + 2) },
-          { label: 'Transparence', value: Math.min(98, maturityScore + 5) },
-          { label: 'Résolution calme', value: Math.min(98, maturityScore - 2) },
-        ],
-      },
-      {
-        id: 'finances',
-        emoji: '💰',
-        label: 'Économie & Gestion du foyer',
-        tagline: 'Votre rapport à l\'argent et aux responsabilités',
-        percentage: Math.min(99, Math.max(70, alchemyScore - 4)),
-        color: '#D9AE3C',
-        pastel: 'rgba(217, 174, 60, 0.08)',
-        description: `Organisation financière : vous recherchez l'équité, la transparence et un modèle clair autour de ${keyValues[1] || 'la responsabilité'}.`,
-        metrics: [
-          { label: 'Transparence budget', value: Math.min(96, alchemyScore + 4) },
-          { label: 'Équité & soutien', value: Math.min(96, alchemyScore + 2) },
-          { label: 'Projets communs', value: Math.min(96, alchemyScore + 6) },
-        ],
-      },
-      {
-        id: 'intimite',
-        emoji: '🔥',
-        label: 'Tendresse & Intimité',
-        tagline: 'Votre vision de l\'affection et du lien affectif',
-        percentage: Math.min(99, Math.max(75, alchemyScore + 2)),
-        color: '#F97316',
-        pastel: 'rgba(249, 115, 22, 0.08)',
-        description: `Affection & Vibe : la complicité émotionnelle et la présence affective sont essentielles à votre épanouissement.`,
-        metrics: [
-          { label: 'Complicité', value: Math.min(98, alchemyScore + 6) },
-          { label: 'Disponibilité', value: Math.min(98, alchemyScore + 2) },
-          { label: 'Affection', value: Math.min(98, alchemyScore + 4) },
-        ],
-      },
-      {
-        id: 'limites',
-        emoji: '🛡️',
-        label: 'Limites & Points de vigilance',
-        tagline: 'Ce qui constitue pour vous un deal-breaker',
-        percentage: Math.min(99, Math.max(80, maturityScore + 6)),
-        color: '#E8403A',
-        pastel: 'rgba(232, 64, 58, 0.08)',
-        description: `Vos lignes rouges non négociables : ${redFlags.join(', ') || 'infidélité et manque de respect'}.`,
-        metrics: [
-          { label: 'Tolérance zéro toxicité', value: 98 },
-          { label: 'Clarté des limites', value: 96 },
-          { label: 'Respect mutuel', value: 100 },
-        ],
-      },
-    ];
+    // Bilan rédigé à partir des réponses réelles du Grand Entretien : un module
+    // par carte, un pourcentage de clarté (réponses tranchées / questions
+    // applicables) et les réponses clés — aucun chiffre ni texte inventé.
+    const portrait = await loadSelfPortrait(this.prisma, userId);
+    const pillars = portrait ? buildSelfPillars(portrait) : [];
+    const plain = (t: string) => t.replace(/\*\*/g, '');
 
     return {
       firstName: mentalMap?.user?.firstName ?? 'Membre',
-      synthesis: mentalMap?.synthesis ?? 'Votre profil révèle une grande maturité relationnelle et un profond désir d\'engagement sérieux.',
-      bio: mentalMap?.bio ?? 'En quête d\'une relation sincère et durable.',
-      maturityScore,
-      alchemyScore,
-      keyValues,
-      needsList,
-      redFlags,
-      pillars: dynamicPillars,
+      synthesis: portrait?.analysis ? plain(portrait.analysis) : null,
+      bio: portrait?.bio ?? null,
+      headline: portrait?.headline ?? null,
+      clarityScore: portrait?.clarity ?? 0,
+      // Ancien champ lu par les versions précédentes de l'app pour le « score de clarté ».
+      maturityScore: portrait?.clarity ?? 0,
+      alchemyScore: mentalMap?.alchemyScore != null ? Math.round(mentalMap.alchemyScore * 100) : null,
+      keyValues: portrait?.values.map((v) => v.label) ?? [],
+      needsList: portrait?.expectations.map((e) => plain(e.text)) ?? [],
+      redFlags: portrait?.redFlags ?? [],
+      threeWords: portrait?.threeWords ?? [],
+      modulesAnswered: portrait?.modules.length ?? 0,
+      pillars,
     };
   }
 

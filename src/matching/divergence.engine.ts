@@ -591,7 +591,7 @@ export const DIVERGENCE_RULES: Rule[] = [
     questionId: 'M8_Q04',
     theme: 'communication',
     label: "Langage de l'amour",
-    severity: () => 'mineure',
+    severity: (a, b) => (a === b ? null : 'mineure'),
   },
 
   // ── Projet de vie

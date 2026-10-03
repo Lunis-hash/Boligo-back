@@ -1,13 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { computeCompatibility } from './compatibility.scorer';
-import { QUESTIONS } from '../interview/questions.data';
-import {
-  buildCompatibilitySheet,
-  buildDiscussionTopics,
-  buildDivergenceReport,
-  collectRawAnswers,
-} from './divergence.engine';
+import { collectRawAnswers, RawAnswers } from './divergence.engine';
+import { buildMatchView, resolveScore } from './match-view';
 import { NotificationService } from '../notifications/notification.service';
 
 @Injectable()
@@ -169,139 +163,44 @@ export class MatchingService {
     // périmètre. L'app affiche alors son état vide (« aucun profil pour le moment »).
     const candidatesToScore = filteredMatches;
 
-    // Réponses du Module 0 / 1 des candidats : les « détails » affichés doivent
-    // venir de l'entretien, jamais d'une valeur inventée.
-    const candidateInterviews = await this.prisma.interviewIA.findMany({
-      where: {
-        userId: { in: candidatesToScore.map((c) => c.id) },
-        status: { in: ['en_cours', 'termine'] },
-      },
-      include: { responses: true },
-    });
-    const interviewByUser = new Map<string, Record<string, string>>();
-    for (const itv of candidateInterviews) {
-      interviewByUser.set(itv.userId, collectRawAnswers(itv.responses));
-    }
-    const answerText = (answers: Record<string, string> | undefined, questionId: string): string | undefined => {
-      const key = answers?.[questionId];
-      if (!key) return undefined;
-      const q = QUESTIONS.find((qq) => qq.id === questionId);
-      return q?.options.find((o) => o.key === key)?.text;
-    };
+    // Réponses du Grand Entretien des candidats : toute la fiche (score, modules,
+    // textes) en est déduite — jamais d'une valeur inventée.
+    const answersByUser = await this.answersByUser(candidatesToScore.map((c) => c.id));
+    const viewer = { answers: viewerAnswers, mentalMap: viewerMentalMap };
 
-    const scored = candidatesToScore.map((m, index) => {
-      const mentalMap = m.mentalMaps[0];
-      const compat = computeCompatibility(viewerMentalMap, mentalMap);
-      // Moteur de divergences : réponses brutes des deux entretiens → gravité,
-      // pénalité de score, fiche « ce qui vous rassemble / point de vigilance ».
-      const report = buildDivergenceReport(viewerAnswers, interviewByUser.get(m.id) ?? {});
-      const adjustedScore = Math.max(0.2, Math.min(0.98, compat.score - report.penalty));
-      const adjustedPercent = Math.round(adjustedScore * 100);
-      const sheet = buildCompatibilitySheet(report, m.firstName);
-      const discussionTopics = buildDiscussionTopics(report, m.firstName);
-      
-      const birthYear = m.birthDate ? new Date(m.birthDate).getFullYear() : 29;
-      const age = Math.max(18, new Date().getFullYear() - birthYear);
-      const location = m.profile?.displayedCity || m.city || 'Lyon';
-      const profession = m.profile?.profession || 'Profession non renseignée';
-
-      const rawSynthesis = mentalMap?.synthesis;
-      const bioText = mentalMap?.bio || m.profile?.description;
-      const keyValsArray = Array.isArray(mentalMap?.keyValues) && mentalMap.keyValues.length > 0 
-        ? mentalMap.keyValues 
-        : (m.gender === 'F' 
-          ? [['Bienveillance', 'Famille', 'Écoute'], ['Sincérité', 'Projet de vie', 'Foi'], ['Ambition', 'Honnêteté', 'Respect']][index % 3] 
-          : [['Loyauté', 'Créativité', 'Stabilité'], ['Engagement', 'Partage', 'Sérénité'], ['Transparence', 'Travail', 'Cuisine']][index % 3]);
-
-      const needsArray = Array.isArray(mentalMap?.needsList) && mentalMap.needsList.length > 0 
-        ? mentalMap.needsList 
-        : [`Communication transparente à ${location}`, `Projet de vie équilibré`, `Soutien mutuel au quotidien`].slice(0, 2 + (index % 2));
-
-      const redFlagsArray = Array.isArray(mentalMap?.redFlags) && mentalMap.redFlags.length > 0 ? mentalMap.redFlags : [];
-
-      const isFemale = m.gender === 'F';
-      const pronoun = isFemale ? 'Elle' : 'Il';
-      const genderAdj = isFemale ? 'ancrée' : 'ancré';
-
-      let aiAnalysis = '';
-      if (rawSynthesis && rawSynthesis.length > 20) {
-        aiAnalysis = rawSynthesis;
-      } else if (bioText && bioText.length > 20) {
-        aiAnalysis = `${m.firstName} (${profession} à ${location}) se définit ainsi : « ${bioText} ». L'IA note une recherche de stabilité et d'authenticité relationnelle.`;
-      } else {
-        const valStr = keyValsArray.join(', ');
-        const needStr = needsArray.join(', ');
-        aiAnalysis = `${m.firstName}, ${age} ans, exerce comme **${profession}** à **${location}**. L'analyse de son profil indique une personnalité **${genderAdj}** axée sur **${valStr}**. ${pronoun} privilégie **${needStr}** pour construire une relation solide et sereine.`;
-      }
-
-      // « Ce qui vous rassemble » : convergences réelles de l'entretien d'abord.
-      const positivePoints = [
-        `Compatibilité mesurée à **${adjustedPercent}%** après lecture de vos ${report.comparedQuestions} réponses communes.`,
-        ...sheet.rassemble.map((r) => `**${r}**.`),
-      ];
-      if (sheet.rassemble.length === 0) {
-        positivePoints.push(`Valeurs affichées par ${m.firstName} : **${keyValsArray.join(', ')}**.`);
-      }
-
-      // Point de vigilance : lignes rouges de la carte mentale, sinon la lecture
-      // du score (valeurs / besoins) — jamais une phrase inventée.
-      // « Votre point de vigilance » : la divergence la plus grave de l'entretien,
-      // sinon les lignes rouges de la carte mentale, sinon la lecture du score.
-      const warningPoint = sheet.vigilance
-        ?? (redFlagsArray.length > 0 ? `Point d'attention identifié : ${redFlagsArray.join(', ')}.` : compat.summary);
-
-      // Détails issus de l'entretien (Module 0 et 1) ; une donnée absente est omise.
-      const answers = interviewByUser.get(m.id);
-      const details = Object.fromEntries(
-        Object.entries({
-          situation: answerText(answers, 'M0_Q04'),
-          children: answerText(answers, 'M0_Q05'),
-          childrenWish: answerText(answers, 'M0_Q06'),
-          religion: (m.profile as any)?.religion || answerText(answers, 'M1_Q05'),
-          education: answerText(answers, 'M0_Q07'),
-          lifestyle: location,
-        }).filter(([, v]) => typeof v === 'string' && v.length > 0),
-      );
-
-      const interests = keyValsArray.map((v: string, i: number) => ({ label: String(v), common: i % 2 === 0 }));
-
-      const threeWords = keyValsArray.slice(0, 3).map((v: string) => String(v));
-
-      const expectations = [
-        { icon: '⏱️', text: `${pronoun} recherche une relation transparente et sérieuse sur la durée.` },
-        { icon: '🤝', text: `Un partenaire **disponible émotionnellement** à ${location}.` },
-        { icon: '🏡', text: `Construire un projet de couple fondé sur **${keyValsArray[0]}**.` }
-      ];
-
-      const sloganText = bioText || `« Cherche une belle relation vraie et durable à ${location}, basée sur ${String(keyValsArray[0] || 'la confiance').toLowerCase()}. »`;
-
-      return {
+    const scored = candidatesToScore.map((m) => {
+      const { _score, ...view } = buildMatchView(viewer, {
         id: m.id,
         firstName: m.firstName,
-        age,
-        location,
-        profession,
-        compatibility: adjustedPercent,
-        compatibilitySummary: compat.summary,
-        compatibilitySheet: { rassemble: sheet.rassemble, vigilance: sheet.vigilance, themes: sheet.themes, hardStop: sheet.hardStop },
-        discussionTopics,
-        hardStop: report.hardStop,
-        slogan: sloganText,
-        aiAnalysis,
-        positivePoints,
-        warningPoint,
-        details,
-        interests,
-        threeWords,
-        expectations,
-        mentalMap: this.formatMentalMap(mentalMap, compat),
-        _sortScore: adjustedScore,
-      };
+        gender: m.gender,
+        birthDate: m.birthDate,
+        city: m.city,
+        profile: m.profile,
+        mentalMap: m.mentalMaps[0] ?? null,
+        answers: answersByUser.get(m.id) ?? {},
+      });
+      return { ...view, _sortScore: _score };
     });
 
     scored.sort((a, b) => b._sortScore - a._sortScore);
 
-    return scored.map(({ _sortScore, compatibilitySummary, ...rest }) => rest);
+    return scored.map(({ _sortScore, ...rest }) => rest);
+  }
+
+  /** Dernier entretien (en cours ou terminé) de chaque membre → réponses brutes. */
+  private async answersByUser(userIds: string[]): Promise<Map<string, RawAnswers>> {
+    const map = new Map<string, RawAnswers>();
+    if (userIds.length === 0) return map;
+    const interviews = await this.prisma.interviewIA.findMany({
+      where: { userId: { in: userIds }, status: { in: ['en_cours', 'termine'] } },
+      orderBy: { startDate: 'asc' },
+      include: { responses: true },
+    });
+    // Tri croissant : l'entretien le plus récent écrase les précédents.
+    for (const itv of interviews) {
+      map.set(itv.userId, collectRawAnswers(itv.responses));
+    }
+    return map;
   }
 
   // Auto-réparer les journeys en phase_harmonie où un utilisateur a tout répondu
@@ -353,47 +252,21 @@ export class MatchingService {
     }
   }
 
-  private formatMentalMap(
-    mentalMap: any,
-    compat?: ReturnType<typeof computeCompatibility>,
-  ) {
-    if (!mentalMap) return [];
-
-    const valuesPct = compat
-      ? Math.round(compat.breakdown.valuesAlignment * 100)
-      : Math.round((mentalMap.maturityScore || 0.82) * 100);
-    const needsPct = compat
-      ? Math.round(compat.breakdown.needsAlignment * 100)
-      : Math.round((mentalMap.alchemyScore || 0.79) * 100);
-    const harmonyPct = compat
-      ? Math.round(compat.breakdown.vibeScore * 100)
-      : Math.round(((mentalMap.alchemyScore || 0.81) + (mentalMap.maturityScore || 0.83)) / 2 * 100);
-    const vecuPct = Math.round((valuesPct + harmonyPct) / 2);
-    const lifestylePct = Math.round((needsPct + harmonyPct) / 2);
-
-    return [
-      { id: 'valeurs', label: '💎 Valeurs & Culture', emoji: '💎', value: Math.max(50, Math.min(99, valuesPct)), color: '#10B981' },
-      { id: 'attachement', label: '🤝 Attachement & Émotions', emoji: '🤝', value: Math.max(50, Math.min(99, needsPct)), color: '#10B981' },
-      { id: 'projet', label: '🌱 Projet de Vie & Famille', emoji: '🌱', value: Math.max(50, Math.min(99, harmonyPct)), color: '#F59E0B' },
-      { id: 'vecu', label: '⚖️ Vécu & Maturité', emoji: '⚖️', value: Math.max(50, Math.min(99, vecuPct)), color: '#F59E0B' },
-      { id: 'mode_de_vie', label: '💼 Mode de vie & Finances', emoji: '💼', value: Math.max(50, Math.min(99, lifestylePct)), color: '#EF4444' },
-    ];
-  }
-
   private async resolveCompatibilityScore(userId: string, targetUserId: string) {
-    const [viewer, candidate, viewerInterview, candidateInterview] = await Promise.all([
+    const [viewerMap, candidateMap, answers] = await Promise.all([
       this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
       this.prisma.mentalMap.findFirst({ where: { userId: targetUserId }, orderBy: { generatedAt: 'desc' } }),
-      this.prisma.interviewIA.findFirst({ where: { userId, status: { in: ['en_cours', 'termine'] } }, orderBy: { startDate: 'desc' }, include: { responses: true } }),
-      this.prisma.interviewIA.findFirst({ where: { userId: targetUserId, status: { in: ['en_cours', 'termine'] } }, orderBy: { startDate: 'desc' }, include: { responses: true } }),
+      this.answersByUser([userId, targetUserId]),
     ]);
-    const compat = computeCompatibility(viewer, candidate);
-    const report = buildDivergenceReport(collectRawAnswers(viewerInterview?.responses), collectRawAnswers(candidateInterview?.responses));
-    const score = Math.max(0.2, Math.min(0.98, compat.score - report.penalty));
-    const summary = report.divergences[0]
-      ? `${compat.summary} Point de vigilance : ${report.divergences[0].label.toLowerCase()} (${report.divergences[0].severity}).`
-      : compat.summary;
-    return { ...compat, score, percent: Math.round(score * 100), summary };
+    const resolved = resolveScore(
+      { answers: answers.get(userId) ?? {}, mentalMap: viewerMap },
+      { answers: answers.get(targetUserId) ?? {}, mentalMap: candidateMap },
+    );
+    const top = resolved.report.divergences[0];
+    const summary = top
+      ? `Compatibilité de ${resolved.percent} %. Point de vigilance : ${top.label.toLowerCase()}.`
+      : `Compatibilité de ${resolved.percent} %.`;
+    return { score: resolved.score, percent: resolved.percent, summary };
   }
 
   // Récupérer tous les matches actifs de l'utilisateur
@@ -416,11 +289,18 @@ export class MatchingService {
       },
     });
 
+    const partnerOf = (p: (typeof proposals)[0]) =>
+      p.sourceUserId === userId ? p.targetUser : p.sourceUser;
+    const [viewerMap, answers] = await Promise.all([
+      this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
+      this.answersByUser([userId, ...proposals.map((p) => partnerOf(p).id)]),
+    ]);
+    const viewer = { answers: answers.get(userId) ?? {}, mentalMap: viewerMap };
+
     const mapped = proposals.map((p) => {
       // Le partenaire est l'autre utilisateur (pas soi-même)
-      const partner = p.sourceUserId === userId ? p.targetUser : p.sourceUser;
+      const partner = partnerOf(p);
       const step = p.journey?.currentStep ?? (p.status === 'en_attente' ? 'attente' : 'phase_harmonie');
-      const partnerMentalMap = partner.mentalMaps?.[0];
 
       // Mapper le step du Journey vers la phase frontend
       const phaseMap: Record<string, string> = {
@@ -436,43 +316,27 @@ export class MatchingService {
       const testUnlock = isVideoUnlockEnv === 'true' || isVideoUnlockEnv === '1';
       const videoEnabled = step === 'video' || (testUnlock && step === 'chat_libre');
 
-      return {
+      const { _score, id, firstName, ...view } = buildMatchView(viewer, {
         id: partner.id,
-        name: partner.firstName,
-        compatibility: Math.round(p.compatibilityScore * 100),
-        profession: partner.profile?.profession || 'Profession non renseignée',
-        location: partner.profile?.displayedCity || partner.city || '',
+        firstName: partner.firstName,
+        gender: partner.gender,
+        birthDate: partner.birthDate,
+        city: partner.city,
+        profile: partner.profile,
+        mentalMap: partner.mentalMaps?.[0] ?? null,
+        answers: answers.get(partner.id) ?? {},
+      });
+
+      return {
+        ...view,
+        id,
+        name: firstName,
         phase: phaseMap[step] ?? 'sondeur',
         journeyId: p.journey?.id ?? null,
         proposalStatus: p.status,
         videoEnabled,
         testUnlock,
         contactsExchanged: step === 'termine',
-        slogan: partnerMentalMap?.bio || `« Cherche une relation sincère à ${partner.city || 'Lyon'}, basée sur le respect mutuel. »`,
-        mentalMap: this.formatMentalMap(partnerMentalMap),
-        aiAnalysis: partnerMentalMap?.synthesis || `${partner.firstName} (${partner.profile?.profession || 'Professionnel(le)'} à ${partner.city || 'Lyon'}) présente une forte compatibilité basée sur l'écoute, le soutien mutuel et un projet de vie équilibré.`,
-        positivePoints: [
-          `Compatibilité mesurée à **${Math.round(p.compatibilityScore * 100)}%** sur les priorités mutuelles.`,
-          `Alignement sur la vision de la vie de couple à ${partner.city || 'Lyon'}.`,
-        ],
-        warningPoint: `Nuance de rythme : Prenez le temps de discuter pour harmoniser vos disponibilités et activités au quotidien.`,
-        details: {
-          situation: 'Célibataire',
-          children: 'Souhaite des enfants',
-          religion: (partner.profile as any)?.religion || 'Spiritualité personnelle',
-          education: 'Enseignement Supérieur',
-          lifestyle: `${partner.city || 'Urbain'}, équilibré`,
-        },
-        interests: [
-          { label: 'Famille & Foyer', common: true },
-          { label: 'Communication', common: true },
-          { label: 'Sincérité', common: true },
-        ],
-        threeWords: ['Authentique', 'Sincère', 'Engagé(e)'],
-        expectations: [
-          { icon: '⏱️', text: `Une relation suivie et transparente sur la durée.` },
-          { icon: '🤝', text: `Un partenaire **présent et à l'écoute**.` }
-        ],
       };
     });
 
@@ -560,18 +424,29 @@ export class MatchingService {
       },
     });
 
+    const [viewerMap, answers] = await Promise.all([
+      this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
+      this.answersByUser([userId, ...proposals.map((p) => p.sourceUser.id)]),
+    ]);
+    const viewer = { answers: answers.get(userId) ?? {}, mentalMap: viewerMap };
+
     return proposals.map((p) => {
-      const partnerMentalMap = p.sourceUser.mentalMaps?.[0];
-      return {
-        id: p.id,
-        userId: p.sourceUser.id,
-        name: p.sourceUser.firstName,
+      const { _score, id, firstName, ...view } = buildMatchView(viewer, {
+        id: p.sourceUser.id,
         firstName: p.sourceUser.firstName,
-        compatibility: Math.round(p.compatibilityScore * 100),
-        profession: p.sourceUser.profile?.profession || 'Profession non renseignée',
-        location: p.sourceUser.profile?.displayedCity || p.sourceUser.city || '',
-        slogan: partnerMentalMap?.bio || "Une âme qui partage ce qui compte vraiment.",
-        mentalMap: this.formatMentalMap(partnerMentalMap),
+        gender: p.sourceUser.gender,
+        birthDate: p.sourceUser.birthDate,
+        city: p.sourceUser.city,
+        profile: p.sourceUser.profile,
+        mentalMap: p.sourceUser.mentalMaps?.[0] ?? null,
+        answers: answers.get(p.sourceUser.id) ?? {},
+      });
+      return {
+        ...view,
+        id: p.id,
+        userId: id,
+        name: firstName,
+        firstName,
         createdAt: p.proposedAt,
       };
     });
@@ -652,7 +527,7 @@ export class MatchingService {
           match.targetUserId,
           'nouveau_match',
           'Match mutuel ! 💍',
-          `Félicitations ! Votre parcours d'Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
+          `Félicitations ! Votre Parcours Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
         ),
       ]);
     } catch (err) {
