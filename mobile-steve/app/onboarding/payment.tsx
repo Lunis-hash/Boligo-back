@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStripe } from '@/services/stripe';
 import { Check, ShieldCheck, Sparkles, ChevronLeft, Tag } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
-import { PaymentService, PaymentPlan, PromoCheckResult, selectHarmoniePlan } from '@/services/payment';
+import { PaymentService, PaymentPlan, PromoCheckResult, paymentIntentIdFromClientSecret, selectHarmoniePlan } from '@/services/payment';
 import { getReadableError } from '@/services/api';
 import { Typography } from '@/constants/theme';
 
@@ -104,7 +104,7 @@ export default function PaymentScreen() {
   const finishWithSuccess = async (message: string, expectedMinimum: number) => {
     setPaymentSuccess(true);
     setSuccessMessage(message);
-    // Le crédit est ajouté par le backend (webhook Stripe ou code promo) :
+    // Le crédit est ajouté par le backend (confirmation, webhook Stripe ou code promo) :
     // on attend qu'il apparaisse dans le solde avant de rendre la main.
     const started = Date.now();
     let balance = await refreshCredits();
@@ -187,6 +187,15 @@ export default function PaymentScreen() {
           Alert.alert('Paiement échoué', presentError.message);
         }
         return;
+      }
+
+      // Le serveur vérifie le paiement auprès de Stripe et crédite le compte.
+      // En cas d'échec réseau, le webhook Stripe (s'il est configuré) prend le
+      // relais et l'attente du solde ci-dessous suffit.
+      try {
+        await PaymentService.confirmPayment(paymentIntentIdFromClientSecret(sheet.paymentIntent));
+      } catch (confirmError) {
+        console.warn('[Paiement] Confirmation serveur différée :', getReadableError(confirmError));
       }
 
       await finishWithSuccess('Votre paiement a été confirmé par Stripe.', expectedMinimum);
