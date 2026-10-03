@@ -70,6 +70,11 @@ export class JourneyController {
     return this.journeyService.advanceStep(id, req.user.id, body.step);
   }
 
+  @Post(':id/leave')
+  async leave(@Param('id') id: string, @Request() req) {
+    return this.journeyService.leaveJourney(id, req.user.id);
+  }
+
   @Post(':id/exchange-contact')
   async exchangeContact(
     @Param('id') id: string,

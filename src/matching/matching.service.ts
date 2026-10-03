@@ -364,6 +364,7 @@ export class MatchingService {
         name: firstName,
         phase: phaseMap[step] ?? 'sondeur',
         journeyId: p.journey?.id ?? null,
+        proposalId: p.id,
         proposalStatus: p.status,
         videoEnabled,
         testUnlock,

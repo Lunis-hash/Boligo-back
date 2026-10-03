@@ -946,6 +946,66 @@ export class JourneyService {
   }
 
   /**
+   * Un membre met fin au parcours (malaise, signalement…). Le parcours se clôt
+   * pour les deux ; l'autre membre récupère son crédit, une seule fois.
+   */
+  async leaveJourney(journeyId: string, userId: string) {
+    const journey = this.requireMember(
+      await this.prisma.journey.findUnique({
+        where: { id: journeyId },
+        include: {
+          userA: { select: { firstName: true } },
+          userB: { select: { firstName: true } },
+        },
+      }),
+      userId,
+    );
+    const closed = await this.prisma.journey.updateMany({
+      where: { id: journeyId, result: 'en_cours' },
+      data: {
+        currentStep: 'termine',
+        result: 'abandonne',
+        endDate: new Date(),
+        closingReason: 'Parcours arrêté par un membre',
+      },
+    });
+    if (closed.count === 0) {
+      throw new BadRequestException('Ce parcours est déjà terminé.');
+    }
+
+    const partnerId = journey.userAId === userId ? journey.userBId : journey.userAId;
+    const leaver = journey.userAId === userId ? journey.userA : journey.userB;
+    const spent = await this.prisma.creditTransaction.findFirst({
+      where: { journeyId, userId: partnerId, type: 'consommation' },
+    });
+    const alreadyRefunded = await this.prisma.creditTransaction.findFirst({
+      where: { journeyId, userId: partnerId, type: 'remboursement_justice' },
+      select: { id: true },
+    });
+    if (spent && !alreadyRefunded) {
+      await this.creditService.refundJustice(
+        partnerId,
+        journeyId,
+        Math.abs(spent.creditAmount),
+        `Parcours arrêté par ${leaver.firstName} : crédit rendu`,
+      );
+    }
+    try {
+      await this.notificationService.sendPushNotification(
+        partnerId,
+        'systeme',
+        'Parcours terminé',
+        spent
+          ? `${leaver.firstName} a mis fin à votre parcours. Votre crédit vous a été rendu.`
+          : `${leaver.firstName} a mis fin à votre parcours.`,
+      );
+    } catch {
+      /* notification facultative */
+    }
+    return { success: true };
+  }
+
+  /**
    * Avancement manuel : uniquement vidéo → échange de coordonnées, et seulement
    * si les deux membres ont rejoint l'appel. Les autres étapes avancent
    * d'elles-mêmes (Sondeur terminé, délai de chat, fin d'appel).

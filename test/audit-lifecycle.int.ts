@@ -253,6 +253,20 @@ async function main() {
     );
   });
 
+  await check('arrêt du parcours par un membre : clos pour les deux, crédit rendu à l’autre une fois', async () => {
+    const V = await member('H', 1);
+    const W = await member('F', 1);
+    const inv: any = await matching.createMatch(V.id, W.id);
+    const acc: any = await matching.acceptMatch(inv.match.id, W.id);
+    await journeys.leaveJourney(acc.journey.id, W.id);
+    assert.strictEqual(await balance(V.id), 1);
+    assert.strictEqual(await balance(W.id), 0);
+    await assert.rejects(journeys.leaveJourney(acc.journey.id, V.id));
+    assert.strictEqual(await balance(V.id), 1);
+    const j = await prisma.journey.findUniqueOrThrow({ where: { id: acc.journey.id } });
+    assert.strictEqual(j.result, 'abandonne');
+  });
+
   await check('code promo gratuit : plafond et usage unique respectés en concurrence', async () => {
     const code = `T${tag}`.toUpperCase().slice(0, 20);
     await prisma.promoCode.create({ data: { code, discountType: 'free', discountValue: 0, maxUses: 1 } });
