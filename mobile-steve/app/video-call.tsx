@@ -29,6 +29,12 @@ import { Camera } from 'expo-camera';
 
 const WARNING_SEC = 30;
 
+// Pas de WebView sur le web : l'appel n'y est pas possible, et l'écran ne doit
+// alors appeler ni /video/call-token ni /video/end (sinon le parcours pourrait
+// avancer sans appel réel).
+const IS_WEB = Platform.OS === 'web';
+const WEB_UNAVAILABLE_MESSAGE = "L'appel vidéo est disponible dans l'application mobile BOLIGO.";
+
 type CallState =
   | 'loading'
   | 'error'
@@ -71,7 +77,7 @@ export default function VideoCallScreen() {
       if (endingRef.current) return;
       endingRef.current = true;
 
-      if (journeyId && hasJoinedRoom) {
+      if (!IS_WEB && journeyId && hasJoinedRoom) {
         try {
           await VideoService.end(
             journeyId,
@@ -92,6 +98,9 @@ export default function VideoCallScreen() {
   );
 
   useEffect(() => {
+    // Sur le web, aucun appel serveur : l'écran affiche simplement un message.
+    if (IS_WEB) return;
+
     let cancelled = false;
 
     (async () => {
@@ -195,6 +204,20 @@ export default function VideoCallScreen() {
       ]).start();
     }
   }, [callState, fadeAnim, slideUp]);
+
+  if (IS_WEB) {
+    return (
+      <View style={styles.centered} testID="video-call-web-unavailable">
+        <LinearGradient colors={['#1a1a2e', '#0f3460']} style={StyleSheet.absoluteFillObject} />
+        <Video size={48} color={Colors.primary.orange} />
+        <Text style={styles.errorTitle}>Appel indisponible sur le web</Text>
+        <Text style={styles.errorSub}>{WEB_UNAVAILABLE_MESSAGE}</Text>
+        <TouchableOpacity onPress={safeGoBack} style={styles.backLink} accessibilityRole="button">
+          <Text style={styles.backLinkText}>Retour</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (callState === 'loading' || callState === 'connecting') {
     return (

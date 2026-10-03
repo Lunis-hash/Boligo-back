@@ -214,7 +214,7 @@ export default function InterviewSummaryScreen() {
             setSynthesisText(data.synthesis);
           }
         }
-      } catch (e) {
+      } catch {
         console.log('Bilan indisponible pour le moment');
       } finally {
         setLoadingSummary(false);
@@ -472,7 +472,7 @@ export default function InterviewSummaryScreen() {
           {/* Bouton CTA */}
           <View style={styles.ctaWrap}>
             <TouchableOpacity
-              onPress={() => router.replace('/(tabs)')}
+              onPress={() => router.replace('/(tabs)/discover')}
               activeOpacity={0.85}
               style={styles.ctaBtnWrap}
             >

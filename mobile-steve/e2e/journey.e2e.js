@@ -171,7 +171,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const loginRes = await api('POST', '/auth/login', { body: { email, password } });
   const tokenA = loginRes.data.access_token;
   record('Login API du compte créé via l\'UI', !!tokenA);
-  await page.getByText('Discover', { exact: true }).first().click().catch(() => {});
+  await page.getByText('Découverte', { exact: true }).first().click().catch(() => {});
   await page.waitForTimeout(2000);
   await shot('12-discover-vide');
   record('Découverte : état vide géré', await page.locator('body').innerText().then((t) => /Aucun profil|Tout est à jour|Actualiser/.test(t)));
@@ -241,7 +241,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   // ── 8. Sondeur 21 questions (jour 1 → 3)
   await page.goto(`${APP_URL}/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(3500);
-  await page.getByText('Matches', { exact: true }).first().click().catch(() => {});
+  await page.getByText('Matchs', { exact: true }).first().click().catch(() => {});
   await page.waitForTimeout(3000);
   await shot('20-matchs-sondeur');
   record('Onglet Matchs : parcours Harmonie visible', await text('Parcours Harmonie — 3 jours').isVisible());
@@ -274,7 +274,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
       });
       await page.reload({ waitUntil: 'networkidle' });
       await page.waitForTimeout(3000);
-      await page.getByText('Matches', { exact: true }).first().click();
+      await page.getByText('Matchs', { exact: true }).first().click();
       await page.waitForTimeout(2500);
     }
   }
@@ -291,7 +291,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Parcours en chat libre après les réponses des deux membres', status.data?.currentStep === 'chat_libre', JSON.stringify(status.data));
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(3500);
-  await page.getByText('Matches', { exact: true }).first().click();
+  await page.getByText('Matchs', { exact: true }).first().click();
   await page.waitForTimeout(2500);
   await shot('23-sondeur-termine');
   record('Onglet Matchs : CTA « Accéder à la messagerie » affiché', await text('Accéder à la messagerie').isVisible());
