@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { loadSelfPortrait } from '../portrait/self-portrait';
 
 @Injectable()
 export class ProfileService {
@@ -24,6 +25,8 @@ export class ProfileService {
 
     const mentalMap = user.mentalMaps[0] || null;
     const displayedCity = user.profile.displayedCity || user.city || null;
+    // Fiche rédigée à partir du Grand Entretien (bio, 3 mots, clarté par module).
+    const portrait = await loadSelfPortrait(this.prisma, userId);
 
     return {
       ...user.profile,
@@ -43,6 +46,24 @@ export class ProfileService {
         createdAt: user.createdAt,
       },
       mentalMap,
+      portrait: portrait
+        ? {
+            headline: portrait.headline,
+            bio: portrait.bio,
+            analysis: portrait.analysis,
+            threeWords: portrait.threeWords,
+            values: portrait.values,
+            redFlags: portrait.redFlags,
+            clarity: portrait.clarity,
+            modules: portrait.modules.map((m) => ({
+              id: m.id,
+              label: m.label,
+              emoji: m.emoji,
+              clarity: m.clarity,
+              description: m.description,
+            })),
+          }
+        : null,
     };
   }
 

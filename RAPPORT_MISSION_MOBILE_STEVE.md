@@ -169,3 +169,54 @@ backend de production tourne avec le code passe-partout ; crédit via le code pr
 Attention : la production Render tourne encore sur l'ancien build (`0046ad8`) tant que cette branche
 n'est pas fusionnée dans `main` ; certains écrans (paiement, Sondeur ciblé, règles serveur) ne refléteront
 les correctifs qu'après fusion et redéploiement.
+
+## 10. Refonte des fiches de profil et des KPI (2026-10-03)
+
+### Causes trouvées
+
+| Symptôme | Cause |
+|---|---|
+| « axée sur **Oui si le projet de ,** … » | La synthèse de secours recopiait les réponses en les **coupant à 20 caractères** (`slice(0, 20)`), puis les collait avec des virgules. Ces bouts de phrase étaient enregistrés comme « valeurs clés » et réutilisés partout. |
+| « 0 » au centre du cercle | Le cercle affichait l'**initiale du prénom** : pour Oli, un « O » qui se lisait comme un zéro. |
+| Pourcentages par module sans lien avec l'entretien | 5 « piliers » calculés sur des recouvrements de textes IA et bornés à 50 % minimum. Côté app, des valeurs inventées comblaient les trous (âge, « Lyon », détails, analyse). |
+| Fiches sans enfants / situation / études | **Bug d'entretien** : la réponse enregistrée à l'inscription marquait le module 0 comme terminé, et ses 7 questions essentielles n'étaient jamais posées. |
+
+### Ce qui a été construit
+
+1. **Moteur de rédaction** (`src/portrait/`, détaillé dans `docs/BOLIGO_MOTEUR_COMPATIBILITE.md` §7). Une phrase écrite à la main pour chaque réponse du Grand Entretien, avec les accords au féminin. Il rédige l'en-tête « Oli, 38 ans, pilote de ligne à Écouis », l'analyse BOLIGO, la bio (quand l'ancienne est abîmée), les 3 mots, les valeurs, les attentes et la grille « Profil ». Les textes sont recalculés à chaque affichage : les fiches existantes sont corrigées **sans toucher aux données des membres**.
+2. **Affinités sur les 11 modules réels** : chaque module est comparé réponse par réponse, avec un verdict humain (« Alignement fort sur la vision de l'engagement », « Incompatibilité déclarée : désir d'enfants »). Le **score global** est la moyenne pondérée de ces modules : le cercle et les barres concordent.
+3. **Application** :
+   - Découverte : le cercle affiche le vrai pourcentage, le badge donne une lecture du score, plus aucune donnée inventée.
+   - Bilan : un module par carte, avec une clarté réelle et vos réponses clés.
+   - Profil : clarté et modules analysés ; bio coupée au mot.
+4. **Entretien** : le module 0 est de nouveau posé à tous, et l'entretien ne se termine que lorsque les 11 modules sont complets.
+5. **Marque** : « Harmonie » remplacé par BOLIGO dans les invites IA et les écrans (« Parcours Harmonie » reste, c'est le nom de la formule).
+6. **Sécurité (mis en production le 2026-10-02)** : le webhook Stripe exige maintenant la signature, et un paiement ne peut plus être crédité deux fois (PR #2).
+
+### Vérifications
+
+| Contrôle | Résultat |
+|---|---|
+| Backend `jest` | 13 suites, **74 tests** OK (dont 13 sur le moteur de fiches et 3 sur le module 0) |
+| Backend `tsc -p tsconfig.build.json` | 0 erreur |
+| Backend lint (fichiers créés) | 0 erreur |
+| App `tsc --noEmit` | 0 erreur |
+| App lint | 0 erreur (avertissements anciens inchangés) |
+| App `jest` | 11 suites, **49 tests** OK |
+| Export web (`expo export --platform web`) | OK |
+| Parcours navigateur (`e2e/journey.e2e.js`) | **52/52 étapes**, dont 6 nouvelles : cercle = score serveur, 11 modules, analyse rédigée, aucun texte tronqué dans le bilan et la Découverte |
+| Démo réaliste « Oli » vu par « Awa » | 89 % ; captures `mobile-steve/docs/screenshots/demo-*.png` |
+
+Expo Go : seuls des composants déjà présents dans l'app sont utilisés
+(`react-native-svg` pour le cercle) ; aucune dépendance native n'est ajoutée.
+
+### À savoir
+
+- **Membres déjà inscrits sans module 0** : leurs fiches s'affichent sans les
+  détails du module 0, et la ligne « Critères essentiels » indique « Pas encore
+  de réponses communes ». Leur faire répondre à ce module demanderait de
+  rouvrir leur entretien, c'est-à-dire de modifier des données de membres :
+  ce n'est pas fait sans votre accord.
+- **Mise en ligne** : ces changements sont sur la branche
+  `claude/magical-keller-kw9t2c`. Ils passent en production une fois fusionnés
+  dans `main` (Render redéploie le serveur et le site web tout seuls).

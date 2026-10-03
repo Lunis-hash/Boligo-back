@@ -41,7 +41,7 @@ export default function DynamicInterviewScreen() {
   const parsed = parseInt((moduleNumber || '0').replace(/^module-?/i, ''), 10);
   const modNum = isNaN(parsed) ? 0 : parsed;
 
-  const currentModuleInfo = MODULE_INFO[modNum] || { title: `Module ${modNum}`, subtitle: 'Entretien Harmonie', icon: '✨' };
+  const currentModuleInfo = MODULE_INFO[modNum] || { title: `Module ${modNum}`, subtitle: 'Grand Entretien BOLIGO', icon: '✨' };
 
   const [isLoading, setIsLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -333,7 +333,7 @@ export default function DynamicInterviewScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.savingTitle}>Enregistrement de vos réponses...</Text>
-              <Text style={styles.savingSub}>Mise à jour de votre Carte Mentale Harmonie</Text>
+              <Text style={styles.savingSub}>Mise à jour de votre fiche BOLIGO</Text>
             </View>
             <ActivityIndicator size="small" color={Colors.primary.red} />
           </View>

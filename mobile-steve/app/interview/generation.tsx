@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ActivityIndicator, Animated, TouchableOpacity }
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { InterviewService } from '@/services/interview';
+import { InterviewService, getResumeModule } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Brain, Sparkles, CheckCircle2 } from 'lucide-react-native';
@@ -33,10 +33,17 @@ export default function GenerationScreen() {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Étape 2 : complétion côté backend (génère la carte mentale IA)
-      setStatus('Génération de votre Bio Harmonie par l\'IA...');
+      setStatus('Rédaction de votre fiche BOLIGO…');
       const current = await InterviewService.getStatus();
       if (!current.isCompleted) {
-        await InterviewService.completeInterview();
+        const result = await InterviewService.completeInterview();
+        if (result?.allModulesCompleted === false) {
+          // Des questions restent à poser (ex. module 0 : seule la réponse
+          // d'inscription y figurait) : on y retourne au lieu d'un bilan incomplet.
+          const status = await InterviewService.getStatus();
+          router.replace(`/interview/${getResumeModule(status)}` as any);
+          return;
+        }
       }
 
       // Étape 3 : Finalisation
@@ -78,7 +85,7 @@ export default function GenerationScreen() {
         </View>
 
         <Text style={styles.title}>
-          {isDone ? 'C\'est prêt !' : 'Harmonie opère...'}
+          {isDone ? 'C\'est prêt !' : 'BOLIGO prépare votre fiche…'}
         </Text>
         
         <Text style={styles.subtitle}>

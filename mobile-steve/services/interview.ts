@@ -27,10 +27,10 @@ export interface InterviewStatus {
 export const LAST_MODULE = 10;
 
 /**
- * Module à afficher pour reprendre l'entretien.
- * Le backend calcule `currentModule` = dernier module complété + 1 ; on
- * préfère le premier module jamais enregistré (un module 0 pré-rempli à
- * l'inscription ne doit pas faire sauter les autres questions du module 0).
+ * Module à afficher pour reprendre l'entretien : le premier module non
+ * terminé. Le backend ne compte un module comme terminé que s'il ne reste
+ * aucune question applicable (la réponse M0_Q02 enregistrée à l'inscription
+ * ne termine donc pas le module 0).
  */
 export function getResumeModule(status: Partial<InterviewStatus> | null | undefined): number {
   if (!status || status.isCompleted) return LAST_MODULE + 1;
