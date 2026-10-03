@@ -28,9 +28,12 @@ function BackendWarmUp() {
   return null;
 }
 
-const publishableKey = 
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 
-  'pk_test_51UMQWmLz8rnS1CBn3uNlIdylaIYPh5hlpznGOR8x9uJBZOhr4KGvIqHkblsi5uwoJ7K6WD4HJMTENfTtL0kN6b5a002jZ8dVZD';
+// Clé publique Stripe fournie au build (eas.json / variables d'environnement).
+// La clé de test de secours ne sert qu'en développement : une build sans clé
+// n'utilise jamais silencieusement une clé d'un autre mode.
+const publishableKey =
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+  (__DEV__ ? 'pk_test_51UMQWmLz8rnS1CBn3uNlIdylaIYPh5hlpznGOR8x9uJBZOhr4KGvIqHkblsi5uwoJ7K6WD4HJMTENfTtL0kN6b5a002jZ8dVZD' : '');
 
 export default function RootLayout() {
   return (

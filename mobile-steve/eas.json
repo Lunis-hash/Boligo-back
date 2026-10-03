@@ -30,7 +30,8 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://boligo-back.onrender.com/api"
+        "EXPO_PUBLIC_API_URL": "https://boligo-back.onrender.com/api",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51UMQWmLz8rnS1CBn3uNlIdylaIYPh5hlpznGOR8x9uJBZOhr4KGvIqHkblsi5uwoJ7K6WD4HJMTENfTtL0kN6b5a002jZ8dVZD"
       }
     }
   },
