@@ -7,6 +7,29 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EmailService } from '../common/email.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { createHash, randomInt, timingSafeEqual } from 'crypto';
+
+/**
+ * Mode de test des codes à usage unique : code passe-partout « 1234 » et code
+ * renvoyé dans la réponse d'inscription. Désactivé tant que OTP_DEBUG n'est
+ * pas explicitement à « true » (jamais en production).
+ */
+const OTP_DEBUG = process.env.OTP_DEBUG === 'true';
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+/** Comparaison à temps constant de deux chaînes. */
+function safeEqual(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ba.length === bb.length && timingSafeEqual(ba, bb);
+}
+
+function normalizeEmail(email: string): string {
+  return (email ?? '').trim().toLowerCase();
+}
 
 @Injectable()
 export class AuthService {
@@ -34,17 +57,18 @@ export class AuthService {
       throw new BadRequestException('Date de naissance invalide.');
     }
 
+    const email = normalizeEmail(dto.email);
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
-          { email: dto.email },
+          { email: { equals: email, mode: 'insensitive' } },
           dto.telephone ? { telephone: dto.telephone } : undefined,
         ].filter(Boolean) as any,
       },
     });
 
     if (existingUser) {
-      if (existingUser.email.toLowerCase() === dto.email.toLowerCase()) {
+      if (existingUser.email.toLowerCase() === email) {
         throw new ConflictException('Email already exists');
       }
       if (dto.telephone && existingUser.telephone === dto.telephone) {
@@ -53,11 +77,11 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 12);
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const verificationCode = randomInt(1000, 10000).toString();
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email,
         passwordHash: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName || '',
@@ -111,25 +135,32 @@ export class AuthService {
       success: true,
       message: 'Compte créé avec succès. Un code de vérification à 4 chiffres a été envoyé par e-mail.',
       email: user.email,
-      otpDebugCode: verificationCode,
+      ...(OTP_DEBUG ? { otpDebugCode: verificationCode } : {}),
     };
   }
 
-  async verifyEmail(email: string, code: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+  /** Recherche par e-mail insensible à la casse (comptes anciens en casse mixte). */
+  private findUserByEmail(email: string) {
+    return this.prisma.user.findFirst({
+      where: { email: { equals: normalizeEmail(email), mode: 'insensitive' } },
     });
+  }
 
-    if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé.');
+  async verifyEmail(email: string, code: string) {
+    const user = await this.findUserByEmail(email);
+    const submitted = (code ?? '').trim();
+
+    // Un compte déjà vérifié ne reçoit JAMAIS de session par cette route :
+    // sinon connaître l'e-mail d'un membre suffirait à se connecter à sa place.
+    if (!user || user.isVerified) {
+      throw new BadRequestException(
+        'Code invalide ou compte déjà vérifié. Connectez-vous avec votre mot de passe.',
+      );
     }
 
-    if (user.isVerified) {
-      return this.signToken(user.id, user.email);
-    }
-
-    // Code passe-partout 1234 pour les tests + vérification du code réel
-    const isValidCode = code === '1234' || (user.verificationCode && user.verificationCode === code);
+    const isValidCode =
+      (OTP_DEBUG && submitted === '1234') ||
+      (!!user.verificationCode && safeEqual(user.verificationCode, submitted));
 
     if (!isValidCode) {
       throw new BadRequestException('Code de vérification incorrect.');
@@ -147,15 +178,14 @@ export class AuthService {
   }
 
   async resendVerificationOtp(email: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.findUserByEmail(email);
 
-    if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé.');
+    // Réponse identique que le compte existe ou non (pas d'énumération).
+    if (!user || user.isVerified) {
+      return { success: true, message: 'Si un compte en attente existe, un nouveau code a été envoyé par e-mail.' };
     }
 
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const verificationCode = randomInt(1000, 10000).toString();
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -172,9 +202,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.findUserByEmail(dto.email);
 
     if (!user) {
       throw new UnauthorizedException('Adresse e-mail ou mot de passe incorrect.');
@@ -190,7 +218,7 @@ export class AuthService {
     }
 
     if (!user.isVerified) {
-      const verificationCode = user.verificationCode || Math.floor(1000 + Math.random() * 9000).toString();
+      const verificationCode = user.verificationCode || randomInt(1000, 10000).toString();
       if (!user.verificationCode) {
         await this.prisma.user.update({
           where: { id: user.id },
@@ -226,8 +254,9 @@ export class AuthService {
       secret: process.env.JWT_SECRET + '_REFRESH',
     });
 
-    // Hacher le refresh token et le stocker en DB
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    // Empreinte SHA-256 du refresh token (bcrypt ne lirait que les 72 premiers
+    // octets, identiques pour tous les jetons d'un même membre).
+    const hashedRefreshToken = sha256(refreshToken);
     await this.prisma.user.update({
       where: { id: userId },
       data: { hashedRefreshToken },
@@ -258,9 +287,12 @@ export class AuthService {
     if (!user || !user.hashedRefreshToken) {
       throw new UnauthorizedException('Access Denied');
     }
+    if (user.accountStatus === 'suspendu') {
+      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
+    }
 
-    const rtMatches = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
-    if (!rtMatches) {
+    // Les anciennes empreintes bcrypt ne sont plus acceptées : reconnexion requise.
+    if (!safeEqual(sha256(refreshToken), user.hashedRefreshToken)) {
       throw new UnauthorizedException('Access Denied');
     }
 
@@ -430,59 +462,62 @@ export class AuthService {
     return { success: true, message: 'Compte supprimé avec succès' };
   }
 
-  async socialLogin(provider: 'google' | 'facebook', token: string, profileDto?: { email?: string; firstName?: string; lastName?: string; id?: string }) {
-    let email: string = profileDto?.email || '';
-    let firstName: string = profileDto?.firstName || (provider === 'google' ? 'Utilisateur Google' : 'Utilisateur Facebook');
-    let lastName: string = profileDto?.lastName || '';
-    let providerId: string = profileDto?.id || `${provider}_${Math.random().toString(36).substring(2, 10)}`;
+  async socialLogin(provider: 'google' | 'facebook', token: string, _profileDto?: unknown) {
+    // Seule l'identité confirmée par Google / Facebook fait foi : le profil
+    // envoyé par le client et les jetons « mock_ » sont ignorés.
+    if (!token || token.startsWith('mock_') || (provider !== 'google' && provider !== 'facebook')) {
+      throw new UnauthorizedException('Connexion sociale invalide.');
+    }
 
-    if (token && !token.startsWith('mock_')) {
-      try {
-        if (provider === 'google') {
-          const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
-          if (res.ok) {
-            const data = await res.json();
-            email = data.email || email;
-            firstName = data.given_name || firstName;
-            lastName = data.family_name || lastName;
-            providerId = data.sub || providerId;
-          } else {
-            const idRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-            if (idRes.ok) {
-              const data = await idRes.json();
-              email = data.email || email;
-              firstName = data.given_name || firstName;
-              lastName = data.family_name || lastName;
-              providerId = data.sub || providerId;
-            }
-          }
-        } else if (provider === 'facebook') {
-          const res = await fetch(`https://graph.facebook.com/me?fields=id,email,first_name,last_name&access_token=${token}`);
-          if (res.ok) {
-            const data = await res.json();
-            email = data.email || email;
-            firstName = data.first_name || firstName;
-            lastName = data.last_name || lastName;
-            providerId = data.id || providerId;
-          }
+    let email = '';
+    let firstName = provider === 'google' ? 'Membre Google' : 'Membre Facebook';
+    let lastName = '';
+    let providerId = '';
+    try {
+      if (provider === 'google') {
+        const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(token)}`, {
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.email_verified === true || data.email_verified === 'true') email = data.email || '';
+          firstName = data.given_name || firstName;
+          lastName = data.family_name || '';
+          providerId = data.sub || '';
         }
-      } catch (e) {
-        console.log(`⚠️ Vérification token ${provider} en réseau échouée, basculement profil.`);
+      } else {
+        const res = await fetch(`https://graph.facebook.com/me?fields=id,email,first_name,last_name&access_token=${encodeURIComponent(token)}`, {
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          email = data.email || '';
+          firstName = data.first_name || firstName;
+          lastName = data.last_name || '';
+          providerId = data.id || '';
+        }
       }
+    } catch {
+      throw new UnauthorizedException('Vérification de la connexion sociale impossible.');
     }
 
-    if (!email) {
-      email = `user_${provider}_${Date.now()}@harmonie.app`;
+    if (!providerId || !email) {
+      throw new UnauthorizedException('Connexion sociale invalide.');
     }
+    email = normalizeEmail(email);
 
     let user = await this.prisma.user.findFirst({
       where: {
         OR: [
           provider === 'google' ? { googleId: providerId } : { facebookId: providerId },
-          { email: email },
+          { email: { equals: email, mode: 'insensitive' } },
         ],
       },
     });
+
+    if (user?.accountStatus === 'suspendu') {
+      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
+    }
 
     if (user) {
       const updateData: any = {};
@@ -523,16 +558,19 @@ export class AuthService {
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email.trim().toLowerCase() },
-    });
+    const user = await this.findUserByEmail(dto.email);
+    const genericResponse = {
+      success: true,
+      message: 'Si un compte est associé à cette adresse, un code de réinitialisation à 6 chiffres vient d’être envoyé.',
+    };
 
+    // Réponse identique que le compte existe ou non (pas d'énumération des membres).
     if (!user) {
-      throw new NotFoundException('Aucun compte associé à cette adresse email.');
+      return genericResponse;
     }
 
-    // Générer un code OTP à 6 chiffres
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Code à 6 chiffres issu d'un générateur cryptographique
+    const code = randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     await this.prisma.user.update({
@@ -546,23 +584,17 @@ export class AuthService {
     // Envoyer l'email
     await this.emailService.sendPasswordResetEmail(user.email, code);
 
-    return {
-      success: true,
-      message: 'Un code de réinitialisation à 6 chiffres a été envoyé à votre adresse email.',
-    };
+    return genericResponse;
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const email = dto.email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.findUserByEmail(dto.email);
 
     if (!user || !user.resetCode || !user.resetCodeExpires) {
       throw new BadRequestException('Demande de réinitialisation invalide ou expirée.');
     }
 
-    if (user.resetCode !== dto.code.trim()) {
+    if (!safeEqual(user.resetCode, dto.code.trim())) {
       throw new BadRequestException('Code de réinitialisation incorrect.');
     }
 
@@ -579,6 +611,8 @@ export class AuthService {
         passwordHash: hashedPassword,
         resetCode: null,
         resetCodeExpires: null,
+        // Toutes les sessions existantes sont révoquées.
+        hashedRefreshToken: null,
       },
     });
 

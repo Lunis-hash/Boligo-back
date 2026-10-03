@@ -38,7 +38,7 @@ function secondsToExpireFromString(input: string): number {
         );
 
         return {
-          secret: configService.get<string>('JWT_SECRET') || 'your-secret-key',
+          secret: configService.get<string>('JWT_SECRET'),
           signOptions: {
             expiresIn,
           },

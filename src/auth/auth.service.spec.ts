@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../common/email.service';
-import { ConflictException, UnauthorizedException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Gender } from '@prisma/client';
 
@@ -51,6 +51,7 @@ describe('AuthService', () => {
 
   const mockJwtService = {
     signAsync: jest.fn().mockResolvedValue('mock-jwt-token'),
+    verifyAsync: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -120,7 +121,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should throw UnauthorizedException if user is not found', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(null);
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
 
       const dto = {
         email: 'notfound@example.com',
@@ -131,7 +132,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException if password does not match', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({
+      mockPrismaService.user.findFirst.mockResolvedValue({
         id: 'user-id',
         email: 'user@example.com',
         passwordHash: 'correctHash',
@@ -147,7 +148,7 @@ describe('AuthService', () => {
     });
 
     it('should login successfully if credentials are correct', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({
+      mockPrismaService.user.findFirst.mockResolvedValue({
         id: 'user-id',
         email: 'user@example.com',
         passwordHash: 'correctHash',
@@ -169,7 +170,7 @@ describe('AuthService', () => {
     });
 
     it('should refuse a suspended account with ForbiddenException', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({
+      mockPrismaService.user.findFirst.mockResolvedValue({
         id: 'user-id',
         email: 'user@example.com',
         passwordHash: 'correctHash',
@@ -179,6 +180,49 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       await expect(service.login({ email: 'user@example.com', password: 'correctpassword' })).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('sécurité des codes et des sessions', () => {
+    it('ne délivre jamais de session à un compte déjà vérifié, même sans code', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue({ id: 'u1', email: 'victime@example.com', isVerified: true });
+      await expect(service.verifyEmail('victime@example.com', '0000')).rejects.toThrow(BadRequestException);
+      expect(mockJwtService.signAsync).not.toHaveBeenCalled();
+    });
+
+    it('refuse le code passe-partout 1234 hors mode de test', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue({
+        id: 'u2', email: 'nouveau@example.com', isVerified: false, verificationCode: '5821',
+      });
+      await expect(service.verifyEmail('nouveau@example.com', '1234')).rejects.toThrow(BadRequestException);
+    });
+
+    it('accepte le bon code et vérifie le compte', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue({
+        id: 'u3', email: 'nouveau@example.com', isVerified: false, verificationCode: '5821',
+      });
+      mockPrismaService.user.update.mockResolvedValue({});
+      mockJwtService.signAsync.mockResolvedValue('jwt');
+      await expect(service.verifyEmail('Nouveau@Example.com ', '5821')).resolves.toMatchObject({ access_token: 'jwt' });
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { isVerified: true, verificationCode: null } }),
+      );
+    });
+
+    it('rejette un refresh token dont l’empreinte ne correspond pas (rejeu)', async () => {
+      mockJwtService.verifyAsync.mockResolvedValue({ sub: 'u4' });
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: 'u4', email: 'a@example.com', accountStatus: 'actif',
+        hashedRefreshToken: '$2b$10$ancienneEmpreinteBcryptQuiNeDoitPlusEtreAcceptee',
+      });
+      await expect(service.refreshTokens('ancien.jeton.jwt')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('refuse une connexion sociale simulée (jeton mock_)', async () => {
+      await expect(
+        service.socialLogin('google', 'mock_x', { email: 'victime@example.com' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(mockPrismaService.user.findFirst).not.toHaveBeenCalled();
     });
   });
 

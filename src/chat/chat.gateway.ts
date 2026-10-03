@@ -7,11 +7,12 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { HttpException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
-import { MessageType } from '@prisma/client';
 import { NotificationService } from '../notifications/notification.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @WebSocketGateway({
   cors: {
@@ -28,7 +29,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatService: ChatService,
     private readonly jwtService: JwtService,
     private readonly notificationService: NotificationService,
+    private readonly prisma: PrismaService,
   ) {}
+
+  /** Le socket a-t-il rejoint (après contrôle d'appartenance) ce parcours ? */
+  private inJourney(client: Socket, journeyId: unknown): journeyId is string {
+    return typeof journeyId === 'string' && client.rooms.has(`journey:${journeyId}`);
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -42,8 +49,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = this.jwtService.verify(token);
       const userId = payload.sub;
 
+      // Compte supprimé ou suspendu : pas de messagerie.
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { accountStatus: true, firstName: true },
+      });
+      if (!user || user.accountStatus === 'suspendu') {
+        client.disconnect(true);
+        return;
+      }
+
       this.connectedUsers.set(userId, client.id);
       client.data.userId = userId;
+      client.data.firstName = user.firstName;
 
       console.log(`✅ User ${userId} connected via WebSocket`);
 
@@ -107,10 +125,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     try {
       const message = await this.chatService.createMessage({
-        journeyId: data.journeyId,
+        journeyId: data?.journeyId,
         senderId: userId,
-        content: data.content,
-        type: data.type as MessageType|| 'texte', // Changed from type: data.type || 'texte',  
+        content: data?.content,
       });
 
       // Diffuser le message à tous les participants de la conversation
@@ -127,9 +144,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         
         if (!isOnline) {
           const senderName = message.sender?.firstName || 'Votre partenaire';
-          const truncatedContent = data.content.length > 60 
-            ? `${data.content.substring(0, 57)}...` 
-            : data.content;
+          const truncatedContent = message.content.length > 60
+            ? `${message.content.substring(0, 57)}…`
+            : message.content;
 
           await this.notificationService.sendPushNotification(
             otherUserId,
@@ -143,8 +160,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
     } catch (error) {
-      console.error('❌ Error sending message:', error);
-      client.emit('error', { message: 'Erreur lors de l\'envoi du message' });
+      // Refus explicite (modération, étape, longueur) : le motif est renvoyé tel quel.
+      const reason =
+        error instanceof HttpException ? error.message : 'Erreur lors de l\'envoi du message';
+      if (!(error instanceof HttpException)) console.error('❌ Error sending message:', error);
+      client.emit('error', { message: reason });
     }
   }
 
@@ -183,9 +203,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { journeyId: string; isTyping: boolean },
   ) {
     const userId = client.data.userId;
+    if (!this.inJourney(client, data?.journeyId)) return;
 
     // Notifier l'autre utilisateur que quelqu'un est en train d'écrire
-    this.server.to(`journey:${data.journeyId}`).emit('userTyping', {
+    client.to(`journey:${data.journeyId}`).emit('userTyping', {
       userId,
       isTyping: data.isTyping,
     });
@@ -206,11 +227,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { journeyId: string; callerName: string },
   ) {
     const callerId = client.data.userId;
-    console.log(`📞 [Video Call] User ${callerId} (${data.callerName}) calling in journey ${data.journeyId}`);
+    if (!this.inJourney(client, data?.journeyId)) return;
+    // Le nom affiché vient du serveur, jamais du client (pas d'appel usurpé).
     client.to(`journey:${data.journeyId}`).emit('incomingCall', {
       journeyId: data.journeyId,
       callerId,
-      callerName: data.callerName,
+      callerName: client.data.firstName ?? 'Votre partenaire',
     });
   }
 
@@ -219,7 +241,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string },
   ) {
-    console.log(`❌ [Video Call] Call rejected in journey ${data.journeyId}`);
+    if (!this.inJourney(client, data?.journeyId)) return;
     this.server.to(`journey:${data.journeyId}`).emit('callRejected', {
       journeyId: data.journeyId,
       userId: client.data.userId,
