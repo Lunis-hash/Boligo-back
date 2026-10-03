@@ -18,7 +18,12 @@ export function emailDeliveryMode(): 'smtp' | 'sendgrid' | 'brevo' | 'simulation
 
 @Injectable()
 export class EmailService implements OnModuleInit {
+  private static modeLogged = false;
+
   onModuleInit() {
+    // Service fourni par plusieurs modules : une seule ligne au démarrage.
+    if (EmailService.modeLogged) return;
+    EmailService.modeLogged = true;
     const mode = emailDeliveryMode();
     if (mode === 'simulation') {
       console.warn(

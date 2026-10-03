@@ -37,7 +37,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return typeof journeyId === 'string' && client.rooms.has(`journey:${journeyId}`);
   }
 
+  /**
+   * Attend la fin de l'authentification du socket : un client peut émettre
+   * joinJourney dès l'événement « connect », avant que handleConnection ait fini.
+   */
+  private async authenticatedUser(client: Socket): Promise<string | undefined> {
+    await client.data.authReady;
+    return client.data.userId;
+  }
+
   async handleConnection(client: Socket) {
+    client.data.authReady = this.authenticate(client);
+    await client.data.authReady;
+  }
+
+  private async authenticate(client: Socket) {
     try {
       const token = client.handshake.auth.token || client.handshake.headers.authorization?.replace('Bearer ', '');
 
@@ -90,7 +104,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string },
   ) {
-    const userId = client.data.userId;
+    const userId = await this.authenticatedUser(client);
+    if (!userId) return;
 
     // Vérifier si l'utilisateur a le droit de rejoindre cette conversation
     const hasAccess = await this.chatService.canAccessJourney(userId, data.journeyId);
@@ -121,7 +136,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string; content: string; type?: string },
   ) {
-    const userId = client.data.userId;
+    const userId = await this.authenticatedUser(client);
+    if (!userId) return;
 
     try {
       const message = await this.chatService.createMessage({
@@ -173,7 +189,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string },
   ) {
-    const userId = client.data.userId;
+    const userId = await this.authenticatedUser(client);
+    if (!userId || !this.inJourney(client, data?.journeyId)) return;
 
     try {
       await this.chatService.markMessagesAsRead(data.journeyId, userId);
