@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  🎬  SIMULATION COMPLÈTE — OWEKE / BOLIGO
+ *  🎬  SIMULATION COMPLÈTE — BOLIGO
  *  Parcours : Inscription → Vérification → Matching → Vidéo
  * ============================================================
  *
@@ -137,7 +137,7 @@ function randomSuffix() {
 function buildProfile(prenom: string, genre: 'MALE' | 'FEMALE') {
   const suffix = randomSuffix();
   return {
-    email: `${prenom.toLowerCase()}.${suffix}@oweke-test.fr`,
+    email: `${prenom.toLowerCase()}.${suffix}@boligo-test.fr`,
     password: 'Test1234!',
     firstName: prenom,
     lastName: 'TestUser',
@@ -146,6 +146,8 @@ function buildProfile(prenom: string, genre: 'MALE' | 'FEMALE') {
     city: 'Paris (75011)',
     telephone: `06${Math.floor(10000000 + Math.random() * 89999999)}`,
     profession: 'Développeur',
+    acceptTerms: true,
+    termsVersion: '2026-10-02',
   };
 }
 
@@ -335,12 +337,7 @@ async function runSimulation() {
 
   console.log(`
 ${C.magenta}${C.bold}
-  ██████╗ ██╗    ██╗███████╗██╗  ██╗███████╗
- ██╔═══██╗██║    ██║██╔════╝██║ ██╔╝██╔════╝
- ██║   ██║██║ █╗ ██║█████╗  █████╔╝ █████╗  
- ██║   ██║██║███╗██║██╔══╝  ██╔═██╗ ██╔══╝  
- ╚██████╔╝╚███╔███╔╝███████╗██║  ██╗███████╗
-  ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚══════╝
+  B O L I G O
   
   🎬 SIMULATION COMPLÈTE DU PARCOURS UTILISATEUR
   Inscription → Vérification → Matching → Appel Vidéo

@@ -66,7 +66,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Discover',
+          title: 'Découverte',
           tabBarIcon: ({ size, color, focused }) => (
             <Layers size={size} color={focused ? Colors.primary.red : color} />
           ),
@@ -75,7 +75,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Matches',
+          title: 'Matchs',
           tabBarIcon: ({ size, color }) => (
             <Heart size={size} color={color} />
           ),

@@ -10,11 +10,14 @@ export class NotificationService {
   ) {}
 
   async registerPushToken(userId: string, pushToken: string) {
-    console.log(`[PUSH] Registering push token for user ${userId}: ${pushToken}`);
-    return this.prisma.user.update({
+    // Ne renvoie rien du compte (l'ancien retour exposait tout l'utilisateur,
+    // empreinte du mot de passe comprise) et ne journalise pas le jeton.
+    await this.prisma.user.update({
       where: { id: userId },
       data: { pushToken },
+      select: { id: true },
     });
+    return { success: true };
   }
 
   async sendPushNotification(
@@ -23,7 +26,7 @@ export class NotificationService {
     title: string,
     content: string,
   ) {
-    console.log(`[PUSH] Creating DB notification for user ${userId}: ${title} - ${content}`);
+    console.log(`[PUSH] Notification « ${type} » pour ${userId}`);
     
     // 1. Enregistrer en base pour l'historique dans l'app
     const dbNotification = await this.prisma.notification.create({

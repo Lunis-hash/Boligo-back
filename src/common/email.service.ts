@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as dns from 'dns';
 
 // Force Node.js à privilégier l'IPv4 pour éviter tout ENETUNREACH sur Render
@@ -6,8 +6,34 @@ if (typeof (dns as any).setDefaultResultOrder === 'function') {
   (dns as any).setDefaultResultOrder('ipv4first');
 }
 
+const isRealKey = (key?: string) => Boolean(key && !key.includes('placeholder'));
+
+/** Canal d'envoi actif, sans jamais révéler de clé. */
+export function emailDeliveryMode(): 'smtp' | 'sendgrid' | 'brevo' | 'simulation' {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) return 'smtp';
+  if (isRealKey(process.env.SENDGRID_API_KEY)) return 'sendgrid';
+  if (isRealKey(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY)) return 'brevo';
+  return 'simulation';
+}
+
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
+  private static modeLogged = false;
+
+  onModuleInit() {
+    // Service fourni par plusieurs modules : une seule ligne au démarrage.
+    if (EmailService.modeLogged) return;
+    EmailService.modeLogged = true;
+    const mode = emailDeliveryMode();
+    if (mode === 'simulation') {
+      console.warn(
+        "[EMAIL] Mode d'envoi : simulation — aucun e-mail réel n'est envoyé (codes de vérification et de réinitialisation non délivrés). Configurez SMTP_HOST/SMTP_USER/SMTP_PASS ou BREVO_API_KEY.",
+      );
+    } else {
+      console.log(`[EMAIL] Mode d'envoi : ${mode}`);
+    }
+  }
+
   private async dispatchEmail(to: string, subject: string, html: string) {
     const smtpHost = process.env.SMTP_HOST;
     const smtpUser = process.env.SMTP_USER;
@@ -37,8 +63,8 @@ export class EmailService {
             user: smtpUser,
             pass: cleanPass,
           },
+          // Certificat du serveur SMTP vérifié (pas d'interception possible).
           tls: {
-            rejectUnauthorized: false,
             servername: smtpHost || 'smtp.gmail.com',
           },
           connectionTimeout: 5000,
@@ -69,13 +95,14 @@ export class EmailService {
       try {
         const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
           method: 'POST',
+          signal: AbortSignal.timeout(10_000),
           headers: {
             'Authorization': `Bearer ${sendgridKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             personalizations: [{ to: [{ email: to }] }],
-            from: { email: 'no-reply@harmonie.app', name: 'BOLIGO' },
+            from: { email: process.env.EMAIL_FROM || 'contact@boligo.app', name: 'BOLIGO' },
             subject: subject,
             content: [{ type: 'text/html', value: html }],
           }),
@@ -100,6 +127,7 @@ export class EmailService {
       try {
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
+          signal: AbortSignal.timeout(10_000),
           headers: {
             'api-key': brevoKey,
             'Content-Type': 'application/json',
@@ -128,7 +156,10 @@ export class EmailService {
     // 3. Mode Simulation dans la console
     console.log('\n==================================================');
     console.log(`✉️ [EMAIL SIMULATED] To: ${to}`);
-    console.log(`✉️ [EMAIL SIMULATED] Subject: ${subject}`);
+    // Le sujet contient le code de vérification : jamais dans les journaux de production.
+    console.log(
+      `✉️ [EMAIL SIMULATED] Subject: ${process.env.NODE_ENV === 'production' ? subject.replace(/\d/g, '•') : subject}`,
+    );
     console.log('==================================================\n');
   }
 

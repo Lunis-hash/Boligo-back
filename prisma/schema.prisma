@@ -55,6 +55,8 @@ model User {
   verificationCode  String?
   resetCode         String?
   resetCodeExpires  DateTime?
+  termsAcceptedAt   DateTime?        // Date d'acceptation expresse des CGU à l'inscription
+  termsVersion      String?          // Version des textes légaux acceptée (ex. « 2026-10-02 »)
 
   profile           Profile?
   interviews        InterviewIA[]
@@ -110,6 +112,8 @@ model InterviewIA {
   version       Int               @default(1)
   responses     ModuleResponse[]
   mentalMap     MentalMap?
+
+  @@index([userId, status])
 }
 
 model ModuleResponse {
@@ -122,6 +126,8 @@ model ModuleResponse {
   iaAnalysis       Json?       // AI feedback
   moduleScore      Float?
   completedAt      DateTime    @default(now())
+
+  @@index([interviewId])
 }
 
 model MentalMap {
@@ -140,6 +146,8 @@ model MentalMap {
   alchemyScore    Float?
   signals         Json?       // All algorithmic signals (Red, Orange, etc.)
   version         Int         @default(1)
+
+  @@index([userId, generatedAt])
 }
 
 // ---------------------------------------------------------
@@ -208,6 +216,9 @@ model Journey {
   contactExchange   ContactExchange?
   creditTransactions CreditTransaction[]
   alumniCouple      AlumniCouple?
+
+  @@index([userAId])
+  @@index([userBId])
 }
 
 // ---------------------------------------------------------
@@ -225,6 +236,8 @@ model HarmonyQuestion {
   options       Json?             // QCM options (dont "Autre...")
   sentAt        DateTime          @default(now())
   responses     HarmonyResponse[]
+
+  @@index([journeyId])
 }
 
 model HarmonyResponse {
@@ -236,6 +249,9 @@ model HarmonyResponse {
   responseText    String          @db.Text
   respondedAt     DateTime        @default(now())
   delayHours      Float?
+
+  @@index([questionId])
+  @@index([userId])
 }
 
 // ---------------------------------------------------------
@@ -268,6 +284,8 @@ model Message {
   report            Report?
 
   @@index([journeyId, sentAt])
+
+  @@index([senderId])
 }
 
 enum ReportReason {
@@ -296,6 +314,9 @@ model Report {
   description     String?      @db.Text
   reportedAt      DateTime     @default(now())
   status          ReportStatus @default(en_attente)
+
+  @@index([reporterId])
+  @@index([reportedId])
 }
 
 // ---------------------------------------------------------
@@ -322,6 +343,10 @@ model CreditTransaction {
   paymentRef      String?
   date            DateTime        @default(now())
   description     String?
+
+  @@index([userId])
+  @@index([journeyId])
+  @@index([paymentRef])
 }
 
 // ---------------------------------------------------------

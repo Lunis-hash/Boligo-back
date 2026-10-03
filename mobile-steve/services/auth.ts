@@ -5,7 +5,8 @@ export interface RegisterData {
   password?: string;
   firstName: string;
   lastName?: string;
-  birthDate: string; // ISO string
+  /** Date de naissance au format AAAA-MM-JJ. */
+  birthDate: string;
   gender: 'H' | 'F';
   city?: string;
   telephone?: string;
@@ -13,6 +14,10 @@ export interface RegisterData {
   profession?: string;
   /** Périmètre de rencontre choisi à l'onboarding (local | national | international). */
   meetingScope?: 'local' | 'national' | 'international';
+  /** Acceptation expresse des CGU et de la politique de confidentialité (exigée par le serveur). */
+  acceptTerms: true;
+  /** Version des textes légaux acceptée (champ « version » de constants/legal.json). */
+  termsVersion?: string;
 }
 
 export const AuthService = {

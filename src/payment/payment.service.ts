@@ -152,7 +152,7 @@ export class PaymentService implements OnModuleInit {
     };
   }
 
-  // ─── Validation d'un code promo (BDD + fallback hardcodé) ─────────────────
+  // ─── Validation d'un code promo (codes en base uniquement) ────────────────
   private async resolvePromoCode(
     code: string,
     userId: string,
@@ -236,45 +236,13 @@ export class PaymentService implements OnModuleInit {
       };
     }
 
-    // 2. Fallback codes hardcodés (pour rétro-compatibilité)
-    const LEGACY_CODES: Record<
-      string,
-      { type: 'free' | 'percent' | 'fixed'; value: number }
-    > = {
-      BOLIGO100: { type: 'free', value: 0 },
-      HARMONIE: { type: 'free', value: 0 },
-      WELCOME: { type: 'free', value: 0 },
-      BOLIGO50: { type: 'percent', value: 50 },
-      BIENVENUE5: { type: 'fixed', value: 500 },
-    };
-
-    const legacy = LEGACY_CODES[normalizedCode];
-    if (!legacy) {
-      return {
-        isValid: false,
-        finalAmount: planAmount,
-        isFree: false,
-        message: 'Code promotionnel invalide ou expiré.',
-      };
-    }
-
-    let finalAmount = planAmount;
-    if (legacy.type === 'free') finalAmount = 0;
-    else if (legacy.type === 'percent')
-      finalAmount = Math.floor(planAmount * (1 - legacy.value / 100));
-    else if (legacy.type === 'fixed')
-      finalAmount = Math.max(0, planAmount - legacy.value);
-
-    const isFree = finalAmount <= 0;
-    const discountEur = (planAmount - finalAmount) / 100;
+    // Aucun code « en dur » : un code n'existe que s'il est en base, avec
+    // ses plafonds (usages, date d'expiration, un usage par membre).
     return {
-      isValid: true,
-      finalAmount,
-      isFree,
-      message: isFree
-        ? 'Code appliqué ✅ — Offre gratuite activée !'
-        : `Code appliqué ✅ — Réduction de ${discountEur.toFixed(2).replace('.', ',')}€`,
-      discountEur,
+      isValid: false,
+      finalAmount: planAmount,
+      isFree: false,
+      message: 'Code promotionnel invalide ou expiré.',
     };
   }
 
@@ -438,6 +406,31 @@ export class PaymentService implements OnModuleInit {
 
   // ─── Traitement du paiement réussi ────────────────────────────────────────
   /** Crédite le membre ; renvoie false si le paiement avait déjà été crédité. */
+  /** Un code de remise utilisé pour un paiement réussi ne resservira pas. */
+  private async recordPaidPromoUsage(code: string, userId: string) {
+    try {
+      const promo = await this.prisma.promoCode.findUnique({
+        where: { code: code.trim().toUpperCase() },
+        select: { id: true },
+      });
+      if (!promo) return;
+      await this.prisma.$transaction([
+        this.prisma.promoUsage.create({
+          data: { promoCodeId: promo.id, userId },
+        }),
+        this.prisma.promoCode.update({
+          where: { id: promo.id },
+          data: { usedCount: { increment: 1 } },
+        }),
+      ]);
+    } catch (err: any) {
+      // P2002 : usage déjà enregistré (webhook et confirmation simultanés).
+      if (err?.code !== 'P2002') {
+        this.logger.warn(`Usage du code promo non enregistré : ${err?.message}`);
+      }
+    }
+  }
+
   private async handlePaymentSuccess(
     paymentIntent: Stripe.PaymentIntent,
   ): Promise<boolean> {
@@ -471,6 +464,10 @@ export class PaymentService implements OnModuleInit {
     this.logger.log(
       `Paiement réussi — user ${userId}, ${credits} crédit(s), ${euroAmount}€, ref: ${paymentRef}`,
     );
+
+    if (metadata.promoCode) {
+      await this.recordPaidPromoUsage(metadata.promoCode, userId);
+    }
 
     // 2. Récupérer l'utilisateur pour l'email
     const user = await this.prisma.user.findUnique({
@@ -575,29 +572,47 @@ export class PaymentService implements OnModuleInit {
     }
 
     if (promoResult.isFree || promoResult.finalAmount <= 0) {
-      // Accès gratuit : enregistrer l'usage + ajouter les crédits
       const normalizedCode = code.trim().toUpperCase();
-
-      // Enregistrer l'usage si code en BDD
-      if (promoResult.promoCodeId) {
-        await this.prisma.$transaction([
-          this.prisma.promoUsage.create({
-            data: { promoCodeId: promoResult.promoCodeId, userId },
-          }),
-          this.prisma.promoCode.update({
-            where: { id: promoResult.promoCodeId },
-            data: { usedCount: { increment: 1 } },
-          }),
-        ]);
+      const promoCodeId = promoResult.promoCodeId;
+      if (!promoCodeId) {
+        throw new BadRequestException('Code promotionnel invalide ou expiré.');
       }
 
-      await this.creditService.addCredits(
-        userId,
-        plan.credits,
-        `Code Promo : ${normalizedCode} (gratuit)`,
-        0,
-        `PROMO_${normalizedCode}_${Date.now()}`,
-      );
+      // Usage + crédit dans une seule transaction : deux demandes simultanées
+      // ne peuvent ni dépasser le plafond du code ni créditer deux fois.
+      await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtext(${'promo:' + promoCodeId}))) AS lock`;
+        const already = await tx.promoUsage.findUnique({
+          where: { promoCodeId_userId: { promoCodeId, userId } },
+        });
+        if (already) {
+          throw new BadRequestException('Vous avez déjà utilisé ce code.');
+        }
+        const claimed = await tx.$executeRaw`
+          UPDATE "PromoCode" SET "usedCount" = "usedCount" + 1
+          WHERE id = ${promoCodeId} AND "isActive" = true
+            AND ("maxUses" IS NULL OR "usedCount" < "maxUses")
+            AND ("expiresAt" IS NULL OR "expiresAt" > now())`;
+        if (claimed !== 1) {
+          throw new BadRequestException('Code promotionnel épuisé ou expiré.');
+        }
+        await tx.promoUsage.create({ data: { promoCodeId, userId } });
+        await tx.user.update({
+          where: { id: userId },
+          data: { creditBalance: { increment: plan.credits } },
+        });
+        await tx.creditTransaction.create({
+          data: {
+            userId,
+            type: 'achat',
+            creditAmount: plan.credits,
+            euroAmount: 0,
+            promoCodeId,
+            paymentRef: `PROMO_${promoCodeId}_${userId}`,
+            description: `Code Promo : ${normalizedCode} (gratuit)`,
+          },
+        });
+      });
 
       return {
         success: true,

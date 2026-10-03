@@ -57,31 +57,38 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
   });
 
   describe('autoAdvanceStaleJourneys - Ghosting Detection', () => {
-    it('should refund user A if B ghosted in phase_harmonie (>48h)', async () => {
-      const stepStartDate = new Date(Date.now() - 50 * 60 * 60 * 1000); // 50 hours ago
+    const ghostedJourney = (hoursAgo: number) => [
+      {
+        id: 'journey-id',
+        currentStep: 'phase_harmonie',
+        stepStartDate: new Date(Date.now() - hoursAgo * 60 * 60 * 1000),
+        userAId: 'user-a',
+        userBId: 'user-b',
+        userA: { id: 'user-a', firstName: 'Alice' },
+        userB: { id: 'user-b', firstName: 'Bob' },
+        harmonyQuestions: [
+          {
+            id: 'q1',
+            responses: [{ userId: 'user-a', responseText: 'Hello' }],
+          },
+        ],
+        messages: [],
+        videoSession: null,
+      },
+    ];
 
-      // Mock journey search in autoAdvanceStaleJourneys
-      mockPrismaService.journey.findMany.mockResolvedValue([
-        {
-          id: 'journey-id',
-          currentStep: 'phase_harmonie',
-          stepStartDate,
-          userAId: 'user-a',
-          userBId: 'user-b',
-          userA: { id: 'user-a', firstName: 'Alice' },
-          userB: { id: 'user-b', firstName: 'Bob' },
-          harmonyQuestions: [
-            {
-              id: 'q1',
-              responses: [
-                { userId: 'user-a', responseText: 'Hello' }
-              ]
-            }
-          ],
-          messages: [],
-          videoSession: null,
-        }
-      ]);
+    it('ne sanctionne personne pendant les 3 jours du Sondeur (50 h)', async () => {
+      mockPrismaService.journey.findMany.mockResolvedValue(ghostedJourney(50));
+      mockPrismaService.journey.findFirst.mockResolvedValue(null);
+
+      await service.canAccessMessages('user-a');
+
+      expect(prisma.journey.update).not.toHaveBeenCalled();
+      expect(creditService.refundJustice).not.toHaveBeenCalled();
+    });
+
+    it('should refund user A if B ghosted in phase_harmonie (Sondeur + 24 h de grâce)', async () => {
+      mockPrismaService.journey.findMany.mockResolvedValue(ghostedJourney(97));
 
       // Mock message accessibility check query
       mockPrismaService.journey.findFirst.mockResolvedValue(null);
@@ -111,7 +118,7 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
         'user-a',
         'journey-id',
         1,
-        'Remboursement anti-ghosting pour le parcours avec Bob'
+        'Remboursement anti-ghosting pour le parcours avec Bob',
       );
 
       // Check if victim was notified
@@ -119,7 +126,7 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
         'user-a',
         'credit',
         'Remboursement anti-ghosting 💍',
-        'Votre crédit a été restitué car Bob n\'a pas répondu depuis 48 heures.'
+        "Votre crédit a été restitué car Bob n'a pas donné suite dans les délais du parcours.",
       );
     });
   });

@@ -5,6 +5,9 @@ import { AiService } from '../ai/ai.service';
 import { buildSelfPillars, loadSelfPortrait } from '../portrait/self-portrait';
 import { collectRawAnswers } from '../matching/divergence.engine';
 import { ageFromBirthDate, pendingQuestions } from './questions.service';
+import { QUESTIONS } from './questions.data';
+
+const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
 
 @Injectable()
 export class InterviewService {
@@ -92,11 +95,35 @@ export class InterviewService {
   }
 
   async saveModule(userId: string, dto: SaveModuleDto) {
+    // Seules les réponses prévues par ce module sont acceptées : une question
+    // d'un autre module ou une option inexistante fausserait le matching.
+    for (const [questionId, value] of Object.entries(dto.answers ?? {})) {
+      const q = QUESTION_BY_ID.get(questionId);
+      if (
+        !q ||
+        q.moduleNumber !== dto.moduleNumber ||
+        !q.options.some((o) => o.key === value)
+      ) {
+        throw new BadRequestException(
+          `Réponse invalide pour la question ${questionId.slice(0, 20)}.`,
+        );
+      }
+    }
+
     let interview = await this.prisma.interviewIA.findFirst({
       where: { userId, status: 'en_cours' },
     });
 
     if (!interview) {
+      // Entretien déjà terminé : rien n'est rouvert ni réécrit (le portrait et
+      // les scores de compatibilité restent ceux de l'entretien validé).
+      const completed = await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'termine' },
+        select: { id: true },
+      });
+      if (completed) {
+        return { success: true, allModulesCompleted: true, alreadyCompleted: true };
+      }
       interview = await this.startInterview(userId);
     }
 

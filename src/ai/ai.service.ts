@@ -24,7 +24,7 @@ export class AiService {
   ) {
     const groqApiKey = process.env.GROQ_API_KEY;
     if (groqApiKey) {
-      this.groq = new Groq({ apiKey: groqApiKey });
+      this.groq = new Groq({ apiKey: groqApiKey, timeout: 20_000, maxRetries: 1 });
     }
   }
 

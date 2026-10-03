@@ -19,16 +19,13 @@ export class CreditController {
     return this.creditService.getBalance(req.user.id);
   }
 
+  // Ancienne route de débit appelée par l'app : le serveur débite désormais
+  // lui-même à l'invitation et à l'acceptation (module matching). Elle ne débite
+  // plus rien, pour qu'une ancienne version de l'app ne facture pas deux fois.
   @Post('spend')
-  async spendCredits(
-    @Request() req,
-    @Body() body: { amount: number; description: string },
-  ) {
-    return this.creditService.spendCredits(
-      req.user.id,
-      body.amount,
-      body.description,
-    );
+  async spendCredits(@Request() req) {
+    const balance = await this.creditService.getBalance(req.user.id);
+    return { success: true, charged: 0, newBalance: balance.credits };
   }
 
   // Pas de route « ajouter des crédits » : les crédits ne s'obtiennent que par

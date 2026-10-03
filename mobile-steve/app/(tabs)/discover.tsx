@@ -18,7 +18,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertTriangle, ShieldCheck, Link2 } from 'lucide-react-native';
+import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertTriangle, Link2 } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
 import client, { getReadableError } from '@/services/api';
 import { getDiscussionTopics, hasMajorDivergence } from '@/services/compatibility';
@@ -92,6 +92,8 @@ interface ActiveMatch {
   age?: number;
   phase: string;
   journeyId: string | null;
+  proposalId?: string;
+  ended?: boolean;
   slogan?: string;
   mentalMap?: MatchProfile['mentalMap'];
   aiAnalysis?: string;
@@ -309,12 +311,16 @@ function ScoreRing({ percent, color }: { percent: number; color: string }) {
         </Text>
         <Text style={styles.scoreRingCaption}>compatibles</Text>
       </View>
-      {/* Verified Badge */}
-      <View style={styles.verifiedBadge}>
-        <ShieldCheck size={14} color="#FFF" />
-      </View>
     </Animated.View>
   );
+}
+
+/** Confirmation avant une action qui ferme une invitation (web : window.confirm). */
+function confirmAction(title: string, message: string, confirmLabel: string, onConfirm: () => void) {
+  Alert.alert(title, message, [
+    { text: 'Annuler', style: 'cancel' },
+    { text: confirmLabel, style: 'destructive', onPress: onConfirm },
+  ]);
 }
 
 function scoreColor(percent: number): string {
@@ -425,7 +431,7 @@ export default function DiscoverScreenWrapper() {
 function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { credits, spendCredit, refreshCredits } = useAppContext();
+  const { credits, refreshCredits } = useAppContext();
 
   const [profiles, setProfiles] = useState<MatchProfile[]>([]);
   const [profileIndex, setProfileIndex] = useState(0);
@@ -436,6 +442,7 @@ function DiscoverScreen() {
   const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(null);
   const [receivedLikes, setReceivedLikes] = useState<any[]>([]);
   const [acceptingProposal, setAcceptingProposal] = useState<{ id: string, name: string } | null>(null);
+  const [answeringProposal, setAnsweringProposal] = useState<string | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
@@ -508,11 +515,8 @@ function DiscoverScreen() {
       const matchRes = await client.get('/matching/my-matches');
       const matches: ActiveMatch[] = matchRes.data ?? [];
 
-      if (matches.length > 0) {
-        setActiveMatch(matches[0]);
-      } else {
-        setActiveMatch(null);
-      }
+      // Un parcours terminé reste visible dans Messages mais ne bloque plus la Découverte.
+      setActiveMatch(matches.find((m) => !m.ended) ?? null);
 
       const likesRes = await client.get('/matching/received-likes');
       const likes: any[] = (likesRes.data ?? []).map((like: any) => ({
@@ -590,26 +594,25 @@ function DiscoverScreen() {
     soundService.playLikeSent();
 
     try {
+      // Le serveur vérifie la règle d'or et débite lui-même le crédit.
       const response = await client.post('/matching/connect', { targetUserId: currentMatch.id });
       if (!response.data?.success) {
+        if (response.data?.code === 'NO_CREDIT') {
+          await refreshCredits();
+          setOverlayMode('no_credit');
+          return;
+        }
         closeOverlay();
         Alert.alert('Connexion impossible', response.data?.message || 'Ce profil n\'est plus disponible.');
         initScreen(true);
         return;
       }
-
-      // HYPOTHÈSE TEMPORAIRE : le backend n'enregistre pas encore lui-même la
-      // consommation du crédit lors de la connexion ; l'app débite le crédit
-      // (POST /credit/spend) une fois la connexion effectivement enregistrée,
-      // pour ne jamais facturer une connexion qui a échoué.
-      const spend = await spendCredit(1, `Connexion avec ${currentMatch.firstName}`);
-      if (!spend.ok && !spend.insufficient) {
-        Alert.alert('Crédits', spend.reason || 'Le débit du crédit n\'a pas pu être enregistré.');
-      }
+      await refreshCredits();
 
       if (response.data.journey) {
         const matchRes = await client.get('/matching/my-matches');
-        if (matchRes.data.length > 0) setActiveMatch(matchRes.data[0]);
+        const live = (matchRes.data ?? []).find((m: ActiveMatch) => !m.ended);
+        if (live) setActiveMatch(live);
         soundService.playMatchCelebration();
         setOverlayMode('success');
       } else {
@@ -637,33 +640,25 @@ function DiscoverScreen() {
       return;
     }
 
-    // Le crédit est débité avant l'acceptation : le backend rattache les
-    // consommations récentes au parcours créé (règle de justice / remboursement
-    // anti-ghosting).
-    const spend = await spendCredit(1, `Acceptation du match avec ${likeName}`);
-    if (!spend.ok) {
-      setAcceptingProposal(null);
-      setConnecting(false);
-      if (spend.insufficient) {
-        setOverlayMode('no_credit');
-      } else {
-        closeOverlay();
-        Alert.alert('Crédits', spend.reason || 'Le débit du crédit a échoué.');
-      }
-      return;
-    }
-
+    // Le serveur débite le crédit et crée le parcours dans la même opération.
     try {
       const res = await client.post('/matching/accept', { proposalId });
       if (!res.data?.success) {
+        if (res.data?.code === 'NO_CREDIT') {
+          await refreshCredits();
+          setOverlayMode('no_credit');
+          return;
+        }
         closeOverlay();
         Alert.alert('Match', res.data?.message || 'Cette invitation n\'est plus valide.');
         await refreshCredits();
         initScreen(true);
         return;
       }
+      await refreshCredits();
       const matchRes = await client.get('/matching/my-matches');
-      if (matchRes.data.length > 0) setActiveMatch(matchRes.data[0]);
+      const live = (matchRes.data ?? []).find((m: ActiveMatch) => !m.ended);
+      if (live) setActiveMatch(live);
       soundService.playMatchCelebration();
       setOverlayMode('success');
       initScreen(true);
@@ -674,6 +669,55 @@ function DiscoverScreen() {
       setAcceptingProposal(null);
       setConnecting(false);
     }
+  };
+
+  // Décliner une invitation reçue : l'auteur récupère son crédit.
+  const handleDeclineLike = (proposalId: string, likeName: string) => {
+    const run = async () => {
+      setAnsweringProposal(proposalId);
+      try {
+        const res = await client.post('/matching/decline', { proposalId });
+        if (!res.data?.success) {
+          Alert.alert('Invitation', res.data?.message || 'Cette invitation n\'est plus valide.');
+        }
+      } catch (error) {
+        Alert.alert('Invitation', getReadableError(error));
+      } finally {
+        setAnsweringProposal(null);
+        initScreen(true);
+      }
+    };
+    confirmAction(
+      'Décliner cette invitation ?',
+      `${likeName} ne sera pas prévenu(e) de votre choix ; son crédit lui sera rendu.`,
+      'Décliner',
+      run,
+    );
+  };
+
+  // Retirer son invitation tant qu'elle n'est pas acceptée : crédit rendu.
+  const handleCancelInvite = (proposalId: string, name: string) => {
+    const run = async () => {
+      setAnsweringProposal(proposalId);
+      try {
+        const res = await client.post('/matching/cancel', { proposalId });
+        if (!res.data?.success) {
+          Alert.alert('Invitation', res.data?.message || 'Cette invitation n\'est plus valide.');
+        }
+        await refreshCredits();
+      } catch (error) {
+        Alert.alert('Invitation', getReadableError(error));
+      } finally {
+        setAnsweringProposal(null);
+        initScreen(true);
+      }
+    };
+    confirmAction(
+      'Retirer votre invitation ?',
+      `Votre invitation à ${name} sera retirée et votre crédit vous sera rendu.`,
+      'Retirer',
+      run,
+    );
   };
 
   const handleNext = () => {
@@ -760,7 +804,8 @@ function DiscoverScreen() {
           <View style={styles.likesSection}>
             <Text style={styles.likesTitle}>💕 Personnes qui vous ont liké</Text>
             {receivedLikes.map((like) => (
-              <TouchableOpacity key={like.id} onPress={() => handleAcceptLike(like.id, like.name)} activeOpacity={0.85} style={styles.likeCard}>
+              <View key={like.id}>
+              <TouchableOpacity onPress={() => handleAcceptLike(like.id, like.name)} activeOpacity={0.85} style={styles.likeCard}>
                 <LinearGradient colors={[Colors.primary.red + '08', Colors.primary.purple + '06']} style={styles.likeCardGrad}>
                   <View style={styles.likeAvatar}>
                     <Text style={styles.likeAvatarText}>{like.name.charAt(0)}</Text>
@@ -776,6 +821,16 @@ function DiscoverScreen() {
                   </LinearGradient>
                 </LinearGradient>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleDeclineLike(like.id, like.name)}
+                disabled={answeringProposal === like.id}
+                activeOpacity={0.7}
+                style={styles.declineLink}
+                testID="discover-decline-like"
+              >
+                <Text style={styles.declineLinkText}>Décliner</Text>
+              </TouchableOpacity>
+              </View>
             ))}
           </View>
         )}
@@ -1038,7 +1093,19 @@ function DiscoverScreen() {
                       </Text>
                     </LinearGradient>
                   </TouchableOpacity>
-                ) : (
+                ) : null}
+                {activeMatch?.phase === 'attente' && activeMatch.proposalId ? (
+                  <TouchableOpacity
+                    onPress={() => handleCancelInvite(activeMatch.proposalId!, activeMatch.name)}
+                    disabled={answeringProposal === activeMatch.proposalId}
+                    activeOpacity={0.7}
+                    style={styles.passBtn}
+                    testID="discover-cancel-invite"
+                  >
+                    <Text style={styles.passBtnText}>Retirer mon invitation (crédit rendu)</Text>
+                  </TouchableOpacity>
+                ) : null}
+                {activeMatch ? null : (
                   <>
                     <TouchableOpacity
                       onPress={() => {
@@ -1074,6 +1141,16 @@ function DiscoverScreen() {
                       <TouchableOpacity onPress={handlePass} activeOpacity={0.7} style={styles.passBtn}>
                         <Text style={styles.passBtnText}>Continuer à explorer</Text>
                         <ChevronRight size={15} color={Colors.text.primary40} />
+                      </TouchableOpacity>
+                    )}
+                    {hasLikedMe && existingLike && (
+                      <TouchableOpacity
+                        onPress={() => handleDeclineLike(existingLike.id, existingLike.name ?? currentMatch.firstName)}
+                        disabled={answeringProposal === existingLike.id}
+                        activeOpacity={0.7}
+                        style={styles.passBtn}
+                      >
+                        <Text style={styles.passBtnText}>Décliner l'invitation</Text>
                       </TouchableOpacity>
                     )}
                   </>
@@ -1287,10 +1364,17 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#fff',
   },
-  verifiedBadge: {
-    position: 'absolute', bottom: -2, right: -2, zIndex: 12,
-    backgroundColor: '#10B981', borderRadius: 12, padding: 2,
-    borderWidth: 2, borderColor: Colors.neutral.white,
+  declineLink: {
+    alignSelf: 'flex-end',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginTop: -4,
+    marginBottom: 6,
+  },
+  declineLinkText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.text.primary40,
   },
   cardFooter: {
     width: '100%',

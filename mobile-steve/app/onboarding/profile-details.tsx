@@ -37,6 +37,7 @@ import {
 } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { PROFESSIONS_DATA, ALL_PROFESSIONS } from '@/constants/professions';
+import legal from '@/constants/legal.json';
 
 import { COUNTRIES, Country, detectUserCountry } from '@/constants/countries';
 
@@ -45,6 +46,46 @@ import { useAuth } from '@/context/auth';
 import { AuthService } from '@/services/auth';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const ERROR_COLOR = '#DC2626';
+
+// ─── Date de naissance ────────────────────────────────────────────
+const MIN_AGE = 18;
+const MAX_AGE = 99;
+
+/** Âge révolu à la date `today`. */
+function getAge(date: Date, today: Date = new Date()): number {
+  let age = today.getFullYear() - date.getFullYear();
+  const m = today.getMonth() - date.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < date.getDate())) age--;
+  return age;
+}
+
+/** Message d'erreur si la date de naissance est refusée, `null` sinon. */
+function getBirthDateError(date: Date | null, today: Date = new Date()): string | null {
+  if (!date) return null;
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (date.getTime() > startOfToday.getTime()) {
+    return 'La date de naissance ne peut pas être dans le futur.';
+  }
+  const age = getAge(date, today);
+  if (age < MIN_AGE) return 'Vous devez avoir au moins 18 ans pour vous inscrire.';
+  if (age > MAX_AGE) return 'Veuillez vérifier votre date de naissance : l’âge maximum accepté est de 99 ans.';
+  return null;
+}
+
+/** Date locale → « AAAA-MM-JJ » (toISOString décalerait la date d'un jour hors UTC). */
+function toIsoDay(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** Texte de l'erreur renvoyée par l'API (chaîne ou liste de messages de validation). */
+function serverMessageOf(error: any): string {
+  const message = error?.response?.data?.message;
+  if (Array.isArray(message)) return message.join('\n');
+  return typeof message === 'string' ? message : '';
+}
 
 // ─── Options de préférences rencontre ─────────────────────────────
 const MEETING_SCOPES = [
@@ -160,6 +201,10 @@ export default function ProfileDetailsScreen() {
   const [phoneDialCode, setPhoneDialCode] = useState('+33');
   const [showPassword, setShowPassword]   = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // Acceptation expresse des CGU : décochée par défaut, envoyée au serveur.
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  const birthDateError = getBirthDateError(birthday);
 
   // Auto-détection dynamique du pays au démarrage & reset session précédente
   useEffect(() => {
@@ -206,6 +251,22 @@ export default function ProfileDetailsScreen() {
   const handleNext = async () => {
     if (step < 4) animateTransition(step + 1);
     else {
+      // Garde-fous : le bouton est déjà désactivé dans ces cas.
+      if (!termsAccepted) {
+        Alert.alert(
+          'Conditions à accepter',
+          'Pour créer votre compte, vous devez accepter les CGU et la politique de confidentialité.',
+        );
+        return;
+      }
+      if (!birthday || birthDateError) {
+        Alert.alert('Date de naissance', birthDateError || 'Veuillez indiquer votre date de naissance.');
+        return;
+      }
+
+      // L'adresse e-mail est normalisée avant envoi (le serveur l'enregistre en minuscules).
+      const normalizedEmail = email.trim().toLowerCase();
+
       setIsSubmitting(true);
       try {
         const cleanPhone = phone.trim();
@@ -214,16 +275,18 @@ export default function ProfileDetailsScreen() {
           : undefined;
 
         const result = await AuthService.register({
-          email: email.trim(),
+          email: normalizedEmail,
           password,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          birthDate: birthday!.toISOString(),
+          birthDate: toIsoDay(birthday),
           gender: gender!,
           city: `${region}, ${country?.name || ''}`,
           telephone: formattedPhone,
           job: profession.trim(),
           meetingScope: (meetingScope as 'local' | 'national' | 'international' | null) ?? undefined,
+          acceptTerms: true,
+          termsVersion: legal.version,
         });
 
         // Vérifier si le token est fourni ou si une vérification OTP est requise
@@ -238,18 +301,30 @@ export default function ProfileDetailsScreen() {
           // Le compte a été créé mais nécessite obligatoirement la validation du code OTP
           router.push({
             pathname: '/(auth)/verify',
-            params: { email: email.trim() },
+            params: { email: normalizedEmail },
           });
         }
       } catch (error: any) {
-        console.error('Registration failed:', error);
-        const serverMsg = error.response?.data?.message;
-        const isExisting = error.response?.status === 409 || (typeof serverMsg === 'string' && serverMsg.toLowerCase().includes('already exists'));
+        console.error('Registration failed:', error?.response?.status ?? error?.message);
+        const serverMsg = serverMessageOf(error);
 
-        if (isExisting) {
+        if (error?.response?.status === 409) {
+          // Le serveur distingue le doublon de téléphone du doublon d'e-mail.
+          if (/t[ée]l[ée]phone|phone/i.test(serverMsg)) {
+            Alert.alert(
+              'Numéro déjà utilisé',
+              'Ce numéro de téléphone est déjà utilisé. Vérifiez-le, ou connectez-vous si ce compte est le vôtre.',
+              [
+                { text: 'Modifier le numéro', style: 'cancel' },
+                { text: 'Se connecter', onPress: () => router.replace('/(auth)/login') },
+              ],
+            );
+            return;
+          }
+
           Alert.alert(
             'Compte existant',
-            'Un compte existe déjà avec cette adresse email. Souhaitez-vous vous connecter ?',
+            'Un compte existe déjà avec cet e-mail. Souhaitez-vous vous connecter ?',
             [
               { text: 'Annuler', style: 'cancel' },
               {
@@ -257,13 +332,13 @@ export default function ProfileDetailsScreen() {
                 onPress: async () => {
                   try {
                     setIsSubmitting(true);
-                    const loginRes = await AuthService.login(email.trim(), password);
+                    const loginRes = await AuthService.login(normalizedEmail, password);
 
                     // Si le compte n'est pas vérifié, redirection vers l'écran OTP
                     if (loginRes.isVerified === false || (!loginRes.access_token && loginRes.email)) {
                       router.push({
                         pathname: '/(auth)/verify',
-                        params: { email: (loginRes.email || email).trim() },
+                        params: { email: (loginRes.email || normalizedEmail).trim() },
                       });
                       return;
                     }
@@ -272,7 +347,8 @@ export default function ProfileDetailsScreen() {
                     const lUserId = loginRes?.userId || loginRes?.user?.id || loginRes?.id || loginRes?._id;
                     await signIn(lToken, lUserId, loginRes?.refresh_token || loginRes?.refreshToken);
                     router.replace('/interview/0');
-                  } catch (loginErr) {
+                  } catch {
+                    // Mot de passe différent : l'écran de connexion propose la réinitialisation.
                     router.replace('/(auth)/login');
                   } finally {
                     setIsSubmitting(false);
@@ -282,7 +358,11 @@ export default function ProfileDetailsScreen() {
             ]
           );
         } else {
-          Alert.alert('Erreur', serverMsg || error.message || 'Une erreur est survenue lors de l\'inscription');
+          Alert.alert(
+            'Inscription impossible',
+            // readableMessage (posé par l'intercepteur) couvre réseau, 429 et 5xx en français.
+            error?.readableMessage || serverMsg || 'Une erreur est survenue lors de l’inscription. Veuillez réessayer.',
+          );
         }
       } finally {
         setIsSubmitting(false);
@@ -333,20 +413,13 @@ export default function ProfileDetailsScreen() {
   // Calendrier
   const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   const DAYS_OF_WEEK = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  const YEARS = Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - 18 - i);
+  // Années de naissance possibles pour un âge de 18 à 99 ans.
+  const YEARS = Array.from({ length: MAX_AGE - MIN_AGE + 2 }, (_, i) => new Date().getFullYear() - MIN_AGE - i);
 
   const getDaysInMonth = (m: number, y: number) => new Date(y, m + 1, 0).getDate();
   const getFirstDay = (m: number, y: number) => {
     const d = new Date(y, m, 1).getDay();
     return d === 0 ? 6 : d - 1;
-  };
-
-  const getAge = (date: Date) => {
-    const today = new Date();
-    let age = today.getFullYear() - date.getFullYear();
-    const m = today.getMonth() - date.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) age--;
-    return age;
   };
 
   const renderCalendarDays = () => {
@@ -387,7 +460,9 @@ export default function ProfileDetailsScreen() {
 
   // ─── Validation par étape ────────────────────────────────────────
   const isStepValid = () => {
-    if (step === 1) return firstName.trim().length >= 2 && profession.trim().length >= 2 && birthday !== null && gender !== null;
+    if (step === 1) {
+      return firstName.trim().length >= 2 && profession.trim().length >= 2 && birthday !== null && !birthDateError && gender !== null;
+    }
     if (step === 2) return country !== null && region.length > 0;
     if (step === 3) return meetingScope !== null;
     if (step === 4) {
@@ -395,9 +470,15 @@ export default function ProfileDetailsScreen() {
       const isPasswordValid = password.length >= 8 && confirmPassword === password;
       const cleanPhone = phone.trim().replace(/[\s\-\.\(\)]/g, '');
       const isPhoneValid = cleanPhone.length >= 8 && /^[0-9+]+$/.test(cleanPhone);
-      return isEmailValid && isPasswordValid && isPhoneValid;
+      return isEmailValid && isPasswordValid && isPhoneValid && termsAccepted && !!birthday && !birthDateError;
     }
     return false;
+  };
+
+  const openLegal = (path: '/legal/cgu' | '/legal/confidentialite') => (e?: { stopPropagation?: () => void }) => {
+    // Sur le web, le clic remonterait jusqu'à la case et la (dé)cocherait.
+    e?.stopPropagation?.();
+    router.push(path as any);
   };
 
   // ─── Rendu étape 1 — Identité + Âge ────────────────────────────
@@ -405,7 +486,7 @@ export default function ProfileDetailsScreen() {
     <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
       <Text style={styles.stepLabel}>Étape 1 sur 4</Text>
       <Text style={styles.stepTitle}>Commençons par{'\n'}vous connaître.</Text>
-      <Text style={styles.stepDesc}>Ces informations restent privées et sécurisées.</Text>
+      <Text style={styles.stepDesc}>Seuls votre prénom, votre âge, votre ville et votre métier apparaissent sur votre fiche ; votre nom reste privé.</Text>
 
       {/* Prénom */}
       <View style={styles.inputGroup}>
@@ -490,7 +571,7 @@ export default function ProfileDetailsScreen() {
             colors={birthday ? [Colors.primary.red + '18', Colors.primary.purple + '10'] : ['#F8F8F8', '#F8F8F8']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.dateBtnGradient}
+            style={[styles.dateBtnGradient, birthDateError ? styles.dateBtnError : null]}
           >
             <View style={styles.dateBtnLeft}>
               <LinearGradient
@@ -499,15 +580,20 @@ export default function ProfileDetailsScreen() {
               >
                 <Text style={{ fontSize: 16 }}>🎂</Text>
               </LinearGradient>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.dateBtnTitle}>
                   {birthday
-                    ? `${birthday.toLocaleDateString('fr-FR')} · ${getAge(birthday)} ans`
+                    ? birthDateError
+                      ? birthday.toLocaleDateString('fr-FR')
+                      : `${birthday.toLocaleDateString('fr-FR')} · ${getAge(birthday)} ans`
                     : 'Choisir ma date de naissance'}
                 </Text>
                 {!birthday && (
-                  <Text style={styles.dateBtnSub}>Doit avoir 18 ans minimum</Text>
+                  <Text style={styles.dateBtnSub}>Vous devez avoir au moins 18 ans</Text>
                 )}
+                {birthDateError ? (
+                  <Text style={styles.fieldError} testID="birthdate-error">{birthDateError}</Text>
+                ) : null}
               </View>
             </View>
             <ChevronRight size={18} color={Colors.text.primary40} />
@@ -672,7 +758,7 @@ export default function ProfileDetailsScreen() {
     <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
       <Text style={styles.stepLabel}>Étape 4 sur 4</Text>
       <Text style={styles.stepTitle}>Créez votre{'\n'}compte sécurisé.</Text>
-      <Text style={styles.stepDesc}>Vos données sont protégées et ne seront jamais partagées.</Text>
+      <Text style={styles.stepDesc}>Votre e-mail et votre téléphone ne sont révélés qu'avec votre accord. Vos données ne sont jamais vendues.</Text>
 
       <View style={styles.inputGroup}>
         <Text style={styles.inputLabel}>Adresse email *</Text>
@@ -799,6 +885,34 @@ export default function ProfileDetailsScreen() {
           </View>
         )}
       </View>
+
+      {/* Acceptation expresse des CGU (décochée par défaut, envoyée au serveur) */}
+      <TouchableOpacity
+        style={[styles.termsBox, termsAccepted && styles.termsBoxActive]}
+        onPress={() => setTermsAccepted(v => !v)}
+        activeOpacity={0.8}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: termsAccepted }}
+        testID="terms-checkbox"
+      >
+        <View style={[styles.termsCheck, termsAccepted && styles.termsCheckActive]}>
+          {termsAccepted && <Check size={14} color="#FFF" strokeWidth={3} />}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.termsText}>
+            J'accepte les{' '}
+            <Text style={styles.termsLink} onPress={openLegal('/legal/cgu')} testID="terms-cgu-link">
+              CGU
+            </Text>
+            {' '}et la{' '}
+            <Text style={styles.termsLink} onPress={openLegal('/legal/confidentialite')} testID="terms-privacy-link">
+              politique de confidentialité
+            </Text>
+            , y compris le traitement de mes réponses à l'entretien pour calculer ma compatibilité.
+          </Text>
+          <Text style={styles.termsVersion}>Version du {legal.version.split('-').reverse().join('/')}</Text>
+        </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 
@@ -857,6 +971,12 @@ export default function ProfileDetailsScreen() {
             )}
           </LinearGradient>
         </TouchableOpacity>
+
+        {step === 4 && !termsAccepted && (
+          <Text style={styles.termsHint} testID="terms-hint">
+            Cochez la case d'acceptation des CGU pour créer votre compte.
+          </Text>
+        )}
 
         {step === 1 && (
           <TouchableOpacity
@@ -935,14 +1055,19 @@ export default function ProfileDetailsScreen() {
             )}
 
             <View style={styles.calFooter}>
+              {birthDateError ? (
+                <Text style={[styles.fieldError, styles.calError]} testID="calendar-birthdate-error">
+                  {birthDateError}
+                </Text>
+              ) : null}
               <TouchableOpacity
                 onPress={() => setShowCalendar(false)}
-                activeOpacity={birthday ? 0.85 : 1}
-                disabled={!birthday}
+                activeOpacity={birthday && !birthDateError ? 0.85 : 1}
+                disabled={!birthday || !!birthDateError}
                 style={styles.calConfirmWrap}
               >
                 <LinearGradient
-                  colors={birthday
+                  colors={birthday && !birthDateError
                     ? [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]
                     : ['#DEDEDE', '#DEDEDE', '#DEDEDE']
                   }
@@ -950,10 +1075,12 @@ export default function ProfileDetailsScreen() {
                   end={{ x: 1, y: 0 }}
                   style={styles.calConfirmBtn}
                 >
-                  <Text style={[styles.calConfirmText, !birthday && { color: '#AAAAAA' }]}>
-                    {birthday
-                      ? `Confirmer — ${getAge(birthday)} ans`
-                      : 'Sélectionner une date'}
+                  <Text style={[styles.calConfirmText, (!birthday || !!birthDateError) && { color: '#AAAAAA' }]}>
+                    {!birthday
+                      ? 'Sélectionner une date'
+                      : birthDateError
+                        ? 'Choisir une autre date'
+                        : `Confirmer — ${getAge(birthday)} ans`}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -1299,6 +1426,66 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.text.primary40,
     marginTop: 2,
+  },
+  dateBtnError: { borderColor: ERROR_COLOR },
+  fieldError: {
+    fontFamily: Typography.fontFamily.medium,
+    fontSize: 12,
+    lineHeight: 17,
+    color: ERROR_COLOR,
+    marginTop: 4,
+  },
+  calError: { textAlign: 'center', marginTop: 0, marginBottom: Spacing.sm },
+
+  // CGU
+  termsBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: Spacing.lg,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.neutral.border,
+    backgroundColor: Colors.neutral.white,
+  },
+  termsBoxActive: { borderColor: Colors.primary.red + '60', backgroundColor: Colors.primary.red + '06' },
+  termsCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.8,
+    borderColor: '#CFC7C0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.neutral.white,
+    marginTop: 1,
+  },
+  termsCheckActive: { backgroundColor: Colors.primary.red, borderColor: Colors.primary.red },
+  termsText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 13,
+    lineHeight: 19,
+    color: Colors.text.primary70,
+  },
+  termsLink: {
+    fontFamily: Typography.fontFamily.bold,
+    fontWeight: '700',
+    color: Colors.primary.red,
+    textDecorationLine: 'underline',
+  },
+  termsVersion: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 11,
+    color: Colors.text.primary40,
+    marginTop: 4,
+  },
+  termsHint: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12,
+    color: Colors.text.primary40,
+    textAlign: 'center',
+    marginTop: 10,
   },
 
   // GPS

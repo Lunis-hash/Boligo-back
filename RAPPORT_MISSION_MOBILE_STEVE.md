@@ -220,3 +220,26 @@ Expo Go : seuls des composants déjà présents dans l'app sont utilisés
 - **Mise en ligne** : ces changements sont sur la branche
   `claude/magical-keller-kw9t2c`. Ils passent en production une fois fusionnés
   dans `main` (Render redéploie le serveur et le site web tout seuls).
+
+## 11. Stripe BOLIGO en mode test et failles de crédits (2026-10-03)
+
+- **Compte Stripe** : les clés de test du compte BOLIGO sont posées sur le
+  serveur Render (`STRIPE_SECRET_KEY`, `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
+  La clé publique est aussi dans l'app (`eas.json`, `app/_layout.tsx`).
+  Au démarrage, les journaux du serveur affichent : « Stripe connecté : compte
+  « environnement de test BOLIGO » (acct_1UMQWmLz8rnS1CBn), mode test ». Le
+  compte OWEKE n'est ni utilisé ni connecté.
+- **Crédit des paiements sans webhook** : l'app appelle `POST /payment/confirm`
+  après la feuille de paiement. Le serveur relit alors le paiement chez Stripe,
+  vérifie qu'il appartient au membre et qu'il est payé, puis crédite une seule
+  fois. Le webhook reste facultatif ; s'il est créé plus tard, ajoutez son code
+  secret dans `STRIPE_WEBHOOK_SECRET`.
+- **Failles fermées (en production)** :
+  - `POST /credit/add` permettait de s'ajouter des crédits gratuitement ;
+  - `POST /credit/spend` acceptait les montants négatifs.
+- **Facture de reçu** : elle est désormais marquée payée, rien n'est réclamé
+  une seconde fois.
+- **Tester un paiement** : il faut un téléphone avec Expo Go, car le web
+  n'affiche pas la feuille de paiement. Utilisez la carte de test Stripe
+  `4242 4242 4242 4242`, n'importe quelle date future et n'importe quel
+  cryptogramme. Aucun argent réel n'est débité.

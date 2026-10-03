@@ -5,7 +5,12 @@ const prisma = new PrismaClient();
 
 async function main() {
   const email = process.env.ADMIN_EMAIL ?? 'admin@boligo.app';
-  const password = process.env.ADMIN_PASSWORD ?? '***MOT-DE-PASSE-SUPPRIME***';
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password || password.length < 12) {
+    throw new Error(
+      'ADMIN_PASSWORD (12 caractères minimum) est obligatoire : aucun mot de passe par défaut.',
+    );
+  }
   const passwordHash = await bcrypt.hash(password, 12);
 
   const admin = await prisma.user.upsert({

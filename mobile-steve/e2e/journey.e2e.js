@@ -43,7 +43,7 @@ async function api(method, p, { token, body } = {}) {
 async function createPartner(gender) {
   const email = `steve-e2e-partner-${Date.now()}@example.test`;
   await api('POST', '/auth/register', {
-    body: { email, password: 'Password12!', firstName: 'Nadia', lastName: 'Partenaire', birthDate: '2001-09-15T00:00:00.000Z', gender, city: 'Paris, France', telephone: `+3362${Math.floor(Math.random() * 1e7)}`, job: 'Architecte', meetingScope: 'international' },
+    body: { email, password: 'Password12!', firstName: 'Nadia', lastName: 'Partenaire', birthDate: '2001-09-15T00:00:00.000Z', gender, city: 'Paris, France', telephone: `+3362${Math.floor(Math.random() * 1e7)}`, job: 'Architecte', meetingScope: 'international', acceptTerms: true, termsVersion: '2026-10-02' },
   });
   const ver = await api('POST', '/auth/verify-email', { body: { email, code: '1234' } });
   const token = ver.data.access_token;
@@ -73,6 +73,17 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
   const text = (t, opts = {}) => page.getByText(t, { exact: false, ...opts }).first();
   const clickText = async (t, opts) => { await text(t, opts).click(); };
+  // Les slides sont rendues côte à côte : on clique l'élément réellement à l'écran.
+  const clickVisibleText = async (t) => {
+    const width = page.viewportSize()?.width ?? 400;
+    const all = page.getByText(t, { exact: false });
+    const n = await all.count();
+    for (let i = 0; i < n; i++) {
+      const box = await all.nth(i).boundingBox();
+      if (box && box.x >= 0 && box.x + box.width / 2 <= width) { await all.nth(i).click(); return; }
+    }
+    throw new Error(`Aucun « ${t} » visible`);
+  };
   const fillPlaceholder = async (ph, value) => { await page.getByPlaceholder(ph).first().fill(value); };
   const email = `steve-e2e-${Date.now()}@example.test`;
   const password = 'Password12!';
@@ -85,15 +96,13 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await clickText('Trouver mon BOLIGO');
   await page.waitForURL(/value-slides/);
   await shot('02-slides');
-  for (let i = 0; i < 5; i++) { await clickText('Suivant →'); await page.waitForTimeout(500); }
+  for (let i = 0; i < 5; i++) { await clickVisibleText('Suivant →'); await page.waitForTimeout(700); }
   await shot('03-slides-cgu');
-  const ctaDisabled = (await page.locator('[aria-disabled="true"]', { hasText: 'Créer mon compte gratuitement' }).count()) > 0;
-  record('Slides : 6 écrans parcourus, CTA désactivé tant que les CGU ne sont pas cochées', ctaDisabled);
-  await clickText("J'ai lu et j'accepte les");
-  await page.waitForTimeout(300);
-  await clickText('Créer mon compte gratuitement');
+  record('Slides : 6 écrans parcourus', true);
+  await page.waitForTimeout(800);
+  await clickVisibleText('Créer mon compte gratuitement');
   await page.waitForURL(/profile-details/);
-  record('CGU acceptées → formulaire de profil', true);
+  record('Slides → formulaire de profil (CGU acceptées à l’étape 4)', true);
 
   // ── 2. Inscription (4 étapes)
   await fillPlaceholder('Votre prénom', 'Steve');
@@ -130,6 +139,11 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const phoneInput = page.locator('input:visible').last();
   await phoneInput.fill(`6${Math.floor(10000000 + Math.random() * 89999999)}`);
   await shot('07-inscription-etape4');
+  await clickText('Créer mon compte', { exact: true });
+  await page.waitForTimeout(500);
+  record('Étape 4 : création bloquée tant que les CGU ne sont pas acceptées', /profile-details/.test(page.url()));
+  await page.getByTestId('terms-checkbox').click();
+  await page.waitForTimeout(300);
   await clickText('Créer mon compte', { exact: true });
   await page.waitForURL(/verify/, { timeout: 15000 });
   record('Compte créé → écran de vérification OTP', true);
@@ -171,7 +185,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const loginRes = await api('POST', '/auth/login', { body: { email, password } });
   const tokenA = loginRes.data.access_token;
   record('Login API du compte créé via l\'UI', !!tokenA);
-  await page.getByText('Discover', { exact: true }).first().click().catch(() => {});
+  await page.getByText('Découverte', { exact: true }).first().click().catch(() => {});
   await page.waitForTimeout(2000);
   await shot('12-discover-vide');
   record('Découverte : état vide géré', await page.locator('body').innerText().then((t) => /Aucun profil|Tout est à jour|Actualiser/.test(t)));
@@ -208,7 +222,15 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Formule chargée depuis le backend (15,00 €)', await text('15,00 €').isVisible());
   await page.getByTestId('plan-parcours_harmonie').click();
   await page.waitForTimeout(600);
-  await page.getByTestId('promo-input').fill('BOLIGO100');
+  // Les codes promo n'existent qu'en base : on crée un code gratuit de test (base de TEST uniquement).
+  const promoCode = `E2E${Date.now().toString(36).toUpperCase()}`;
+  if (E2E_PSQL) {
+    execSync(E2E_PSQL, {
+      input: `INSERT INTO "PromoCode" (id, code, "discountType", "discountValue", "maxUses", "isActive") VALUES (gen_random_uuid()::text, '${promoCode}', 'free', 0, 5, true);`,
+      stdio: ['pipe', 'ignore', 'inherit'],
+    });
+  }
+  await page.getByTestId('promo-input').fill(E2E_PSQL ? promoCode : 'BOLIGO100');
   await page.getByTestId('promo-apply').click();
   await page.waitForTimeout(1500);
   await shot('16-paiement-promo');
@@ -234,6 +256,10 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const balanceAfter = await api('GET', '/credit/balance', { token: tokenA });
   record('Crédit débité après la connexion', balanceAfter.data?.credits === 0, JSON.stringify(balanceAfter.data));
   const likes = await api('GET', '/matching/received-likes', { token: partner.token });
+  // Accepter coûte aussi 1 crédit (débité par le serveur) : sans crédit, refus explicite.
+  const refused = await api('POST', '/matching/accept', { token: partner.token, body: { proposalId: likes.data[0].id } });
+  record('Acceptation sans crédit refusée (NO_CREDIT)', refused.data?.success === false && refused.data?.code === 'NO_CREDIT');
+  await api('POST', '/payment/apply-promo', { token: partner.token, body: { code: promoCode, optionId: 'parcours_harmonie' } });
   const accept = await api('POST', '/matching/accept', { token: partner.token, body: { proposalId: likes.data[0].id } });
   const journeyId = accept.data.journey.id;
   record('Partenaire accepte (API) → parcours créé', !!journeyId);
@@ -241,7 +267,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   // ── 8. Sondeur 21 questions (jour 1 → 3)
   await page.goto(`${APP_URL}/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(3500);
-  await page.getByText('Matches', { exact: true }).first().click().catch(() => {});
+  await page.getByText('Matchs', { exact: true }).first().click().catch(() => {});
   await page.waitForTimeout(3000);
   await shot('20-matchs-sondeur');
   record('Onglet Matchs : parcours Harmonie visible', await text('Parcours Harmonie — 3 jours').isVisible());
@@ -274,7 +300,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
       });
       await page.reload({ waitUntil: 'networkidle' });
       await page.waitForTimeout(3000);
-      await page.getByText('Matches', { exact: true }).first().click();
+      await page.getByText('Matchs', { exact: true }).first().click();
       await page.waitForTimeout(2500);
     }
   }
@@ -291,7 +317,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Parcours en chat libre après les réponses des deux membres', status.data?.currentStep === 'chat_libre', JSON.stringify(status.data));
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(3500);
-  await page.getByText('Matches', { exact: true }).first().click();
+  await page.getByText('Matchs', { exact: true }).first().click();
   await page.waitForTimeout(2500);
   await shot('23-sondeur-termine');
   record('Onglet Matchs : CTA « Accéder à la messagerie » affiché', await text('Accéder à la messagerie').isVisible());
@@ -322,6 +348,25 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Message insultant bloqué avant envoi (modération locale)', dialogs.length > insultDialogsBefore, dialogs[dialogs.length - 1] || '');
 
   // ── 10. Vidéo (API) puis échange de contacts (UI)
+  // L'appel ne peut pas finir le chat : il faut l'étape vidéo et les deux membres
+  // connectés. Hors étape, la fin d'appel n'avance rien.
+  const earlyEnd = await api('POST', '/video/end', { token: partner.token, body: { journeyId, durationSec: 60 } });
+  record('Fin d\'appel sans appel réel (chat libre) → étape inchangée', earlyEnd.data?.advanced === false, JSON.stringify(earlyEnd.data));
+  if (E2E_PSQL) {
+    // Voyage dans le temps (base de TEST) : 3 jours de chat écoulés → étape vidéo.
+    execSync(E2E_PSQL, {
+      input: `UPDATE "Journey" SET "stepStartDate" = now() - interval '3 days 1 hour' WHERE id = '${journeyId}';`,
+      stdio: ['pipe', 'ignore', 'inherit'],
+    });
+    await api('GET', '/matching/my-matches', { token: tokenA });
+    const joinA = await api('POST', `/journey/${journeyId}/video/join`, { token: tokenA });
+    const joinB = await api('POST', `/journey/${journeyId}/video/join`, { token: partner.token });
+    record('Étape vidéo : les deux membres rejoignent l\'appel', !!joinA.data?.meetingUrl && !!joinB.data?.meetingUrl, `${joinA.status}/${joinB.status}`);
+    execSync(E2E_PSQL, {
+      input: `UPDATE "VideoSession" SET "startDate" = now() - interval '90 seconds' WHERE "journeyId" = '${journeyId}';`,
+      stdio: ['pipe', 'ignore', 'inherit'],
+    });
+  }
   const endCall = await api('POST', '/video/end', { token: partner.token, body: { journeyId, durationSec: 60 } });
   record('Fin d\'appel vidéo (API) → étape échange de contacts', endCall.data?.currentStep === 'echange_contacts', JSON.stringify(endCall.data));
   await page.reload({ waitUntil: 'networkidle' });
