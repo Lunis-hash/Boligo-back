@@ -10,6 +10,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthRateLimitGuard } from './auth-rate-limit.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -25,6 +26,7 @@ export class AuthController {
   }
 
   @Post('verify-email')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify email with OTP code received after registration' })
   @ApiResponse({ status: 200, description: 'Email verified, returns JWT tokens.' })
@@ -34,6 +36,7 @@ export class AuthController {
   }
 
   @Post('resend-verification')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend verification OTP code via email' })
   @ApiResponse({ status: 200, description: 'New verification OTP code sent via email.' })
@@ -42,6 +45,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful, returns JWT token.' })
@@ -60,6 +64,7 @@ export class AuthController {
   }
 
   @Post('social-login')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Social login with Google or Facebook' })
   @ApiResponse({ status: 200, description: 'Social login successful, returns JWT token.' })
@@ -69,6 +74,7 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset code via email' })
   @ApiResponse({ status: 200, description: 'Reset code sent via email.' })
@@ -78,6 +84,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @UseGuards(AuthRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using OTP code received via email' })
   @ApiResponse({ status: 200, description: 'Password reset successfully.' })

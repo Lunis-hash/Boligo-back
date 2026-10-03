@@ -70,13 +70,24 @@ export class JourneyController {
     return this.journeyService.advanceStep(id, req.user.id, body.step);
   }
 
+  @Post(':id/leave')
+  async leave(@Param('id') id: string, @Request() req) {
+    return this.journeyService.leaveJourney(id, req.user.id);
+  }
+
   @Post(':id/exchange-contact')
   async exchangeContact(
     @Param('id') id: string,
-    @Body() body: { sharePhone: boolean; shareEmail: boolean },
+    @Body() body: { sharePhone?: boolean; shareEmail?: boolean },
     @Request() req,
   ) {
-    return this.journeyService.exchangeContact(id, req.user.id, body.sharePhone ?? true, body.shareEmail ?? true);
+    // Rien n'est partagé sans un choix explicite du membre.
+    return this.journeyService.exchangeContact(
+      id,
+      req.user.id,
+      body?.sharePhone === true,
+      body?.shareEmail === true,
+    );
   }
 
   @Get(':id/contact-exchange')

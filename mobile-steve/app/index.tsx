@@ -4,10 +4,8 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Dimensions,
   StatusBar,
   ScrollView,
-  Platform,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -20,8 +18,6 @@ import { useAuth } from '@/context/auth';
 import { InterviewService, getResumeModule } from '@/services/interview';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const COLORS = {
   bg: '#FFFFFF',
@@ -184,13 +180,13 @@ export default function WelcomeScreen() {
             <View style={styles.journeyRow}>
               <View style={[styles.jDot, { backgroundColor: COLORS.purple }]} />
               <Text style={styles.jText}>
-                <Text style={styles.jBold}>40 questions</Text> pour ton profil
+                <Text style={styles.jBold}>Environ 70 questions</Text> en 11 modules pour votre profil
               </Text>
             </View>
             <View style={styles.journeyRow}>
               <View style={[styles.jDot, { backgroundColor: COLORS.red }]} />
               <Text style={styles.jText}>
-                Des profils <Text style={styles.jBold}>compatibles à 80 %</Text>
+                Des profils <Text style={styles.jBold}>classés par compatibilité</Text>
               </Text>
             </View>
             <View style={styles.journeyRow}>
@@ -208,7 +204,7 @@ export default function WelcomeScreen() {
             <View style={styles.journeyRow}>
               <View style={[styles.jDot, { backgroundColor: COLORS.green }]} />
               <Text style={styles.jText}>
-                <Text style={styles.jBold}>7 minutes</Text> de vidéo, puis vos contacts
+                <Text style={styles.jBold}>2 minutes</Text> de vidéo, puis vos contacts
               </Text>
             </View>
           </View>
@@ -231,7 +227,7 @@ export default function WelcomeScreen() {
           <View style={styles.reassureRow}>
             <Text style={styles.reassureBold}>Inscription gratuite</Text>
             <Text style={styles.dotSep}>●</Text>
-            <Text style={styles.reassureText}>Profils vérifiés</Text>
+            <Text style={styles.reassureText}>E-mail vérifié</Text>
           </View>
 
           {/* Lien vers connexion */}

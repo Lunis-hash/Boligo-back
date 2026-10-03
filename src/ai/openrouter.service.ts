@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentModelConfig, HARMONIE_AI_ROUTING, HarmonieAgentsConfig } from './openrouter.config';
 
+const OPENROUTER_TIMEOUT_MS = 20_000;
+
 export interface OpenRouterChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -57,9 +59,11 @@ export class OpenRouterService {
         
         const response = await fetch(this.baseUrl, {
           method: 'POST',
+          // Un modèle qui ne répond pas ne doit pas bloquer la requête du membre.
+          signal: AbortSignal.timeout(OPENROUTER_TIMEOUT_MS),
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
-            'HTTP-Referer': process.env.APP_URL || 'https://harmonie-app.com',
+            'HTTP-Referer': process.env.APP_URL || 'https://boligo-web.onrender.com',
             'X-Title': 'BOLIGO AI Coach',
             'Content-Type': 'application/json',
           },

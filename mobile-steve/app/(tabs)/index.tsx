@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Alert,
+  AppState,
 } from 'react-native';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
@@ -137,7 +138,9 @@ function DayStep({
 }
 
 // ─── Écran principal ───────────────────────────────────────────────
-function pickActiveMatch(matches: any[]) {
+function pickActiveMatch(allMatches: any[]) {
+  // Un parcours terminé ne s'affiche plus ici (il reste consultable dans Messages).
+  const matches = allMatches.filter((m) => !m.ended);
   if (!matches.length) return undefined;
   const withJourney = matches.find(
     (m) => m.journeyId && m.phase !== 'attente',
@@ -183,12 +186,25 @@ export default function MatchesScreen() {
   const ctaScale = useRef(new Animated.Value(0.92)).current;
   const ctaFade = useRef(new Animated.Value(0)).current;
 
-  // Recharger matchs + parcours à chaque ouverture de l'onglet
+  // Recharger matchs + parcours à chaque ouverture de l'onglet et au retour au
+  // premier plan : les réponses du partenaire et le jour du Sondeur évoluent.
+  const journeyIdRef = useRef<string | null>(null);
+  const refreshAll = useCallback(() => {
+    loadMatches(true);
+    if (journeyIdRef.current) loadJourney(journeyIdRef.current, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadMatches]);
   useFocusEffect(
     useCallback(() => {
-      loadMatches();
-    }, []),
+      refreshAll();
+    }, [refreshAll]),
   );
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refreshAll();
+    });
+    return () => sub.remove();
+  }, [refreshAll]);
 
   // Appliquer les données du parcours instantanément
   const applyJourneyData = (status: any, questions: any[]) => {
@@ -250,6 +266,7 @@ export default function MatchesScreen() {
 
   // Charger le journey depuis l'API ou le cache instantané
   useEffect(() => {
+    journeyIdRef.current = firstMatch?.journeyId ?? null;
     if (firstMatch?.journeyId) {
       setJourneyId(firstMatch.journeyId);
       const cached = cacheService.peek<any>(`journey_${firstMatch.journeyId}`);
@@ -380,8 +397,12 @@ export default function MatchesScreen() {
 
     const countToday = totalQuestionsToday;
     if (countToday === 0) return;
-    if (qIndex < countToday - 1) {
-      setTimeout(() => { setQIndex(i => i + 1); setCustomText(''); }, 300);
+    // Question suivante encore sans réponse (reprise possible au milieu d'une journée).
+    const nextIndex = dayDbQuestions.findIndex(
+      (q: any, i: number) => i !== qIndex && q.id !== dbQ.id && !userAnswers[q.id],
+    );
+    if (nextIndex !== -1) {
+      setTimeout(() => { setQIndex(nextIndex); setCustomText(''); }, 300);
     } else {
       setTimeout(async () => {
         soundService.playMatchCelebration();
@@ -446,7 +467,9 @@ export default function MatchesScreen() {
 
   const openQuestionFlow = () => {
     if (!canAnswerToday) return;
-    setQIndex(0);
+    // Reprendre à la première question du jour sans réponse.
+    const firstPending = dayDbQuestions.findIndex((q: any) => !userAnswers[q.id]);
+    setQIndex(firstPending === -1 ? 0 : firstPending);
     setViewMode('question');
   };
 

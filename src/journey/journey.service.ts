@@ -15,6 +15,9 @@ import { AiSondeurQuestion, DAY_ANGLES, assembleSondeur, describeReportForAi } f
 import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 
+/** 3 jours de Sondeur + 24 h de grâce avant d'appliquer la Règle de Justice. */
+const SONDEUR_JUSTICE_HOURS = 96;
+
 @Injectable()
 export class JourneyService {
   /** Évite 2 générations IA simultanées pour le même parcours. */
@@ -273,8 +276,13 @@ export class JourneyService {
     return this.pickCanonicalHarmonyQuestions(questions).map((q) => {
       const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
       const storedOptions = Array.isArray(q.options) ? (q.options as string[]) : null;
+      // La réponse du partenaire n'est révélée qu'après la sienne : personne
+      // ne peut s'aligner sur l'autre avant d'avoir répondu.
+      const answered = q.responses.some((r) => r.userId === userId);
       return {
         ...q,
+        responses: answered ? q.responses : q.responses.filter((r) => r.userId === userId),
+        partnerAnswered: q.responses.some((r) => r.userId !== userId),
         emoji: q.emoji ?? bankQ?.emoji ?? '💬',
         options: storedOptions ?? bankQ?.options ?? null,
       };
@@ -657,12 +665,15 @@ export class JourneyService {
     const isFinished = userAHasAll && userBHasAll;
 
     if (isFinished) {
-      await this.prisma.journey.update({
-        where: { id: journey.id },
+      // Le chat libre dure 3 jours à partir de maintenant, pas du début du parcours.
+      const moved = await this.prisma.journey.updateMany({
+        where: { id: journey.id, currentStep: 'phase_harmonie' },
         data: {
           currentStep: 'chat_libre',
+          stepStartDate: new Date(),
         },
       });
+      if (moved.count === 0) return;
 
       // Notification des deux utilisateurs
       await this.notificationService.notifyVideoUnlock(journey.userAId, journey.userB.firstName);
@@ -711,8 +722,9 @@ export class JourneyService {
             continue;
           }
 
-          // Règle de Justice en phase_harmonie : après 48h
-          if (hoursSinceStart >= 48) {
+          // Règle de Justice en phase_harmonie : le Sondeur dure 3 jours (le
+          // jour 3 s'ouvre à 48 h) ; on laisse 24 h de grâce après le dernier jour.
+          if (hoursSinceStart >= SONDEUR_JUSTICE_HOURS) {
             const responsesA = allQuestions.filter(q =>
               q.responses.some(r => r.userId === journey.userAId),
             ).length;
@@ -820,7 +832,7 @@ export class JourneyService {
               victimId,
               'credit',
               'Remboursement anti-ghosting 💍',
-              `Votre crédit a été restitué car ${ghoster.firstName} n'a pas répondu depuis 48 heures.`,
+              `Votre crédit a été restitué car ${ghoster.firstName} n'a pas donné suite dans les délais du parcours.`,
             );
           }
         }
@@ -830,68 +842,68 @@ export class JourneyService {
 
   // Échange de contacts : un utilisateur accepte de partager
   async exchangeContact(journeyId: string, userId: string, sharePhone: boolean, shareEmail: boolean) {
-    const journey = await this.prisma.journey.findUnique({
-      where: { id: journeyId },
-      include: { contactExchange: true },
-    });
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Deux consentements simultanés ne doivent ni créer deux lignes ni
+      // écraser le choix de l'autre membre.
+      await tx.$queryRaw`SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtext(${'contact:' + journeyId}))) AS lock`;
+      const journey = this.requireMember(
+        await tx.journey.findUnique({
+          where: { id: journeyId },
+          include: { contactExchange: true },
+        }),
+        userId,
+      );
+      if (journey.currentStep !== 'echange_contacts' || journey.result !== 'en_cours') {
+        throw new BadRequestException(
+          "L'échange de coordonnées s'ouvre après l'appel vidéo du parcours.",
+        );
+      }
 
-    if (!journey) throw new Error('Parcours non trouvé');
-    if (journey.userAId !== userId && journey.userBId !== userId) {
-      throw new Error('Vous ne faites pas partie de ce parcours');
-    }
+      const isUserA = journey.userAId === userId;
+      const existing = journey.contactExchange;
+      const alreadyConsented = isUserA ? existing?.consentA : existing?.consentB;
+      if (existing && alreadyConsented) return existing;
 
-    const isUserA = journey.userAId === userId;
+      if (!existing) {
+        return tx.contactExchange.create({
+          data: {
+            journeyId,
+            ...(isUserA ? { consentA: true } : { consentB: true }),
+            phoneShared: sharePhone === true,
+            emailShared: shareEmail === true,
+          },
+        });
+      }
 
-    // Créer ou mettre à jour le ContactExchange
-    const existing = journey.contactExchange;
-    const data: any = {
-      journeyId,
-      ...(isUserA
-        ? { consentA: true, phoneShared: sharePhone, emailShared: shareEmail }
-        : { consentB: true, phoneShared: sharePhone, emailShared: shareEmail }),
-    };
-
-    if (existing) {
-      // Si l'autre a déjà accepté, on note la date d'échange
-      const bothConsent = isUserA ? existing.consentB : existing.consentA;
-      if (bothConsent) data.exchangedAt = new Date();
-
-      await this.prisma.contactExchange.update({
+      // Un canal n'est partagé que si les DEUX membres l'acceptent : le refus
+      // de l'un n'est jamais levé par le consentement de l'autre.
+      const partnerConsented = isUserA ? existing.consentB : existing.consentA;
+      return tx.contactExchange.update({
         where: { id: existing.id },
         data: {
-          ...(isUserA
-            ? { consentA: true }
-            : { consentB: true }),
-          phoneShared: existing.phoneShared || sharePhone,
-          emailShared: existing.emailShared || shareEmail,
-          exchangedAt: data.exchangedAt,
+          ...(isUserA ? { consentA: true } : { consentB: true }),
+          phoneShared: existing.phoneShared && sharePhone === true,
+          emailShared: existing.emailShared && shareEmail === true,
+          exchangedAt: partnerConsented ? new Date() : existing.exchangedAt,
         },
       });
-    } else {
-      await this.prisma.contactExchange.create({ data });
-    }
-
-    // Récupérer les infos à jour
-    const updated = await this.prisma.contactExchange.findUnique({
-      where: { journeyId },
     });
 
-    const bothAccepted = updated?.consentA && updated?.consentB;
+    const bothAccepted = updated.consentA && updated.consentB;
 
-    // Si les deux ont accepté, avancer le journey à termine
     if (bothAccepted) {
-      await this.prisma.journey.update({
-        where: { id: journeyId },
-        data: { currentStep: 'termine', result: 'reussi' },
+      await this.prisma.journey.updateMany({
+        where: { id: journeyId, currentStep: 'echange_contacts' },
+        data: { currentStep: 'termine', result: 'reussi', endDate: new Date() },
       });
     }
 
     return {
-      consentA: updated?.consentA ?? false,
-      consentB: updated?.consentB ?? false,
-      phoneShared: updated?.phoneShared ?? false,
-      emailShared: updated?.emailShared ?? false,
-      exchangedAt: updated?.exchangedAt,
+      consentA: updated.consentA,
+      consentB: updated.consentB,
+      phoneShared: updated.phoneShared,
+      emailShared: updated.emailShared,
+      exchangedAt: updated.exchangedAt,
       bothAccepted,
     };
   }
@@ -925,43 +937,106 @@ export class JourneyService {
       emailShared: journey.contactExchange?.emailShared ?? false,
       partner: {
         firstName: partner.firstName,
-        telephone: bothAccepted && (journey.contactExchange?.phoneShared ?? true) ? partner.telephone : null,
-        email: bothAccepted && (journey.contactExchange?.emailShared ?? true) ? partner.email : null,
+        telephone: bothAccepted && journey.contactExchange?.phoneShared ? partner.telephone : null,
+        email: bothAccepted && journey.contactExchange?.emailShared ? partner.email : null,
         profession: partner.profile?.profession,
         displayedCity: partner.profile?.displayedCity || partner.city,
       },
     };
   }
 
-  // Avancer manuellement une étape du journey (ex: video → echange_contacts)
-  async advanceStep(journeyId: string, userId: string, step: string) {
-    const validSteps = ['chat_libre', 'video', 'echange_contacts', 'termine'];
-    if (!validSteps.includes(step)) {
-      throw new Error(`Étape invalide: ${step}`);
-    }
-
-    // Vérifier que l'utilisateur fait partie du journey
-    const journey = await this.prisma.journey.findUnique({
-      where: { id: journeyId },
-    });
-
-    if (!journey) {
-      throw new Error('Parcours non trouvé');
-    }
-
-    if (journey.userAId !== userId && journey.userBId !== userId) {
-      throw new Error('Vous ne faites pas partie de ce parcours');
-    }
-
-    const updated = await this.prisma.journey.update({
-      where: { id: journeyId },
+  /**
+   * Un membre met fin au parcours (malaise, signalement…). Le parcours se clôt
+   * pour les deux ; l'autre membre récupère son crédit, une seule fois.
+   */
+  async leaveJourney(journeyId: string, userId: string) {
+    const journey = this.requireMember(
+      await this.prisma.journey.findUnique({
+        where: { id: journeyId },
+        include: {
+          userA: { select: { firstName: true } },
+          userB: { select: { firstName: true } },
+        },
+      }),
+      userId,
+    );
+    const closed = await this.prisma.journey.updateMany({
+      where: { id: journeyId, result: 'en_cours' },
       data: {
-        currentStep: step as any,
-        stepStartDate: new Date(),
+        currentStep: 'termine',
+        result: 'abandonne',
+        endDate: new Date(),
+        closingReason: 'Parcours arrêté par un membre',
       },
     });
+    if (closed.count === 0) {
+      throw new BadRequestException('Ce parcours est déjà terminé.');
+    }
 
-    console.log(`✅ [Journey] ${journeyId} avancé à ${step}`);
-    return { success: true, currentStep: updated.currentStep };
+    const partnerId = journey.userAId === userId ? journey.userBId : journey.userAId;
+    const leaver = journey.userAId === userId ? journey.userA : journey.userB;
+    const spent = await this.prisma.creditTransaction.findFirst({
+      where: { journeyId, userId: partnerId, type: 'consommation' },
+    });
+    const alreadyRefunded = await this.prisma.creditTransaction.findFirst({
+      where: { journeyId, userId: partnerId, type: 'remboursement_justice' },
+      select: { id: true },
+    });
+    if (spent && !alreadyRefunded) {
+      await this.creditService.refundJustice(
+        partnerId,
+        journeyId,
+        Math.abs(spent.creditAmount),
+        `Parcours arrêté par ${leaver.firstName} : crédit rendu`,
+      );
+    }
+    try {
+      await this.notificationService.sendPushNotification(
+        partnerId,
+        'systeme',
+        'Parcours terminé',
+        spent
+          ? `${leaver.firstName} a mis fin à votre parcours. Votre crédit vous a été rendu.`
+          : `${leaver.firstName} a mis fin à votre parcours.`,
+      );
+    } catch {
+      /* notification facultative */
+    }
+    return { success: true };
+  }
+
+  /**
+   * Avancement manuel : uniquement vidéo → échange de coordonnées, et seulement
+   * si les deux membres ont rejoint l'appel. Les autres étapes avancent
+   * d'elles-mêmes (Sondeur terminé, délai de chat, fin d'appel).
+   */
+  async advanceStep(journeyId: string, userId: string, step: string) {
+    const journey = this.requireMember(
+      await this.prisma.journey.findUnique({
+        where: { id: journeyId },
+        include: { videoSession: true },
+      }),
+      userId,
+    );
+    if (journey.result !== 'en_cours') {
+      throw new BadRequestException('Ce parcours est terminé.');
+    }
+    if (step !== 'echange_contacts' || journey.currentStep !== 'video') {
+      throw new BadRequestException(
+        "Cette étape s'ouvre automatiquement : elle ne peut pas être forcée.",
+      );
+    }
+    const call = journey.videoSession;
+    if (!call?.consentA || !call?.consentB) {
+      throw new BadRequestException(
+        "L'échange de coordonnées s'ouvre après l'appel vidéo avec les deux membres.",
+      );
+    }
+
+    await this.prisma.journey.updateMany({
+      where: { id: journeyId, currentStep: 'video' },
+      data: { currentStep: 'echange_contacts', stepStartDate: new Date() },
+    });
+    return { success: true, currentStep: 'echange_contacts' };
   }
 }

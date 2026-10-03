@@ -18,9 +18,27 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Rect, Path, Line, Text as SvgText, G, Ellipse, Polygon } from 'react-native-svg';
 import { Colors, Typography } from '@/constants/theme';
-import { Check, X } from 'lucide-react-native';
+import legal from '@/constants/legal.json';
+import { Heart, X } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const FRENCH_MONTHS = [
+  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+];
+
+/** « 2026-10-02 » → « 2 octobre 2026 » (sans dépendre d'Intl, absent sur certains moteurs JS). */
+function formatLegalVersion(version: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(version);
+  if (!match) return version;
+  const day = Number(match[3]);
+  const month = FRENCH_MONTHS[Number(match[2]) - 1];
+  if (!month) return version;
+  return `${day === 1 ? '1er' : day} ${month} ${match[1]}`;
+}
+
+const LEGAL_VERSION_LABEL = formatLegalVersion(legal.version);
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -49,22 +67,22 @@ const SLIDES = [
     haloColor: 'rgba(232,64,58,0.10)',
     haloBorder: 'rgba(232,64,58,0.16)',
     barColor: ['#E8403A', '#E8834A'] as [string, string],
-    reassure: 'Inscription gratuite ● Profils vérifiés',
+    reassure: 'Inscription gratuite ● E-mail vérifié',
   },
   {
     id: '2',
     topRight: 'Étape 1',
     isStep: true,
-    badgeText: 'Ton profil',
+    badgeText: 'Votre profil',
     badgeColor: '#5A3AB8',
     badgeBorder: 'rgba(124,92,232,0.35)',
-    titleMain: '40 questions.',
+    titleMain: 'Environ 70 questions.',
     titleItalic: "Puis l'IA fait le reste.",
-    descLead: 'Tes réponses construisent ton profil de compatibilité — ',
-    descLeadBold: 'invisible aux autres',
-    descBody: ". L'IA te propose ensuite uniquement des profils ",
-    descBodyBold: 'compatibles à 80 % minimum',
-    descEnd: '. À toi de choisir.',
+    descLead: 'Onze modules pour construire votre profil de compatibilité — ',
+    descLeadBold: 'vos réponses ne sont pas publiées',
+    descBody: ". L'IA vous propose ensuite des profils ",
+    descBodyBold: 'classés par compatibilité',
+    descEnd: '. À vous de choisir.',
     ctaText: 'Suivant →',
     ctaColors: ['#7C5CE8', '#5A3AB8'] as [string, string],
     themeColor: '#7C5CE8',
@@ -73,7 +91,7 @@ const SLIDES = [
     haloColor: 'rgba(124,92,232,0.10)',
     haloBorder: 'rgba(124,92,232,0.16)',
     barColor: ['#7C5CE8', '#5A3AB8'] as [string, string],
-    reassure: 'Profils 100% confidentiels',
+    reassure: 'Aucune photo affichée',
   },
   {
     id: '3',
@@ -105,7 +123,7 @@ const SLIDES = [
     badgeColor: '#0D7C74',
     badgeBorder: 'rgba(15,154,144,0.4)',
     titleMain: '3 jours à vous.',
-    titleItalic: "Sans l'IA.",
+    titleItalic: 'Sans questions imposées.',
     descLead: 'Le parcours Harmonie terminé, ',
     descLeadBold: 'la conversation vous appartient.',
     descBody: ' Trois jours pour parler de ce que vous voulez, à votre rythme.',
@@ -117,7 +135,7 @@ const SLIDES = [
     haloColor: 'rgba(15,154,144,0.10)',
     haloBorder: 'rgba(15,154,144,0.16)',
     barColor: ['#17ADA2', '#0F8078'] as [string, string],
-    reassure: 'Messagerie privée et chiffrée',
+    reassure: 'Messagerie modérée ● Signalement intégré',
   },
   {
     id: '5',
@@ -128,11 +146,11 @@ const SLIDES = [
     badgeBorder: 'rgba(232,131,74,0.4)',
     titleMain: 'Le ghosting',
     titleItalic: 'a un prix, ici.',
-    descLead: "S'il quitte la conversation sans un mot, ",
+    descLead: "Si l'autre cesse de répondre en cours de parcours, ",
     descLeadBold: 'il perd son crédit.',
-    descBody: " Le tien t'est ",
+    descBody: ' Le vôtre vous est ',
     descBodyBold: 'rendu automatiquement.',
-    descEnd: " Tu ne paies jamais pour le silence de l'autre.",
+    descEnd: " Vous ne payez jamais pour le silence de l'autre.",
     ctaText: 'Suivant →',
     ctaColors: ['#E8403A', '#E8834A'] as [string, string],
     themeColor: '#E8834A',
@@ -141,7 +159,7 @@ const SLIDES = [
     haloColor: 'rgba(232,131,74,0.10)',
     haloBorder: 'rgba(232,131,74,0.16)',
     barColor: ['#E8403A', '#E8834A'] as [string, string],
-    reassure: 'Protection financière garantie',
+    reassure: 'Crédit restitué automatiquement',
   },
   {
     id: '6',
@@ -150,10 +168,10 @@ const SLIDES = [
     badgeText: 'Rencontre réelle',
     badgeColor: '#158044',
     badgeBorder: 'rgba(30,158,90,0.4)',
-    titleMain: '7 minutes en vidéo.',
+    titleMain: '2 minutes en vidéo.',
     titleItalic: 'Puis vos contacts.',
     descLead: "L'appel se débloque : ",
-    descLeadBold: '7 minutes pour transformer la complicité en vraie rencontre.',
+    descLeadBold: '2 minutes pour mettre une voix et un visage sur la complicité.',
     descBody: " Ensuite, l'application vous propose d'échanger vos contacts — ",
     descBodyBold: 'si vous dites oui tous les deux.',
     ctaText: 'Créer mon compte gratuitement →',
@@ -173,7 +191,9 @@ export default function ValueSlidesScreen() {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexRef = useRef(0);
-  const [cguAccepted, setCguAccepted] = useState(false);
+  // Les CGU sont présentées ici pour information ; leur acceptation expresse
+  // (case à cocher, version envoyée au serveur) se fait à la dernière étape de
+  // l'inscription (profile-details), qu'aucun « Passer » ne permet d'éviter.
   const [showCguModal, setShowCguModal] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
@@ -285,7 +305,7 @@ export default function ValueSlidesScreen() {
       ])
     ).start();
 
-    // 6. Aiguille chronomètre 7 min (tick)
+    // 6. Aiguille chronomètre 2 min (tick)
     Animated.loop(
       Animated.timing(clockTick, {
         toValue: 1,
@@ -346,9 +366,7 @@ export default function ValueSlidesScreen() {
       // synchronise l'index tout de suite pour que le bouton suive.
       syncIndexFromOffset(nextIndex * SCREEN_WIDTH);
     } else {
-      if (cguAccepted) {
-        router.replace('/onboarding/profile-details');
-      }
+      router.replace('/onboarding/profile-details');
     }
   };
 
@@ -579,7 +597,7 @@ export default function ValueSlidesScreen() {
         );
 
       case 1:
-        // Slide 2 : Constellation 80% avec rotation & pulsation
+        // Slide 2 : Constellation de compatibilité avec rotation & pulsation
         return (
           <View style={styles.illusCenter}>
             <Animated.View
@@ -648,7 +666,7 @@ export default function ValueSlidesScreen() {
                 <Circle cx="72" cy="124" r="8" fill="rgba(232,131,74,0.3)" stroke="rgba(232,131,74,0.6)" strokeWidth="1.5" />
               </Svg>
 
-              {/* Cœur central 80% avec pulsation */}
+              {/* Cœur central (score de compatibilité) avec pulsation */}
               <Animated.View
                 style={{
                   position: 'absolute',
@@ -673,7 +691,7 @@ export default function ValueSlidesScreen() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800' }}>80%</Text>
+                  <Heart size={15} color="#FFF" fill="#FFF" strokeWidth={2} />
                 </View>
               </Animated.View>
             </Animated.View>
@@ -967,7 +985,7 @@ export default function ValueSlidesScreen() {
         );
 
       case 5:
-        // Slide 6 : Vidéo 7 min avec aiguille d'horloge tournante
+        // Slide 6 : Vidéo 2 min avec aiguille d'horloge tournante
         return (
           <View style={styles.illusCenter}>
             <Animated.View
@@ -1008,9 +1026,9 @@ export default function ValueSlidesScreen() {
                 <Circle cx="100" cy="27" r="10" fill="rgba(232,131,74,0.35)" stroke="rgba(232,131,74,0.45)" strokeWidth="1" />
                 <Ellipse cx="100" cy="45" rx="14" ry="8" fill="rgba(232,131,74,0.18)" />
 
-                {/* Chronomètre 7 min */}
+                {/* Chronomètre 2 min */}
                 <Circle cx="74" cy="80" r="14" fill="rgba(30,158,90,0.10)" stroke="rgba(30,158,90,0.45)" strokeWidth="1.5" />
-                <SvgText x="64" y="104" fill="#158044" fontSize="9" fontWeight="700">7 min</SvgText>
+                <SvgText x="64" y="104" fill="#158044" fontSize="9" fontWeight="700">2 min</SvgText>
 
                 {/* Double consentement ✓ Oui */}
                 <Rect x="14" y="114" width="52" height="19" rx="9.5" fill="rgba(30,158,90,0.14)" stroke="rgba(30,158,90,0.5)" strokeWidth="1.2" />
@@ -1022,7 +1040,7 @@ export default function ValueSlidesScreen() {
                 <Line x1="66" y1="123" x2="82" y2="123" stroke="rgba(30,158,90,0.6)" strokeWidth="1.5" strokeLinecap="round" />
               </Svg>
 
-              {/* Aiguille rotative du chronomètre 7 min */}
+              {/* Aiguille rotative du chronomètre 2 min */}
               <Animated.View
                 style={{
                   position: 'absolute',
@@ -1109,57 +1127,37 @@ export default function ValueSlidesScreen() {
             {item.descEnd || ''}
           </Text>
 
-          {/* Case à cocher CGU sur le dernier écran */}
+          {/* Information CGU sur le dernier écran : l'acceptation expresse a lieu à la
+              dernière étape de l'inscription, où elle est enregistrée par le serveur. */}
           {index === 5 && (
-            <TouchableOpacity
-              style={styles.cguBox}
-              onPress={() => setCguAccepted(!cguAccepted)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.cguCheck, cguAccepted && styles.cguCheckActive]}>
-                {cguAccepted && <Check size={14} color="#FFF" strokeWidth={3} />}
-              </View>
+            <View style={styles.cguBox} testID="slides-cgu-notice">
               <Text style={styles.cguText}>
-                J'ai lu et j'accepte les{' '}
+                Service réservé aux personnes majeures. Vous pourrez lire et accepter les{' '}
                 <Text
                   style={styles.cguLink}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    setShowCguModal(true);
-                  }}
+                  onPress={() => setShowCguModal(true)}
+                  accessibilityRole="link"
                 >
                   Conditions Générales d'Utilisation et de Vente
-                </Text>
-                . J'ai 18 ans ou plus.
+                </Text>{' '}
+                à la dernière étape de l'inscription.
               </Text>
-            </TouchableOpacity>
+            </View>
           )}
 
           {/* Bouton CTA */}
           <TouchableOpacity
             onPress={handleNext}
-            activeOpacity={index === 5 && !cguAccepted ? 1 : 0.88}
-            disabled={index === 5 && !cguAccepted}
+            activeOpacity={0.88}
             style={styles.ctaWrapper}
           >
             <LinearGradient
-              colors={
-                index === 5 && !cguAccepted
-                  ? ['#E4DFDA', '#E4DFDA']
-                  : item.ctaColors
-              }
+              colors={item.ctaColors}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.ctaButton}
             >
-              <Text
-                style={[
-                  styles.ctaText,
-                  index === 5 && !cguAccepted && { color: '#A79E96' },
-                ]}
-              >
-                {item.ctaText}
-              </Text>
+              <Text style={styles.ctaText}>{item.ctaText}</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -1233,7 +1231,7 @@ export default function ValueSlidesScreen() {
         scrollEventThrottle={16}
       />
 
-      {/* ══ MODALE CGU OFFICIELLE ══ */}
+      {/* ══ MODALE CGU — texte issu de constants/legal.json (source unique) ══ */}
       <Modal
         visible={showCguModal}
         animationType="slide"
@@ -1246,15 +1244,18 @@ export default function ValueSlidesScreen() {
               styles.sheet,
               { paddingBottom: Math.max(insets.bottom + 16, 24) },
             ]}
+            testID="cgu-sheet"
           >
             {/* Header Modale */}
             <View style={styles.sheetHead}>
-              <Text style={styles.sheetTitle}>
-                Conditions Générales d'Utilisation
+              <Text style={styles.sheetTitle} numberOfLines={2}>
+                {legal.cgu.title}
               </Text>
               <TouchableOpacity
                 onPress={() => setShowCguModal(false)}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel="Fermer"
               >
                 <X size={22} color="#918780" />
               </TouchableOpacity>
@@ -1266,47 +1267,24 @@ export default function ValueSlidesScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.sheetVersion}>
-                Version 1.0 — En vigueur au 1er Juin 2026
+              <Text style={styles.sheetVersion} testID="cgu-sheet-version">
+                {legal.company.brand} — version du {LEGAL_VERSION_LABEL}
               </Text>
 
-              <Text style={styles.sheetArticleTitle}>
-                ARTICLE 1 — ÉDITEUR DU SERVICE
-              </Text>
-              <Text style={styles.sheetP}>
-                L'application <Text style={styles.sheetBold}>BOLIGO</Text> est
-                éditée et exploitée par la société{' '}
-                <Text style={styles.sheetBold}>HARMONIE</Text>, SAS au capital de
-                10 000 €, dont le siège social est situé{' '}
-                <Text style={styles.sheetBold}>Bezons, France</Text>.
-              </Text>
+              <Text style={styles.sheetP}>{legal.cgu.intro}</Text>
 
-              <Text style={styles.sheetArticleTitle}>
-                ARTICLE 2 — OBJET ET ACCEPTATION
-              </Text>
-              <Text style={styles.sheetP}>
-                Les présentes CGUV régissent l'accès et l'usage de l'application
-                BOLIGO, service de mise en relation basé sur l'affinité profonde.
-              </Text>
-
-              <Text style={styles.sheetArticleTitle}>
-                ARTICLE 3 — DÉROULEMENT DU PARCOURS
-              </Text>
-              <Text style={styles.sheetP}>
-                Le parcours se compose d'un questionnaire d'évaluation IA, de 3
-                jours de questions guidées sans photo, de 3 jours d'échanges
-                libres, et d'un appel vidéo sécurisé de 7 minutes avant toute
-                transmission mutuelle de contacts.
-              </Text>
-
-              <Text style={styles.sheetArticleTitle}>
-                ARTICLE 4 — SÉCURITÉ ET ANTI-GHOSTING
-              </Text>
-              <Text style={styles.sheetP}>
-                Tout membre interrompant une conversation sans réponse sous 48h
-                perd son crédit de parcours, et le crédit du membre lésé lui est
-                restitué automatiquement.
-              </Text>
+              {legal.cgu.sections.map((section) => (
+                <View key={section.id}>
+                  <Text style={styles.sheetArticleTitle}>
+                    {section.title.toUpperCase()}
+                  </Text>
+                  {section.paragraphs.map((paragraph, i) => (
+                    <Text key={i} style={styles.sheetP}>
+                      {paragraph}
+                    </Text>
+                  ))}
+                </View>
+              ))}
             </ScrollView>
 
             <View style={styles.sheetLinks}>
@@ -1314,7 +1292,7 @@ export default function ValueSlidesScreen() {
                 onPress={() => { setShowCguModal(false); router.push('/legal/cgu' as any); }}
                 testID="cgu-full-link"
               >
-                <Text style={styles.sheetLink}>Lire les CGU complètes</Text>
+                <Text style={styles.sheetLink}>Ouvrir en plein écran</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => { setShowCguModal(false); router.push('/legal/confidentialite' as any); }}>
                 <Text style={styles.sheetLink}>Politique de confidentialité</Text>
@@ -1324,12 +1302,9 @@ export default function ValueSlidesScreen() {
             {/* Footer Modale */}
             <TouchableOpacity
               style={styles.sheetCta}
-              onPress={() => {
-                setCguAccepted(true);
-                setShowCguModal(false);
-              }}
+              onPress={() => setShowCguModal(false)}
             >
-              <Text style={styles.sheetCtaText}>J'ai compris et j'accepte</Text>
+              <Text style={styles.sheetCtaText}>J'ai compris</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1539,21 +1514,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 10,
   },
-  cguCheck: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 1.8,
-    borderColor: '#CFC7C0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF',
-    marginTop: 1,
-  },
-  cguCheckActive: {
-    backgroundColor: '#1E9E5A',
-    borderColor: '#1E9E5A',
-  },
   cguText: {
     flex: 1,
     fontSize: 12,
@@ -1617,6 +1577,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(20,16,14,0.10)',
   },
   sheetTitle: {
+    flex: 1,
+    marginRight: 12,
     fontFamily: Typography.fontFamily.serif,
     fontSize: 17,
     fontWeight: '800',
@@ -1643,10 +1605,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: '#5C534C',
     marginBottom: 10,
-  },
-  sheetBold: {
-    fontWeight: '700',
-    color: '#14100E',
   },
   sheetLinks: {
     flexDirection: 'row',

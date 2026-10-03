@@ -98,7 +98,7 @@ export default function PaymentScreen() {
 
   const goBackToApp = () => {
     if (router.canGoBack()) router.back();
-    else router.replace('/(tabs)');
+    else router.replace('/(tabs)/discover');
   };
 
   const finishWithSuccess = async (message: string, expectedMinimum: number) => {
@@ -112,7 +112,7 @@ export default function PaymentScreen() {
       await new Promise((r) => setTimeout(r, CREDIT_SYNC_INTERVAL_MS));
       balance = await refreshCredits();
     }
-    setTimeout(() => router.replace('/(tabs)'), 1200);
+    setTimeout(() => router.replace('/(tabs)/discover'), 1200);
   };
 
   const handleSelectPlan = (plan: PaymentPlan) => {

@@ -8,7 +8,8 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get('journeys/:journeyId/messages')
-  async getJourneyMessages(@Param('journeyId') journeyId: string) {
+  async getJourneyMessages(@Param('journeyId') journeyId: string, @Request() req) {
+    await this.chatService.assertMember(req.user.id, journeyId);
     return this.chatService.getJourneyMessages(journeyId);
   }
 
@@ -18,12 +19,14 @@ export class ChatController {
   }
 
   @Get('journeys/:journeyId/last-message')
-  async getLastMessage(@Param('journeyId') journeyId: string) {
+  async getLastMessage(@Param('journeyId') journeyId: string, @Request() req) {
+    await this.chatService.assertMember(req.user.id, journeyId);
     return this.chatService.getLastMessage(journeyId);
   }
 
   @Post('journeys/:journeyId/read')
   async markAsRead(@Param('journeyId') journeyId: string, @Request() req) {
+    await this.chatService.assertMember(req.user.id, journeyId);
     await this.chatService.markMessagesAsRead(journeyId, req.user.id);
     return { success: true };
   }

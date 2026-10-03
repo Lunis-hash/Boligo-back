@@ -67,6 +67,9 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 | 43 | P2 | Bilan / Profil | Bilan : 6 « dimensions » à pourcentages fictifs (« Respect mutuel 100 % »), « Profil complété à 100 % » fixe ; Profil : bio coupée au 100e caractère, « 0 % » sans entretien | `summary.tsx`, `profile.tsx` | ✅ (un module par carte, clarté réelle, coupe au mot) | `78ef2a2`, `d232e6f` |
 | 44 | P3 | Marque | Ancien nom « Harmonie » dans les invites IA, la bio de secours, l'API et 4 écrans (« Entretien Harmonie », « Modération Harmonie »…) | `grep Harmonie` | ✅ (BOLIGO ; « Parcours / Phase Harmonie » conservés : noms de produit) | `78ef2a2`, `d232e6f` |
 | 45 | P3 | Moteur | Même langage de l'amour signalé comme une « nuance » (règle `M8_Q04` toujours `mineure`) | test unitaire | ✅ | `78ef2a2` |
+| 46 | P0 sécu | Backend | `POST /credit/add` : tout membre connecté pouvait s'ajouter des crédits sans payer (route inutilisée par l'app) | lecture `credit.controller.ts` | ✅ (route supprimée, en production) | PR #4 (`44207e7`) |
+| 47 | P0 sécu | Backend | `POST /credit/spend` avec un montant négatif ajoutait des crédits ; deux débits simultanés pouvaient rendre le solde négatif | `credit.service.spec.ts`, test sur base réelle | ✅ (entier 1–10, débit conditionnel) | PR #4 |
+| 48 | P1 | Paiement | Crédit des paiements dépendant d'un webhook non configurable depuis l'environnement ; facture de reçu laissée « à payer » et ligne de facture non rattachée | lecture `payment.service.ts` | ✅ (`POST /payment/confirm` relit le paiement chez Stripe ; crédit unique par verrou Postgres ; facture payée hors Stripe) | PR #4 |
 
 ## 2. Recette exécutée
 

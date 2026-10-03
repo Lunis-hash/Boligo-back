@@ -13,6 +13,8 @@ import {
   Keyboard,
   Alert,
   Linking,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -305,7 +307,7 @@ function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match
 }
 
 // ─── Vue : Chat libre ─────────────────────────────────────────────
-function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
+function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void; onLeft: () => void }) {
   const router = useRouter();
   const { userId } = useAuth();
   const [messages, setMessages] = useState<Message[]>(match.messages || []);
@@ -313,6 +315,7 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
   const scrollRef = useRef<ScrollView>(null);
   const cfg = PHASE_CONFIG[match.phase];
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const fetchMessages = useCallback(async () => {
     if (!match.journeyId) return;
@@ -505,11 +508,26 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
               </LinearGradient>
             </TouchableOpacity>
           ) : null}
-          <TouchableOpacity style={styles.moreBtn} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.moreBtn}
+            activeOpacity={0.7}
+            onPress={() => setMenuOpen(true)}
+            accessibilityLabel="Options de la conversation"
+            testID="chat-more"
+          >
             <MoreVertical size={20} color={Colors.text.primary40} />
           </TouchableOpacity>
         </View>
       </View>
+
+      <ChatSafetyMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        partnerId={match.id}
+        partnerName={match.name}
+        journeyId={match.journeyId}
+        onLeft={onLeft}
+      />
 
       {/* Progression Chat 3 jours */}
       <View style={styles.chatProgressContainer}>
@@ -657,6 +675,119 @@ function ChatView({ match, onBack }: { match: Match; onBack: () => void }) {
   );
 }
 
+// ─── Sécurité : signaler un membre / arrêter le parcours ──────────
+const REPORT_REASONS: { key: string; label: string }[] = [
+  { key: 'insulte', label: 'Propos insultants' },
+  { key: 'harcelement', label: 'Harcèlement' },
+  { key: 'faux_profil', label: 'Faux profil' },
+  { key: 'spam', label: 'Spam ou arnaque' },
+  { key: 'autre', label: 'Autre raison' },
+];
+
+function ChatSafetyMenu({
+  visible,
+  onClose,
+  partnerId,
+  partnerName,
+  journeyId,
+  onLeft,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  partnerId: string;
+  partnerName: string;
+  journeyId: string | null;
+  onLeft: () => void;
+}) {
+  const [step, setStep] = useState<'menu' | 'report'>('menu');
+  const [busy, setBusy] = useState(false);
+
+  const close = () => {
+    setStep('menu');
+    onClose();
+  };
+
+  const report = async (reason: string) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await client.post('/report', { reportedUserId: partnerId, reason });
+      close();
+      Alert.alert('Signalement envoyé', "Merci. L'équipe de modération BOLIGO va examiner la situation.");
+    } catch (e) {
+      Alert.alert('Signalement impossible', getReadableError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const leave = () => {
+    if (!journeyId) return;
+    Alert.alert(
+      'Arrêter le parcours ?',
+      `Votre parcours avec ${partnerName} sera définitivement terminé pour vous deux. Son crédit lui sera rendu.`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Arrêter',
+          style: 'destructive',
+          onPress: async () => {
+            setBusy(true);
+            try {
+              await client.post(`/journey/${journeyId}/leave`);
+              close();
+              onLeft();
+            } catch (e) {
+              Alert.alert('Action impossible', getReadableError(e));
+            } finally {
+              setBusy(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+      <Pressable style={styles.sheetBackdrop} onPress={close}>
+        <Pressable style={styles.sheet} onPress={() => undefined}>
+          {step === 'menu' ? (
+            <>
+              <Text style={styles.sheetTitle}>Conversation avec {partnerName}</Text>
+              <TouchableOpacity style={styles.sheetItem} onPress={() => setStep('report')} testID="chat-report">
+                <Text style={styles.sheetItemText}>Signaler {partnerName}</Text>
+              </TouchableOpacity>
+              {journeyId ? (
+                <TouchableOpacity style={styles.sheetItem} onPress={leave} disabled={busy} testID="chat-leave">
+                  <Text style={[styles.sheetItemText, styles.sheetDanger]}>Arrêter le parcours</Text>
+                </TouchableOpacity>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <Text style={styles.sheetTitle}>Pourquoi signalez-vous {partnerName} ?</Text>
+              {REPORT_REASONS.map((r) => (
+                <TouchableOpacity
+                  key={r.key}
+                  style={styles.sheetItem}
+                  onPress={() => report(r.key)}
+                  disabled={busy}
+                >
+                  <Text style={styles.sheetItemText}>{r.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
+          <TouchableOpacity style={styles.sheetCancel} onPress={close}>
+            <Text style={styles.sheetCancelText}>Fermer</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 // ─── Contact Exchange Card ──────────────────────────────────────
 function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyId: string | null; partnerName: string; onExchanged: () => void }) {
   const [exchangeState, setExchangeState] = useState<'pending' | 'accepted' | 'revealed'>('pending');
@@ -681,14 +812,17 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
   }, [journeyId]);
 
   const [accepting, setAccepting] = useState(false);
+  // Chaque canal se choisit séparément ; il n'est révélé que si les deux membres l'acceptent.
+  const [sharePhone, setSharePhone] = useState(true);
+  const [shareEmail, setShareEmail] = useState(true);
 
   const handleAccept = async () => {
-    if (!journeyId || accepting) return;
+    if (!journeyId || accepting || (!sharePhone && !shareEmail)) return;
     setAccepting(true);
     try {
       const res = await client.post(`/journey/${journeyId}/exchange-contact`, {
-        sharePhone: true,
-        shareEmail: true,
+        sharePhone,
+        shareEmail,
       });
       const data = res.data || {};
       // Les coordonnées ne sont révélées qu'après le consentement des deux
@@ -724,7 +858,30 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
           <Text style={styles.exchangeSub}>
             Votre appel vidéo s'est bien terminé. {partnerName} souhaite peut-être vous recontacter.
           </Text>
-          <TouchableOpacity onPress={handleAccept} disabled={accepting} activeOpacity={0.85} style={[styles.exchangeBtnWrap, accepting && { opacity: 0.6 }]} testID="contact-exchange-accept">
+          {([
+            { key: 'phone', label: 'Mon numéro de téléphone', value: sharePhone, set: setSharePhone, Icon: Phone },
+            { key: 'email', label: 'Mon adresse e-mail', value: shareEmail, set: setShareEmail, Icon: Mail },
+          ] as const).map(({ key, label, value, set, Icon }) => (
+            <TouchableOpacity
+              key={key}
+              onPress={() => set(!value)}
+              activeOpacity={0.7}
+              style={styles.shareChoice}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: value }}
+              testID={`contact-share-${key}`}
+            >
+              <View style={[styles.shareBox, value && styles.shareBoxOn]}>
+                {value ? <Text style={styles.shareTick}>✓</Text> : null}
+              </View>
+              <Icon size={16} color={Colors.text.primary70} />
+              <Text style={styles.shareLabel}>{label}</Text>
+            </TouchableOpacity>
+          ))}
+          <Text style={styles.shareHint}>
+            Un moyen de contact n'est révélé que si vous l'acceptez tous les deux.
+          </Text>
+          <TouchableOpacity onPress={handleAccept} disabled={accepting || (!sharePhone && !shareEmail)} activeOpacity={0.85} style={[styles.exchangeBtnWrap, (accepting || (!sharePhone && !shareEmail)) && { opacity: 0.6 }]} testID="contact-exchange-accept">
             <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.exchangeBtn}>
               <UserCheck size={18} color="#fff" />
               <Text style={styles.exchangeBtnText}>{accepting ? 'Enregistrement…' : 'Oui, partager mes contacts'}</Text>
@@ -976,7 +1133,17 @@ export default function MessagesScreen() {
   }
 
   if (selected) {
-    return <ChatView match={selected} onBack={() => setSelected(null)} />;
+    return (
+      <ChatView
+        match={selected}
+        onBack={() => setSelected(null)}
+        onLeft={() => {
+          setSelected(null);
+          cacheService.invalidate('chat_access_result');
+          loadData(true);
+        }}
+      />
+    );
   }
 
   return (
@@ -1044,6 +1211,35 @@ const styles = StyleSheet.create({
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
   onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#22C55E' },
   chatHeaderActions: { flexDirection: 'row', gap: 8 },
+  shareChoice: { flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'stretch', paddingVertical: 8 },
+  shareBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.primary.red,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareBoxOn: { backgroundColor: Colors.primary.red },
+  shareTick: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  shareLabel: { fontSize: 14, color: Colors.text.primary100 },
+  shareHint: { fontSize: 12, color: Colors.text.primary40, alignSelf: 'stretch', marginTop: 4, marginBottom: 10 },
+  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: Colors.neutral.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 28,
+  },
+  sheetTitle: { fontSize: 15, fontWeight: '700', color: Colors.text.primary100, marginBottom: 8 },
+  sheetItem: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#E5E7EB' },
+  sheetItemText: { fontSize: 15, color: Colors.text.primary100 },
+  sheetDanger: { color: '#DC2626', fontWeight: '600' },
+  sheetCancel: { paddingTop: 16, alignItems: 'center' },
+  sheetCancelText: { fontSize: 15, fontWeight: '600', color: Colors.text.primary40 },
   videoBtn: { borderRadius: 20, overflow: 'hidden' },
   videoBtnGrad: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   videoBtnLocked: { opacity: 0.8 },

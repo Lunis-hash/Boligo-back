@@ -185,6 +185,15 @@ client.interceptors.response.use(
           return client(originalRequest);
         } catch (err) {
           processQueue(err, null);
+          // Déconnexion seulement si le serveur refuse la session (jeton absent,
+          // expiré ou révoqué). Une coupure réseau ou un serveur en train de se
+          // réveiller (Render) ne doit pas déconnecter le membre.
+          const refreshStatus = (err as AxiosError)?.response?.status;
+          const sessionRejected = !(err as AxiosError)?.isAxiosError || refreshStatus === 401 || refreshStatus === 403;
+          if (!sessionRejected) {
+            debug('🌐 [API] Rafraîchissement reporté (réseau ou serveur indisponible).');
+            return Promise.reject(err);
+          }
           debug('🔐 [API] Rafraîchissement impossible : déconnexion.');
           try {
             await storage.clearSession();
