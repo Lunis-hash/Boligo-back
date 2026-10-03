@@ -216,39 +216,49 @@ export class VideoCallService {
 
   async endCall(journeyId: string, userId: string, durationSec?: number) {
     const journey = await this.getJourneyForUser(journeyId, userId);
+    const call = journey.videoSession;
 
     const now = new Date();
-    const durationMinutes =
-      durationSec != null
-        ? Math.max(1, Math.ceil(durationSec / 60))
-        : undefined;
+    // La durée vient du serveur (premier participant entré → maintenant) ;
+    // celle envoyée par l'app ne sert qu'à l'affiner à la baisse.
+    const elapsedSec = call?.startDate
+      ? Math.max(0, Math.round((now.getTime() - call.startDate.getTime()) / 1000))
+      : 0;
+    const clientSec =
+      typeof durationSec === 'number' && Number.isFinite(durationSec) && durationSec >= 0
+        ? durationSec
+        : elapsedSec;
+    const effectiveSec = Math.min(elapsedSec, clientSec, VIDEO_CALL_MAX_SECONDS + 60);
 
-    if (journey.videoSession) {
+    if (call && call.status === 'en_cours') {
       await this.prisma.videoSession.update({
         where: { journeyId },
         data: {
           status: 'terminee',
           endDate: now,
-          ...(durationMinutes != null ? { durationMinutes } : {}),
+          durationMinutes: Math.max(1, Math.ceil(effectiveSec / 60)),
         },
       });
     }
 
+    // L'étape n'avance que si l'appel a vraiment eu lieu à l'étape vidéo,
+    // avec les deux membres connectés.
+    const bothJoined = Boolean(call?.consentA && call?.consentB);
     let advanced = false;
-    const isRealCall = durationSec == null || durationSec >= 10;
     if (
-      isRealCall &&
-      (journey.currentStep === 'video' ||
-        journey.currentStep === 'chat_libre')
+      bothJoined &&
+      effectiveSec >= 10 &&
+      journey.result === 'en_cours' &&
+      canAccessVideoStep(journey.currentStep)
     ) {
-      await this.prisma.journey.update({
-        where: { id: journeyId },
+      const res = await this.prisma.journey.updateMany({
+        where: { id: journeyId, currentStep: journey.currentStep },
         data: {
           currentStep: 'echange_contacts',
           stepStartDate: now,
         },
       });
-      advanced = true;
+      advanced = res.count > 0;
     }
 
     return {

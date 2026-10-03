@@ -73,10 +73,16 @@ export class JourneyController {
   @Post(':id/exchange-contact')
   async exchangeContact(
     @Param('id') id: string,
-    @Body() body: { sharePhone: boolean; shareEmail: boolean },
+    @Body() body: { sharePhone?: boolean; shareEmail?: boolean },
     @Request() req,
   ) {
-    return this.journeyService.exchangeContact(id, req.user.id, body.sharePhone ?? true, body.shareEmail ?? true);
+    // Rien n'est partagé sans un choix explicite du membre.
+    return this.journeyService.exchangeContact(
+      id,
+      req.user.id,
+      body?.sharePhone === true,
+      body?.shareEmail === true,
+    );
   }
 
   @Get(':id/contact-exchange')
