@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { runDbTransfer } from './maintenance/db-transfer';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
@@ -56,6 +57,15 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}/api`);
+
+  // Transfert ponctuel vers la base dédiée de BOLIGO, en arrière-plan : le
+  // service continue de répondre sur la base actuelle pendant la copie.
+  const transferTarget = process.env.DB_TRANSFER_TARGET_URL;
+  if (transferTarget) {
+    void runDbTransfer(process.env.DATABASE_URL ?? '', transferTarget).catch((err) =>
+      console.error('[DB-TRANSFER] erreur inattendue', err instanceof Error ? err.message : err),
+    );
+  }
 }
 bootstrap();
 
