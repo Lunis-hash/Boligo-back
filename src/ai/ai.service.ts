@@ -7,6 +7,8 @@ import {
   normalizeAiQuestions,
 } from '../journey/harmony-question.types';
 import { decodeUserResponses } from '../interview/questions.data';
+import { collectRawAnswers } from '../matching/divergence.engine';
+import { buildPortrait } from '../portrait/portrait.writer';
 
 @Injectable()
 export class AiService {
@@ -91,7 +93,7 @@ ${label}:
         ? `\nQUESTIONS DÉJÀ POSÉES À CE COUPLE (interdiction de reformuler) :\n${avoidTexts.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`
         : '';
 
-    const systemPrompt = `Tu es l'Expert Psychologue et Analyste de Couples de Harmonie (rencontres sérieuses, mariage, valeurs profondes). Tu conduis le "Sondeur IA".`;
+    const systemPrompt = `Tu es l'Expert Psychologue et Analyste de Couples de BOLIGO (rencontres sérieuses, mariage, valeurs profondes). Tu conduis le "Sondeur IA".`;
 
     const prompt = `
 Tu génères 21 questions HARD MODE personnalisées pour CE couple à partir de leurs cartes mentales respectives.
@@ -205,7 +207,7 @@ Retourne UNIQUEMENT un tableau JSON :
     }));
 
     const prompt = `
-Tu es l'Expert en Relations de Harmonie. Sélectionne les 21 questions HARD MODE les plus pertinentes pour ce couple.
+Tu es l'Expert en Relations de BOLIGO. Sélectionne les 21 questions HARD MODE les plus pertinentes pour ce couple.
 Répartition: 7 lignes rouges (limites/fidélité), 7 valeurs profondes (famille/religion/argent), 7 futur+intimité (dont au moins 1 angle intimité/sexualité du couple).
 
 ${this.formatMentalMapBlock('PROFIL A', userAMentalMap)}
@@ -243,7 +245,7 @@ Retourne UNIQUEMENT un tableau JSON de 21 IDs distincts:
       .join('\n\n');
 
     const prompt = `
-Tu es l'Expert Psychologue et Analyste Relationnel d'Harmonie.
+Tu es l'Expert Psychologue et Analyste Relationnel de BOLIGO.
 Analyse en profondeur les réponses de cet utilisateur à l'ensemble de ses modules d'entretien et génère son profil personnalisé 6D.
 
 PROFIL UTILISATEUR:
@@ -256,12 +258,14 @@ RÉPONSES DÉCODÉES DE L'UTILISATEUR AUX MODULES :
 ${answersText}
 
 DIRECTIVES DE RÉDACTION STRICTES POUR LA BIO ("À PROPOS") :
-- Rédige une Bio complète d'environ 8 à 10 lignes (130 à 180 mots), à la première personne ("Je..."), fluide, vivante, mature et élégante.
+- Rédige une Bio complète d'environ 8 à 10 lignes (130 à 180 mots), à la première personne ("Je..."), fluide, chaleureuse, mature et élégante.
 - Elle doit être ULTRA-PERSONNALISÉE en exploitant les détails spécifiques de ses réponses ci-dessus :
-  1. Sa personnalité et sa vision profonde du couple (Module 1).
-  2. Ses piliers de vie, ses valeurs clés et la place de la famille/spiritualité (Module 2).
-  3. Sa façon concrète de communiquer, d'écouter et de traverser les désaccords (Module 3).
-  4. Ce qu'elle recherche intimement chez son partenaire pour construire un engagement solide dans la durée (Module 4).
+  1. Son projet de couple et le délai d'engagement souhaité (Projet de couple, Critères essentiels).
+  2. Ses valeurs, sa culture et la place de la foi et de la famille (Identité & culture, Famille).
+  3. Sa façon d'aimer, de communiquer et de traverser les désaccords (Attachement, Communication).
+  4. Ce qu'elle apporte et ce qu'elle recherche chez son partenaire (Alchimie & énergie).
+- Ne recopie JAMAIS une réponse telle quelle : reformule-la en phrase complète. Aucune phrase coupée, aucune liste de mots séparés par des virgules.
+- L'application s'appelle BOLIGO : ne cite aucun autre nom d'application.
 
 Retourne UNIQUEMENT un JSON valide :
 {
@@ -293,7 +297,7 @@ Retourne UNIQUEMENT un JSON valide :
       }
 
       // Fusion sécurisée : garantit que chaque champ (bio, synthesis, piliers 6D) est toujours rempli
-      const fallback = this.fallbackDynamicSynthesis(userContext, decoded);
+      const fallback = this.fallbackDynamicSynthesis(userContext, allResponses);
       return {
         synthesis: parsed.synthesis?.trim() || fallback.synthesis,
         bio: parsed.bio?.trim() || fallback.bio,
@@ -306,7 +310,7 @@ Retourne UNIQUEMENT un JSON valide :
       };
     } catch (error) {
       this.logger.error('❌ [SONDEUR IA] Erreur génération carte mentale:', error);
-      return this.fallbackDynamicSynthesis(userContext, decoded);
+      return this.fallbackDynamicSynthesis(userContext, allResponses);
     }
   }
 
@@ -318,7 +322,7 @@ Retourne UNIQUEMENT un JSON valide :
     this.logger.log('💖 [CUPIDON IA] Calcul du score de compatibilité multi-dimensionnel');
 
     const prompt = `
-Tu es Cupidon IA, l'Orchestrateur de Compatibilité d'Harmonie.
+Tu es Cupidon IA, l'Orchestrateur de Compatibilité de BOLIGO.
 Analyse les deux cartes mentales ci-dessous et calcule l'indice d'affinité global et par dimension.
 
 ${this.formatMentalMapBlock('PROFIL A', userAMentalMap)}
@@ -374,7 +378,7 @@ Retourne UNIQUEMENT un JSON valide :
       .join('\n');
 
     const prompt = `
-Tu es le Coach de Conversation d'Harmonie.
+Tu es le Coach de Conversation de BOLIGO.
 Aide ${userFirstName} à relancer ou approfondir la discussion avec ${partnerFirstName}.
 
 DERNIERS MESSAGES ÉCHANGÉS:
@@ -467,7 +471,7 @@ Retourne UNIQUEMENT un JSON:
     }
 
     const prompt = `
-Tu es le modérateur de sécurité d'Harmonie (application de rencontres sérieuses et de coaching amoureux).
+Tu es le modérateur de sécurité de BOLIGO (application de rencontres sérieuses et de coaching amoureux).
 Analyse ce message privé :
 
 MESSAGE:
@@ -503,36 +507,33 @@ Retourne UNIQUEMENT un JSON:
   // Fallbacks et Utilitaires
   // =========================================================================
 
-  private fallbackDynamicSynthesis(userContext: any, decoded: any[]) {
-    const extractedAnswers: string[] = [];
-    decoded.forEach((m) => {
-      m.qna.forEach((q: any) => {
-        if (q.answer && !q.answer.includes('Non renseigné')) {
-          extractedAnswers.push(q.answer);
-        }
-      });
+  /**
+   * Synthèse de secours sans IA : rédigée par le moteur de portraits BOLIGO à
+   * partir des réponses structurées (jamais de réponse recopiée ni coupée).
+   */
+  private fallbackDynamicSynthesis(userContext: any, allResponses: any[]) {
+    const portrait = buildPortrait({
+      firstName: String(userContext.firstName ?? 'Membre'),
+      gender: userContext.gender === 'F' ? 'F' : userContext.gender === 'H' ? 'H' : null,
+      age: typeof userContext.age === 'number' ? userContext.age : null,
+      city: userContext.city ?? null,
+      answers: collectRawAnswers(allResponses),
     });
-
-    const firstVal = extractedAnswers[0] || 'la sincérité';
-    const secondVal = extractedAnswers[1] || 'l\'engagement';
-    const thirdVal = extractedAnswers[2] || 'le respect mutuel';
+    const plain = (t: string) => t.replace(/\*\*/g, '');
+    const values = portrait.values.map((v) => v.label);
+    const needs = portrait.expectations.map((e) => plain(e.text));
 
     return {
-      synthesis: `${userContext.firstName}, ${userContext.age} ans, aborde sa démarche relationnelle avec une profonde authenticité et une volonté affirmée de construire. Ses réponses aux modules démontrent un attachement prioritaire à ${firstVal.toLowerCase()}, complété par un besoin essentiel de ${secondVal.toLowerCase()}. Sa maturité affective se manifeste par une recherche de transparence et un refus clair des relations superficielles.`,
-      bio: `Moi, c'est ${userContext.firstName}. À travers cette démarche sur Harmonie, je cherche à bâtir une relation sincère, sereine et résolument tournée vers l'avenir.\n\nCe qui compte le plus pour moi au quotidien, c'est ${firstVal.toLowerCase()} et le partage d'une vision commune fondée sur ${secondVal.toLowerCase()}.\n\nDans un couple, j'accorde une importance capitale à l'écoute mutuelle, à la bienveillance et à la capacité de dialoguer sereinement, même lors des désaccords.\n\nJe souhaite rencontrer une personne authentique, investie, avec qui faire grandir une complicité naturelle et un projet de vie partagé dans le respect mutuel.`,
-      needsList: [`Projet commun autour de ${firstVal.toLowerCase()}`, `Respect et ${secondVal.toLowerCase()}`, `Dialogue ouvert au quotidien`, `Complicité et soutien mutuel`],
-      keyValues: [firstVal.slice(0, 20), secondVal.slice(0, 20), thirdVal.slice(0, 20), 'Authenticité'],
-      redFlags: ['Infidélité ou mensonge répété'],
-      maturityScore: 0.85,
-      alchemyScore: 0.82,
-      customPillars: {
-        maturite: { score: 0.88, comment: `Clarté affirmée sur le choix de ${firstVal.toLowerCase()}.` },
-        alchimie: { score: 0.82, comment: `Recherche d'une complicité naturelle.` },
-        valeurs: { score: 0.90, comment: `Ancrage fort sur ${secondVal.toLowerCase()}.` },
-        projet: { score: 0.85, comment: `Engagement recherché dans la durée.` },
-        communication: { score: 0.87, comment: `Préférence pour le dialogue direct.` },
-        intimite: { score: 0.83, comment: `Vision équilibrée du lien affectif.` },
-      },
+      synthesis: plain(portrait.analysis),
+      bio: portrait.bio,
+      needsList: needs.length > 0 ? needs : ['Une relation sincère et durable'],
+      keyValues: values.length > 0 ? values.slice(0, 4) : portrait.threeWords,
+      redFlags: portrait.redFlags.length > 0 ? portrait.redFlags : ['Infidélité ou mensonge répété'],
+      maturityScore: Math.max(0.5, Math.min(0.98, portrait.clarity / 100)),
+      alchemyScore: 0.8,
+      customPillars: Object.fromEntries(
+        portrait.modules.map((m) => [m.id, { score: m.clarity / 100, comment: m.description }]),
+      ),
     };
   }
 }

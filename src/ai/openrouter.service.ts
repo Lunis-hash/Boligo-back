@@ -29,12 +29,12 @@ export class OpenRouterService {
         '⚠️ OPENROUTER_API_KEY non configurée. L\'orchestrateur fonctionnera en mode secours.',
       );
     } else {
-      this.logger.log('🚀 Orchestrateur OpenRouter IA d\'Harmonie initialisé avec succès.');
+      this.logger.log('🚀 Orchestrateur OpenRouter IA de BOLIGO initialisé avec succès.');
     }
   }
 
   /**
-   * Effectue un appel orchestré à OpenRouter pour l'un des agents Harmonie.
+   * Effectue un appel orchestré à OpenRouter pour l'un des agents BOLIGO.
    * Bascule automatiquement sur les modèles de secours en cas d'erreur.
    */
   async executeAgentPrompt(
@@ -60,7 +60,7 @@ export class OpenRouterService {
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
             'HTTP-Referer': process.env.APP_URL || 'https://harmonie-app.com',
-            'X-Title': 'Harmonie AI Coach',
+            'X-Title': 'BOLIGO AI Coach',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

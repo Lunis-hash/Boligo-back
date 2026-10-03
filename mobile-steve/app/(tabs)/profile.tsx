@@ -13,6 +13,14 @@ import { useAuth } from '@/context/auth';
 import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 
+/** Coupe au dernier mot complet (jamais au milieu d'un mot). */
+function truncateAtWord(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,;:.\-–—]+$/, '')}…`;
+}
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -115,6 +123,8 @@ export default function ProfileScreen() {
 
   const user = profileData?.user || {};
   const mentalMap = profileData?.mentalMap || {};
+  // Fiche rédigée par le serveur à partir du Grand Entretien (bio, modules, valeurs).
+  const portrait = profileData?.portrait || null;
   const profile = {
     description: profileData?.description || null,
     profession: profileData?.profession || null,
@@ -123,46 +133,29 @@ export default function ProfileScreen() {
     profileStatus: profileData?.profileStatus || 'incomplet',
   };
 
-  // Construire les piliers depuis les vraies données IA
+  // Un module du Grand Entretien par ligne : pourcentage = clarté des réponses.
   const buildPillars = () => {
-    const pillars = [];
-    if (mentalMap.maturityScore != null) {
-      pillars.push({ id: 'maturite', label: 'Maturité', emoji: '💎', percentage: Math.round(mentalMap.maturityScore * 100), kpi: 'Score' });
-    }
-    if (mentalMap.alchemyScore != null) {
-      pillars.push({ id: 'alchimie', label: 'Alchimie', emoji: '✨', percentage: Math.round(mentalMap.alchemyScore * 100), kpi: 'Indice' });
-    }
-    const keyValues: string[] = Array.isArray(mentalMap.keyValues) ? mentalMap.keyValues : [];
-    const valueEmojis = ['💎', '💜', '🕊️', '🌍', '🔒', '🌟', '🤝', '🙏'];
-    keyValues.forEach((val, i) => {
-      pillars.push({ id: `kv_${i}`, label: val, emoji: valueEmojis[i % valueEmojis.length], percentage: Math.round((mentalMap.maturityScore || 0.75) * 100) - (i * 5), kpi: 'Valeur' });
-    });
-    if (pillars.length === 0) {
-      pillars.push(
-        { id: 'maturite', label: 'Maturité', emoji: '💎', percentage: 0, kpi: 'Score' },
-        { id: 'alchimie', label: 'Alchimie', emoji: '✨', percentage: 0, kpi: 'Indice' },
-      );
-    }
-    return pillars;
+    const modules: any[] = Array.isArray(portrait?.modules) ? portrait.modules : [];
+    return modules.map((m) => ({ id: m.id, label: m.label, emoji: m.emoji, percentage: m.clarity, kpi: 'Clarté' }));
   };
 
   const buildNeeds = () => {
-    const needsList: string[] = Array.isArray(mentalMap.needsList) ? mentalMap.needsList : [];
+    const values: any[] = Array.isArray(portrait?.values) ? portrait.values : [];
     const needEmojis = ['💜', '🔒', '👨‍👩‍👧', '💬', '🌱', '🤝', '🎯', '🙏'];
-    if (needsList.length > 0) {
-      return needsList.map((need, i) => ({ id: `need_${i}`, title: need, emoji: needEmojis[i % needEmojis.length], text: need.split(' ').slice(0, 2).join(' ') }));
-    }
-    return [
-      { id: 'rel', title: 'Relation Stable', emoji: '💜', text: 'Engagement' },
-      { id: 'lim', title: 'Limites Strictes', emoji: '🔒', text: 'Sécurité' },
-      { id: 'fam', title: 'Vision Famille', emoji: '👨‍👩‍👧', text: 'Projet' },
-    ];
+    return values.map((v, i) => ({ id: v.id, title: v.label, emoji: needEmojis[i % needEmojis.length], text: 'Valeur clé' }));
   };
 
+  const plain = (text: string) => text.replace(/\*\*/g, '');
+  const fullAbout: string = profile.description || portrait?.bio || '';
+  const aboutPreview = truncateAtWord(fullAbout, 140);
+  const redFlags: string[] = Array.isArray(portrait?.redFlags) && portrait.redFlags.length > 0
+    ? portrait.redFlags
+    : Array.isArray(mentalMap.redFlags) ? mentalMap.redFlags : [];
+
   const age = user.birthDate ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() : '?';
-  const aboutText = showFullAbout
-    ? (profile.description || mentalMap.bio || 'Votre bio sera générée après l\'entretien.')
-    : (profile.description || mentalMap.bio || '').substring(0, 100) + '...';
+  const aboutText = fullAbout
+    ? (showFullAbout ? fullAbout : aboutPreview)
+    : 'Votre bio sera rédigée à la fin de votre Grand Entretien.';
 
   return (
     <View style={styles.mainContainer}>
@@ -307,11 +300,11 @@ export default function ProfileScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <Sparkles size={13} color={Colors.primary.orange} />
               <Text style={{ fontSize: 10, fontFamily: Typography.fontFamily.bold, color: Colors.primary.orange, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                {mentalMap.bio ? '✨ Synthèse rédigée par l\'IA' : '💡 Bio personnelle'}
+                {profile.description ? '💡 Votre bio' : '✨ Rédigée par BOLIGO d’après vos réponses'}
               </Text>
             </View>
             <Text style={styles.bioText}>{aboutText}</Text>
-            {!showFullAbout && (profile.description || mentalMap.bio) && (
+            {!showFullAbout && aboutPreview !== fullAbout && (
               <TouchableOpacity onPress={() => setShowFullAbout(true)}>
                 <Text style={styles.moreLink}>Lire la suite</Text>
               </TouchableOpacity>
@@ -362,7 +355,7 @@ export default function ProfileScreen() {
           <View style={styles.premiumCard}>
             <View style={styles.cardHeader}>
               <Radar size={18} color={Colors.primary.red} />
-              <Text style={styles.cardTitle}>ANALYSE BOLIGO GESTALT</Text>
+              <Text style={styles.cardTitle}>ANALYSE BOLIGO</Text>
               <TouchableOpacity onPress={() => router.push('/interview/summary')}>
                 <ChevronRight size={18} color={Colors.primary.red} />
               </TouchableOpacity>
@@ -370,22 +363,26 @@ export default function ProfileScreen() {
 
             <View style={styles.kpiGrid}>
               <View style={styles.kpiCell}>
-                <Text style={styles.kpiLabel}>ALIGNEMENT</Text>
-                <Text style={styles.kpiValue}>{mentalMap.maturityScore != null ? `Score ${Math.round(mentalMap.maturityScore * 100)}%` : '—'}</Text>
-                <View style={styles.kpiTrend}><TrendingUp size={12} color={Colors.primary.orange} /><Text style={styles.kpiTrendText}>Maturité</Text></View>
+                <Text style={styles.kpiLabel}>CLARTÉ</Text>
+                <Text style={styles.kpiValue}>{portrait ? `${portrait.clarity}%` : '—'}</Text>
+                <View style={styles.kpiTrend}><TrendingUp size={12} color={Colors.primary.orange} /><Text style={styles.kpiTrendText}>Réponses tranchées</Text></View>
               </View>
               <View style={styles.kpiDivider} />
               <View style={styles.kpiCell}>
-                <Text style={styles.kpiLabel}>STABILITÉ</Text>
-                <Text style={styles.kpiValue}>{mentalMap.alchemyScore != null ? `Indice ${Math.round(mentalMap.alchemyScore * 100)}%` : '—'}</Text>
-                <View style={[styles.kpiTrend, { backgroundColor: Colors.primary.red + '10' }]}><Activity size={12} color={Colors.primary.red} /><Text style={[styles.kpiTrendText, { color: Colors.primary.red }]}>Équilibrée</Text></View>
+                <Text style={styles.kpiLabel}>MODULES</Text>
+                <Text style={styles.kpiValue}>{portrait ? `${portrait.modules?.length ?? 0}/11` : '—'}</Text>
+                <View style={[styles.kpiTrend, { backgroundColor: Colors.primary.red + '10' }]}><Activity size={12} color={Colors.primary.red} /><Text style={[styles.kpiTrendText, { color: Colors.primary.red }]}>Analysés</Text></View>
               </View>
             </View>
 
-            {mentalMap.synthesis && (
+            {!!portrait?.analysis && (
               <View style={styles.summaryContainer}>
-                <Text style={styles.summaryText}>{mentalMap.synthesis}</Text>
+                <Text style={styles.summaryText}>{plain(portrait.analysis)}</Text>
               </View>
+            )}
+
+            {buildPillars().length === 0 && (
+              <Text style={styles.summaryText}>Terminez votre Grand Entretien pour découvrir votre analyse par module.</Text>
             )}
 
             <View style={styles.pillarGrid}>
@@ -405,9 +402,10 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* ═══ SECTION 7 : BESOINS ═══ */}
+        {/* ═══ SECTION 7 : VALEURS ═══ */}
+        {buildNeeds().length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionHeading}>Exigences Fondamentales</Text>
+          <Text style={styles.sectionHeading}>Vos valeurs clés</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
             {buildNeeds().map((need) => (
               <View key={need.id} style={styles.needCard}>
@@ -418,13 +416,14 @@ export default function ProfileScreen() {
             ))}
           </ScrollView>
         </View>
+        )}
 
-        {/* ═══ SECTION 8 : RED FLAGS ═══ */}
-        {Array.isArray(mentalMap.redFlags) && mentalMap.redFlags.length > 0 && (
+        {/* ═══ SECTION 8 : LIGNES ROUGES ═══ */}
+        {redFlags.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Points de vigilance</Text>
+            <Text style={styles.sectionHeading}>Vos lignes rouges</Text>
             <View style={styles.contentCard}>
-              {mentalMap.redFlags.map((flag: string, i: number) => (
+              {redFlags.map((flag: string, i: number) => (
                 <View key={i} style={styles.redFlagRow}>
                   <Text style={styles.redFlagDot}>⚠️</Text>
                   <Text style={styles.redFlagText}>{flag}</Text>

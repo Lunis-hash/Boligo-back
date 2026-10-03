@@ -59,6 +59,14 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 | 35 | P0 sécu | Backend | `GET /journey/:id/questions` et `/messages` sans contrôle d'appartenance ; coordonnées du partenaire renvoyées avant double consentement | recette API | ✅ 403/404 + coordonnées masquées tant que les deux n'ont pas consenti | `4bd31c4` (Boligo-back) |
 | 36 | P2 | Backend | `chat/unread-count` toujours 0 (`req.user.userId` inexistant) | recette API | ✅ | `134833b` (Boligo-back) |
 | 37 | P2 | Web | `/login` : photo de fond agrandie (scale 1,15) non rognée ⇒ barre de défilement horizontale sur le web à toutes les largeurs | sonde Playwright (scrollWidth 419 > 390) | ✅ conteneur `overflow: hidden` | `9e15d66` |
+| 38 | P0 sécu | Backend | Webhook Stripe : sans en-tête `stripe-signature`, le corps JSON était accepté non signé ⇒ n'importe qui pouvait créditer un compte ; un même paiement renvoyé par Stripe était crédité deux fois | `payment.service.spec.ts` (3 tests échouent sur l'ancien code) | ✅ (en production) | `c0b47a7` (PR #2) |
+| 39 | P0 métier | Fiches | Fiches robotiques et tronquées (« axée sur **Oui si le projet de ,** … ») : la synthèse de secours coupait chaque réponse à 20 caractères (`keyValues: firstVal.slice(0, 20)`) puis les joignait par des virgules | fiche « Oli » ; `ai.service.ts` | ✅ | `78ef2a2` |
+| 40 | P1 | Découverte | « 0 » au centre du cercle : le cercle affichait l'initiale du prénom (« O » pour Oli), lue comme un zéro, à côté du badge « 83 % » | capture Découverte | ✅ (le cercle affiche le vrai pourcentage) | `d232e6f` |
+| 41 | P1 | KPI | Affinités par module déconnectées du Grand Entretien : 5 piliers calculés sur des recouvrements de textes IA, bornés à 50 % minimum ; valeurs inventées côté app (âge, ville « Lyon », détails, analyse) | `formatMentalMap`, `discover.tsx` | ✅ (11 modules calculés réponse par réponse, verdict humain) | `78ef2a2`, `c369ce7`, `d232e6f` |
+| 42 | P1 | Entretien | Module 0 jamais posé aux inscrits de l'app : la réponse M0_Q02 enregistrée à l'inscription marquait le module 0 « terminé » ⇒ désir d'enfants, déménagement, situation, études, tabac jamais demandés ; entretien clos dès 11 lignes de modules | recette navigateur : 67 réponses au lieu de 74 | ✅ | `ded8be5` |
+| 43 | P2 | Bilan / Profil | Bilan : 6 « dimensions » à pourcentages fictifs (« Respect mutuel 100 % »), « Profil complété à 100 % » fixe ; Profil : bio coupée au 100e caractère, « 0 % » sans entretien | `summary.tsx`, `profile.tsx` | ✅ (un module par carte, clarté réelle, coupe au mot) | `78ef2a2`, `d232e6f` |
+| 44 | P3 | Marque | Ancien nom « Harmonie » dans les invites IA, la bio de secours, l'API et 4 écrans (« Entretien Harmonie », « Modération Harmonie »…) | `grep Harmonie` | ✅ (BOLIGO ; « Parcours / Phase Harmonie » conservés : noms de produit) | `78ef2a2`, `d232e6f` |
+| 45 | P3 | Moteur | Même langage de l'amour signalé comme une « nuance » (règle `M8_Q04` toujours `mineure`) | test unitaire | ✅ | `78ef2a2` |
 
 ## 2. Recette exécutée
 
@@ -68,7 +76,7 @@ Statut : ✅ corrigé · 🔄 en cours · 📝 documenté (hors périmètre mobi
 | Lint | `npm run lint` | 0 erreur, 69 avertissements (variables inutilisées héritées, `exhaustive-deps`) |
 | Unitaires | `npm test` | 10 suites, 44 tests OK |
 | API | `API_URL=http://localhost:3000/api npm run test:api` | 60/64 — les 4 échecs sont des bugs backend documentés (`docs/BACKEND_ISSUES.md`) |
-| Navigateur | `node e2e/journey.e2e.js` (Chromium 390×844 + 360×640 + 768×1024, `E2E_PSQL` pour simuler les jours) | **47/47 étapes OK** (dont jours 2 et 3 du Sondeur verrouillés jusqu'au lendemain) — détail dans `docs/E2E_RESULTATS.md`, captures dans `docs/screenshots/` |
+| Navigateur | `node e2e/journey.e2e.js` (Chromium 390×844 + 360×640 + 768×1024, `E2E_PSQL` pour simuler les jours) | **52/52 étapes OK** (2026-10-03, dont cercle de score = score serveur, 11 modules, aucun texte tronqué) (dont jours 2 et 3 du Sondeur verrouillés jusqu'au lendemain) — détail dans `docs/E2E_RESULTATS.md`, captures dans `docs/screenshots/` |
 | Export web | `npx expo export --platform web` | OK (bundle unique) |
 
 Parcours rejoué de bout en bout dans le navigateur : accueil → slides + CGU → inscription 4 étapes → OTP →

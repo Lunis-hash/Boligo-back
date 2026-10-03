@@ -16,6 +16,7 @@ import { useState, useRef, useEffect, Component, ReactNode, useCallback } from '
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle } from 'react-native-svg';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertTriangle, ShieldCheck, Link2 } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
@@ -49,6 +50,10 @@ interface MatchProfile {
   firstName: string;
   profession: string;
   compatibility: number;
+  /** Lecture qualitative du score (« Belle compatibilité »). */
+  compatibilityLabel?: string;
+  /** « il » ou « elle », pour accorder les titres de section. */
+  pronoun?: 'il' | 'elle';
   slogan: string;
   age?: number;
   location?: string;
@@ -59,22 +64,20 @@ interface MatchProfile {
   /** Sujets calculés par le moteur de divergences du serveur (prioritaires). */
   discussionTopics?: { id: string; title: string; prompt: string }[];
   hardStop?: boolean;
-  details?: {
-    situation: string;
-    children: string;
-    religion: string;
-    education: string;
-    lifestyle: string;
-  };
+  details?: Record<string, string>;
   interests?: { label: string; common: boolean }[];
   threeWords?: string[];
   expectations?: { icon: string; text: string }[];
+  /** Affinités par module du Grand Entretien (0 → 10), calculées par le serveur. */
   mentalMap: {
     id: string;
     label: string;
     emoji: string;
-    value: number;
+    /** null : aucune réponse comparable sur ce module. */
+    value: number | null;
     color: string;
+    /** Lecture humaine du module (« Alignement fort sur … »). */
+    verdict?: string;
   }[];
 }
 
@@ -82,8 +85,11 @@ interface ActiveMatch {
   id: string;
   name: string;
   compatibility: number;
+  compatibilityLabel?: string;
+  pronoun?: 'il' | 'elle';
   profession: string;
   location: string;
+  age?: number;
   phase: string;
   journeyId: string | null;
   slogan?: string;
@@ -95,97 +101,50 @@ interface ActiveMatch {
   interests?: MatchProfile['interests'];
   threeWords?: MatchProfile['threeWords'];
   expectations?: MatchProfile['expectations'];
+  discussionTopics?: MatchProfile['discussionTopics'];
+  hardStop?: boolean;
 }
 
-// ─── Données mock enrichies "Mental Map V2" ────────────────────
-const FALLBACK_PROFILES: MatchProfile[] = [
-  {
-    id: '1',
-    firstName: 'Amélie G.',
-    age: 32,
-    location: 'Lyon',
-    distance: '~460 km',
-    profession: 'Ingénieure',
-    compatibility: 80,
-    slogan: "Je cherche quelqu'un avec qui construire quelque chose de vrai — pas juste une belle histoire. La vie à deux, ça se mérite et ça se choisit chaque jour.",
-    aiAnalysis: "Amélie est une personne **profondément ancrée dans ses valeurs**, qui place la loyauté et la communication au cœur de sa vision du couple. Elle envisage la **famille comme une priorité à moyen terme** et cherche un partenaire qui partage cette orientation sans pression. Son rapport à la foi est discret mais structurant — elle ne l'impose pas, mais elle y tient. Dans sa vie quotidienne, elle **allie vie professionnelle exigeante et besoin de calme à la maison**, ce qui en fait quelqu'un de fiable et de posé.",
-    positivePoints: [
-      "Vous partagez **la même vision de la famille** — enfants envisagés dans une temporalité similaire et importance accordée à l'éducation.",
-      "**Votre rapport à la foi** est complémentaire : croyance personnelle sans prosélytisme pour tous les deux.",
-      "Vous valorisez tous les deux **la communication directe** et la résolution pacifique des conflits."
-    ],
-    warningPoint: "Vos **attentes sur le rythme de vie** diffèrent légèrement : Amélie privilégie les soirées calmes à la maison, là où votre profil indique une préférence pour des sorties plus régulières. Ce n'est pas un obstacle, mais ça mérite une conversation.",
-    details: {
-      situation: 'Célibataire',
-      children: 'Souhaite en avoir',
-      religion: 'Chrétienne pratiquante',
-      education: 'Bac +5',
-      lifestyle: 'Urbain, sédentaire'
-    },
-    interests: [
-      { label: 'Famille', common: true },
-      { label: 'Foi & spiritualité', common: true },
-      { label: 'Honnêteté', common: true },
-      { label: 'Projets de vie', common: false },
-      { label: 'Cuisine', common: false },
-      { label: 'Développement personnel', common: true },
-      { label: 'Lecture', common: false },
-      { label: 'Cinéma', common: false },
-    ],
-    threeWords: ['Ancrée', 'Directe', 'Bâtisseuse'],
-    expectations: [
-      { icon: '⏱️', text: "Un engagement concret envisagé **dans les 2 ans**, pas une relation sans horizon." },
-      { icon: '🤝', text: "Un partenaire **disponible émotionnellement** — capable d'écouter sans fuir les conversations difficiles." },
-      { icon: '🏡', text: "Un foyer stable, pas forcément parfait — mais **construit à deux**." }
-    ],
-    mentalMap: [
-      { id: 'valeurs', label: 'Valeurs & croyances', emoji: '💎', value: 92, color: '#10B981' },
-      { id: 'projet', label: 'Projet de vie', emoji: '🌱', value: 87, color: '#10B981' },
-      { id: 'com', label: 'Communication dans le couple', emoji: '💬', value: 80, color: '#F59E0B' },
-      { id: 'foyer', label: 'Finances & gestion du foyer', emoji: '💰', value: 74, color: '#F59E0B' },
-      { id: 'sexe', label: 'Sexualité & intimité', emoji: '🔥', value: 61, color: '#EF4444' },
-    ],
-  },
-  {
-    id: '2',
-    firstName: 'Thomas D.',
-    age: 29,
-    location: 'Paris',
-    distance: '~5 km',
-    profession: 'Architecte',
-    compatibility: 88,
-    slogan: 'Construire quelque chose de durable, ensemble.',
-    aiAnalysis: "Thomas est un profil **très orienté projet**. Il aime structurer son avenir tout en gardant une place importante pour la **spontanéité et la découverte**. Très attaché à l'équilibre vie pro / vie perso.",
-    positivePoints: [
-      "Vous partagez une **vision commune sur les projets d'avenir** et la construction d'un foyer stable.",
-      "**L'équilibre financier** semble très aligné entre vous deux."
-    ],
-    details: {
-      situation: 'Célibataire',
-      children: 'Ne sait pas encore',
-      religion: 'Agnostique',
-      education: 'Bac +5',
-      lifestyle: 'Urbain, très actif'
-    },
-    interests: [
-      { label: 'Entrepreneuriat & Projets', common: true },
-      { label: 'Sport', common: true },
-      { label: 'Art & Design', common: false },
-    ],
-    threeWords: ['Créatif', 'Structuré', 'Bâtisseur'],
-    expectations: [
-      { icon: '🏡', text: "Un/une partenaire de vie pour **construire un avenir solide** et s'élever mutuellement." },
-      { icon: '⚖️', text: "Une relation basée sur **l'égalité et le partage des tâches**." }
-    ],
-    mentalMap: [
-      { id: 'valeurs', label: 'Valeurs & croyances', emoji: '💎', value: 90, color: '#10B981' },
-      { id: 'projet', label: 'Projet de vie', emoji: '🌱', value: 92, color: '#10B981' },
-      { id: 'com', label: 'Communication dans le couple', emoji: '💬', value: 88, color: '#10B981' },
-      { id: 'foyer', label: 'Finances & gestion du foyer', emoji: '💰', value: 89, color: '#10B981' },
-      { id: 'sexe', label: 'Sexualité & intimité', emoji: '🔥', value: 79, color: '#F59E0B' },
-    ],
-  },
-];
+// ─── Lecture des fiches renvoyées par le serveur ───────────────────
+/** Libellés de la grille « Profil » (clés renvoyées par le serveur). */
+const DETAIL_LABELS: Record<string, { label: string; emoji: string }> = {
+  situation: { label: 'Situation', emoji: '💍' },
+  children: { label: 'Enfants', emoji: '👶' },
+  childrenWish: { label: "Désir d'enfants", emoji: '🍼' },
+  religion: { label: 'Spiritualité', emoji: '🙏' },
+  education: { label: 'Études', emoji: '🎓' },
+  lifestyle: { label: 'Vie dans 5 ans', emoji: '🌱' },
+  city: { label: 'Ville', emoji: '📍' },
+};
+
+function asArray<T>(value: unknown): T[] | undefined {
+  return Array.isArray(value) && value.length > 0 ? (value as T[]) : undefined;
+}
+
+/** Fiche serveur → fiche affichée. Aucune valeur n'est inventée : un champ absent est masqué. */
+function toMatchProfile(p: any, idx: number): MatchProfile {
+  return {
+    id: p.userId ?? p.id ?? `profile-${idx}`,
+    firstName: p.firstName ?? p.name ?? 'Membre BOLIGO',
+    age: typeof p.age === 'number' ? p.age : undefined,
+    location: p.location || undefined,
+    profession: p.profession || '',
+    compatibility: typeof p.compatibility === 'number' ? p.compatibility : 0,
+    compatibilityLabel: p.compatibilityLabel,
+    pronoun: p.pronoun === 'elle' ? 'elle' : p.pronoun === 'il' ? 'il' : undefined,
+    slogan: p.slogan || '',
+    aiAnalysis: p.aiAnalysis || undefined,
+    positivePoints: asArray<string>(p.positivePoints),
+    warningPoint: p.warningPoint || undefined,
+    discussionTopics: asArray(p.discussionTopics),
+    hardStop: p.hardStop === true,
+    details: p.details && typeof p.details === 'object' && Object.keys(p.details).length > 0 ? p.details : undefined,
+    interests: asArray(p.interests),
+    threeWords: asArray<string>(p.threeWords),
+    expectations: asArray(p.expectations),
+    mentalMap: asArray<MatchProfile['mentalMap'][0]>(p.mentalMap) ?? [],
+  };
+}
 
 // ─── Anneaux pulsants animés ───────────────────────────────────────
 function PulsingRings() {
@@ -290,9 +249,20 @@ const renderFormattedText = (text: string) => {
 };
 
 // ─── Composants UI ────────────────────────────────────────────────
-function AnonymousAvatar({ initial }: { initial: string }) {
+/**
+ * Cercle de compatibilité : le pourcentage global est écrit au centre et
+ * l'anneau se remplit d'autant. (Avant, le cercle affichait l'initiale du
+ * prénom : pour « Oli », un « O » qui se lisait comme un 0.)
+ */
+const RING_SIZE = 112;
+const RING_STROKE = 8;
+
+function ScoreRing({ percent, color }: { percent: number; color: string }) {
   const enterScale = useRef(new Animated.Value(0.82)).current;
   const enterOpacity = useRef(new Animated.Value(0)).current;
+  const safe = Math.max(0, Math.min(100, Math.round(percent)));
+  const radius = (RING_SIZE - RING_STROKE) / 2;
+  const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
     enterScale.setValue(0.82);
@@ -301,10 +271,15 @@ function AnonymousAvatar({ initial }: { initial: string }) {
       Animated.spring(enterScale, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }),
       Animated.timing(enterOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
     ]).start();
-  }, [initial]);
+  }, [safe]);
 
   return (
-    <Animated.View style={[styles.avatarContainer, { opacity: enterOpacity, transform: [{ scale: enterScale }] }]}>
+    <Animated.View
+      style={[styles.avatarContainer, { opacity: enterOpacity, transform: [{ scale: enterScale }] }]}
+      accessible
+      accessibilityLabel={`${safe} % de compatibilité`}
+      testID="discover-score-ring"
+    >
       <PulsingRings />
 
       {/* Particules géométriques */}
@@ -313,14 +288,27 @@ function AnonymousAvatar({ initial }: { initial: string }) {
       <FloatingParticle color={Colors.primary.orange} size={10} delay={1600} style={{ bottom: -30, left: -20 }} />
       <FloatingParticle color={Colors.primary.red}    size={6}  delay={400}  style={{ bottom: -24, right: -22 }} />
 
-      {/* Cœur du cercle — initiale + dégradé */}
-      <LinearGradient
-        colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-        style={styles.avatarCore}
-      >
-        <Text style={styles.avatarInitial}>{initial}</Text>
-      </LinearGradient>
+      <View style={styles.scoreRing}>
+        <Svg width={RING_SIZE} height={RING_SIZE} style={StyleSheet.absoluteFill}>
+          <Circle
+            cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={radius}
+            stroke={color} strokeOpacity={0.15} strokeWidth={RING_STROKE} fill={Colors.neutral.white}
+          />
+          <Circle
+            cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={radius}
+            stroke={color} strokeWidth={RING_STROKE} fill="transparent"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={circumference * (1 - safe / 100)}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+          />
+        </Svg>
+        <Text style={[styles.scoreRingValue, { color }]} testID="discover-score-value">
+          {safe}
+          <Text style={styles.scoreRingPercent}> %</Text>
+        </Text>
+        <Text style={styles.scoreRingCaption}>compatibles</Text>
+      </View>
       {/* Verified Badge */}
       <View style={styles.verifiedBadge}>
         <ShieldCheck size={14} color="#FFF" />
@@ -329,12 +317,18 @@ function AnonymousAvatar({ initial }: { initial: string }) {
   );
 }
 
+function scoreColor(percent: number): string {
+  if (percent >= 75) return '#10B981';
+  if (percent >= 55) return '#F59E0B';
+  return '#EF4444';
+}
+
 function PillarRow({ pillar, delay }: { pillar: MatchProfile['mentalMap'][0]; delay: number }) {
   const barWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(barWidth, {
-      toValue: pillar.value / 100,
+      toValue: (pillar.value ?? 0) / 100,
       duration: 800,
       delay,
       useNativeDriver: false,
@@ -344,8 +338,8 @@ function PillarRow({ pillar, delay }: { pillar: MatchProfile['mentalMap'][0]; de
   return (
     <View style={styles.pillarRow}>
       <View style={styles.pillarHeader}>
-        <Text style={styles.pillarLabel}>{pillar.label}</Text>
-        <Text style={[styles.pillarVal, { color: pillar.color }]}>{pillar.value}%</Text>
+        <Text style={styles.pillarLabel}>{pillar.emoji ? `${pillar.emoji} ` : ''}{pillar.label}</Text>
+        <Text style={[styles.pillarVal, { color: pillar.color }]}>{pillar.value === null ? '—' : `${pillar.value} %`}</Text>
       </View>
       <View style={styles.pillarTrack}>
         <Animated.View
@@ -355,12 +349,13 @@ function PillarRow({ pillar, delay }: { pillar: MatchProfile['mentalMap'][0]; de
               backgroundColor: pillar.color,
               width: barWidth.interpolate({
                 inputRange: [0, 1],
-                outputRange: ['0%', `${pillar.value}%`],
+                outputRange: ['0%', `${pillar.value ?? 0}%`],
               }),
             },
           ]}
         />
       </View>
+      {!!pillar.verdict && <Text style={styles.pillarVerdict}>{pillar.verdict}</Text>}
     </View>
   );
 }
@@ -471,64 +466,13 @@ function DiscoverScreen() {
     };
   }, [loading]);
 
-  // Helper pour dynamiser les textes de l'IA avec le VRAI prénom du profil affiché
-  const formatAiText = (text: string | undefined, targetName: string): string => {
-    if (!text) return '';
-    const cleanName = targetName.split(' ')[0].trim() || 'Ce profil';
-    return text
-      .replace(/\bAmélie\b/g, cleanName)
-      .replace(/\bThomas\b/g, cleanName);
-  };
-
-  const formatAiList = (list: string[] | undefined, targetName: string): string[] => {
-    if (!list) return [];
-    const cleanName = targetName.split(' ')[0].trim() || 'Ce profil';
-    return list.map(item => item.replace(/\bAmélie\b/g, cleanName).replace(/\bThomas\b/g, cleanName));
-  };
-
-  // Construction du match courant — uniquement données réelles du backend
-  const activeName = activeMatch?.name ?? 'Utilisateur';
-
+  // Fiche affichée : match en cours, sinon like reçu, sinon profil de Découverte.
+  // Toutes les données viennent du serveur (moteur de fiches BOLIGO).
   const currentMatch: MatchProfile | null = activeMatch
-    ? {
-      id: activeMatch.id,
-      firstName: activeMatch.name,
-      profession: activeMatch.profession,
-      compatibility: activeMatch.compatibility,
-      slogan: activeMatch.slogan || '',
-      mentalMap: (activeMatch.mentalMap?.length ? activeMatch.mentalMap : [
-        { id: 'valeurs', label: '💎 Valeurs & Culture', emoji: '💎', value: 82, color: '#10B981' },
-        { id: 'attachement', label: '🤝 Attachement & Émotions', emoji: '🤝', value: 80, color: '#10B981' },
-        { id: 'projet', label: '🌱 Projet de Vie & Famille', emoji: '🌱', value: 78, color: '#F59E0B' },
-        { id: 'vecu', label: '⚖️ Vécu & Maturité', emoji: '⚖️', value: 75, color: '#F59E0B' },
-        { id: 'mode_de_vie', label: '💼 Mode de vie & Finances', emoji: '💼', value: 72, color: '#EF4444' },
-      ]),
-      aiAnalysis: formatAiText(activeMatch.aiAnalysis, activeName),
-      positivePoints: formatAiList(activeMatch.positivePoints, activeName),
-      warningPoint: formatAiText(activeMatch.warningPoint, activeName),
-      details: activeMatch.details,
-      interests: activeMatch.interests,
-      threeWords: activeMatch.threeWords,
-      expectations: activeMatch.expectations,
-    }
-    : (receivedLikes.length > 0)
-      ? {
-        id: receivedLikes[0].userId,
-        firstName: receivedLikes[0].firstName ?? receivedLikes[0].name ?? 'Utilisateur',
-        profession: receivedLikes[0].profession || 'Profil qui vous a liké',
-        compatibility: receivedLikes[0].compatibility || 0,
-        slogan: receivedLikes[0].slogan || 'Cette personne a manifesté son intérêt.',
-        mentalMap: receivedLikes[0].mentalMap?.length ? receivedLikes[0].mentalMap : FALLBACK_PROFILES[0].mentalMap,
-        aiAnalysis: `L'IA a identifié une affinité mutuelle avec ${receivedLikes[0].firstName ?? 'ce profil'}. Vous pouvez démarrer l'expérience.`,
-      }
-      : profiles[profileIndex]
-        ? {
-          ...profiles[profileIndex],
-          aiAnalysis: formatAiText(profiles[profileIndex].aiAnalysis, profiles[profileIndex].firstName),
-          positivePoints: formatAiList(profiles[profileIndex].positivePoints, profiles[profileIndex].firstName),
-          warningPoint: formatAiText(profiles[profileIndex].warningPoint, profiles[profileIndex].firstName),
-        }
-        : null;
+    ? toMatchProfile({ ...activeMatch, firstName: activeMatch.name }, 0)
+    : receivedLikes.length > 0
+      ? toMatchProfile(receivedLikes[0], 0)
+      : profiles[profileIndex] ?? null;
 
   // Sujets à aborder : ceux du moteur de divergences serveur (réponses réelles aux
   // entretiens) quand ils existent, sinon dérivés des piliers de compatibilité.
@@ -591,54 +535,7 @@ function DiscoverScreen() {
       let realProfiles: MatchProfile[] = [];
 
       if (fetchedProfiles.length > 0) {
-        realProfiles = fetchedProfiles.map((p: any, idx: number) => {
-          const name = p.firstName ?? p.name ?? `Profil #${idx + 1}`;
-          const compatScore = typeof p.compatibility === 'number' ? p.compatibility : Math.round((p.compatibilityScore ?? 0.75) * 100);
-
-          return {
-            id: p.id || `profile-${idx}`,
-            firstName: name,
-            age: p.age ?? (25 + (idx * 3) % 15),
-            location: p.location ?? p.city ?? (idx % 2 === 0 ? 'Paris' : 'Lyon'),
-            distance: undefined, // l'app ne géolocalise pas : aucune distance inventée
-            profession: p.profession ?? p.job ?? (idx % 2 === 0 ? 'Architecte / Designer' : 'Cadre / Ingénieur(e)'),
-            compatibility: compatScore,
-            slogan: p.slogan ?? p.bio ?? `« Rechercher une belle complicité fondée sur la sincérité et le soutien à ${p.location ?? p.city ?? 'Lyon'}. »`,
-            aiAnalysis: p.aiAnalysis ?? `${name} présente un profil structuré autour de l'écoute et du respect mutuel. L'analyse révèle un fort besoin de transparence et d'engagement.`,
-            positivePoints: (Array.isArray(p.positivePoints) && p.positivePoints.length > 0) ? p.positivePoints : [
-              `Compatibilité mesurée à **${compatScore}%** sur les priorités de vie.`,
-              `Alignement fort sur la valeur de **transparence et d'écoute mutuelle**.`,
-            ],
-            warningPoint: p.warningPoint ?? `Vos rythmes de vie quotidiens méritent un échange direct pour s'harmoniser sereinement.`,
-            discussionTopics: Array.isArray(p.discussionTopics) ? p.discussionTopics : undefined,
-            hardStop: p.hardStop === true,
-            details: p.details ?? {
-              situation: 'Célibataire',
-              children: idx % 2 === 0 ? 'Souhaite en avoir' : 'À discuter ensemble',
-              religion: 'Spiritualité personnelle',
-              education: 'Enseignement Supérieur (Bac +5)',
-              lifestyle: idx % 2 === 0 ? 'Urbain, dynamique' : 'Calme, sédentaire'
-            },
-            interests: (Array.isArray(p.interests) && p.interests.length > 0) ? p.interests : [
-              { label: 'Famille & Foyer', common: true },
-              { label: 'Sincérité', common: true },
-            ],
-            threeWords: (Array.isArray(p.threeWords) && p.threeWords.length > 0) ? p.threeWords : ['Authentique', 'Sincère', 'Engagé(e)'],
-            expectations: (Array.isArray(p.expectations) && p.expectations.length > 0) ? p.expectations : [
-              { icon: '⏱️', text: `Une relation transparente et sérieuse sur la durée.` },
-              { icon: '🤝', text: `Un partenaire **disponible émotionnellement**.` }
-            ],
-            mentalMap: (Array.isArray(p.mentalMap) && p.mentalMap.length > 0) ? p.mentalMap : [
-              { id: 'valeurs', label: 'Valeurs & croyances', emoji: '💎', value: Math.min(95, Math.max(70, compatScore + 5)), color: '#10B981' },
-              { id: 'projet', label: 'Projet de vie', emoji: '🌱', value: Math.min(95, Math.max(65, compatScore)), color: '#10B981' },
-              { id: 'com', label: 'Communication dans le couple', emoji: '💬', value: 80, color: '#F59E0B' },
-              { id: 'foyer', label: 'Finances & gestion du foyer', emoji: '💰', value: 74, color: '#F59E0B' },
-              { id: 'sexe', label: 'Sexualité & intimité', emoji: '🔥', value: 65, color: '#EF4444' },
-            ],
-          };
-        });
-      } else {
-        realProfiles = [];
+        realProfiles = fetchedProfiles.map(toMatchProfile);
       }
 
       setProfiles(realProfiles);
@@ -783,7 +680,7 @@ function DiscoverScreen() {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
     Animated.timing(cardFade, { toValue: 0, duration: 120, useNativeDriver: true }).start(() => {
       setProfileIndex(i => {
-        const total = profiles.length > 0 ? profiles.length : FALLBACK_PROFILES.length;
+        const total = Math.max(1, profiles.length);
         return (i + 1) % total;
       });
     });
@@ -793,7 +690,7 @@ function DiscoverScreen() {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
     Animated.timing(cardFade, { toValue: 0, duration: 120, useNativeDriver: true }).start(() => {
       setProfileIndex(i => {
-        const total = profiles.length > 0 ? profiles.length : FALLBACK_PROFILES.length;
+        const total = Math.max(1, profiles.length);
         return (i - 1 + total) % total;
       });
     });
@@ -904,12 +801,12 @@ function DiscoverScreen() {
                 style={styles.compatBadge}
               >
                 <Sparkles size={12} color="#fff" />
-                <Text style={styles.compatText}>{currentMatch.compatibility}% de compatibilité</Text>
+                <Text style={styles.compatText}>{currentMatch.compatibilityLabel || 'Compatibilité BOLIGO'}</Text>
               </LinearGradient>
 
-              {/* Avatar central animée */}
+              {/* Cercle de score : le vrai pourcentage global */}
               <View style={styles.avatarWrapper}>
-                <AnonymousAvatar initial={(currentMatch?.firstName || "?").charAt(0)} />
+                <ScoreRing percent={currentMatch.compatibility} color={scoreColor(currentMatch.compatibility)} />
               </View>
 
               {/* Footer de la grande carte : Nom + Slogan */}
@@ -921,24 +818,26 @@ function DiscoverScreen() {
                 
                 {/* Badges de localisation, âge, profession sous le nom */}
                 <View style={styles.profileBadgesRow}>
-                  {currentMatch.age && <Text style={styles.profileBadge}>{currentMatch.age} ans</Text>}
-                  {currentMatch.location && <Text style={styles.profileBadge}>{currentMatch.location}</Text>}
+                  {typeof currentMatch.age === 'number' && currentMatch.age > 0 ? <Text style={styles.profileBadge}>{currentMatch.age} ans</Text> : null}
+                  {!!currentMatch.location && <Text style={styles.profileBadge}>{currentMatch.location}</Text>}
                   {!!currentMatch.profession && <Text style={styles.profileBadge}>{currentMatch.profession}</Text>}
                   {!!currentMatch.distance && <Text style={styles.profileBadge}>{currentMatch.distance}</Text>}
                 </View>
 
+                {!!currentMatch.slogan && (
                 <View style={styles.sloganBox}>
                   <Text style={styles.sloganQuote}>«</Text>
                   <Text style={styles.sloganText}>{currentMatch.slogan}</Text>
                   <Text style={styles.sloganQuote}>»</Text>
                 </View>
+                )}
               </LinearGradient>
             </View>
 
             <View style={styles.mainContent}>
 
               {/* 4. Analyse Boligo */}
-              {currentMatch.aiAnalysis && (
+              {!!currentMatch.aiAnalysis && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.iconCircle}><Text style={{fontSize:15}}>🧠</Text></View>
@@ -950,21 +849,26 @@ function DiscoverScreen() {
               </View>
               )}
 
-              {/* 5. Affinités par module */}
-              <View style={styles.sectionBlock}>
+              {/* 5. Affinités par module du Grand Entretien */}
+              {currentMatch.mentalMap.length > 0 && (
+              <View style={styles.sectionBlock} testID="discover-modules">
                 <View style={styles.sectionHeader}>
                   <View style={styles.iconCircle}><Text style={{fontSize:15}}>📊</Text></View>
                   <Text style={styles.sectionTitle}>AFFINITÉS PAR MODULE</Text>
                 </View>
+                <Text style={styles.modulesIntro}>
+                  Calculées en comparant vos réponses au Grand Entretien, module par module.
+                </Text>
                 <View style={styles.modulesCard}>
                   {currentMatch.mentalMap.map((p, i) => (
                     <PillarRow key={p.id} pillar={p} delay={i * 80} />
                   ))}
                 </View>
               </View>
+              )}
 
               {/* 6. Pourquoi vous pourriez fonctionner */}
-              {currentMatch.positivePoints && (
+              {!!currentMatch.positivePoints?.length && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
                   <View style={[styles.iconCircle, { backgroundColor: '#10B98115' }]}><Link2 size={16} color="#10B981" /></View>
@@ -982,7 +886,7 @@ function DiscoverScreen() {
               )}
 
               {/* 7. Point de vigilance */}
-              {currentMatch.warningPoint && (
+              {!!currentMatch.warningPoint && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
                   <View style={[styles.iconCircle, { backgroundColor: '#F59E0B15' }]}><Text style={{fontSize:15}}>⚖️</Text></View>
@@ -1029,31 +933,17 @@ function DiscoverScreen() {
                   <Text style={styles.sectionTitle}>PROFIL</Text>
                 </View>
                 <View style={styles.detailsGrid}>
-                  {Object.entries(currentMatch.details).map(([key, val], i) => {
-                    const labelMap: Record<string, string> = {
-                      situation: 'Situation',
-                      children: 'Enfants',
-                      religion: 'Spiritualité',
-                      education: 'Études',
-                      lifestyle: 'Style de vie',
-                    };
-                    const emojiMap: Record<string, string> = {
-                      situation: '💍',
-                      children: '👶',
-                      religion: '🙏',
-                      education: '🎓',
-                      lifestyle: '🏡',
-                    };
-                    return (
-                      <View key={i} style={styles.detailBox}>
+                  {Object.entries(currentMatch.details)
+                    .filter(([key, val]) => !!DETAIL_LABELS[key] && typeof val === 'string' && val.length > 0)
+                    .map(([key, val]) => (
+                      <View key={key} style={styles.detailBox}>
                         <View style={styles.detailBoxHeader}>
-                          <Text style={{ fontSize: 13 }}>{emojiMap[key] || '✨'}</Text>
-                          <Text style={styles.detailBoxLabel}>{(labelMap[key] || key).toUpperCase()}</Text>
+                          <Text style={{ fontSize: 13 }}>{DETAIL_LABELS[key].emoji}</Text>
+                          <Text style={styles.detailBoxLabel}>{DETAIL_LABELS[key].label.toUpperCase()}</Text>
                         </View>
                         <Text style={styles.detailBoxVal}>{val}</Text>
                       </View>
-                    );
-                  })}
+                    ))}
                 </View>
               </View>
               )}
@@ -1075,9 +965,9 @@ function DiscoverScreen() {
                 </View>
                 <View style={styles.legendRow}>
                   <View style={styles.legendDot} />
-                  <Text style={styles.legendText}>Intérêt commun</Text>
+                  <Text style={styles.legendText}>En commun</Text>
                   <View style={[styles.legendDot, { backgroundColor: Colors.neutral.border }]} />
-                  <Text style={styles.legendText}>Son intérêt</Text>
+                  <Text style={styles.legendText}>{currentMatch.pronoun === 'elle' ? 'Ses valeurs à elle' : currentMatch.pronoun === 'il' ? 'Ses valeurs à lui' : 'Ses valeurs'}</Text>
                 </View>
               </View>
               )}
@@ -1104,7 +994,9 @@ function DiscoverScreen() {
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.iconCircle}><Text style={{fontSize:15}}>🎯</Text></View>
-                  <Text style={styles.sectionTitle}>CE QU'IL/ELLE ATTEND VRAIMENT</Text>
+                  <Text style={styles.sectionTitle}>
+                    {currentMatch.pronoun === 'elle' ? "CE QU'ELLE ATTEND VRAIMENT" : currentMatch.pronoun === 'il' ? "CE QU'IL ATTEND VRAIMENT" : 'SES ATTENTES'}
+                  </Text>
                 </View>
                 <View style={{ gap: Spacing.sm }}>
                   {currentMatch.expectations.map((exp, i) => (
@@ -1473,6 +1365,18 @@ const styles = StyleSheet.create({
   pillarVal: { fontFamily: Typography.fontFamily.medium, fontSize: 12 },
   pillarTrack: { height: 6, borderRadius: 3, backgroundColor: Colors.neutral.border, overflow: 'hidden' },
   pillarFill: { height: '100%', borderRadius: 3 },
+  pillarVerdict: { fontFamily: Typography.fontFamily.regular, fontSize: 12, lineHeight: 17, color: Colors.text.primary70 },
+  modulesIntro: { fontFamily: Typography.fontFamily.regular, fontSize: 12.5, lineHeight: 18, color: Colors.text.primary70, marginBottom: Spacing.sm },
+  scoreRing: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  scoreRingValue: { fontFamily: Typography.fontFamily.bold, fontSize: 30, lineHeight: 34 },
+  scoreRingPercent: { fontFamily: Typography.fontFamily.bold, fontSize: 16 },
+  scoreRingCaption: { fontFamily: Typography.fontFamily.medium, fontSize: 11, color: Colors.text.primary70, marginTop: 1 },
 
   // 6. Pourquoi ça marche
   positiveCard: {
