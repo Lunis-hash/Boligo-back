@@ -73,6 +73,17 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
   const text = (t, opts = {}) => page.getByText(t, { exact: false, ...opts }).first();
   const clickText = async (t, opts) => { await text(t, opts).click(); };
+  // Les slides sont rendues côte à côte : on clique l'élément réellement à l'écran.
+  const clickVisibleText = async (t) => {
+    const width = page.viewportSize()?.width ?? 400;
+    const all = page.getByText(t, { exact: false });
+    const n = await all.count();
+    for (let i = 0; i < n; i++) {
+      const box = await all.nth(i).boundingBox();
+      if (box && box.x >= 0 && box.x + box.width / 2 <= width) { await all.nth(i).click(); return; }
+    }
+    throw new Error(`Aucun « ${t} » visible`);
+  };
   const fillPlaceholder = async (ph, value) => { await page.getByPlaceholder(ph).first().fill(value); };
   const email = `steve-e2e-${Date.now()}@example.test`;
   const password = 'Password12!';
@@ -85,10 +96,11 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await clickText('Trouver mon BOLIGO');
   await page.waitForURL(/value-slides/);
   await shot('02-slides');
-  for (let i = 0; i < 5; i++) { await clickText('Suivant →'); await page.waitForTimeout(500); }
+  for (let i = 0; i < 5; i++) { await clickVisibleText('Suivant →'); await page.waitForTimeout(700); }
   await shot('03-slides-cgu');
   record('Slides : 6 écrans parcourus', true);
-  await clickText('Créer mon compte gratuitement');
+  await page.waitForTimeout(800);
+  await clickVisibleText('Créer mon compte gratuitement');
   await page.waitForURL(/profile-details/);
   record('Slides → formulaire de profil (CGU acceptées à l’étape 4)', true);
 
@@ -210,7 +222,15 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Formule chargée depuis le backend (15,00 €)', await text('15,00 €').isVisible());
   await page.getByTestId('plan-parcours_harmonie').click();
   await page.waitForTimeout(600);
-  await page.getByTestId('promo-input').fill('BOLIGO100');
+  // Les codes promo n'existent qu'en base : on crée un code gratuit de test (base de TEST uniquement).
+  const promoCode = `E2E${Date.now().toString(36).toUpperCase()}`;
+  if (E2E_PSQL) {
+    execSync(E2E_PSQL, {
+      input: `INSERT INTO "PromoCode" (id, code, "discountType", "discountValue", "maxUses", "isActive") VALUES (gen_random_uuid()::text, '${promoCode}', 'free', 0, 5, true);`,
+      stdio: ['pipe', 'ignore', 'inherit'],
+    });
+  }
+  await page.getByTestId('promo-input').fill(E2E_PSQL ? promoCode : 'BOLIGO100');
   await page.getByTestId('promo-apply').click();
   await page.waitForTimeout(1500);
   await shot('16-paiement-promo');
@@ -236,6 +256,10 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const balanceAfter = await api('GET', '/credit/balance', { token: tokenA });
   record('Crédit débité après la connexion', balanceAfter.data?.credits === 0, JSON.stringify(balanceAfter.data));
   const likes = await api('GET', '/matching/received-likes', { token: partner.token });
+  // Accepter coûte aussi 1 crédit (débité par le serveur) : sans crédit, refus explicite.
+  const refused = await api('POST', '/matching/accept', { token: partner.token, body: { proposalId: likes.data[0].id } });
+  record('Acceptation sans crédit refusée (NO_CREDIT)', refused.data?.success === false && refused.data?.code === 'NO_CREDIT');
+  await api('POST', '/payment/apply-promo', { token: partner.token, body: { code: promoCode, optionId: 'parcours_harmonie' } });
   const accept = await api('POST', '/matching/accept', { token: partner.token, body: { proposalId: likes.data[0].id } });
   const journeyId = accept.data.journey.id;
   record('Partenaire accepte (API) → parcours créé', !!journeyId);
@@ -324,6 +348,25 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Message insultant bloqué avant envoi (modération locale)', dialogs.length > insultDialogsBefore, dialogs[dialogs.length - 1] || '');
 
   // ── 10. Vidéo (API) puis échange de contacts (UI)
+  // L'appel ne peut pas finir le chat : il faut l'étape vidéo et les deux membres
+  // connectés. Hors étape, la fin d'appel n'avance rien.
+  const earlyEnd = await api('POST', '/video/end', { token: partner.token, body: { journeyId, durationSec: 60 } });
+  record('Fin d\'appel sans appel réel (chat libre) → étape inchangée', earlyEnd.data?.advanced === false, JSON.stringify(earlyEnd.data));
+  if (E2E_PSQL) {
+    // Voyage dans le temps (base de TEST) : 3 jours de chat écoulés → étape vidéo.
+    execSync(E2E_PSQL, {
+      input: `UPDATE "Journey" SET "stepStartDate" = now() - interval '3 days 1 hour' WHERE id = '${journeyId}';`,
+      stdio: ['pipe', 'ignore', 'inherit'],
+    });
+    await api('GET', '/matching/my-matches', { token: tokenA });
+    const joinA = await api('POST', `/journey/${journeyId}/video/join`, { token: tokenA });
+    const joinB = await api('POST', `/journey/${journeyId}/video/join`, { token: partner.token });
+    record('Étape vidéo : les deux membres rejoignent l\'appel', !!joinA.data?.meetingUrl && !!joinB.data?.meetingUrl, `${joinA.status}/${joinB.status}`);
+    execSync(E2E_PSQL, {
+      input: `UPDATE "VideoSession" SET "startDate" = now() - interval '90 seconds' WHERE "journeyId" = '${journeyId}';`,
+      stdio: ['pipe', 'ignore', 'inherit'],
+    });
+  }
   const endCall = await api('POST', '/video/end', { token: partner.token, body: { journeyId, durationSec: 60 } });
   record('Fin d\'appel vidéo (API) → étape échange de contacts', endCall.data?.currentStep === 'echange_contacts', JSON.stringify(endCall.data));
   await page.reload({ waitUntil: 'networkidle' });

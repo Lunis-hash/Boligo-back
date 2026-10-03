@@ -121,11 +121,26 @@ function waitFor(socket, event, ms = 4000) {
   // ── Découverte & match
   const disc = await call('GET', '/matching/discover', { token: A.token });
   record('discover (A voit B)', disc.status === 200 && disc.data.some((p) => p.id === B.userId), `profils=${disc.data?.length}`);
+  const noCredit = await call('POST', '/matching/connect', { token: A.token, body: { targetUserId: B.userId } });
+  record('connect sans crédit → refus NO_CREDIT', noCredit.data?.success === false && noCredit.data?.code === 'NO_CREDIT', JSON.stringify(noCredit.data?.message));
+  // Les codes promo n'existent qu'en base : code gratuit de test (base de TEST uniquement).
+  const promoCode = `SMOKE${Date.now().toString(36).toUpperCase()}`;
+  if (E2E_PSQL) {
+    execSync(E2E_PSQL, { input: `INSERT INTO "PromoCode" (id, code, "discountType", "discountValue", "maxUses", "isActive") VALUES (gen_random_uuid()::text, '${promoCode}', 'free', 0, 5, true);`, stdio: ['pipe', 'ignore', 'inherit'] });
+  }
+  for (const user of [A, B]) {
+    const promo = await call('POST', '/payment/apply-promo', { token: user.token, body: { code: promoCode, optionId: 'parcours_harmonie' } });
+    record(`code promo gratuit → 1 crédit (${user.email.split('-')[2]})`, promo.status === 201 && promo.data?.isFree === true, `status ${promo.status}`);
+  }
+  const promoAgain = await call('POST', '/payment/apply-promo', { token: A.token, body: { code: promoCode, optionId: 'parcours_harmonie' } });
+  record('même code promo une 2e fois → 400', promoAgain.status === 400, `status ${promoAgain.status}`);
+  const legacyPromo = await call('POST', '/payment/apply-promo', { token: A.token, body: { code: 'BOLIGO100', optionId: 'parcours_harmonie' } });
+  record('ancien code « en dur » absent de la base → 400', legacyPromo.status === 400, `status ${legacyPromo.status}`);
   const balanceBefore = await call('GET', '/credit/balance', { token: A.token });
   const connect = await call('POST', '/matching/connect', { token: A.token, body: { targetUserId: B.userId } });
   record('connect A→B (like)', connect.status === 201 && connect.data?.success === true, JSON.stringify(connect.data?.message));
   const balanceAfter = await call('GET', '/credit/balance', { token: A.token });
-  record('connect ne débite PAS de crédit côté backend (constat)', balanceBefore.data?.credits === balanceAfter.data?.credits, `avant=${balanceBefore.data?.credits} après=${balanceAfter.data?.credits}`);
+  record('connect débite 1 crédit côté serveur', balanceBefore.data?.credits === 1 && balanceAfter.data?.credits === 0, `avant=${balanceBefore.data?.credits} après=${balanceAfter.data?.credits}`);
   const disc2 = await call('GET', '/matching/discover', { token: A.token });
   record('discover bloqué pendant invitation en attente', disc2.data?.length === 0, `profils=${disc2.data?.length}`);
   const likes = await call('GET', '/matching/received-likes', { token: B.token });
@@ -133,6 +148,8 @@ function waitFor(socket, event, ms = 4000) {
   const accept = await call('POST', '/matching/accept', { token: B.token, body: { proposalId: likes.data[0].id } });
   record('accept B', accept.status === 201 && accept.data?.success === true && !!accept.data?.journey?.id, JSON.stringify(accept.data?.message));
   const journeyId = accept.data.journey.id;
+  const balanceB = await call('GET', '/credit/balance', { token: B.token });
+  record('accept débite 1 crédit à B côté serveur', balanceB.data?.credits === 0, `solde=${balanceB.data?.credits}`);
   const myMatches = await call('GET', '/matching/my-matches', { token: A.token });
   record('my-matches A → phase sondeur + journeyId', myMatches.data?.[0]?.phase === 'sondeur' && myMatches.data?.[0]?.journeyId === journeyId, JSON.stringify({ phase: myMatches.data?.[0]?.phase, videoEnabled: myMatches.data?.[0]?.videoEnabled }));
 
@@ -206,12 +223,31 @@ function waitFor(socket, event, ms = 4000) {
   socketB.close();
 
   // ── Vidéo
+  const endEarly = await call('POST', '/video/end', { token: A.token, body: { journeyId, durationSec: 60 } });
+  record('video/end pendant le chat (aucun appel) → étape inchangée', endEarly.data?.advanced === false, JSON.stringify(endEarly.data));
+  const forced = await call('PATCH', `/journey/${journeyId}/advance`, { token: A.token, body: { step: 'termine' } });
+  record('avancement forcé vers « termine » → 400', forced.status === 400, `status ${forced.status}`);
+  const exTooEarly = await call('POST', `/journey/${journeyId}/exchange-contact`, { token: A.token, body: { sharePhone: true, shareEmail: true } });
+  record('échange de coordonnées avant la vidéo → 400', exTooEarly.status === 400, `status ${exTooEarly.status}`);
+  if (E2E_PSQL) {
+    // 3 jours de chat écoulés (base de TEST) → étape vidéo au prochain chargement.
+    execSync(E2E_PSQL, { input: `UPDATE "Journey" SET "stepStartDate" = now() - interval '3 days 1 hour' WHERE id = '${journeyId}';`, stdio: ['pipe', 'ignore', 'inherit'] });
+    await call('GET', '/matching/my-matches', { token: A.token });
+  }
   const vs = await call('GET', `/video/session/${journeyId}`, { token: A.token });
-  record('video/session canJoin (VIDEO_TEST_UNLOCK)', vs.status === 200 && vs.data?.canJoin === true, JSON.stringify({ step: vs.data?.currentStep, canJoin: vs.data?.canJoin, max: vs.data?.maxDurationSec }));
+  record('video/session canJoin (étape vidéo)', vs.status === 200 && vs.data?.canJoin === true, JSON.stringify({ step: vs.data?.currentStep, canJoin: vs.data?.canJoin, max: vs.data?.maxDurationSec }));
   const tokenCall = await call('POST', '/video/call-token', { token: A.token, body: { journeyId } });
   record('video/call-token → meetingUrl', tokenCall.status === 201 && !!tokenCall.data?.meetingUrl, `provider=${tokenCall.data?.provider}`);
+  const endAlone = await call('POST', '/video/end', { token: A.token, body: { journeyId, durationSec: 60 } });
+  record('video/end avec un seul membre connecté → étape inchangée', endAlone.data?.advanced === false, JSON.stringify(endAlone.data));
+  await call('POST', '/video/call-token', { token: A.token, body: { journeyId } });
+  const tokenCallB = await call('POST', '/video/call-token', { token: B.token, body: { journeyId } });
+  record('video/call-token B → meetingUrl', tokenCallB.status === 201 && !!tokenCallB.data?.meetingUrl, `provider=${tokenCallB.data?.provider}`);
+  if (E2E_PSQL) {
+    execSync(E2E_PSQL, { input: `UPDATE "VideoSession" SET "startDate" = now() - interval '90 seconds' WHERE "journeyId" = '${journeyId}';`, stdio: ['pipe', 'ignore', 'inherit'] });
+  }
   const endWrong = await call('POST', '/video/end', { token: A.token, body: { callId: journeyId, durationOrReason: 30 } });
-  record('video/end avec payload actuel de l\'app {callId} → échec attendu', endWrong.status !== 201, `status ${endWrong.status}`);
+  record('video/end sans journeyId → échec attendu', endWrong.status !== 201 || endWrong.data?.advanced !== true, `status ${endWrong.status}`);
   const endOk = await call('POST', '/video/end', { token: A.token, body: { journeyId, durationSec: 30 } });
   record('video/end {journeyId,durationSec} → avance vers echange_contacts', endOk.status === 201 && endOk.data?.currentStep === 'echange_contacts', JSON.stringify(endOk.data));
 
@@ -220,8 +256,10 @@ function waitFor(socket, event, ms = 4000) {
   record('contact-exchange avant consentement ne révèle ni téléphone ni e-mail', ce0.status === 200 && ce0.data?.partner?.telephone == null && ce0.data?.partner?.email == null, JSON.stringify({ myConsent: ce0.data?.myConsent, partnerTel: ce0.data?.partner?.telephone ?? null }));
   const exA = await call('POST', `/journey/${journeyId}/exchange-contact`, { token: A.token, body: { sharePhone: true, shareEmail: true } });
   record('exchange-contact A', exA.status === 201 && exA.data?.consentA === true && exA.data?.bothAccepted === false, JSON.stringify(exA.data));
-  const exB = await call('POST', `/journey/${journeyId}/exchange-contact`, { token: B.token, body: { sharePhone: true, shareEmail: true } });
-  record('exchange-contact B → bothAccepted', exB.data?.bothAccepted === true, JSON.stringify(exB.data));
+  const exB = await call('POST', `/journey/${journeyId}/exchange-contact`, { token: B.token, body: { sharePhone: false, shareEmail: true } });
+  record('exchange-contact B (e-mail seulement) → bothAccepted, téléphone non partagé', exB.data?.bothAccepted === true && exB.data?.phoneShared === false && exB.data?.emailShared === true, JSON.stringify(exB.data));
+  const ce1 = await call('GET', `/journey/${journeyId}/contact-exchange`, { token: A.token });
+  record('A voit l\'e-mail de B mais pas son téléphone', !!ce1.data?.partner?.email && ce1.data?.partner?.telephone == null, '');
   const final = await call('GET', `/journey/${journeyId}/status`, { token: A.token });
   record('journey terminé', final.data?.currentStep === 'termine', JSON.stringify(final.data));
 
@@ -230,16 +268,14 @@ function waitFor(socket, event, ms = 4000) {
   record('payment/plans (1 seul plan côté backend)', plans.status === 200 && plans.data?.plans?.length === 1, plans.data?.plans?.map((p) => `${p.id}=${p.priceDisplay}/${p.credits}cr`).join(' '));
   const premium = await call('POST', '/payment/create-payment-intent', { token: A.token, body: { optionId: 'harmonie_premium' } });
   record('create-payment-intent optionId inconnu (harmonie_premium) → retombe sur 15€/1 crédit (constat)', premium.data?.originalAmount === 1500, JSON.stringify({ status: premium.status, originalAmount: premium.data?.originalAmount, isMock: premium.data?.isMock }));
-  const confirm = await call('POST', '/payment/confirm', { token: A.token, body: { paymentIntentId: 'pi_x' } });
-  record('POST payment/confirm (appelé par l\'app) → 404', confirm.status === 404, `status ${confirm.status}`);
-  const spendTooMuch = await call('POST', '/credit/spend', { token: A.token, body: { amount: 1, description: 'test' } });
-  record('credit/spend solde insuffisant → 400', spendTooMuch.status === 400, `status ${spendTooMuch.status}`);
-  const add = await call('POST', '/credit/add', { token: A.token, body: { amount: 2, description: 'self-service (constat sécurité)' } });
-  record('credit/add ouvert à tout utilisateur (constat sécurité)', add.status === 201 && add.data?.newBalance === 2, JSON.stringify(add.data?.newBalance));
-  const spend = await call('POST', '/credit/spend', { token: A.token, body: { amount: 1, description: 'connexion test' } });
-  record('credit/spend → 201 + newBalance', spend.status === 201 && spend.data?.newBalance === 1, JSON.stringify(spend.data?.newBalance));
+  const confirm = await call('POST', '/payment/confirm', { token: A.token, body: { paymentIntentId: '../charges' } });
+  record('POST payment/confirm référence mal formée → 400', confirm.status === 400, `status ${confirm.status}`);
+  const add = await call('POST', '/credit/add', { token: A.token, body: { amount: 2, description: 'self-service' } });
+  record('credit/add n\'existe plus → 404', add.status === 404, `status ${add.status}`);
+  const spend = await call('POST', '/credit/spend', { token: A.token, body: { amount: 1, description: 'ancienne app' } });
+  record('credit/spend ne débite plus rien (débit serveur)', spend.status === 201 && spend.data?.charged === 0, JSON.stringify(spend.data));
   const creditHistory = await call('GET', '/credit/history', { token: A.token });
-  record('credit/history', creditHistory.status === 200 && creditHistory.data.length === 2, `transactions=${creditHistory.data?.length}`);
+  record('credit/history (code promo + invitation)', creditHistory.status === 200 && creditHistory.data.length === 2, `transactions=${creditHistory.data?.length}`);
 
   // ── Divers
   const report = await call('POST', '/report', { token: A.token, body: { reportedUserId: B.userId, reason: 'spam', description: 'test' } });
@@ -247,7 +283,7 @@ function waitFor(socket, event, ms = 4000) {
   const push = await call('POST', '/notifications/push-token', { token: A.token, body: { pushToken: 'ExponentPushToken[test]' } });
   record('notifications/push-token', push.status === 201, `status ${push.status}`);
   const idor = await call('GET', `/journey/${journeyId}/messages`, { token: (await registerAndVerify('carol', 'F')).token });
-  record('IDOR : un tiers lit les messages d\'un journey (constat sécurité, attendu 403)', idor.status === 403, `status ${idor.status} messages=${Array.isArray(idor.data) ? idor.data.length : '-'}`);
+  record('IDOR : un tiers ne lit pas les messages d\'un parcours (403)', idor.status === 403, `status ${idor.status} messages=${Array.isArray(idor.data) ? idor.data.length : '-'}`);
 
   const failed = results.filter((r) => !r.ok);
   console.log(`\n${results.length - failed.length}/${results.length} étapes OK`);

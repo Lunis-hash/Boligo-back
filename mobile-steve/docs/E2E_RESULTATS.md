@@ -1,15 +1,16 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-03T00:56:42.943Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-03T13:10:40.671Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
 | Accueil affiché | ✅ |  |
-| Slides : 6 écrans parcourus, CTA désactivé tant que les CGU ne sont pas cochées | ✅ |  |
-| CGU acceptées → formulaire de profil | ✅ |  |
+| Slides : 6 écrans parcourus | ✅ |  |
+| Slides → formulaire de profil (CGU acceptées à l’étape 4) | ✅ |  |
 | Étape 1 (identité, métier, genre, date) validée | ✅ |  |
 | Étape 2 (localisation) validée | ✅ |  |
 | Étape 3 (périmètre) validée | ✅ |  |
+| Étape 4 : création bloquée tant que les CGU ne sont pas acceptées | ✅ |  |
 | Compte créé → écran de vérification OTP | ✅ |  |
 | Code OTP accepté → entretien module 0 | ✅ |  |
 | Entretien : 74 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
@@ -30,13 +31,14 @@ Date : 2026-10-03T00:56:42.943Z · App : http://localhost:8081 · API : http://l
 | Solde affiché dans la découverte = 1 crédit | ✅ |  |
 | Invitation envoyée (en attente de réponse) | ✅ |  |
 | Crédit débité après la connexion | ✅ | {"credits":0} |
+| Acceptation sans crédit refusée (NO_CREDIT) | ✅ |  |
 | Partenaire accepte (API) → parcours créé | ✅ |  |
 | Onglet Matchs : parcours Harmonie visible | ✅ |  |
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"7fab340d-e9 |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"7fab340d-e90a-442f-b2f0-3575a79f7562","currentStep":"chat_libre","currentDay":3,"partnerName":"Nadia","isCompleted":true} |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"e8906337-07 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"e8906337-07aa-4c0c-bf60-c9ac8af0be15","currentStep":"chat_libre","currentDay":1,"partnerName":"Nadia","isCompleted":true} |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |
@@ -44,6 +46,8 @@ Date : 2026-10-03T00:56:42.943Z · App : http://localhost:8081 · API : http://l
 | Message insultant bloqué avant envoi (modération locale) | ✅ | Message non envoyé
 
 Votre message contient des termes inappropriés non autorisés. |
+| Fin d'appel sans appel réel (chat libre) → étape inchangée | ✅ | {"success":true,"advanced":false,"currentStep":"chat_libre"} |
+| Étape vidéo : les deux membres rejoignent l'appel | ✅ | 201/201 |
 | Fin d'appel vidéo (API) → étape échange de contacts | ✅ | {"success":true,"advanced":true,"currentStep":"echange_contacts"} |
 | Carte « Échanger vos contacts ? » affichée | ✅ |  |
 | Après mon consentement : contacts NON révélés tant que le partenaire n'a pas accepté | ✅ |  |
