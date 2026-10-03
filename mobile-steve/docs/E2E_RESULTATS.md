@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-02T13:49:48.522Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-03T00:56:42.943Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -12,12 +12,17 @@ Date : 2026-10-02T13:49:48.522Z · App : http://localhost:8081 · API : http://l
 | Étape 3 (périmètre) validée | ✅ |  |
 | Compte créé → écran de vérification OTP | ✅ |  |
 | Code OTP accepté → entretien module 0 | ✅ |  |
-| Entretien : 67 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
+| Entretien : 74 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
 | Bilan de compatibilité affiché | ✅ |  |
+| Bilan : aucun texte tronqué ni « undefined » | ✅ |  |
 | Login API du compte créé via l'UI | ✅ |  |
 | Découverte : état vide géré | ✅ |  |
 | Découverte : profil compatible affiché | ✅ |  |
-| Découverte : bloc « Sujets à aborder » (selon les piliers du profil) | ✅ | affiché |
+| Découverte : cercle = pourcentage global du serveur | ✅ | 98% / API 98 |
+| Découverte : affinités sur les 11 modules du Grand Entretien | ✅ | 11 modules |
+| Découverte : analyse rédigée (« Nadia, … ans, … ») | ✅ | Nadia, 25 ans, architecte à Paris, aborde sa recherche avec  |
+| Découverte : aucun texte tronqué ni « undefined » | ✅ |  |
+| Découverte : bloc « Sujets à aborder » (selon les piliers du profil) | ✅ | non affiché : aucun pilier < 60 % |
 | Like sans crédit → « Plus de crédits disponibles » | ✅ |  |
 | Formule chargée depuis le backend (15,00 €) | ✅ |  |
 | Code promo validé | ✅ |  |
@@ -30,8 +35,8 @@ Date : 2026-10-02T13:49:48.522Z · App : http://localhost:8081 · API : http://l
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"4e1d14d0-c4 |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"4e1d14d0-c4a8-4dee-90c4-fc3811c45cff","currentStep":"chat_libre","currentDay":3,"partnerName":"Nadia","isCompleted":true} |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"7fab340d-e9 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"7fab340d-e90a-442f-b2f0-3575a79f7562","currentStep":"chat_libre","currentDay":3,"partnerName":"Nadia","isCompleted":true} |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |

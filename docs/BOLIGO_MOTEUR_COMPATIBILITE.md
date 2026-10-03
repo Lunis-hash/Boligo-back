@@ -119,3 +119,62 @@ Grand Entretien (11 modules, 76 questions en banque, 60–70 posées)
 | Stripe | Un seul compte connecté : OWEKE (live). | utiliser ses clés pour BOLIGO mélangerait les deux sociétés | créer un compte Stripe BOLIGO (test puis live) |
 | Daily.co | aucun compte | — | créer un compte BOLIGO |
 | Dépôts | `Boligo-back` + `mobile-steve/` distincts des dépôts `oweke*` | — | — |
+
+## 7. Moteur de rédaction des fiches (`src/portrait/`)
+
+Toutes les fiches (Découverte, match en cours, likes reçus, bilan de fin
+d'entretien, onglet Profil) sont **rédigées à la lecture** à partir des
+réponses structurées du Grand Entretien. Aucune donnée de membre n'est
+modifiée : les fiches déjà générées, y compris les anciennes fiches tronquées,
+s'affichent correctement dès la mise en ligne.
+
+| Fichier | Rôle |
+|---|---|
+| `portrait.phrases.ts` | Les 11 modules (libellé, emoji, poids) et les tables de rédaction : une phrase écrite à la main par réponse. Les accords se font avec `{Il}`, `{e}` et `{masc|fem}`. |
+| `portrait.text.ts` | Typographie : accords, nettoyage (virgules orphelines, « undefined », apostrophes), coupe au mot, « à Lyon » / « au Havre ». |
+| `portrait.writer.ts` | `buildPortrait()` : en-tête, analyse à la 3e personne, bio à la 1re personne si la bio enregistrée est abîmée, 3 mots, valeurs, attentes, détails, bilan par module avec clarté. |
+| `module-affinity.ts` | Affinités par module entre deux membres et score global. |
+| `self-portrait.ts` | Fiche personnelle (bilan, `/profile/me`). |
+| `../matching/match-view.ts` | Fiche vue par un autre membre, la même pour les trois écrans. |
+
+### Exemple
+
+> Oli, 38 ans, pilote de ligne à Écouis, aborde sa recherche avec **une exigence de clarté : les sujets importants se posent tôt**. Il cherche un **engagement officiel, le mariage**, envisagé dans les douze mois si tout va bien. Fonder une famille fait clairement partie de son projet. En couple, il recherche un équilibre entre intimité et liberté et préfère prendre du recul lors d'un désaccord, puis en reparler au calme. Sa foi chrétienne compte, et il reste ouvert à d'autres croyances. […] Ce qu'il apporte de plus précieux : **sa stabilité et sa fiabilité**, avec l'envie d'offrir la sécurité à la personne qui partagera sa vie.
+
+### Affinités par module et score global
+
+Pour chacun des 11 modules (0 → 10), chaque question répondue par les deux
+membres donne une similarité :
+
+| Cas | Similarité |
+|---|---|
+| Réponses identiques | 1 |
+| Différentes mais jugées compatibles par le moteur de divergences | 0,85 |
+| Différentes, question sans règle de divergence | 0,65 |
+| Divergence mineure / modérée / majeure / critique | 0,72 / 0,5 / 0,25 / 0 |
+| Module 10 : ce que l'un recherche (`M10_Q03`) face à ce que l'autre apporte (`M10_Q09`) | 1 si cohérent, sinon 0,5 |
+
+Les faits personnels et les filtres déjà appliqués (origine, études, passé,
+périmètre, tranche d'âge…) ne sont pas comparés.
+
+- **Pourcentage du module** : moyenne de ces similarités, plafonnée à 64 % si
+  le module contient une divergence majeure et à 35 % s'il contient une
+  incompatibilité déclarée.
+- **Verdict** : « Alignement fort sur … » (≥ 80), « Bonne base, avec une
+  nuance : … » (≥ 65), « À explorer ensemble : … » (≥ 45), « Vigilance : … »,
+  ou « Incompatibilité déclarée : … ».
+- **Module sans réponse commune** : il reste affiché, sans pourcentage, avec
+  « Pas encore de réponses communes sur ce module ».
+- **Score global** (le cercle de Découverte) : moyenne des modules pondérée
+  (critères essentiels et projet de couple ×1,5, identité ×1,3, attachement
+  et communication ×1,2…). Il est plafonné à 60 % en cas d'incompatibilité
+  déclarée. Il faut au moins 8 réponses comparables, sinon l'ancienne
+  estimation par carte mentale sert de repli. Le cercle et les barres
+  viennent donc du même calcul.
+
+### Bilan personnel : la clarté
+
+Le pourcentage d'un module dans le bilan est la **clarté** : la part des
+questions applicables (âge, genre, dépendances) auxquelles le membre a donné
+une réponse tranchée. Les réponses d'hésitation (« Je ne suis pas certain(e) »,
+« Je ne sais pas vraiment »…) ne comptent pas.
