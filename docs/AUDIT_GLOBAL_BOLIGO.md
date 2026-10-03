@@ -23,7 +23,7 @@
   - **les mentions légales** encore à compléter ;
   - **l'appel vidéo**, toujours impossible sur le web ;
   - **la fin de parcours** : un écran « Parcours clos » (raison, remboursement) reste à créer ;
-  - **l'envoi réel des e-mails** : sans fournisseur configuré, personne ne reçoit son code d'inscription.
+  - **la délivrabilité des e-mails** : l'envoi SMTP est actif en production ; reste à confirmer la réception (domaine BOLIGO, SPF, DKIM).
 - **Cloisonnement de la base** : la base Supabase de BOLIGO héberge des schémas et des fonctions d'un autre projet, exécutables avec la clé publique. C'est une décision à prendre (voir décision n° 1).
 - **À décider par vous** :
   - le cloisonnement de la base ;
@@ -35,7 +35,7 @@
 - **Tests** : tous au vert. API 107/107, intégration 20/20, application 83/83, recette navigateur 56/56, recette API 80/80.
 - **Mise en ligne** :
   - la migration de base (index et consentement CGU) est **appliquée en production** ;
-  - le code corrigé est **fusionné dans `main`** (demande de fusion n° 5) : Render redéploie l'API `boligo-back` et le site `boligo-web` à chaque fusion sur `main`.
+  - le code corrigé est **fusionné dans `main`** (demande de fusion n° 5) et **en ligne depuis le 3 octobre, 16 h 25 UTC** : l'API `boligo-back` et le site `boligo-web` ont été redéployés sans erreur (Stripe connecté au compte de test BOLIGO, e-mails en SMTP).
 
 ### Lexique
 
@@ -292,9 +292,9 @@ Chemins de l'application relatifs à `mobile-steve/`. Chemins de l'API préfixé
    | `HARMONIE`, `WELCOME`, `BETA2026` | gratuits | plafonnés, expirent le 31/12/2026 |
 
    **Recommandation :** désactiver ou plafonner `BOLIGO100`, `BOLIGO50` et `BIENVENUE5` avant le lancement public. Désactivez-les plutôt que de les supprimer, pour garder l'historique. Aucune donnée n'a été modifiée. La liste codée en dur a été retirée du code.
-3. **Fournisseur d'e-mails.** Aucune trace d'envoi d'e-mail dans les journaux.
-   - Au démarrage, l'API écrit désormais une ligne `[EMAIL] Mode d'envoi : …`. Si elle indique « simulation », **aucun code de vérification n'est délivré et personne ne peut terminer son inscription**.
-   - Configurez sur Render un fournisseur dédié à BOLIGO : `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`, ou `BREVO_API_KEY`, avec `EMAIL_FROM` sur le domaine BOLIGO et l'authentification du domaine (SPF, DKIM).
+3. **Fournisseur d'e-mails.** Au déploiement du 3 octobre (16 h 25 UTC), l'API a écrit `[EMAIL] Mode d'envoi : smtp` : un serveur SMTP est bien configuré et les codes sont envoyés réellement.
+   - Vérifiez que ce compte SMTP appartient à BOLIGO et que l'expéditeur (`EMAIL_FROM`) utilise le domaine BOLIGO, authentifié (SPF, DKIM), pour que les codes n'arrivent pas en spam.
+   - Faites une inscription test de bout en bout pour confirmer la réception du code.
    - Vérifiez aussi que `OTP_DEBUG` est absent ou à `false` en production.
 4. **Paiements Stripe.** Stripe tourne aujourd'hui dans le bac à sable de test BOLIGO. Les crédits sont attribués après confirmation côté serveur (`POST /payment/confirm`). Avant d'ouvrir les paiements réels :
    - définir `STRIPE_WEBHOOK_SECRET` sur Render (les webhooks non signés sont refusés en production) ;
