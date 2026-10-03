@@ -45,6 +45,7 @@ async function registerAndVerify(tag, gender) {
       email, password: 'Password12!', firstName: tag, lastName: 'Test',
       birthDate: '1994-05-20T00:00:00.000Z', gender, city: 'Paris, France',
       telephone: `+3361${Math.floor(Math.random() * 1e7)}`, job: 'Testeur', meetingScope: 'international',
+      acceptTerms: true, termsVersion: '2026-10-02',
     },
   });
   record(`register ${tag}`, reg.status === 201, `status ${reg.status}, otpDebugCode présent=${!!reg.data?.otpDebugCode}`);
@@ -96,9 +97,11 @@ function waitFor(socket, event, ms = 4000) {
   const goodRefresh = await call('POST', '/auth/refresh', { body: { refreshToken: A.refresh } });
   record('refresh token valide → nouveaux tokens', goodRefresh.status === 200 && !!goodRefresh.data?.access_token, `status ${goodRefresh.status}`);
   if (goodRefresh.data?.access_token) { A.token = goodRefresh.data.access_token; A.refresh = goodRefresh.data.refresh_token; }
-  const dup = await call('POST', '/auth/register', { body: { email: A.email, password: 'Password12!', firstName: 'X', birthDate: '1994-05-20', gender: 'F' } });
+  const dup = await call('POST', '/auth/register', { body: { email: A.email, password: 'Password12!', firstName: 'X', birthDate: '1994-05-20', gender: 'F', acceptTerms: true } });
   record('register email déjà utilisé → 409', dup.status === 409, `status ${dup.status}`);
-  const minor = await call('POST', '/auth/register', { body: { email: `minor-${Date.now()}@example.test`, password: 'Password12!', firstName: 'X', birthDate: '2015-05-20', gender: 'F' } });
+  const minor = await call('POST', '/auth/register', { body: { email: `minor-${Date.now()}@example.test`, password: 'Password12!', firstName: 'X', birthDate: '2015-05-20', gender: 'F', acceptTerms: true } });
+  const noTerms = await call('POST', '/auth/register', { body: { email: `noterms-${Date.now()}@example.test`, password: 'Password12!', firstName: 'X', birthDate: '1994-05-20', gender: 'F' } });
+  record('register sans acceptation des CGU → 400', noTerms.status === 400, `status ${noTerms.status}`);
   record('register mineur → 400', minor.status === 400, `status ${minor.status}`);
   const login = await call('POST', '/auth/login', { body: { email: A.email, password: 'Password12!' } });
   record('login valide → 200 + tokens', login.status === 200 && !!login.data?.access_token, `status ${login.status}`);

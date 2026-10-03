@@ -31,6 +31,49 @@ function normalizeEmail(email: string): string {
   return (email ?? '').trim().toLowerCase();
 }
 
+const MIN_AGE = 18;
+const MAX_AGE = 99;
+const EMAIL_TAKEN_MESSAGE = 'Un compte existe déjà avec cet e-mail.';
+const PHONE_TAKEN_MESSAGE = 'Ce numéro de téléphone est déjà utilisé.';
+const TERMS_REQUIRED_MESSAGE =
+  "Vous devez accepter les conditions générales d'utilisation et la politique de confidentialité pour créer un compte.";
+
+/**
+ * « AAAA-MM-JJ » (ou date ISO complète des anciennes versions de l'application)
+ * → Date ; null si la chaîne est invalide ou désigne un jour inexistant (31/02…).
+ */
+function parseBirthDate(value: string): Date | null {
+  const raw = (value ?? '').trim();
+  const dayOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  if (dayOnly) {
+    const [y, m, d] = [Number(dayOnly[1]), Number(dayOnly[2]), Number(dayOnly[3])];
+    const date = new Date(Date.UTC(y, m - 1, d));
+    const exists = date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+    return exists ? date : null;
+  }
+  const date = new Date(raw);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+/** Traduit une violation d'unicité Prisma (deux inscriptions simultanées) en 409 explicite. */
+function rethrowUniqueViolation(e: any): never {
+  if (e?.code === 'P2002') {
+    const target = String(e?.meta?.target ?? '');
+    throw new ConflictException(target.includes('telephone') ? PHONE_TAKEN_MESSAGE : EMAIL_TAKEN_MESSAGE);
+  }
+  throw e;
+}
+
+/** Âge révolu, calculé en UTC pour ne pas dépendre du fuseau du serveur. */
+function ageInYears(birth: Date, now: Date): number {
+  let age = now.getUTCFullYear() - birth.getUTCFullYear();
+  const m = now.getUTCMonth() - birth.getUTCMonth();
+  if (m < 0 || (m === 0 && now.getUTCDate() < birth.getUTCDate())) {
+    age--;
+  }
+  return age;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,21 +83,30 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const birth = new Date(dto.birthDate);
-    if (isNaN(birth.getTime())) {
+    // Acceptation expresse des CGU : déjà exigée par le DTO (@Equals(true)),
+    // revérifiée ici pour tout appel qui ne passerait pas par la validation.
+    if (dto.acceptTerms !== true) {
+      throw new BadRequestException(TERMS_REQUIRED_MESSAGE);
+    }
+    const termsVersion =
+      typeof dto.termsVersion === 'string' && dto.termsVersion.trim()
+        ? dto.termsVersion.trim().slice(0, 32)
+        : null;
+
+    const birth = parseBirthDate(dto.birthDate);
+    if (!birth) {
       throw new BadRequestException('Date de naissance invalide.');
     }
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--;
+    const now = new Date();
+    if (birth.getTime() > now.getTime()) {
+      throw new BadRequestException('La date de naissance ne peut pas être dans le futur.');
     }
-    if (age < 18) {
+    const age = ageInYears(birth, now);
+    if (age < MIN_AGE) {
       throw new BadRequestException('Vous devez avoir au moins 18 ans pour vous inscrire.');
     }
-    if (age > 120) {
-      throw new BadRequestException('Date de naissance invalide.');
+    if (age > MAX_AGE) {
+      throw new BadRequestException('Date de naissance invalide : l’âge maximum accepté est de 99 ans.');
     }
 
     const email = normalizeEmail(dto.email);
@@ -68,12 +120,12 @@ export class AuthService {
     });
 
     if (existingUser) {
-      if (existingUser.email.toLowerCase() === email) {
-        throw new ConflictException('Email already exists');
+      // Messages distincts : l'application propose la connexion pour un e-mail
+      // déjà inscrit, et la correction du numéro pour un téléphone déjà utilisé.
+      if (dto.telephone && existingUser.telephone === dto.telephone && normalizeEmail(existingUser.email) !== email) {
+        throw new ConflictException(PHONE_TAKEN_MESSAGE);
       }
-      if (dto.telephone && existingUser.telephone === dto.telephone) {
-        throw new ConflictException('Ce numéro de téléphone est déjà associé à un compte.');
-      }
+      throw new ConflictException(EMAIL_TAKEN_MESSAGE);
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 12);
@@ -85,12 +137,14 @@ export class AuthService {
         passwordHash: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName || '',
-        birthDate: new Date(dto.birthDate),
+        birthDate: birth,
         gender: dto.gender,
         city: dto.city,
         telephone: dto.telephone,
         isVerified: false,
         verificationCode: verificationCode,
+        termsAcceptedAt: now,
+        termsVersion,
         profile: {
           create: {
             displayedCity: dto.city || null,
@@ -124,7 +178,7 @@ export class AuthService {
           },
         },
       },
-    });
+    }).catch(rethrowUniqueViolation);
 
     // Envoyer l'email OTP de validation de façon asynchrone (sans bloquer la réponse)
     this.emailService.sendVerificationEmail(user.email, verificationCode).catch((e) => {

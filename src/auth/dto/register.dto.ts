@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { Equals, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export enum GenderValue {
   H = 'H',
@@ -59,4 +59,19 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   meetingScope?: string;
+
+  @ApiProperty({
+    example: true,
+    description: "Acceptation expresse des CGU et de la politique de confidentialité (doit valoir true).",
+  })
+  @Equals(true, {
+    message: "Vous devez accepter les conditions générales d'utilisation et la politique de confidentialité pour créer un compte.",
+  })
+  acceptTerms: boolean;
+
+  @ApiProperty({ example: '2026-10-02', required: false, description: 'Version des textes légaux acceptée.' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(32)
+  termsVersion?: string;
 }

@@ -43,7 +43,7 @@ async function api(method, p, { token, body } = {}) {
 async function createPartner(gender) {
   const email = `steve-e2e-partner-${Date.now()}@example.test`;
   await api('POST', '/auth/register', {
-    body: { email, password: 'Password12!', firstName: 'Nadia', lastName: 'Partenaire', birthDate: '2001-09-15T00:00:00.000Z', gender, city: 'Paris, France', telephone: `+3362${Math.floor(Math.random() * 1e7)}`, job: 'Architecte', meetingScope: 'international' },
+    body: { email, password: 'Password12!', firstName: 'Nadia', lastName: 'Partenaire', birthDate: '2001-09-15T00:00:00.000Z', gender, city: 'Paris, France', telephone: `+3362${Math.floor(Math.random() * 1e7)}`, job: 'Architecte', meetingScope: 'international', acceptTerms: true, termsVersion: '2026-10-02' },
   });
   const ver = await api('POST', '/auth/verify-email', { body: { email, code: '1234' } });
   const token = ver.data.access_token;
@@ -87,13 +87,10 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await shot('02-slides');
   for (let i = 0; i < 5; i++) { await clickText('Suivant →'); await page.waitForTimeout(500); }
   await shot('03-slides-cgu');
-  const ctaDisabled = (await page.locator('[aria-disabled="true"]', { hasText: 'Créer mon compte gratuitement' }).count()) > 0;
-  record('Slides : 6 écrans parcourus, CTA désactivé tant que les CGU ne sont pas cochées', ctaDisabled);
-  await clickText("J'ai lu et j'accepte les");
-  await page.waitForTimeout(300);
+  record('Slides : 6 écrans parcourus', true);
   await clickText('Créer mon compte gratuitement');
   await page.waitForURL(/profile-details/);
-  record('CGU acceptées → formulaire de profil', true);
+  record('Slides → formulaire de profil (CGU acceptées à l’étape 4)', true);
 
   // ── 2. Inscription (4 étapes)
   await fillPlaceholder('Votre prénom', 'Steve');
@@ -130,6 +127,11 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   const phoneInput = page.locator('input:visible').last();
   await phoneInput.fill(`6${Math.floor(10000000 + Math.random() * 89999999)}`);
   await shot('07-inscription-etape4');
+  await clickText('Créer mon compte', { exact: true });
+  await page.waitForTimeout(500);
+  record('Étape 4 : création bloquée tant que les CGU ne sont pas acceptées', /profile-details/.test(page.url()));
+  await page.getByTestId('terms-checkbox').click();
+  await page.waitForTimeout(300);
   await clickText('Créer mon compte', { exact: true });
   await page.waitForURL(/verify/, { timeout: 15000 });
   record('Compte créé → écran de vérification OTP', true);
