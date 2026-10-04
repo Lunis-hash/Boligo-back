@@ -8,21 +8,22 @@ import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Brain, ShieldCheck, CheckCircle2, LogOut, ArrowRight } from 'lucide-react-native';
+import { ModuleIcon } from '@/components/BrandIcons';
 
 const { width } = Dimensions.get('window');
 
-const MODULE_INFO: Record<number, { title: string; subtitle: string; icon: string }> = {
-  0: { title: 'Filtres non-négociables', subtitle: 'Vos critères et filtres essentiels', icon: '🎯' },
-  1: { title: 'Identité & Culture', subtitle: 'Origines, traditions et spiritualité', icon: '💎' },
-  2: { title: 'Attachement & Régulation émotionnelle', subtitle: 'Gestion des émotions et sécurité affective', icon: '🧠' },
-  3: { title: 'Vécu & Contexte', subtitle: 'Parcours de vie et enseignements', icon: '⚖️' },
-  4: { title: 'Vision économique', subtitle: 'Gestion financière et organisation du foyer', icon: '💼' },
-  5: { title: 'Dynamique sociale & familiale', subtitle: 'Relations familiales et entourage', icon: '🤝' },
-  6: { title: 'Quotidien, Communication réelle & Limites', subtitle: 'Communication, intimité et limites', icon: '💬' },
-  7: { title: 'Trajectoire de vie & Personnalité', subtitle: 'Ambitions, projets et tempérament', icon: '🌱' },
-  8: { title: 'Projet de couple', subtitle: 'Engagement et vision commune du couple', icon: '💍' },
-  9: { title: 'Pouvoir, Effort & Capacité à aimer', subtitle: 'Leadership, compromis et don de soi', icon: '❤️' },
-  10: { title: 'Alchimie, Vibe & Désir', subtitle: 'Clef de voûte et alchimie relationnelle', icon: '✨' },
+const MODULE_INFO: Record<number, { title: string; subtitle: string }> = {
+  0: { title: 'Filtres non-négociables', subtitle: 'Vos critères et filtres essentiels' },
+  1: { title: 'Identité & Culture', subtitle: 'Origines, traditions et spiritualité' },
+  2: { title: 'Attachement & Régulation émotionnelle', subtitle: 'Gestion des émotions et sécurité affective' },
+  3: { title: 'Vécu & Contexte', subtitle: 'Parcours de vie et enseignements' },
+  4: { title: 'Vision économique', subtitle: 'Gestion financière et organisation du foyer' },
+  5: { title: 'Dynamique sociale & familiale', subtitle: 'Relations familiales et entourage' },
+  6: { title: 'Quotidien, Communication réelle & Limites', subtitle: 'Communication, intimité et limites' },
+  7: { title: 'Trajectoire de vie & Personnalité', subtitle: 'Ambitions, projets et tempérament' },
+  8: { title: 'Projet de couple', subtitle: 'Engagement et vision commune du couple' },
+  9: { title: 'Pouvoir, Effort & Capacité à aimer', subtitle: 'Leadership, compromis et don de soi' },
+  10: { title: 'Alchimie, Vibe & Désir', subtitle: 'Clef de voûte et alchimie relationnelle' },
 };
 
 interface Message {
@@ -41,7 +42,7 @@ export default function DynamicInterviewScreen() {
   const parsed = parseInt((moduleNumber || '0').replace(/^module-?/i, ''), 10);
   const modNum = isNaN(parsed) ? 0 : parsed;
 
-  const currentModuleInfo = MODULE_INFO[modNum] || { title: `Module ${modNum}`, subtitle: 'Grand Entretien BOLIGO', icon: '✨' };
+  const currentModuleInfo = MODULE_INFO[modNum] || { title: `Module ${modNum}`, subtitle: 'Grand Entretien BOLIGO' };
 
   const [isLoading, setIsLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -120,22 +121,18 @@ export default function DynamicInterviewScreen() {
   const handleAnswer = async (optionKey: string, optionText: string) => {
     if (isAnswering) return;
     setIsAnswering(true);
-    
     const currentQ = questions[currentQuestionIndex];
     addUserMessage(optionText);
-    
     const newAnswers = { ...answers, [currentQ.id]: optionKey };
     setAnswers(newAnswers);
 
     const nextIndex = currentQuestionIndex + 1;
     const progress = questions.length > 0 ? (nextIndex / questions.length) : 1;
-    
     Animated.timing(progressAnim, {
       toValue: progress,
       duration: 500,
       useNativeDriver: false,
     }).start();
-    
     if (nextIndex < questions.length) {
       setCurrentQuestionIndex(nextIndex);
       setTimeout(() => {
@@ -155,7 +152,7 @@ export default function DynamicInterviewScreen() {
 
       if (modNum < LAST_MODULE) {
         setTimeout(() => {
-          addAIMessage('✨ Excellent ! Vos réponses sont enregistrées. Passons au module suivant...');
+          addAIMessage('Merci, vos réponses sont enregistrées. Passons au module suivant.');
           setTimeout(() => goToNextStep(), 1400);
         }, 800);
       } else {
@@ -209,7 +206,7 @@ export default function DynamicInterviewScreen() {
 
         <View style={styles.loadingBadge}>
           <Sparkles size={12} color={Colors.primary.red} />
-          <Text style={styles.loadingBadgeText}>MODULE {modNum} / 10 · {currentModuleInfo.icon}</Text>
+          <Text style={styles.loadingBadgeText}>MODULE {modNum} / 10</Text>
         </View>
 
         <Text style={styles.loadingTitle}>{currentModuleInfo.title}</Text>
@@ -226,15 +223,13 @@ export default function DynamicInterviewScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
-      
       {/* ── En-tête d'accompagnement ── */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerTopRow}>
           <View style={styles.moduleBadge}>
-            <Text style={styles.moduleBadgeIcon}>{currentModuleInfo.icon}</Text>
+            <ModuleIcon module={modNum} size={14} />
             <Text style={styles.moduleBadgeText}>MODULE {modNum} / 10</Text>
           </View>
-          
           <TouchableOpacity
             style={styles.pauseBtn}
             onPress={handlePause}
@@ -453,7 +448,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
   },
   moduleBadgeIcon: {
-    fontSize: 12,
+    fontFamily: Typography.fontFamily.regular, fontSize: 12,
   },
   moduleBadgeText: {
     fontSize: 10,

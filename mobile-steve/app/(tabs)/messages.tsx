@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  Animated,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
@@ -22,9 +21,11 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
 import { useAuth } from '@/context/auth';
 import { Mic, Send, Video, MoreVertical, ChevronLeft, Lock, Sparkles, Shield, Heart, Phone, Mail, UserCheck } from 'lucide-react-native';
 import client from '@/services/api';
+import { dayLabel, formatSince, stepDay } from '@/services/timeFormat';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 import { moderateOutgoingMessage, maskProfanityForDisplay } from '@/services/chatModeration';
@@ -60,6 +61,8 @@ interface Message {
   text: string;
   senderId: 'me' | 'other';
   timestamp: string;
+  /** Date ISO d'envoi : sert aux séparateurs « Aujourd'hui », « Hier »… */
+  sentAt?: string;
   isRead: boolean;
   /** En attente de confirmation serveur — affiché grisé */
   status?: 'sending' | 'sent' | 'failed';
@@ -101,6 +104,7 @@ function mapApiMessageToUi(msg: ChatSocketMessage | Record<string, unknown>, use
     text: maskProfanityForDisplay(m.content ?? ''),
     senderId: m.sender?.id === userId ? 'me' : 'other',
     timestamp: formatMsgTime(m.sentAt),
+    sentAt: m.sentAt ? new Date(m.sentAt).toISOString() : undefined,
     isRead: Boolean(m.isRead ?? true),
     status: 'sent',
   };
@@ -121,21 +125,18 @@ function messagesChanged(prev: Message[], next: Message[]): boolean {
 
 // Mapper les données API vers l'interface Match
 function mapApiMatchToMatch(apiMatch: any, userId: string): Match {
-  // Calculer le jour du chat depuis la date de début du journey
-  const now = Date.now();
-  // On ne peut pas calculer précisément sans stepStartDate, donc on utilise un default
-  const phaseDay = apiMatch.phase === 'chat' ? 1 : apiMatch.phase === 'video' ? 1 : 1;
+  const phaseDay = apiMatch.phase === 'chat' ? stepDay(apiMatch.stepStartDate) : 1;
 
   return {
     id: apiMatch.id,
     name: apiMatch.name || 'Utilisateur',
     avatarLetter: (apiMatch.name || 'U').charAt(0).toUpperCase(),
     phase: apiMatch.phase === 'sondeur' ? 'harmonie' : apiMatch.phase === 'contacts' ? 'contacts' : apiMatch.phase,
-    harmonyScore: apiMatch.compatibility || (79 + (String(apiMatch.id || '').charCodeAt(0) % 17)),
+    harmonyScore: apiMatch.compatibility ?? 0,
     whyMatch: apiMatch.slogan || 'Compatibilité basée sur vos valeurs communes.',
     phaseDay,
     totalDays: 3,
-    lastActivity: 'Récemment',
+    lastActivity: '',
     isOnline: false,
     journeyId: apiMatch.journeyId || null,
     videoEnabled: apiMatch.videoEnabled,
@@ -185,31 +186,9 @@ function Avatar({ letter, gradColors, size = 54 }: { letter: string; gradColors:
   );
 }
 
-function GradientText({ text, style }: { text: string; style?: object }) {
-  // Note: vrai dégradé texte nécessite MaskedView — ici on utilise la couleur principale
-  return <Text style={[{ color: Colors.primary.purple }, style]}>{text}</Text>;
-}
-
-function PhaseBadge({ phase }: { phase: Phase }) {
-  const cfg = PHASE_CONFIG[phase];
-  return (
-    <View style={[styles.phaseBadge, { backgroundColor: cfg.color + '18' }]}>
-      <Text style={[styles.phaseBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
-    </View>
-  );
-}
-
 // ─── Vue : Liste des conversations ───────────────────────────────
 function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match) => void }) {
   const insets = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState<'all' | 'harmonie' | 'chat'>('all');
-
-  const filtered = matches.filter(m => {
-    if (activeTab === 'harmonie') return m.phase === 'harmonie';
-    if (activeTab === 'chat') return m.phase === 'chat' || m.phase === 'video';
-    return true;
-  });
-
   return (
     <View style={styles.listContainer}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
@@ -217,48 +196,12 @@ function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match
       {/* Header */}
       <View style={[styles.listHeader, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.listTitle}>Messages</Text>
+        <Text style={styles.listSubtitle}>Votre conversation de parcours</Text>
       </View>
 
-      {/* Tabs */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsScroll} contentContainerStyle={styles.tabsContent}>
-        {([['all', 'Tous'], ['harmonie', 'Phase Harmonie'], ['chat', 'Chat libre']] as const).map(([key, label]) => (
-          <TouchableOpacity
-            key={key}
-            onPress={() => setActiveTab(key)}
-            style={[styles.tab, activeTab === key && styles.tabActive]}
-            activeOpacity={0.7}
-          >
-            {activeTab === key ? (
-              <LinearGradient colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.tabGrad}>
-                <Text style={[styles.tabText, styles.tabTextActive]}>{label}</Text>
-              </LinearGradient>
-            ) : (
-              <Text style={styles.tabText}>{label}</Text>
-            )}
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Parcours actifs — cards horizontales */}
-      <Text style={styles.sectionLabel}>Vos parcours actifs</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.cardsScroll} contentContainerStyle={styles.cardsContent}>
-        {matches.map(m => {
-          const cfg = PHASE_CONFIG[m.phase];
-          return (
-            <TouchableOpacity key={m.id} onPress={() => onSelect(m)} activeOpacity={0.8} style={[styles.matchCard, { borderColor: cfg.color + '40' }]}>
-              <Avatar letter={m.avatarLetter} gradColors={cfg.gradColors} size={52} />
-              <Text style={styles.matchCardName}>{m.name}</Text>
-              <PhaseBadge phase={m.phase} />
-              <Text style={styles.matchCardScore}>{m.harmonyScore}% harmonie</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      {/* Liste conversations */}
-      <Text style={styles.sectionLabel}>Historique</Text>
+      {/* Une seule rencontre à la fois : une liste simple, sans doublon. */}
       <FlatList
-        data={filtered}
+        data={matches}
         keyExtractor={item => item.id}
         renderItem={({ item }) => {
           const cfg = PHASE_CONFIG[item.phase];
@@ -267,11 +210,13 @@ function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match
             ? lastMsg.text
             : item.phase === 'contacts'
               ? item.contactsExchanged
-                ? '🎉 Coordonnées échangées !'
-                : '✉️ Partagez vos coordonnées'
-              : item.harmonieQuestions?.find(q => q.status === 'pending')
-                ? 'Question du Jour ' + item.phaseDay + ' en attente…'
-                : '—';
+                ? 'Coordonnées échangées'
+                : 'Partagez vos coordonnées'
+              : item.phase === 'chat'
+                ? 'Lancez la conversation'
+                : item.phase === 'video'
+                  ? "L'appel vidéo est prêt"
+                  : 'Questions du jour en cours';
           const hasUnread = lastMsg && !lastMsg.isRead;
 
           return (
@@ -292,7 +237,7 @@ function ListView({ matches, onSelect }: { matches: Match[]; onSelect: (m: Match
                   </Text>
                   <View style={[styles.phaseTagSmall, { backgroundColor: cfg.color + '15' }]}>
                     <Text style={[styles.phaseTagSmallText, { color: cfg.color }]}>
-                      {cfg.label} J{item.phaseDay}
+                      {item.phase === 'chat' ? `${cfg.label} · J${item.phaseDay}` : cfg.label}
                     </Text>
                   </View>
                   {hasUnread && <View style={styles.unreadDot} />}
@@ -453,7 +398,7 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
 
     setMessages((prev) => [
       ...prev,
-      { id: pendingId, text: msgText, senderId: 'me', timestamp: ts, isRead: false, status: 'sending' },
+      { id: pendingId, text: msgText, senderId: 'me', timestamp: ts, sentAt: new Date().toISOString(), isRead: false, status: 'sending' },
     ]);
     setText('');
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -501,8 +446,9 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
           <Text style={styles.detName}>{match.name}</Text>
           <View style={styles.onlineRow}>
             {match.isOnline && <View style={styles.onlineDot} />}
-            <Text style={[styles.detSub, match.isOnline ? { color: '#22C55E' } : { color: Colors.text.primary40 }]}>
-              {match.isOnline ? 'En ligne · ' : ''}{cfg.label} J{match.phaseDay} / {match.totalDays}
+            <Text style={[styles.detSub, match.isOnline ? { color: Brand.succes } : { color: Colors.text.primary40 }]}>
+              {match.isOnline ? 'En ligne · ' : ''}{cfg.label}
+              {match.phase === 'chat' ? ` · jour ${match.phaseDay} sur ${match.totalDays}` : ''}
             </Text>
           </View>
         </View>
@@ -512,7 +458,7 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
               style={[styles.videoBtn, !videoEnabled && styles.videoBtnLocked]}
               onPress={() => {
                 if (!videoEnabled) {
-                  Alert.alert('Appel vidéo verrouillé', 'L\'accès aux appels vidéo est réservé aux membres ayant terminé les 3 jours du parcours Sondeur. Poursuivez vos questions quotidiennes pour débloquer la visio !');
+                  Alert.alert('Appel vidéo bientôt disponible', 'L\'appel vidéo s\'ouvre à la fin des 3 jours de chat libre.');
                   return;
                 }
                 router.push({ pathname: '/video-call', params: { name: match.name, avatar: match.avatarLetter, journeyId: match.journeyId || '' } })
@@ -520,7 +466,7 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
               activeOpacity={videoEnabled ? 0.8 : 1}
             >
               <LinearGradient 
-                colors={videoEnabled ? [Colors.primary.orange, Colors.primary.purple] : ['#E0E0E0', '#B0B0B0']} 
+                colors={videoEnabled ? [Colors.primary.orange, Colors.primary.purple] : [Brand.lilas, Brand.bordLilas]}
                 start={{ x: 0, y: 0 }} 
                 end={{ x: 1, y: 1 }} 
                 style={styles.videoBtnGrad}
@@ -528,7 +474,7 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
                 {videoEnabled ? (
                   <Video size={17} color={Colors.neutral.white} />
                 ) : (
-                  <Video size={17} color="#8E8E93" />
+                  <Video size={17} color={Brand.encrePale} />
                 )}
               </LinearGradient>
             </TouchableOpacity>
@@ -557,29 +503,14 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
 
       <GhostingBanner view={ghosting} partnerName={match.name} onLeavePolitely={() => openMenu('leave')} />
 
-      {/* Progression Chat 3 jours */}
+      {/* Le jour du chat est dans l'en-tête ; ici, seulement l'état de l'appel vidéo. */}
+      {(match.phase === 'video' || (match.phase === 'chat' && (!videoEnabled || (match.testUnlock ?? VIDEO_TEST_UNLOCK)))) && (
       <View style={styles.chatProgressContainer}>
-        <View style={styles.progressTop}>
-          <Text style={styles.progressTitle}>Chat libre · {match.totalDays} jours</Text>
-          <Text style={styles.progressTime}>J{match.phaseDay} / {match.totalDays}</Text>
-        </View>
-        <View style={styles.progressDots}>
-          {[1, 2, 3].map(day => (
-            <LinearGradient
-              key={day}
-              colors={day <= match.phaseDay
-                ? [Colors.primary.red, Colors.primary.orange]
-                : ['rgba(0,0,0,0.05)', 'rgba(0,0,0,0.05)']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={styles.progressDot}
-            />
-          ))}
-        </View>
         {match.phase === 'chat' && !videoEnabled && (
           <View style={[styles.videoUnlockBanner, { backgroundColor: Colors.neutral.backgroundLight }]}>
             <Lock size={14} color={Colors.text.primary40} />
             <Text style={[styles.videoUnlockText, { color: Colors.text.primary70 }]}>
-              Appel vidéo verrouillé — Continuez à échanger pour débloquer cette étape !
+              L’appel vidéo s’ouvre à la fin des 3 jours de chat.
             </Text>
           </View>
         )}
@@ -587,7 +518,7 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
           <View style={[styles.videoUnlockBanner, { backgroundColor: Colors.primary.orange + '10' }]}>
             <Video size={14} color={Colors.primary.orange} />
             <Text style={[styles.videoUnlockText, { color: Colors.primary.orange }]}>
-              Mode test — appel vidéo débloqué pour essayer l’appel
+              Mode test : l’appel vidéo est ouvert pour l’essayer.
             </Text>
           </View>
         )}
@@ -595,17 +526,12 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
           <View style={[styles.videoUnlockBanner, { backgroundColor: Colors.primary.orange + '10' }]}>
             <Video size={14} color={Colors.primary.orange} />
             <Text style={[styles.videoUnlockText, { color: Colors.primary.orange }]}>
-              Appel vidéo débloqué ! Vous pouvez vous voir 🎉
+              Appel vidéo débloqué : vous pouvez maintenant vous voir.
             </Text>
           </View>
         )}
-        <View style={styles.rulesBannerInline}>
-          <Shield size={12} color={Colors.text.primary40} />
-          <Text style={styles.rulesInlineText}>
-            Sans contacts externes. Modération BOLIGO : grossièretés masquées à l’écran et bloquées à l’envoi (aucune copie locale hors session).
-          </Text>
-        </View>
       </View>
+      )}
 
       {/* CTA Vidéo */}
       {videoEnabled && (match.phase === 'video' || ((match.testUnlock ?? VIDEO_TEST_UNLOCK) && match.phase === 'chat')) && (
@@ -623,8 +549,8 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
               <Video size={20} color={Colors.primary.red} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.videoCtaHeavyTitle}>Passer à l'appel vidéo ✨</Text>
-              <Text style={styles.videoCtaHeavySub}>C'est le moment de vous voir !</Text>
+              <Text style={styles.videoCtaHeavyTitle}>Passer à l'appel vidéo</Text>
+              <Text style={styles.videoCtaHeavySub}>7 minutes pour mettre un visage sur vos échanges.</Text>
             </View>
             <Text style={{ color: '#fff', fontSize: 24, fontFamily: Typography.fontFamily.bold }}>›</Text>
           </LinearGradient>
@@ -646,16 +572,25 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
             onExchanged={() => { /* refresh les matches */ }}
           />
         )}
-        <Text style={styles.dateSep}>Aujourd'hui</Text>
-        {messages.map(msg => {
+        <View style={styles.rulesBannerInline}>
+          <Shield size={12} color={Colors.text.primary40} style={{ marginTop: 2 }} />
+          <Text style={styles.rulesInlineText}>
+            Messagerie modérée : les propos déplacés sont bloqués. Gardez vos coordonnées pour la fin du parcours.
+          </Text>
+        </View>
+        {messages.map((msg, i) => {
           const isPending = msg.status === 'sending';
           const isFailed = msg.status === 'failed';
+          const label = dayLabel(msg.sentAt);
+          const showDay = !!label && label !== dayLabel(messages[i - 1]?.sentAt);
           return (
-          <View key={msg.id} style={[styles.bubbleWrap, msg.senderId === 'me' ? styles.bubbleWrapMe : styles.bubbleWrapOther, isPending && styles.bubbleWrapPending]}>
+          <View key={msg.id}>
+          {showDay ? <Text style={styles.dateSep}>{label}</Text> : null}
+          <View style={[styles.bubbleWrap, msg.senderId === 'me' ? styles.bubbleWrapMe : styles.bubbleWrapOther, isPending && styles.bubbleWrapPending]}>
             {msg.senderId === 'me' ? (
               <LinearGradient
                 colors={isPending || isFailed
-                  ? ['#C8C8C8', '#A8A8A8', '#B8B8B8']
+                  ? ['#D9CFE3', '#C9BEDA', '#D9CFE3']
                   : [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -673,9 +608,10 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
                 {isPending ? 'Envoi…' : isFailed ? 'Échec' : msg.timestamp}
               </Text>
               {msg.senderId === 'me' && !isPending && !isFailed && (
-                <Text style={{ fontSize: 11, color: msg.isRead ? Colors.primary.purple : Colors.text.primary40 }}>✓✓</Text>
+                <Text style={{ fontFamily: Typography.fontFamily.regular, fontSize: 11, color: msg.isRead ? Colors.primary.purple : Colors.text.primary40 }}>✓✓</Text>
               )}
             </View>
+          </View>
           </View>
         );})}
       </ScrollView>
@@ -987,7 +923,7 @@ function ContactExchangeCard({ journeyId, partnerName, onExchanged }: { journeyI
         <View style={styles.exchangeIconWrap}>
           <Heart size={22} color={Colors.primary.red} />
         </View>
-        <Text style={styles.exchangeTitle}>Contacts échangés ! 🎉</Text>
+        <Text style={styles.exchangeTitle}>Contacts échangés</Text>
         <Text style={styles.exchangeSub}>Vous pouvez maintenant contacter {partnerInfo?.firstName || partnerName} directement</Text>
 
         {partnerInfo && (
@@ -1096,9 +1032,7 @@ export default function MessagesScreen() {
             const msgRes = await client.get(`/journey/${match.journeyId}/messages`);
             const apiMsgs = msgRes.data || [];
             match.messages = mapApiMessagesToUi(apiMsgs, userId);
-            match.lastActivity = apiMsgs.length > 0
-              ? 'Il y a ' + Math.round((Date.now() - new Date(apiMsgs[apiMsgs.length - 1].sentAt).getTime()) / 60000) + ' min'
-              : 'Aucun message';
+            match.lastActivity = apiMsgs.length > 0 ? formatSince(apiMsgs[apiMsgs.length - 1].sentAt) : '';
           } catch (e) {
             console.log('💬 [Messages] No messages for journey', match.journeyId);
             match.messages = [];
@@ -1130,7 +1064,6 @@ export default function MessagesScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
-        
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <Text style={styles.headerTitle}>Messages</Text>
@@ -1141,9 +1074,7 @@ export default function MessagesScreen() {
           <View style={styles.lockIconCircle}>
             <Lock size={48} color={Colors.primary.red} />
           </View>
-          
           <Text style={styles.lockedTitle}>Messages verrouillés</Text>
-          
           <Text style={styles.lockedDescription}>
             Pour préserver la qualité des rencontres, l'accès aux messages est débloqué après avoir terminé votre premier{' '}
             <Text style={styles.boldText}>Parcours Harmonie</Text> (3 jours).
@@ -1223,8 +1154,12 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   // ── LIST ──
   listContainer: { flex: 1, backgroundColor: Colors.neutral.white },
-  listHeader: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  listTitle: { fontSize: 28, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100, letterSpacing: -0.5 },
+  listHeader: {
+    paddingHorizontal: Spacing.xl, paddingBottom: Spacing.md, marginBottom: Spacing.sm,
+    backgroundColor: Colors.neutral.white, borderBottomWidth: 1, borderBottomColor: Colors.neutral.border,
+  },
+  listTitle: { fontSize: 28, fontFamily: Typography.fontFamily.serif, color: Colors.text.primary100, letterSpacing: -0.4 },
+  listSubtitle: { fontFamily: Typography.fontFamily.regular, fontSize: 12, color: Colors.text.primary40, marginTop: 2 },
 
   tabsScroll: { flexGrow: 0 },
   tabsContent: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, gap: 8, flexDirection: 'row' },
@@ -1252,7 +1187,7 @@ const styles = StyleSheet.create({
   convName: { fontSize: 16, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100 },
   convTime: { fontSize: 12, color: Colors.text.primary40, fontFamily: Typography.fontFamily.regular },
   convBottom: { flexDirection: 'row', alignItems: 'center' },
-  convPreview: { fontSize: 13, color: Colors.text.primary40, flex: 1, overflow: 'hidden' },
+  convPreview: { fontFamily: Typography.fontFamily.regular, fontSize: 13, color: Colors.text.primary40, flex: 1, overflow: 'hidden' },
   convPreviewUnread: { color: Colors.text.primary100, fontFamily: Typography.fontFamily.medium },
   phaseTagSmall: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 6 },
   phaseTagSmallText: { fontSize: 10, fontFamily: Typography.fontFamily.bold },
@@ -1267,7 +1202,7 @@ const styles = StyleSheet.create({
   detSub: { fontSize: 12, fontFamily: Typography.fontFamily.medium, marginTop: 2 },
   moreBtn: { padding: 6, backgroundColor: Colors.neutral.backgroundLight, borderRadius: 20 },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#22C55E' },
+  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: Brand.succes },
   chatHeaderActions: { flexDirection: 'row', gap: 8 },
   shareChoice: { flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'stretch', paddingVertical: 8 },
   shareBox: {
@@ -1280,9 +1215,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   shareBoxOn: { backgroundColor: Colors.primary.red },
-  shareTick: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
-  shareLabel: { fontSize: 14, color: Colors.text.primary100 },
-  shareHint: { fontSize: 12, color: Colors.text.primary40, alignSelf: 'stretch', marginTop: 4, marginBottom: 10 },
+  shareTick: { color: '#FFFFFF', fontSize: 13, fontFamily: Typography.fontFamily.bold },
+  shareLabel: { fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Colors.text.primary100 },
+  shareHint: { fontFamily: Typography.fontFamily.regular, fontSize: 12, color: Colors.text.primary40, alignSelf: 'stretch', marginTop: 4, marginBottom: 10 },
   sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: Colors.neutral.white,
@@ -1292,13 +1227,13 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 28,
   },
-  sheetTitle: { fontSize: 15, fontWeight: '700', color: Colors.text.primary100, marginBottom: 8 },
+  sheetTitle: { fontSize: 15, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100, marginBottom: 8 },
   sheetItem: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#E5E7EB' },
-  sheetItemText: { fontSize: 15, color: Colors.text.primary100 },
-  sheetDanger: { color: '#DC2626', fontWeight: '600' },
-  sheetHint: { fontSize: 14, lineHeight: 20, color: Colors.text.primary70, marginBottom: 8 },
+  sheetItemText: { fontFamily: Typography.fontFamily.regular, fontSize: 15, color: Colors.text.primary100 },
+  sheetDanger: { color: Brand.danger, fontFamily: Typography.fontFamily.semiBold },
+  sheetHint: { fontFamily: Typography.fontFamily.regular, fontSize: 14, lineHeight: 20, color: Colors.text.primary70, marginBottom: 8 },
   sheetCancel: { paddingTop: 16, alignItems: 'center' },
-  sheetCancelText: { fontSize: 15, fontWeight: '600', color: Colors.text.primary40 },
+  sheetCancelText: { fontSize: 15, fontFamily: Typography.fontFamily.semiBold, color: Colors.text.primary40 },
   videoBtn: { borderRadius: 20, overflow: 'hidden' },
   videoBtnGrad: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   videoBtnLocked: { opacity: 0.8 },
@@ -1349,16 +1284,16 @@ const styles = StyleSheet.create({
   sendAnswerText: { fontSize: 13, fontFamily: Typography.fontFamily.bold, color: Colors.neutral.white },
 
   waitingCard: { backgroundColor: 'rgba(124,58,237,0.05)', borderRadius: 12, padding: Spacing.md, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  waitingIcon: { fontSize: 20 },
+  waitingIcon: { fontFamily: Typography.fontFamily.regular, fontSize: 20 },
   waitingText: { fontSize: 13, color: Colors.text.primary70, flex: 1, lineHeight: 20, fontFamily: Typography.fontFamily.regular },
 
   lockedCard: { backgroundColor: Colors.neutral.backgroundLight, borderRadius: 14, padding: Spacing.md, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: Spacing.sm },
   lockedText: { fontSize: 13, color: Colors.text.primary40, flex: 1, fontFamily: Typography.fontFamily.regular },
 
   // ── CHAT ──
-  chatProgressContainer: { marginHorizontal: Spacing.md, marginTop: Spacing.md, marginBottom: Spacing.sm, backgroundColor: Colors.neutral.backgroundLight, borderRadius: 14, padding: Spacing.md },
-  rulesBannerInline: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: Spacing.sm, paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)' },
-  rulesInlineText: { fontSize: 11, color: Colors.text.primary40, fontFamily: Typography.fontFamily.regular },
+  chatProgressContainer: { marginHorizontal: Spacing.md, marginTop: Spacing.md },
+  rulesBannerInline: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 6, paddingHorizontal: Spacing.md, marginBottom: Spacing.sm },
+  rulesInlineText: { flexShrink: 1, fontSize: 11, lineHeight: 16, color: Colors.text.primary40, fontFamily: Typography.fontFamily.regular, textAlign: 'center' },
   videoCtaHeavyWrap: { marginHorizontal: Spacing.md, marginBottom: Spacing.sm, borderRadius: 18, overflow: 'hidden', elevation: 2, shadowColor: Colors.primary.orange, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
   videoCtaHeavyGrad: { flexDirection: 'row', alignItems: 'center', padding: Spacing.lg, gap: 15 },
   videoCtaHeavyIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
@@ -1372,8 +1307,8 @@ const styles = StyleSheet.create({
   videoCtaLockedSub: { fontSize: 13, color: Colors.text.primary40, fontFamily: Typography.fontFamily.regular },
 
   // Video unlock banner
-  videoUnlockBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.03)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, marginBottom: 10 },
-  videoUnlockText: { fontSize: 12, fontFamily: Typography.fontFamily.medium, color: Colors.text.primary40 },
+  videoUnlockBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.03)', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, marginBottom: Spacing.sm },
+  videoUnlockText: { flexShrink: 1, fontSize: 12, lineHeight: 17, fontFamily: Typography.fontFamily.medium, color: Colors.text.primary40 },
 
 
 
@@ -1441,12 +1376,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.white,
   },
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+    backgroundColor: Colors.neutral.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral.border,
   },
   headerTitle: {
     fontSize: 28,
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     color: Colors.text.primary100,
   },
   lockedContainer: {
@@ -1466,7 +1404,7 @@ const styles = StyleSheet.create({
   },
   lockedTitle: {
     fontSize: 24,
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     color: Colors.text.primary100,
     marginBottom: Spacing.md,
     textAlign: 'center',

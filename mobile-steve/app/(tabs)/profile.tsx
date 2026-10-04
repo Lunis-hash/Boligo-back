@@ -1,11 +1,14 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Platform, Alert , ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import legal from '@/constants/legal.json';
-import { Settings, MapPin, Edit3, Briefcase, Globe, ShieldCheck, Sparkles, TrendingUp, User, ChevronRight, Activity, Radar, Phone, Mail, Calendar, Heart, CreditCard, Tag , LogOut, Trash2 } from 'lucide-react-native';
+import { formatLegalDate } from '@/components/LegalDocument';
+import { MapPin, Edit3, Briefcase, ShieldCheck, ShieldAlert, Sparkles, TrendingUp, User, ChevronRight, Activity, Radar, Phone, Mail, Calendar, Heart, CreditCard, Tag, LogOut, Trash2 } from 'lucide-react-native';
+import { Brand } from '@/constants/brand';
+import { ModuleIcon } from '@/components/BrandIcons';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -19,6 +22,13 @@ function truncateAtWord(text: string, max: number): string {
   const cut = text.slice(0, max);
   const lastSpace = cut.lastIndexOf(' ');
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,;:.\-–—]+$/, '')}…`;
+}
+
+/** Numéro du module (0 à 10) d'après son identifiant (« m3 ») ou son champ module. */
+function moduleNumber(m: { id?: string; module?: number }): number | undefined {
+  if (typeof m.module === 'number') return m.module;
+  const n = Number(String(m.id ?? '').replace(/\D/g, ''));
+  return Number.isFinite(n) && String(m.id ?? '').match(/\d/) ? n : undefined;
 }
 
 export default function ProfileScreen() {
@@ -136,13 +146,12 @@ export default function ProfileScreen() {
   // Un module du Grand Entretien par ligne : pourcentage = clarté des réponses.
   const buildPillars = () => {
     const modules: any[] = Array.isArray(portrait?.modules) ? portrait.modules : [];
-    return modules.map((m) => ({ id: m.id, label: m.label, emoji: m.emoji, percentage: m.clarity, kpi: 'Clarté' }));
+    return modules.map((m) => ({ id: m.id, module: moduleNumber(m), label: m.label, percentage: m.clarity, kpi: 'Clarté' }));
   };
 
   const buildNeeds = () => {
     const values: any[] = Array.isArray(portrait?.values) ? portrait.values : [];
-    const needEmojis = ['💜', '🔒', '👨‍👩‍👧', '💬', '🌱', '🤝', '🎯', '🙏'];
-    return values.map((v, i) => ({ id: v.id, title: v.label, emoji: needEmojis[i % needEmojis.length], text: 'Valeur clé' }));
+    return values.map((v) => ({ id: v.id, title: v.label, text: 'Valeur clé' }));
   };
 
   const plain = (text: string) => text.replace(/\*\*/g, '');
@@ -277,7 +286,7 @@ export default function ProfileScreen() {
               <View style={styles.infoIconCircle}><Tag size={18} color={Colors.primary.red} /></View>
               <View style={styles.infoTextWrap}>
                 <Text style={styles.infoLabel}>Statut du profil</Text>
-                <Text style={styles.infoValue}>{profile.profileStatus === 'complet' ? '✅ Complet' : profile.profileStatus === 'actif' ? '🟢 Actif' : '🟡 Incomplet'}</Text>
+                <Text style={styles.infoValue}>{profile.profileStatus === 'complet' ? 'Complet' : profile.profileStatus === 'actif' ? 'Actif' : 'Incomplet'}</Text>
               </View>
             </View>
           </View>
@@ -300,7 +309,7 @@ export default function ProfileScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <Sparkles size={13} color={Colors.primary.orange} />
               <Text style={{ fontSize: 10, fontFamily: Typography.fontFamily.bold, color: Colors.primary.orange, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                {profile.description ? '💡 Votre bio' : '✨ Rédigée par BOLIGO d’après vos réponses'}
+                {profile.description ? 'Votre bio' : 'Rédigée par BOLIGO d’après vos réponses'}
               </Text>
             </View>
             <Text style={styles.bioText}>{aboutText}</Text>
@@ -328,7 +337,7 @@ export default function ProfileScreen() {
               <View style={styles.infoIconCircle}><ShieldCheck size={18} color={Colors.primary.red} /></View>
               <View style={styles.infoTextWrap}>
                 <Text style={styles.infoLabel}>Vérifié</Text>
-                <Text style={styles.infoValue}>{user.isVerified ? '✅ Oui' : '❌ Non'}</Text>
+                <Text style={styles.infoValue}>{user.isVerified ? 'Oui' : 'Non'}</Text>
               </View>
             </View>
             <View style={styles.infoDivider} />
@@ -336,7 +345,7 @@ export default function ProfileScreen() {
               <View style={styles.infoIconCircle}><Activity size={18} color={Colors.primary.red} /></View>
               <View style={styles.infoTextWrap}>
                 <Text style={styles.infoLabel}>Statut</Text>
-                <Text style={styles.infoValue}>{user.accountStatus === 'actif' ? '🟢 Actif' : '🟡 ' + (user.accountStatus || 'Nouveau')}</Text>
+                <Text style={styles.infoValue}>{user.accountStatus === 'actif' ? 'Actif' : user.accountStatus || 'Nouveau'}</Text>
               </View>
             </View>
             <View style={styles.infoDivider} />
@@ -389,7 +398,7 @@ export default function ProfileScreen() {
               {buildPillars().map((pillar) => (
                 <View key={pillar.id} style={styles.pillarItem}>
                   <View style={styles.pillarIconCircle}>
-                    <Text style={styles.pillarEmoji}>{pillar.emoji}</Text>
+                    <ModuleIcon module={pillar.module} size={20} />
                   </View>
                   <View style={styles.pillarInfo}>
                     <Text style={styles.pillarLabel} numberOfLines={1}>{pillar.label}</Text>
@@ -409,7 +418,7 @@ export default function ProfileScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
             {buildNeeds().map((need) => (
               <View key={need.id} style={styles.needCard}>
-                <Text style={styles.needEmoji}>{need.emoji}</Text>
+                <View style={styles.needIcon}><Heart size={18} color={Brand.framboise} strokeWidth={1.9} /></View>
                 <Text style={styles.needTitle}>{need.title}</Text>
                 <Text style={styles.needSub}>{need.text}</Text>
               </View>
@@ -425,7 +434,7 @@ export default function ProfileScreen() {
             <View style={styles.contentCard}>
               {redFlags.map((flag: string, i: number) => (
                 <View key={i} style={styles.redFlagRow}>
-                  <Text style={styles.redFlagDot}>⚠️</Text>
+                  <ShieldAlert size={16} color={Brand.framboise} strokeWidth={1.9} />
                   <Text style={styles.redFlagText}>{flag}</Text>
                 </View>
               ))}
@@ -455,7 +464,7 @@ export default function ProfileScreen() {
             <Text style={styles.legalRowText}>Politique de confidentialité</Text>
             <ChevronRight size={18} color={Colors.text.primary40} />
           </TouchableOpacity>
-          <Text style={styles.legalVersion}>Textes légaux — version du {legal.version}</Text>
+          <Text style={styles.legalVersion}>Textes légaux · version du {formatLegalDate(legal.version)}</Text>
         </View>
 
         {/* LOGOUT & DELETE ACCOUNT */}
@@ -466,12 +475,12 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.logoutButton, { marginTop: 12, borderColor: '#FF3B30' }]} 
+            style={[styles.logoutButton, { marginTop: 12, borderColor: Brand.danger }]} 
             activeOpacity={0.7} 
             onPress={handleDeleteAccount}
           >
-            <Trash2 size={20} color="#FF3B30" />
-            <Text style={[styles.logoutText, { color: '#FF3B30' }]}>Supprimer mon compte</Text>
+            <Trash2 size={20} color={Brand.danger} />
+            <Text style={[styles.logoutText, { color: Brand.danger }]}>Supprimer mon compte</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -492,7 +501,7 @@ const styles = StyleSheet.create({
   orbitBorder: { position: 'absolute', top: 0, left: 0 },
   verificationBadge: { position: 'absolute', bottom: 12, right: 15, backgroundColor: Colors.primary.red, width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: Colors.neutral.white, elevation: 3 },
   headerInfo: { alignItems: 'center', marginTop: 15, paddingHorizontal: 20 },
-  name: { fontSize: 26, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100, marginBottom: 8, textAlign: 'center' },
+  name: { fontSize: 28, fontFamily: Typography.fontFamily.serif, color: Colors.text.primary100, marginBottom: 8, textAlign: 'center' },
   locationContainer: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: Colors.neutral.backgroundLight, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   locationTextBold: { fontSize: 13, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100 },
   settingsBtn: { position: 'absolute', top: 60, right: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.neutral.backgroundLight, justifyContent: 'center', alignItems: 'center' },
@@ -521,11 +530,11 @@ const styles = StyleSheet.create({
   kpiTrend: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary.orange + '15', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   kpiTrendText: { fontSize: 10, fontFamily: Typography.fontFamily.bold, color: Colors.primary.orange },
   summaryContainer: { marginBottom: 25, borderBottomWidth: 1, borderBottomColor: Colors.neutral.border, paddingBottom: 25 },
-  summaryText: { fontSize: 14, lineHeight: 24, color: Colors.text.primary70, fontStyle: 'italic', textAlign: 'center' },
+  summaryText: { fontFamily: Typography.fontFamily.regular, fontSize: 14, lineHeight: 24, color: Colors.text.primary70, fontStyle: 'italic', textAlign: 'center' },
   pillarGrid: { gap: 12 },
   pillarItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.neutral.white, padding: 14, borderRadius: 20, borderWidth: 1, borderColor: Colors.neutral.border },
   pillarIconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.primary.red + '05', justifyContent: 'center', alignItems: 'center', marginRight: 14 },
-  pillarEmoji: { fontSize: 22 },
+  pillarEmoji: { fontFamily: Typography.fontFamily.regular, fontSize: 22 },
   pillarInfo: { flex: 1, gap: 4 },
   pillarLabel: { fontSize: 15, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100 },
   pillarKpiText: { fontSize: 12, color: Colors.primary.red, fontFamily: Typography.fontFamily.medium },
@@ -533,19 +542,19 @@ const styles = StyleSheet.create({
 
   // Bio
   contentCard: { backgroundColor: Colors.neutral.backgroundLight, borderRadius: 24, padding: 24 },
-  bioText: { fontSize: 15, lineHeight: 26, color: Colors.text.primary70 },
+  bioText: { fontFamily: Typography.fontFamily.regular, fontSize: 15, lineHeight: 26, color: Colors.text.primary70 },
   moreLink: { fontSize: 14, fontFamily: Typography.fontFamily.bold, color: Colors.primary.red, marginTop: 15 },
 
   // Needs
   horizontalScroll: { gap: 14 },
   needCard: { width: 160, backgroundColor: Colors.primary.red + '05', padding: 20, borderRadius: 24, borderWidth: 1, borderColor: Colors.primary.red + '15' },
-  needEmoji: { fontSize: 28, marginBottom: 12 },
+  needIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: Brand.rose, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   needTitle: { fontSize: 15, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100, marginBottom: 6 },
-  needSub: { fontSize: 13, color: Colors.text.primary70, lineHeight: 18 },
+  needSub: { fontFamily: Typography.fontFamily.regular, fontSize: 13, color: Colors.text.primary70, lineHeight: 18 },
 
   // Red flags
   redFlagRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: Colors.neutral.border + '50' },
-  redFlagDot: { fontSize: 16 },
+  redFlagDot: { fontFamily: Typography.fontFamily.regular, fontSize: 16 },
   redFlagText: { flex: 1, fontSize: 14, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary70, lineHeight: 20 },
 
   // Footer

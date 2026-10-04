@@ -3,6 +3,7 @@ import { Hourglass } from 'lucide-react-native';
 import { Brand } from '@/constants/brand';
 import { GhostingView, ghostingBannerText } from '@/services/ghosting';
 
+import { Typography } from '@/constants/theme';
 /**
  * Bandeau du pacte anti-ghosting : rappelle qui attend qui et l'échéance.
  * Quand c'est à moi de répondre, propose aussi de mettre fin poliment.
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
   theirs: { backgroundColor: Brand.lilas, borderColor: '#DCD2FA' },
   icon: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   texts: { flex: 1, gap: 4 },
-  title: { fontSize: 15, fontWeight: '700', color: Brand.encre },
-  body: { fontSize: 14, lineHeight: 20, color: Brand.encreDouce },
-  link: { marginTop: 2, fontSize: 14, fontWeight: '700', color: Brand.framboise, textDecorationLine: 'underline' },
+  title: { fontSize: 15, fontFamily: Typography.fontFamily.bold, color: Brand.encre },
+  body: { fontFamily: Typography.fontFamily.regular, fontSize: 14, lineHeight: 20, color: Brand.encreDouce },
+  link: { marginTop: 2, fontSize: 14, fontFamily: Typography.fontFamily.bold, color: Brand.framboise, textDecorationLine: 'underline' },
 });

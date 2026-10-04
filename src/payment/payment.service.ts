@@ -265,8 +265,8 @@ export class PaymentService implements OnModuleInit {
       const discountEur = (planAmount - finalAmount) / 100;
       const isFree = finalAmount <= 0;
       const messageDiscount = isFree
-        ? 'Code appliqué ✅ — Offre gratuite activée !'
-        : `Code appliqué ✅ — Réduction de ${discountEur.toFixed(2).replace('.', ',')}€`;
+        ? 'Code appliqué : offre gratuite activée.'
+        : `Code appliqué : réduction de ${discountEur.toFixed(2).replace('.', ',')} €.`;
 
       return {
         isValid: true,

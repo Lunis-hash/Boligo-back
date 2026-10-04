@@ -364,6 +364,8 @@ export class MatchingService {
         name: firstName,
         phase: phaseMap[step] ?? 'sondeur',
         journeyId: p.journey?.id ?? null,
+        // Début de l'étape en cours : l'app en déduit le jour (1 à 3) du chat.
+        stepStartDate: p.journey?.stepStartDate ?? null,
         proposalId: p.id,
         proposalStatus: p.status,
         videoEnabled,
@@ -506,8 +508,8 @@ export class MatchingService {
       await this.notify(
         targetUserId,
         'nouveau_match',
-        'Nouveau profil compatible ! 💍',
-        "Quelqu'un s'intéresse à votre profil. Découvrez sa compatibilité !",
+        'Nouveau profil compatible',
+        "Quelqu'un s'intéresse à votre profil. Découvrez votre compatibilité.",
       );
     }
     return outcome;
@@ -826,14 +828,14 @@ export class MatchingService {
       this.notify(
         match.sourceUserId,
         'nouveau_match',
-        'Match mutuel ! 💍',
-        `Félicitations ! ${userB?.firstName || 'Votre partenaire'} a accepté votre invitation. Votre parcours commence !`,
+        'Invitation acceptée',
+        `${userB?.firstName || 'Votre partenaire'} a accepté votre invitation. Votre Parcours Harmonie commence.`,
       ),
       this.notify(
         match.targetUserId,
         'nouveau_match',
-        'Match mutuel ! 💍',
-        `Félicitations ! Votre Parcours Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
+        'Votre parcours commence',
+        `Votre Parcours Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
       ),
     ]);
 

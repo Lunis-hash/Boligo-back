@@ -34,14 +34,17 @@ import {
   Sparkles,
   ChevronRight,
   Lock,
+  Hourglass,
 } from 'lucide-react-native';
+import { Brand } from '@/constants/brand';
+import { ThemeIcon } from '@/components/BrandIcons';
 
 // ─── Thèmes par défaut des 3 jours (affichage uniquement) ──────────
 // Les questions réelles sont générées par le backend (GET /journey/:id/questions).
 const SONDEUR_DAYS = [
-  { day: 1, theme: 'Lignes rouges', emoji: '🚩' },
-  { day: 2, theme: 'Valeurs profondes', emoji: '⚖️' },
-  { day: 3, theme: 'Futur & Sacrifices', emoji: '🔮' },
+  { day: 1, theme: 'Lignes rouges' },
+  { day: 2, theme: 'Valeurs profondes' },
+  { day: 3, theme: 'Futur & Sacrifices' },
 ];
 
 // ─── Composant étape jour ──────────────────────────────────────────
@@ -49,7 +52,6 @@ function DayStep({
   day,
   status,
   theme,
-  emoji,
   isLast,
   onPressActive,
   lockedLabel,
@@ -57,7 +59,6 @@ function DayStep({
   day: number;
   status: 'done' | 'active' | 'locked';
   theme: string;
-  emoji: string;
   isLast: boolean;
   onPressActive?: () => void;
   lockedLabel?: string;
@@ -79,7 +80,7 @@ function DayStep({
             end={{ x: 1, y: 1 }}
             style={styles.dayCircle}
           >
-            <Text style={{ fontSize: 16 }}>{emoji}</Text>
+            <ThemeIcon theme={theme} size={16} color="#FFFFFF" />
           </LinearGradient>
         ) : (
           <View style={[styles.dayCircle, styles.dayCircleLocked]}>
@@ -119,11 +120,11 @@ function DayStep({
               status === 'locked' && { color: Colors.text.primary40 },
             ]}
           >
-            {emoji}  {theme}
+            {theme}
           </Text>
         </View>
-        {status === 'done' && <Text style={styles.dayDoneLabel}>Réponses comparées ✓</Text>}
-        {status === 'active' && <Text style={styles.dayActiveLabel}>En cours — 2 questions</Text>}
+        {status === 'done' && <Text style={styles.dayDoneLabel}>Réponses comparées</Text>}
+        {status === 'active' && <Text style={styles.dayActiveLabel}>En cours · 7 questions</Text>}
         {status === 'locked' && <Text style={styles.dayLockedLabel}>{lockedLabel ?? 'Disponible après le jour précédent'}</Text>}
       </View>
     </View>
@@ -156,10 +157,8 @@ function pickActiveMatch(allMatches: any[]) {
 export default function MatchesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const topPadding = Math.max(
-    (insets.top || StatusBar.currentHeight || 0) + (Platform.OS === 'ios' ? 10 : 16),
-    Platform.OS === 'ios' ? 56 : 48
-  );
+  // Même hauteur d'en-tête que les autres onglets.
+  const topPadding = insets.top + 12;
   const bottomPadding = Math.max(insets.bottom + 20, 32);
 
   const { credits, matches, loadMatches } = useAppContext();
@@ -332,10 +331,10 @@ export default function MatchesScreen() {
   const dayThemes = [1, 2, 3].map(day => {
     const dayQs = dbQuestions.filter((q: any) => q.day === day);
     if (dayQs.length > 0) {
-      return { day, theme: dayQs[0].theme, emoji: dayQs[0].emoji ?? '💬' };
+      return { day, theme: dayQs[0].theme };
     }
     const local = SONDEUR_DAYS.find(d => d.day === day);
-    return { day, theme: local?.theme ?? 'Question', emoji: local?.emoji ?? '💬' };
+    return { day, theme: local?.theme ?? 'Question' };
   });
 
   const dayDbQuestions = dbQuestions.filter((q: any) => q.day === currentDay);
@@ -438,7 +437,10 @@ export default function MatchesScreen() {
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={Colors.neutral.white} />
         <View style={[styles.header, { paddingTop: topPadding }]}>
-          <Text style={styles.headerTitle}>Mes matchs</Text>
+          <View>
+            <Text style={styles.headerTitle}>Mes matchs</Text>
+            <Text style={styles.headerSub}>Parcours de découverte mutuelle</Text>
+          </View>
         </View>
         <View style={styles.emptyWrap}>
           <LinearGradient
@@ -519,7 +521,7 @@ export default function MatchesScreen() {
               style={styles.questionDayBadge}
             >
               <Text style={styles.questionDayBadgeText}>
-                {dayThemeMeta?.emoji ?? dayData.emoji}  Jour {currentDay} · {dayThemeMeta?.theme ?? dayData.theme}
+                Jour {currentDay} · {dayThemeMeta?.theme ?? dayData.theme}
               </Text>
             </LinearGradient>
             <Text style={styles.questionCounter}>
@@ -545,14 +547,14 @@ export default function MatchesScreen() {
             </View>
             <Text style={styles.questionText}>{currentQ?.question}</Text>
             <Text style={styles.questionHint}>
-              💡 Réponds sincèrement — {firstMatch.name} répondra de son côté sans voir ta réponse.
+              Répondez sincèrement : {firstMatch.name} répond de son côté, sans voir votre réponse.
             </Text>
           </View>
 
           {/* Champ de saisie libre */}
           <View style={styles.optionsWrap}>
             <TextInput
-              style={[styles.customInput, { minHeight: 120, textAlignVertical: 'top', fontSize: 16 }]}
+              style={[styles.customInput, { fontFamily: Typography.fontFamily.regular, minHeight: 120, textAlignVertical: 'top', fontSize: 16 }]}
               placeholder="Écrivez votre réponse ici..."
               placeholderTextColor={Colors.text.primary40}
               value={customText}
@@ -574,12 +576,12 @@ export default function MatchesScreen() {
               >
                 {submittingAnswer ? (
                   <>
-                    <Text style={[styles.optionTextSelected, { fontSize: 16, textAlign: 'center', flex: 0 }]}>Analyse en cours...</Text>
+                    <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>Analyse en cours…</Text>
                     <ActivityIndicator size="small" color="#fff" style={{ marginLeft: 8 }} />
                   </>
                 ) : (
                   <>
-                    <Text style={[styles.optionTextSelected, { fontSize: 16, textAlign: 'center', flex: 0 }]}>Valider la réponse</Text>
+                    <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>Valider la réponse</Text>
                     <Check size={18} color="#fff" strokeWidth={3} style={{ marginLeft: 8 }} />
                   </>
                 )}
@@ -622,7 +624,7 @@ export default function MatchesScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View
-          style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+          style={{ gap: Spacing.lg, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
         >
           {/* ── Carte match ─────────────────────────────────────── */}
           <View style={styles.matchCard}>
@@ -667,7 +669,7 @@ export default function MatchesScreen() {
                 colors={[Colors.primary.red + '15', Colors.primary.purple + '12']}
                 style={styles.waitingIconCircle}
               >
-                <Text style={{ fontSize: 44 }}>⏳</Text>
+                <Hourglass size={38} color={Brand.framboise} strokeWidth={1.6} />
               </LinearGradient>
               <Text style={styles.waitingTitle}>Invitation envoyée</Text>
               <Text style={styles.waitingDesc}>
@@ -690,7 +692,7 @@ export default function MatchesScreen() {
             </View>
           ) : (
             <>
-              <GhostingBanner view={ghosting} partnerName={firstMatch.name} style={{ marginHorizontal: 0, marginTop: 0, marginBottom: 14 }} />
+              <GhostingBanner view={ghosting} partnerName={firstMatch.name} style={{ marginHorizontal: 0, marginTop: 0, marginBottom: 0 }} />
               {loading && (
                 <View style={styles.preparingCard}>
                   <ActivityIndicator color={Colors.primary.red} />
@@ -731,7 +733,6 @@ export default function MatchesScreen() {
                       day={d.day}
                       status={getDayStatus(d.day)}
                       theme={d.theme}
-                      emoji={d.emoji}
                       isLast={i === dayThemes.length - 1}
                       onPressActive={openQuestionFlow}
                       lockedLabel={getSondeurLockedLabel(d.day, dayState)}
@@ -762,7 +763,7 @@ export default function MatchesScreen() {
                     style={styles.questionDayCardGrad}
                   >
                     <View style={styles.questionDayCardLeft}>
-                      <Text style={styles.questionDayEmoji}>{dayThemeMeta?.emoji ?? dayData.emoji}</Text>
+                      <View style={styles.questionDayEmoji}><ThemeIcon theme={dayThemeMeta?.theme ?? dayData.theme} size={22} color="#FFFFFF" /></View>
                       <View>
                         <Text style={styles.questionDayTitle}>Question du jour</Text>
                         <Text style={styles.questionDaySub}>
@@ -792,7 +793,7 @@ export default function MatchesScreen() {
                           style={styles.dayAnswersHeaderGrad}
                         >
                           <Text style={styles.dayAnswersHeaderText}>
-                            {dayDbQs[0]?.emoji ?? '💬'}  Jour {day} · {dayDbQs[0]?.theme ?? 'Question'}
+                            Jour {day} · {dayDbQs[0]?.theme ?? 'Question'}
                           </Text>
                         </LinearGradient>
 
@@ -892,7 +893,7 @@ export default function MatchesScreen() {
                   colors={[Colors.primary.red + '20', Colors.primary.purple + '18']}
                   style={styles.ctaIconCircle}
                 >
-                  <Text style={{ fontSize: 40 }}>🎉</Text>
+                  <Sparkles size={36} color={Brand.framboise} strokeWidth={1.6} />
                 </LinearGradient>
 
                 {/* Textes */}
@@ -959,13 +960,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+    backgroundColor: Colors.neutral.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral.border,
+    marginBottom: Spacing.md,
   },
   headerTitle: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 26,
+    fontFamily: Typography.fontFamily.serif,
+    fontSize: 28,
     color: Colors.text.primary100,
+    letterSpacing: -0.4,
   },
   headerSub: {
     fontFamily: Typography.fontFamily.regular,
@@ -1081,7 +1087,7 @@ const styles = StyleSheet.create({
   dayDoneLabel: { fontFamily: Typography.fontFamily.regular, fontSize: 11, color: Colors.primary.red },
   dayActiveLabel: { fontFamily: Typography.fontFamily.medium, fontSize: 11, color: Colors.primary.purple },
   dayLockedLabel: { fontFamily: Typography.fontFamily.regular, fontSize: 11, color: Colors.text.primary40 },
-  nextDayNotice: { marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: 'rgba(16,185,129,0.08)' },
+  nextDayNotice: { marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: Brand.lilas },
   nextDayNoticeText: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Colors.text.primary70 },
 
   // Question du jour
@@ -1093,7 +1099,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
   questionDayCardLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-  questionDayEmoji: { fontSize: 32 },
+  questionDayEmoji: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
   questionDayTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 17, color: '#fff' },
   questionDaySub: { fontFamily: Typography.fontFamily.regular, fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
   questionDayArrow: {
@@ -1274,7 +1280,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backArrow: { fontSize: 20, color: Colors.text.primary100 },
+  backArrow: { fontFamily: Typography.fontFamily.regular, fontSize: 20, color: Colors.text.primary100 },
   questionHeaderCenter: { flex: 1, gap: 4 },
   questionDayBadge: {
     alignSelf: 'flex-start',

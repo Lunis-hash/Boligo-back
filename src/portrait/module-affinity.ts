@@ -91,10 +91,11 @@ export interface AnswerCompatibility {
   modules: ModuleAffinity[];
 }
 
+/** Couleurs de la marque : framboise (fort), lavande (moyen), prune clair (faible). */
 export function affinityColor(value: number): string {
-  if (value >= 75) return '#10B981';
-  if (value >= 55) return '#F59E0B';
-  return '#EF4444';
+  if (value >= 75) return '#C62A6E';
+  if (value >= 55) return '#7C5CDB';
+  return '#8A7B98';
 }
 
 function worstDivergenceFor(

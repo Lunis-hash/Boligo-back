@@ -167,7 +167,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           await this.notificationService.sendPushNotification(
             otherUserId,
             'message',
-            `Nouveau message de ${senderName} 💬`,
+            `Nouveau message de ${senderName}`,
             truncatedContent,
           );
         }

@@ -102,7 +102,7 @@ But : faire émerger les vraies limites et zones de friction potentielles AVANT 
 RÈGLES STRICTES:
 - 21 questions exactement, 7 par jour (day: 1, 2 ou 3).
 - Chaque question: 4 options concrètes + "Autre..." en dernier.
-- Formule en "tu", scénario réaliste ("si ton/ton partenaire…", "comment réagirais-tu si…").
+- Formule en « vous » (vouvoiement), scénario réaliste (« si votre partenaire… », « comment réagiriez-vous si… »).
 - Ton direct, mature, respectueux.
 - Ne cite pas les red flags mot pour mot ; exploite-les pour choisir L'ANGLE le plus risqué entre ces deux profils.
 
@@ -159,7 +159,7 @@ Retourne UNIQUEMENT un tableau JSON de 21 objets:
     const avoidBlock = avoidTexts.length
       ? `\nQUESTIONS DÉJÀ POSÉES À CE COUPLE (ne pas reformuler) :\n${avoidTexts.slice(0, 40).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`
       : '';
-    const systemPrompt = `Tu es l'analyste de couples de BOLIGO (rencontres sérieuses, valeurs profondes, approche Gottman / attachement). Tu écris en français, en tutoyant, avec tact et précision.`;
+    const systemPrompt = `Tu es l'analyste de couples de BOLIGO (rencontres sérieuses, valeurs profondes, approche Gottman / attachement). Tu écris en français, en vouvoyant, avec tact et précision.`;
     const prompt = `
 Génère exactement ${dayAngles.length * themeGrid.length} questions pour le Sondeur d'un couple, à partir de l'analyse déterministe ci-dessous.
 

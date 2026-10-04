@@ -8,6 +8,7 @@ import { Brand } from '@/constants/brand';
 import { useBrandFonts } from '@/services/brandFonts';
 import { LandingPage } from '@/components/landing/LandingPage';
 
+import { Typography } from '@/constants/theme';
 export default function WelcomeScreen() {
   const router = useRouter();
   const { font } = useBrandFonts();
@@ -99,12 +100,12 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   splashLogo: {
-    fontSize: 52,
+    fontFamily: Typography.fontFamily.regular, fontSize: 52,
     color: Brand.framboise,
     letterSpacing: 3,
   },
   splashSub: {
-    fontSize: 15,
+    fontFamily: Typography.fontFamily.regular, fontSize: 15,
     color: Brand.encreDouce,
     marginTop: 6,
     marginBottom: 32,
@@ -117,22 +118,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: {
-    fontSize: 16,
+    fontFamily: Typography.fontFamily.regular, fontSize: 16,
     color: '#FFFFFF',
   },
   loginLink: {
-    fontSize: 14,
+    fontFamily: Typography.fontFamily.regular, fontSize: 14,
     color: Brand.framboise,
     textDecorationLine: 'underline',
   },
   resumeHintText: {
-    fontSize: 14,
+    fontFamily: Typography.fontFamily.regular, fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
     color: Brand.encreDouce,
   },
   resumeErrorText: {
-    fontSize: 15,
+    fontFamily: Typography.fontFamily.regular, fontSize: 15,
     color: Brand.encreDouce,
     textAlign: 'center',
     lineHeight: 22,

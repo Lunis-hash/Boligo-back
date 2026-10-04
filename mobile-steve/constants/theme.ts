@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 /**
  * Palette de l'application, alignée sur l'identité « Couleur » (constants/brand.ts) :
  * framboise et lavande en tête, bleu nuit en contrepoint, textes prune foncé.
@@ -27,14 +29,28 @@ export const Colors = {
   },
 };
 
+/**
+ * Polices de la marque (chargées au démarrage par app/_layout.tsx) :
+ * Plus Jakarta Sans pour les textes, Fraunces pour les titres.
+ * Sur le web, une police système prend le relais le temps du chargement.
+ */
+const family = (name: string, fallback: string) =>
+  Platform.select({ web: `${name}, ${fallback}`, default: name }) as string;
+const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+const SERIF = 'Georgia, "Times New Roman", serif';
+
+const FONT = {
+  regular: family('PlusJakartaSans_400Regular', SANS),
+  medium: family('PlusJakartaSans_500Medium', SANS),
+  semiBold: family('PlusJakartaSans_600SemiBold', SANS),
+  bold: family('PlusJakartaSans_700Bold', SANS),
+  serif: family('Fraunces_500Medium', SERIF),
+  serifItalic: family('Fraunces_500Medium_Italic', SERIF),
+  serifBold: family('Fraunces_600SemiBold', SERIF),
+};
+
 export const Typography: any = {
-  fontFamily: {
-    regular: 'System',
-    medium: 'System',
-    semiBold: 'System',
-    bold: 'System',
-    serif: 'System',
-  },
+  fontFamily: FONT,
   fontSize: {
     xs: 12,
     sm: 14,
@@ -50,12 +66,12 @@ export const Typography: any = {
     label: 13,
     labelLarge: 15,
   },
-  h1: { fontSize: 32, fontFamily: 'System' },
-  h2: { fontSize: 24, fontFamily: 'System' },
-  h3: { fontSize: 20, fontFamily: 'System' },
-  body: { fontSize: 15, fontFamily: 'System' },
-  label: { fontSize: 13, fontFamily: 'System' },
-  labelLarge: { fontSize: 15, fontFamily: 'System' },
+  h1: { fontSize: 32, fontFamily: FONT.serif },
+  h2: { fontSize: 24, fontFamily: FONT.serif },
+  h3: { fontSize: 20, fontFamily: FONT.semiBold },
+  body: { fontSize: 15, fontFamily: FONT.regular },
+  label: { fontSize: 13, fontFamily: FONT.medium },
+  labelLarge: { fontSize: 15, fontFamily: FONT.medium },
 };
 
 export const Spacing = {

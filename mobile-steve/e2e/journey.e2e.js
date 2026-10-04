@@ -94,15 +94,14 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Accueil affiché', await text('Trouver mon BOLIGO').isVisible());
   await shot('01-accueil');
   await clickText('Trouver mon BOLIGO');
-  await page.waitForURL(/value-slides/);
-  await shot('02-slides');
-  for (let i = 0; i < 5; i++) { await clickVisibleText('Suivant →'); await page.waitForTimeout(700); }
-  await shot('03-slides-cgu');
-  record('Slides : 6 écrans parcourus', true);
-  await page.waitForTimeout(800);
-  await clickVisibleText('Créer mon compte gratuitement');
+  // La page d'accueil présente déjà le concept : le bouton mène directement à l'inscription.
   await page.waitForURL(/profile-details/);
-  record('Slides → formulaire de profil (CGU acceptées à l’étape 4)', true);
+  record('Accueil → formulaire d’inscription direct (CGU acceptées à l’étape 4)', true);
+  const legacy = await page.context().newPage();
+  await legacy.goto(`${APP_URL}/onboarding/value-slides`, { waitUntil: 'networkidle' });
+  await legacy.waitForURL(/profile-details/, { timeout: 10000 }).catch(() => {});
+  record('Ancienne adresse des diapositives → inscription', /profile-details/.test(legacy.url()), legacy.url());
+  await legacy.close();
 
   // ── 2. Inscription (4 étapes)
   await fillPlaceholder('Votre prénom', 'Steve');
@@ -407,7 +406,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Profil : données réelles du backend', await text('Steve').isVisible() && await text(email).isVisible());
   await clickText('Modifier mon profil');
   await page.waitForTimeout(2000);
-  await page.getByPlaceholder('Développeur, Médecin...').fill('Product Manager');
+  await page.getByPlaceholder('Développeur, médecin…').fill('Product Manager');
   await shot('30-profil-edition');
   await clickText('Enregistrer', { exact: true });
   await page.waitForTimeout(2500);

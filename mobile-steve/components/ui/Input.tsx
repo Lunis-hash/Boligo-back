@@ -92,12 +92,12 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   hintText: {
-    fontSize: 12,
+    fontFamily: Typography.fontFamily.regular, fontSize: 12,
     color: Colors.text.primary40,
     marginTop: 4,
   },
   errorText: {
-    fontSize: 12,
+    fontFamily: Typography.fontFamily.regular, fontSize: 12,
     color: Colors.primary.red,
     marginTop: 4,
   },

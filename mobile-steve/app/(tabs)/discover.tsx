@@ -18,14 +18,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertTriangle, Link2 } from 'lucide-react-native';
+import { Heart, Sparkles, ChevronRight, ChevronLeft, RefreshCw, AlertTriangle, Link2, Brain, ChartColumn, Scale, MessageCircle, User, Tag, Target } from 'lucide-react-native';
+import { Brand } from '@/constants/brand';
+import { DetailIcon, ExpectationIcon, ModuleIcon } from '@/components/BrandIcons';
 import { useAppContext } from '@/context/AppContext';
 import client, { getReadableError } from '@/services/api';
 import { getDiscussionTopics, hasMajorDivergence } from '@/services/compatibility';
-import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // ─── Error Boundary ──────────────
 class DiscoverErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean; error: string;}> {
@@ -34,9 +35,20 @@ class DiscoverErrorBoundary extends Component<{children: ReactNode}, {hasError: 
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30, backgroundColor: '#fff' }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FF4D67', marginBottom: 12 }}>Erreur Discover</Text>
-          <Text style={{ fontSize: 14, color: '#333', textAlign: 'center' }}>{this.state.error}</Text>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30, backgroundColor: Brand.fond }}>
+          <Text style={{ fontSize: 24, fontFamily: Typography.fontFamily.serif, color: Brand.encre, marginBottom: 10, textAlign: 'center' }}>
+            Un souci d'affichage
+          </Text>
+          <Text style={{ fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Brand.encreDouce, textAlign: 'center', lineHeight: 21, marginBottom: 20 }}>
+            Les profils n'ont pas pu s'afficher. Vos données ne sont pas touchées.
+          </Text>
+          <TouchableOpacity
+            onPress={() => this.setState({ hasError: false, error: '' })}
+            activeOpacity={0.85}
+            style={{ backgroundColor: Brand.framboise, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 28 }}
+          >
+            <Text style={{ fontFamily: Typography.fontFamily.bold, fontSize: 15, color: '#FFFFFF' }}>Réessayer</Text>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -71,6 +83,8 @@ interface MatchProfile {
   /** Affinités par module du Grand Entretien (0 → 10), calculées par le serveur. */
   mentalMap: {
     id: string;
+    /** Numéro du module du Grand Entretien (0 à 10). */
+    module?: number;
     label: string;
     emoji: string;
     /** null : aucune réponse comparable sur ce module. */
@@ -109,14 +123,14 @@ interface ActiveMatch {
 
 // ─── Lecture des fiches renvoyées par le serveur ───────────────────
 /** Libellés de la grille « Profil » (clés renvoyées par le serveur). */
-const DETAIL_LABELS: Record<string, { label: string; emoji: string }> = {
-  situation: { label: 'Situation', emoji: '💍' },
-  children: { label: 'Enfants', emoji: '👶' },
-  childrenWish: { label: "Désir d'enfants", emoji: '🍼' },
-  religion: { label: 'Spiritualité', emoji: '🙏' },
-  education: { label: 'Études', emoji: '🎓' },
-  lifestyle: { label: 'Vie dans 5 ans', emoji: '🌱' },
-  city: { label: 'Ville', emoji: '📍' },
+const DETAIL_LABELS: Record<string, { label: string }> = {
+  situation: { label: 'Situation' },
+  children: { label: 'Enfants' },
+  childrenWish: { label: "Désir d'enfants" },
+  religion: { label: 'Spiritualité' },
+  education: { label: 'Études' },
+  lifestyle: { label: 'Vie dans 5 ans' },
+  city: { label: 'Ville' },
 };
 
 function asArray<T>(value: unknown): T[] | undefined {
@@ -323,10 +337,11 @@ function confirmAction(title: string, message: string, confirmLabel: string, onC
   ]);
 }
 
+/** Couleur du score aux couleurs de la marque (fort, moyen, faible). */
 function scoreColor(percent: number): string {
-  if (percent >= 75) return '#10B981';
-  if (percent >= 55) return '#F59E0B';
-  return '#EF4444';
+  if (percent >= 75) return Brand.framboise;
+  if (percent >= 55) return Brand.lavande;
+  return Brand.encrePale;
 }
 
 function PillarRow({ pillar, delay }: { pillar: MatchProfile['mentalMap'][0]; delay: number }) {
@@ -344,7 +359,10 @@ function PillarRow({ pillar, delay }: { pillar: MatchProfile['mentalMap'][0]; de
   return (
     <View style={styles.pillarRow}>
       <View style={styles.pillarHeader}>
-        <Text style={styles.pillarLabel}>{pillar.emoji ? `${pillar.emoji} ` : ''}{pillar.label}</Text>
+        <View style={styles.pillarLabelRow}>
+          <ModuleIcon module={pillar.module} size={15} />
+          <Text style={styles.pillarLabel}>{pillar.label}</Text>
+        </View>
         <Text style={[styles.pillarVal, { color: pillar.color }]}>{pillar.value === null ? '—' : `${pillar.value} %`}</Text>
       </View>
       <View style={styles.pillarTrack}>
@@ -392,7 +410,6 @@ function DiscoverSkeleton({ pulseAnim }: { pulseAnim: Animated.Value }) {
         <View style={styles.skeletonCardFooter}>
           <Text style={styles.skeletonLoadingText}>Recherche de profils compatibles...</Text>
           <Animated.View style={[styles.skeletonTextLine, { width: '40%', height: 20, marginBottom: 12, opacity: pulseAnim }]} />
-          
           <View style={styles.skeletonBadgesRow}>
             <Animated.View style={[styles.skeletonBadge, { width: 50, opacity: pulseAnim }]} />
             <Animated.View style={[styles.skeletonBadge, { width: 70, opacity: pulseAnim }]} />
@@ -798,14 +815,13 @@ function DiscoverScreen() {
       </View>
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
         {loading && (
           <DiscoverSkeleton pulseAnim={pulseAnim} />
         )}
 
         {!loading && receivedLikes.length > 0 && !activeMatch && (
           <View style={styles.likesSection}>
-            <Text style={styles.likesTitle}>💕 Personnes qui vous ont liké</Text>
+            <Text style={styles.likesTitle}>Invitations reçues</Text>
             {receivedLikes.map((like) => (
               <View key={like.id}>
               <TouchableOpacity onPress={() => handleAcceptLike(like.id, like.name)} activeOpacity={0.85} style={styles.likeCard}>
@@ -863,8 +879,34 @@ function DiscoverScreen() {
               </LinearGradient>
 
               {/* Cercle de score : le vrai pourcentage global */}
-              <View style={styles.avatarWrapper}>
+              <View style={[styles.avatarWrapper, styles.ringRow]}>
+                {!activeMatch ? (
+                  <TouchableOpacity
+                    onPress={handlePrev}
+                    style={styles.ringArrow}
+                    activeOpacity={0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel="Profil précédent"
+                  >
+                    <ChevronLeft size={22} color={Brand.encreDouce} />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.ringArrowSpacer} />
+                )}
                 <ScoreRing percent={currentMatch.compatibility} color={scoreColor(currentMatch.compatibility)} />
+                {!activeMatch ? (
+                  <TouchableOpacity
+                    onPress={handleNext}
+                    style={styles.ringArrow}
+                    activeOpacity={0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel="Profil suivant"
+                  >
+                    <ChevronRight size={22} color={Brand.encreDouce} />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.ringArrowSpacer} />
+                )}
               </View>
 
               {/* Footer de la grande carte : Nom + Slogan */}
@@ -873,7 +915,6 @@ function DiscoverScreen() {
                 style={styles.cardFooter}
               >
                 <Text style={styles.cardTitle}>{currentMatch.firstName}</Text>
-                
                 {/* Badges de localisation, âge, profession sous le nom */}
                 <View style={styles.profileBadgesRow}>
                   {typeof currentMatch.age === 'number' && currentMatch.age > 0 ? <Text style={styles.profileBadge}>{currentMatch.age} ans</Text> : null}
@@ -898,7 +939,7 @@ function DiscoverScreen() {
               {!!currentMatch.aiAnalysis && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={styles.iconCircle}><Text style={{fontSize:15}}>🧠</Text></View>
+                  <View style={styles.iconCircle}><Brain size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>ANALYSE BOLIGO</Text>
                 </View>
                 <View style={styles.analysisCard}>
@@ -911,7 +952,7 @@ function DiscoverScreen() {
               {currentMatch.mentalMap.length > 0 && (
               <View style={styles.sectionBlock} testID="discover-modules">
                 <View style={styles.sectionHeader}>
-                  <View style={styles.iconCircle}><Text style={{fontSize:15}}>📊</Text></View>
+                  <View style={styles.iconCircle}><ChartColumn size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>AFFINITÉS PAR MODULE</Text>
                 </View>
                 <Text style={styles.modulesIntro}>
@@ -929,7 +970,7 @@ function DiscoverScreen() {
               {!!currentMatch.positivePoints?.length && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={[styles.iconCircle, { backgroundColor: '#10B98115' }]}><Link2 size={16} color="#10B981" /></View>
+                  <View style={styles.iconCircle}><Link2 size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>POURQUOI VOUS POURRIEZ FONCTIONNER</Text>
                 </View>
                 <View style={{ gap: Spacing.sm }}>
@@ -947,12 +988,12 @@ function DiscoverScreen() {
               {!!currentMatch.warningPoint && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={[styles.iconCircle, { backgroundColor: '#F59E0B15' }]}><Text style={{fontSize:15}}>⚖️</Text></View>
+                  <View style={styles.iconCircle}><Scale size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>POINT DE VIGILANCE</Text>
                 </View>
                 <View style={styles.warningCard}>
                   <View style={styles.warningHeader}>
-                    <AlertTriangle size={16} color="#F59E0B" />
+                    <AlertTriangle size={16} color={Brand.framboise} />
                     <Text style={styles.warningTitle}>À ABORDER ENSEMBLE</Text>
                   </View>
                   <Text style={styles.warningText}>{renderFormattedText(currentMatch.warningPoint)}</Text>
@@ -964,7 +1005,7 @@ function DiscoverScreen() {
               {discussionTopics.length > 0 && (
               <View style={styles.sectionBlock} testID="discussion-topics">
                 <View style={styles.sectionHeader}>
-                  <View style={[styles.iconCircle, { backgroundColor: '#6366F115' }]}><Text style={{fontSize:15}}>💬</Text></View>
+                  <View style={styles.iconCircle}><MessageCircle size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>SUJETS À ABORDER</Text>
                 </View>
                 <Text style={styles.topicsIntro}>
@@ -987,7 +1028,7 @@ function DiscoverScreen() {
               {currentMatch.details && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={styles.iconCircle}><Text style={{fontSize:15}}>👤</Text></View>
+                  <View style={styles.iconCircle}><User size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>PROFIL</Text>
                 </View>
                 <View style={styles.detailsGrid}>
@@ -996,7 +1037,7 @@ function DiscoverScreen() {
                     .map(([key, val]) => (
                       <View key={key} style={styles.detailBox}>
                         <View style={styles.detailBoxHeader}>
-                          <Text style={{ fontSize: 13 }}>{DETAIL_LABELS[key].emoji}</Text>
+                          <DetailIcon field={key} />
                           <Text style={styles.detailBoxLabel}>{DETAIL_LABELS[key].label.toUpperCase()}</Text>
                         </View>
                         <Text style={styles.detailBoxVal}>{val}</Text>
@@ -1010,7 +1051,7 @@ function DiscoverScreen() {
               {currentMatch.interests && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={styles.iconCircle}><Text style={{fontSize:15}}>✨</Text></View>
+                  <View style={styles.iconCircle}><Sparkles size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>VALEURS & CENTRES D'INTÉRÊT</Text>
                 </View>
                 <View style={styles.chipsWrap}>
@@ -1034,7 +1075,7 @@ function DiscoverScreen() {
               {currentMatch.threeWords && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={styles.iconCircle}><Text style={{fontSize:15}}>🏷️</Text></View>
+                  <View style={styles.iconCircle}><Tag size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>CE PROFIL EN 3 MOTS</Text>
                 </View>
                 <View style={styles.threeWordsRow}>
@@ -1051,7 +1092,7 @@ function DiscoverScreen() {
               {currentMatch.expectations && (
               <View style={styles.sectionBlock}>
                 <View style={styles.sectionHeader}>
-                  <View style={styles.iconCircle}><Text style={{fontSize:15}}>🎯</Text></View>
+                  <View style={styles.iconCircle}><Target size={16} color={Brand.framboise} strokeWidth={1.9} /></View>
                   <Text style={styles.sectionTitle}>
                     {currentMatch.pronoun === 'elle' ? "CE QU'ELLE ATTEND VRAIMENT" : currentMatch.pronoun === 'il' ? "CE QU'IL ATTEND VRAIMENT" : 'SES ATTENTES'}
                   </Text>
@@ -1059,7 +1100,7 @@ function DiscoverScreen() {
                 <View style={{ gap: Spacing.sm }}>
                   {currentMatch.expectations.map((exp, i) => (
                     <View key={i} style={styles.expectationCard}>
-                      <Text style={styles.expectationIcon}>{exp.icon}</Text>
+                      <View style={styles.expectationIcon}><ExpectationIcon tag={exp.icon} /></View>
                       <Text style={styles.expectationText}>{renderFormattedText(exp.text)}</Text>
                     </View>
                   ))}
@@ -1082,7 +1123,7 @@ function DiscoverScreen() {
                     style={styles.likeBtnWrap}
                   >
                     <LinearGradient
-                      colors={activeMatch.phase === 'attente' ? ['#E5E7EB', '#9CA3AF'] : ['#10B981', '#059669']}
+                      colors={activeMatch.phase === 'attente' ? ['#CFC6DA', Brand.encrePale] : [Brand.lavande, Brand.nuit]}
                       start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                       style={styles.likeBtn}
                     >
@@ -1129,7 +1170,7 @@ function DiscoverScreen() {
                       style={styles.likeBtnWrap}
                     >
                       <LinearGradient
-                        colors={hasLikedMe ? ['#10B981', '#059669'] : [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
+                        colors={hasLikedMe ? [Brand.lavande, Brand.nuit] : [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
                         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                         style={styles.likeBtn}
                       >
@@ -1182,29 +1223,6 @@ function DiscoverScreen() {
           </View>
         )}
       </ScrollView>
-
-      {/* ── Flèches de navigation FIXES (Défiler les profils : Précédent ‹ / Suivant ›) ── */}
-      {!loading && overlayMode === 'none' && (activeMatch || profiles.length > 0) && currentMatch && !activeMatch && (
-        <>
-          {/* Flèche gauche — Profil précédent */}
-          <TouchableOpacity
-            onPress={handlePrev}
-            style={styles.fixedArrowBtnLeft}
-            activeOpacity={0.75}
-          >
-            <ChevronLeft size={26} color={Colors.text.primary70} />
-          </TouchableOpacity>
-
-          {/* Flèche droite — Profil suivant */}
-          <TouchableOpacity
-            onPress={handleNext}
-            style={styles.fixedArrowBtnRight}
-            activeOpacity={0.75}
-          >
-            <ChevronRight size={26} color={Colors.text.primary70} />
-          </TouchableOpacity>
-        </>
-      )}
 
       {/* OVERLAYS */}
       {overlayMode !== 'none' && (
@@ -1284,7 +1302,7 @@ function DiscoverScreen() {
             {overlayMode === 'success' && currentMatch && (
               <>
                 <LinearGradient colors={[Colors.primary.red + '15', Colors.primary.purple + '12']} style={styles.successCircle}>
-                  <Text style={{ fontSize: 44 }}>✨</Text>
+                  <Sparkles size={40} color={Brand.framboise} strokeWidth={1.6} />
                 </LinearGradient>
                 <Text style={styles.sheetTitle}>Connexion établie !</Text>
                 <Text style={styles.sheetDesc}>{currentMatch.firstName} et vous pouvez maintenant vous découvrir mutuellement. Bonne conversation !</Text>
@@ -1312,7 +1330,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.white,
     borderBottomWidth: 1, borderBottomColor: Colors.neutral.border,
   },
-  headerTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 24, color: Colors.text.primary100 },
+  headerTitle: { fontFamily: Typography.fontFamily.serif, fontSize: 28, color: Colors.text.primary100, letterSpacing: -0.4 },
   headerSub: { fontFamily: Typography.fontFamily.regular, fontSize: 12, color: Colors.text.primary40, marginTop: 2 },
   creditsBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -1324,7 +1342,6 @@ const styles = StyleSheet.create({
 
   scrollContent: { paddingBottom: 60 },
   profileCard: { flex: 1 },
-  
   // RESTORED BIG CARD STYLES
   bigCard: {
     margin: Spacing.lg,
@@ -1403,7 +1420,7 @@ const styles = StyleSheet.create({
   },
   declineLinkText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: Typography.fontFamily.semiBold,
     color: Colors.text.primary40,
   },
   cardFooter: {
@@ -1414,7 +1431,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardTitle: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     fontSize: 24,
     color: Colors.text.primary100,
   },
@@ -1437,8 +1454,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   sloganText: {
-    fontFamily: Typography.fontFamily.serif,
-    fontStyle: 'italic',
+    fontFamily: Typography.fontFamily.serifItalic,
     fontSize: 15,
     color: Colors.text.primary70,
     textAlign: 'center',
@@ -1456,7 +1472,7 @@ const styles = StyleSheet.create({
   topicPrompt: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Colors.text.primary70 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: 2 },
   iconCircle: {
-    width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.neutral.border,
+    width: 30, height: 30, borderRadius: 10, backgroundColor: Brand.rose,
     alignItems: 'center', justifyContent: 'center'
   },
   sectionTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 12, color: Colors.text.primary100, letterSpacing: 1 },
@@ -1475,7 +1491,8 @@ const styles = StyleSheet.create({
   },
   pillarRow: { gap: 6 },
   pillarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  pillarLabel: { fontFamily: Typography.fontFamily.bold, fontSize: 13, color: Colors.text.primary100 },
+  pillarLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
+  pillarLabel: { fontFamily: Typography.fontFamily.semiBold, fontSize: 13, color: Colors.text.primary100, flexShrink: 1 },
   pillarVal: { fontFamily: Typography.fontFamily.medium, fontSize: 12 },
   pillarTrack: { height: 6, borderRadius: 3, backgroundColor: Colors.neutral.border, overflow: 'hidden' },
   pillarFill: { height: '100%', borderRadius: 3 },
@@ -1498,16 +1515,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B98110', borderRadius: BorderRadius.md, padding: Spacing.md,
     borderWidth: 1, borderColor: '#10B98130',
   },
-  positiveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981', marginTop: 8 },
+  positiveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Brand.lavande, marginTop: 8 },
   positiveText: { flex: 1, fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Colors.text.primary100, lineHeight: 22 },
 
   // 7. Vigilance
   warningCard: {
-    backgroundColor: '#FFF0F2', borderRadius: BorderRadius.md, padding: Spacing.md,
-    borderWidth: 1, borderColor: '#FFE4E6', gap: 6,
+    backgroundColor: Brand.rose, borderRadius: BorderRadius.md, padding: Spacing.md,
+    borderWidth: 1, borderColor: Brand.bordRose, gap: 6,
   },
   warningHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  warningTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 11, color: '#F59E0B', letterSpacing: 0.5 },
+  warningTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 11, color: Brand.framboise, letterSpacing: 0.5 },
   warningText: { fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Colors.text.primary70, lineHeight: 22 },
 
   // 8. Détails Grid
@@ -1551,7 +1568,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14, alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: Colors.neutral.border,
   },
-  wordText: { fontFamily: Typography.fontFamily.serif, fontStyle: 'italic', fontSize: 15, color: '#D4AF37', fontWeight: 'bold' },
+  wordText: { fontFamily: Typography.fontFamily.serifItalic, fontSize: 16, color: Brand.lavande },
 
   // 11. Attentes
   expectationCard: {
@@ -1559,7 +1576,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.white, borderRadius: BorderRadius.md, padding: Spacing.md,
     borderWidth: 1, borderColor: Colors.neutral.border,
   },
-  expectationIcon: { fontSize: 24 },
+  expectationIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: Brand.rose, alignItems: 'center', justifyContent: 'center' },
   expectationText: { flex: 1, fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Colors.text.primary100, lineHeight: 22 },
 
   // --- REST OF ORIGINAL STYLES ---
@@ -1625,7 +1642,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     gap: 6,
   },
-  pactTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 14, fontWeight: '700', color: '#33287A' },
+  pactTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 14,  color: '#33287A' },
   pactText: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: '#5E4F6E' },
   pactCheckRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6, paddingVertical: 4 },
   pactCheck: {
@@ -1639,8 +1656,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pactCheckOn: { backgroundColor: '#7C5CDB' },
-  pactCheckMark: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', lineHeight: 16 },
-  pactCheckText: { flex: 1, fontFamily: Typography.fontFamily.medium, fontSize: 14, fontWeight: '600', color: '#2A1B3D' },
+  pactCheckMark: { color: '#FFFFFF', fontSize: 14, fontFamily: Typography.fontFamily.bold, lineHeight: 16 },
+  pactCheckText: { flex: 1, fontFamily: Typography.fontFamily.semiBold, fontSize: 14,  color: '#2A1B3D' },
   costRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: Colors.primary.red + '08',
@@ -1779,58 +1796,42 @@ const styles = StyleSheet.create({
   },
   likeIndicator: {
     left: 24,
-    backgroundColor: '#10B981',
+    backgroundColor: Brand.framboise,
     transform: [{ rotate: '-12deg' }],
   },
   passIndicator: {
     right: 24,
-    backgroundColor: '#EF4444',
+    backgroundColor: Brand.encrePale,
     transform: [{ rotate: '12deg' }],
   },
   swipeIndicatorText: {
     color: '#FFFFFF',
-    fontWeight: '800',
+    fontFamily: Typography.fontFamily.bold,
     fontSize: 14,
     letterSpacing: 1.5,
   },
-  fixedArrowBtnLeft: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -24 }],
-    left: 10,
-    zIndex: 99,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+  // Flèches de part et d'autre du cercle de score : elles défilent avec la fiche.
+  ringRow: {
+    flexDirection: 'row',
+    alignSelf: 'stretch',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
-  fixedArrowBtnRight: {
-    position: 'absolute',
-    top: '50%',
-    transform: [{ translateY: -24 }],
-    right: 10,
-    zIndex: 99,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+  ringArrowSpacer: { width: 40 },
+  ringArrow: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Brand.blanc,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: Brand.bordLilas,
+    shadowColor: Brand.nuit,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    zIndex: 2,
   },
 });

@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 import { Stack, useRouter } from 'expo-router';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/auth';
@@ -7,8 +8,11 @@ import { StripeProvider } from '@/services/stripe';
 import { addNotificationResponseListener, configureNotificationHandler } from '@/services/notifications';
 import { installWebAlert } from '@/services/webAlert';
 import { warmUpBackend } from '@/services/api';
+import { useBrandFonts } from '@/services/brandFonts';
 
 installWebAlert();
+// L'écran de démarrage reste affiché jusqu'au chargement des polices.
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 /** Ouvre l'écran pertinent quand l'utilisateur touche une notification. */
 function NotificationRouter() {
@@ -35,7 +39,24 @@ const publishableKey =
   process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
   (__DEV__ ? 'pk_test_51UMQWmLz8rnS1CBn3uNlIdylaIYPh5hlpznGOR8x9uJBZOhr4KGvIqHkblsi5uwoJ7K6WD4HJMTENfTtL0kN6b5a002jZ8dVZD' : '');
 
+/** Polices prêtes, ou délai dépassé (on affiche alors avec la police du système). */
+function useFontsGate() {
+  const { ready } = useBrandFonts();
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+  const open = ready || timedOut;
+  useEffect(() => {
+    if (open) SplashScreen.hideAsync().catch(() => undefined);
+  }, [open]);
+  return open;
+}
+
 export default function RootLayout() {
+  const fontsOpen = useFontsGate();
+  if (!fontsOpen) return null;
   return (
     <ErrorBoundary>
       <StripeProvider publishableKey={publishableKey}>

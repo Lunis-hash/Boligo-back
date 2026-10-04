@@ -7,13 +7,14 @@ import { collectRawAnswers } from '../matching/divergence.engine';
 import { ageFrom } from '../matching/match-view';
 import { buildPortrait, Portrait } from './portrait.writer';
 
+// Couleurs de la marque : framboise, lavande, bleu nuit, rose vif, bleu, orchidée.
 const PALETTE = [
-  '#E8403A',
-  '#10B981',
-  '#7C5CE8',
-  '#D9AE3C',
-  '#F97316',
-  '#0EA5E9',
+  '#C62A6E',
+  '#7C5CDB',
+  '#33287A',
+  '#D63F7E',
+  '#4E6BD6',
+  '#A63DB8',
 ];
 
 function pastel(hex: string): string {
