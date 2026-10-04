@@ -71,8 +71,8 @@ export class JourneyController {
   }
 
   @Post(':id/leave')
-  async leave(@Param('id') id: string, @Request() req) {
-    return this.journeyService.leaveJourney(id, req.user.id);
+  async leave(@Param('id') id: string, @Body() body: { farewell?: string }, @Request() req) {
+    return this.journeyService.leaveJourney(id, req.user.id, body?.farewell);
   }
 
   @Post(':id/exchange-contact')

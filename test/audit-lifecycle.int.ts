@@ -1,7 +1,7 @@
 /**
  * Vérification d'intégration des règles métier corrigées lors de l'audit :
  * invitations et crédits, cycle de vie des invitations, étapes du parcours,
- * échange de coordonnées, codes promo, Sondeur, Grand Entretien.
+ * échange de coordonnées, codes promo, Sondeur, Grand Entretien, anti-ghosting.
  *
  * S'exécute UNIQUEMENT sur une base PostgreSQL locale (refus sinon) :
  *   npm run test:int
@@ -16,6 +16,7 @@ import { VideoCallService } from '../src/video/video-call.service';
 import { PaymentService } from '../src/payment/payment.service';
 import { CreditService } from '../src/credit/credit.service';
 import { InterviewService } from '../src/interview/interview.service';
+import { GhostingService } from '../src/journey/ghosting.service';
 
 process.env.HARMONY_QUESTIONS_SOURCE = 'bank';
 const url = process.env.DATABASE_URL || '';
@@ -24,11 +25,20 @@ if (!/@(localhost|127\.0\.0\.1)[:/]/.test(url)) {
 }
 
 const prisma = new PrismaService();
-const notif: any = { sendPushNotification: async () => undefined, notifyVideoUnlock: async () => undefined };
+const sent: Array<{ userId: string; type: string; title: string; content: string }> = [];
+// Comme le vrai service : chaque notification est enregistrée (utile au dédoublonnage des rappels).
+const notif: any = {
+  sendPushNotification: async (userId: string, type: any, title: string, content: string) => {
+    sent.push({ userId, type, title, content });
+    return prisma.notification.create({ data: { userId, type, title, content } });
+  },
+  notifyVideoUnlock: async () => undefined,
+};
 const gateway: any = { broadcastIncomingCall: () => undefined, broadcastNewMessage: () => undefined };
 const matching = new MatchingService(prisma, notif);
 const credit = new CreditService(prisma);
-const journeys = new JourneyService(prisma, {} as any, notif, gateway, credit);
+const ghosting = new GhostingService(prisma, notif, credit);
+const journeys = new JourneyService(prisma, {} as any, notif, gateway, credit, ghosting);
 const video = new VideoCallService(prisma, { logConfigurationHint: () => undefined } as any, notif, gateway);
 const payment = new PaymentService({ get: () => undefined } as any, prisma, credit, {} as any);
 
@@ -283,6 +293,103 @@ async function main() {
     await assert.rejects(payment.applyPromoCode(P.id, 'BOLIGO100X', 'parcours_harmonie'));
   });
 
+  const HOUR = 60 * 60 * 1000;
+  const liveJourney = async (step: string, hoursInStep: number) => {
+    const X = await member('H', 1);
+    const Y = await member('F', 1);
+    const inv: any = await matching.createMatch(X.id, Y.id);
+    const acc: any = await matching.acceptMatch(inv.match.id, Y.id);
+    await prisma.journey.update({
+      where: { id: acc.journey.id },
+      data: { currentStep: step as any, stepStartDate: new Date(Date.now() - hoursInStep * HOUR) },
+    });
+    return { X, Y, id: acc.journey.id as string };
+  };
+
+  await check('anti-ghosting : en observation, le moniteur ne modifie rien', async () => {
+    const { X, Y, id } = await liveJourney('chat_libre', 60);
+    await prisma.message.create({ data: { journeyId: id, senderId: X.id, content: 'Bonjour !', sentAt: new Date(Date.now() - 50 * HOUR) } });
+    const report = await ghosting.sweep(new Date(), 'observe');
+    assert.ok(report.close >= 1);
+    const j = await prisma.journey.findUniqueOrThrow({ where: { id } });
+    assert.strictEqual(j.result, 'en_cours');
+    assert.strictEqual(await balance(X.id), 0);
+    assert.strictEqual(await balance(Y.id), 0);
+  });
+
+  await check('anti-ghosting : 48 h sans réponse au chat → parcours clos, crédit rendu une seule fois', async () => {
+    const { X, Y, id } = await liveJourney('chat_libre', 60);
+    await prisma.message.create({ data: { journeyId: id, senderId: X.id, content: 'Tu es là ?', sentAt: new Date(Date.now() - 50 * HOUR) } });
+    sent.length = 0;
+    await ghosting.sweep(new Date(), 'on');
+    const j = await prisma.journey.findUniqueOrThrow({ where: { id } });
+    assert.strictEqual(j.result, 'echoue');
+    assert.strictEqual(j.currentStep, 'termine');
+    assert.strictEqual(await balance(X.id), 1, 'celui qui attendait récupère son crédit');
+    assert.strictEqual(await balance(Y.id), 0, "celui qui n'a pas répondu ne récupère rien");
+    assert.ok(sent.some((m) => m.userId === X.id && m.type === 'credit'));
+    assert.ok(sent.some((m) => m.userId === Y.id && m.title === 'Parcours terminé'));
+    await ghosting.sweep(new Date(), 'on');
+    await assert.rejects(journeys.leaveJourney(id, X.id));
+    assert.strictEqual(await balance(X.id), 1);
+    assert.strictEqual(await prisma.creditTransaction.count({ where: { journeyId: id, type: 'remboursement_justice' } }), 1);
+  });
+
+  await check('anti-ghosting : un rappel, puis un dernier avertissement, sans doublon', async () => {
+    const { X, Y, id } = await liveJourney('chat_libre', 30);
+    const msg = await prisma.message.create({ data: { journeyId: id, senderId: X.id, content: 'Ça va ?', sentAt: new Date(Date.now() - 25 * HOUR) } });
+    sent.length = 0;
+    await ghosting.sweep(new Date(), 'on');
+    await ghosting.sweep(new Date(), 'on');
+    const reminders = sent.filter((m) => m.userId === Y.id && m.type === 'rappel_reponse');
+    assert.strictEqual(reminders.length, 1);
+    assert.strictEqual(reminders[0].title, `${X.firstName} attend votre réponse`);
+    await prisma.message.update({ where: { id: msg.id }, data: { sentAt: new Date(Date.now() - 37 * HOUR) } });
+    await prisma.notification.updateMany({ where: { userId: Y.id }, data: { sentAt: new Date(Date.now() - 37 * HOUR + 60000) } });
+    await ghosting.sweep(new Date(), 'on');
+    await ghosting.sweep(new Date(), 'on');
+    const all = sent.filter((m) => m.userId === Y.id && m.type === 'rappel_reponse');
+    assert.strictEqual(all.length, 2);
+    assert.ok(all[1].title.startsWith('Dernier rappel'));
+    const j = await prisma.journey.findUniqueOrThrow({ where: { id } });
+    assert.strictEqual(j.result, 'en_cours');
+  });
+
+  await check("anti-ghosting : le compte à rebours est renvoyé à chaque membre", async () => {
+    const { X, Y, id } = await liveJourney('chat_libre', 10);
+    await prisma.message.create({ data: { journeyId: id, senderId: Y.id, content: 'Hello', sentAt: new Date(Date.now() - 2 * HOUR) } });
+    const forX: any = await journeys.getStatus(id, X.id);
+    const forY: any = await journeys.getStatus(id, Y.id);
+    assert.strictEqual(forX.ghosting.waitingOn, 'me');
+    assert.strictEqual(forY.ghosting.waitingOn, 'partner');
+    assert.strictEqual(forY.ghosting.refundOnClose, true);
+    assert.ok(forX.ghosting.closeAt);
+  });
+
+  await check("Règle de Justice à l'ouverture de l'app, même en observation", async () => {
+    const { X, Y, id } = await liveJourney('video', 50);
+    await prisma.videoSession.create({ data: { journeyId: id, status: 'en_cours', consentA: true, startDate: new Date(Date.now() - 30 * HOUR) } });
+    await journeys.canAccessMessages(X.id);
+    const j = await prisma.journey.findUniqueOrThrow({ where: { id } });
+    assert.strictEqual(j.result, 'echoue');
+    assert.strictEqual(await balance(X.id), 1);
+    assert.strictEqual(await balance(Y.id), 0);
+  });
+
+  await check('sortie polie : message de courtoisie transmis, crédit rendu à l’autre', async () => {
+    const { X, Y, id } = await liveJourney('chat_libre', 5);
+    sent.length = 0;
+    await journeys.leaveJourney(id, Y.id, 'merci');
+    const toX = sent.find((m) => m.userId === X.id);
+    assert.ok(toX && toX.content.includes('Merci pour ces échanges'));
+    assert.ok(toX && toX.content.includes('Votre crédit vous a été rendu'));
+    assert.strictEqual(await balance(X.id), 1);
+    const { id: id2, X: X2 } = await liveJourney('chat_libre', 5);
+    sent.length = 0;
+    await journeys.leaveJourney(id2, X2.id, '<script>texte libre</script>');
+    assert.ok(sent.every((m) => !m.content.includes('texte libre')));
+  });
+
   console.log(`\n${passed} vérifications réussies`);
 }
 
@@ -297,6 +404,8 @@ main()
     const ids = users.map((u) => u.id);
     const js = await prisma.journey.findMany({ where: { OR: [{ userAId: { in: ids } }, { userBId: { in: ids } }] }, select: { id: true } });
     const jIds = js.map((j) => j.id);
+    await prisma.notification.deleteMany({ where: { userId: { in: ids } } });
+    await prisma.message.deleteMany({ where: { journeyId: { in: jIds } } });
     await prisma.harmonyResponse.deleteMany({ where: { userId: { in: ids } } });
     await prisma.harmonyQuestion.deleteMany({ where: { journeyId: { in: jIds } } });
     await prisma.contactExchange.deleteMany({ where: { journeyId: { in: jIds } } });

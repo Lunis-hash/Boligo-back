@@ -22,6 +22,8 @@ import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { useAppContext } from '@/context/AppContext';
 import { useAuth } from '@/context/auth';
 import client, { getReadableError } from '@/services/api';
+import { GhostingBanner } from '@/components/GhostingBanner';
+import { GhostingView, isGhostingView } from '@/services/ghosting';
 import { clampDay, getSondeurDayState, getSondeurDayStatus, getSondeurLockedLabel } from '@/services/sondeur';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
@@ -180,6 +182,8 @@ export default function MatchesScreen() {
   const [revealedKeys, setRevealedKeys] = useState<string[]>([]);
   const [partnerAnswers, setPartnerAnswers] = useState<Record<string, string>>({});
   const [submittingAnswer, setSubmittingAnswer] = useState(false);
+  // Pacte anti-ghosting : compte à rebours renvoyé avec le statut du parcours.
+  const [ghosting, setGhosting] = useState<GhostingView | null>(null);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -209,6 +213,7 @@ export default function MatchesScreen() {
   // Appliquer les données du parcours instantanément
   const applyJourneyData = (status: any, questions: any[]) => {
     setDbQuestions(questions);
+    setGhosting(isGhostingView(status?.ghosting) ? status.ghosting : null);
     setCalendarDay(clampDay(status?.currentDay));
 
     // Si le parcours est fini (chat_libre ou plus)
@@ -685,6 +690,7 @@ export default function MatchesScreen() {
             </View>
           ) : (
             <>
+              <GhostingBanner view={ghosting} partnerName={firstMatch.name} style={{ marginHorizontal: 0, marginTop: 0, marginBottom: 14 }} />
               {loading && (
                 <View style={styles.preparingCard}>
                   <ActivityIndicator color={Colors.primary.red} />

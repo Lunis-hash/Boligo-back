@@ -7,11 +7,12 @@ import { DailyService } from '../video/daily.service';
 import { VideoCallService } from '../video/video-call.service';
 import { ChatModule } from '../chat/chat.module';
 import { CreditModule } from '../credit/credit.module';
+import { GhostingService } from './ghosting.service';
 
 @Module({
   imports: [PrismaModule, AiModule, CreditModule, forwardRef(() => ChatModule)],
   controllers: [JourneyController],
-  providers: [JourneyService, DailyService, VideoCallService],
-  exports: [JourneyService, VideoCallService],
+  providers: [JourneyService, GhostingService, DailyService, VideoCallService],
+  exports: [JourneyService, GhostingService, VideoCallService],
 })
 export class JourneyModule {}

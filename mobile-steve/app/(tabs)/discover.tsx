@@ -438,6 +438,8 @@ function DiscoverScreen() {
   const [overlayMode, setOverlayMode] = useState<'none' | 'connect' | 'no_credit' | 'success'>('none');
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  // Pacte anti-ghosting : engagement explicite avant chaque parcours.
+  const [pactAccepted, setPactAccepted] = useState(false);
 
   const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(null);
   const [receivedLikes, setReceivedLikes] = useState<any[]>([]);
@@ -567,6 +569,7 @@ function DiscoverScreen() {
   }, [profileIndex, profiles.length, activeMatch]);
 
   const openOverlay = (mode: 'connect' | 'no_credit' | 'success') => {
+    if (mode === 'connect') setPactAccepted(false);
     setOverlayMode(mode);
     overlayAnim.setValue(0);
     Animated.spring(overlayAnim, { toValue: 1, friction: 8, tension: 55, useNativeDriver: true }).start();
@@ -577,7 +580,7 @@ function DiscoverScreen() {
   };
 
   const handleConnect = async () => {
-    if (!currentMatch || connecting) return;
+    if (!currentMatch || connecting || !pactAccepted) return;
 
     if (acceptingProposal) {
       setConnecting(true);
@@ -1181,7 +1184,7 @@ function DiscoverScreen() {
       </ScrollView>
 
       {/* ── Flèches de navigation FIXES (Défiler les profils : Précédent ‹ / Suivant ›) ── */}
-      {!loading && (activeMatch || profiles.length > 0) && currentMatch && !activeMatch && (
+      {!loading && overlayMode === 'none' && (activeMatch || profiles.length > 0) && currentMatch && !activeMatch && (
         <>
           {/* Flèche gauche — Profil précédent */}
           <TouchableOpacity
@@ -1213,8 +1216,35 @@ function DiscoverScreen() {
             {/* 1. Connect Confirmation Mode */}
             {overlayMode === 'connect' && currentMatch && (
               <>
-                <Text style={styles.sheetTitle}>Souhaitez-vous découvrir {currentMatch.firstName} ?</Text>
-                <Text style={styles.sheetDesc}>En confirmant, vous manifestez votre intérêt. Vos identités complètes seront révélées mutuellement.</Text>
+                <Text style={styles.sheetTitle}>
+                  {acceptingProposal
+                    ? `Commencer le parcours avec ${acceptingProposal.name} ?`
+                    : `Souhaitez-vous découvrir ${currentMatch.firstName} ?`}
+                </Text>
+                <Text style={styles.sheetDesc}>
+                  {acceptingProposal
+                    ? 'En confirmant, vous acceptez son invitation : le Parcours Harmonie commence pour vous deux.'
+                    : `En confirmant, vous invitez ${currentMatch.firstName} à commencer un Parcours Harmonie avec vous. Vos coordonnées restent privées jusqu’à la fin du parcours.`}
+                </Text>
+                <View style={styles.pactBox}>
+                  <Text style={styles.pactTitle}>Le pacte anti-ghosting</Text>
+                  <Text style={styles.pactText}>
+                    En vous engageant, vous promettez d’aller au bout du parcours ou d’y mettre fin poliment depuis l’application. Sans réponse dans les délais (en général 48 h), le parcours se termine et l’autre personne récupère son crédit.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setPactAccepted((v) => !v)}
+                    activeOpacity={0.8}
+                    style={styles.pactCheckRow}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: pactAccepted }}
+                    testID="pact-accept"
+                  >
+                    <View style={[styles.pactCheck, pactAccepted && styles.pactCheckOn]}>
+                      {pactAccepted ? <Text style={styles.pactCheckMark}>✓</Text> : null}
+                    </View>
+                    <Text style={styles.pactCheckText}>Je m’engage à respecter ce pacte</Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.costRow}>
                   <Heart size={13} color={Colors.primary.red} fill={Colors.primary.red} />
                   <Text style={styles.costText}>1 crédit sera utilisé</Text>
@@ -1222,7 +1252,7 @@ function DiscoverScreen() {
                 </View>
                 <View style={styles.sheetBtns}>
                   <TouchableOpacity disabled={connecting} onPress={closeOverlay} style={[styles.btnSec, connecting && { opacity: 0.5 }]}><Text style={styles.btnSecText}>Annuler</Text></TouchableOpacity>
-                  <TouchableOpacity disabled={connecting} onPress={handleConnect} activeOpacity={0.85} style={[styles.btnPriWrap, connecting && { opacity: 0.7 }]}>
+                  <TouchableOpacity disabled={connecting || !pactAccepted} onPress={handleConnect} activeOpacity={0.85} style={[styles.btnPriWrap, (connecting || !pactAccepted) && { opacity: 0.5 }]} testID="connect-confirm">
                     <LinearGradient colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.btnPri}>
                       {connecting ? (
                         <ActivityIndicator size="small" color="#fff" />
@@ -1588,6 +1618,29 @@ const styles = StyleSheet.create({
   sheetHandle: { width: 40, height: 4, backgroundColor: Colors.neutral.border, borderRadius: 2, alignSelf: 'center', marginBottom: Spacing.xl },
   sheetTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 22, color: Colors.text.primary100, marginBottom: Spacing.sm },
   sheetDesc: { fontFamily: Typography.fontFamily.regular, fontSize: 15, color: Colors.text.primary70, lineHeight: 23, marginBottom: Spacing.lg },
+  pactBox: {
+    backgroundColor: '#EEE8FF',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: Spacing.lg,
+    gap: 6,
+  },
+  pactTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 14, fontWeight: '700', color: '#33287A' },
+  pactText: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: '#5E4F6E' },
+  pactCheckRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6, paddingVertical: 4 },
+  pactCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#7C5CDB',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pactCheckOn: { backgroundColor: '#7C5CDB' },
+  pactCheckMark: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', lineHeight: 16 },
+  pactCheckText: { flex: 1, fontFamily: Typography.fontFamily.medium, fontSize: 14, fontWeight: '600', color: '#2A1B3D' },
   costRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: Colors.primary.red + '08',
