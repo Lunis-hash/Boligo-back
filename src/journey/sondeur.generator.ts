@@ -80,7 +80,7 @@ const TARGETED_B: Record<
 > = {
   1: {
     text: (d) =>
-      `Vous ne voyez pas « ${d.label.toLowerCase()} » de la même façon (« ${d.a.text} » / « ${d.b.text} »). Si rien ne bougeait, pourrais-tu construire quand même ?`,
+      `Vous ne voyez pas « ${d.label.toLowerCase()} » de la même façon (« ${d.a.text} » / « ${d.b.text} »). Si rien ne bougeait, pourriez-vous construire quand même ?`,
     options: [
       'Non, ce point me bloquerait',
       'Oui, si le reste est solide',
@@ -90,7 +90,7 @@ const TARGETED_B: Record<
   },
   2: {
     text: (d) =>
-      `Qu'est-ce que tu aimerais que l'autre comprenne de ta réponse sur « ${d.label.toLowerCase()} » (« ${d.a.text} » / « ${d.b.text} ») ?`,
+      `Qu'est-ce que vous aimeriez que l'autre comprenne de votre réponse sur « ${d.label.toLowerCase()} » (« ${d.a.text} » / « ${d.b.text} ») ?`,
     options: [
       "Que ce n'est pas un caprice mais une valeur",
       "Que j'ai déjà souffert de l'inverse",
@@ -100,7 +100,7 @@ const TARGETED_B: Record<
   },
   3: {
     text: (d) =>
-      `Concrètement, quel premier pas ferais-tu dans les prochains mois pour rapprocher vos positions sur « ${d.label.toLowerCase()} » ?`,
+      `Concrètement, quel premier pas feriez-vous dans les prochains mois pour rapprocher vos positions sur « ${d.label.toLowerCase()} » ?`,
     options: [
       'En parler avec nos proches ou un tiers',
       'Tester une période à sa façon',
@@ -116,7 +116,7 @@ const TARGETED: Record<
 > = {
   1: {
     text: (d) =>
-      `Sur « ${d.label.toLowerCase()} », vos réponses diffèrent : « ${d.a.text} » d'un côté, « ${d.b.text} » de l'autre. Est-ce une ligne rouge pour toi ?`,
+      `Sur « ${d.label.toLowerCase()} », vos réponses diffèrent : « ${d.a.text} » d'un côté, « ${d.b.text} » de l'autre. Est-ce une ligne rouge pour vous ?`,
     options: [
       'Oui, non négociable',
       'Négociable si on en parle vraiment',
@@ -126,7 +126,7 @@ const TARGETED: Record<
   },
   2: {
     text: (d) =>
-      `« ${d.label} » : l'un de vous a répondu « ${d.a.text} », l'autre « ${d.b.text} ». D'où vient ta position, et qu'est-ce qu'elle protège chez toi ?`,
+      `« ${d.label} » : l'un de vous a répondu « ${d.a.text} », l'autre « ${d.b.text} ». D'où vient votre position, et qu'est-ce qu'elle protège en vous ?`,
     options: [
       'Mon éducation et ma famille',
       'Mes convictions personnelles',
@@ -153,7 +153,7 @@ type ThemeTemplates = Record<number, { text: string; options: string[] }>;
 const GENERIC: Record<Theme, ThemeTemplates> = {
   famille: {
     1: {
-      text: 'Ta famille désapprouve ouvertement ton partenaire. Que fais-tu ?',
+      text: 'Votre famille désapprouve ouvertement votre partenaire. Que faites-vous ?',
       options: [
         "Je défends mon couple, quoi qu'il en coûte",
         'Je cherche à réconcilier les deux',
@@ -162,7 +162,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: 'Quelle place ta famille doit-elle avoir dans les décisions de votre couple ?',
+      text: 'Quelle place votre famille doit-elle avoir dans les décisions de votre couple ?',
       options: [
         'Consultée, mais nous décidons seuls',
         'Impliquée sur les grands choix',
@@ -171,7 +171,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: 'Comment imagines-tu votre foyer dans cinq ans : enfants, parents, rythme de vie ?',
+      text: 'Comment imaginez-vous votre foyer dans cinq ans : enfants, parents, rythme de vie ?',
       options: [
         'Un foyer avec enfants et famille proche',
         "Un couple d'abord, le reste viendra",
@@ -182,7 +182,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
   },
   argent: {
     1: {
-      text: "Tu découvres une dette importante que ton partenaire ne t'avait pas dite. Ta réaction ?",
+      text: 'Vous découvrez une dette importante que votre partenaire ne vous avait pas dite. Votre réaction ?',
       options: [
         'Rupture de confiance difficile à réparer',
         'On en parle et on construit un plan ensemble',
@@ -191,7 +191,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Dans le couple, l'argent sert d'abord à quoi, selon toi ?",
+      text: "Dans le couple, l'argent sert d'abord à quoi, selon vous ?",
       options: [
         "À sécuriser le foyer et l'avenir",
         'À profiter de la vie ensemble',
@@ -211,7 +211,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
   },
   spiritualite: {
     1: {
-      text: "Sur la foi ou la spiritualité, qu'est-ce que tu ne pourrais pas accepter chez ton partenaire ?",
+      text: "Sur la foi ou la spiritualité, qu'est-ce que vous ne pourriez pas accepter chez votre partenaire ?",
       options: [
         "Qu'il ou elle rejette ma pratique",
         "Qu'il ou elle ne partage aucune de mes valeurs",
@@ -220,7 +220,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: 'Quelle place ta spiritualité ou tes convictions prennent-elles dans ton quotidien ?',
+      text: 'Quelle place votre spiritualité ou vos convictions prennent-elles dans votre quotidien ?',
       options: [
         'Centrale : elle guide mes choix',
         'Importante dans les grands moments',
@@ -229,7 +229,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: 'Comment souhaites-tu transmettre (ou non) tes convictions à vos futurs enfants ?',
+      text: 'Comment souhaitez-vous transmettre (ou non) vos convictions à vos futurs enfants ?',
       options: [
         'Dans ma tradition, clairement',
         'En leur laissant le choix',
@@ -240,7 +240,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
   },
   intimite: {
     1: {
-      text: "En matière d'intimité et de fidélité, quelle est ta limite absolue ?",
+      text: "En matière d'intimité et de fidélité, quelle est votre limite absolue ?",
       options: [
         'Toute infidélité, même émotionnelle',
         "Le mensonge plus que l'acte",
@@ -249,7 +249,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Pour toi, la tendresse et le désir dans un couple, ça s'entretient comment ?",
+      text: "Pour vous, la tendresse et le désir dans un couple, ça s'entretient comment ?",
       options: [
         'Par des gestes et des mots au quotidien',
         'Par des moments à deux préservés',
@@ -258,7 +258,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: "Si vos envies d'intimité ne se rejoignent pas à un moment de la vie, que fais-tu ?",
+      text: "Si vos envies d'intimité ne se rejoignent pas à un moment de la vie, que faites-vous ?",
       options: [
         "On en parle sans tabou et on s'ajuste",
         'Je prends sur moi sans le dire',
@@ -269,7 +269,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
   },
   communication: {
     1: {
-      text: "Pendant une dispute, quel comportement de l'autre te ferait quitter la pièce ?",
+      text: "Pendant une dispute, quel comportement de l'autre vous ferait quitter la pièce ?",
       options: [
         'Les cris ou les insultes',
         'Le silence et le mépris',
@@ -278,7 +278,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: 'Quand tu es blessé(e), de quoi as-tu besoin en premier ?',
+      text: 'Quand vous êtes blessé(e), de quoi avez-vous besoin en premier ?',
       options: [
         "Qu'on m'écoute sans me couper",
         "Qu'on reconnaisse le tort",
@@ -287,7 +287,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: 'Comment aimerais-tu que vous régliez vos désaccords dans cinq ans ?',
+      text: 'Comment aimeriez-vous que votre couple règle ses désaccords dans cinq ans ?',
       options: [
         'Un rituel de discussion calme',
         "En demandant de l'aide si besoin",
@@ -298,7 +298,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
   },
   projet: {
     1: {
-      text: "Qu'est-ce qui, dans un projet de vie, te ferait renoncer à cette relation ?",
+      text: "Qu'est-ce qui, dans un projet de vie, vous ferait renoncer à cette relation ?",
       options: [
         "Le refus de s'engager",
         'Des ambitions incompatibles',
@@ -307,7 +307,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: 'Pour toi, un engagement sérieux se prouve par quoi ?',
+      text: 'Pour vous, un engagement sérieux se prouve par quoi ?',
       options: [
         'Des actes concrets au quotidien',
         'Une date et un cadre clairs',
@@ -316,7 +316,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: 'Imagine votre dimanche idéal dans cinq ans. À quoi ressemble-t-il ?',
+      text: 'Imaginez votre dimanche idéal dans cinq ans. À quoi ressemble-t-il ?',
       options: [
         'En famille, à la maison',
         'En sortie ou en voyage à deux',
@@ -327,7 +327,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
   },
   lieu: {
     1: {
-      text: "Ton partenaire obtient une opportunité à l'étranger. Jusqu'où peux-tu le ou la suivre ?",
+      text: "Votre partenaire obtient une opportunité à l'étranger. Jusqu'où pouvez-vous le ou la suivre ?",
       options: [
         "Je pars, le couple d'abord",
         'Seulement si mon projet y trouve sa place',
@@ -336,7 +336,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Qu'est-ce qui te rattache le plus à ton lieu de vie actuel ?",
+      text: "Qu'est-ce qui vous rattache le plus à votre lieu de vie actuel ?",
       options: [
         'Ma famille et mes proches',
         'Mon travail et ma stabilité',
@@ -359,7 +359,7 @@ const GENERIC: Record<Theme, ThemeTemplates> = {
 const GENERIC_B: Record<Theme, ThemeTemplates> = {
   famille: {
     1: {
-      text: "Un proche de ton partenaire s'invite chez vous plusieurs semaines sans prévenir. Que fais-tu ?",
+      text: "Un proche de votre partenaire s'invite chez vous plusieurs semaines sans prévenir. Que faites-vous ?",
       options: [
         "J'accepte, la famille passe avant",
         "J'accepte avec des règles claires",
@@ -368,7 +368,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: 'Quel souvenir de ta propre famille veux-tu absolument reproduire, ou éviter, dans ton couple ?',
+      text: 'Quel souvenir de votre propre famille voulez-vous absolument reproduire, ou éviter, dans votre couple ?',
       options: [
         'La chaleur et les repas ensemble',
         'Le respect des aînés',
@@ -388,7 +388,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
   },
   argent: {
     1: {
-      text: "Ton partenaire envoie chaque mois de l'argent à sa famille sans t'en parler. Ta réaction ?",
+      text: "Votre partenaire envoie chaque mois de l'argent à sa famille sans vous en parler. Votre réaction ?",
       options: [
         "C'est son droit tant que le foyer ne manque de rien",
         'On doit en décider ensemble',
@@ -397,7 +397,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Un cadeau cher ou une épargne commune : lequel te rassure le plus sur l'engagement de l'autre ?",
+      text: "Un cadeau cher ou une épargne commune : lequel vous rassure le plus sur l'engagement de l'autre ?",
       options: [
         "L'épargne commune",
         "Le cadeau, pour l'attention",
@@ -417,7 +417,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
   },
   spiritualite: {
     1: {
-      text: 'Ton partenaire remet en question une de tes pratiques devant ta famille. Que ressens-tu ?',
+      text: 'Votre partenaire remet en question une de vos pratiques devant votre famille. Que ressentez-vous ?',
       options: [
         'Une trahison difficile à passer',
         'De la gêne, mais on en parle après',
@@ -426,7 +426,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Si ta foi ou tes convictions évoluaient avec le temps, en parlerais-tu à l'autre ?",
+      text: "Si votre foi ou vos convictions évoluaient avec le temps, en parleriez-vous à l'autre ?",
       options: [
         'Oui, immédiatement et sans filtre',
         'Oui, une fois sûr(e) de moi',
@@ -446,7 +446,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
   },
   intimite: {
     1: {
-      text: 'Ton partenaire garde des contacts réguliers avec un ex. Où est ta limite ?',
+      text: 'Votre partenaire garde des contacts réguliers avec un ex. Où est votre limite ?',
       options: [
         "Aucun contact, c'est clair",
         'Acceptable si tout est transparent',
@@ -455,7 +455,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Qu'est-ce qui te fait te sentir vraiment désiré(e) dans une relation ?",
+      text: "Qu'est-ce qui vous fait vous sentir vraiment désiré(e) dans une relation ?",
       options: [
         'Les attentions inattendues',
         'Les mots et les compliments',
@@ -475,7 +475,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
   },
   communication: {
     1: {
-      text: 'Après une dispute, ton partenaire ne te parle plus pendant deux jours. Que fais-tu ?',
+      text: 'Après une dispute, votre partenaire ne vous parle plus pendant deux jours. Que faites-vous ?',
       options: [
         'Je fais le premier pas',
         "J'attends qu'il ou elle revienne",
@@ -484,7 +484,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: 'Quelle phrase aimerais-tu entendre plus souvent dans ton couple ?',
+      text: 'Quelle phrase aimeriez-vous entendre plus souvent dans votre couple ?',
       options: [
         '« Je comprends ce que tu ressens »',
         '« Tu as raison, excuse-moi »',
@@ -493,7 +493,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: 'Si un sujet revient sans cesse entre vous sans solution, que proposes-tu ?',
+      text: 'Si un sujet revient sans cesse entre vous sans solution, que proposez-vous ?',
       options: [
         'Un temps dédié chaque semaine pour en parler',
         "Demander l'aide d'un tiers",
@@ -504,7 +504,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
   },
   projet: {
     1: {
-      text: "Ton partenaire veut repousser l'engagement de plusieurs années. Ta réaction ?",
+      text: "Votre partenaire veut repousser l'engagement de plusieurs années. Votre réaction ?",
       options: [
         'Je ne peux pas attendre sans date',
         "J'attends si le projet reste clair",
@@ -513,7 +513,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Qu'est-ce qui compte le plus pour toi dans un projet à deux : la sécurité, l'aventure ou la transmission ?",
+      text: "Qu'est-ce qui compte le plus pour vous dans un projet à deux : la sécurité, l'aventure ou la transmission ?",
       options: [
         'La sécurité et la stabilité',
         "L'aventure et la découverte",
@@ -522,7 +522,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: "Quel projet aimerais-tu avoir réalisé ensemble d'ici cinq ans ?",
+      text: "Quel projet aimeriez-vous avoir réalisé ensemble d'ici cinq ans ?",
       options: [
         'Un foyer ou un bien à nous',
         'Un voyage ou une expérience marquante',
@@ -533,7 +533,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
   },
   lieu: {
     1: {
-      text: 'Vivre à distance plusieurs mois pour une raison professionnelle : envisageable pour toi ?',
+      text: 'Vivre à distance plusieurs mois pour une raison professionnelle : envisageable pour vous ?',
       options: [
         'Non, je veux une vie commune au quotidien',
         "Oui, si c'est limité et planifié",
@@ -542,7 +542,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     2: {
-      text: "Entre ta ville, celle de l'autre et un lieu neutre, laquelle te semble la plus juste pour s'installer ?",
+      text: "Entre votre ville, celle de l'autre et un lieu neutre, laquelle vous semble la plus juste pour s'installer ?",
       options: [
         'Ma ville, pour mes repères',
         "La sienne, si c'est mieux pour nous",
@@ -551,7 +551,7 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
       ],
     },
     3: {
-      text: 'Comment imagines-tu votre maison idéale dans cinq ans ?',
+      text: 'Comment imaginez-vous votre maison idéale dans cinq ans ?',
       options: [
         'Proche de nos familles',
         'En ville, près du travail',

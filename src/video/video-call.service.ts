@@ -179,8 +179,8 @@ export class VideoCallService {
         await this.notificationService.sendPushNotification(
           partner.id,
           'systeme',
-          'Appel vidéo entrant 🎥',
-          `${user.firstName} vous appelle en vidéo. Rejoignez l'appel !`,
+          'Appel vidéo entrant',
+          `${user.firstName} vous appelle en vidéo. Rejoignez l'appel.`,
         );
         console.log(`[Video] Push call notification sent to partner ${partner.id}`);
       } catch (pushErr) {

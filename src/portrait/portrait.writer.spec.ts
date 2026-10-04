@@ -182,7 +182,7 @@ describe('Affinités par module et score global', () => {
     const res = computeAnswerCompatibility(a, b, report);
     const m0 = res.modules.find((m) => m.id === 'm0')!;
     expect(m0.value).toBeLessThanOrEqual(35);
-    expect(m0.color).toBe('#EF4444');
+    expect(m0.color).toBe('#8A7B98');
     expect(m0.verdict).toBe('Incompatibilité déclarée : désir d’enfants');
     expect(res.score!).toBeLessThanOrEqual(0.6);
   });

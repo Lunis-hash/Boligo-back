@@ -80,8 +80,8 @@ export class NotificationService {
     await this.sendPushNotification(
       userId,
       'systeme',
-      'Appel vidéo débloqué ! 🎥',
-      `Félicitations ! Vous avez terminé les échanges avec ${partnerName}. L'appel vidéo est maintenant disponible.`,
+      'Appel vidéo disponible',
+      `Vos échanges avec ${partnerName} sont terminés : l'appel vidéo est maintenant disponible.`,
     );
 
     // 2. Email de notification vidéo débloquée
@@ -114,8 +114,8 @@ export class NotificationService {
     await this.sendPushNotification(
       userId,
       'nouveau_match',
-      'Un match exceptionnel vous attend ! 💍',
-      `L'IA BOLIGO a trouvé un profil compatible à ${Math.round(compatibilityScore)}%. Consultez votre match dès maintenant !`,
+      'Un profil très compatible vous attend',
+      `BOLIGO a trouvé un profil compatible à ${Math.round(compatibilityScore)} %. Découvrez-le dès maintenant.`,
     );
 
     // 2. Email de nouveau match
