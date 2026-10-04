@@ -350,7 +350,7 @@ export default function VideoCallScreen() {
           activeOpacity={0.85}
           style={styles.hangupBtn}
         >
-          <LinearGradient colors={['#FF3B30', '#FF6B6B']} style={styles.hangupGrad}>
+          <LinearGradient colors={['#FF3B30', '#E2679A']} style={styles.hangupGrad}>
             <PhoneOff size={28} color="#fff" />
           </LinearGradient>
           <Text style={styles.hangupLabel}>Raccrocher</Text>

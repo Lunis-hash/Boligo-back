@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(232, 64, 58, 0.06)',
+    backgroundColor: 'rgba(198, 42, 110, 0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(232, 64, 58, 0.15)',
+    borderColor: 'rgba(198, 42, 110, 0.15)',
   },
   mainTitle: {
     fontFamily: Typography.fontFamily.bold,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(232, 64, 58, 0.2)',
+    borderColor: 'rgba(198, 42, 110, 0.2)',
     marginBottom: Spacing.xl,
   },
   emailPillText: {
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   codeInputFilled: {
-    borderColor: 'rgba(232, 64, 58, 0.4)',
+    borderColor: 'rgba(198, 42, 110, 0.4)',
     color: Colors.primary.red,
     backgroundColor: '#FFF9F8',
   },

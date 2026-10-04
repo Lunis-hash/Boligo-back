@@ -8,8 +8,6 @@ import {
   Platform,
   ScrollView,
   Animated,
-  Dimensions,
-  Image,
   StatusBar,
   Alert,
   ActivityIndicator,
@@ -25,13 +23,6 @@ import { InterviewService, getResumeModule } from '@/services/interview';
 import { useAuth } from '@/context/auth';
 import { Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-// ─── Photos de fond ────────────────────────────────────────────────
-const BG_IMAGES = [
-  'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=900&q=80',
-];
 
 // ─── Particules décoratives ────────────────────────────────────────
 const PARTICLES = [
@@ -76,7 +67,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentImage, setCurrentImage] = useState(0);
   const [focusedInput, setFocusedInput] = useState<'email' | 'password' | null>(null);
 
   // Animations d'entrée
@@ -85,14 +75,8 @@ export default function LoginScreen() {
   const cardAnim = useRef(new Animated.Value(0)).current;
   const cardScale = useRef(new Animated.Value(0.94)).current;
   const cardSlide = useRef(new Animated.Value(16)).current;
-  const imgFade = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Préchargement images
-    // Photos d'ambiance servies par un CDN externe : un échec (hors ligne,
-    // CDN bloqué) ne doit pas remonter en rejet de promesse non géré.
-    BG_IMAGES.forEach((url) => Image.prefetch(url).catch(() => {}));
-
     // Animation d'entrée
     Animated.parallel([
       Animated.timing(topAnim, {
@@ -116,17 +100,7 @@ export default function LoginScreen() {
         delay: 400, useNativeDriver: true,
       }),
     ]).start();
-
-    // Rotation images de fond
-    const interval = setInterval(() => {
-      Animated.sequence([
-        Animated.timing(imgFade, { toValue: 0.4, duration: 900, useNativeDriver: true }),
-        Animated.timing(imgFade, { toValue: 1,   duration: 900, useNativeDriver: true }),
-      ]).start();
-      setCurrentImage(prev => (prev + 1) % BG_IMAGES.length);
-    }, 6000);
-
-    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogin = async () => {
@@ -187,16 +161,14 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Photo flouée en fond */}
-      <Animated.Image
-        source={{ uri: BG_IMAGES[currentImage] }}
-        style={[styles.bgImage, { opacity: imgFade }]}
-        blurRadius={18}
-        resizeMode="cover"
+      {/* Fond aux couleurs BOLIGO : framboise, lavande, bleu nuit */}
+      <LinearGradient
+        colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
+        locations={[0, 0.6, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
       />
-
-      {/* Overlay sombre */}
-      <View style={styles.overlay} />
 
       {/* Particules */}
       {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
@@ -231,7 +203,7 @@ export default function LoginScreen() {
             ]}
           >
             <View style={styles.badgeTop}>
-              <Text style={styles.badgeTopText}>Dating sérieux</Text>
+              <Text style={styles.badgeTopText}>Rencontres sérieuses</Text>
             </View>
 
             <Text style={styles.logo}>BOLIGO</Text>
@@ -371,24 +343,8 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#111',
-    // La photo de fond est agrandie (scale 1.15) : sans ce clip, le web
-    // affiche une barre de défilement horizontale.
+    backgroundColor: Colors.primary.purple,
     overflow: 'hidden',
-  },
-
-  // Fond flouté
-  bgImage: {
-    ...StyleSheet.absoluteFillObject,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    transform: [{ scale: 1.15 }],
-  },
-
-  // Overlay
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.52)',
   },
 
   floatingBackBtn: {
@@ -398,7 +354,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.38)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -423,9 +379,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeTop: {
-    backgroundColor: 'rgba(233,64,87,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     borderWidth: 1,
-    borderColor: 'rgba(233,64,87,0.35)',
+    borderColor: 'rgba(255,255,255,0.35)',
     borderRadius: BorderRadius.full,
     paddingHorizontal: Spacing.md,
     paddingVertical: 4,
@@ -441,13 +397,13 @@ const styles = StyleSheet.create({
   logo: {
     fontFamily: Typography.fontFamily.bold,
     fontSize: 44,
-    color: Colors.primary.red,
+    color: '#FFFFFF',
     letterSpacing: 3,
   },
   taglineHeader: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: 12.5,
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255,255,255,0.88)',
     marginTop: Spacing.xs,
     letterSpacing: 0.3,
   },
@@ -459,7 +415,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(233,64,87,0.12)',
+    borderColor: 'rgba(198, 42, 110,0.12)',
     shadowColor: Colors.neutral.black,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.35,
