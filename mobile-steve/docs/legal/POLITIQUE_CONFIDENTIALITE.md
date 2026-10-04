@@ -1,6 +1,6 @@
 # Politique de confidentialité — BOLIGO
 
-Version du 2026-10-02.
+Version du 2026-10-04.
 
 Cette politique explique quelles données BOLIGO collecte, pourquoi, combien de temps, avec qui elles sont partagées et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.
 

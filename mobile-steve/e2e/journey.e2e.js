@@ -249,6 +249,10 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await page.getByTestId('discover-like').click();
   await page.waitForTimeout(600);
   await shot('18-confirmation-connexion');
+  const confirmBtn = page.getByTestId('connect-confirm');
+  record('Pacte anti-ghosting exigé avant l’invitation (bouton inactif)', (await confirmBtn.getAttribute('aria-disabled')) === 'true');
+  await page.getByTestId('pact-accept').click();
+  await page.waitForTimeout(300);
   await clickText('Confirmer', { exact: true });
   await page.waitForTimeout(3000);
   await shot('19-invitation-envoyee');
@@ -336,10 +340,19 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   record('Message envoyé depuis l\'app (bulle affichée)', sentOk);
   const msgsA = await api('GET', `/journey/${journeyId}/messages`, { token: tokenA });
   record('Message persisté côté backend', (msgsA.data || []).some((m) => m.content.includes('Bonjour Nadia')), `messages=${msgsA.data?.length}`);
+  let waitingBanner = false;
+  for (let i = 0; i < 10; i++) { if (await page.getByTestId('ghosting-banner-partner').isVisible().catch(() => false)) { waitingBanner = true; break; } await sleep(500); }
+  record('Anti-ghosting : bandeau « Vous attendez la réponse » après mon message', waitingBanner);
   await api('POST', '/journey/message', { token: partner.token, body: { journeyId, content: 'Coucou Steve ! Ravie aussi 😊', type: 'texte' } });
   let realtime = false;
   for (let i = 0; i < 12; i++) { if (await text('Coucou Steve').isVisible().catch(() => false)) { realtime = true; break; } await sleep(500); }
   record('Message du partenaire reçu en temps réel (WebSocket)', realtime);
+  let myTurnBanner = false;
+  for (let i = 0; i < 10; i++) { if (await page.getByTestId('ghosting-banner-me').isVisible().catch(() => false)) { myTurnBanner = true; break; } await sleep(500); }
+  record('Anti-ghosting : bandeau « Nadia attend votre réponse » avec échéance', myTurnBanner && (await text('attend votre réponse').isVisible()));
+  const partnerView = await api('GET', `/journey/${journeyId}/status`, { token: partner.token });
+  record('Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance', partnerView.data?.ghosting?.waitingOn === 'partner' && partnerView.data?.ghosting?.refundOnClose === true, JSON.stringify(partnerView.data?.ghosting));
+  await shot('25b-anti-ghosting');
   await shot('25-chat-temps-reel');
   const insultDialogsBefore = dialogs.length;
   await fillPlaceholder('Votre message…', 'ferme la connard');

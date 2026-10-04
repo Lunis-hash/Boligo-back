@@ -1,24 +1,29 @@
+/**
+ * Palette de l'application, alignée sur l'identité « Couleur » (constants/brand.ts) :
+ * framboise et lavande en tête, bleu nuit en contrepoint, textes prune foncé.
+ * Les anciens noms de jetons sont conservés pour ne pas toucher chaque écran.
+ */
 export const Colors = {
   primary: {
-    red: '#E94057',
-    coral: '#FF6B6B',
-    purple: '#7C3AED',
-    orange: '#F97316',
-    rose: '#F43F5E',
-    blue: '#3B82F6',
+    red: '#C62A6E', // framboise
+    coral: '#E2679A', // rose vif
+    purple: '#7C5CDB', // lavande
+    orange: '#33287A', // bleu nuit (plus d'orange dans l'identité)
+    rose: '#D63F7E',
+    blue: '#4E6BD6',
   },
   neutral: {
     white: '#FFFFFF',
-    black: '#000000',
-    backgroundLight: '#F8F9FA',
-    border: '#E5E7EB',
+    black: '#2A1B3D',
+    backgroundLight: '#FBF5F8',
+    border: '#EDE4EC',
   },
   text: {
-    primary100: '#111827',
-    primary70: '#4B5563',
-    primary40: '#9CA3AF',
-    secondary: '#6B7280',
-    inactive: '#9CA3AF',
+    primary100: '#2A1B3D',
+    primary70: '#5E4F6E',
+    primary40: '#9A8FA8',
+    secondary: '#6B5E7A',
+    inactive: '#9A8FA8',
   },
 };
 

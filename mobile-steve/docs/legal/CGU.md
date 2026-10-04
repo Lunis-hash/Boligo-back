@@ -1,6 +1,6 @@
 # Conditions Générales d'Utilisation et de Vente — BOLIGO
 
-Version du 2026-10-02.
+Version du 2026-10-04.
 
 Les présentes Conditions Générales d'Utilisation et de Vente (« CGU ») régissent l'accès et l'utilisation de l'application BOLIGO (mobile et web), service de rencontre fondé sur la compatibilité profonde. En créant un compte, vous déclarez les avoir lues et les accepter sans réserve.
 
@@ -42,7 +42,7 @@ Le paiement s'effectue par carte bancaire via Stripe. BOLIGO ne conserve aucune 
 
 Le crédit est débité lorsque vous engagez un parcours (envoi d'une invitation ou acceptation d'une invitation reçue). Il n'est pas remboursable en argent, sauf disposition légale impérative.
 
-Règle de justice : si l'autre membre abandonne le parcours sans répondre pendant 48 heures (Sondeur, chat ou vidéo), le parcours est clôturé et votre crédit vous est restitué automatiquement sous forme de crédit.
+Pacte anti-ghosting et règle de justice : en engageant un parcours, chaque membre s'engage à le suivre jusqu'au bout ou à y mettre fin poliment depuis l'application. Le membre qui met fin au parcours peut joindre un message de courtoisie ; l'autre membre en est informé et son crédit lui est restitué. Quand un membre attend la réponse de l'autre, l'échéance s'affiche dans l'application et des rappels peuvent être envoyés : 96 heures après le début du Sondeur, 48 heures après le dernier message du chat libre, et pour la vidéo au moins 48 heures après l'ouverture de l'étape et 24 heures après l'appel de l'autre. Sans réponse à l'échéance, le parcours est clôturé et le crédit de la personne qui attendait lui est restitué automatiquement sous forme de crédit. À l'étape de l'échange de coordonnées, le parcours ayant eu lieu, une absence de réponse sous 72 heures peut clore le parcours sans restitution. Un parcours resté sans aucune activité des deux membres pendant 7 jours peut être clôturé sans restitution.
 
 Droit de rétractation : conformément à l'article L221-28 du Code de la consommation, vous reconnaissez que le service numérique commence dès l'achat du crédit à votre demande expresse et renoncez à votre droit de rétractation de 14 jours une fois le crédit utilisé. Tant que le crédit n'a pas été utilisé, vous pouvez demander son remboursement dans ce délai en écrivant à l'adresse de contact.
 

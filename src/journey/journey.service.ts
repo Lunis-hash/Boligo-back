@@ -14,9 +14,8 @@ import { buildDivergenceReport, collectRawAnswers, THEMES, THEME_LIST, Theme } f
 import { AiSondeurQuestion, DAY_ANGLES, assembleSondeur, describeReportForAi } from './sondeur.generator';
 import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
-
-/** 3 jours de Sondeur + 24 h de grâce avant d'appliquer la Règle de Justice. */
-const SONDEUR_JUSTICE_HOURS = 96;
+import { GhostingService } from './ghosting.service';
+import { farewellText } from './farewell';
 
 @Injectable()
 export class JourneyService {
@@ -30,6 +29,7 @@ export class JourneyService {
     @Inject(forwardRef(() => ChatGateway))
     private chatGateway: ChatGateway,
     private creditService: CreditService,
+    private ghostingService: GhostingService,
   ) {}
 
   // Vérifier si l'utilisateur peut accéder aux messages
@@ -139,9 +139,12 @@ export class JourneyService {
     return {
       id: journey.id,
       currentStep: journey.currentStep,
+      result: journey.result,
       currentDay,
       partnerName: partner.firstName,
       isCompleted: journey.currentStep !== 'phase_harmonie',
+      // Compte à rebours anti-ghosting vu par ce membre.
+      ghosting: await this.ghostingService.viewFor(journey.id, userId),
     };
   }
 
@@ -681,163 +684,46 @@ export class JourneyService {
     }
   }
 
-  // Auto-réparer les journeys et appliquer la Règle de Justice (anti-ghosting)
+  // Auto-réparer les parcours et appliquer la Règle de Justice (anti-ghosting)
   private async autoAdvanceStaleJourneys(userId: string) {
     const journeys = await this.prisma.journey.findMany({
       where: {
         OR: [{ userAId: userId }, { userBId: userId }],
-        currentStep: { in: ['phase_harmonie', 'chat_libre', 'video'] },
+        currentStep: { in: ['phase_harmonie', 'chat_libre'] },
         result: 'en_cours',
       },
-      include: {
-        harmonyQuestions: { include: { responses: true } },
-        messages: { orderBy: { sentAt: 'desc' }, take: 1 },
-        videoSession: true,
-        userA: { select: { id: true, firstName: true } },
-        userB: { select: { id: true, firstName: true } },
-      },
+      include: { harmonyQuestions: { include: { responses: true } } },
     });
 
     for (const journey of journeys) {
-      const hoursSinceStart = (Date.now() - journey.stepStartDate.getTime()) / (1000 * 60 * 60);
-      let ghosterId: string | null = null;
-      let victimId: string | null = null;
-
-      // phase_harmonie → chat_libre
+      // phase_harmonie → chat_libre : les deux ont répondu à tout le Sondeur
       if (journey.currentStep === 'phase_harmonie') {
         const allQuestions = journey.harmonyQuestions;
-        if (allQuestions.length > 0) {
-          const userAHasAll = allQuestions.every(q =>
-            q.responses.some(r => r.userId === journey.userAId),
-          );
-          const userBHasAll = allQuestions.every(q =>
-            q.responses.some(r => r.userId === journey.userBId),
-          );
-
-          if (userAHasAll && userBHasAll) {
-            await this.prisma.journey.update({
-              where: { id: journey.id },
-              data: { currentStep: 'chat_libre', stepStartDate: new Date() },
-            });
-            continue;
-          }
-
-          // Règle de Justice en phase_harmonie : le Sondeur dure 3 jours (le
-          // jour 3 s'ouvre à 48 h) ; on laisse 24 h de grâce après le dernier jour.
-          if (hoursSinceStart >= SONDEUR_JUSTICE_HOURS) {
-            const responsesA = allQuestions.filter(q =>
-              q.responses.some(r => r.userId === journey.userAId),
-            ).length;
-            const responsesB = allQuestions.filter(q =>
-              q.responses.some(r => r.userId === journey.userBId),
-            ).length;
-
-            if (responsesA > responsesB) {
-              ghosterId = journey.userBId;
-              victimId = journey.userAId;
-            } else if (responsesB > responsesA) {
-              ghosterId = journey.userAId;
-              victimId = journey.userBId;
-            }
-          }
+        const answeredAll = (memberId: string) =>
+          allQuestions.length > 0 && allQuestions.every((q) => q.responses.some((r) => r.userId === memberId));
+        if (answeredAll(journey.userAId) && answeredAll(journey.userBId)) {
+          await this.prisma.journey.updateMany({
+            where: { id: journey.id, currentStep: 'phase_harmonie' },
+            data: { currentStep: 'chat_libre', stepStartDate: new Date() },
+          });
         }
       }
 
       // chat_libre → video : après 3 jours
       if (journey.currentStep === 'chat_libre') {
-        const chatStart = journey.stepStartDate.getTime();
-        const daysSinceChat = (Date.now() - chatStart) / (1000 * 60 * 60 * 24);
-
+        const daysSinceChat = (Date.now() - journey.stepStartDate.getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceChat >= 3) {
-          await this.prisma.journey.update({
-            where: { id: journey.id },
+          await this.prisma.journey.updateMany({
+            where: { id: journey.id, currentStep: 'chat_libre' },
             data: { currentStep: 'video', stepStartDate: new Date() },
           });
-          continue;
-        }
-
-        // Règle de Justice en chat_libre : après 48h d'inactivité sur le dernier message
-        if (hoursSinceStart >= 48) {
-          const lastMsg = journey.messages[0];
-          if (lastMsg) {
-            const hoursSinceLastMsg = (Date.now() - lastMsg.sentAt.getTime()) / (1000 * 60 * 60);
-            if (hoursSinceLastMsg >= 48) {
-              ghosterId = lastMsg.senderId === journey.userAId ? journey.userBId : journey.userAId;
-              victimId = lastMsg.senderId;
-            }
-          }
-        }
-      }
-
-      // video : après 48h d'inactivité sans consentement mutuel
-      if (journey.currentStep === 'video') {
-        if (hoursSinceStart >= 48 && journey.videoSession) {
-          const session = journey.videoSession;
-          if (session.consentA && !session.consentB) {
-            ghosterId = journey.userBId;
-            victimId = journey.userAId;
-          } else if (session.consentB && !session.consentA) {
-            ghosterId = journey.userAId;
-            victimId = journey.userBId;
-          }
-        }
-      }
-
-      // Si un ghoster est identifié, on clôt le parcours et on rembourse le crédit
-      if (ghosterId && victimId) {
-        const ghoster = ghosterId === journey.userAId ? journey.userA : journey.userB;
-        const victim = victimId === journey.userAId ? journey.userA : journey.userB;
-
-        // 1. Clôturer le parcours en échec pour cause d'inactivité
-        await this.prisma.journey.update({
-          where: { id: journey.id },
-          data: {
-            currentStep: 'termine',
-            result: 'echoue',
-            endDate: new Date(),
-            closingReason: `Inactivité de la part de ${ghoster.firstName}`,
-          },
-        });
-
-        // 2. Trouver la transaction de consommation de crédit du match
-        const victimTransaction = await this.prisma.creditTransaction.findFirst({
-          where: {
-            journeyId: journey.id,
-            userId: victimId,
-            type: 'consommation',
-          },
-        });
-
-        if (victimTransaction) {
-          // Vérifier si un remboursement a déjà été effectué pour éviter les doublons
-          const refundExists = await this.prisma.creditTransaction.findFirst({
-            where: {
-              journeyId: journey.id,
-              userId: victimId,
-              type: 'remboursement_justice',
-            },
-          });
-
-          if (!refundExists) {
-            const refundAmount = Math.abs(victimTransaction.creditAmount);
-            await this.creditService.refundJustice(
-              victimId,
-              journey.id,
-              refundAmount,
-              `Remboursement anti-ghosting pour le parcours avec ${ghoster.firstName}`,
-            );
-
-            // 3. Notifier l'utilisateur
-            await this.notificationService.sendPushNotification(
-              victimId,
-              'credit',
-              'Remboursement anti-ghosting 💍',
-              `Votre crédit a été restitué car ${ghoster.firstName} n'a pas donné suite dans les délais du parcours.`,
-            );
-          }
         }
       }
     }
+
+    // Règle de Justice : si l'un attend l'autre au-delà de l'échéance, le
+    // parcours se clôt et la personne qui attendait récupère son crédit.
+    await this.ghostingService.enforceForUser(userId);
   }
 
   // Échange de contacts : un utilisateur accepte de partager
@@ -946,10 +832,11 @@ export class JourneyService {
   }
 
   /**
-   * Un membre met fin au parcours (malaise, signalement…). Le parcours se clôt
-   * pour les deux ; l'autre membre récupère son crédit, une seule fois.
+   * Un membre met fin au parcours (malaise, signalement, ou simplement pas
+   * d'envie de continuer). Le parcours se clôt pour les deux ; l'autre membre
+   * reçoit le message de courtoisie choisi et récupère son crédit, une fois.
    */
-  async leaveJourney(journeyId: string, userId: string) {
+  async leaveJourney(journeyId: string, userId: string, farewell?: string) {
     const journey = this.requireMember(
       await this.prisma.journey.findUnique({
         where: { id: journeyId },
@@ -975,29 +862,20 @@ export class JourneyService {
 
     const partnerId = journey.userAId === userId ? journey.userBId : journey.userAId;
     const leaver = journey.userAId === userId ? journey.userA : journey.userB;
-    const spent = await this.prisma.creditTransaction.findFirst({
-      where: { journeyId, userId: partnerId, type: 'consommation' },
-    });
-    const alreadyRefunded = await this.prisma.creditTransaction.findFirst({
-      where: { journeyId, userId: partnerId, type: 'remboursement_justice' },
-      select: { id: true },
-    });
-    if (spent && !alreadyRefunded) {
-      await this.creditService.refundJustice(
-        partnerId,
-        journeyId,
-        Math.abs(spent.creditAmount),
-        `Parcours arrêté par ${leaver.firstName} : crédit rendu`,
-      );
-    }
+    const refunded = await this.creditService.refundJourneyOnce(
+      partnerId,
+      journeyId,
+      `Parcours arrêté par ${leaver.firstName} : crédit rendu`,
+    );
+    const courtesy = farewellText(farewell);
     try {
       await this.notificationService.sendPushNotification(
         partnerId,
         'systeme',
         'Parcours terminé',
-        spent
-          ? `${leaver.firstName} a mis fin à votre parcours. Votre crédit vous a été rendu.`
-          : `${leaver.firstName} a mis fin à votre parcours.`,
+        `${leaver.firstName} a mis fin à votre parcours.` +
+          (courtesy ? ` Son message : « ${courtesy} »` : '') +
+          (refunded ? ' Votre crédit vous a été rendu.' : ''),
       );
     } catch {
       /* notification facultative */

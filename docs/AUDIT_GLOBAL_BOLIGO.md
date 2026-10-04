@@ -7,6 +7,24 @@
 
 ---
 
+## Mise à jour du 4 octobre 2026
+
+- **Nouvelle identité visuelle « Couleur »** (direction choisie par le propriétaire) :
+  - page d'accueil refaite pour ordinateur et téléphone ;
+  - palette appliquée à toute l'application : framboise et lavande, bleu nuit en contrepoint, ni noir ni orange ;
+  - nouvelle icône et nouvel écran de démarrage (deux anneaux entrelacés) ;
+  - polices Fraunces et Plus Jakarta Sans.
+- **Pacte anti-ghosting** : engagement obligatoire avant chaque parcours, sortie polie avec un message de courtoisie, compte à rebours visible et crédit rendu à celui qui attendait. Détails dans `docs/ANTI_GHOSTING.md`.
+  - Le moniteur automatique (rappels et clôtures) est livré **en mode observation** : il n'envoie rien et ne modifie aucun parcours tant qu'il n'est pas validé (`GHOSTING_MONITOR=on`).
+  - CGU mises à jour (section 5), version 2026-10-04.
+- **Codes promo illimités désactivés** : BOLIGO100, BOLIGO50, BIENVENUE5.
+- **Historique Git nettoyé** : l'ancien mot de passe administrateur n'apparaît plus dans aucune branche. Six références de demandes de fusion conservées par GitHub contiennent encore les anciens commits ; seul le support GitHub peut les purger. Aucun compte n'utilise ce mot de passe.
+- **Journal des requêtes de la base purgé** : il contenait en clair des mots de passe d'un rôle appartenant à un autre projet hébergé sur la même base. Ces mots de passe doivent être considérés comme exposés et remplacés par le responsable de cet autre projet.
+- **Séparation physique de la base** : l'outil de transfert est prêt et testé (`src/maintenance/db-transfer.ts`). Il attend une base cible dédiée : une base Render payante, ou un second compte Supabase gratuit.
+- **Tests au 4 octobre** : API 129/129, intégration 26/26, application 88/88, recette navigateur 60/60.
+
+---
+
 ## En bref
 
 - **Ce qui a été audité.** Tous les parcours de BOLIGO : slides, inscription en 4 étapes, code par e-mail, Grand Entretien (11 modules, environ 76 questions), bilan, Découverte, Parcours Harmonie (15 €, 1 crédit), Sondeur (3 jours × 7 questions), chat libre, appel vidéo de 7 minutes, échange de coordonnées. L'audit couvre aussi l'API, la base, le design et le bundle web.

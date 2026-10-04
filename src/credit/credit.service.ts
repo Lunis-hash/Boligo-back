@@ -162,6 +162,33 @@ export class CreditService {
     };
   }
 
+  /**
+   * Rend à un membre le crédit qu'il a dépensé pour un parcours, une seule
+   * fois, même si deux clôtures (sortie, anti-ghosting) arrivent en même temps.
+   * Renvoie le montant rendu (0 si rien n'avait été dépensé ou déjà rendu).
+   */
+  async refundJourneyOnce(userId: string, journeyId: string, description: string): Promise<number> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT 1 FROM (SELECT pg_advisory_xact_lock(hashtext(${'journey-refund:' + journeyId + ':' + userId}))) AS lock`;
+      const spent = await tx.creditTransaction.findFirst({
+        where: { journeyId, userId, type: 'consommation' },
+        select: { creditAmount: true },
+      });
+      if (!spent) return 0;
+      const already = await tx.creditTransaction.findFirst({
+        where: { journeyId, userId, type: 'remboursement_justice' },
+        select: { id: true },
+      });
+      if (already) return 0;
+      const amount = Math.abs(spent.creditAmount);
+      await tx.user.update({ where: { id: userId }, data: { creditBalance: { increment: amount } } });
+      await tx.creditTransaction.create({
+        data: { userId, journeyId, type: 'remboursement_justice', creditAmount: amount, description },
+      });
+      return amount;
+    });
+  }
+
   // Historique des transactions
   async getHistory(userId: string) {
     const transactions = await this.prisma.creditTransaction.findMany({

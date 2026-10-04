@@ -27,9 +27,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ── Palette de couleurs officielle Onboarding BOLIGO ──────────────────
 const COLORS = {
   bg: '#FFFFFF',
-  red: '#E8403A',
-  redDark: '#C42E29',
-  orange: '#E8834A',
+  red: '#C62A6E',
+  redDark: '#A32159',
+  orange: '#7C5CDB',
   purple: '#7C5CE8',
   purpleDark: '#5A3AB8',
   gold: '#C89A2E',

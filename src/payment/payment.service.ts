@@ -183,7 +183,7 @@ export class PaymentService implements OnModuleInit {
             },
           ],
           guarantee:
-            "Remboursement cr\u00e9dit si l'autre personne ne r\u00e9pond pas (R\u00e8gle de Justice)",
+            "Pacte anti-ghosting : cr\u00e9dit rendu si l'autre ne donne plus de nouvelles",
           badge: 'Recommandé',
           promoCodes: {
             hint: 'Avez-vous un code promotionnel ?',

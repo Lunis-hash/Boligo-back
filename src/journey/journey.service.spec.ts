@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JourneyService } from './journey.service';
+import { GhostingService } from './ghosting.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { NotificationService } from '../notifications/notification.service';
@@ -8,47 +9,37 @@ import { CreditService } from '../credit/credit.service';
 
 describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
   let service: JourneyService;
-  let prisma: PrismaService;
-  let creditService: CreditService;
-  let notificationService: NotificationService;
 
   const mockPrismaService = {
     journey: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
-    },
-    creditTransaction: {
-      findFirst: jest.fn(),
+      updateMany: jest.fn(),
     },
   };
 
-  const mockAiService = {};
   const mockNotificationService = {
     sendPushNotification: jest.fn(),
   };
-  const mockChatGateway = {};
   const mockCreditService = {
-    refundJustice: jest.fn(),
+    refundJourneyOnce: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         JourneyService,
+        GhostingService,
         { provide: PrismaService, useValue: mockPrismaService },
-        { provide: AiService, useValue: mockAiService },
+        { provide: AiService, useValue: {} },
         { provide: NotificationService, useValue: mockNotificationService },
-        { provide: ChatGateway, useValue: mockChatGateway },
+        { provide: ChatGateway, useValue: {} },
         { provide: CreditService, useValue: mockCreditService },
       ],
     }).compile();
 
     service = module.get<JourneyService>(JourneyService);
-    prisma = module.get<PrismaService>(PrismaService);
-    creditService = module.get<CreditService>(CreditService);
-    notificationService = module.get<NotificationService>(NotificationService);
-
     jest.clearAllMocks();
   });
 
@@ -56,77 +47,81 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
     expect(service).toBeDefined();
   });
 
-  describe('autoAdvanceStaleJourneys - Ghosting Detection', () => {
-    const ghostedJourney = (hoursAgo: number) => [
-      {
-        id: 'journey-id',
-        currentStep: 'phase_harmonie',
-        stepStartDate: new Date(Date.now() - hoursAgo * 60 * 60 * 1000),
-        userAId: 'user-a',
-        userBId: 'user-b',
-        userA: { id: 'user-a', firstName: 'Alice' },
-        userB: { id: 'user-b', firstName: 'Bob' },
-        harmonyQuestions: [
-          {
-            id: 'q1',
-            responses: [{ userId: 'user-a', responseText: 'Hello' }],
-          },
-        ],
-        messages: [],
-        videoSession: null,
-      },
-    ];
-
-    it('ne sanctionne personne pendant les 3 jours du Sondeur (50 h)', async () => {
-      mockPrismaService.journey.findMany.mockResolvedValue(ghostedJourney(50));
-      mockPrismaService.journey.findFirst.mockResolvedValue(null);
-
-      await service.canAccessMessages('user-a');
-
-      expect(prisma.journey.update).not.toHaveBeenCalled();
-      expect(creditService.refundJustice).not.toHaveBeenCalled();
+  describe('Sondeur : B ne répond plus', () => {
+    const ghostedJourney = (hoursAgo: number) => ({
+      id: 'journey-id',
+      currentStep: 'phase_harmonie',
+      result: 'en_cours',
+      stepStartDate: new Date(Date.now() - hoursAgo * 60 * 60 * 1000),
+      userAId: 'user-a',
+      userBId: 'user-b',
+      userA: { id: 'user-a', firstName: 'Alice' },
+      userB: { id: 'user-b', firstName: 'Bob' },
+      harmonyQuestions: [
+        {
+          id: 'q1',
+          responses: [{ userId: 'user-a', respondedAt: new Date() }],
+        },
+        { id: 'q2', responses: [] },
+      ],
+      messages: [],
+      videoSession: null,
+      contactExchange: null,
     });
 
-    it('should refund user A if B ghosted in phase_harmonie (Sondeur + 24 h de grâce)', async () => {
-      mockPrismaService.journey.findMany.mockResolvedValue(ghostedJourney(97));
-
-      // Mock message accessibility check query
+    beforeEach(() => {
       mockPrismaService.journey.findFirst.mockResolvedValue(null);
+    });
 
-      // Mock transaction query
-      mockPrismaService.creditTransaction.findFirst
-        // First call: find victim consumption transaction
-        .mockResolvedValueOnce({ id: 'tx-id', creditAmount: -1 })
-        // Second call: check if refund exists
-        .mockResolvedValueOnce(null);
+    it('ne sanctionne personne pendant les 3 jours du Sondeur (50 h)', async () => {
+      mockPrismaService.journey.findMany.mockResolvedValue([
+        ghostedJourney(50),
+      ]);
 
       await service.canAccessMessages('user-a');
 
-      // Check if journey was closed in database
-      expect(prisma.journey.update).toHaveBeenCalledWith({
-        where: { id: 'journey-id' },
+      expect(mockPrismaService.journey.updateMany).not.toHaveBeenCalled();
+      expect(mockCreditService.refundJourneyOnce).not.toHaveBeenCalled();
+    });
+
+    it("rend le crédit d'Alice si Bob n'a pas répondu après 96 h", async () => {
+      mockPrismaService.journey.findMany.mockResolvedValue([
+        ghostedJourney(97),
+      ]);
+      mockPrismaService.journey.updateMany.mockResolvedValue({ count: 1 });
+      mockCreditService.refundJourneyOnce.mockResolvedValue(1);
+
+      await service.canAccessMessages('user-a');
+
+      expect(mockPrismaService.journey.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: 'journey-id',
+          result: 'en_cours',
+          currentStep: 'phase_harmonie',
+        },
         data: {
           currentStep: 'termine',
           result: 'echoue',
-          endDate: expect.any(Date),
-          closingReason: 'Inactivité de la part de Bob',
+          endDate: expect.any(Date) as Date,
+          closingReason: 'Sans réponse de Bob dans les délais',
         },
       });
-
-      // Check if credit service refund was triggered
-      expect(creditService.refundJustice).toHaveBeenCalledWith(
+      expect(mockCreditService.refundJourneyOnce).toHaveBeenCalledWith(
         'user-a',
         'journey-id',
-        1,
-        'Remboursement anti-ghosting pour le parcours avec Bob',
+        'Sans réponse de Bob : crédit rendu',
       );
-
-      // Check if victim was notified
-      expect(notificationService.sendPushNotification).toHaveBeenCalledWith(
+      expect(mockNotificationService.sendPushNotification).toHaveBeenCalledWith(
         'user-a',
         'credit',
-        'Remboursement anti-ghosting 💍',
-        "Votre crédit a été restitué car Bob n'a pas donné suite dans les délais du parcours.",
+        'Votre crédit vous a été rendu',
+        'Bob n’a pas répondu dans les délais : le parcours s’est terminé et votre crédit vous a été rendu.',
+      );
+      expect(mockNotificationService.sendPushNotification).toHaveBeenCalledWith(
+        'user-b',
+        'systeme',
+        'Parcours terminé',
+        'Faute de réponse dans les délais, votre parcours avec Alice s’est terminé.',
       );
     });
   });

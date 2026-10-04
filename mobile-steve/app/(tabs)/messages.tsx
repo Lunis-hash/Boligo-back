@@ -37,6 +37,8 @@ import {
   type ChatSocketMessage,
 } from '@/services/chatSocket';
 import { getReadableError } from '@/services/api';
+import { GhostingBanner } from '@/components/GhostingBanner';
+import { FAREWELLS, GhostingView, isGhostingView } from '@/services/ghosting';
 
 /** Débloque l’appel vidéo en phase chat pour les tests (à désactiver en prod). */
 const VIDEO_TEST_UNLOCK = __DEV__;
@@ -316,6 +318,8 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
   const cfg = PHASE_CONFIG[match.phase];
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuStart, setMenuStart] = useState<'menu' | 'leave'>('menu');
+  const [ghosting, setGhosting] = useState<GhostingView | null>(null);
 
   const fetchMessages = useCallback(async () => {
     if (!match.journeyId) return;
@@ -410,6 +414,27 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
       fetchMessages();
     }, [fetchMessages]),
   );
+
+  // Pacte anti-ghosting : qui attend qui, et jusqu'à quand (recalculé par le serveur).
+  const confirmedCount = messages.filter((m) => m.status !== 'sending').length;
+  useEffect(() => {
+    if (!match.journeyId) return;
+    let alive = true;
+    client
+      .get(`/journey/${match.journeyId}/status`)
+      .then((res) => {
+        if (alive) setGhosting(isGhostingView(res.data?.ghosting) ? res.data.ghosting : null);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [match.journeyId, confirmedCount]);
+
+  const openMenu = (startAt: 'menu' | 'leave') => {
+    setMenuStart(startAt);
+    setMenuOpen(true);
+  };
 
   const videoEnabled = match.videoEnabled ?? canUseVideoCall(match.phase);
 
@@ -511,7 +536,7 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
           <TouchableOpacity
             style={styles.moreBtn}
             activeOpacity={0.7}
-            onPress={() => setMenuOpen(true)}
+            onPress={() => openMenu('menu')}
             accessibilityLabel="Options de la conversation"
             testID="chat-more"
           >
@@ -522,12 +547,15 @@ function ChatView({ match, onBack, onLeft }: { match: Match; onBack: () => void;
 
       <ChatSafetyMenu
         visible={menuOpen}
+        startAt={menuStart}
         onClose={() => setMenuOpen(false)}
         partnerId={match.id}
         partnerName={match.name}
         journeyId={match.journeyId}
         onLeft={onLeft}
       />
+
+      <GhostingBanner view={ghosting} partnerName={match.name} onLeavePolitely={() => openMenu('leave')} />
 
       {/* Progression Chat 3 jours */}
       <View style={styles.chatProgressContainer}>
@@ -686,6 +714,7 @@ const REPORT_REASONS: { key: string; label: string }[] = [
 
 function ChatSafetyMenu({
   visible,
+  startAt = 'menu',
   onClose,
   partnerId,
   partnerName,
@@ -693,14 +722,19 @@ function ChatSafetyMenu({
   onLeft,
 }: {
   visible: boolean;
+  startAt?: 'menu' | 'leave';
   onClose: () => void;
   partnerId: string;
   partnerName: string;
   journeyId: string | null;
   onLeft: () => void;
 }) {
-  const [step, setStep] = useState<'menu' | 'report'>('menu');
+  const [step, setStep] = useState<'menu' | 'report' | 'leave'>(startAt);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (visible) setStep(startAt);
+  }, [visible, startAt]);
 
   const close = () => {
     setStep('menu');
@@ -721,20 +755,23 @@ function ChatSafetyMenu({
     }
   };
 
-  const leave = () => {
+  // Sortie polie : l'autre reçoit le message de courtoisie choisi (ou aucun,
+  // par exemple après un comportement déplacé) et récupère son crédit.
+  const leave = (farewell?: { code: string; text: string }) => {
     if (!journeyId) return;
     Alert.alert(
-      'Arrêter le parcours ?',
-      `Votre parcours avec ${partnerName} sera définitivement terminé pour vous deux. Son crédit lui sera rendu.`,
+      'Mettre fin au parcours ?',
+      (farewell ? `${partnerName} recevra votre message : « ${farewell.text} »\n\n` : '') +
+        `Le parcours sera terminé pour vous deux et le crédit de ${partnerName} lui sera rendu.`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Arrêter',
+          text: 'Mettre fin',
           style: 'destructive',
           onPress: async () => {
             setBusy(true);
             try {
-              await client.post(`/journey/${journeyId}/leave`);
+              await client.post(`/journey/${journeyId}/leave`, farewell ? { farewell: farewell.code } : {});
               close();
               onLeft();
             } catch (e) {
@@ -759,10 +796,31 @@ function ChatSafetyMenu({
                 <Text style={styles.sheetItemText}>Signaler {partnerName}</Text>
               </TouchableOpacity>
               {journeyId ? (
-                <TouchableOpacity style={styles.sheetItem} onPress={leave} disabled={busy} testID="chat-leave">
-                  <Text style={[styles.sheetItemText, styles.sheetDanger]}>Arrêter le parcours</Text>
+                <TouchableOpacity style={styles.sheetItem} onPress={() => setStep('leave')} disabled={busy} testID="chat-leave">
+                  <Text style={[styles.sheetItemText, styles.sheetDanger]}>Mettre fin poliment au parcours</Text>
                 </TouchableOpacity>
               ) : null}
+            </>
+          ) : step === 'leave' ? (
+            <>
+              <Text style={styles.sheetTitle}>Mettre fin poliment au parcours</Text>
+              <Text style={styles.sheetHint}>
+                Personne ne reste sans réponse : choisissez le message que {partnerName} recevra.
+              </Text>
+              {FAREWELLS.map((f) => (
+                <TouchableOpacity
+                  key={f.code}
+                  style={styles.sheetItem}
+                  onPress={() => leave(f)}
+                  disabled={busy}
+                  testID={`chat-farewell-${f.code}`}
+                >
+                  <Text style={styles.sheetItemText}>« {f.text} »</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity style={styles.sheetItem} onPress={() => leave()} disabled={busy} testID="chat-leave-silent">
+                <Text style={[styles.sheetItemText, styles.sheetDanger]}>Mettre fin sans message (comportement déplacé)</Text>
+              </TouchableOpacity>
             </>
           ) : (
             <>
@@ -1238,6 +1296,7 @@ const styles = StyleSheet.create({
   sheetItem: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#E5E7EB' },
   sheetItemText: { fontSize: 15, color: Colors.text.primary100 },
   sheetDanger: { color: '#DC2626', fontWeight: '600' },
+  sheetHint: { fontSize: 14, lineHeight: 20, color: Colors.text.primary70, marginBottom: 8 },
   sheetCancel: { paddingTop: 16, alignItems: 'center' },
   sheetCancelText: { fontSize: 15, fontWeight: '600', color: Colors.text.primary40 },
   videoBtn: { borderRadius: 20, overflow: 'hidden' },

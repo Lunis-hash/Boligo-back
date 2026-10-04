@@ -289,7 +289,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionHeading}>À propos</Text>
             <TouchableOpacity 
               onPress={() => router.push('/profile/edit' as any)} 
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(233,64,87,0.1)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(198, 42, 110,0.1)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}
             >
               <Edit3 size={12} color={Colors.primary.red} />
               <Text style={{ fontSize: 11, fontFamily: Typography.fontFamily.bold, color: Colors.primary.red }}>Modifier</Text>

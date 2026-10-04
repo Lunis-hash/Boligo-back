@@ -53,20 +53,20 @@ const SLIDES = [
     topRight: 'Passer',
     isStep: false,
     badgeText: 'Se découvrir autrement',
-    badgeColor: '#C42E29',
-    badgeBorder: 'rgba(232,64,58,0.35)',
+    badgeColor: '#A32159',
+    badgeBorder: 'rgba(198, 42, 110,0.35)',
     titleMain: 'Pas de photos.',
     titleItalic: 'Des questions pour vraiment se découvrir.',
     descLead: "L'IA vous connecte à ceux qui vous ressemblent.",
     descBody: " Ici, on ne juge pas un visage — on découvre une personne.",
     ctaText: 'Suivant →',
-    ctaColors: ['#E8403A', '#E8834A'] as [string, string],
-    themeColor: '#E8403A',
-    blob1: '#E8403A',
+    ctaColors: ['#C62A6E', '#7C5CDB'] as [string, string],
+    themeColor: '#C62A6E',
+    blob1: '#C62A6E',
     blob2: '#7C5CE8',
-    haloColor: 'rgba(232,64,58,0.10)',
-    haloBorder: 'rgba(232,64,58,0.16)',
-    barColor: ['#E8403A', '#E8834A'] as [string, string],
+    haloColor: 'rgba(198, 42, 110,0.10)',
+    haloBorder: 'rgba(198, 42, 110,0.16)',
+    barColor: ['#C62A6E', '#7C5CDB'] as [string, string],
     reassure: 'Inscription gratuite ● E-mail vérifié',
   },
   {
@@ -87,7 +87,7 @@ const SLIDES = [
     ctaColors: ['#7C5CE8', '#5A3AB8'] as [string, string],
     themeColor: '#7C5CE8',
     blob1: '#7C5CE8',
-    blob2: '#E8403A',
+    blob2: '#C62A6E',
     haloColor: 'rgba(124,92,232,0.10)',
     haloBorder: 'rgba(124,92,232,0.16)',
     barColor: ['#7C5CE8', '#5A3AB8'] as [string, string],
@@ -109,7 +109,7 @@ const SLIDES = [
     ctaColors: ['#D9AE3C', '#A87C1C'] as [string, string],
     themeColor: '#C89A2E',
     blob1: '#C89A2E',
-    blob2: '#E8834A',
+    blob2: '#7C5CDB',
     haloColor: 'rgba(200,154,46,0.10)',
     haloBorder: 'rgba(200,154,46,0.18)',
     barColor: ['#D9AE3C', '#A87C1C'] as [string, string],
@@ -143,7 +143,7 @@ const SLIDES = [
     isStep: false,
     badgeText: 'Anti-ghosting',
     badgeColor: '#B3661A',
-    badgeBorder: 'rgba(232,131,74,0.4)',
+    badgeBorder: 'rgba(124, 92, 219,0.4)',
     titleMain: 'Le ghosting',
     titleItalic: 'a un prix, ici.',
     descLead: "Si l'autre cesse de répondre en cours de parcours, ",
@@ -152,13 +152,13 @@ const SLIDES = [
     descBodyBold: 'rendu automatiquement.',
     descEnd: " Vous ne payez jamais pour le silence de l'autre.",
     ctaText: 'Suivant →',
-    ctaColors: ['#E8403A', '#E8834A'] as [string, string],
-    themeColor: '#E8834A',
-    blob1: '#E8403A',
-    blob2: '#E8834A',
-    haloColor: 'rgba(232,131,74,0.10)',
-    haloBorder: 'rgba(232,131,74,0.16)',
-    barColor: ['#E8403A', '#E8834A'] as [string, string],
+    ctaColors: ['#C62A6E', '#7C5CDB'] as [string, string],
+    themeColor: '#7C5CDB',
+    blob1: '#C62A6E',
+    blob2: '#7C5CDB',
+    haloColor: 'rgba(124, 92, 219,0.10)',
+    haloBorder: 'rgba(124, 92, 219,0.16)',
+    barColor: ['#C62A6E', '#7C5CDB'] as [string, string],
     reassure: 'Crédit restitué automatiquement',
   },
   {
@@ -414,7 +414,7 @@ export default function ValueSlidesScreen() {
                 style={[
                   styles.floatDot,
                   {
-                    backgroundColor: 'rgba(232,64,58,0.55)',
+                    backgroundColor: 'rgba(198, 42, 110,0.55)',
                     top: -12,
                     left: '18%',
                     width: 7,
@@ -453,7 +453,7 @@ export default function ValueSlidesScreen() {
                     cx="73"
                     cy="73"
                     r="62"
-                    stroke="rgba(232,64,58,0.22)"
+                    stroke="rgba(198, 42, 110,0.22)"
                     strokeWidth="1.3"
                     strokeDasharray="5 5"
                     fill="none"
@@ -496,7 +496,7 @@ export default function ValueSlidesScreen() {
                       y1="2.5"
                       x2="31"
                       y2="23.5"
-                      stroke="#E8403A"
+                      stroke="#C62A6E"
                       strokeWidth="2.2"
                       strokeLinecap="round"
                     />
@@ -509,8 +509,8 @@ export default function ValueSlidesScreen() {
                     styles.cascadePill,
                     {
                       top: 36,
-                      backgroundColor: 'rgba(232,64,58,0.09)',
-                      borderColor: 'rgba(232,64,58,0.38)',
+                      backgroundColor: 'rgba(198, 42, 110,0.09)',
+                      borderColor: 'rgba(198, 42, 110,0.38)',
                       transform: [
                         { scale: cascade1.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
                         { translateX: cascade1.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) },
@@ -545,8 +545,8 @@ export default function ValueSlidesScreen() {
                     styles.cascadePill,
                     {
                       top: 92,
-                      backgroundColor: 'rgba(232,131,74,0.09)',
-                      borderColor: 'rgba(232,131,74,0.38)',
+                      backgroundColor: 'rgba(124, 92, 219,0.09)',
+                      borderColor: 'rgba(124, 92, 219,0.38)',
                       transform: [
                         { scale: cascade3.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
                         { translateX: cascade3.interpolate({ inputRange: [0, 1], outputRange: [-4, 0] }) },
@@ -584,8 +584,8 @@ export default function ValueSlidesScreen() {
                     style={[
                       styles.avatarBubble,
                       {
-                        backgroundColor: 'rgba(232,131,74,0.3)',
-                        borderColor: 'rgba(232,131,74,0.5)',
+                        backgroundColor: 'rgba(124, 92, 219,0.3)',
+                        borderColor: 'rgba(124, 92, 219,0.5)',
                         transform: [{ scale: pulseNode }],
                       },
                     ]}
@@ -652,18 +652,18 @@ export default function ValueSlidesScreen() {
                 {/* Lignes de connexion */}
                 <Line x1="52" y1="55" x2="35" y2="42" stroke="rgba(124,92,232,0.5)" strokeWidth="1.3" />
                 <Line x1="92" y1="55" x2="109" y2="42" stroke="rgba(124,92,232,0.5)" strokeWidth="1.3" />
-                <Line x1="52" y1="79" x2="29" y2="86" stroke="rgba(232,64,58,0.5)" strokeWidth="1.3" />
-                <Line x1="92" y1="79" x2="115" y2="86" stroke="rgba(232,64,58,0.5)" strokeWidth="1.3" />
-                <Line x1="72" y1="42" x2="72" y2="18" stroke="rgba(232,131,74,0.5)" strokeWidth="1.3" />
-                <Line x1="72" y1="92" x2="72" y2="116" stroke="rgba(232,131,74,0.5)" strokeWidth="1.3" />
+                <Line x1="52" y1="79" x2="29" y2="86" stroke="rgba(198, 42, 110,0.5)" strokeWidth="1.3" />
+                <Line x1="92" y1="79" x2="115" y2="86" stroke="rgba(198, 42, 110,0.5)" strokeWidth="1.3" />
+                <Line x1="72" y1="42" x2="72" y2="18" stroke="rgba(124, 92, 219,0.5)" strokeWidth="1.3" />
+                <Line x1="72" y1="92" x2="72" y2="116" stroke="rgba(124, 92, 219,0.5)" strokeWidth="1.3" />
 
                 {/* 6 Nœuds orbitaux */}
                 <Circle cx="28" cy="34" r="9" fill="rgba(124,92,232,0.28)" stroke="rgba(124,92,232,0.55)" strokeWidth="1.5" />
                 <Circle cx="116" cy="34" r="9" fill="rgba(124,92,232,0.28)" stroke="rgba(124,92,232,0.55)" strokeWidth="1.5" />
-                <Circle cx="20" cy="92" r="9" fill="rgba(232,64,58,0.28)" stroke="rgba(232,64,58,0.55)" strokeWidth="1.5" />
-                <Circle cx="124" cy="92" r="9" fill="rgba(232,64,58,0.28)" stroke="rgba(232,64,58,0.55)" strokeWidth="1.5" />
-                <Circle cx="72" cy="10" r="8" fill="rgba(232,131,74,0.3)" stroke="rgba(232,131,74,0.6)" strokeWidth="1.5" />
-                <Circle cx="72" cy="124" r="8" fill="rgba(232,131,74,0.3)" stroke="rgba(232,131,74,0.6)" strokeWidth="1.5" />
+                <Circle cx="20" cy="92" r="9" fill="rgba(198, 42, 110,0.28)" stroke="rgba(198, 42, 110,0.55)" strokeWidth="1.5" />
+                <Circle cx="124" cy="92" r="9" fill="rgba(198, 42, 110,0.28)" stroke="rgba(198, 42, 110,0.55)" strokeWidth="1.5" />
+                <Circle cx="72" cy="10" r="8" fill="rgba(124, 92, 219,0.3)" stroke="rgba(124, 92, 219,0.6)" strokeWidth="1.5" />
+                <Circle cx="72" cy="124" r="8" fill="rgba(124, 92, 219,0.3)" stroke="rgba(124, 92, 219,0.6)" strokeWidth="1.5" />
               </Svg>
 
               {/* Cœur central (score de compatibilité) avec pulsation */}
@@ -756,12 +756,12 @@ export default function ValueSlidesScreen() {
                 <Circle cx="22" cy="38" r="16" fill="rgba(200,154,46,0.16)" stroke="rgba(200,154,46,0.45)" strokeWidth="1.6" />
                 <SvgText x="18" y="44" fill="rgba(168,124,28,0.9)" fontSize="14" fontWeight="700">?</SvgText>
 
-                <Circle cx="130" cy="38" r="16" fill="rgba(232,131,74,0.16)" stroke="rgba(232,131,74,0.45)" strokeWidth="1.6" />
+                <Circle cx="130" cy="38" r="16" fill="rgba(124, 92, 219,0.16)" stroke="rgba(124, 92, 219,0.45)" strokeWidth="1.6" />
                 <SvgText x="126" y="44" fill="rgba(200,120,40,0.9)" fontSize="14" fontWeight="700">?</SvgText>
 
                 {/* Lignes de flux */}
                 <Line x1="53" y1="38" x2="38" y2="38" stroke="rgba(200,154,46,0.6)" strokeWidth="1.4" />
-                <Line x1="99" y1="38" x2="114" y2="38" stroke="rgba(232,131,74,0.6)" strokeWidth="1.4" />
+                <Line x1="99" y1="38" x2="114" y2="38" stroke="rgba(124, 92, 219,0.6)" strokeWidth="1.4" />
 
                 {/* Question posée */}
                 <Rect x="10" y="68" width="132" height="19" rx="9.5" fill="rgba(200,154,46,0.12)" stroke="rgba(200,154,46,0.45)" strokeWidth="1.2" />
@@ -771,7 +771,7 @@ export default function ValueSlidesScreen() {
                 <Rect x="10" y="92" width="63" height="18" rx="9" fill="rgba(200,154,46,0.09)" stroke="rgba(200,154,46,0.35)" strokeWidth="1.1" />
                 <SvgText x="18" y="104" fill="rgba(20,16,14,0.65)" fontSize="7.5" fontWeight="500">Sa réponse</SvgText>
 
-                <Rect x="79" y="92" width="63" height="18" rx="9" fill="rgba(232,131,74,0.09)" stroke="rgba(232,131,74,0.35)" strokeWidth="1.1" />
+                <Rect x="79" y="92" width="63" height="18" rx="9" fill="rgba(124, 92, 219,0.09)" stroke="rgba(124, 92, 219,0.35)" strokeWidth="1.1" />
                 <SvgText x="87" y="104" fill="rgba(20,16,14,0.65)" fontSize="7.5" fontWeight="500">Ta réponse</SvgText>
 
                 {/* Badge 3 jours */}
@@ -909,7 +909,7 @@ export default function ValueSlidesScreen() {
                 style={[
                   styles.floatDot,
                   {
-                    backgroundColor: 'rgba(232,131,74,0.55)',
+                    backgroundColor: 'rgba(124, 92, 219,0.55)',
                     top: -12,
                     right: '20%',
                     width: 7,
@@ -935,7 +935,7 @@ export default function ValueSlidesScreen() {
                     cx="75"
                     cy="75"
                     r="62"
-                    stroke="rgba(232,131,74,0.2)"
+                    stroke="rgba(124, 92, 219,0.2)"
                     strokeWidth="1.3"
                     strokeDasharray="5 5"
                     fill="none"
@@ -950,8 +950,8 @@ export default function ValueSlidesScreen() {
                 <Ellipse cx="30" cy="57" rx="12" ry="6" fill="rgba(20,16,14,0.08)" />
 
                 {/* Badge -1© */}
-                <Rect x="8" y="72" width="46" height="20" rx="10" fill="rgba(232,64,58,0.10)" stroke="rgba(232,64,58,0.45)" strokeWidth="1.3" />
-                <SvgText x="15" y="85" fill="#E8403A" fontSize="10" fontWeight="700">− 1 ©</SvgText>
+                <Rect x="8" y="72" width="46" height="20" rx="10" fill="rgba(198, 42, 110,0.10)" stroke="rgba(198, 42, 110,0.45)" strokeWidth="1.3" />
+                <SvgText x="15" y="85" fill="#C62A6E" fontSize="10" fontWeight="700">− 1 ©</SvgText>
 
                 {/* Avatar Protégé */}
                 <Circle cx="120" cy="46" r="19" fill="rgba(30,158,90,0.14)" stroke="rgba(30,158,90,0.5)" strokeWidth="1.6" />
@@ -963,7 +963,7 @@ export default function ValueSlidesScreen() {
                 <SvgText x="103" y="85" fill="#158044" fontSize="10" fontWeight="700">+ 1 ©</SvgText>
 
                 {/* Badge Automatique */}
-                <Rect x="34" y="110" width="82" height="18" rx="9" fill="rgba(232,131,74,0.13)" stroke="rgba(232,131,74,0.42)" strokeWidth="1.2" />
+                <Rect x="34" y="110" width="82" height="18" rx="9" fill="rgba(124, 92, 219,0.13)" stroke="rgba(124, 92, 219,0.42)" strokeWidth="1.2" />
                 <SvgText x="38" y="123" fill="#B3661A" fontSize="8.5" fontWeight="700">✓ Automatique</SvgText>
               </Svg>
 
@@ -976,8 +976,8 @@ export default function ValueSlidesScreen() {
                 }}
               >
                 <Svg width="40" height="20" viewBox="0 0 40 20">
-                  <Line x1="4" y1="10" x2="30" y2="10" stroke="rgba(232,131,74,0.85)" strokeWidth="2.2" strokeLinecap="round" />
-                  <Polygon points="34,10 26,5 26,15" fill="rgba(232,131,74,0.9)" />
+                  <Line x1="4" y1="10" x2="30" y2="10" stroke="rgba(124, 92, 219,0.85)" strokeWidth="2.2" strokeLinecap="round" />
+                  <Polygon points="34,10 26,5 26,15" fill="rgba(124, 92, 219,0.9)" />
                 </Svg>
               </Animated.View>
             </Animated.View>
@@ -1022,9 +1022,9 @@ export default function ValueSlidesScreen() {
                 <Ellipse cx="48" cy="45" rx="14" ry="8" fill="rgba(124,92,232,0.18)" />
 
                 {/* Vidéo Utilisateur 2 */}
-                <Rect x="76" y="10" width="48" height="50" rx="10" fill="rgba(232,131,74,0.12)" stroke="rgba(232,131,74,0.3)" strokeWidth="1.2" />
-                <Circle cx="100" cy="27" r="10" fill="rgba(232,131,74,0.35)" stroke="rgba(232,131,74,0.45)" strokeWidth="1" />
-                <Ellipse cx="100" cy="45" rx="14" ry="8" fill="rgba(232,131,74,0.18)" />
+                <Rect x="76" y="10" width="48" height="50" rx="10" fill="rgba(124, 92, 219,0.12)" stroke="rgba(124, 92, 219,0.3)" strokeWidth="1.2" />
+                <Circle cx="100" cy="27" r="10" fill="rgba(124, 92, 219,0.35)" stroke="rgba(124, 92, 219,0.45)" strokeWidth="1" />
+                <Ellipse cx="100" cy="45" rx="14" ry="8" fill="rgba(124, 92, 219,0.18)" />
 
                 {/* Chronomètre 7 min */}
                 <Circle cx="74" cy="80" r="14" fill="rgba(30,158,90,0.10)" stroke="rgba(30,158,90,0.45)" strokeWidth="1.5" />
@@ -1351,7 +1351,7 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.bold,
     fontSize: 16,
     fontWeight: '800',
-    color: '#E8403A',
+    color: '#C62A6E',
     letterSpacing: 2.6,
   },
   skipText: {
@@ -1425,7 +1425,7 @@ const styles = StyleSheet.create({
   linkLine: {
     width: 22,
     height: 1.8,
-    backgroundColor: 'rgba(232,64,58,0.7)',
+    backgroundColor: 'rgba(198, 42, 110,0.7)',
     borderRadius: 1,
   },
   chatBubble: {
@@ -1521,7 +1521,7 @@ const styles = StyleSheet.create({
     color: '#5C534C',
   },
   cguLink: {
-    color: '#E8403A',
+    color: '#C62A6E',
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
@@ -1529,7 +1529,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#E8403A',
+    shadowColor: '#C62A6E',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -1595,7 +1595,7 @@ const styles = StyleSheet.create({
   sheetArticleTitle: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#E8403A',
+    color: '#C62A6E',
     letterSpacing: 1.2,
     marginTop: 14,
     marginBottom: 6,
@@ -1617,11 +1617,11 @@ const styles = StyleSheet.create({
   sheetLink: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#E8403A',
+    color: '#C62A6E',
     textDecorationLine: 'underline',
   },
   sheetCta: {
-    backgroundColor: '#E8403A',
+    backgroundColor: '#C62A6E',
     paddingVertical: 15,
     borderRadius: 14,
     alignItems: 'center',
