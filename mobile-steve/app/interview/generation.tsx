@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     color: Colors.text.primary100,
     marginBottom: Spacing.md,
     textAlign: 'center',

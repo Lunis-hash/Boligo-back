@@ -34,10 +34,14 @@ import {
   Briefcase,
   Plus,
   X,
+  Calendar,
 } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
 import { PROFESSIONS_DATA, ALL_PROFESSIONS } from '@/constants/professions';
+import { ProfessionIcon } from '@/components/BrandIcons';
 import legal from '@/constants/legal.json';
+import { formatLegalDate } from '@/components/LegalDocument';
 
 import { COUNTRIES, Country, detectUserCountry } from '@/constants/countries';
 
@@ -47,7 +51,7 @@ import { AuthService } from '@/services/auth';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const ERROR_COLOR = '#DC2626';
+const ERROR_COLOR = Brand.danger;
 
 // ─── Date de naissance ────────────────────────────────────────────
 const MIN_AGE = 18;
@@ -94,14 +98,14 @@ const MEETING_SCOPES = [
     icon: MapPin,
     title: 'Local',
     subtitle: 'Même ville ou région',
-    desc: 'Rencontrer des personnes près de chez toi, idéal pour des rendez-vous rapides.',
+    desc: 'Rencontrer des personnes près de chez vous, idéal pour se voir rapidement.',
   },
   {
     id: 'national',
     icon: Users,
     title: 'National',
     subtitle: 'Tout mon pays',
-    desc: 'Ouvrir les rencontres à tout ton pays pour plus de compatibilité.',
+    desc: 'Ouvrir les rencontres à tout votre pays pour plus de compatibilité.',
   },
   {
     id: 'international',
@@ -546,14 +550,12 @@ export default function ProfileDetailsScreen() {
             onPress={() => setGender('H')}
             style={[styles.genderBtn, gender === 'H' && styles.genderBtnActive]}
           >
-            <Text style={[styles.genderEmoji, gender === 'H' && styles.genderEmojiActive]}>👨</Text>
             <Text style={[styles.genderText, gender === 'H' && styles.genderTextActive]}>Homme</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setGender('F')}
             style={[styles.genderBtn, gender === 'F' && styles.genderBtnActive]}
           >
-            <Text style={[styles.genderEmoji, gender === 'F' && styles.genderEmojiActive]}>👩</Text>
             <Text style={[styles.genderText, gender === 'F' && styles.genderTextActive]}>Femme</Text>
           </TouchableOpacity>
         </View>
@@ -568,7 +570,7 @@ export default function ProfileDetailsScreen() {
           activeOpacity={0.7}
         >
           <LinearGradient
-            colors={birthday ? [Colors.primary.red + '18', Colors.primary.purple + '10'] : ['#F8F8F8', '#F8F8F8']}
+            colors={birthday ? [Colors.primary.red + '18', Colors.primary.purple + '10'] : ['#FFFFFF', '#FFFFFF']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.dateBtnGradient, birthDateError ? styles.dateBtnError : null]}
@@ -578,7 +580,7 @@ export default function ProfileDetailsScreen() {
                 colors={[Colors.primary.red, Colors.primary.purple]}
                 style={styles.dateBtnIcon}
               >
-                <Text style={{ fontSize: 16 }}>🎂</Text>
+                <Calendar size={17} color="#FFFFFF" strokeWidth={2} />
               </LinearGradient>
               <View style={{ flex: 1 }}>
                 <Text style={styles.dateBtnTitle}>
@@ -910,7 +912,7 @@ export default function ProfileDetailsScreen() {
             </Text>
             , y compris le traitement de mes réponses à l'entretien pour calculer ma compatibilité.
           </Text>
-          <Text style={styles.termsVersion}>Version du {legal.version.split('-').reverse().join('/')}</Text>
+          <Text style={styles.termsVersion}>Version du {formatLegalDate(legal.version)}</Text>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -951,7 +953,7 @@ export default function ProfileDetailsScreen() {
           <LinearGradient
             colors={isStepValid()
               ? [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]
-              : ['#DEDEDE', '#DEDEDE', '#DEDEDE']
+              : ['#E4DCEA', '#E4DCEA', '#E4DCEA']
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -985,7 +987,7 @@ export default function ProfileDetailsScreen() {
             style={{ marginTop: 14, alignItems: 'center' }}
           >
             <Text style={{ fontSize: 13, color: Colors.primary.red, fontFamily: Typography.fontFamily.medium }}>
-              Vous avez déjà un compte ? <Text style={{ textDecorationLine: 'underline', fontWeight: 'bold' }}>Se connecter</Text>
+              Vous avez déjà un compte ? <Text style={{ textDecorationLine: 'underline', fontFamily: Typography.fontFamily.bold }}>Se connecter</Text>
             </Text>
           </TouchableOpacity>
         )}
@@ -1069,7 +1071,7 @@ export default function ProfileDetailsScreen() {
                 <LinearGradient
                   colors={birthday && !birthDateError
                     ? [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]
-                    : ['#DEDEDE', '#DEDEDE', '#DEDEDE']
+                    : ['#E4DCEA', '#E4DCEA', '#E4DCEA']
                   }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -1134,7 +1136,7 @@ export default function ProfileDetailsScreen() {
                   <Plus size={16} color="#FFF" />
                 </View>
                 <Text style={styles.customProfessionText}>
-                  Utiliser <Text style={{ fontWeight: 'bold', color: Colors.primary.red }}>« {professionSearch.trim()} »</Text>
+                  Utiliser <Text style={{ fontFamily: Typography.fontFamily.bold, color: Colors.primary.red }}>« {professionSearch.trim()} »</Text>
                 </Text>
               </TouchableOpacity>
             )}
@@ -1187,7 +1189,7 @@ export default function ProfileDetailsScreen() {
                   {PROFESSIONS_DATA.map((category) => (
                     <View key={category.category} style={styles.professionCategoryGroup}>
                       <View style={styles.professionCategoryHeader}>
-                        <Text style={styles.professionCategoryIcon}>{category.icon}</Text>
+                        <ProfessionIcon category={category.category} />
                         <Text style={styles.professionCategoryTitle}>{category.category}</Text>
                       </View>
                       {category.items.map((item) => {
@@ -1359,7 +1361,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   stepTitle: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     fontSize: 30,
     lineHeight: 38,
     color: Colors.text.primary100,
@@ -1470,7 +1472,6 @@ const styles = StyleSheet.create({
   },
   termsLink: {
     fontFamily: Typography.fontFamily.bold,
-    fontWeight: '700',
     color: Colors.primary.red,
     textDecorationLine: 'underline',
   },
@@ -1526,7 +1527,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: Colors.text.primary100,
   },
-  selectorPlaceholder: { color: Colors.text.primary40, fontSize: 16 },
+  selectorPlaceholder: { fontFamily: Typography.fontFamily.regular, color: Colors.text.primary40, fontSize: 16 },
 
   // Récap localisation
   locationRecap: {
@@ -1643,7 +1644,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
   },
   btnText: {
-    fontFamily: Typography.fontFamily.medium,
+    fontFamily: Typography.fontFamily.bold,
     fontSize: Typography.labelLarge.fontSize,
     color: Colors.neutral.white,
     letterSpacing: 0.2,
@@ -1803,7 +1804,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.neutral.border + '40',
   },
   countryItemActive: { backgroundColor: Colors.primary.red + '06' },
-  countryFlag: { fontSize: 24 },
+  countryFlag: { fontFamily: Typography.fontFamily.regular, fontSize: 24 },
   countryName: {
     flex: 1,
     fontFamily: Typography.fontFamily.medium,
@@ -1834,8 +1835,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary.red,
     backgroundColor: Colors.primary.red + '08',
   },
-  genderEmoji: { fontSize: 20, opacity: 0.6 },
-  genderEmojiActive: { opacity: 1 },
   genderText: {
     fontFamily: Typography.fontFamily.medium,
     fontSize: 15,
@@ -1861,7 +1860,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.white,
   },
   dialCodeFlag: {
-    fontSize: 20,
+    fontFamily: Typography.fontFamily.regular, fontSize: 20,
   },
   dialCodeText: {
     fontFamily: Typography.fontFamily.bold,
@@ -1962,9 +1961,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral.border + '60',
     marginBottom: 6,
-  },
-  professionCategoryIcon: {
-    fontSize: 16,
   },
   professionCategoryTitle: {
     fontFamily: Typography.fontFamily.bold,

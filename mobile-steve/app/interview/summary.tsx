@@ -18,12 +18,20 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { InterviewService } from '@/services/interview';
-import { ChevronRight, ChevronLeft, Check, Heart, Star } from 'lucide-react-native';
+import { ChevronRight, ChevronLeft, Check, Heart, Star, Sparkles } from 'lucide-react-native';
+import { Brand } from '@/constants/brand';
+import { ModuleIcon } from '@/components/BrandIcons';
+
+/** Numéro du module (0 à 10) d'après l'identifiant renvoyé par le serveur (« m3 »). */
+function moduleNumber(id: string): number | undefined {
+  const digits = String(id).match(/\d+/);
+  return digits ? Number(digits[0]) : undefined;
+}
 import Svg, { Circle } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const CARD_WIDTH = Math.min(SCREEN_WIDTH - Spacing.lg * 2, 380);
+const CARD_WIDTH = Math.min(SCREEN_WIDTH - Spacing.xl * 2, 380);
 const CARD_GAP   = Spacing.md;
 
 // ─── Cartes du bilan : un module du Grand Entretien par carte ────────
@@ -122,7 +130,7 @@ function PillarCard({
           <View style={styles.cardVisual}>
             <CircularProgress size={76} percentage={pillar.percentage} color={pillar.color} strokeWidth={5} />
             <View style={[styles.cardEmoji, { backgroundColor: pillar.pastel }]}>
-              <Text style={{ fontSize: 26 }}>{pillar.emoji}</Text>
+              <ModuleIcon module={moduleNumber(pillar.id)} size={26} color={pillar.color} />
             </View>
             <View style={[styles.percentBadge, { backgroundColor: pillar.color }]}>
               <Text style={styles.percentBadgeText}>{pillar.percentage}%</Text>
@@ -288,7 +296,7 @@ export default function InterviewSummaryScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.introCircle}
           >
-            <Text style={{ fontSize: 42 }}>✨</Text>
+            <Sparkles size={38} color={Brand.framboise} strokeWidth={1.6} />
           </LinearGradient>
           <Text style={styles.introTitle}>Analyse de votre profil</Text>
           <Text style={styles.introSub}>Nous préparons votre bilan de compatibilité…</Text>
@@ -321,7 +329,7 @@ export default function InterviewSummaryScreen() {
               <Heart size={11} color={Colors.primary.red} fill={Colors.primary.red} />
               <Text style={styles.headerBadgeText}>Votre bilan de compatibilité</Text>
             </View>
-            <Text style={styles.title}>Votre profil{'\n'}est prêt 🎉</Text>
+            <Text style={styles.title}>Votre profil{'\n'}est prêt.</Text>
             <Text style={styles.subtitle}>
               Voici ce que votre Grand Entretien révèle sur vous. Ces {pillars.length || TOTAL_MODULES} modules guident nos suggestions de rencontres.
             </Text>
@@ -462,7 +470,7 @@ export default function InterviewSummaryScreen() {
               end={{ x: 1, y: 0 }}
               style={styles.messageGrad}
             >
-              <Text style={styles.messageTitle}>✨ Comment BOLIGO vous présente</Text>
+              <Text style={styles.messageTitle}>Comment BOLIGO vous présente</Text>
               <Text style={styles.messageText}>
                 {synthesisText || 'Votre présentation sera rédigée à partir de vos réponses dès la fin de votre Grand Entretien.'}
               </Text>
@@ -523,7 +531,7 @@ export default function InterviewSummaryScreen() {
                 {/* Header modal */}
                 <View style={styles.modalHeader}>
                   <View style={[styles.modalEmojiCircle, { backgroundColor: selectedPillar.pastel }]}>
-                    <Text style={{ fontSize: 32 }}>{selectedPillar.emoji}</Text>
+                    <ModuleIcon module={moduleNumber(selectedPillar.id)} size={30} color={selectedPillar.color} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.modalTitle}>{selectedPillar.label}</Text>
@@ -636,7 +644,7 @@ const styles = StyleSheet.create({
     color: Colors.primary.red, letterSpacing: 0.5,
   },
   title: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     fontSize: 30, lineHeight: 38,
     color: Colors.text.primary100,
     textAlign: 'center', marginBottom: Spacing.sm,
@@ -791,7 +799,7 @@ const styles = StyleSheet.create({
   clarityNote: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: 12, lineHeight: 17, color: Colors.text.primary70,
-    paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.xl, marginBottom: Spacing.sm,
   },
   metricRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   metricLabel: {

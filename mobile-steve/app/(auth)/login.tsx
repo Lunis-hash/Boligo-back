@@ -133,7 +133,6 @@ export default function LoginScreen() {
       }
 
       await signIn(result.access_token, result.userId, result.refresh_token);
-      
       try {
         const status = await InterviewService.getStatus();
         if (status.isCompleted) {
@@ -438,8 +437,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   cardTitleItalic: {
-    fontFamily: Typography.fontFamily.serif,
-    fontStyle: 'italic',
+    fontFamily: Typography.fontFamily.serifItalic,
     fontSize: 22,
     color: Colors.primary.red,
   },
@@ -456,7 +454,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   input: {
-    borderWidth: 1,
+    fontFamily: Typography.fontFamily.regular, borderWidth: 1,
     borderColor: Colors.neutral.border,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,

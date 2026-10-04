@@ -4,6 +4,16 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import legal from '@/constants/legal.json';
 import { Colors, Spacing, Typography } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
+
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+/** « 2026-10-04 » → « 4 octobre 2026 ». */
+export function formatLegalDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d || m > 12) return iso;
+  return `${d === 1 ? '1er' : d} ${MOIS[m - 1]} ${y}`;
+}
 
 export type LegalDocKey = 'cgu' | 'privacy';
 
@@ -23,7 +33,7 @@ export function LegalDocument({ doc }: { doc: LegalDocKey }) {
           accessibilityLabel="Retour"
           testID="legal-back"
         >
-          <ArrowLeft size={22} color={Colors.text.primary100} />
+          <ArrowLeft size={22} color={Brand.encre} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {data.shortTitle}
@@ -32,7 +42,7 @@ export function LegalDocument({ doc }: { doc: LegalDocKey }) {
       </View>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
         <Text style={styles.title}>{data.title}</Text>
-        <Text style={styles.version}>Version du {legal.version}</Text>
+        <Text style={styles.version}>Version du {formatLegalDate(legal.version)}</Text>
         <Text style={styles.intro}>{data.intro}</Text>
         {data.sections.map((section) => (
           <View key={section.id} style={styles.section}>
@@ -50,7 +60,7 @@ export function LegalDocument({ doc }: { doc: LegalDocKey }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.neutral.white },
+  container: { flex: 1, backgroundColor: Brand.fond },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -58,14 +68,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.neutral.border,
+    borderBottomColor: Brand.bordRose,
+    backgroundColor: Brand.blanc,
   },
-  headerTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 16, color: Colors.text.primary100 },
-  content: { paddingHorizontal: Spacing.lg, paddingTop: 20 },
-  title: { fontFamily: Typography.fontFamily.bold, fontSize: 22, lineHeight: 28, color: Colors.text.primary100 },
-  version: { fontFamily: Typography.fontFamily.regular, fontSize: 12, color: Colors.text.primary40, marginTop: 6, marginBottom: 16 },
+  headerTitle: { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, color: Brand.encre },
+  content: { paddingHorizontal: Spacing.lg, paddingTop: 24, width: '100%', maxWidth: 760, alignSelf: 'center' },
+  title: { fontFamily: Typography.fontFamily.serif, fontSize: 28, lineHeight: 34, color: Brand.encre },
+  version: { fontFamily: Typography.fontFamily.semiBold, fontSize: 12, color: Brand.framboise, marginTop: 8, marginBottom: 16, letterSpacing: 0.3 },
   intro: { fontFamily: Typography.fontFamily.regular, fontSize: 14, lineHeight: 22, color: Colors.text.primary70, marginBottom: 20 },
   section: { marginBottom: 20 },
-  sectionTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 15, lineHeight: 21, color: Colors.text.primary100, marginBottom: 8 },
+  sectionTitle: { fontFamily: Typography.fontFamily.serifBold, fontSize: 17, lineHeight: 23, color: Brand.nuit, marginBottom: 8 },
   paragraph: { fontFamily: Typography.fontFamily.regular, fontSize: 14, lineHeight: 22, color: Colors.text.primary70, marginBottom: 8 },
 });

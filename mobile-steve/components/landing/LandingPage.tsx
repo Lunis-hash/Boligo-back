@@ -135,7 +135,7 @@ export function LandingPage() {
     const y = sectionY.current[key];
     if (y !== undefined) scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true });
   };
-  const start = () => router.push('/onboarding/value-slides');
+  const start = () => router.push('/onboarding/profile-details');
   const login = () => router.push('/(auth)/login');
 
   const container: ViewStyle = { width: '100%', maxWidth: 1240, alignSelf: 'center', paddingHorizontal: padX };

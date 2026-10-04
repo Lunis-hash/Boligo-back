@@ -13,6 +13,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { Colors, Typography, Spacing } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
 import {
   PhoneOff,
   Clock,
@@ -208,7 +209,7 @@ export default function VideoCallScreen() {
   if (IS_WEB) {
     return (
       <View style={styles.centered} testID="video-call-web-unavailable">
-        <LinearGradient colors={['#1a1a2e', '#0f3460']} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={[Brand.encre, Brand.nuit]} style={StyleSheet.absoluteFillObject} />
         <Video size={48} color={Colors.primary.orange} />
         <Text style={styles.errorTitle}>Appel indisponible sur le web</Text>
         <Text style={styles.errorSub}>{WEB_UNAVAILABLE_MESSAGE}</Text>
@@ -223,7 +224,7 @@ export default function VideoCallScreen() {
     return (
       <View style={styles.centered}>
         <LinearGradient
-          colors={['#1a1a2e', '#16213e', '#0f3460']}
+          colors={[Brand.encre, '#2E2363', Brand.nuit]}
           style={StyleSheet.absoluteFillObject}
         />
         <ActivityIndicator size="large" color={Colors.primary.red} />
@@ -238,7 +239,7 @@ export default function VideoCallScreen() {
   if (errorMessage && callState === 'error') {
     return (
       <View style={styles.centered}>
-        <LinearGradient colors={['#1a1a2e', '#0f3460']} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={[Brand.encre, Brand.nuit]} style={StyleSheet.absoluteFillObject} />
         <Video size={48} color={Colors.primary.orange} />
         <Text style={styles.errorTitle}>Appel indisponible</Text>
         <Text style={styles.errorSub}>{errorMessage}</Text>
@@ -252,14 +253,14 @@ export default function VideoCallScreen() {
   if (callState === 'ended') {
     return (
       <View style={styles.fullScreen}>
-        <LinearGradient colors={['#1a1a2e', '#0f3460']} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={[Brand.encre, Brand.nuit]} style={StyleSheet.absoluteFillObject} />
         <Animated.View
           style={[styles.endedContent, { opacity: fadeAnim, transform: [{ translateY: slideUp }] }]}
         >
           <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} style={styles.endedIcon}>
             <Heart size={36} color={Colors.neutral.white} />
           </LinearGradient>
-          <Text style={styles.endedTitle}>Appel terminé !</Text>
+          <Text style={styles.endedTitle}>Appel terminé</Text>
           <Text style={styles.endedSub}>Votre appel avec {partnerName} est terminé</Text>
 
           <View style={styles.endedDurationCard}>
@@ -350,7 +351,7 @@ export default function VideoCallScreen() {
           activeOpacity={0.85}
           style={styles.hangupBtn}
         >
-          <LinearGradient colors={['#FF3B30', '#E2679A']} style={styles.hangupGrad}>
+          <LinearGradient colors={[Brand.danger, Brand.framboise]} style={styles.hangupGrad}>
             <PhoneOff size={28} color="#fff" />
           </LinearGradient>
           <Text style={styles.hangupLabel}>Raccrocher</Text>
@@ -361,13 +362,13 @@ export default function VideoCallScreen() {
 }
 
 const styles = StyleSheet.create({
-  fullScreen: { flex: 1, backgroundColor: '#0f0f1a' },
-  webview: { flex: 1, backgroundColor: '#000' },
+  fullScreen: { flex: 1, backgroundColor: Brand.encre },
+  webview: { flex: 1, backgroundColor: Brand.encre },
   webviewLoader: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: Brand.encre,
   },
   centered: {
     flex: 1,
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   endedTitle: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     fontSize: 28,
     color: '#fff',
     marginBottom: 8,

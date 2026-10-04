@@ -17,7 +17,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Mail, RefreshCw, Edit3, ArrowRight, ShieldCheck } from 'lucide-react-native';
-import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, Typography, Spacing } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
 import { AuthService } from '@/services/auth';
 import { useAuth } from '@/context/auth';
 
@@ -283,7 +284,7 @@ export default function VerifyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF9F8',
+    backgroundColor: Brand.fond,
   },
   header: {
     flexDirection: 'row',
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.sm,
-    backgroundColor: '#FAF9F8',
+    backgroundColor: Brand.fond,
   },
   backBtn: {
     width: 40,
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(198, 42, 110, 0.15)',
   },
   mainTitle: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     fontSize: 26,
     color: Colors.text.primary100,
     textAlign: 'center',

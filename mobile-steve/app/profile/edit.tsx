@@ -83,7 +83,7 @@ export default function EditProfileScreen() {
     try {
       await client.patch('/profile/me', payload);
       cacheService.invalidate('user_profile_me');
-      Alert.alert('Profil mis à jour ✨', 'Tes modifications ont été enregistrées.', [
+      Alert.alert('Profil mis à jour', 'Vos modifications sont enregistrées.', [
         { text: 'OK', onPress: () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/profile')) },
       ]);
     } catch (e: any) {
@@ -119,7 +119,7 @@ export default function EditProfileScreen() {
             style={styles.bannerGrad}
           >
             <Heart size={24} color={Colors.primary.red} />
-            <Text style={styles.bannerText}>Reste authentique, ton profil te ressemble.</Text>
+            <Text style={styles.bannerText}>Restez authentique : votre profil doit vous ressembler.</Text>
           </LinearGradient>
         </View>
 
@@ -131,14 +131,14 @@ export default function EditProfileScreen() {
               <View style={styles.iconCircle}><User size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Prénom</Text>
             </View>
-            <TextInput style={styles.input} value={form.firstName} onChangeText={t => u('firstName', t)} placeholder="Ton prénom" placeholderTextColor={Colors.text.inactive} />
+            <TextInput style={styles.input} value={form.firstName} onChangeText={t => u('firstName', t)} placeholder="Votre prénom" placeholderTextColor={Colors.text.inactive} />
           </View>
           <View style={styles.fieldWrap}>
             <View style={styles.fieldHeader}>
               <View style={styles.iconCircle}><User size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Nom</Text>
             </View>
-            <TextInput style={styles.input} value={form.lastName} onChangeText={t => u('lastName', t)} placeholder="Ton nom" placeholderTextColor={Colors.text.inactive} />
+            <TextInput style={styles.input} value={form.lastName} onChangeText={t => u('lastName', t)} placeholder="Votre nom" placeholderTextColor={Colors.text.inactive} />
           </View>
           <View style={styles.fieldWrap}>
             <View style={styles.fieldHeader}>
@@ -171,7 +171,7 @@ export default function EditProfileScreen() {
               <Text style={styles.fieldLabel}>Email</Text>
             </View>
             <View style={styles.readOnlyRow}>
-              <Text style={styles.readOnlyText}>{readOnly.email}</Text>
+              <Text style={styles.readOnlyText} numberOfLines={1} ellipsizeMode="middle">{readOnly.email}</Text>
               <Text style={styles.lockBadge}>Non modifiable</Text>
             </View>
           </View>
@@ -187,7 +187,7 @@ export default function EditProfileScreen() {
               <View style={styles.iconCircle}><MapPin size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Ville de résidence</Text>
             </View>
-            <TextInput style={styles.input} value={form.city} onChangeText={t => u('city', t)} placeholder="Abidjan, Dakar..." placeholderTextColor={Colors.text.inactive} />
+            <TextInput style={styles.input} value={form.city} onChangeText={t => u('city', t)} placeholder="Abidjan, Dakar…" placeholderTextColor={Colors.text.inactive} />
           </View>
         </View>
 
@@ -203,7 +203,7 @@ export default function EditProfileScreen() {
               style={[styles.input, styles.textArea]}
               multiline numberOfLines={4}
               value={form.description} onChangeText={t => u('description', t)}
-              placeholder="Décris-toi en quelques lignes..." placeholderTextColor={Colors.text.inactive}
+              placeholder="Présentez-vous en quelques lignes…" placeholderTextColor={Colors.text.inactive}
               textAlignVertical="top"
             />
           </View>
@@ -212,14 +212,14 @@ export default function EditProfileScreen() {
               <View style={styles.iconCircle}><Briefcase size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Profession</Text>
             </View>
-            <TextInput style={styles.input} value={form.profession} onChangeText={t => u('profession', t)} placeholder="Développeur, Médecin..." placeholderTextColor={Colors.text.inactive} />
+            <TextInput style={styles.input} value={form.profession} onChangeText={t => u('profession', t)} placeholder="Développeur, médecin…" placeholderTextColor={Colors.text.inactive} />
           </View>
           <View style={styles.fieldWrap}>
             <View style={styles.fieldHeader}>
               <View style={styles.iconCircle}><MapPin size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Ville affichée</Text>
             </View>
-            <TextInput style={styles.input} value={form.displayedCity} onChangeText={t => u('displayedCity', t)} placeholder="Visible par tes matchs" placeholderTextColor={Colors.text.inactive} />
+            <TextInput style={styles.input} value={form.displayedCity} onChangeText={t => u('displayedCity', t)} placeholder="Visible par vos rencontres" placeholderTextColor={Colors.text.inactive} />
           </View>
         </View>
 
@@ -232,16 +232,16 @@ export default function EditProfileScreen() {
               <Text style={styles.fieldLabel}>Vérifié</Text>
             </View>
             <View style={styles.readOnlyRow}>
-              <Text style={styles.readOnlyText}>{readOnly.isVerified ? '✅ Oui' : '❌ Non'}</Text>
+              <Text style={styles.readOnlyText}>{readOnly.isVerified ? 'Oui' : 'Pas encore'}</Text>
             </View>
           </View>
           <View style={styles.fieldWrap}>
             <View style={styles.fieldHeader}>
               <View style={styles.iconCircle}><Calendar size={16} color={Colors.primary.red} /></View>
-              <Text style={styles.fieldLabel}>Membre depuis</Text>
+              <Text style={styles.fieldLabel}>Statut du compte</Text>
             </View>
             <View style={styles.readOnlyRow}>
-              <Text style={styles.readOnlyText}>{readOnly.accountStatus === 'actif' ? '🟢 Actif' : '🟡 Nouveau'}</Text>
+              <Text style={styles.readOnlyText}>{readOnly.accountStatus === 'actif' ? 'Actif' : 'Nouveau'}</Text>
             </View>
           </View>
         </View>
@@ -299,8 +299,8 @@ const styles = StyleSheet.create({
 
   // Read-only
   readOnlyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.neutral.backgroundLight, borderRadius: BorderRadius.lg, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: Colors.neutral.border },
-  readOnlyText: { fontSize: 15, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary40 },
-  lockBadge: { fontSize: 10, fontFamily: Typography.fontFamily.medium, color: Colors.text.inactive, backgroundColor: Colors.neutral.border, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  readOnlyText: { flex: 1, minWidth: 0, marginRight: 8, fontSize: 15, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary40 },
+  lockBadge: { flexShrink: 0, fontSize: 10, fontFamily: Typography.fontFamily.medium, color: Colors.text.inactive, backgroundColor: Colors.neutral.border, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, overflow: 'hidden' },
 
   // Footer
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: Colors.neutral.white, borderTopWidth: 1, borderTopColor: Colors.neutral.border },

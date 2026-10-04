@@ -21,27 +21,20 @@ import { useAppContext } from '@/context/AppContext';
 import { PaymentService, PaymentPlan, PromoCheckResult, paymentIntentIdFromClientSecret, selectHarmoniePlan } from '@/services/payment';
 import { getReadableError } from '@/services/api';
 import { Typography } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ── Palette de couleurs officielle Onboarding BOLIGO ──────────────────
+// ── Palette de la marque ──────────────────
 const COLORS = {
-  bg: '#FFFFFF',
-  red: '#C62A6E',
-  redDark: '#A32159',
-  orange: '#7C5CDB',
-  purple: '#7C5CE8',
-  purpleDark: '#5A3AB8',
-  gold: '#C89A2E',
-  goldDark: '#A87C1C',
-  teal: '#0F9A90',
-  tealDark: '#0D7C74',
-  green: '#1E9E5A',
-  greenDark: '#158044',
-  ink: '#14100E',
-  ink2: '#5C534C',
-  ink3: '#918780',
-  line: 'rgba(20,16,14,0.10)',
+  bg: Brand.fond,
+  red: Brand.framboise,
+  accent: Brand.lavande,
+  nuit: Brand.nuit,
+  ink: Brand.encre,
+  ink2: Brand.encreDouce,
+  ink3: Brand.encrePale,
+  line: 'rgba(42,27,61,0.10)',
 };
 
 /** Délai maximal d'attente du webhook Stripe avant de rendre la main (ms). */
@@ -229,7 +222,7 @@ export default function PaymentScreen() {
           >
             <ChevronLeft size={24} color={COLORS.ink} />
           </TouchableOpacity>
-          <Text style={styles.checkoutTitle}>Paiement Sécurisé</Text>
+          <Text style={styles.checkoutTitle}>Paiement sécurisé</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -237,13 +230,13 @@ export default function PaymentScreen() {
           {paymentSuccess ? (
             <View style={styles.successContainer}>
               <View style={styles.successCircle}>
-                <Sparkles size={56} color={COLORS.goldDark} />
+                <Sparkles size={56} color={COLORS.accent} />
               </View>
-              <Text style={styles.successTitle}>Paiement Confirmé !</Text>
+              <Text style={styles.successTitle}>Paiement confirmé</Text>
               <Text style={styles.successSubtitle}>
                 {successMessage} Votre solde est de {credits} crédit{credits > 1 ? 's' : ''}.
               </Text>
-              <ActivityIndicator size="small" color={COLORS.goldDark} style={{ marginTop: 24 }} />
+              <ActivityIndicator size="small" color={COLORS.accent} style={{ marginTop: 24 }} />
             </View>
           ) : (
             <View style={styles.formContainer}>
@@ -261,7 +254,7 @@ export default function PaymentScreen() {
 
                 <View style={styles.summaryTotalRow}>
                   <Text style={styles.totalLabel}>Total à régler</Text>
-                  <View style={{ alignItems: 'flex-end' }}>
+                  <View style={{ alignItems: 'flex-end', flex: 1 }}>
                     <Text style={styles.totalAmount}>{checkoutTotal}</Text>
                     <Text style={styles.totalPeriod}>
                       {selectedPlan.credits} crédit{selectedPlan.credits > 1 ? 's' : ''} · Paiement unique · Sans abonnement
@@ -273,7 +266,7 @@ export default function PaymentScreen() {
               {/* Code promo */}
               <View style={styles.promoBox}>
                 <View style={styles.promoHeader}>
-                  <Tag size={16} color={COLORS.goldDark} />
+                  <Tag size={16} color={COLORS.accent} />
                   <Text style={styles.promoTitle}>{selectedPlan.promoCodes?.hint || 'Avez-vous un code promotionnel ?'}</Text>
                 </View>
                 <View style={styles.promoRow}>
@@ -308,10 +301,10 @@ export default function PaymentScreen() {
 
               <View style={styles.securityBox}>
                 <View style={styles.securityIconCircle}>
-                  <ShieldCheck size={28} color={COLORS.green} />
+                  <ShieldCheck size={28} color={COLORS.nuit} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.securityTitle}>Paiement 100% Chiffré & Sécurisé</Text>
+                  <Text style={styles.securityTitle}>Paiement chiffré et sécurisé</Text>
                   <Text style={styles.securitySubtitle}>
                     Vos coordonnées bancaires sont directement chiffrées par Stripe. BOLIGO ne conserve aucune donnée de carte bancaire.
                   </Text>
@@ -352,7 +345,7 @@ export default function PaymentScreen() {
       <StatusBar style="dark" />
 
       <View style={styles.meshBackground} pointerEvents="none">
-        <View style={[styles.blob, styles.blobGold]} />
+        <View style={[styles.blob, styles.blobLavande]} />
         <View style={[styles.blob, styles.blobRed]} />
       </View>
 
@@ -372,7 +365,7 @@ export default function PaymentScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
         <View style={styles.headerSection}>
           <View style={styles.badgePill}>
-            <Text style={styles.badgePillText}>CHOISIS TON PARCOURS</Text>
+            <Text style={styles.badgePillText}>VOTRE PARCOURS</Text>
           </View>
           <Text style={styles.pageTitle}>
             Un parcours. <Text style={styles.pageTitleItalic}>Sept jours. Une vraie rencontre.</Text>
@@ -398,7 +391,7 @@ export default function PaymentScreen() {
               <View key={plan.id} style={[styles.packStandardCard, plan.badge ? styles.packHighlightCard : null]}>
                 {plan.badge ? (
                   <View style={styles.heroTagBadge}>
-                    <LinearGradient colors={['#D9AE3C', '#A87C1C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroTagGradient}>
+                    <LinearGradient colors={[Brand.framboise, Brand.lavande]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroTagGradient}>
                       <Text style={styles.heroTagText}>{plan.badge}</Text>
                     </LinearGradient>
                   </View>
@@ -418,7 +411,7 @@ export default function PaymentScreen() {
                   {plan.features.map((feat, index) => (
                     <View key={index} style={styles.featureRow}>
                       <View style={styles.tickmarkGreen}>
-                        <Check size={11} color={COLORS.green} strokeWidth={3.5} />
+                        <Check size={11} color={COLORS.red} strokeWidth={3.5} />
                       </View>
                       <Text style={styles.featureText}>
                         <Text style={styles.featureStrong}>{feat.label}</Text>
@@ -428,7 +421,12 @@ export default function PaymentScreen() {
                   ))}
                 </View>
 
-                {plan.guarantee ? <Text style={styles.guaranteeText}>🛡️ {plan.guarantee}</Text> : null}
+                {plan.guarantee ? (
+                  <View style={styles.guaranteeRow}>
+                    <ShieldCheck size={15} color={COLORS.accent} strokeWidth={2} />
+                    <Text style={styles.guaranteeText}>{plan.guarantee}</Text>
+                  </View>
+                ) : null}
 
                 <TouchableOpacity activeOpacity={0.8} onPress={() => handleSelectPlan(plan)} style={styles.standardCtaBtn} testID={`plan-${plan.id}`}>
                   <Text style={styles.standardCtaText}>Choisir ce parcours</Text>
@@ -443,7 +441,7 @@ export default function PaymentScreen() {
           <Text style={styles.reassureDot}>●</Text>
           <Text style={styles.reassureBold}>Sans abonnement</Text>
           <Text style={styles.reassureDot}>●</Text>
-          <Text style={styles.reassureItem}>100% Sécurisé</Text>
+          <Text style={styles.reassureItem}>Sécurisé par Stripe</Text>
         </View>
       </ScrollView>
     </View>
@@ -469,8 +467,8 @@ const styles = StyleSheet.create({
     borderRadius: 120,
     opacity: 0.12,
   },
-  blobGold: {
-    backgroundColor: COLORS.gold,
+  blobLavande: {
+    backgroundColor: COLORS.accent,
     top: -40,
     right: -50,
   },
@@ -500,13 +498,13 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 2.2,
     color: COLORS.red,
   },
   skipText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: Typography.fontFamily.semiBold,
     color: COLORS.ink3,
     paddingHorizontal: 4,
     paddingVertical: 2,
@@ -523,33 +521,31 @@ const styles = StyleSheet.create({
   },
   badgePill: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(200,154,46,0.1)',
+    backgroundColor: 'rgba(124,92,219,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(200,154,46,0.3)',
+    borderColor: 'rgba(124,92,219,0.3)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 16,
     marginBottom: 8,
   },
   badgePillText: {
-    color: COLORS.goldDark,
+    color: COLORS.accent,
     fontSize: 9.5,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   pageTitle: {
     fontSize: Math.min(SCREEN_WIDTH * 0.058, 22),
-    fontWeight: '800',
     color: COLORS.ink,
     lineHeight: 28,
     letterSpacing: -0.3,
-    fontFamily: Typography.fontFamily.serif || Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
   },
   pageTitleItalic: {
-    fontWeight: '400',
-    fontStyle: 'italic',
-    color: COLORS.ink2,
+    fontFamily: Typography.fontFamily.serifItalic,
+    color: COLORS.red,
   },
 
   // Pack Grid
@@ -568,7 +564,7 @@ const styles = StyleSheet.create({
   },
   standardPackName: {
     fontSize: 10.5,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.6,
     color: COLORS.ink3,
     marginBottom: 6,
@@ -581,18 +577,17 @@ const styles = StyleSheet.create({
   },
   priceAmount: {
     fontSize: 32,
-    fontWeight: '800',
     color: COLORS.ink,
     lineHeight: 36,
-    fontFamily: Typography.fontFamily.serif || Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
   },
   pricePeriod: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: Typography.fontFamily.medium,
     color: COLORS.ink3,
   },
   packDesc: {
-    fontSize: 12.5,
+    fontFamily: Typography.fontFamily.regular, fontSize: 12.5,
     lineHeight: 18,
     color: COLORS.ink2,
     marginBottom: 14,
@@ -612,7 +607,7 @@ const styles = StyleSheet.create({
     width: 17,
     height: 17,
     borderRadius: 9,
-    backgroundColor: 'rgba(30,158,90,0.14)',
+    backgroundColor: 'rgba(198,42,110,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1.5,
@@ -621,19 +616,19 @@ const styles = StyleSheet.create({
     width: 17,
     height: 17,
     borderRadius: 9,
-    backgroundColor: 'rgba(200,154,46,0.18)',
+    backgroundColor: 'rgba(124,92,219,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1.5,
   },
   featureText: {
-    flex: 1,
+    fontFamily: Typography.fontFamily.regular, flex: 1,
     fontSize: 12.5,
     lineHeight: 18,
     color: COLORS.ink2,
   },
   featureStrong: {
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     color: COLORS.ink,
   },
 
@@ -647,15 +642,15 @@ const styles = StyleSheet.create({
   },
   standardCtaText: {
     fontSize: 14.5,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     color: COLORS.ink,
   },
 
   // Pack Hero Card (Premium)
   packHeroCard: {
-    backgroundColor: 'rgba(200,154,46,0.03)',
+    backgroundColor: 'rgba(124,92,219,0.03)',
     borderWidth: 2,
-    borderColor: COLORS.gold,
+    borderColor: COLORS.accent,
     borderRadius: 16,
     padding: 20,
     position: 'relative',
@@ -674,34 +669,34 @@ const styles = StyleSheet.create({
   heroTagText: {
     color: '#FFFFFF',
     fontSize: 8.5,
-    fontWeight: '800',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
   heroPackName: {
     fontSize: 10.5,
-    fontWeight: '800',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.6,
-    color: COLORS.goldDark,
+    color: COLORS.accent,
     marginBottom: 6,
   },
   plusDividerRow: {
     paddingTop: 11,
     marginBottom: 11,
     borderTopWidth: 1,
-    borderColor: 'rgba(200,154,46,0.35)',
+    borderColor: 'rgba(124,92,219,0.35)',
     borderStyle: 'dashed',
   },
   plusTitleText: {
     fontSize: 9.5,
-    fontWeight: '800',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.4,
-    color: COLORS.goldDark,
+    color: COLORS.accent,
   },
   heroCtaWrapper: {
     borderRadius: 14,
     overflow: 'hidden',
-    shadowColor: COLORS.goldDark,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 14,
@@ -715,7 +710,7 @@ const styles = StyleSheet.create({
   heroCtaText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 0.2,
   },
 
@@ -730,17 +725,17 @@ const styles = StyleSheet.create({
   },
   reassureItem: {
     fontSize: 11.5,
-    fontWeight: '500',
+    fontFamily: Typography.fontFamily.medium,
     color: COLORS.ink3,
   },
   reassureBold: {
     fontSize: 11.5,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     color: COLORS.ink2,
   },
   reassureDot: {
-    fontSize: 5,
-    color: '#D6CFC8',
+    fontFamily: Typography.fontFamily.regular, fontSize: 5,
+    color: '#D9CFE3',
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -763,7 +758,7 @@ const styles = StyleSheet.create({
   },
   checkoutTitle: {
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     color: COLORS.ink,
   },
   checkoutBody: {
@@ -774,7 +769,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   orderSummaryCard: {
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: COLORS.line,
     borderRadius: 16,
@@ -782,12 +777,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   orderSummaryHero: {
-    borderColor: COLORS.gold,
-    backgroundColor: 'rgba(200,154,46,0.03)',
+    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(124,92,219,0.03)',
   },
   orderBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: COLORS.goldDark,
+    backgroundColor: COLORS.accent,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -796,25 +791,24 @@ const styles = StyleSheet.create({
   orderBadgeText: {
     color: '#FFF',
     fontSize: 9,
-    fontWeight: '800',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1,
   },
   summarySub: {
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.4,
     color: COLORS.ink3,
     marginBottom: 4,
   },
   summaryTitle: {
     fontSize: 20,
-    fontWeight: '800',
     color: COLORS.ink,
     marginBottom: 6,
-    fontFamily: Typography.fontFamily.serif || Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
   },
   summaryDesc: {
-    fontSize: 13,
+    fontFamily: Typography.fontFamily.regular, fontSize: 13,
     lineHeight: 18,
     color: COLORS.ink2,
   },
@@ -829,27 +823,29 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   totalLabel: {
+    flexShrink: 0,
+    marginRight: 12,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Typography.fontFamily.semiBold,
     color: COLORS.ink2,
   },
   totalAmount: {
     fontSize: 24,
-    fontWeight: '800',
     color: COLORS.ink,
-    fontFamily: Typography.fontFamily.serif || Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
   },
   totalPeriod: {
-    fontSize: 10.5,
+    fontFamily: Typography.fontFamily.regular, fontSize: 10.5,
     color: COLORS.ink3,
     marginTop: 2,
+    textAlign: 'right',
   },
   securityBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#F7FDF9',
+    backgroundColor: Brand.ciel,
     borderWidth: 1,
-    borderColor: 'rgba(30,158,90,0.2)',
+    borderColor: 'rgba(198,42,110,0.2)',
     borderRadius: 14,
     padding: 16,
     gap: 12,
@@ -860,12 +856,12 @@ const styles = StyleSheet.create({
   },
   securityTitle: {
     fontSize: 13.5,
-    fontWeight: '700',
-    color: COLORS.greenDark,
+    fontFamily: Typography.fontFamily.bold,
+    color: COLORS.nuit,
     marginBottom: 4,
   },
   securitySubtitle: {
-    fontSize: 11.5,
+    fontFamily: Typography.fontFamily.regular, fontSize: 11.5,
     lineHeight: 16,
     color: COLORS.ink2,
   },
@@ -874,7 +870,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.goldDark,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.28,
     shadowRadius: 18,
@@ -883,7 +879,7 @@ const styles = StyleSheet.create({
   ctaPrimaryText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
   },
   ctaRegularBtn: {
     backgroundColor: COLORS.red,
@@ -901,7 +897,7 @@ const styles = StyleSheet.create({
   ctaRegularText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
   },
   cancelBtn: {
     alignItems: 'center',
@@ -909,7 +905,7 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: Typography.fontFamily.medium,
     color: COLORS.ink3,
     textDecorationLine: 'underline',
   },
@@ -924,20 +920,19 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(200,154,46,0.12)',
+    backgroundColor: 'rgba(124,92,219,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
   successTitle: {
     fontSize: 24,
-    fontWeight: '800',
     color: COLORS.ink,
     marginBottom: 10,
-    fontFamily: Typography.fontFamily.serif || Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
   },
   successSubtitle: {
-    fontSize: 14,
+    fontFamily: Typography.fontFamily.regular, fontSize: 14,
     lineHeight: 21,
     color: COLORS.ink2,
     textAlign: 'center',
@@ -948,7 +943,7 @@ const styles = StyleSheet.create({
   balanceText: {
     marginTop: 10,
     fontSize: 12.5,
-    fontWeight: '600',
+    fontFamily: Typography.fontFamily.semiBold,
     color: COLORS.ink3,
   },
   stateBox: {
@@ -961,51 +956,59 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   stateText: {
-    fontSize: 13.5,
+    fontFamily: Typography.fontFamily.regular, fontSize: 13.5,
     color: COLORS.ink2,
     textAlign: 'center',
   },
   packHighlightCard: {
-    borderColor: COLORS.gold,
-    backgroundColor: 'rgba(200,154,46,0.03)',
+    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(124,92,219,0.03)',
+  },
+  guaranteeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 14,
   },
   guaranteeText: {
-    fontSize: 12,
+    fontFamily: Typography.fontFamily.regular, fontSize: 12,
     color: COLORS.ink2,
-    marginBottom: 14,
     lineHeight: 17,
+    flex: 1,
   },
   promoBox: {
     borderWidth: 1.5,
-    borderColor: 'rgba(200,154,46,0.35)',
-    backgroundColor: 'rgba(200,154,46,0.04)',
+    borderColor: 'rgba(124,92,219,0.35)',
+    backgroundColor: 'rgba(124,92,219,0.04)',
     borderRadius: 14,
     padding: 14,
     marginBottom: 20,
   },
   promoHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  promoTitle: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
+  promoTitle: { fontSize: 13, fontFamily: Typography.fontFamily.bold, color: COLORS.ink },
   promoRow: { flexDirection: 'row', gap: 10 },
   promoInput: {
     flex: 1,
+    minWidth: 0,
     borderWidth: 1.5,
     borderColor: COLORS.line,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: Typography.fontFamily.bold,
     letterSpacing: 1.5,
     color: COLORS.ink,
     backgroundColor: '#FFFFFF',
   },
   promoBtn: {
-    backgroundColor: COLORS.goldDark,
+    flexShrink: 0,
+    backgroundColor: COLORS.accent,
     borderRadius: 12,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  promoBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
-  promoOk: { marginTop: 10, fontSize: 12.5, fontWeight: '600', color: COLORS.greenDark },
+  promoBtnText: { color: '#FFF', fontSize: 13, fontFamily: Typography.fontFamily.bold },
+  promoOk: { marginTop: 10, fontSize: 12.5, fontFamily: Typography.fontFamily.semiBold, color: COLORS.nuit },
 });

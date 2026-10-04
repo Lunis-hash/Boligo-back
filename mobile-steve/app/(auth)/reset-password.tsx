@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Brand } from '@/constants/brand';
 import { AuthService } from '@/services/auth';
 import { getReadableError } from '@/services/api';
 
@@ -196,7 +197,7 @@ export default function ResetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF9F8' },
+  container: { flex: 1, backgroundColor: Brand.fond },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   title: {
-    fontFamily: Typography.fontFamily.bold,
+    fontFamily: Typography.fontFamily.serif,
     fontSize: 24,
     color: Colors.text.primary100,
     textAlign: 'center',
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   input: {
-    borderWidth: 1,
+    fontFamily: Typography.fontFamily.regular, borderWidth: 1,
     borderColor: Colors.neutral.border,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,

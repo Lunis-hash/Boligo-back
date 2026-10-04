@@ -22,6 +22,9 @@ export const Brand = {
   bordRose: '#F3E4EC',
   bordLilas: '#ECE6FA',
   bordCiel: '#E3E9F7',
+  /** États (en ligne, action irréversible), accordés à la palette. */
+  succes: '#1F8A65',
+  danger: '#B3263E',
 } as const;
 
 /** Familles de polices chargées par useBrandFonts() (repli système sinon). */

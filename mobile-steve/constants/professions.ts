@@ -1,13 +1,11 @@
 export interface ProfessionCategory {
   category: string;
-  icon: string;
   items: string[];
 }
 
 export const PROFESSIONS_DATA: ProfessionCategory[] = [
   {
     category: 'Technologies, IT & Digital',
-    icon: '💻',
     items: [
       'Développeur / Ingénieur Logiciel',
       'Designer UI / UX',
@@ -22,7 +20,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Santé, Médical & Bien-être',
-    icon: '🩺',
     items: [
       'Médecin Généraliste',
       'Médecin Spécialiste',
@@ -39,7 +36,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Droit, Finance & Gestion',
-    icon: '⚖️',
     items: [
       'Avocat / Avocate',
       'Juriste d’Entreprise',
@@ -56,7 +52,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Business, Management & Commerce',
-    icon: '💼',
     items: [
       'Chef d’Entreprise / Entrepreneur',
       'Directeur / Cadre Dirigeant',
@@ -70,7 +65,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Ingénierie, Architecture & BTP',
-    icon: '🏗️',
     items: [
       'Architecte',
       'Ingénieur BTP / Génie Civil',
@@ -84,7 +78,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Enseignement, Recherche & Éducation',
-    icon: '🎓',
     items: [
       'Professeur des Écoles',
       'Professeur Collège / Lycée',
@@ -96,7 +89,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Art, Culture, Médias & Création',
-    icon: '🎨',
     items: [
       'Journaliste / Rédacteur',
       'Directeur Artistique / Graphiste',
@@ -109,7 +101,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Fonction Publique, Sécurité & Diplomatie',
-    icon: '🏛️',
     items: [
       'Haut Fonctionnaire / Diplomate',
       'Fonctionnaire Territorial / État',
@@ -121,7 +112,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Artisanat, Restauration & Hôtellerie',
-    icon: '🍽️',
     items: [
       'Chef Cuisinier / Pâtissier',
       'Restaurateur / Hôtelier',
@@ -132,7 +122,6 @@ export const PROFESSIONS_DATA: ProfessionCategory[] = [
   },
   {
     category: 'Études, Reconversion & Autre',
-    icon: '✨',
     items: [
       'Étudiant(e)',
       'En Reconversion Professionnelle',
