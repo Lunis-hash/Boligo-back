@@ -1,4 +1,4 @@
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTIONS, V6_ADDED } from '../interview/questions.data';
 import {
   buildDivergenceReport,
   RawAnswers,
@@ -17,10 +17,12 @@ import { agree, cleanText, truncateAtWord } from './portrait.text';
 /** Réponses déterministes couvrant toutes les questions (option n° `shift`). */
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  // Questions d'origine (avant « fumez-vous ? ») : réponses inchangées ; non-fumeur.
-  QUESTIONS.filter((q) => q.id !== 'M0_Q09').forEach((q, i) => {
-    out[q.id] = q.options[(i + shift) % q.options.length].key;
-  });
+  // Questions d'origine (avant « fumez-vous ? » et la V6) : réponses inchangées ; non-fumeur.
+  QUESTIONS.filter((q) => q.id !== 'M0_Q09' && !V6_ADDED.has(q.id)).forEach(
+    (q, i) => {
+      out[q.id] = q.options[(i + shift) % q.options.length].key;
+    },
+  );
   out.M0_Q09 = 'A';
   return out;
 }
@@ -167,8 +169,17 @@ describe('Moteur de rédaction des fiches', () => {
 
 describe('Affinités par module et score global', () => {
   it('donne 100 % sur tous les modules à deux réponses identiques', () => {
-    // Ce que chacun recherche correspond à ce que l'autre apporte.
-    const a = { ...answersWith(1), M10_Q03: 'C', M10_Q09: 'C' };
+    // Ce que chacun recherche correspond à ce que l'autre apporte. Aucune
+    // réponse identique à risque (V6 : deux refus de s'excuser, deux fuites en
+    // dispute, deux comptabilités affectives sont des risques partagés).
+    const a = {
+      ...answersWith(1),
+      M10_Q03: 'C',
+      M10_Q09: 'C',
+      M2_Q08: 'A',
+      M6_Q01: 'B',
+      M9_Q03: 'A',
+    };
     const res = computeAnswerCompatibility(a, a, buildDivergenceReport(a, a));
     expect(res.score).toBe(0.98);
     for (const m of res.modules) {

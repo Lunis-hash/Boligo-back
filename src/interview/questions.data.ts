@@ -3,15 +3,25 @@ export interface QuestionOption {
   text: string;
 }
 
+export interface QuestionDependency {
+  questionId: string;
+  values: string[];
+}
+
 export interface QuestionRules {
   maxAge?: number;
   minAge?: number;
   gender?: 'H' | 'F';
-  dependsOn?: {
-    questionId: string;
-    values: string[];
-  };
+  /** Une dépendance, ou une liste dont l'une au moins doit être remplie. */
+  dependsOn?: QuestionDependency | QuestionDependency[];
 }
+
+/**
+ * Échelle de réponse : 'accord' (5 points, de « pas du tout d'accord » à
+ * « tout à fait d'accord ») ou 'frequence' (de « jamais » à « très souvent »).
+ * Les questions sans échelle proposent des scénarios.
+ */
+export type QuestionScale = 'accord' | 'frequence';
 
 export interface Question {
   id: string;
@@ -19,9 +29,89 @@ export interface Question {
   text: string;
   options: QuestionOption[];
   rules?: QuestionRules;
+  /** Plusieurs réponses possibles, enregistrées « A,B,… » (ordre des options). */
+  multiple?: boolean;
+  scale?: QuestionScale;
 }
 
-export function decodeUserResponses(responses: Array<{ moduleName?: string; rawResponses: Record<string, string> }>): Array<{ moduleName: string; qna: Array<{ question: string; answer: string }> }> {
+/** Échelle d'accord en 5 points (A = 1 … E = 5). */
+export const AGREEMENT_OPTIONS: QuestionOption[] = [
+  { key: 'A', text: "Pas du tout d'accord" },
+  { key: 'B', text: "Plutôt pas d'accord" },
+  { key: 'C', text: "Ni d'accord ni pas d'accord" },
+  { key: 'D', text: "Plutôt d'accord" },
+  { key: 'E', text: "Tout à fait d'accord" },
+];
+
+/** Échelle de fréquence en 5 points (A = 1 … E = 5). */
+export const FREQUENCY_OPTIONS: QuestionOption[] = [
+  { key: 'A', text: 'Jamais' },
+  { key: 'B', text: 'Rarement' },
+  { key: 'C', text: 'Parfois' },
+  { key: 'D', text: 'Souvent' },
+  { key: 'E', text: 'Très souvent' },
+];
+
+/** Clés d'une réponse : « A » ou, pour une question à choix multiple, « A,B ». */
+export function answerKeys(value: string | undefined | null): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean);
+}
+
+/** La réponse est-elle valide pour cette question (une option, ou plusieurs si `multiple`) ? */
+export function isValidAnswer(q: Question, value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  const keys = answerKeys(value);
+  if (keys.length === 0) return false;
+  if (!q.multiple && keys.length !== 1) return false;
+  if (new Set(keys).size !== keys.length) return false;
+  return keys.every((k) => q.options.some((o) => o.key === k));
+}
+
+/** Réponse rangée dans l'ordre des options (« B,A » → « A,B ») ; à appeler sur une réponse valide. */
+export function normalizeAnswer(q: Question, value: string): string {
+  if (!q.multiple) return value.trim();
+  const keys = new Set(answerKeys(value));
+  return q.options
+    .filter((o) => keys.has(o.key))
+    .map((o) => o.key)
+    .join(',');
+}
+
+/** Les dépendances de la question sont-elles remplies par ces réponses ? */
+export function dependencyMet(
+  rules: QuestionRules | undefined,
+  answers: Record<string, string>,
+): boolean {
+  if (!rules?.dependsOn) return true;
+  const deps = Array.isArray(rules.dependsOn)
+    ? rules.dependsOn
+    : [rules.dependsOn];
+  return deps.some((d) => {
+    const v = answers[d.questionId];
+    return !!v && d.values.includes(v);
+  });
+}
+
+/** Texte d'une réponse, y compris à choix multiple (« Français, English »). */
+export function answerText(q: Question | undefined, value: string): string {
+  if (!q) return String(value);
+  const keys = answerKeys(value);
+  const texts = keys.map((k) => q.options.find((o) => o.key === k)?.text ?? k);
+  return texts.length ? texts.join(', ') : String(value);
+}
+
+export function decodeUserResponses(
+  responses: Array<{
+    moduleName?: string;
+    rawResponses: Record<string, string>;
+  }>,
+): Array<{
+  moduleName: string;
+  qna: Array<{ question: string; answer: string }>;
+}> {
   const questionMap = new Map<string, Question>();
   QUESTIONS.forEach((q) => questionMap.set(q.id, q));
 
@@ -32,11 +122,9 @@ export function decodeUserResponses(responses: Array<{ moduleName?: string; rawR
     for (const [qId, optionKey] of Object.entries(raw)) {
       const qObj = questionMap.get(qId);
       if (qObj) {
-        const optObj = qObj.options.find((o) => o.key === optionKey);
-        const answerText = optObj ? optObj.text : String(optionKey);
         qna.push({
           question: qObj.text,
-          answer: answerText,
+          answer: answerText(qObj, String(optionKey)),
         });
       } else {
         qna.push({
@@ -113,7 +201,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M0_Q06',
     moduleNumber: 0,
-    text: 'Souhaitez-vous des enfants à l\'avenir ?',
+    text: "Souhaitez-vous des enfants à l'avenir ?",
     options: [
       { key: 'A', text: 'Oui, absolument' },
       { key: 'B', text: 'Oui si les conditions sont réunies' },
@@ -125,7 +213,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M0_Q07',
     moduleNumber: 0,
-    text: 'Votre niveau d\'études :',
+    text: "Votre niveau d'études :",
     options: [
       { key: 'A', text: 'Sans diplôme / CAP-BEP' },
       { key: 'B', text: 'Baccalauréat' },
@@ -147,7 +235,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M0_Q08',
     moduleNumber: 0,
-    text: 'Le tabac, l\'alcool ou d\'autres substances chez votre partenaire :',
+    text: "Le tabac, l'alcool ou d'autres substances chez votre partenaire :",
     options: [
       { key: 'A', text: 'Rédhibitoire — je ne pourrais pas vivre avec' },
       { key: 'B', text: 'Acceptable avec modération et sans excès' },
@@ -155,12 +243,31 @@ export const QUESTIONS: Question[] = [
       { key: 'D', text: 'Sans importance pour moi' },
     ],
   },
+  {
+    // V6 — croisement par langue : deux membres ne sont présentés l'un à
+    // l'autre que s'ils partagent au moins une langue (« Autre » exceptée).
+    id: 'M0_Q10',
+    moduleNumber: 0,
+    text: "Dans quelles langues êtes-vous à l'aise pour vivre une relation au quotidien ? (plusieurs réponses possibles)",
+    multiple: true,
+    options: [
+      { key: 'A', text: 'Français' },
+      { key: 'B', text: 'English' },
+      { key: 'C', text: 'Arabe — العربية' },
+      { key: 'D', text: 'Lingala' },
+      { key: 'E', text: 'Kiswahili' },
+      { key: 'F', text: 'Wolof' },
+      { key: 'G', text: 'Português' },
+      { key: 'H', text: 'Español' },
+      { key: 'I', text: 'Une autre langue' },
+    ],
+  },
 
   // --- MODULE 1 : IDENTITÉ & CULTURE ---
   {
     id: 'M1_Q01',
     moduleNumber: 1,
-    text: 'Votre continent d\'origine ou de référence culturelle :',
+    text: "Votre continent d'origine ou de référence culturelle :",
     options: [
       { key: 'A', text: 'Afrique subsaharienne' },
       { key: 'B', text: 'Maghreb / Moyen-Orient' },
@@ -178,7 +285,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'La même que la mienne' },
       { key: 'B', text: 'Une culture proche ou compatible' },
       { key: 'C', text: 'Une culture différente mais ouverte' },
-      { key: 'D', text: 'Je n\'ai pas de préférence' },
+      { key: 'D', text: "Je n'ai pas de préférence" },
     ],
   },
   {
@@ -186,10 +293,16 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 1,
     text: 'Quelle place accordez-vous aux traditions de mariage dans votre culture ?',
     options: [
-      { key: 'A', text: 'Centrale — je les respecterai toutes (dot, zaffa, feu sacré, lazo…)' },
-      { key: 'B', text: 'Importante — j\'en garderai les principales' },
-      { key: 'C', text: 'Modérée — j\'en choisirai quelques-unes' },
-      { key: 'D', text: 'Peu importante — je privilégie le symbolisme personnel' },
+      {
+        key: 'A',
+        text: 'Centrale — je les respecterai toutes (dot, zaffa, feu sacré, lazo…)',
+      },
+      { key: 'B', text: "Importante — j'en garderai les principales" },
+      { key: 'C', text: "Modérée — j'en choisirai quelques-unes" },
+      {
+        key: 'D',
+        text: 'Peu importante — je privilégie le symbolisme personnel',
+      },
     ],
   },
   {
@@ -225,7 +338,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: 'Oui — même foi obligatoire' },
       { key: 'B', text: 'Oui — mon partenaire devra respecter mes pratiques' },
-      { key: 'C', text: 'Oui — mais je suis ouvert(e) à d\'autres croyances' },
+      { key: 'C', text: "Oui — mais je suis ouvert(e) à d'autres croyances" },
       { key: 'D', text: 'Non — la religion est une affaire personnelle' },
     ],
   },
@@ -237,7 +350,22 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Ma langue maternelle uniquement' },
       { key: 'B', text: 'Français ou langue du pays de résidence' },
       { key: 'C', text: 'Bilingue — deux langues' },
-      { key: 'D', text: 'Peu importe du moment qu\'on se comprend' },
+      { key: 'D', text: "Peu importe du moment qu'on se comprend" },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q09).
+    id: 'M1_Q09',
+    moduleNumber: 1,
+    text: 'Votre rapport aux interdits alimentaires :',
+    options: [
+      {
+        key: 'A',
+        text: 'Stricts — halal, casher, végétarien ou autre conviction',
+      },
+      { key: 'B', text: 'Présents mais flexibles selon le contexte' },
+      { key: 'C', text: 'Aucun — je mange de tout' },
+      { key: 'D', text: "Sujet que je n'ai jamais vraiment posé" },
     ],
   },
   {
@@ -257,9 +385,48 @@ export const QUESTIONS: Question[] = [
     text: 'Votre position sur la polygamie :',
     options: [
       { key: 'A', text: 'Inacceptable — monogamie exclusive, sans discussion' },
-      { key: 'B', text: 'Je la respecte chez les autres, mais pas pour mon couple' },
-      { key: 'C', text: 'Envisageable dans un cadre religieux, consenti et transparent' },
+      {
+        key: 'B',
+        text: 'Je la respecte chez les autres, mais pas pour mon couple',
+      },
+      {
+        key: 'C',
+        text: 'Envisageable dans un cadre religieux, consenti et transparent',
+      },
       { key: 'D', text: 'Je préfère en parler en personne' },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q13) : posée si des enfants sont là ou souhaités.
+    id: 'M1_Q13',
+    moduleNumber: 1,
+    text: 'Votre rapport à la transmission culturelle à vos enfants :',
+    rules: {
+      dependsOn: [
+        { questionId: 'M0_Q05', values: ['B', 'C', 'D'] },
+        { questionId: 'M0_Q06', values: ['A', 'B', 'C'] },
+      ],
+    },
+    options: [
+      {
+        key: 'A',
+        text: 'Langue maternelle, traditions et religion — tout se transmet',
+      },
+      { key: 'B', text: 'Ils seront exposés aux deux cultures' },
+      { key: 'C', text: 'Ils choisiront eux-mêmes en grandissant' },
+      { key: 'D', text: 'La culture ne sera pas centrale dans leur éducation' },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q15).
+    id: 'M1_Q15',
+    moduleNumber: 1,
+    text: "Si votre famille n'approuve pas votre partenaire pour des raisons culturelles :",
+    options: [
+      { key: 'A', text: 'Je respecte leur avis et je revois ma décision' },
+      { key: 'B', text: "J'en tiens compte mais je suis mon cœur" },
+      { key: 'C', text: "J'explique ma position et je maintiens mon choix" },
+      { key: 'D', text: "Leur approbation n'est pas nécessaire pour moi" },
     ],
   },
 
@@ -269,21 +436,24 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 2,
     text: 'Quand votre partenaire ne répond pas à vos messages pendant plusieurs heures :',
     options: [
-      { key: 'A', text: 'Je suppose qu\'il/elle est occupé(e) et je patiente sereinement' },
-      { key: 'B', text: 'Je commence à m\'inquiéter légèrement' },
+      {
+        key: 'A',
+        text: "Je suppose qu'il/elle est occupé(e) et je patiente sereinement",
+      },
+      { key: 'B', text: "Je commence à m'inquiéter légèrement" },
       { key: 'C', text: 'Je lui renvoie un message pour vérifier' },
-      { key: 'D', text: 'Je ressens de l\'angoisse ou de la colère intérieure' },
+      { key: 'D', text: "Je ressens de l'angoisse ou de la colère intérieure" },
     ],
   },
   {
     id: 'M2_Q02',
     moduleNumber: 2,
-    text: 'Quand votre partenaire demande plus de proximité que vous n\'en souhaitez :',
+    text: "Quand votre partenaire demande plus de proximité que vous n'en souhaitez :",
     options: [
-      { key: 'A', text: 'J\'essaie de m\'adapter même si ça me coûte' },
-      { key: 'B', text: 'J\'explique calmement mon besoin d\'espace' },
+      { key: 'A', text: "J'essaie de m'adapter même si ça me coûte" },
+      { key: 'B', text: "J'explique calmement mon besoin d'espace" },
       { key: 'C', text: 'Je me sens envahi(e) et prends mes distances' },
-      { key: 'D', text: 'J\'ignore la demande et change de sujet' },
+      { key: 'D', text: "J'ignore la demande et change de sujet" },
     ],
   },
   {
@@ -291,10 +461,13 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 2,
     text: 'Dans une relation, ce dont vous avez le plus besoin :',
     options: [
-      { key: 'A', text: 'Me sentir en sécurité et aimé(e) inconditionnellement' },
+      {
+        key: 'A',
+        text: 'Me sentir en sécurité et aimé(e) inconditionnellement',
+      },
       { key: 'B', text: 'Conserver mon autonomie et mon espace personnel' },
       { key: 'C', text: 'Un équilibre entre intimité et liberté' },
-      { key: 'D', text: 'Je n\'ai pas encore identifié clairement mon besoin' },
+      { key: 'D', text: "Je n'ai pas encore identifié clairement mon besoin" },
     ],
   },
   {
@@ -309,14 +482,42 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V6 — question miroir rétablie depuis la V5 (Q05) : ce que les autres ont
+    // observé, confronté à l'anxiété et à l'évitement déclarés.
+    id: 'M2_Q05',
+    moduleNumber: 2,
+    text: "On m'a déjà reproché dans une relation de :",
+    options: [
+      { key: 'A', text: "Trop m'inquiéter ou manquer de confiance" },
+      {
+        key: 'B',
+        text: 'Fuir ou mettre de la distance quand ça devient intense',
+      },
+      { key: 'C', text: 'Avoir du mal à exprimer ce que je ressentais' },
+      { key: 'D', text: "On ne m'a jamais fait ce type de reproche" },
+    ],
+  },
+  {
     id: 'M2_Q06',
     moduleNumber: 2,
-    text: 'Quand je suis en colère dans une relation, j\'ai tendance à :',
+    text: "Quand je suis en colère dans une relation, j'ai tendance à :",
     options: [
       { key: 'A', text: 'Exprimer ma colère clairement et directement' },
-      { key: 'B', text: 'Prendre du recul avant d\'en parler' },
-      { key: 'C', text: 'Garder ça pour moi jusqu\'à ce que ça explose' },
+      { key: 'B', text: "Prendre du recul avant d'en parler" },
+      { key: 'C', text: "Garder ça pour moi jusqu'à ce que ça explose" },
       { key: 'D', text: 'Couper le contact temporairement (silence punitif)' },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q07) : vitesse de réparation après un conflit.
+    id: 'M2_Q07',
+    moduleNumber: 2,
+    text: 'Après une dispute sérieuse, vous revenez à la douceur en :',
+    options: [
+      { key: 'A', text: 'Quelques heures — je ne laisse pas traîner' },
+      { key: 'B', text: "Une journée — j'ai besoin de digérer" },
+      { key: 'C', text: 'Plusieurs jours — les blessures durent' },
+      { key: 'D', text: 'Très longtemps — je peux tenir des semaines' },
     ],
   },
   {
@@ -324,22 +525,98 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 2,
     text: 'Êtes-vous capable de vous excuser en premier, même si vous pensez avoir raison ?',
     options: [
-      { key: 'A', text: 'Oui — l\'harmonie passe avant mon ego' },
+      { key: 'A', text: "Oui — l'harmonie passe avant mon ego" },
       { key: 'B', text: 'Oui si je réalise avoir commis une erreur' },
       { key: 'C', text: 'Difficilement — mon ego résiste' },
-      { key: 'D', text: 'Non — je n\'ai pas à m\'excuser si j\'avais raison' },
+      { key: 'D', text: "Non — je n'ai pas à m'excuser si j'avais raison" },
     ],
   },
   {
+    // V6 — reformulée : on mesure l'ouverture à l'aide (une attitude), plus un
+    // antécédent de suivi psychologique (donnée de santé, RGPD article 9).
+    // Les clés gardent leur sens : A = suivi régulier, D = préfère gérer seul(e).
     id: 'M2_Q10',
     moduleNumber: 2,
-    text: 'Avez-vous suivi un accompagnement psychologique ?',
+    text: "Si vous traversiez une période difficile, demander l'aide d'un professionnel (psychologue, conseiller conjugal) serait pour vous :",
     options: [
-      { key: 'A', text: 'Oui, régulièrement — c\'est un pilier de ma vie' },
-      { key: 'B', text: 'Oui, ponctuellement après une crise' },
-      { key: 'C', text: 'Non mais je suis ouvert(e)' },
-      { key: 'D', text: 'Non — je préfère gérer seul(e)' },
+      {
+        key: 'A',
+        text: "Naturel — je l'ai déjà fait ou je le ferais sans hésiter",
+      },
+      { key: 'B', text: "Possible, après avoir d'abord essayé seul(e)" },
+      {
+        key: 'C',
+        text: "Je n'en ai jamais eu besoin, mais j'y suis ouvert(e)",
+      },
+      { key: 'D', text: "Difficile — je préfère m'en sortir seul(e)" },
     ],
+  },
+  // V6 — échelles validées (formulations originales BOLIGO, sur le modèle des
+  // questionnaires de recherche) : anxiété et évitement d'attachement (ECR-R),
+  // régulation émotionnelle (ERQ). Items marqués « inversé » : 6 − note.
+  {
+    // Anxiété d'attachement.
+    id: 'M2_Q11',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "J'ai souvent peur de tenir davantage à l'autre que l'autre ne tient à moi.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Anxiété d'attachement.
+    id: 'M2_Q12',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "Quand l'autre prend un peu de distance, j'ai besoin d'être rassuré(e) très vite.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Anxiété d'attachement (inversé).
+    id: 'M2_Q13',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "L'idée d'être quitté(e) m'inquiète rarement.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Évitement d'attachement.
+    id: 'M2_Q14',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "Je suis mal à l'aise quand l'autre veut être très proche de moi.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Évitement d'attachement.
+    id: 'M2_Q15',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "Je préfère ne pas montrer à l'autre ce que je ressens au fond de moi.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Évitement d'attachement (inversé).
+    id: 'M2_Q16',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "Il m'est facile de compter sur l'autre quand j'en ai besoin.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Régulation émotionnelle : réévaluation.
+    id: 'M2_Q17',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "Quand je suis contrarié(e), j'arrive à regarder la situation sous un autre angle pour me calmer.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Régulation émotionnelle : suppression.
+    id: 'M2_Q18',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: 'Je garde mes émotions pour moi, même quand elles sont fortes.',
+    options: AGREEMENT_OPTIONS,
   },
 
   // --- MODULE 3 : VÉCU & CONTEXTE ---
@@ -349,9 +626,9 @@ export const QUESTIONS: Question[] = [
     text: 'La leçon principale de vos relations passées :',
     options: [
       { key: 'A', text: 'Mieux communiquer mes besoins dès le départ' },
-      { key: 'B', text: 'L\'importance de la compatibilité des valeurs' },
+      { key: 'B', text: "L'importance de la compatibilité des valeurs" },
       { key: 'C', text: 'Poser mes limites sans culpabilité' },
-      { key: 'D', text: 'Choisir avec la tête autant qu\'avec le cœur' },
+      { key: 'D', text: "Choisir avec la tête autant qu'avec le cœur" },
     ],
   },
   {
@@ -371,10 +648,10 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 3,
     text: 'Comment avez-vous vécu votre dernière rupture ?',
     options: [
-      { key: 'A', text: 'Très difficilement — je m\'en remets encore' },
+      { key: 'A', text: "Très difficilement — je m'en remets encore" },
       { key: 'B', text: 'Douloureusement mais je me suis reconstruit(e)' },
       { key: 'C', text: 'Relativement bien — décision mutuelle' },
-      { key: 'D', text: 'C\'est moi qui ai décidé — je me sens libéré(e)' },
+      { key: 'D', text: "C'est moi qui ai décidé — je me sens libéré(e)" },
     ],
   },
   {
@@ -382,9 +659,12 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 3,
     text: 'Votre vision de la famille recomposée :',
     options: [
-      { key: 'A', text: 'Mon enfant c\'est ton enfant — intégration totale' },
-      { key: 'B', text: 'On s\'aime mais les rôles parentaux restent définis' },
-      { key: 'C', text: 'Mon partenaire est présent sans autorité parentale directe' },
+      { key: 'A', text: "Mon enfant c'est ton enfant — intégration totale" },
+      { key: 'B', text: "On s'aime mais les rôles parentaux restent définis" },
+      {
+        key: 'C',
+        text: 'Mon partenaire est présent sans autorité parentale directe',
+      },
       { key: 'D', text: 'Ça se construira avec le temps et la confiance' },
     ],
     rules: { minAge: 35 },
@@ -401,12 +681,27 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V6 — rétablie depuis la V5 (Q07).
+    id: 'M3_Q07',
+    moduleNumber: 3,
+    text: 'Avez-vous des conflits non résolus avec votre ex-partenaire ?',
+    options: [
+      { key: 'A', text: 'Non — tout est clarifié' },
+      { key: 'B', text: 'Des tensions sur la garde des enfants' },
+      { key: 'C', text: 'Des tensions financières encore actives' },
+      { key: 'D', text: "Nous n'avons jamais eu de vraie clôture" },
+    ],
+  },
+  {
     id: 'M3_Q08',
     moduleNumber: 3,
     text: 'Avez-vous vécu une situation de violence dans une relation passée ?',
     options: [
-      { key: 'A', text: 'Oui — j\'en ai été victime et j\'ai travaillé là-dessus' },
-      { key: 'B', text: 'Oui — j\'en ai été témoin dans ma famille' },
+      {
+        key: 'A',
+        text: "Oui — j'en ai été victime et j'ai travaillé là-dessus",
+      },
+      { key: 'B', text: "Oui — j'en ai été témoin dans ma famille" },
       { key: 'C', text: 'Non, jamais' },
       { key: 'D', text: 'Je préfère ne pas répondre' },
     ],
@@ -416,8 +711,11 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 3,
     text: 'Avez-vous déjà reproduit les mêmes schémas dans plusieurs relations ?',
     options: [
-      { key: 'A', text: 'Oui et j\'ai travaillé là-dessus en thérapie' },
-      { key: 'B', text: 'Oui, je le vois mais j\'ai du mal à changer' },
+      {
+        key: 'A',
+        text: "Oui, et j'ai travaillé là-dessus (seul(e) ou accompagné(e))",
+      },
+      { key: 'B', text: "Oui, je le vois mais j'ai du mal à changer" },
       { key: 'C', text: 'Je ne sais pas vraiment' },
       { key: 'D', text: 'Non — chaque relation est différente pour moi' },
     ],
@@ -427,22 +725,28 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M4_Q01',
     moduleNumber: 4,
-    text: 'Votre rapport à l\'argent dans un couple :',
+    text: "Votre rapport à l'argent dans un couple :",
     options: [
       { key: 'A', text: 'Tout en commun — un seul pot partagé' },
       { key: 'B', text: 'Contribution proportionnelle aux revenus' },
       { key: 'C', text: 'Chacun ses dépenses + charges communes partagées' },
-      { key: 'D', text: 'L\'argent reste une affaire individuelle' },
+      { key: 'D', text: "L'argent reste une affaire individuelle" },
     ],
   },
   {
     id: 'M4_Q03',
     moduleNumber: 4,
-    text: 'Votre vision du rôle économique de l\'homme :',
+    text: "Votre vision du rôle économique de l'homme :",
     options: [
-      { key: 'A', text: 'Il est le pourvoyeur principal — c\'est sa responsabilité' },
-      { key: 'B', text: 'Il contribue sans que ce soit une obligation absolue' },
-      { key: 'C', text: 'L\'égalité est la norme — on partage tout' },
+      {
+        key: 'A',
+        text: "Il est le pourvoyeur principal — c'est sa responsabilité",
+      },
+      {
+        key: 'B',
+        text: 'Il contribue sans que ce soit une obligation absolue',
+      },
+      { key: 'C', text: "L'égalité est la norme — on partage tout" },
       { key: 'D', text: 'Son rôle dépend de la situation de chacun' },
     ],
   },
@@ -451,20 +755,32 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 4,
     text: 'Votre vision du rôle économique de la femme :',
     options: [
-      { key: 'A', text: 'Elle gère le foyer et l\'éducation — c\'est sa priorité' },
-      { key: 'B', text: 'Elle travaille mais la maison reste sa responsabilité principale' },
-      { key: 'C', text: 'Elle est autonome financièrement et contribue au foyer' },
-      { key: 'D', text: 'Elle fait ce qu\'elle souhaite — aucun rôle imposé' },
+      {
+        key: 'A',
+        text: "Elle gère le foyer et l'éducation — c'est sa priorité",
+      },
+      {
+        key: 'B',
+        text: 'Elle travaille mais la maison reste sa responsabilité principale',
+      },
+      {
+        key: 'C',
+        text: 'Elle est autonome financièrement et contribue au foyer',
+      },
+      { key: 'D', text: "Elle fait ce qu'elle souhaite — aucun rôle imposé" },
     ],
   },
   {
     id: 'M4_Q05',
     moduleNumber: 4,
-    text: 'Votre rapport aux envois d\'argent à la famille élargie :',
+    text: "Votre rapport aux envois d'argent à la famille élargie :",
     options: [
-      { key: 'A', text: 'C\'est normal et régulier — ma famille compte sur moi' },
+      {
+        key: 'A',
+        text: "C'est normal et régulier — ma famille compte sur moi",
+      },
       { key: 'B', text: 'Ça se discute en couple avant toute décision' },
-      { key: 'C', text: 'C\'est mon argent — c\'est mon affaire' },
+      { key: 'C', text: "C'est mon argent — c'est mon affaire" },
       { key: 'D', text: 'Ça doit être limité pour préserver notre foyer' },
     ],
     rules: {
@@ -474,23 +790,36 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M4_Q06',
     moduleNumber: 4,
-    text: 'L\'achat immobilier dans votre projet de vie :',
+    text: "L'achat immobilier dans votre projet de vie :",
     options: [
-      { key: 'A', text: 'Seul(e) — c\'est mon indépendance' },
-      { key: 'B', text: 'À deux — c\'est un projet commun' },
-      { key: 'C', text: 'Location flexible pour l\'instant' },
+      { key: 'A', text: "Seul(e) — c'est mon indépendance" },
+      { key: 'B', text: "À deux — c'est un projet commun" },
+      { key: 'C', text: "Location flexible pour l'instant" },
       { key: 'D', text: 'Pas une priorité' },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q07) : posée si l'origine est l'Afrique subsaharienne ou le Maghreb / Moyen-Orient.
+    id: 'M4_Q07',
+    moduleNumber: 4,
+    rules: { dependsOn: { questionId: 'M1_Q01', values: ['A', 'B'] } },
+    text: 'La dot ou le Mahr dans votre culture :',
+    options: [
+      { key: 'A', text: 'Une obligation que je respecte pleinement' },
+      { key: 'B', text: 'Une tradition symbolique importante' },
+      { key: 'C', text: 'Je la pratique de façon modernisée' },
+      { key: 'D', text: "Pas dans ma culture, ou je n'y adhère pas" },
     ],
   },
   {
     id: 'M4_Q08',
     moduleNumber: 4,
-    text: 'Votre rapport à l\'épargne dans le couple :',
+    text: "Votre rapport à l'épargne dans le couple :",
     options: [
       { key: 'A', text: 'On épargne ensemble pour des projets communs' },
       { key: 'B', text: 'Chacun épargne de son côté' },
       { key: 'C', text: 'Épargne commune + épargne personnelle' },
-      { key: 'D', text: 'Je ne suis pas à l\'aise pour épargner ensemble' },
+      { key: 'D', text: "Je ne suis pas à l'aise pour épargner ensemble" },
     ],
   },
   {
@@ -498,9 +827,12 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 4,
     text: 'Les dettes ou crédits en cours de votre partenaire :',
     options: [
-      { key: 'A', text: 'Tout doit être dit avant de s\'engager' },
+      { key: 'A', text: "Tout doit être dit avant de s'engager" },
       { key: 'B', text: 'On en parle au moment de vivre ensemble' },
-      { key: 'C', text: 'Ça reste personnel tant que ça n\'impacte pas le couple' },
+      {
+        key: 'C',
+        text: "Ça reste personnel tant que ça n'impacte pas le couple",
+      },
       { key: 'D', text: 'Je ne me suis jamais posé la question' },
     ],
   },
@@ -522,10 +854,16 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 5,
     text: 'Votre mère (ou père) manque de respect à votre partenaire. Vous :',
     options: [
-      { key: 'A', text: 'Défendez votre partenaire immédiatement et clairement' },
-      { key: 'B', text: 'Cherchez à comprendre avant d\'agir' },
+      {
+        key: 'A',
+        text: 'Défendez votre partenaire immédiatement et clairement',
+      },
+      { key: 'B', text: "Cherchez à comprendre avant d'agir" },
       { key: 'C', text: 'Attendez que ça se règle naturellement' },
-      { key: 'D', text: 'Dites à votre partenaire de ne pas trop prendre à cœur' },
+      {
+        key: 'D',
+        text: 'Dites à votre partenaire de ne pas trop prendre à cœur',
+      },
     ],
   },
   {
@@ -533,10 +871,13 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 5,
     text: 'La cohabitation avec la belle-famille :',
     options: [
-      { key: 'A', text: 'J\'accepte si c\'est temporaire et avec des règles claires' },
-      { key: 'B', text: 'Je n\'accepte pas — notre foyer nous appartient' },
-      { key: 'C', text: 'C\'est normal dans ma culture — c\'est attendu' },
-      { key: 'D', text: 'J\'accepte si mon partenaire est d\'accord' },
+      {
+        key: 'A',
+        text: "J'accepte si c'est temporaire et avec des règles claires",
+      },
+      { key: 'B', text: "Je n'accepte pas — notre foyer nous appartient" },
+      { key: 'C', text: "C'est normal dans ma culture — c'est attendu" },
+      { key: 'D', text: "J'accepte si mon partenaire est d'accord" },
     ],
   },
   {
@@ -544,9 +885,9 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 5,
     text: 'Avez-vous des amis proches du sexe opposé ?',
     options: [
-      { key: 'A', text: 'Oui — c\'est non-négociable pour moi' },
+      { key: 'A', text: "Oui — c'est non-négociable pour moi" },
       { key: 'B', text: 'Oui — mais je suis transparent(e) à ce sujet' },
-      { key: 'C', text: 'J\'évite par respect pour mon partenaire' },
+      { key: 'C', text: "J'évite par respect pour mon partenaire" },
       { key: 'D', text: 'Non, je préfère ne pas en avoir' },
     ],
   },
@@ -555,10 +896,16 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 5,
     text: 'Les réseaux sociaux et votre vie de couple :',
     options: [
-      { key: 'A', text: 'Je publie notre vie — j\'aime partager notre bonheur' },
-      { key: 'B', text: 'Je protège notre intimité — peu ou pas de publications' },
+      { key: 'A', text: "Je publie notre vie — j'aime partager notre bonheur" },
+      {
+        key: 'B',
+        text: 'Je protège notre intimité — peu ou pas de publications',
+      },
       { key: 'C', text: 'Chacun gère son compte librement' },
-      { key: 'D', text: 'Les réseaux n\'ont pas de place dans notre vie de couple' },
+      {
+        key: 'D',
+        text: "Les réseaux n'ont pas de place dans notre vie de couple",
+      },
     ],
   },
   {
@@ -575,7 +922,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M5_Q08',
     moduleNumber: 5,
-    text: 'L\'accès au téléphone et aux messages de votre partenaire :',
+    text: "L'accès au téléphone et aux messages de votre partenaire :",
     options: [
       { key: 'A', text: 'Transparence totale — chacun a accès à tout' },
       { key: 'B', text: 'Confiance sans contrôle — chacun garde son intimité' },
@@ -588,23 +935,65 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M6_Q01',
     moduleNumber: 6,
-    text: 'Lors d\'une dispute, votre comportement concret est plutôt :',
+    text: "Lors d'une dispute, votre comportement concret est plutôt :",
     options: [
-      { key: 'A', text: 'Parler même si c\'est difficile — je confronte directement' },
+      {
+        key: 'A',
+        text: "Parler même si c'est difficile — je confronte directement",
+      },
       { key: 'B', text: 'Prendre du recul et revenir calme' },
       { key: 'C', text: 'Couper la conversation et partir' },
       { key: 'D', text: 'Me murer dans le silence — parfois des jours' },
     ],
   },
   {
+    // V6 — question miroir rétablie depuis la V5 (Q02).
+    id: 'M6_Q02',
+    moduleNumber: 6,
+    text: "On m'a déjà reproché dans une dispute de :",
+    options: [
+      { key: 'A', text: 'Parler trop fort ou trop vite' },
+      { key: 'B', text: 'Fuir ou couper la communication' },
+      { key: 'C', text: 'Être sarcastique ou blessant(e) avec les mots' },
+      { key: 'D', text: "On ne m'a jamais fait ce type de reproche" },
+    ],
+  },
+  {
     id: 'M6_Q03',
     moduleNumber: 6,
-    text: 'Avez-vous besoin de gagner le débat ou d\'avoir le dernier mot ?',
+    text: "Avez-vous besoin de gagner le débat ou d'avoir le dernier mot ?",
     options: [
-      { key: 'A', text: 'Non — résoudre m\'importe plus que gagner' },
-      { key: 'B', text: 'Parfois je m\'emporte mais je m\'en rends compte' },
-      { key: 'C', text: 'Souvent oui — c\'est plus fort que moi' },
-      { key: 'D', text: 'Oui — et j\'assume totalement' },
+      { key: 'A', text: "Non — résoudre m'importe plus que gagner" },
+      { key: 'B', text: "Parfois je m'emporte mais je m'en rends compte" },
+      { key: 'C', text: "Souvent oui — c'est plus fort que moi" },
+      { key: 'D', text: "Oui — et j'assume totalement" },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q04) : limite face à la violence physique.
+    id: 'M6_Q04',
+    moduleNumber: 6,
+    text: 'La violence physique dans une relation :',
+    options: [
+      { key: 'A', text: 'Rupture immédiate — limite absolue, non négociable' },
+      {
+        key: 'B',
+        text: "Inacceptable, mais je tenterais d'abord une discussion",
+      },
+      { key: 'C', text: 'Ça dépend des circonstances' },
+      { key: 'D', text: 'Je ne sais pas comment je réagirais' },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q05) : limite face aux mots blessants.
+    id: 'M6_Q05',
+    moduleNumber: 6,
+    text: "Les insultes ou les mots blessants lors d'une dispute :",
+    options: [
+      { key: 'A', text: 'Limite absolue pour moi — inacceptable' },
+      { key: 'B', text: 'Grave, mais je peux pardonner une première fois' },
+      { key: 'C', text: 'Difficile, mais ça peut arriver dans un couple' },
+      { key: 'D', text: "J'essaie d'ignorer si ce n'est pas récurrent" },
     ],
   },
   {
@@ -612,21 +1001,45 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 6,
     text: 'Votre rapport à la sexualité dans le couple :',
     options: [
-      { key: 'A', text: 'C\'est un pilier fondamental de la relation' },
-      { key: 'B', text: 'C\'est important mais pas déterminant' },
-      { key: 'C', text: 'C\'est un sujet qui se construit avec le temps' },
-      { key: 'D', text: 'C\'est un sujet intime que j\'aborderai en temps voulu' },
+      { key: 'A', text: "C'est un pilier fondamental de la relation" },
+      { key: 'B', text: "C'est important mais pas déterminant" },
+      { key: 'C', text: "C'est un sujet qui se construit avec le temps" },
+      {
+        key: 'D',
+        text: "C'est un sujet intime que j'aborderai en temps voulu",
+      },
     ],
   },
   {
     id: 'M6_Q07',
     moduleNumber: 6,
-    text: 'La fréquence d\'intimité physique que vous souhaitez idéalement dans une relation :',
+    text: "La fréquence d'intimité physique que vous souhaitez idéalement dans une relation :",
     options: [
       { key: 'A', text: 'Très régulièrement — plusieurs fois par semaine' },
       { key: 'B', text: 'Régulièrement — quelques fois par mois' },
-      { key: 'C', text: 'Occasionnellement — selon l\'humeur et la complicité' },
-      { key: 'D', text: 'La fréquence m\'importe peu — c\'est la qualité qui compte' },
+      { key: 'C', text: "Occasionnellement — selon l'humeur et la complicité" },
+      {
+        key: 'D',
+        text: "La fréquence m'importe peu — c'est la qualité qui compte",
+      },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q08) : savoir poser une limite intime.
+    id: 'M6_Q08',
+    moduleNumber: 6,
+    text: "Quand vous n'avez pas envie d'intimité physique et que votre partenaire le propose :",
+    options: [
+      {
+        key: 'A',
+        text: "Je l'exprime doucement et on trouve une alternative tendre",
+      },
+      {
+        key: 'B',
+        text: "J'accepte pour lui faire plaisir — ça m'arrive souvent",
+      },
+      { key: 'C', text: 'Je dis non clairement, sans culpabilité' },
+      { key: 'D', text: "J'ai du mal à refuser — je ne veux pas décevoir" },
     ],
   },
   {
@@ -637,7 +1050,10 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Absolue et non-négociable' },
       { key: 'B', text: 'Importante mais je crois en la réconciliation' },
       { key: 'C', text: 'Je suis humain(e) — les tentations existent' },
-      { key: 'D', text: 'Je définis la fidélité différemment selon le contexte' },
+      {
+        key: 'D',
+        text: 'Je définis la fidélité différemment selon le contexte',
+      },
     ],
   },
   {
@@ -646,10 +1062,45 @@ export const QUESTIONS: Question[] = [
     text: 'Après une dispute, la réconciliation idéale pour vous :',
     options: [
       { key: 'A', text: 'On en reparle calmement et on se demande pardon' },
-      { key: 'B', text: 'Un geste tendre vaut mieux qu\'une longue discussion' },
+      { key: 'B', text: "Un geste tendre vaut mieux qu'une longue discussion" },
       { key: 'C', text: 'Chacun prend du recul, puis on tourne la page' },
-      { key: 'D', text: 'J\'ai besoin que l\'autre fasse le premier pas' },
+      { key: 'D', text: "J'ai besoin que l'autre fasse le premier pas" },
     ],
+  },
+  // V6 — les « quatre cavaliers » de Gottman (critique, mépris, attitude
+  // défensive, repli) : les comportements de dispute les plus prédictifs de
+  // l'usure d'un couple. Échelle de fréquence.
+  {
+    // Critique.
+    id: 'M6_Q12',
+    moduleNumber: 6,
+    scale: 'frequence',
+    text: "Pendant une dispute, je reproche à l'autre ce qu'il ou elle est, plutôt qu'un fait précis (« tu es toujours… », « tu ne fais jamais… »).",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    // Mépris.
+    id: 'M6_Q13',
+    moduleNumber: 6,
+    scale: 'frequence',
+    text: 'Pendant une dispute, je deviens ironique, je me moque ou je lève les yeux au ciel.',
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    // Attitude défensive.
+    id: 'M6_Q14',
+    moduleNumber: 6,
+    scale: 'frequence',
+    text: "Quand on me fait un reproche, je me justifie ou je renvoie la faute plutôt que d'écouter.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    // Repli (mur de silence).
+    id: 'M6_Q15',
+    moduleNumber: 6,
+    scale: 'frequence',
+    text: 'Pendant une dispute, je me ferme complètement et je ne réponds plus.',
+    options: FREQUENCY_OPTIONS,
   },
 
   // --- MODULE 7 : TRAJECTOIRE DE VIE & PERSONNALITÉ ---
@@ -659,7 +1110,10 @@ export const QUESTIONS: Question[] = [
     text: 'Dans 5 ans, si tout se passe comme vous le souhaitez, votre vie ressemble à :',
     options: [
       { key: 'A', text: 'Stable et établie — foyer, enfants, sécurité' },
-      { key: 'B', text: 'En progression constante — carrière, projets, croissance' },
+      {
+        key: 'B',
+        text: 'En progression constante — carrière, projets, croissance',
+      },
       { key: 'C', text: 'Aventureuse et libre — voyages, découvertes' },
       { key: 'D', text: 'Paisible et profonde — peu mais bien' },
     ],
@@ -667,11 +1121,11 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M7_Q02',
     moduleNumber: 7,
-    text: 'Votre niveau d\'ambition professionnelle :',
+    text: "Votre niveau d'ambition professionnelle :",
     options: [
       { key: 'A', text: 'Élevé — je vise haut et je sacrifie pour ça' },
-      { key: 'B', text: 'Modéré — j\'aime réussir sans que ça prenne tout' },
-      { key: 'C', text: 'Faible — l\'équilibre de vie prime sur la carrière' },
+      { key: 'B', text: "Modéré — j'aime réussir sans que ça prenne tout" },
+      { key: 'C', text: "Faible — l'équilibre de vie prime sur la carrière" },
       { key: 'D', text: 'Accompli — je suis dans une phase de transmission' },
     ],
   },
@@ -680,21 +1134,27 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 7,
     text: 'Vous êtes plutôt :',
     options: [
-      { key: 'A', text: 'Introverti(e) — les gens me fatiguent, je me ressource seul(e)' },
-      { key: 'B', text: 'Ambiverti(e) — j\'ai besoin des deux selon les moments' },
-      { key: 'C', text: 'Extraverti(e) — les gens me donnent de l\'énergie' },
+      {
+        key: 'A',
+        text: 'Introverti(e) — les gens me fatiguent, je me ressource seul(e)',
+      },
+      {
+        key: 'B',
+        text: "Ambiverti(e) — j'ai besoin des deux selon les moments",
+      },
+      { key: 'C', text: "Extraverti(e) — les gens me donnent de l'énergie" },
       { key: 'D', text: 'Ça dépend complètement du contexte' },
     ],
   },
   {
     id: 'M7_Q05',
     moduleNumber: 7,
-    text: 'Votre rapport au changement et à l\'imprévu :',
+    text: "Votre rapport au changement et à l'imprévu :",
     options: [
-      { key: 'A', text: 'J\'adore — le changement me stimule et me nourrit' },
-      { key: 'B', text: 'J\'accepte bien — la flexibilité est une qualité' },
-      { key: 'C', text: 'J\'ai besoin de m\'adapter progressivement' },
-      { key: 'D', text: 'J\'ai besoin de stabilité — l\'imprévu me déstabilise' },
+      { key: 'A', text: "J'adore — le changement me stimule et me nourrit" },
+      { key: 'B', text: "J'accepte bien — la flexibilité est une qualité" },
+      { key: 'C', text: "J'ai besoin de m'adapter progressivement" },
+      { key: 'D', text: "J'ai besoin de stabilité — l'imprévu me déstabilise" },
     ],
   },
   {
@@ -702,7 +1162,7 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 7,
     text: 'Où vous voyez-vous vivre dans 5 ans ?',
     options: [
-      { key: 'A', text: 'Dans la même ville qu\'aujourd\'hui' },
+      { key: 'A', text: "Dans la même ville qu'aujourd'hui" },
       { key: 'B', text: 'Dans une autre ville ou région de mon pays' },
       { key: 'C', text: 'Dans un autre pays' },
       { key: 'D', text: 'Je suis ouvert(e) — ça dépend du projet de vie' },
@@ -714,10 +1174,95 @@ export const QUESTIONS: Question[] = [
     text: 'Le temps passé ensemble dans la semaine, idéalement :',
     options: [
       { key: 'A', text: 'Le plus possible — on partage presque tout' },
-      { key: 'B', text: 'Les soirées et les week-ends, avec des moments à soi' },
+      {
+        key: 'B',
+        text: 'Les soirées et les week-ends, avec des moments à soi',
+      },
       { key: 'C', text: 'Quelques rendez-vous de qualité — chacun sa vie' },
       { key: 'D', text: 'Ça dépend des périodes et des projets' },
     ],
+  },
+  // V6 — personnalité en cinq grands traits (structure du BFI-10 : deux
+  // affirmations par trait, dont une inversée).
+  {
+    // Extraversion.
+    id: 'M7_Q09',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui est sociable et va facilement vers les autres.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Extraversion (inversé).
+    id: 'M7_Q10',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui est plutôt réservé(e).",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Agréabilité.
+    id: 'M7_Q11',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui accorde facilement sa confiance et sa bienveillance.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Agréabilité (inversé).
+    id: 'M7_Q12',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui a tendance à relever les défauts des autres.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Conscience.
+    id: 'M7_Q13',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui va au bout de ce qu'il ou elle entreprend, avec soin.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Conscience (inversé).
+    id: 'M7_Q14',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui a tendance à remettre les choses à plus tard.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Stabilité émotionnelle (inversé).
+    id: 'M7_Q15',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui se laisse facilement gagner par le stress ou l'inquiétude.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Stabilité émotionnelle.
+    id: 'M7_Q16',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui reste calme et détendu(e) face aux difficultés.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Ouverture.
+    id: 'M7_Q17',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui a de l'imagination et aime les idées nouvelles.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Ouverture (inversé).
+    id: 'M7_Q18',
+    moduleNumber: 7,
+    scale: 'accord',
+    text: "Je me vois comme quelqu'un qui s'intéresse peu à l'art, à la culture ou aux idées abstraites.",
+    options: AGREEMENT_OPTIONS,
   },
 
   // --- MODULE 8 : PROJET DE COUPLE ---
@@ -751,15 +1296,15 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Un acte religieux et spirituel fondamental' },
       { key: 'B', text: 'Un engagement civil et symbolique' },
       { key: 'C', text: 'Les deux — civil ET religieux' },
-      { key: 'D', text: 'Un choix optionnel — l\'amour prime sur le papier' },
+      { key: 'D', text: "Un choix optionnel — l'amour prime sur le papier" },
     ],
   },
   {
     id: 'M8_Q04',
     moduleNumber: 8,
-    text: 'Votre langage de l\'amour principal :',
+    text: "Votre langage de l'amour principal :",
     options: [
-      { key: 'A', text: 'Mots d\'affirmation (je t\'aime, les compliments)' },
+      { key: 'A', text: "Mots d'affirmation (je t'aime, les compliments)" },
       { key: 'B', text: 'Actes de service (aider, rendre service)' },
       { key: 'C', text: 'Cadeaux (offrir et recevoir)' },
       { key: 'D', text: 'Temps de qualité (être pleinement présent(e))' },
@@ -778,14 +1323,26 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V6 — rétablie depuis la V5 (Q06).
+    id: 'M8_Q06',
+    moduleNumber: 8,
+    text: 'La communication dans votre couple idéal :',
+    options: [
+      { key: 'A', text: 'On se parle de tout, tout le temps' },
+      { key: 'B', text: "On communique en profondeur sur l'essentiel" },
+      { key: 'C', text: "On discute surtout quand c'est nécessaire" },
+      { key: 'D', text: 'Je préfère les actes aux longs discours' },
+    ],
+  },
+  {
     id: 'M8_Q08',
     moduleNumber: 8,
     text: 'Ce que vous ne pourrez jamais accepter dans un couple :',
     options: [
       { key: 'A', text: 'Le mensonge répété' },
-      { key: 'B', text: 'L\'infidélité sous toute forme' },
+      { key: 'B', text: "L'infidélité sous toute forme" },
       { key: 'C', text: 'Le manque de respect de ma famille' },
-      { key: 'D', text: 'L\'absence de projet commun' },
+      { key: 'D', text: "L'absence de projet commun" },
     ],
   },
   {
@@ -793,10 +1350,19 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 8,
     text: 'Si vos projets de vie divergent sur un point clé (ville, enfants, religion), vous :',
     options: [
-      { key: 'A', text: 'J\'en parle tôt et je tranche vite si ce n\'est pas compatible' },
-      { key: 'B', text: 'Je laisse la relation grandir avant d\'aborder le sujet' },
-      { key: 'C', text: 'Je cherche un compromis, quel qu\'en soit le prix' },
-      { key: 'D', text: 'Je fais confiance à l\'amour pour trouver une solution' },
+      {
+        key: 'A',
+        text: "J'en parle tôt et je tranche vite si ce n'est pas compatible",
+      },
+      {
+        key: 'B',
+        text: "Je laisse la relation grandir avant d'aborder le sujet",
+      },
+      { key: 'C', text: "Je cherche un compromis, quel qu'en soit le prix" },
+      {
+        key: 'D',
+        text: "Je fais confiance à l'amour pour trouver une solution",
+      },
     ],
   },
 
@@ -808,19 +1374,31 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: 'On décide ensemble — égalité totale' },
       { key: 'B', text: 'Je prends naturellement le leadership' },
-      { key: 'C', text: 'Mon partenaire prend souvent les décisions — ça me convient' },
+      {
+        key: 'C',
+        text: 'Mon partenaire prend souvent les décisions — ça me convient',
+      },
       { key: 'D', text: 'Ça dépend du domaine — on a chacun nos zones' },
     ],
   },
   {
     id: 'M9_Q02',
     moduleNumber: 9,
-    text: 'Votre philosophie de l\'effort en amour :',
+    text: "Votre philosophie de l'effort en amour :",
     options: [
-      { key: 'A', text: 'L\'amour vrai ne devrait pas demander d\'effort — ça doit être naturel' },
-      { key: 'B', text: 'L\'amour se construit — l\'effort est une preuve d\'amour' },
-      { key: 'C', text: 'L\'effort doit être réciproque sinon je me retire' },
-      { key: 'D', text: 'Je donne beaucoup mais j\'attends la même chose en retour' },
+      {
+        key: 'A',
+        text: "L'amour vrai ne devrait pas demander d'effort — ça doit être naturel",
+      },
+      {
+        key: 'B',
+        text: "L'amour se construit — l'effort est une preuve d'amour",
+      },
+      { key: 'C', text: "L'effort doit être réciproque sinon je me retire" },
+      {
+        key: 'D',
+        text: "Je donne beaucoup mais j'attends la même chose en retour",
+      },
     ],
   },
   {
@@ -830,8 +1408,8 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: 'Non — je donne librement sans compter' },
       { key: 'B', text: 'Parfois, surtout quand je me sens lésé(e)' },
-      { key: 'C', text: 'Oui — je surveille naturellement l\'équilibre' },
-      { key: 'D', text: 'Oui — c\'est une façon de me protéger' },
+      { key: 'C', text: "Oui — je surveille naturellement l'équilibre" },
+      { key: 'D', text: "Oui — c'est une façon de me protéger" },
     ],
   },
   {
@@ -839,10 +1417,10 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 9,
     text: 'Quand vous ressentez de la frustration dans une relation :',
     options: [
-      { key: 'A', text: 'Je l\'exprime clairement dès que possible' },
-      { key: 'B', text: 'J\'attends le bon moment pour en parler' },
+      { key: 'A', text: "Je l'exprime clairement dès que possible" },
+      { key: 'B', text: "J'attends le bon moment pour en parler" },
       { key: 'C', text: 'Je garde pour moi en espérant que ça passe' },
-      { key: 'D', text: 'Je laisse s\'accumuler jusqu\'à l\'explosion' },
+      { key: 'D', text: "Je laisse s'accumuler jusqu'à l'explosion" },
     ],
   },
   {
@@ -850,22 +1428,54 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 9,
     text: 'Votre rapport au sacrifice dans une relation :',
     options: [
-      { key: 'A', text: 'Je peux tout sacrifier pour la personne que j\'aime' },
-      { key: 'B', text: 'Je peux faire des sacrifices importants si c\'est réciproque' },
-      { key: 'C', text: 'Les petits sacrifices oui, les grands non — je reste moi' },
-      { key: 'D', text: 'Je considère qu\'une vraie relation ne demande pas de sacrifices' },
+      { key: 'A', text: "Je peux tout sacrifier pour la personne que j'aime" },
+      {
+        key: 'B',
+        text: "Je peux faire des sacrifices importants si c'est réciproque",
+      },
+      {
+        key: 'C',
+        text: 'Les petits sacrifices oui, les grands non — je reste moi',
+      },
+      {
+        key: 'D',
+        text: "Je considère qu'une vraie relation ne demande pas de sacrifices",
+      },
     ],
   },
   {
     id: 'M9_Q07',
     moduleNumber: 9,
-    text: 'Votre rapport à la tendresse et à l\'affection physique hors sexualité :',
+    text: "Votre rapport à la tendresse et à l'affection physique hors sexualité :",
     options: [
-      { key: 'A', text: 'Essentielles — c\'est mon langage principal d\'amour' },
-      { key: 'B', text: 'Importantes mais je ne suis pas très démonstratif(ve)' },
+      { key: 'A', text: "Essentielles — c'est mon langage principal d'amour" },
+      {
+        key: 'B',
+        text: 'Importantes mais je ne suis pas très démonstratif(ve)',
+      },
       { key: 'C', text: 'Appréciées mais pas indispensables' },
-      { key: 'D', text: 'Je suis peu à l\'aise avec le contact physique non-sexuel' },
+      {
+        key: 'D',
+        text: "Je suis peu à l'aise avec le contact physique non-sexuel",
+      },
     ],
+  },
+  // V6 — contrôle de sincérité (sur le modèle des échelles de désirabilité
+  // sociale) : être d'accord avec les deux affirmations signale un portrait
+  // idéalisé. Jamais montré aux autres membres, jamais pénalisé.
+  {
+    id: 'M9_Q08',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il ne m'est jamais arrivé d'être jaloux(se), même un tout petit peu.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q09',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Je n'ai jamais dit le moindre petit mensonge.",
+    options: AGREEMENT_OPTIONS,
   },
 
   // --- MODULE 10 : ALCHIMIE, VIBE & DÉSIR (CLEF DE VOÛTE) ---
@@ -874,21 +1484,48 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 10,
     text: 'Quand vous entrez dans une pièce, les gens ont tendance à :',
     options: [
-      { key: 'A', text: 'Vous remarquer facilement — vous avez une présence naturelle' },
-      { key: 'B', text: 'Vous remarquer progressivement au fil de la conversation' },
+      {
+        key: 'A',
+        text: 'Vous remarquer facilement — vous avez une présence naturelle',
+      },
+      {
+        key: 'B',
+        text: 'Vous remarquer progressivement au fil de la conversation',
+      },
       { key: 'C', text: 'Se souvenir surtout de ce que vous avez dit' },
       { key: 'D', text: 'Avoir du mal à vous définir clairement après coup' },
     ],
   },
   {
+    // V6 — question miroir rétablie depuis la V5 (Q02) : comparée à l'énergie que l'autre recherche (M10_Q03, mêmes clés).
+    id: 'M10_Q02',
+    moduleNumber: 10,
+    text: "Mes amis proches me décriraient comme quelqu'un de :",
+    options: [
+      { key: 'A', text: 'Drôle, léger(ère) et agréable à vivre' },
+      {
+        key: 'B',
+        text: 'Intense, profond(e) et stimulant(e) intellectuellement',
+      },
+      { key: 'C', text: 'Chaleureux(se), attentionné(e) et rassurant(e)' },
+      { key: 'D', text: 'Calme, stable et fiable — un roc' },
+    ],
+  },
+  {
     id: 'M10_Q03',
     moduleNumber: 10,
-    text: 'Quel type d\'énergie recherchez-vous chez un(e) partenaire ?',
+    text: "Quel type d'énergie recherchez-vous chez un(e) partenaire ?",
     options: [
-      { key: 'A', text: 'Quelqu\'un de léger, drôle et qui me fait rire' },
-      { key: 'B', text: 'Quelqu\'un d\'intense, profond et stimulant intellectuellement' },
-      { key: 'C', text: 'Quelqu\'un de chaleureux, stable et rassurant' },
-      { key: 'D', text: 'Quelqu\'un de calme, posé et qui équilibre mon énergie' },
+      { key: 'A', text: "Quelqu'un de léger, drôle et qui me fait rire" },
+      {
+        key: 'B',
+        text: "Quelqu'un d'intense, profond et stimulant intellectuellement",
+      },
+      { key: 'C', text: "Quelqu'un de chaleureux, stable et rassurant" },
+      {
+        key: 'D',
+        text: "Quelqu'un de calme, posé et qui équilibre mon énergie",
+      },
     ],
   },
   {
@@ -896,21 +1533,33 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 10,
     text: 'Vous faites rire facilement les gens autour de vous ?',
     options: [
-      { key: 'A', text: 'Oui — l\'humour est une de mes forces naturelles' },
-      { key: 'B', text: 'Souvent — j\'ai le sens de l\'humour mais sans en faire une scène' },
+      { key: 'A', text: "Oui — l'humour est une de mes forces naturelles" },
+      {
+        key: 'B',
+        text: "Souvent — j'ai le sens de l'humour mais sans en faire une scène",
+      },
       { key: 'C', text: 'Parfois — surtout avec les gens que je connais bien' },
-      { key: 'D', text: 'Rarement — je suis plus sérieux(se) dans ma façon d\'être' },
+      {
+        key: 'D',
+        text: "Rarement — je suis plus sérieux(se) dans ma façon d'être",
+      },
     ],
   },
   {
     id: 'M10_Q06',
     moduleNumber: 10,
-    text: 'L\'attirance dans une relation, pour vous, naît principalement de :',
+    text: "L'attirance dans une relation, pour vous, naît principalement de :",
     options: [
-      { key: 'A', text: 'La connexion intellectuelle et les conversations stimulantes' },
+      {
+        key: 'A',
+        text: 'La connexion intellectuelle et les conversations stimulantes',
+      },
       { key: 'B', text: 'La complicité et le rire partagé' },
-      { key: 'C', text: 'La présence physique et l\'énergie du corps' },
-      { key: 'D', text: 'Le sentiment d\'être compris(e) profondément et accepté(e)' },
+      { key: 'C', text: "La présence physique et l'énergie du corps" },
+      {
+        key: 'D',
+        text: "Le sentiment d'être compris(e) profondément et accepté(e)",
+      },
     ],
   },
   {
@@ -918,16 +1567,25 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 10,
     text: 'Ce que vous apportez de vraiment unique dans une relation :',
     options: [
-      { key: 'A', text: 'Ma joie de vivre et ma légèreté — être avec moi, c\'est fun' },
-      { key: 'B', text: 'Ma profondeur et mon écoute — je fais vraiment sentir l\'autre compris(e)' },
+      {
+        key: 'A',
+        text: "Ma joie de vivre et ma légèreté — être avec moi, c'est fun",
+      },
+      {
+        key: 'B',
+        text: "Ma profondeur et mon écoute — je fais vraiment sentir l'autre compris(e)",
+      },
       { key: 'C', text: 'Ma stabilité et ma fiabilité — je suis toujours là' },
-      { key: 'D', text: 'Ma créativité et mon goût pour le beau et l\'insolite' },
+      {
+        key: 'D',
+        text: "Ma créativité et mon goût pour le beau et l'insolite",
+      },
     ],
   },
   {
     id: 'M10_Q10',
     moduleNumber: 10,
-    text: 'Si vous deviez résumer en un mot l\'expérience que vous voulez offrir à votre partenaire :',
+    text: "Si vous deviez résumer en un mot l'expérience que vous voulez offrir à votre partenaire :",
     options: [
       { key: 'A', text: 'Sécurité' },
       { key: 'B', text: 'Aventure' },
@@ -936,3 +1594,61 @@ export const QUESTIONS: Question[] = [
     ],
   },
 ];
+
+/**
+ * Évolutions du questionnaire V6 par rapport au Grand Entretien précédent :
+ * question nouvelle, rétablie depuis le questionnaire V5, ou reformulée (les
+ * clés de réponse gardent leur sens). Sert aux documents et aux tests.
+ */
+export const V6_CHANGES: Record<
+  string,
+  'nouvelle' | 'retablie' | 'reformulee'
+> = {
+  M0_Q10: 'nouvelle',
+  M1_Q09: 'retablie',
+  M1_Q13: 'retablie',
+  M1_Q15: 'retablie',
+  M2_Q05: 'retablie',
+  M2_Q07: 'retablie',
+  M2_Q10: 'reformulee',
+  M2_Q11: 'nouvelle',
+  M2_Q12: 'nouvelle',
+  M2_Q13: 'nouvelle',
+  M2_Q14: 'nouvelle',
+  M2_Q15: 'nouvelle',
+  M2_Q16: 'nouvelle',
+  M2_Q17: 'nouvelle',
+  M2_Q18: 'nouvelle',
+  M3_Q07: 'retablie',
+  M3_Q10: 'reformulee',
+  M4_Q07: 'retablie',
+  M6_Q02: 'retablie',
+  M6_Q04: 'retablie',
+  M6_Q05: 'retablie',
+  M6_Q08: 'retablie',
+  M6_Q12: 'nouvelle',
+  M6_Q13: 'nouvelle',
+  M6_Q14: 'nouvelle',
+  M6_Q15: 'nouvelle',
+  M7_Q09: 'nouvelle',
+  M7_Q10: 'nouvelle',
+  M7_Q11: 'nouvelle',
+  M7_Q12: 'nouvelle',
+  M7_Q13: 'nouvelle',
+  M7_Q14: 'nouvelle',
+  M7_Q15: 'nouvelle',
+  M7_Q16: 'nouvelle',
+  M7_Q17: 'nouvelle',
+  M7_Q18: 'nouvelle',
+  M8_Q06: 'retablie',
+  M9_Q08: 'nouvelle',
+  M9_Q09: 'nouvelle',
+  M10_Q02: 'retablie',
+};
+
+/** Questions ajoutées en V6 (nouvelles ou rétablies), absentes des entretiens antérieurs. */
+export const V6_ADDED = new Set(
+  Object.entries(V6_CHANGES)
+    .filter(([, change]) => change !== 'reformulee')
+    .map(([id]) => id),
+);

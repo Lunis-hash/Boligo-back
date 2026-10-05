@@ -14,6 +14,7 @@ describe('pendingQuestions', () => {
       'M0_Q07',
       'M0_Q09',
       'M0_Q08',
+      'M0_Q10',
     ]);
   });
 
@@ -29,6 +30,27 @@ describe('pendingQuestions', () => {
     expect(
       pendingQuestions(4, { M1_Q01: 'A' }, 30, 'H').map((q) => q.id),
     ).toContain('M4_Q05');
+  });
+
+  it('pose la transmission culturelle si des enfants sont là OU souhaités (V6)', () => {
+    const module1 = (answers: Record<string, string>, age = 30) =>
+      pendingQuestions(1, answers, age, 'F').map((q) => q.id);
+    // Ni enfant ni désir d'enfant : pas de question sur la transmission.
+    expect(module1({ M0_Q05: 'A', M0_Q06: 'D' })).not.toContain('M1_Q13');
+    // Enfants souhaités.
+    expect(module1({ M0_Q05: 'A', M0_Q06: 'B' })).toContain('M1_Q13');
+    // Déjà parent, sans désir d'autres enfants (ou plus de 55 ans, sans M0_Q06).
+    expect(module1({ M0_Q05: 'C', M0_Q06: 'D' })).toContain('M1_Q13');
+    expect(module1({ M0_Q05: 'B' }, 60)).toContain('M1_Q13');
+  });
+
+  it('ne pose la dot ou le Mahr qu’aux origines concernées (V6)', () => {
+    expect(
+      pendingQuestions(4, { M1_Q01: 'C' }, 30, 'H').map((q) => q.id),
+    ).not.toContain('M4_Q07');
+    expect(
+      pendingQuestions(4, { M1_Q01: 'B' }, 30, 'H').map((q) => q.id),
+    ).toContain('M4_Q07');
   });
 
   it('renvoie une liste vide quand tout est répondu', () => {

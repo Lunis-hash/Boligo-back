@@ -23,6 +23,10 @@ import {
   RawAnswers,
   Severity,
 } from '../matching/divergence.engine';
+import {
+  SCALE_ITEM_IDS,
+  psychometricSimilarities,
+} from '../psychometrics/psychometrics';
 import { MODULES, ModuleInfo } from './portrait.phrases';
 import { cleanText } from './portrait.text';
 
@@ -54,21 +58,32 @@ const MAJOR_CAPS = [0.98, 0.79, 0.69, 0.59, 0.54];
 /** En dessous, le score global retombe sur l'estimation de la carte mentale. */
 export const MIN_COMPARED_FOR_SCORE = 8;
 
-/** Faits personnels ou filtres déjà appliqués : jamais comparés. */
+/**
+ * Jamais comparés une à une : faits personnels, filtres déjà appliqués
+ * (langues comprises), questions miroir et affirmations d'échelle (lues
+ * ensemble par la psychométrie, plus fiable qu'une comparaison item par item).
+ */
 const NOT_COMPARED = new Set([
   'M0_Q01',
   'M0_Q02',
   'M0_Q07',
+  'M0_Q10',
   'M1_Q01',
   'M1_Q04',
   'M2_Q04',
+  'M2_Q05',
   'M2_Q10',
   'M3_Q02',
   'M3_Q03',
+  'M3_Q07',
   'M3_Q08',
+  'M6_Q02',
+  'M6_Q08',
   'M10_Q01',
+  'M10_Q02',
   'M10_Q03',
   'M10_Q09',
+  ...SCALE_ITEM_IDS,
 ]);
 
 /** Ce que l'un recherche (M10_Q03) face à ce que l'autre apporte (M10_Q09). */
@@ -199,6 +214,20 @@ function similaritiesByModule(
     if (seek && bring) {
       push(10, (SEEK_MATCHES_BRING[seek] ?? []).includes(bring) ? 1 : 0.5);
     }
+  }
+
+  // Alchimie (miroir) : l'énergie recherchée face à la façon dont les amis
+  // de l'autre le ou la décrivent (M10_Q02 et M10_Q03 ont les mêmes clés).
+  for (const [seek, seen] of [
+    [a.M10_Q03, b.M10_Q02],
+    [b.M10_Q03, a.M10_Q02],
+  ]) {
+    if (seek && seen) push(10, seek === seen ? 1 : 0.6);
+  }
+
+  // Échelles V6 : sécurité d'attachement, régulation, dispute, personnalité.
+  for (const { module, value, weight } of psychometricSimilarities(a, b)) {
+    for (let i = 0; i < weight; i++) push(module, value);
   }
 
   return byModule;

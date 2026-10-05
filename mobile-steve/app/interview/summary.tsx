@@ -17,10 +17,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { InterviewService } from '@/services/interview';
+import { InterviewService, RelationalProfile } from '@/services/interview';
 import { ChevronRight, ChevronLeft, Check, Heart, Star, Sparkles } from 'lucide-react-native';
 import { Brand } from '@/constants/brand';
 import { ModuleIcon } from '@/components/BrandIcons';
+import { RelationalProfileCard } from '@/components/RelationalProfileCard';
 
 /** Numéro du module (0 à 10) d'après l'identifiant renvoyé par le serveur (« m3 »). */
 function moduleNumber(id: string): number | undefined {
@@ -192,6 +193,7 @@ export default function InterviewSummaryScreen() {
   const [selectedPillar, setSelectedPillar] = useState<any | null>(null);
   const [globalScore, setGlobalScore]   = useState<number | null>(null);
   const [synthesisText, setSynthesisText] = useState('');
+  const [relational, setRelational]     = useState<RelationalProfile | null>(null);
 
   // Animations intro
   const introFade   = useRef(new Animated.Value(0)).current;
@@ -220,6 +222,9 @@ export default function InterviewSummaryScreen() {
           }
           if (data.synthesis) {
             setSynthesisText(data.synthesis);
+          }
+          if (data.relationalProfile) {
+            setRelational(data.relationalProfile);
           }
         }
       } catch {
@@ -476,6 +481,13 @@ export default function InterviewSummaryScreen() {
               </Text>
             </LinearGradient>
           </View>
+
+          {/* Profil relationnel (échelles du Grand Entretien V6) */}
+          {relational && (
+            <View style={styles.relationalWrap}>
+              <RelationalProfileCard profile={relational} />
+            </View>
+          )}
 
           {/* Bouton CTA */}
           <View style={styles.ctaWrap}>
@@ -850,6 +862,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   messageGrad: { padding: Spacing.lg, borderRadius: BorderRadius.lg },
+  relationalWrap: { marginHorizontal: Spacing.xl },
   messageTitle: {
     fontFamily: Typography.fontFamily.bold,
     fontSize: 13, color: Colors.text.primary100,

@@ -183,25 +183,46 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await page.waitForTimeout(1500);
   await shot('09-entretien-module0');
 
-  // ── 4. Entretien 11 modules
+  // ── 3 bis. Entretien en anglais puis retour en français (V6)
+  await page.getByTestId('interview-lang-en').click();
+  await page.waitForTimeout(1500);
+  const english = await page.getByText('The age range you are looking for in a partner:').first().isVisible().catch(() => false);
+  record('Entretien : bascule en anglais (questions traduites)', english);
+  await shot('09b-entretien-anglais');
+  await page.getByTestId('interview-lang-fr').click();
+  await page.waitForTimeout(1500);
+
+  // ── 4. Entretien 11 modules (langues : choix multiple puis « Valider »)
   let answered = 0;
-  for (let i = 0; i < 120; i++) {
+  let multiple = 0;
+  for (let i = 0; i < 260; i++) {
     if (/interview\/(generation|summary)/.test(page.url())) break;
     const opt = page.getByText(/^A$/).first();
     if (await opt.isVisible().catch(() => false)) {
       await opt.click();
+      const validate = page.getByTestId('interview-validate');
+      if (await validate.isVisible().catch(() => false)) {
+        await page.waitForTimeout(300);
+        await validate.click();
+        multiple++;
+      }
       answered++;
       await page.waitForTimeout(900);
     } else {
       await page.waitForTimeout(700);
     }
   }
+  record(`Entretien : question à choix multiple (langues) validée`, multiple === 1, `${multiple}`);
   record(`Entretien : ${answered} questions répondues, modules 0→10`, /interview\/(generation|summary)/.test(page.url()), page.url());
   await shot('10-generation');
   await page.waitForURL(/interview\/summary/, { timeout: 30000 });
   await page.waitForTimeout(3500);
   await shot('11-bilan');
   record('Bilan de compatibilité affiché', await text('Vos modules du Grand Entretien').isVisible());
+  const relational = page.getByTestId('relational-profile');
+  await relational.scrollIntoViewIfNeeded().catch(() => {});
+  record('Bilan : « Votre profil relationnel » affiché (échelles V6)', await relational.isVisible().catch(() => false));
+  await shot('11b-profil-relationnel');
   const bilanText = await page.locator('body').innerText();
   record('Bilan : aucun texte tronqué ni « undefined »', !/undefined|,\s*,|\s,\s|Oui si le projet de ,/.test(bilanText));
   await clickText('Découvrir mes matchs');

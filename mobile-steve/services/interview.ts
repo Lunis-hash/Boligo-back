@@ -1,4 +1,5 @@
 import client from './api';
+import { getItem, setItem } from './storage';
 
 export interface QuestionOption {
   key: string;
@@ -10,10 +11,50 @@ export interface Question {
   text: string;
   options: QuestionOption[];
   assistance?: string;
-  dependsOn?: {
-    questionId: string;
-    answerKey: string;
-  };
+  /** Plusieurs réponses possibles (langues) : envoyées « A,B ». */
+  multiple?: boolean;
+  /** Échelle d'accord ou de fréquence (5 points). */
+  scale?: 'accord' | 'frequence';
+}
+
+/** Langue dans laquelle le membre passe le Grand Entretien. */
+export type InterviewLanguage = 'fr' | 'en';
+
+const LANGUAGE_KEY = 'interviewLanguage';
+
+/** Langue de l'appareil : l'anglais si le système est en anglais, sinon le français. */
+export function deviceLanguage(): InterviewLanguage {
+  try {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale || '';
+    return locale.toLowerCase().startsWith('en') ? 'en' : 'fr';
+  } catch {
+    return 'fr';
+  }
+}
+
+export async function getInterviewLanguage(): Promise<InterviewLanguage> {
+  const saved = await getItem(LANGUAGE_KEY);
+  return saved === 'en' || saved === 'fr' ? saved : deviceLanguage();
+}
+
+export async function setInterviewLanguage(lang: InterviewLanguage): Promise<void> {
+  await setItem(LANGUAGE_KEY, lang);
+}
+
+/** Réponses cochées d'une question à choix multiple, dans l'ordre des options. */
+export function joinMultipleAnswer(question: Question, keys: string[]): { key: string; text: string } {
+  const picked = question.options.filter((o) => keys.includes(o.key));
+  return { key: picked.map((o) => o.key).join(','), text: picked.map((o) => o.text).join(', ') };
+}
+
+/** « Votre profil relationnel » (bilan) : lecture des échelles du Grand Entretien. */
+export interface RelationalProfile {
+  attachment: { style: string; title: string; text: string } | null;
+  regulation: { title: string; text: string } | null;
+  conflict: { title: string; text: string } | null;
+  personality: { trait: string; label: string; value: number }[];
+  observations: string[];
+  disclaimer: string;
 }
 
 export interface InterviewStatus {
@@ -51,14 +92,16 @@ export const InterviewService = {
     return response.data;
   },
 
-  getQuestions: async (moduleNumber: number, retries = 2): Promise<Question[]> => {
+  getQuestions: async (moduleNumber: number, lang: InterviewLanguage = 'fr', retries = 2): Promise<Question[]> => {
     try {
-      const response = await client.get<Question[]>(`/interview/questions/${moduleNumber}`);
+      const response = await client.get<Question[]>(`/interview/questions/${moduleNumber}`, {
+        params: { lang },
+      });
       return response.data;
     } catch (error: any) {
       if (retries > 0) {
         await new Promise((res) => setTimeout(res, 1000));
-        return InterviewService.getQuestions(moduleNumber, retries - 1);
+        return InterviewService.getQuestions(moduleNumber, lang, retries - 1);
       }
       throw error;
     }

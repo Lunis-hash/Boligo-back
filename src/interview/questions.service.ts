@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { QUESTIONS, Question } from './questions.data';
+import { QUESTIONS, Question, dependencyMet } from './questions.data';
+import { InterviewLanguage, localizeQuestion } from './questions.en';
 
 /**
  * Questions d'un module encore à poser à ce membre : non répondues et
@@ -28,14 +29,8 @@ export function pendingQuestions(
       if (q.rules.minAge && age < q.rules.minAge) return false;
       if (q.rules.gender && gender !== q.rules.gender) return false;
 
-      // 3. Vérifier les dépendances (dependsOn)
-      if (q.rules.dependsOn) {
-        const { questionId, values } = q.rules.dependsOn;
-        const userResponse = answers[questionId];
-        if (!userResponse || !values.includes(userResponse)) {
-          return false; // La question dépend d'une réponse spécifique qui n'est pas présente
-        }
-      }
+      // 3. Vérifier les dépendances (dependsOn) : l'une au moins doit être remplie.
+      if (!dependencyMet(q.rules, answers)) return false;
     }
 
     return true;
@@ -60,6 +55,7 @@ export class QuestionsService {
   async getQuestionsForUser(
     userId: string,
     moduleNumber: number,
+    lang: InterviewLanguage = 'fr',
   ): Promise<Question[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -81,12 +77,12 @@ export class QuestionsService {
       });
     }
 
-    // Filtrage dynamique
+    // Filtrage dynamique, puis langue d'affichage (les clés de réponse ne changent pas).
     return pendingQuestions(
       moduleNumber,
       allRawResponses,
       ageFromBirthDate(user.birthDate),
       user.gender,
-    );
+    ).map((q) => localizeQuestion(q, lang));
   }
 }

@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { AiService } from '../ai/ai.service';
-import { buildSelfPillars, loadSelfPortrait } from '../portrait/self-portrait';
+import {
+  buildSelfPillars,
+  loadSelfPortrait,
+  loadSelfRelationalProfile,
+} from '../portrait/self-portrait';
 import { collectRawAnswers } from '../matching/divergence.engine';
 import { ageFromBirthDate, pendingQuestions } from './questions.service';
-import { QUESTIONS } from './questions.data';
+import { QUESTIONS, isValidAnswer, normalizeAnswer } from './questions.data';
 
 const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
 
@@ -97,17 +101,20 @@ export class InterviewService {
   async saveModule(userId: string, dto: SaveModuleDto) {
     // Seules les réponses prévues par ce module sont acceptées : une question
     // d'un autre module ou une option inexistante fausserait le matching.
+    const answers: Record<string, string> = {};
     for (const [questionId, value] of Object.entries(dto.answers ?? {})) {
       const q = QUESTION_BY_ID.get(questionId);
+      // Choix multiple (langues) : « A,B » ; sinon une seule option existante.
       if (
         !q ||
         q.moduleNumber !== dto.moduleNumber ||
-        !q.options.some((o) => o.key === value)
+        !isValidAnswer(q, value)
       ) {
         throw new BadRequestException(
           `Réponse invalide pour la question ${questionId.slice(0, 20)}.`,
         );
       }
+      answers[questionId] = normalizeAnswer(q, value as string);
     }
 
     let interview = await this.prisma.interviewIA.findFirst({
@@ -135,7 +142,7 @@ export class InterviewService {
     if (existingResponse) {
       const mergedAnswers = {
         ...((existingResponse.rawResponses as Record<string, any>) || {}),
-        ...dto.answers,
+        ...answers,
       };
       await this.prisma.moduleResponse.update({
         where: { id: existingResponse.id },
@@ -150,7 +157,7 @@ export class InterviewService {
           interviewId: interview.id,
           moduleNumber: dto.moduleNumber,
           moduleName: dto.moduleName,
-          rawResponses: dto.answers,
+          rawResponses: answers,
         },
       });
     }
@@ -228,7 +235,10 @@ export class InterviewService {
     // Bilan rédigé à partir des réponses réelles du Grand Entretien : un module
     // par carte, un pourcentage de clarté (réponses tranchées / questions
     // applicables) et les réponses clés — aucun chiffre ni texte inventé.
-    const portrait = await loadSelfPortrait(this.prisma, userId);
+    const [portrait, relationalProfile] = await Promise.all([
+      loadSelfPortrait(this.prisma, userId),
+      loadSelfRelationalProfile(this.prisma, userId),
+    ]);
     const pillars = portrait ? buildSelfPillars(portrait) : [];
     const plain = (t: string) => t.replace(/\*\*/g, '');
 
@@ -247,6 +257,8 @@ export class InterviewService {
       threeWords: portrait?.threeWords ?? [],
       modulesAnswered: portrait?.modules.length ?? 0,
       pillars,
+      // Échelles V6 (attachement, émotions, dispute, personnalité) : pour le membre seul.
+      relationalProfile,
     };
   }
 

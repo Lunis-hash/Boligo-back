@@ -13,7 +13,12 @@
  * (y compris les anciennes, tronquées) s'affichent correctement sans
  * modifier les données des membres.
  */
-import { QUESTIONS, Question } from '../interview/questions.data';
+import {
+  QUESTIONS,
+  Question,
+  answerKeys,
+  dependencyMet,
+} from '../interview/questions.data';
 import { RawAnswers } from '../matching/divergence.engine';
 import {
   APPROACH_BY_DIVERGENCE,
@@ -67,6 +72,7 @@ import {
   agree,
   atCity,
   cleanText,
+  joinFr,
   lowerFirstWord,
   sentence,
   shortCity,
@@ -361,6 +367,29 @@ function expectations(a: RawAnswers, g: Gender): Expectation[] {
   return out.map((e) => ({ ...e, text: cleanText(e.text) }));
 }
 
+/** Noms des langues de M0_Q10 sur la fiche (en français, l'app étant en français). */
+const LANGUAGE_NAMES: Record<string, string> = {
+  A: 'français',
+  B: 'anglais',
+  C: 'arabe',
+  D: 'lingala',
+  E: 'swahili',
+  F: 'wolof',
+  G: 'portugais',
+  H: 'espagnol',
+  I: 'une autre langue',
+};
+
+/** « Français et anglais » ; null si la question n'a pas été posée. */
+function languagesDetail(a: RawAnswers): string | null {
+  const names = answerKeys(a.M0_Q10)
+    .map((k) => LANGUAGE_NAMES[k])
+    .filter(Boolean);
+  if (!names.length) return null;
+  const text = joinFr(names);
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function details(input: PortraitInput): Record<string, string> {
   const { answers: a, gender: g } = input;
   const entries: Array<[string, string | null]> = [
@@ -371,6 +400,7 @@ function details(input: PortraitInput): Record<string, string> {
     ['education', pick(DETAIL_EDUCATION, a, 'M0_Q07', g)],
     ['lifestyle', pick(DETAIL_LIFESTYLE, a, 'M7_Q01', g)],
     ['smoking', pick(DETAIL_SMOKING, a, 'M0_Q09', g)],
+    ['languages', languagesDetail(a)],
     ['city', shortCity(input.city)],
   ];
   return Object.fromEntries(
@@ -396,11 +426,7 @@ function applies(q: Question, input: PortraitInput): boolean {
   if (r.maxAge !== undefined && age !== null && age >= r.maxAge) return false;
   if (r.minAge !== undefined && age !== null && age < r.minAge) return false;
   if (r.gender && input.gender && r.gender !== input.gender) return false;
-  if (r.dependsOn) {
-    const v = input.answers[r.dependsOn.questionId];
-    if (!v || !r.dependsOn.values.includes(v)) return false;
-  }
-  return true;
+  return dependencyMet(r, input.answers);
 }
 
 function moduleSelfViews(input: PortraitInput): ModuleSelfView[] {

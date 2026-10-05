@@ -656,6 +656,74 @@ export const EXTRA_TARGETED: Record<number, PairTemplate<Divergence>[]> = {
 };
 
 /** Gabarits d'accord : le couple a répondu la même chose, on creuse ce point commun. */
+/**
+ * Risque partagé (même réponse des deux côtés, et c'est elle qui pose
+ * problème : deux silences, deux réparations lentes) : on ne parle pas de
+ * « différence », on prépare le moment où cela arrivera.
+ */
+export const SHARED_RISK: Record<number, PairTemplate<Divergence>[]> = {
+  1: [
+    {
+      text: (d) =>
+        `Sur « ${lower(d.label)} », vous avez répondu tous les deux « ${d.a.text} ». Le jour où cela arrivera entre vous, qui fera le premier pas ?`,
+      options: opts(
+        'Moi, même si ça me coûte',
+        'Celui ou celle qui se calme en premier',
+        'On se fixe une règle à l’avance',
+      ),
+    },
+    {
+      text: (d) =>
+        `« ${d.label} » : vous fonctionnez de la même façon (« ${d.a.text} »). Qu’est-ce qui vous a déjà aidé à sortir de cette situation dans le passé ?`,
+      options: opts(
+        'Un message ou un geste de l’autre',
+        'Du temps seul(e), puis une vraie discussion',
+        'Rien encore — c’est à construire',
+      ),
+    },
+  ],
+  2: [
+    {
+      text: (d) =>
+        `Vous avez tous les deux répondu « ${d.a.text} » sur « ${lower(d.label)} ». Quel signal discret pourriez-vous convenir pour dire « je suis prêt(e) à en reparler » ?`,
+      options: opts(
+        'Un mot ou un message convenu',
+        'Un geste tendre',
+        'Proposer un moment précis pour en parler',
+      ),
+    },
+    {
+      text: (d) =>
+        `« ${d.label} » : quand vous réagissez tous les deux ainsi (« ${d.a.text} »), qu’est-ce que vous ressentez à l’intérieur ?`,
+      options: opts(
+        'De la colère que je n’arrive pas à dire',
+        'De la peur de blesser ou d’être blessé(e)',
+        'Le besoin de me protéger',
+      ),
+    },
+  ],
+  3: [
+    {
+      text: (d) =>
+        `Dans un an, qu’est-ce qui vous montrera que « ${lower(d.label)} » (« ${d.a.text} ») ne vous éloigne plus ?`,
+      options: opts(
+        'Nos disputes durent moins longtemps',
+        'L’un de nous relance toujours le dialogue',
+        'Nous en parlons avant que ça s’envenime',
+      ),
+    },
+    {
+      text: (d) =>
+        `Vous partagez la même réaction sur « ${lower(d.label)} » (« ${d.a.text} »). Quelle règle de couple poseriez-vous dès maintenant pour vous en protéger ?`,
+      options: opts(
+        'Ne jamais se coucher fâchés',
+        'Reparler de toute dispute sous 24 heures',
+        'Demander de l’aide si ça se répète',
+      ),
+    },
+  ],
+};
+
 export const CONVERGENT: Record<number, PairTemplate<Convergence>[]> = {
   1: [
     {

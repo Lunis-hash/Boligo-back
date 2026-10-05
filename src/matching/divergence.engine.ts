@@ -13,6 +13,7 @@
  * d'attachement (Bowlby), valeurs et projet de vie partagés.
  */
 import { QUESTIONS } from '../interview/questions.data';
+import { psychometricDivergences } from '../psychometrics/psychometrics';
 
 export type Theme =
   | 'famille'
@@ -72,6 +73,11 @@ export interface Divergence {
   question: string;
   a: AnswerView;
   b: AnswerView;
+  /**
+   * Risque partagé : les deux membres ont donné la même réponse et c'est
+   * justement elle qui pose problème (deux silences, deux réparations lentes).
+   */
+  shared?: boolean;
 }
 
 export interface Convergence {
@@ -110,6 +116,11 @@ interface Rule {
   severity: SeverityFn;
   /** Libellé quand les deux réponses sont identiques (sinon libellé générique). */
   convergence?: Partial<Record<string, string>>;
+  /**
+   * Même réponse des deux côtés mais risque réel (questionnaire V5 : « signal
+   * rouge si deux D → impasse de réparation »).
+   */
+  sameRisk?: Partial<Record<string, Severity>>;
 }
 
 /** Construit une fonction de gravité à partir d'une table de paires non ordonnées « AB » → gravité. */
@@ -265,6 +276,50 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
+    questionId: 'M1_Q13',
+    theme: 'famille',
+    label: 'Transmission culturelle aux enfants',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'mineure',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      A: 'Vous voulez tous les deux transmettre langue, traditions et religion',
+      B: 'Vos enfants grandiraient entre vos deux cultures',
+    },
+  },
+  {
+    questionId: 'M1_Q15',
+    theme: 'famille',
+    label: 'Si la famille désapprouve',
+    severity: pairs({
+      AD: 'moderee',
+      AC: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+  },
+  {
+    questionId: 'M4_Q07',
+    theme: 'famille',
+    label: 'Dot ou Mahr',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: { A: 'La dot ou le Mahr compte pour vous deux' },
+  },
+  {
     questionId: 'M3_Q05',
     theme: 'famille',
     label: "Place de l'ex",
@@ -381,6 +436,22 @@ export const DIVERGENCE_RULES: Rule[] = [
       BC: 'mineure',
       CD: 'mineure',
     }),
+  },
+  {
+    questionId: 'M1_Q09',
+    theme: 'spiritualite',
+    label: 'Interdits alimentaires',
+    severity: pairs({
+      AC: 'moderee',
+      AD: 'mineure',
+      AB: 'mineure',
+      BC: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      A: 'Vous respectez tous les deux des interdits alimentaires',
+    },
   },
   {
     questionId: 'M8_Q03',
@@ -540,6 +611,8 @@ export const DIVERGENCE_RULES: Rule[] = [
     questionId: 'M2_Q06',
     theme: 'communication',
     label: 'Expression de la colère',
+    // Deux silences punitifs : personne ne relance.
+    sameRisk: { D: 'moderee' },
     severity: pairs({
       AD: 'moderee',
       AC: 'moderee',
@@ -553,6 +626,8 @@ export const DIVERGENCE_RULES: Rule[] = [
     questionId: 'M6_Q01',
     theme: 'communication',
     label: 'Comportement en dispute',
+    // V5 : « signal rouge si deux D → impasse certaine ».
+    sameRisk: { D: 'majeure', C: 'moderee' },
     severity: pairs({
       AD: 'majeure',
       BD: 'moderee',
@@ -564,6 +639,95 @@ export const DIVERGENCE_RULES: Rule[] = [
     convergence: {
       B: 'Vous prenez tous les deux du recul avant de revenir calmes',
     },
+  },
+  {
+    questionId: 'M2_Q07',
+    theme: 'communication',
+    label: 'Temps pour se réconcilier',
+    severity: pairs({
+      AD: 'moderee',
+      CD: 'moderee',
+      AC: 'mineure',
+      AB: 'mineure',
+      BC: 'mineure',
+      BD: 'mineure',
+    }),
+    // V5 : « signal rouge si deux D → impasse de réparation certaine ».
+    sameRisk: { D: 'majeure', C: 'moderee' },
+    convergence: {
+      A: 'Vous ne laissez ni l’un ni l’autre traîner une dispute',
+    },
+  },
+  {
+    questionId: 'M2_Q08',
+    theme: 'communication',
+    label: 'S’excuser en premier',
+    severity: pairs(
+      { AD: 'moderee', BD: 'mineure', CD: 'mineure', AC: 'mineure' },
+      'mineure',
+    ),
+    sameRisk: { D: 'majeure', C: 'moderee' },
+    convergence: {
+      A: 'L’harmonie passe avant l’ego pour vous deux',
+    },
+  },
+  {
+    questionId: 'M6_Q04',
+    theme: 'communication',
+    label: 'Limite face à la violence physique',
+    severity: pairs({
+      AC: 'majeure',
+      AD: 'moderee',
+      BC: 'moderee',
+      AB: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      A: 'La violence physique est pour vous deux une limite absolue',
+    },
+  },
+  {
+    questionId: 'M6_Q05',
+    theme: 'communication',
+    label: 'Mots blessants en dispute',
+    severity: pairs({
+      AC: 'majeure',
+      AD: 'moderee',
+      BC: 'moderee',
+      AB: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      A: 'Les insultes sont une limite absolue pour vous deux',
+    },
+  },
+  {
+    questionId: 'M8_Q06',
+    theme: 'communication',
+    label: 'Style de communication',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      A: 'Vous aimez tous les deux vous parler de tout',
+      B: 'Vous voulez tous les deux échanger en profondeur sur l’essentiel',
+    },
+  },
+  {
+    questionId: 'M9_Q03',
+    theme: 'communication',
+    label: 'Comptabilité affective',
+    severity: pairs({ AD: 'moderee', AC: 'mineure', BD: 'mineure' }, 'mineure'),
+    // V5 : « C+D = ressentiment latent probable ».
+    sameRisk: { D: 'moderee' },
+    convergence: { A: 'Vous donnez tous les deux sans compter' },
   },
   {
     questionId: 'M6_Q03',
@@ -581,6 +745,7 @@ export const DIVERGENCE_RULES: Rule[] = [
     questionId: 'M9_Q04',
     theme: 'communication',
     label: 'Gestion de la frustration',
+    sameRisk: { D: 'moderee' },
     severity: pairs({ AD: 'moderee', AC: 'mineure', BD: 'mineure' }, 'mineure'),
   },
   {
@@ -861,7 +1026,8 @@ export function buildDivergenceReport(
     const kb = b[rule.questionId];
     if (!ka || !kb) continue;
     compared++;
-    const severity = rule.severity(ka, kb);
+    const sameRisk = ka === kb ? rule.sameRisk?.[ka] : undefined;
+    const severity = sameRisk ?? rule.severity(ka, kb);
     if (severity === null) {
       if (ka === kb) {
         convergences.push({
@@ -883,10 +1049,13 @@ export function buildDivergenceReport(
       question: questionText(rule.questionId),
       a: { key: ka, text: optionText(rule.questionId, ka) },
       b: { key: kb, text: optionText(rule.questionId, kb) },
+      ...(sameRisk ? { shared: true } : {}),
     });
   }
 
   divergences.push(...crossRules(a, b));
+  // Échelles V6 (attachement, dispute) : tendances croisées des deux membres.
+  divergences.push(...psychometricDivergences(a, b, divergences));
 
   // Ligne rouge déclarée (M8_Q05 = « Désaccord profond sur les enfants ou la
   // religion ») : un désaccord majeur sur ces deux sujets devient une incompatibilité.
@@ -983,7 +1152,9 @@ export function buildCompatibilitySheet(
           : top.severity === 'moderee'
             ? 'Divergence à explorer'
             : 'Nuance';
-    vigilance = `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ». À aborder franchement pendant le Sondeur.`;
+    vigilance = top.shared
+      ? `${intensity} — ${top.label.toLowerCase()} : vous avez répondu tous les deux « ${top.a.text} ». À aborder franchement pendant le Sondeur.`
+      : `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ». À aborder franchement pendant le Sondeur.`;
   }
 
   return {
@@ -1016,7 +1187,9 @@ export function buildDiscussionTopics(
       id: d.questionId,
       theme: d.theme,
       title: `${THEMES[d.theme].emoji} ${THEMES[d.theme].label} — ${d.label.toLowerCase()}`,
-      prompt: `Vous : « ${d.a.text} ». ${partnerFirstName} : « ${d.b.text} ». Qu'est-ce qui, pour chacun de vous, rend cette position importante ?`,
+      prompt: d.shared
+        ? `Vous avez répondu tous les deux « ${d.a.text} ». Le jour où cela arrivera entre vous, qui fera le premier pas, et comment ?`
+        : `Vous : « ${d.a.text} ». ${partnerFirstName} : « ${d.b.text} ». Qu'est-ce qui, pour chacun de vous, rend cette position importante ?`,
     });
     if (topics.length >= max) break;
   }
