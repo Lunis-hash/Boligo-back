@@ -61,9 +61,9 @@ export const QUESTIONS: Question[] = [
     text: "La tranche d'âge que vous recherchez chez votre partenaire :",
     options: [
       { key: 'A', text: 'Même génération (±5 ans)' },
-      { key: 'B', text: 'Partenaire plus jeune' },
-      { key: 'C', text: 'Partenaire plus âgé(e)' },
-      { key: 'D', text: "L'âge ne m'importe pas" },
+      { key: 'B', text: "Plus jeune (5 ans d'écart au plus)" },
+      { key: 'C', text: "Plus âgé(e) (5 ans d'écart au plus)" },
+      { key: 'D', text: "Peu importe, dans la limite de 5 ans d'écart" },
     ],
   },
   {
@@ -131,6 +131,17 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: 'Baccalauréat' },
       { key: 'C', text: 'Bac +2 à Bac +4' },
       { key: 'D', text: 'Bac +5 et plus' },
+    ],
+  },
+  {
+    // Ce que le membre fait lui-même ; M0_Q08 dit ce qu'il accepte chez l'autre.
+    id: 'M0_Q09',
+    moduleNumber: 0,
+    text: 'Vous-même, fumez-vous ?',
+    options: [
+      { key: 'A', text: 'Non, jamais' },
+      { key: 'B', text: 'Occasionnellement' },
+      { key: 'C', text: 'Oui, régulièrement' },
     ],
   },
   {

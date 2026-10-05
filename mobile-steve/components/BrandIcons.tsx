@@ -4,6 +4,8 @@ import {
   Baby,
   Briefcase,
   ChefHat,
+  Cigarette,
+  CigaretteOff,
   Cpu,
   HardHat,
   Landmark,
@@ -108,7 +110,17 @@ const DETAIL_ICONS: Record<string, IconComponent> = {
   city: MapPin,
 };
 
-export function DetailIcon({ field, size = 15, color = Brand.lavande }: IconProps & { field: string }) {
+export function DetailIcon({
+  field,
+  value,
+  size = 15,
+  color = Brand.lavande,
+}: IconProps & { field: string; value?: string }) {
+  // Tabac : icône barrée pour un non-fumeur.
+  if (field === 'smoking') {
+    const Smoke = value && /^non/i.test(value) ? CigaretteOff : Cigarette;
+    return <Smoke size={size} color={color} strokeWidth={1.9} />;
+  }
   const Icon = DETAIL_ICONS[field] || CircleCheck;
   return <Icon size={size} color={color} strokeWidth={1.9} />;
 }

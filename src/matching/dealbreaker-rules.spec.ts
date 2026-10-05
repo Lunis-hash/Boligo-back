@@ -42,4 +42,47 @@ describe('Lignes rouges déclarées dans le Grand Entretien', () => {
     expect(title).not.toMatch(/boligo/);
     expect(title).toContain('objectif de rencontre');
   });
+
+  it('repère un fumeur même s’il a répondu « sans importance » pour l’autre', () => {
+    const refuses = { M0_Q08: 'A', M0_Q09: 'A' };
+    const smoker = { M0_Q08: 'D', M0_Q09: 'C' };
+    const report = buildDivergenceReport(refuses, smoker);
+    expect(report.hardStop).toBe(true);
+    const tabac = report.divergences.find((d) => d.label === 'Tabac')!;
+    expect(tabac.severity).toBe('critique');
+    expect(tabac.a.text).toMatch(/Rédhibitoire/);
+    expect(tabac.b.text).toBe('Oui, régulièrement');
+    // Sens inverse : les réponses restent attribuées au bon membre.
+    const reverse = buildDivergenceReport(smoker, refuses).divergences.find(
+      (d) => d.label === 'Tabac',
+    )!;
+    expect(reverse.a.text).toBe('Oui, régulièrement');
+  });
+
+  it('ne compte pas deux fois un ancien entretien sans la question « fumez-vous ? »', () => {
+    const report = buildDivergenceReport(
+      { M0_Q08: 'A' },
+      { M0_Q08: 'C', M0_Q09: 'B' },
+    );
+    expect(
+      report.divergences.filter((d) => /tabac/i.test(d.label)),
+    ).toHaveLength(1);
+  });
+
+  it('reste une divergence modérée entre « avec modération » et un fumeur régulier', () => {
+    const report = buildDivergenceReport(
+      { M0_Q08: 'B', M0_Q09: 'A' },
+      { M0_Q08: 'D', M0_Q09: 'C' },
+    );
+    expect(report.hardStop).toBe(false);
+    expect(report.divergences.find((d) => d.label === 'Tabac')?.severity).toBe(
+      'moderee',
+    );
+    expect(
+      buildDivergenceReport(
+        { M0_Q08: 'D', M0_Q09: 'A' },
+        { M0_Q08: 'D', M0_Q09: 'C' },
+      ).divergences,
+    ).toHaveLength(0);
+  });
 });

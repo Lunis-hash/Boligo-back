@@ -143,7 +143,8 @@ export const QUESTION_SHORT_LABEL: Record<string, string> = {
   M0_Q03: 'Déménager pour le couple',
   M0_Q05: 'Enfants à charge',
   M0_Q06: "Désir d'enfants",
-  M0_Q08: 'Tabac, alcool',
+  M0_Q08: 'Tabac, alcool chez l’autre',
+  M0_Q09: 'Vous fumez',
   M1_Q03: 'Traditions de mariage',
   M1_Q05: 'Religion',
   M1_Q06: 'Foi dans le couple',
@@ -636,6 +637,12 @@ export const DETAIL_EDUCATION: Phrases = {
   B: 'Baccalauréat',
   C: 'Bac +2 à Bac +4',
   D: 'Bac +5 et plus',
+};
+
+export const DETAIL_SMOKING: Phrases = {
+  A: 'Non-{fumeur|fumeuse}',
+  B: '{Fumeur|Fumeuse} occasionnel{|le}',
+  C: '{Fumeur|Fumeuse}',
 };
 
 export const DETAIL_LIFESTYLE: Phrases = {

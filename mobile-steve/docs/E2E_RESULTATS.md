@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-05T10:17:12.686Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-05T11:05:02.953Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -13,7 +13,7 @@ Date : 2026-10-05T10:17:12.686Z · App : http://localhost:8081 · API : http://l
 | Étape 4 : création bloquée tant que les CGU ne sont pas acceptées | ✅ |  |
 | Compte créé → écran de vérification OTP | ✅ |  |
 | Code OTP accepté → entretien module 0 | ✅ |  |
-| Entretien : 74 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
+| Entretien : 75 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
 | Bilan de compatibilité affiché | ✅ |  |
 | Bilan : aucun texte tronqué ni « undefined » | ✅ |  |
 | Login API du compte créé via l'UI | ✅ |  |
@@ -38,15 +38,15 @@ Date : 2026-10-05T10:17:12.686Z · App : http://localhost:8081 · API : http://l
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"f9dd8b01-1e |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"f9dd8b01-1ea3-4ab2-aba8-7af1e17db8ba","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"Nadia","isCompleted":true,"ghosting":{ |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"6eabb18d-a3 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"6eabb18d-a3bf-4ee9-9791-f8a9fcd224ad","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"Nadia","isCompleted":true,"ghosting":{ |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |
 | Anti-ghosting : bandeau « Vous attendez la réponse » après mon message | ✅ |  |
 | Message du partenaire reçu en temps réel (WebSocket) | ✅ |  |
 | Anti-ghosting : bandeau « Nadia attend votre réponse » avec échéance | ✅ |  |
-| Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance | ✅ | {"waitingOn":"partner","since":"2026-10-05T10:15:39.759Z","closeAt":"2026-10-07T10:15:39.759Z","refundOnClose":true} |
+| Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance | ✅ | {"waitingOn":"partner","since":"2026-10-05T11:03:29.746Z","closeAt":"2026-10-07T11:03:29.746Z","refundOnClose":true} |
 | Message insultant bloqué avant envoi (modération locale) | ✅ | Message non envoyé
 
 Votre message contient des termes inappropriés non autorisés. |

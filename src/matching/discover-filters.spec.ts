@@ -24,9 +24,16 @@ const karim: FilterSubject = {
 
 describe('Filtres non négociables du Module 0', () => {
   it('applique les critères des deux membres', () => {
-    // Bernard accepte Amina (plus jeune, international)…
-    expect(acceptsCandidate(bernard, amina)).toBe(true);
-    // …mais Amina (±5 ans, même ville) n'accepte pas Bernard : pas de proposition.
+    // Une femme de 49 ans, à Lyon, plus jeune que Bernard : Bernard l'accepte…
+    const nadia: FilterSubject = {
+      age: 49,
+      city: 'Lyon, France',
+      answers: { M0_Q01: 'C', M0_Q02: 'A' }, // plus âgé, même ville
+    };
+    expect(acceptsCandidate(bernard, nadia)).toBe(true);
+    expect(mutuallyAccepted(bernard, nadia)).toBe(true);
+    // …mais Amina (25 ans, ±5 ans, même ville) n'est jamais proposée à Bernard.
+    expect(acceptsCandidate(bernard, amina)).toBe(false);
     expect(mutuallyAccepted(bernard, amina)).toBe(false);
     expect(mutuallyAccepted(amina, karim)).toBe(true);
   });
@@ -60,7 +67,16 @@ describe('Filtres non négociables du Module 0', () => {
       expect(born.getTime()).toBeGreaterThanOrEqual(b.gte!.getTime());
       expect(born.getTime()).toBeLessThanOrEqual(b.lte!.getTime());
     }
-    expect(birthDateBounds(25, 'D', now)).toBeUndefined();
+    // « Peu importe » reste borné à 5 ans d'écart.
+    const any = birthDateBounds(25, 'D', now)!;
+    const born = (age: number) => {
+      const d = new Date(now);
+      d.setFullYear(d.getFullYear() - age);
+      return d.getTime();
+    };
+    expect(born(30)).toBeGreaterThanOrEqual(any.gte!.getTime());
+    expect(born(18)).toBeGreaterThan(any.lte!.getTime());
+    expect(birthDateBounds(null, 'D', now)).toBeUndefined();
   });
 
   it('pré-filtre la requête sur la ville (local) ou le pays (national)', () => {
@@ -76,5 +92,24 @@ describe('Filtres non négociables du Module 0', () => {
     });
     expect(scopeWhere('Lyon, France', 'D')).toBeUndefined();
     expect(scopeWhere(null, 'A')).toBeUndefined();
+  });
+
+  it("n'accepte jamais plus de 5 ans d'écart, même quand l'âge « importe peu »", () => {
+    const anyAge = (age: number): FilterSubject => ({
+      age,
+      city: 'Paris, France',
+      answers: { M0_Q01: 'D', M0_Q02: 'D' },
+    });
+    expect(mutuallyAccepted(anyAge(52), anyAge(19))).toBe(false);
+    expect(mutuallyAccepted(anyAge(30), anyAge(35))).toBe(true);
+    expect(mutuallyAccepted(anyAge(30), anyAge(36))).toBe(false);
+    // « Plus jeune » : de 1 à 5 ans de moins.
+    const wantsYounger: FilterSubject = {
+      ...anyAge(40),
+      answers: { M0_Q01: 'B', M0_Q02: 'D' },
+    };
+    expect(acceptsCandidate(wantsYounger, anyAge(36))).toBe(true);
+    expect(acceptsCandidate(wantsYounger, anyAge(30))).toBe(false);
+    expect(acceptsCandidate(wantsYounger, anyAge(41))).toBe(false);
   });
 });

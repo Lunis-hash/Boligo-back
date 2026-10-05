@@ -4,9 +4,11 @@ import { buildHeadline, buildPortrait, isUsableBio } from './portrait.writer';
 
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  QUESTIONS.forEach((q, i) => {
+  // Questions d'origine (avant « fumez-vous ? ») : réponses inchangées ; non-fumeur.
+  QUESTIONS.filter((q) => q.id !== 'M0_Q09').forEach((q, i) => {
     out[q.id] = q.options[(i + shift) % q.options.length].key;
   });
+  out.M0_Q09 = 'A';
   return out;
 }
 
@@ -121,5 +123,22 @@ describe('Métier en milieu de phrase', () => {
       'Steve, 24 ans, DevOps / ingénieur cloud',
     );
     expect(headline('DRH')).toBe('Steve, 24 ans, DRH');
+  });
+});
+
+describe('Tabac sur la fiche', () => {
+  it('affiche « Non-fumeuse » ou « Fumeur occasionnel » selon la réponse', () => {
+    const f = buildPortrait({
+      firstName: 'Amina',
+      gender: 'F',
+      answers: { M0_Q09: 'A' },
+    });
+    expect(f.details.smoking).toBe('Non-fumeuse');
+    const h = buildPortrait({
+      firstName: 'Marc',
+      gender: 'H',
+      answers: { M0_Q09: 'B' },
+    });
+    expect(h.details.smoking).toBe('Fumeur occasionnel');
   });
 });

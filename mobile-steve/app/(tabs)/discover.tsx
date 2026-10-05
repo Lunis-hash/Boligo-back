@@ -130,6 +130,7 @@ const DETAIL_LABELS: Record<string, { label: string }> = {
   religion: { label: 'Spiritualité' },
   education: { label: 'Études' },
   lifestyle: { label: 'Vie dans 5 ans' },
+  smoking: { label: 'Tabac' },
   city: { label: 'Ville' },
 };
 
@@ -1037,7 +1038,7 @@ function DiscoverScreen() {
                     .map(([key, val]) => (
                       <View key={key} style={styles.detailBox}>
                         <View style={styles.detailBoxHeader}>
-                          <DetailIcon field={key} />
+                          <DetailIcon field={key} value={val} />
                           <Text style={styles.detailBoxLabel}>{DETAIL_LABELS[key].label.toUpperCase()}</Text>
                         </View>
                         <Text style={styles.detailBoxVal}>{val}</Text>

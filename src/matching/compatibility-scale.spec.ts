@@ -6,9 +6,11 @@ import { buildMatchView, compatibilityLabel } from './match-view';
 /** Réponses complètes et cohérentes : option n° `shift` partout. */
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  QUESTIONS.forEach((q, i) => {
+  // Questions d'origine (avant « fumez-vous ? ») : réponses inchangées ; non-fumeur.
+  QUESTIONS.filter((q) => q.id !== 'M0_Q09').forEach((q, i) => {
     out[q.id] = q.options[(i + shift) % q.options.length].key;
   });
+  out.M0_Q09 = 'A';
   return out;
 }
 

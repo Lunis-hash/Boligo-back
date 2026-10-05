@@ -772,7 +772,51 @@ function crossRules(a: RawAnswers, b: RawAnswers): Divergence[] {
     });
   }
 
+  // Tabac : ce que l'un refuse chez l'autre (M0_Q08) face à ce que l'autre fait
+  // (M0_Q09). Un fumeur qui a répondu « sans importance » pour l'autre est donc
+  // repéré. Les entretiens antérieurs à M0_Q09 restent couverts par la règle
+  // M0_Q08 (« je consomme moi-même ») : pas de double comptage.
+  const smoke = smokingDivergence(a, b, view);
+  if (smoke) out.push(smoke);
+
   return out;
+}
+
+/** Fumeur (M0_Q09), occasionnel ou régulier. */
+function smokes(x: RawAnswers): boolean {
+  return x.M0_Q09 === 'B' || x.M0_Q09 === 'C';
+}
+
+function smokingDivergence(
+  a: RawAnswers,
+  b: RawAnswers,
+  view: (id: string, key: string) => AnswerView,
+): Divergence | null {
+  for (const [refuser, smoker, refuserIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    if (!smokes(smoker) || smoker.M0_Q08 === 'C') continue;
+    const severity: Severity | null =
+      refuser.M0_Q08 === 'A'
+        ? 'critique'
+        : refuser.M0_Q08 === 'B' && smoker.M0_Q09 === 'C'
+          ? 'moderee'
+          : null;
+    if (!severity) continue;
+    const refusal = view('M0_Q08', refuser.M0_Q08);
+    const habit = view('M0_Q09', smoker.M0_Q09);
+    return {
+      questionId: 'M0_Q09',
+      theme: 'projet',
+      severity,
+      label: 'Tabac',
+      question: questionText('M0_Q09'),
+      a: refuserIsA ? refusal : habit,
+      b: refuserIsA ? habit : refusal,
+    };
+  }
+  return null;
 }
 
 const QUESTION_INDEX = new Map(QUESTIONS.map((q) => [q.id, q]));
