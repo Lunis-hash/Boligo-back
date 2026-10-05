@@ -335,6 +335,22 @@ export const CHILDREN_WISH: Phrases = {
   D: "{Il} ne souhaite pas d'enfants, une décision mûrie",
 };
 
+/** Désir d'enfants d'un membre qui est déjà parent (M0_Q05 = B, C ou D). */
+export const CHILDREN_WISH_PARENT: Phrases = {
+  A: '{Il} souhaite agrandir sa famille',
+  B: '{Il} envisage d’autres enfants si les conditions sont réunies',
+  C: 'La question d’autres enfants reste ouverte pour {lui|elle}',
+  D: "{Il} ne souhaite pas d'autres enfants, une décision mûrie",
+};
+
+/** Phrase « vous » du module 0 pour un membre déjà parent. */
+export const MODULE0_SELF_PARENT: Phrases = {
+  A: 'Agrandir votre famille fait partie de votre projet.',
+  B: 'Vous envisagez d’autres enfants si les conditions sont réunies.',
+  C: 'La question d’autres enfants reste ouverte pour vous.',
+  D: "Vous ne souhaitez pas d'autres enfants, et c'est une décision mûrie.",
+};
+
 export const CHILDREN_NOW: Phrases = {
   B: 'déjà parent d’un enfant à charge',
   C: 'déjà parent de deux enfants ou plus',
@@ -418,6 +434,38 @@ export const BIO_GOAL: Phrases = {
   B: 'Je cherche une relation sérieuse, avec un vrai projet de vie à deux.',
   C: 'Je souhaite rencontrer quelqu’un en prenant le temps de bien nous connaître.',
   D: 'Je suis ouvert{e} à une belle rencontre, sans scénario écrit d’avance.',
+};
+
+/** Tempérament (M7_Q03), complété par l'humour (M10_Q04). */
+export const BIO_TEMPERAMENT: Phrases = {
+  A: 'Plutôt réservé{e}, je me ressource au calme',
+  B: 'J’aime autant les soirées entre amis que les moments au calme',
+  C: 'Sociable, je tire mon énergie des autres',
+  D: 'Je m’adapte volontiers à chaque contexte',
+};
+
+export const BIO_HUMOUR: Phrases = {
+  A: ', et l’humour est l’une de mes forces',
+  B: ', avec un vrai sens de l’humour',
+  C: ', et mon humour se révèle avec ceux que je connais bien',
+  D: ' ; je suis plutôt {sérieux|sérieuse} dans ma façon d’être',
+};
+
+/** Langage de l'amour (M8_Q04). */
+export const BIO_LOVE: Phrases = {
+  A: 'Je dis facilement les mots qui comptent, et j’aime les entendre.',
+  B: 'Pour moi, aimer, c’est aussi rendre la vie de l’autre plus simple au quotidien.',
+  C: 'J’aime les attentions, offrir autant que recevoir.',
+  D: 'Le temps passé ensemble, pleinement présent, compte plus que tout pour moi.',
+  E: 'Câlins et gestes tendres sont ma façon de dire que je tiens à quelqu’un.',
+};
+
+/** Ce que je recherche (M10_Q03). */
+export const BIO_SEEK: Phrases = {
+  A: 'J’aimerais rencontrer quelqu’un de léger et drôle, qui me fasse rire.',
+  B: 'J’aimerais rencontrer quelqu’un d’intense, avec qui refaire le monde.',
+  C: 'J’aimerais rencontrer quelqu’un de chaleureux et rassurant.',
+  D: 'J’aimerais rencontrer quelqu’un de calme, qui équilibre mon énergie.',
 };
 
 export const BIO_BRINGS: Phrases = {

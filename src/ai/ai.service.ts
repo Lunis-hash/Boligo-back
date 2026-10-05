@@ -6,6 +6,7 @@ import {
   HarmonyQuestionPayload,
   normalizeAiQuestions,
 } from '../journey/harmony-question.types';
+import { aiBioContradicts } from './ai-bio-guard';
 import { decodeUserResponses } from '../interview/questions.data';
 import { collectRawAnswers } from '../matching/divergence.engine';
 import { buildPortrait } from '../portrait/portrait.writer';
@@ -18,6 +19,13 @@ import {
 
 /** La liste des modèles Groq est relue toutes les six heures. */
 const GROQ_MODEL_TTL_MS = 6 * 60 * 60 * 1000;
+
+/** Genre en toutes lettres pour le prompt (« H » / « F » en base). */
+function genderWord({ gender }: { gender?: string }): string {
+  if (gender === 'F') return 'femme';
+  if (gender === 'H') return 'homme';
+  return gender ?? 'non précisé';
+}
 
 @Injectable()
 export class AiService implements OnModuleInit {
@@ -318,7 +326,7 @@ Analyse en profondeur les réponses de cet utilisateur à l'ensemble de ses modu
 PROFIL UTILISATEUR:
 - Prénom: ${userContext.firstName}
 - Âge: ${userContext.age} ans
-- Genre: ${userContext.gender}
+- Genre: ${genderWord(userContext as { gender?: string })}
 - Ville: ${userContext.city || 'Non spécifiée'}
 
 RÉPONSES DÉCODÉES DE L'UTILISATEUR AUX MODULES :
@@ -330,7 +338,9 @@ DIRECTIVES DE RÉDACTION STRICTES POUR LA BIO ("À PROPOS") :
   1. Son projet de couple et le délai d'engagement souhaité (Projet de couple, Critères essentiels).
   2. Ses valeurs, sa culture et la place de la foi et de la famille (Identité & culture, Famille).
   3. Sa façon d'aimer, de communiquer et de traverser les désaccords (Attachement, Communication).
-  4. Ce qu'elle apporte et ce qu'elle recherche chez son partenaire (Alchimie & énergie).
+  4. Ce que la personne apporte et ce qu'elle recherche chez son partenaire (Alchimie & énergie).
+- Accorde chaque adjectif au genre indiqué ci-dessus.
+- N'invente AUCUN fait absent des réponses (enfants, religion, métier, loisirs, lieu).
 - Ne recopie JAMAIS une réponse telle quelle : reformule-la en phrase complète. Aucune phrase coupée, aucune liste de mots séparés par des virgules.
 - L'application s'appelle BOLIGO : ne cite aucun autre nom d'application.
 
@@ -365,9 +375,19 @@ Retourne UNIQUEMENT un JSON valide :
 
       // Fusion sécurisée : garantit que chaque champ (bio, synthesis, piliers 6D) est toujours rempli
       const fallback = this.fallbackDynamicSynthesis(userContext, allResponses);
+      // La bio IA devient la citation de la fiche Découverte : écartée si elle
+      // contredit une réponse clé (enfants, religion).
+      const rawBio: unknown = (parsed as { bio?: unknown }).bio;
+      const aiBio = typeof rawBio === 'string' ? rawBio.trim() : '';
+      const contradiction = aiBio
+        ? aiBioContradicts(aiBio, collectRawAnswers(allResponses))
+        : null;
+      if (contradiction) {
+        this.logger.warn(`⚠️ [SONDEUR IA] Bio IA écartée : ${contradiction}`);
+      }
       return {
         synthesis: parsed.synthesis?.trim() || fallback.synthesis,
-        bio: parsed.bio?.trim() || fallback.bio,
+        bio: (!contradiction && aiBio) || fallback.bio,
         needsList: Array.isArray(parsed.needsList) && parsed.needsList.length > 0 ? parsed.needsList : fallback.needsList,
         keyValues: Array.isArray(parsed.keyValues) && parsed.keyValues.length > 0 ? parsed.keyValues : fallback.keyValues,
         redFlags: Array.isArray(parsed.redFlags) && parsed.redFlags.length > 0 ? parsed.redFlags : fallback.redFlags,

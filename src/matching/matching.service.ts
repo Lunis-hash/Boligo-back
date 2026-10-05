@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { MatchProposal, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { collectRawAnswers, RawAnswers } from './divergence.engine';
-import { buildMatchView, resolveScore } from './match-view';
+import { ageFrom, buildMatchView, resolveScore } from './match-view';
+import {
+  birthDateBounds,
+  FilterSubject,
+  mutuallyAccepted,
+  scopeWhere,
+} from './discover-filters';
 import { NotificationService } from '../notifications/notification.service';
 import {
   acceptRef,
@@ -19,6 +25,8 @@ import {
 /** Plafonds de la Découverte : candidats évalués et fiches renvoyées. */
 const DISCOVER_CANDIDATES_MAX = 500;
 const DISCOVER_RESULTS_MAX = 50;
+/** Une incompatibilité déclarée (ligne rouge du membre) n'est pas proposée en Découverte. */
+const DISCOVER_HIDE_HARD_STOPS = true;
 /** Un parcours réussi reste visible (coordonnées échangées) pendant 30 jours. */
 const ENDED_VISIBLE_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -35,6 +43,7 @@ export class MatchingService {
       where: { id: userId },
       include: {
         mentalMaps: { orderBy: { generatedAt: 'desc' }, take: 1 },
+        profile: true,
       },
     });
 
@@ -42,6 +51,9 @@ export class MatchingService {
     await this.expireStaleProposals();
 
     const viewerMentalMap = currentUser.mentalMaps[0] ?? null;
+    // Même règle que pour inviter : pas de Découverte avant la fin du Grand Entretien
+    // (sinon chaque fiche affiche un score inventé de 72 %).
+    if (!viewerMentalMap) return [];
 
     // 1.5 RÈGLE D'OR BOLIGO : Pas de multi-match. 
     // Si l'utilisateur a déjà un match actif OU une invitation envoyée en attente,
@@ -91,13 +103,13 @@ export class MatchingService {
 
     // Réponses brutes de tous les modules : filtres du Module 0 + moteur de divergences.
     const viewerAnswers = collectRawAnswers(userInterview?.responses);
-    const m0Responses = viewerAnswers;
-    const agePrefOption = m0Responses.M0_Q01; // A: ±5 ans, B: plus jeune, C: plus âgé, D: peu importe
-    const scopePrefOption = m0Responses.M0_Q02; // A: même ville, B: même région, C: même pays, D: international
-
-    const currentUserBirthYear = currentUser.birthDate ? new Date(currentUser.birthDate).getFullYear() : new Date().getFullYear() - 30;
-    const currentUserAge = new Date().getFullYear() - currentUserBirthYear;
-    const currentUserCity = (currentUser.city || '').toLowerCase().trim();
+    const viewerSubject: FilterSubject = {
+      age: ageFrom(currentUser.birthDate) ?? null,
+      city: currentUser.profile?.displayedCity || currentUser.city || null,
+      answers: viewerAnswers,
+    };
+    const birthDate = birthDateBounds(viewerSubject.age, viewerAnswers.M0_Q01);
+    const scope = scopeWhere(viewerSubject.city, viewerAnswers.M0_Q02);
 
     const matches = await this.prisma.user.findMany({
       where: {
@@ -106,6 +118,9 @@ export class MatchingService {
         role: UserRole.USER,
         accountStatus: { not: 'suspendu' },
         mentalMaps: { some: {} },
+        // Âge et périmètre du membre appliqués AVANT la limite de candidats chargés.
+        ...(birthDate ? { birthDate } : {}),
+        ...(scope ?? {}),
       },
       take: DISCOVER_CANDIDATES_MAX,
       include: {
@@ -117,65 +132,16 @@ export class MatchingService {
       },
     });
 
-    // Application stricte des filtres du Module 0
-    const filteredMatches = matches.filter((candidate) => {
-      const candidateBirthYear = candidate.birthDate ? new Date(candidate.birthDate).getFullYear() : 0;
-      const candidateAge = candidateBirthYear ? new Date().getFullYear() - candidateBirthYear : 0;
-      const candidateCity = (candidate.profile?.displayedCity || candidate.city || '').toLowerCase().trim();
-
-      // 1. Filtre Tranche d'âge
-      if (candidateAge > 0 && currentUserAge > 0) {
-        if (agePrefOption === 'A') {
-          // Même génération (±5 ans)
-          if (Math.abs(candidateAge - currentUserAge) > 5) {
-            return false;
-          }
-        } else if (agePrefOption === 'B') {
-          // Plus jeune
-          if (candidateAge >= currentUserAge) {
-            return false;
-          }
-        } else if (agePrefOption === 'C') {
-          // Plus âgé(e)
-          if (candidateAge <= currentUserAge) {
-            return false;
-          }
-        }
-      }
-
-      // 2. Filtre Périmètre Géographique (A: Local, B: Régional, C: National, D: International)
-      if (currentUserCity && candidateCity) {
-        const userParts = currentUserCity.split(',').map((p) => p.trim());
-        const candidateParts = candidateCity.split(',').map((p) => p.trim());
-
-        if (scopePrefOption === 'A') {
-          // Local (Même ville)
-          const isSameCity =
-            userParts[0] && candidateParts[0] &&
-            (candidateParts[0].includes(userParts[0]) || userParts[0].includes(candidateParts[0]));
-          if (!isSameCity) return false;
-        } else if (scopePrefOption === 'B') {
-          // Régional (Même région ou même ville)
-          const userRegion = userParts[1] || userParts[0];
-          const candidateRegion = candidateParts[1] || candidateParts[0];
-          const isSameRegion =
-            userRegion && candidateRegion &&
-            (candidateRegion.includes(userRegion) || userRegion.includes(candidateRegion));
-          if (!isSameRegion) return false;
-        } else if (scopePrefOption === 'C') {
-          // National (Même pays)
-          const userCountry = userParts[userParts.length - 1];
-          const candidateCountry = candidateParts[candidateParts.length - 1];
-          const isSameCountry =
-            userCountry && candidateCountry &&
-            (candidateCountry.includes(userCountry) || userCountry.includes(candidateCountry));
-          if (!isSameCountry) return false;
-        }
-        // scopePrefOption === 'D' -> International (tous les profils autorisés)
-      }
-
-      return true;
-    });
+    // Filtres du Module 0 appliqués dans les deux sens : chacun doit entrer dans
+    // la tranche d'âge et le périmètre de l'autre.
+    const answersByUser = await this.answersByUser(matches.map((c) => c.id));
+    const filteredMatches = matches.filter((candidate) =>
+      mutuallyAccepted(viewerSubject, {
+        age: ageFrom(candidate.birthDate) ?? null,
+        city: candidate.profile?.displayedCity || candidate.city || null,
+        answers: answersByUser.get(candidate.id) ?? {},
+      }),
+    );
 
     // Les filtres du Module 0 sont stricts : aucun repli sur des profils hors
     // périmètre. L'app affiche alors son état vide (« aucun profil pour le moment »).
@@ -183,22 +149,23 @@ export class MatchingService {
 
     // Réponses du Grand Entretien des candidats : toute la fiche (score, modules,
     // textes) en est déduite — jamais d'une valeur inventée.
-    const answersByUser = await this.answersByUser(candidatesToScore.map((c) => c.id));
     const viewer = { answers: viewerAnswers, mentalMap: viewerMentalMap };
 
-    const scored = candidatesToScore.map((m) => {
-      const { _score, ...view } = buildMatchView(viewer, {
-        id: m.id,
-        firstName: m.firstName,
-        gender: m.gender,
-        birthDate: m.birthDate,
-        city: m.city,
-        profile: m.profile,
-        mentalMap: m.mentalMaps[0] ?? null,
-        answers: answersByUser.get(m.id) ?? {},
-      });
-      return { ...view, _sortScore: _score };
-    });
+    const scored = candidatesToScore
+      .map((m) => {
+        const { _score, ...view } = buildMatchView(viewer, {
+          id: m.id,
+          firstName: m.firstName,
+          gender: m.gender,
+          birthDate: m.birthDate,
+          city: m.city,
+          profile: m.profile,
+          mentalMap: m.mentalMaps[0] ?? null,
+          answers: answersByUser.get(m.id) ?? {},
+        });
+        return { ...view, _sortScore: _score };
+      })
+      .filter((view) => !(DISCOVER_HIDE_HARD_STOPS && view.hardStop));
 
     scored.sort((a, b) => b._sortScore - a._sortScore);
 
@@ -286,7 +253,44 @@ export class MatchingService {
     const summary = top
       ? `Compatibilité de ${resolved.percent} %. Point de vigilance : ${top.label.toLowerCase()}.`
       : `Compatibilité de ${resolved.percent} %.`;
-    return { score: resolved.score, percent: resolved.percent, summary };
+    return {
+      score: resolved.score,
+      percent: resolved.percent,
+      summary,
+      hardStop: resolved.report.hardStop,
+    };
+  }
+
+  /** Les filtres du Module 0 de chacun acceptent-ils l'autre ? */
+  private async module0Allows(
+    userId: string,
+    targetUserId: string,
+  ): Promise<boolean> {
+    const [users, answers] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { id: { in: [userId, targetUserId] } },
+        select: {
+          id: true,
+          birthDate: true,
+          city: true,
+          profile: { select: { displayedCity: true } },
+        },
+      }),
+      this.answersByUser([userId, targetUserId]),
+    ]);
+    const subject = (id: string): FilterSubject | null => {
+      const u = users.find((x) => x.id === id);
+      return u
+        ? {
+            age: ageFrom(u.birthDate) ?? null,
+            city: u.profile?.displayedCity || u.city || null,
+            answers: answers.get(id) ?? {},
+          }
+        : null;
+    };
+    const a = subject(userId);
+    const b = subject(targetUserId);
+    return !!a && !!b && mutuallyAccepted(a, b);
   }
 
   // Récupérer tous les matches actifs de l'utilisateur
@@ -412,6 +416,13 @@ export class MatchingService {
     if (reverse) return this.acceptMatch(reverse.id, userId);
 
     const compat = await this.resolveCompatibilityScore(userId, targetUserId);
+    // Ni ligne rouge déclarée, ni profil hors des critères non négociables de l'un ou de l'autre.
+    if (
+      (DISCOVER_HIDE_HARD_STOPS && compat.hardStop) ||
+      !(await this.module0Allows(userId, targetUserId))
+    ) {
+      return { success: false, message: "Ce profil n'est plus disponible." };
+    }
 
     const outcome = await this.prisma.$transaction(async (tx) => {
       await this.lockMembers(tx, [userId, targetUserId]);

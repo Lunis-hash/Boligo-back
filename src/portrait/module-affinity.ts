@@ -10,8 +10,10 @@
  *  - module 10 : ce que l'un recherche est comparé à ce que l'autre apporte.
  * Un module qui contient une divergence majeure ne peut pas dépasser 64 %,
  * une incompatibilité déclarée (critique) 35 %. Le score global est la moyenne
- * pondérée des modules, plafonnée à 60 % en cas d'incompatibilité déclarée :
- * le cercle reste cohérent avec les barres affichées dessous.
+ * pondérée des modules, plafonnée selon le nombre de divergences majeures
+ * (une divergence majeure ne peut pas laisser « Très forte compatibilité »).
+ * Une incompatibilité déclarée ramène le score sous 55 % (« Incompatibilité
+ * déclarée ») tout en gardant l'ordre entre deux profils incompatibles.
  */
 import { QUESTIONS } from '../interview/questions.data';
 import {
@@ -37,8 +39,18 @@ const MODULE_CAP: Partial<Record<Severity, number>> = {
   critique: 35,
   majeure: 64,
 };
-/** Plafond du score global en cas d'incompatibilité déclarée. */
-const HARD_STOP_CAP = 0.6;
+/** Plafond du score global en cas d'incompatibilité déclarée (sous le seuil de 55 %). */
+const HARD_STOP_CAP = 0.5;
+/** Part de l'affinité conservée en cas d'incompatibilité déclarée (garde l'ordre). */
+const HARD_STOP_FACTOR = 0.6;
+/** Chaque incompatibilité déclarée supplémentaire retire encore 5 points. */
+const HARD_STOP_EXTRA = 0.05;
+/**
+ * Plafond du score global selon le nombre de divergences majeures (0, 1, 2, 3,
+ * 4 et plus) : une majeure exclut « Très forte », deux excluent « Belle »,
+ * quatre font passer en « Divergences importantes ».
+ */
+const MAJOR_CAPS = [0.98, 0.79, 0.69, 0.59, 0.54];
 /** En dessous, le score global retombe sur l'estimation de la carte mentale. */
 export const MIN_COMPARED_FOR_SCORE = 8;
 
@@ -237,6 +249,31 @@ export function buildModuleAffinities(
   return out;
 }
 
+/**
+ * Plafonne un score brut (0–1) selon les divergences : une incompatibilité
+ * déclarée le ramène sous 55 % (en gardant l'ordre entre deux profils
+ * incompatibles), des divergences majeures l'empêchent d'afficher une
+ * compatibilité forte.
+ */
+export function capForDivergences(
+  raw: number,
+  report: DivergenceReport,
+): number {
+  const critical = report.divergences.filter(
+    (d) => d.severity === 'critique',
+  ).length;
+  if (report.hardStop || critical > 0) {
+    return (
+      Math.min(HARD_STOP_CAP, raw * HARD_STOP_FACTOR) -
+      HARD_STOP_EXTRA * Math.max(0, critical - 1)
+    );
+  }
+  const major = report.divergences.filter(
+    (d) => d.severity === 'majeure',
+  ).length;
+  return Math.min(raw, MAJOR_CAPS[Math.min(major, MAJOR_CAPS.length - 1)]);
+}
+
 /** Score global issu des réponses : moyenne pondérée des modules − incompatibilités. */
 export function computeAnswerCompatibility(
   a: RawAnswers,
@@ -260,7 +297,7 @@ export function computeAnswerCompatibility(
     weights += w;
   }
   let raw = weights > 0 ? weighted / weights : 0.5;
-  if (report.hardStop) raw = Math.min(raw, HARD_STOP_CAP);
+  raw = capForDivergences(raw, report);
   const score = Math.max(0.2, Math.min(0.98, Math.round(raw * 100) / 100));
   return { score, compared, modules };
 }
