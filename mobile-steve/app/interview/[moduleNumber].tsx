@@ -508,11 +508,15 @@ export default function DynamicInterviewScreen() {
                   </Text>
                 )}
                 {message.suggested && <Text style={styles.multipleHint}>{t.suggested}</Text>}
-                {message.options.map((option) => {
+                {message.options.map((option, optionIndex) => {
                   const checked = message.multiple && picked.includes(option.key);
+                  // Lettre affichée selon la position : les langues ne proposent que
+                  // quatre des options (clés A, B, H, I), lues « A, B, C, D ».
+                  const letter = String.fromCharCode(65 + optionIndex);
                   return (
                     <TouchableOpacity
                       key={option.key}
+                      testID={`option-${option.key}`}
                       style={[styles.optionButton, checked && styles.optionButtonChecked]}
                       onPress={() =>
                         message.multiple ? togglePicked(option.key) : handleAnswer(option.key, option.text)
@@ -525,7 +529,7 @@ export default function DynamicInterviewScreen() {
                         {checked ? (
                           <Check size={14} color="#FFF" strokeWidth={3} />
                         ) : (
-                          <Text style={styles.optionLetterText}>{option.key}</Text>
+                          <Text style={styles.optionLetterText}>{letter}</Text>
                         )}
                       </View>
                       <Text style={styles.optionText}>{option.text}</Text>

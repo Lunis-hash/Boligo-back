@@ -221,13 +221,33 @@ couvre :
 
 ### 8.2 Langues (M0_Q10)
 
-- Les langues du pays de résidence (choisi ou détecté à l'inscription) sont
-  pré-cochées : Sénégal → français et wolof ; Espagne → espagnol ;
-  Allemagne → « autre langue : allemand ». Le membre modifie librement.
-- Anglais et espagnol sont proposés pour tous ; « Une autre langue
-  (précisez) » se complète en toutes lettres (`M0_Q10_AUTRE`).
-- Deux membres qui écrivent la même langue sont rapprochés ; une langue
-  écrite n'exclut jamais personne (une faute de frappe ne doit pas séparer).
+- **Quatre propositions** : la langue du pays de résidence (choisi ou
+  détecté par géolocalisation à l'inscription ; le français par défaut),
+  l'anglais, l'espagnol et « Une autre langue (précisez) », écrite en
+  toutes lettres (`M0_Q10_AUTRE`).
+- Les langues du pays sont pré-cochées ; ses autres langues sont
+  pré-écrites dans « autre langue » : Sénégal → français + « Wolof » ;
+  RDC → français + « Lingala » ; Portugal → portugais ; Allemagne →
+  « Allemand ». Le membre modifie librement.
+- Une langue écrite qui correspond à une option connue (« Wolof »,
+  « Arabe », « Lingala »…) compte comme cette option dans le croisement.
+  Deux membres qui écrivent la même langue sont rapprochés ; une langue
+  écrite inconnue n'exclut jamais personne.
+- Les neuf clés historiques (A à I) restent reconnues : les réponses déjà
+  enregistrées gardent leur sens.
+
+### 8.2 bis Âge et double origine
+
+- **M0_Q01** : « Peu importe » accepte désormais jusqu'à **10 ans**
+  d'écart ; « même génération », « plus jeune » et « plus âgé(e) » restent
+  à 5 ans. Chacun doit entrer dans la limite de l'autre : un membre
+  « peu importe » ne verra pas une personne de 8 ans d'écart qui a
+  répondu « même génération ».
+- **M1_Q01** : deux continents d'origine possibles (double origine,
+  métissage). La règle « même culture exigée » ne se déclenche que si les
+  deux membres n'ont aucune origine en commun ; les questions qui dépendent
+  de l'origine (dot, envois d'argent) sont posées dès qu'une des deux
+  origines est concernée.
 
 ### 8.3 Orthographe
 

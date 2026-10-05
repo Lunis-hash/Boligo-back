@@ -113,10 +113,10 @@ export function dependencyMet(
   const deps = Array.isArray(rules.dependsOn)
     ? rules.dependsOn
     : [rules.dependsOn];
-  return deps.some((d) => {
-    const v = answers[d.questionId];
-    return !!v && d.values.includes(v);
-  });
+  // Réponse à choix multiple (« A,C ») : l'une des clés suffit.
+  return deps.some((d) =>
+    answerKeys(answers[d.questionId]).some((k) => d.values.includes(k)),
+  );
 }
 
 /**
@@ -196,7 +196,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Même génération (±5 ans)' },
       { key: 'B', text: "Plus jeune (5 ans d'écart au plus)" },
       { key: 'C', text: "Plus âgé(e) (5 ans d'écart au plus)" },
-      { key: 'D', text: "Peu importe, dans la limite de 5 ans d'écart" },
+      { key: 'D', text: "Peu importe, dans la limite de 10 ans d'écart" },
     ],
   },
   {
@@ -312,7 +312,9 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M1_Q01',
     moduleNumber: 1,
-    text: "Votre continent d'origine ou de référence culturelle :",
+    text: "Votre continent d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
+    multiple: true,
+    maxChoices: 2,
     options: [
       { key: 'A', text: 'Afrique subsaharienne' },
       { key: 'B', text: 'Maghreb / Moyen-Orient' },

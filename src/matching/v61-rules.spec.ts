@@ -5,7 +5,10 @@ import {
   isValidAnswer,
 } from '../interview/questions.data';
 import { QUESTIONS_EN } from '../interview/questions.en';
-import { suggestLanguages } from '../interview/country-languages';
+import {
+  languageChoices,
+  suggestLanguages,
+} from '../interview/country-languages';
 import { withSuggestion } from '../interview/questions.service';
 import { buildDivergenceReport, RawAnswers } from './divergence.engine';
 import { mutuallyAccepted, shareLanguage } from './discover-filters';
@@ -83,7 +86,10 @@ describe('Langues proposées selon le pays (M0_Q10)', () => {
   it('ajoute la suggestion à la seule question des langues', () => {
     const lang = QUESTION_BY_ID_FOR_TESTS.get('M0_Q10')!;
     const q = withSuggestion(lang, 'Kinshasa, Congo RDC', 'fr');
-    expect(q.suggested).toEqual(['A', 'D']);
+    // Quatre propositions : langue du pays, anglais, espagnol, autre langue.
+    expect(q.options.map((o) => o.key)).toEqual(['A', 'B', 'H', 'I']);
+    expect(q.suggested).toEqual(['A', 'I']);
+    expect(q.suggestedOther).toBe('Lingala');
     const other = QUESTION_BY_ID_FOR_TESTS.get('M0_Q03')!;
     expect(withSuggestion(other, 'Dakar, Sénégal', 'fr')).toBe(other);
   });
@@ -278,5 +284,64 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
     expect(all).toMatch(/Qui paie \?/);
     expect(all).toMatch(/voiture/);
     expect(all).toMatch(/handicap/);
+  });
+});
+
+describe('Retours du 5 octobre : âge, langues, double origine', () => {
+  it('propose quatre langues : celle du pays, anglais, espagnol, autre', () => {
+    expect(languageChoices('Lisbonne, Portugal')).toEqual({
+      optionKeys: ['G', 'B', 'H', 'I'],
+      suggested: ['G'],
+    });
+    expect(languageChoices('Berlin, Allemagne')).toEqual({
+      optionKeys: ['A', 'B', 'H', 'I'],
+      suggested: ['I'],
+      other: 'Allemand',
+    });
+    expect(languageChoices('Dakar, Sénégal', 'en')).toEqual({
+      optionKeys: ['A', 'B', 'H', 'I'],
+      suggested: ['A', 'I'],
+      other: 'Wolof',
+    });
+    expect(languageChoices(null)).toEqual({
+      optionKeys: ['A', 'B', 'H', 'I'],
+      suggested: [],
+    });
+  });
+
+  it('une langue écrite vaut l’option correspondante (« Wolof » = Wolof)', () => {
+    const wolof = { M0_Q10: 'A,I', M0_Q10_AUTRE: 'Wolof' };
+    expect(
+      shareLanguage({ M0_Q10: 'I', M0_Q10_AUTRE: 'wolof' }, { M0_Q10: 'F' }),
+    ).toBe(true);
+    expect(shareLanguage(wolof, { M0_Q10: 'B' })).toBe(false);
+    // Langue écrite inconnue de la liste : toujours aucun filtre.
+    expect(
+      shareLanguage({ M0_Q10: 'I', M0_Q10_AUTRE: 'Bambara' }, { M0_Q10: 'B' }),
+    ).toBe(true);
+  });
+
+  it('accepte deux origines (métissage) et en tient compte partout', () => {
+    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q01')!;
+    expect(isValidAnswer(origin, 'A,C')).toBe(true);
+    expect(isValidAnswer(origin, 'A,C,E')).toBe(false);
+    // « La même culture » exigée : une origine commune suffit.
+    expect(
+      find({ M1_Q01: 'A,C', M1_Q02: 'A' }, { M1_Q01: 'C' }, 'M1_Q02'),
+    ).toHaveLength(0);
+    const d = find({ M1_Q01: 'A,C', M1_Q02: 'A' }, { M1_Q01: 'D' }, 'M1_Q02');
+    expect(d[0].a.text).toBe('Afrique subsaharienne, Europe');
+  });
+});
+
+describe('Double origine et questions conditionnelles', () => {
+  it('pose la question de la dot dès qu’une des deux origines est concernée', () => {
+    const { pendingQuestions } = jest.requireActual<
+      typeof import('../interview/questions.service')
+    >('../interview/questions.service');
+    const ids = (M1_Q01: string) =>
+      pendingQuestions(4, { M1_Q01 }, 30, 'F').map((q) => q.id);
+    expect(ids('C,A')).toContain('M4_Q07');
+    expect(ids('C,E')).not.toContain('M4_Q07');
   });
 });
