@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-05T13:13:12.209Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-05T16:03:35.461Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -8,14 +8,17 @@ Date : 2026-10-05T13:13:12.209Z · App : http://localhost:8081 · API : http://l
 | Accueil → formulaire d’inscription direct (CGU acceptées à l’étape 4) | ✅ |  |
 | Ancienne adresse des diapositives → inscription | ✅ | http://localhost:8081/onboarding/profile-details |
 | Étape 1 (identité, métier, genre, date) validée | ✅ |  |
+| Étape 2 : pays deviné, ville à choisir (aucune ville imposée) | ✅ |  |
+| Étape 2 : ville hors liste saisie (Montreuil) | ✅ |  |
 | Étape 2 (localisation) validée | ✅ |  |
 | Étape 3 (périmètre) validée | ✅ |  |
 | Étape 4 : création bloquée tant que les CGU ne sont pas acceptées | ✅ |  |
 | Compte créé → écran de vérification OTP | ✅ |  |
 | Code OTP accepté → entretien module 0 | ✅ |  |
 | Entretien : bascule en anglais (questions traduites) | ✅ |  |
-| Entretien : question à choix multiple (langues) validée | ✅ | 1 |
-| Entretien : 113 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
+| Entretien : langues du pays pré-cochées, autre langue écrite | ✅ |  |
+| Entretien : deux questions à choix multiple validées (langues, signaux d’alerte) | ✅ | 2 |
+| Entretien : 137 questions répondues, modules 0→10 | ✅ | http://localhost:8081/interview/generation |
 | Bilan de compatibilité affiché | ✅ |  |
 | Bilan : « Votre profil relationnel » affiché (échelles V6) | ✅ |  |
 | Bilan : aucun texte tronqué ni « undefined » | ✅ |  |
@@ -41,15 +44,15 @@ Date : 2026-10-05T13:13:12.209Z · App : http://localhost:8081 · API : http://l
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"09803275-aa |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"09803275-aad5-489e-87d1-be011330cf0c","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"Nadia","isCompleted":true,"ghosting":{ |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"adfacdc6-54 |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"adfacdc6-541a-42f6-9cb3-c78690afbe1c","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"Nadia","isCompleted":true,"ghosting":{ |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |
 | Anti-ghosting : bandeau « Vous attendez la réponse » après mon message | ✅ |  |
 | Message du partenaire reçu en temps réel (WebSocket) | ✅ |  |
 | Anti-ghosting : bandeau « Nadia attend votre réponse » avec échéance | ✅ |  |
-| Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance | ✅ | {"waitingOn":"partner","since":"2026-10-05T13:11:38.856Z","closeAt":"2026-10-07T13:11:38.856Z","refundOnClose":true} |
+| Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance | ✅ | {"waitingOn":"partner","since":"2026-10-05T16:02:02.752Z","closeAt":"2026-10-07T16:02:02.752Z","refundOnClose":true} |
 | Message insultant bloqué avant envoi (modération locale) | ✅ | Message non envoyé
 
 Votre message contient des termes inappropriés non autorisés. |
@@ -60,7 +63,10 @@ Votre message contient des termes inappropriés non autorisés. |
 | Après mon consentement : contacts NON révélés tant que le partenaire n'a pas accepté | ✅ |  |
 | Contacts révélés après double consentement | ✅ |  |
 | Profil : données réelles du backend | ✅ |  |
+| Édition : ville de résidence reprise de l’inscription | ✅ |  |
 | Profession modifiée et persistée (PATCH /profile/me) | ✅ | "Product Manager" |
+| Périmètre modifié : international → national | ✅ | "national" |
+| Ville de résidence conservée avec son pays | ✅ | "Montreuil, France" |
 | Session persistante après rechargement (token stocké) | ✅ | http://localhost:8081/discover |
 | Déconnexion → écran de connexion | ✅ | http://localhost:8081/login |
 | Mauvais mot de passe → message clair | ✅ | Connexion impossible

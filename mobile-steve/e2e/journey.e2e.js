@@ -149,8 +149,16 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await clickText('Continuer', { exact: true });
   await page.waitForTimeout(600);
   record('Étape 1 (identité, métier, genre, date) validée', await text('Étape 2 sur 4').isVisible());
+  // V6.1 : aucune ville présélectionnée ; une ville absente de la liste se saisit.
   const regionVisible = await text('Sélectionner une ville').isVisible().catch(() => false);
-  if (regionVisible) { await clickText('Sélectionner une ville'); await page.waitForTimeout(300); await clickText('Paris', { exact: true }); }
+  record('Étape 2 : pays deviné, ville à choisir (aucune ville imposée)', regionVisible);
+  await clickText('Sélectionner une ville');
+  await page.waitForTimeout(300);
+  await page.getByTestId('city-search').fill('Montreuil');
+  await page.waitForTimeout(300);
+  await page.getByTestId('city-custom').click();
+  await page.waitForTimeout(300);
+  record('Étape 2 : ville hors liste saisie (Montreuil)', await text('Montreuil, France').isVisible().catch(() => false));
   await shot('05-inscription-etape2');
   await clickText('Continuer', { exact: true });
   await page.waitForTimeout(600);
@@ -192,27 +200,42 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await page.getByTestId('interview-lang-fr').click();
   await page.waitForTimeout(1500);
 
-  // ── 4. Entretien 11 modules (langues : choix multiple puis « Valider »)
+  // ── 4. Entretien 11 modules (choix multiples : langues, puis signaux d'alerte)
   let answered = 0;
   let multiple = 0;
-  for (let i = 0; i < 260; i++) {
+  let languagesSuggested = false;
+  for (let i = 0; i < 320; i++) {
     if (/interview\/(generation|summary)/.test(page.url())) break;
+    const validate = page.getByTestId('interview-validate');
+    if (await validate.isVisible().catch(() => false)) {
+      const body = await page.locator('body').innerText();
+      if (/Pré-coché selon votre pays/.test(body)) {
+        // Langues : français pré-coché (France) ; on ajoute « bambara » écrit en toutes lettres.
+        languagesSuggested = true;
+        await page.getByText(/^I$/).first().click();
+        await page.getByTestId('interview-other').fill('Bambara');
+        await shot('09c-langues-autre');
+      } else if ((await validate.getAttribute('aria-disabled')) === 'true') {
+        await page.getByText(/^A$/).first().click();
+      }
+      await page.waitForTimeout(300);
+      await validate.click();
+      multiple++;
+      answered++;
+      await page.waitForTimeout(900);
+      continue;
+    }
     const opt = page.getByText(/^A$/).first();
     if (await opt.isVisible().catch(() => false)) {
       await opt.click();
-      const validate = page.getByTestId('interview-validate');
-      if (await validate.isVisible().catch(() => false)) {
-        await page.waitForTimeout(300);
-        await validate.click();
-        multiple++;
-      }
       answered++;
       await page.waitForTimeout(900);
     } else {
       await page.waitForTimeout(700);
     }
   }
-  record(`Entretien : question à choix multiple (langues) validée`, multiple === 1, `${multiple}`);
+  record('Entretien : langues du pays pré-cochées, autre langue écrite', languagesSuggested);
+  record(`Entretien : deux questions à choix multiple validées (langues, signaux d’alerte)`, multiple === 2, `${multiple}`);
   record(`Entretien : ${answered} questions répondues, modules 0→10`, /interview\/(generation|summary)/.test(page.url()), page.url());
   await shot('10-generation');
   await page.waitForURL(/interview\/summary/, { timeout: 30000 });
@@ -456,11 +479,16 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   await clickText('Modifier mon profil');
   await page.waitForTimeout(2000);
   await page.getByPlaceholder('Développeur, médecin…').fill('Product Manager');
+  record('Édition : ville de résidence reprise de l’inscription', (await page.getByTestId('residence-city').inputValue()) === 'Montreuil');
+  // Le périmètre choisi à l'inscription se modifie ici (réponse M0_Q02).
+  await page.getByTestId('scope-national').click();
   await shot('30-profil-edition');
   await clickText('Enregistrer', { exact: true });
   await page.waitForTimeout(2500);
   const me = await api('GET', '/profile/me', { token: tokenA });
   record('Profession modifiée et persistée (PATCH /profile/me)', me.data?.profession === 'Product Manager', JSON.stringify(me.data?.profession));
+  record('Périmètre modifié : international → national', me.data?.meetingScope === 'national', JSON.stringify(me.data?.meetingScope));
+  record('Ville de résidence conservée avec son pays', me.data?.user?.city === 'Montreuil, France', JSON.stringify(me.data?.user?.city));
   await page.goto(`${APP_URL}/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(3500);
   record('Session persistante après rechargement (token stocké)', /discover/.test(page.url()), page.url());

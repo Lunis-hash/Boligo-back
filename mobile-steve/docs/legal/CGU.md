@@ -1,6 +1,6 @@
 # Conditions Générales d'Utilisation et de Vente — BOLIGO
 
-Version du 2026-10-04.
+Version du 2026-10-05.
 
 Les présentes Conditions Générales d'Utilisation et de Vente (« CGU ») régissent l'accès et l'utilisation de l'application BOLIGO (mobile et web), service de rencontre fondé sur la compatibilité profonde. En créant un compte, vous déclarez les avoir lues et les accepter sans réserve.
 

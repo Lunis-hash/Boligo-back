@@ -382,8 +382,10 @@ const LANGUAGE_NAMES: Record<string, string> = {
 
 /** « Français et anglais » ; null si la question n'a pas été posée. */
 function languagesDetail(a: RawAnswers): string | null {
+  // « Une autre langue » : la langue écrite par le membre, quand il l'a précisée.
+  const other = cleanText(a.M0_Q10_AUTRE ?? '').toLowerCase();
   const names = answerKeys(a.M0_Q10)
-    .map((k) => LANGUAGE_NAMES[k])
+    .map((k) => (k === 'I' && other ? other : LANGUAGE_NAMES[k]))
     .filter(Boolean);
   if (!names.length) return null;
   const text = joinFr(names);

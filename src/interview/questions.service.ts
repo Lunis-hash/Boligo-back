@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { QUESTIONS, Question, dependencyMet } from './questions.data';
 import { InterviewLanguage, localizeQuestion } from './questions.en';
+import { suggestLanguages } from './country-languages';
 
 /**
  * Questions d'un module encore à poser à ce membre : non répondues et
@@ -83,6 +84,27 @@ export class QuestionsService {
       allRawResponses,
       ageFromBirthDate(user.birthDate),
       user.gender,
-    ).map((q) => localizeQuestion(q, lang));
+    )
+      .map((q) => localizeQuestion(q, lang))
+      .map((q) => withSuggestion(q, user.city, lang));
   }
+}
+
+/**
+ * Langues du pays de résidence pré-cochées à M0_Q10 (pays choisi ou détecté
+ * par géolocalisation à l'inscription). Le membre reste libre de modifier.
+ */
+export function withSuggestion(
+  q: Question,
+  city: string | null | undefined,
+  lang: InterviewLanguage,
+): Question {
+  if (q.id !== 'M0_Q10') return q;
+  const s = suggestLanguages(city, lang);
+  if (!s) return q;
+  return {
+    ...q,
+    suggested: s.keys,
+    ...(s.other ? { suggestedOther: s.other } : {}),
+  };
 }

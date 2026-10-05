@@ -46,7 +46,7 @@ describe('Questionnaire V6', () => {
 
   it('range les langues dans l’ordre des options et les rend lisibles', () => {
     expect(normalizeAnswer(languages, 'G, B,A')).toBe('A,B,G');
-    expect(answerText(languages, 'A,B')).toBe('Français, English');
+    expect(answerText(languages, 'A,B')).toBe('Français, Anglais — English');
   });
 
   it('ne parle plus d’antécédents de suivi psychologique (RGPD art. 9)', () => {
@@ -81,7 +81,7 @@ describe('Traduction anglaise', () => {
     expect(freq.options[0].text).toBe('Never');
     const lang = localizeQuestion(languages, 'en');
     expect(lang.multiple).toBe(true);
-    expect(lang.options[0]).toEqual({ key: 'A', text: 'Français (French)' });
+    expect(lang.options[0]).toEqual({ key: 'A', text: 'French — Français' });
   });
 
   it('reste en français par défaut', () => {

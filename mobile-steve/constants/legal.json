@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-04",
+  "version": "2026-10-05",
   "company": {
     "brand": "BOLIGO",
     "legalName": "[À COMPLÉTER : raison sociale de l'éditeur]",
@@ -183,7 +183,7 @@
         "id": "destinataires",
         "title": "5. Destinataires et sous-traitants",
         "paragraphs": [
-          "Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), et le prestataire d'envoi d'e-mails configuré par BOLIGO.",
+          "Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.",
           "Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.",
           "Votre interlocuteur dans un parcours voit votre prénom, votre âge, votre ville, votre profession, votre carte mentale, vos réponses au Sondeur et vos messages. Votre téléphone et votre e-mail ne lui sont révélés qu'après votre consentement explicite.",
           "Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale."

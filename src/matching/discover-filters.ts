@@ -23,6 +23,23 @@ export function cityParts(city: string | null | undefined): string[] {
 }
 
 /**
+ * Lieu servant aux filtres : la ville de résidence, choisie dans une liste à
+ * l'inscription (« Ville, Pays »), avant la ville affichée, texte libre de
+ * présentation.
+ */
+export function filterCity(user: {
+  city?: string | null;
+  profile?: { displayedCity?: string | null } | null;
+}): string | null {
+  return user.city || user.profile?.displayedCity || null;
+}
+
+/** Région : avant-dernier élément de « Ville, Région, Pays », sinon le premier. */
+function regionOf(parts: string[]): string {
+  return parts.length >= 3 ? parts[parts.length - 2] : parts[0];
+}
+
+/**
  * Règle BOLIGO : jamais plus de 5 ans d'écart entre deux membres, quelle que
  * soit la préférence déclarée (« plus jeune », « plus âgé(e) », « peu importe »).
  */
@@ -47,7 +64,7 @@ export function acceptsCandidate(
     const scope = viewer.answers.M0_Q02;
     if (scope === 'A' && !(c[0].includes(v[0]) || v[0].includes(c[0])))
       return false;
-    if (scope === 'B' && (v[1] ?? v[0]) !== (c[1] ?? c[0])) return false;
+    if (scope === 'B' && regionOf(v) !== regionOf(c)) return false;
     // Pays comparé à l'identique : « Congo » n'est pas « Congo RDC ».
     if (scope === 'C' && v[v.length - 1] !== c[c.length - 1]) return false;
   }
@@ -68,8 +85,23 @@ export function memberLanguages(answers: RawAnswers): string[] | null {
   return keys.length ? keys : null;
 }
 
+/**
+ * Langues écrites en toutes lettres (« une autre langue : bambara »), sans
+ * accents ni casse. Une faute de frappe ne doit jamais exclure : elles ne
+ * servent qu'à rapprocher deux membres, jamais à les séparer.
+ */
+export function otherLanguages(answers: RawAnswers): string[] {
+  if (!answerKeys(answers.M0_Q10).includes(OTHER_LANGUAGE)) return [];
+  return (answers.M0_Q10_AUTRE ?? '')
+    .split(/[,;/]| et | and /)
+    .map(norm)
+    .filter((l) => l.length >= 2);
+}
+
 /** Les deux membres partagent-ils au moins une langue du quotidien ? */
 export function shareLanguage(a: RawAnswers, b: RawAnswers): boolean {
+  const oa = otherLanguages(a);
+  if (oa.length && otherLanguages(b).some((l) => oa.includes(l))) return true;
   const la = memberLanguages(a);
   const lb = memberLanguages(b);
   if (!la || !lb) return true;

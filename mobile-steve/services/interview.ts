@@ -4,6 +4,8 @@ import { getItem, setItem } from './storage';
 export interface QuestionOption {
   key: string;
   text: string;
+  /** Option à préciser en toutes lettres (« Une autre langue (précisez) »). */
+  freeText?: boolean;
 }
 
 export interface Question {
@@ -15,6 +17,40 @@ export interface Question {
   multiple?: boolean;
   /** Échelle d'accord ou de fréquence (5 points). */
   scale?: 'accord' | 'frequence';
+  /** Nombre maximal de réponses (signaux d'alerte : 3). */
+  maxChoices?: number;
+  /** Réponses pré-cochées proposées (langues du pays de résidence). */
+  suggested?: string[];
+  /** Précision pré-remplie de l'option à préciser (« Allemand »). */
+  suggestedOther?: string;
+}
+
+/** Suffixe de la précision écrite enregistrée avec la réponse (« M0_Q10_AUTRE »). */
+export const FREE_TEXT_SUFFIX = '_AUTRE';
+
+/** Option à préciser en toutes lettres, s'il y en a une. */
+export function freeTextOption(question: Question): QuestionOption | undefined {
+  return question.options.find((o) => o.freeText);
+}
+
+/** Réponses cochées d'office : la suggestion du serveur, limitée aux options et au maximum. */
+export function initialPicked(question: Question): string[] {
+  if (!question.multiple) return [];
+  const keys = (question.suggested ?? []).filter((k) => question.options.some((o) => o.key === k));
+  return question.maxChoices ? keys.slice(0, question.maxChoices) : keys;
+}
+
+/** Coche ou décoche une réponse, sans dépasser le nombre maximal. */
+export function togglePick(question: Question, picked: string[], key: string): string[] {
+  if (picked.includes(key)) return picked.filter((k) => k !== key);
+  if (question.maxChoices && picked.length >= question.maxChoices) return picked;
+  return [...picked, key];
+}
+
+/** Précision écrite acceptée par le serveur : 2 à 60 lettres, espaces, tirets, apostrophes, virgules. */
+export function isValidFreeText(text: string): boolean {
+  const t = text.replace(/\s+/g, ' ').trim();
+  return t.length >= 2 && t.length <= 60 && /^[\p{L}\p{M}][\p{L}\p{M} '’,-]*$/u.test(t);
 }
 
 /** Langue dans laquelle le membre passe le Grand Entretien. */
@@ -42,9 +78,17 @@ export async function setInterviewLanguage(lang: InterviewLanguage): Promise<voi
 }
 
 /** Réponses cochées d'une question à choix multiple, dans l'ordre des options. */
-export function joinMultipleAnswer(question: Question, keys: string[]): { key: string; text: string } {
+export function joinMultipleAnswer(
+  question: Question,
+  keys: string[],
+  other?: string,
+): { key: string; text: string } {
   const picked = question.options.filter((o) => keys.includes(o.key));
-  return { key: picked.map((o) => o.key).join(','), text: picked.map((o) => o.text).join(', ') };
+  const otherText = other?.replace(/\s+/g, ' ').trim();
+  return {
+    key: picked.map((o) => o.key).join(','),
+    text: picked.map((o) => (o.freeText && otherText ? otherText : o.text)).join(', '),
+  };
 }
 
 /** « Votre profil relationnel » (bilan) : lecture des échelles du Grand Entretien. */
@@ -52,6 +96,8 @@ export interface RelationalProfile {
   attachment: { style: string; title: string; text: string } | null;
   regulation: { title: string; text: string } | null;
   conflict: { title: string; text: string } | null;
+  /** Timidité ou ouverture au début d'une relation. */
+  openness?: { title: string; text: string } | null;
   personality: { trait: string; label: string; value: number }[];
   observations: string[];
   disclaimer: string;

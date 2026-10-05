@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Eye, HeartHandshake, MessageCircle, Waves } from 'lucide-react-native';
+import { Eye, HeartHandshake, MessageCircle, Smile, Waves } from 'lucide-react-native';
 import { Brand } from '@/constants/brand';
 import { Typography } from '@/constants/theme';
 import type { RelationalProfile } from '@/services/interview';
@@ -14,6 +14,7 @@ export function RelationalProfileCard({ profile }: { profile: RelationalProfile 
     { Icon: HeartHandshake, label: 'Dans le lien', item: profile.attachment },
     { Icon: Waves, label: 'Vos émotions', item: profile.regulation },
     { Icon: MessageCircle, label: 'En dispute', item: profile.conflict },
+    { Icon: Smile, label: 'Premiers pas', item: profile.openness ?? null },
   ].filter((r) => r.item);
 
   return (

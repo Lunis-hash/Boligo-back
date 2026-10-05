@@ -1,11 +1,11 @@
 /**
- * Génère le document du questionnaire BOLIGO (V6), en français et en anglais,
+ * Génère le document du questionnaire BOLIGO (V6.1), en français et en anglais,
  * à partir des données du Grand Entretien : le document et l'application ne
  * peuvent donc pas diverger.
  *
  *   npx ts-node -P tsconfig.json --transpile-only scripts/questionnaire-doc.ts
  *
- * Sortie : docs/questionnaire/BOLIGO_Questionnaire_V6_FR.html et _EN.html
+ * Sortie : docs/questionnaire/BOLIGO_Questionnaire_V6_1_FR.html et _EN.html
  * (importables tels quels dans Google Docs ou Word).
  */
 import * as fs from 'fs';
@@ -15,6 +15,7 @@ import {
   Question,
   QuestionDependency,
   V6_CHANGES,
+  V61_ADDED,
 } from '../src/interview/questions.data';
 import {
   InterviewLanguage,
@@ -28,6 +29,10 @@ import {
   CONTEMPT,
   CRITICISM,
   DEFENSIVENESS,
+  DEMANDINGNESS,
+  HABIT_ITEM_IDS,
+  RED_FLAG_HABITS,
+  SHYNESS,
   REAPPRAISAL,
   SOCIAL_DESIRABILITY,
   STONEWALLING,
@@ -83,11 +88,13 @@ const SEVERITY: Record<Lang, Record<Severity, string>> = {
 const CHANGE: Record<Lang, Record<string, string>> = {
   fr: {
     nouvelle: '★ Nouvelle (V6)',
+    nouvelle61: '★ Nouvelle (V6.1)',
     retablie: '↺ Rétablie depuis la V5',
     reformulee: '✎ Reformulée (V6)',
   },
   en: {
     nouvelle: '★ New (V6)',
+    nouvelle61: '★ New (V6.1)',
     retablie: '↺ Restored from V5',
     reformulee: '✎ Reworded (V6)',
   },
@@ -119,12 +126,23 @@ function scaleOf(id: string, lang: Lang): string | null {
       BIG_FIVE.emotionalStability,
     ],
     [fr ? 'Ouverture' : 'Openness', BIG_FIVE.openness],
+    [fr ? 'Timidité au début d’une relation' : 'Early shyness', SHYNESS],
+    [
+      fr
+        ? 'Caractère exigeant (bouderie, attentes non dites, impatience)'
+        : 'Demandingness (sulking, unspoken expectations, impatience)',
+      DEMANDINGNESS,
+    ],
   ];
   for (const [label, items] of groups) {
     const item = items.find((i) => i.id === id);
     if (item)
       return `${label}${item.reverse ? (fr ? ' — item inversé' : ' — reverse-scored') : ''}`;
   }
+  if (HABIT_ITEM_IDS.includes(id))
+    return fr
+      ? 'Habitude — lue seulement face aux signaux d’alerte de l’autre (M8_Q10)'
+      : 'Habit — only read against the other member’s red flags (M8_Q10)';
   if (SOCIAL_DESIRABILITY.includes(id))
     return fr
       ? 'Contrôle de sincérité (désirabilité sociale) — jamais montré ni pénalisé'
@@ -132,8 +150,40 @@ function scaleOf(id: string, lang: Lang): string | null {
   return null;
 }
 
+/** Lectures croisées V6.1 (pas de règle question par question). */
+function crossSignals(id: string, lang: Lang): string[] {
+  const fr = lang === 'fr';
+  const flags = Object.keys(RED_FLAG_HABITS).join(', ');
+  const table: Record<string, [string, string]> = {
+    M8_Q10: [
+      `${flags} cochés face à la même habitude chez l'autre : « souvent » → ${SEVERITY.fr.moderee}, « très souvent » → ${SEVERITY.fr.majeure}. F, G, I : sujets du Sondeur.`,
+      `${flags} ticked against the same habit in the other member: "often" → ${SEVERITY.en.moderee}, "very often" → ${SEVERITY.en.majeure}. F, G, I: Sonder topics.`,
+    ],
+    M9_Q19: [
+      `Face à un caractère exigeant (échelle ≥ 70) : D → ${SEVERITY.fr.majeure}, C → ${SEVERITY.fr.moderee}, A → nuance. Deux caractères exigeants → ${SEVERITY.fr.moderee} (risque partagé).`,
+      `Against a demanding character (scale ≥ 70): D → ${SEVERITY.en.majeure}, C → ${SEVERITY.en.moderee}, A → nuance. Two demanding characters → ${SEVERITY.en.moderee} (shared risk).`,
+    ],
+    M2_Q19: [
+      'Deux timidités (échelle ≥ 70), ou une timidité face à « on se parle de tout, tout le temps » (M8_Q06 = A) → nuance, abordée par le Sondeur.',
+      'Two shy members (scale ≥ 70), or shyness against "we talk about everything, all the time" (M8_Q06 = A) → nuance, raised by the Sonder.',
+    ],
+    M10_Q11: [
+      'Comparée à l’allure de l’autre (M10_Q12) : même allure → affinité du module 10 plus forte. F ne compte ni pour ni contre.',
+      'Compared with the other member’s look (M10_Q12): same look → stronger module 10 affinity. F counts neither for nor against.',
+    ],
+    M10_Q13: [
+      'Comparée à ce qu’on remarque chez l’autre (M10_Q14) : même déclic → affinité du module 10 plus forte.',
+      'Compared with what people notice in the other member (M10_Q14): same spark → stronger module 10 affinity.',
+    ],
+  };
+  const t = table[id];
+  return t ? [fr ? t[0] : t[1]] : [];
+}
+
 /** Signaux de compatibilité d'une question, déduits des règles réelles du moteur. */
 function signals(q: Question, lang: Lang): string[] {
+  const cross = crossSignals(q.id, lang);
+  if (cross.length) return cross;
   const rule = DIVERGENCE_RULES.find((r) => r.questionId === q.id);
   if (!rule) return [];
   const keys = q.options.map((o) => o.key);
@@ -185,8 +235,21 @@ function condition(q: Question, lang: Lang): string | null {
 
 const INTRO: Record<Lang, string> = {
   fr: `
-<h1>BOLIGO — Questionnaire de compatibilité V6</h1>
+<h1>BOLIGO — Questionnaire de compatibilité V6.1</h1>
 <p><b>Grand Entretien — version française.</b> ${QUESTIONS.length} questions en 11 modules (0 à 10). Document généré à partir de l'application : chaque question, chaque option et chaque signal ci-dessous est celui que l'application utilise réellement.</p>
+
+<h2>Ce qui change en V6.1 (5 octobre 2026)</h2>
+<ul>
+<li><b>Orthographe</b> : audit complet en français et en anglais (par exemple M9_Q03 : « ce que vous donnez et ce que vous recevez »).</li>
+<li><b>Argent</b> : qui paie au premier rendez-vous (l'homme, celui qui invite, moitié-moitié), soutien quand l'argent manque, place du niveau de vie dans le choix d'un partenaire, prêt des affaires personnelles (voiture, téléphone).</li>
+<li><b>Attirance physique</b>, sans aucun critère de corps : l'allure des personnes qui vous ont déjà fait chavirer, comparée à l'allure de l'autre ; ce qui provoque votre déclic, comparé à ce qu'on remarque en premier chez l'autre ; rythme de l'attirance. Les préférences idéales déclarées prédisent mal l'attirance réelle (Eastwick &amp; Finkel, 2008), alors que les partenaires passés d'une même personne se ressemblent (Park &amp; MacDonald, 2019).</li>
+<li><b>Signaux d'alerte actuels</b>, pour les femmes comme pour les hommes (3 au plus) : déclarations trop rapides, jalousie qui contrôle, disparitions sans explication, intentions floues, mépris des ex, impolitesse, dépendance financière, torts jamais reconnus, « non » ignoré, téléphone pendant les moments à deux. Ils sont croisés avec les habitudes que l'autre déclare.</li>
+<li><b>Caractère exigeant (« capricieux »)</b> et tolérance à ce caractère : bouderie, attente que l'autre devine, impatience ; patience de l'autre face à la bouderie.</li>
+<li><b>Timidité et ouverture</b> : timidité au début d'une relation, lenteur à se confier, facilité à recevoir les confidences. Le profil relationnel conseille le membre timide ; le Sondeur, écrit et à son rythme, précède l'appel vidéo.</li>
+<li><b>Maladie et handicap</b> : une seule question d'attitude (prendre soin de l'autre). BOLIGO ne demande jamais à un membre s'il a un handicap : c'est une donnée de santé (RGPD, article 9) et un motif de discrimination interdit (Code pénal, article 225-1).</li>
+<li><b>Langues</b> : celles du pays de résidence sont pré-cochées ; « une autre langue » se précise en toutes lettres et rapproche deux membres qui écrivent la même.</li>
+<li><b>Sondeur</b> : formulations concrètes propres à chaque nouveau sujet (« le serveur pose l'addition… ») et questions de fond dans chaque thème.</li>
+</ul>
 
 <h2>Ce qui change par rapport à la V5</h2>
 <ul>
@@ -237,8 +300,21 @@ const INTRO: Record<Lang, string> = {
 <b>Fréquence</b> : A Jamais · B Rarement · C Parfois · D Souvent · E Très souvent.</p>
 `,
   en: `
-<h1>BOLIGO — Compatibility Questionnaire V6</h1>
+<h1>BOLIGO — Compatibility Questionnaire V6.1</h1>
 <p><b>Mental Map Interview — English version.</b> ${QUESTIONS.length} questions in 11 modules (0 to 10). Generated from the app: every question, option and signal below is exactly what the app uses.</p>
+
+<h2>What changes in V6.1 (5 October 2026)</h2>
+<ul>
+<li><b>Spelling</b>: full review in French and English (e.g. M9_Q03: "what you give versus what you receive").</li>
+<li><b>Money</b>: who pays on a first date (the man, whoever invited, fifty-fifty), support when money runs short, the place of lifestyle in choosing a partner, lending personal belongings (car, phone).</li>
+<li><b>Physical attraction</b>, with no body criteria: the look of people who swept you off your feet, compared with the other member's look; what sparks your attraction, compared with what people notice first in the other; the pace of attraction. Stated ideal preferences predict actual attraction poorly (Eastwick &amp; Finkel, 2008), whereas a person's past partners resemble each other (Park &amp; MacDonald, 2019).</li>
+<li><b>Current red flags</b>, for women and men alike (3 at most): overwhelming early declarations, controlling jealousy, disappearing without explanation, vague intentions, badmouthing exes, rudeness, financial dependence, never admitting fault, ignoring a "no", phone during time together. They are matched against the habits the other member reports.</li>
+<li><b>Demanding ("capricious") character</b> and tolerance of it: sulking, expecting the other to guess, impatience; the other member's patience with sulking.</li>
+<li><b>Shyness and openness</b>: early shyness, slowness to confide, ease in receiving confidences. The relational profile advises shy members; the written Sonder, at their own pace, comes before the video call.</li>
+<li><b>Illness and disability</b>: a single attitude question (caring for the other). BOLIGO never asks members whether they have a disability: it is health data (GDPR, article 9) and a prohibited ground of discrimination (French Criminal Code, article 225-1).</li>
+<li><b>Languages</b>: those of the country of residence are pre-selected; "another language" is written in and brings together members who write the same one.</li>
+<li><b>Sonder</b>: concrete wording specific to each new topic ("the waiter puts the bill on the table…") and in-depth questions in every theme.</li>
+</ul>
 
 <h2>What changes compared with V5</h2>
 <ul>
@@ -293,7 +369,7 @@ const INTRO: Record<Lang, string> = {
 function render(lang: Lang): string {
   const fr = lang === 'fr';
   const html: string[] = [
-    '<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Questionnaire V6</title></head><body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4">',
+    '<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Questionnaire V6.1</title></head><body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4">',
     INTRO[lang],
   ];
   for (let m = 0; m <= 10; m++) {
@@ -304,11 +380,23 @@ function render(lang: Lang): string {
     for (const raw of questions) {
       const q = localizeQuestion(raw, lang);
       const tags: string[] = [];
-      const change = V6_CHANGES[q.id];
+      const change = V61_ADDED.has(q.id) ? 'nouvelle61' : V6_CHANGES[q.id];
       if (change) tags.push(CHANGE[lang][change]);
       if (q.multiple)
         tags.push(
-          fr ? 'Plusieurs réponses possibles' : 'Several answers possible',
+          q.maxChoices
+            ? fr
+              ? `${q.maxChoices} réponses au plus`
+              : `${q.maxChoices} answers at most`
+            : fr
+              ? 'Plusieurs réponses possibles'
+              : 'Several answers possible',
+        );
+      if (q.id === 'M0_Q10')
+        tags.push(
+          fr
+            ? 'Langues du pays de résidence pré-cochées ; « autre langue » à préciser en toutes lettres'
+            : 'Languages of the country of residence pre-selected; "another language" to be written in',
         );
       const cond = condition(q, lang);
       if (cond) tags.push((fr ? 'Condition : ' : 'Condition: ') + cond);
@@ -344,7 +432,7 @@ fs.mkdirSync(outDir, { recursive: true });
 for (const lang of ['fr', 'en'] as const) {
   const file = path.join(
     outDir,
-    `BOLIGO_Questionnaire_V6_${lang === 'fr' ? 'FR' : 'EN'}.html`,
+    `BOLIGO_Questionnaire_V6_1_${lang === 'fr' ? 'FR' : 'EN'}.html`,
   );
   fs.writeFileSync(file, render(lang));
   console.log(file);

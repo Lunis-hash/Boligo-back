@@ -98,7 +98,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M0_Q09: {
-    text: 'Do you smoke yourself?',
+    text: 'Do you smoke?',
     options: ['No, never', 'Occasionally', 'Yes, regularly'],
   },
   M0_Q08: {
@@ -113,15 +113,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M0_Q10: {
     text: 'Which languages are you comfortable living a relationship in, day to day? (several answers possible)',
     options: [
-      'Français (French)',
+      'French — Français',
       'English',
       'Arabic — العربية',
       'Lingala',
       'Kiswahili',
       'Wolof',
-      'Português (Portuguese)',
-      'Español (Spanish)',
-      'Another language',
+      'Portuguese — Português',
+      'Spanish — Español',
+      'Another language (please specify)',
     ],
   },
 
@@ -339,6 +339,13 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'When I’m upset, I can look at the situation from another angle to calm down.',
   },
   M2_Q18: { text: 'I keep my emotions to myself, even when they are strong.' },
+  M2_Q19: {
+    text: 'When I first meet someone, I feel shy and find it hard to show who I really am.',
+  },
+  M2_Q20: {
+    text: 'It takes me time before I talk about myself and how I feel.',
+  },
+  M2_Q21: { text: 'People confide in me easily.' },
 
   // ── Module 3 — Past & context
   M3_Q01: {
@@ -421,7 +428,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'Everything shared — one common pot',
       'Contributions proportional to income',
-      'Each pays their own expenses + shared costs split',
+      'Each pays their own expenses, and shared costs are split',
       'Money stays an individual matter',
     ],
   },
@@ -462,7 +469,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M4_Q07: {
-    text: 'The dowry or Mahr in your culture:',
+    text: 'The dowry or mahr in your culture:',
     options: [
       'An obligation I fully respect',
       'An important symbolic tradition',
@@ -475,7 +482,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'We save together for shared projects',
       'Each of us saves separately',
-      'Shared savings + personal savings',
+      'Shared savings and personal savings',
       'I’m not comfortable saving together',
     ],
   },
@@ -486,6 +493,42 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'We talk about it when we move in together',
       'It stays personal as long as it doesn’t affect the couple',
       'I’ve never thought about it',
+    ],
+  },
+  M4_Q10: {
+    text: 'On a first date, the bill:',
+    options: [
+      'The man should pay — it’s a sign of respect',
+      'Whoever suggested the date pays',
+      'We split it fifty-fifty',
+      'It doesn’t matter, as long as nobody feels indebted',
+    ],
+  },
+  M4_Q11: {
+    text: 'If your partner earned little or nothing for a long period:',
+    options: [
+      'I would support them without counting — that’s what a couple is for',
+      'I would support them, with a plan to get through it together',
+      'I would support them for a while, but it would end up weighing on my feelings',
+      'A lasting lack of money would be a reason to leave',
+    ],
+  },
+  M4_Q12: {
+    text: 'The place of money and lifestyle in choosing a partner:',
+    options: [
+      'Essential — I want a certain standard of living',
+      'Important — stability matters more than the amount',
+      'Secondary — we build it together',
+      'None — only the heart matters',
+    ],
+  },
+  M4_Q13: {
+    text: 'Lending your personal belongings to your partner (car, phone, computer, clothes):',
+    options: [
+      'What’s mine is yours',
+      'Gladly, as long as they ask first',
+      'Some things only — not my car or my phone',
+      'I prefer each of us to keep our own things',
     ],
   },
 
@@ -567,7 +610,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M6_Q02: {
     text: 'In arguments, I have been criticised for:',
     options: [
-      'Talking too loud or too fast',
+      'Talking too loudly or too fast',
       'Running away or cutting off communication',
       'Being sarcastic or hurtful with words',
       'I’ve never received this kind of criticism',
@@ -622,7 +665,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'When you don’t feel like physical intimacy and your partner suggests it:',
     options: [
       'I say so gently and we find a tender alternative',
-      'I accept to please them — this happens to me often',
+      'I go along with it to please them — this often happens',
       'I say no clearly, without guilt',
       'I find it hard to refuse — I don’t want to disappoint',
     ],
@@ -754,7 +797,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'A fundamental religious and spiritual act',
       'A civil and symbolic commitment',
-      'Both — civil AND religious',
+      'Both — civil and religious',
       'An optional choice — love matters more than paperwork',
     ],
   },
@@ -769,7 +812,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M8_Q05: {
-    text: 'The deal-breakers in your relationship:',
+    text: 'What would end a relationship for you, with no discussion possible:',
     options: [
       'Infidelity or a serious lie',
       'Violence or repeated disrespect',
@@ -802,6 +845,30 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Let the relationship grow before bringing it up',
       'Look for a compromise, whatever the cost',
       'Trust love to find a solution',
+    ],
+  },
+  M8_Q10: {
+    text: 'Which of these signs would make you run quickly? (3 at most)',
+    options: [
+      'Very fast, overwhelming declarations of love',
+      'Controlling jealousy: phone searched, location demanded',
+      'Disappearing for days without explanation, then coming back as if nothing happened',
+      'Staying vague about intentions: “we’ll see”, no commitment',
+      'Badmouthing all their exes',
+      'Being rude to waiters, strangers or their family',
+      'Relying on the other person’s money to live',
+      'Never admitting they were wrong',
+      'Not respecting a “no” or a boundary',
+      'Eyes glued to their phone during time together',
+    ],
+  },
+  M8_Q11: {
+    text: 'If your partner became seriously ill or lived with a disability, taking care of them would be:',
+    options: [
+      'Obvious — for better or for worse',
+      'Natural, with outside help to last over time',
+      'Frightening, but I would try',
+      'I don’t know if I could do it',
     ],
   },
 
@@ -843,7 +910,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M9_Q06: {
-    text: 'Your relationship to sacrifice in a relationship:',
+    text: 'Your attitude to sacrifice in a relationship:',
     options: [
       'I can sacrifice everything for the person I love',
       'I can make big sacrifices if it’s mutual',
@@ -862,6 +929,38 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
   M9_Q08: { text: 'I have never been jealous, not even a tiny bit.' },
   M9_Q09: { text: 'I have never told even the smallest lie.' },
+  M9_Q10: {
+    text: 'At the start of a relationship, I quickly tell the other person they are the love of my life.',
+  },
+  M9_Q11: {
+    text: 'When I have doubts, I look at the other person’s phone or ask where they are.',
+  },
+  M9_Q12: {
+    text: 'When a relationship no longer suits me, I would rather disappear than explain myself.',
+  },
+  M9_Q13: {
+    text: 'I prefer not to define the relationship too early, to keep my options open.',
+  },
+  M9_Q14: {
+    text: 'When I talk about my exes, it’s mostly to say what they did wrong.',
+  },
+  M9_Q15: { text: 'During time together, I check my phone.' },
+  M9_Q16: {
+    text: 'When I don’t get what I want, I let it show (sulking, coldness).',
+  },
+  M9_Q17: {
+    text: 'In a couple, I expect the other person to guess what I want without my having to say it.',
+  },
+  M9_Q18: { text: 'When I want something, I find it hard to wait.' },
+  M9_Q19: {
+    text: 'With a partner who sulks when they don’t get what they want:',
+    options: [
+      'It doesn’t bother me — I gladly give in to please them',
+      'I let it go, then we talk about it calmly',
+      'It quickly annoys me — I don’t give in',
+      'It’s a deal-breaker for me',
+    ],
+  },
 
   // ── Module 10 — Alchemy, vibe & desire
   M10_Q01: {
@@ -874,7 +973,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M10_Q02: {
-    text: 'My close friends would describe me as someone:',
+    text: 'My close friends would describe me as:',
     options: [
       'Funny, light-hearted and easy to be around',
       'Intense, deep and intellectually stimulating',
@@ -904,7 +1003,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'For you, attraction in a relationship comes mainly from:',
     options: [
       'Intellectual connection and stimulating conversations',
-      'Complicity and shared laughter',
+      'Closeness and shared laughter',
       'Physical presence and bodily energy',
       'The feeling of being deeply understood and accepted',
     ],
@@ -912,7 +1011,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M10_Q09: {
     text: 'What you bring that is truly unique to a relationship:',
     options: [
-      'My joy of life and light-heartedness — being with me is fun',
+      'My joie de vivre and light-heartedness — being with me is fun',
       'My depth and listening — I make the other person feel truly understood',
       'My stability and reliability — I’m always there',
       'My creativity and my taste for beauty and the unusual',
@@ -921,6 +1020,59 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M10_Q10: {
     text: 'If you had to sum up in one word the experience you want to offer your partner:',
     options: ['Security', 'Adventure', 'Depth', 'Joy'],
+  },
+  M10_Q11: {
+    text: 'Think back to the people who swept you off your feet quickly. What did their look mostly have in common?',
+    options: [
+      'An elegant, polished look',
+      'A natural, relaxed style',
+      'A sporty, energetic look',
+      'An original, artistic, unconventional style',
+      'A look rooted in their culture (clothing, codes)',
+      'Nothing in common: it surprises me every time',
+    ],
+  },
+  M10_Q12: {
+    text: 'Your own look, day to day:',
+    options: [
+      'Elegant and polished',
+      'Natural and relaxed',
+      'Sporty and energetic',
+      'Original, artistic, unconventional',
+      'Rooted in my culture (clothing, codes)',
+      'I don’t really pay attention to it',
+    ],
+  },
+  M10_Q13: {
+    text: 'In someone, what sparks attraction first:',
+    options: [
+      'Their eyes and smile',
+      'Their voice and way of speaking',
+      'Their look and bearing',
+      'Their confidence, their charisma',
+      'Their kindness towards others',
+      'Their humour and wit',
+    ],
+  },
+  M10_Q14: {
+    text: 'What people notice first about you:',
+    options: [
+      'My eyes and smile',
+      'My voice and way of speaking',
+      'My look and bearing',
+      'My confidence, my charisma',
+      'My kindness towards others',
+      'My humour and wit',
+    ],
+  },
+  M10_Q15: {
+    text: 'For a story to begin, physical attraction has to be:',
+    options: [
+      'Immediate — without a spark at first sight, it won’t work',
+      'There, and it grows as we get to know each other',
+      'Secondary — it grows out of the connection',
+      'It really depends on the person',
+    ],
   },
 };
 
@@ -964,7 +1116,7 @@ export function localizeQuestion(
     ...q,
     text: t.text,
     options: q.options.map((o, i) => ({
-      key: o.key,
+      ...o,
       text: options?.[i] ?? o.text,
     })),
   };

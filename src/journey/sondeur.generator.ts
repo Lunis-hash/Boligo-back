@@ -28,10 +28,12 @@ import {
 } from './harmony-question.types';
 import {
   CONVERGENT,
+  DEEP_GENERIC,
   EXTRA_GENERIC,
   EXTRA_TARGETED,
   PoolTemplate,
   SHARED_RISK,
+  TOPIC_DEEP,
 } from './sondeur.pool';
 
 export const SONDEUR_DAYS = 3;
@@ -669,14 +671,22 @@ function pickFresh(
   return null;
 }
 
-/** Divergences d'un thème, de la plus grave à la moins grave (mineures exclues). */
+/**
+ * Divergences d'un thème, de la plus grave à la moins grave. Les mineures sont
+ * écartées, sauf sur les sujets de fond V6.1 (premier rendez-vous, timidité…)
+ * qui ont leurs propres formulations : elles passent alors en dernier.
+ */
 function divergencesForTheme(
   report: DivergenceReport,
   theme: Theme,
 ): Divergence[] {
-  return report.divergences.filter(
-    (d) => d.theme === theme && d.severity !== 'mineure',
-  );
+  const ofTheme = report.divergences.filter((d) => d.theme === theme);
+  return [
+    ...ofTheme.filter((d) => d.severity !== 'mineure'),
+    ...ofTheme.filter(
+      (d) => d.severity === 'mineure' && d.questionId in TOPIC_DEEP,
+    ),
+  ];
 }
 
 function pickAi(
@@ -696,13 +706,20 @@ function pickAi(
   return candidate ?? null;
 }
 
-/** Les cinq formulations d'un créneau sans divergence. */
+/** Les formulations d'un créneau sans divergence (cinq, plus les questions de fond V6.1). */
 function genericPool(theme: Theme, day: number): PoolTemplate[] {
   return [
     GENERIC[theme][day],
     GENERIC_B[theme][day],
     ...EXTRA_GENERIC[theme][day],
+    ...(DEEP_GENERIC[theme]?.[day] ?? []),
   ];
+}
+
+/** Formulation de fond propre au sujet de la divergence (V6.1), si elle existe. */
+function topicTemplate(day: number, d: Divergence): PoolTemplate[] {
+  const t = TOPIC_DEEP[d.questionId]?.[day];
+  return t ? [{ text: t.text(d), options: t.options }] : [];
 }
 
 /**
@@ -756,7 +773,10 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
 
       if (divergence) {
         const pick = pickFresh(
-          arrange(targetedPool(day, divergence), seed, `${slot}|div`),
+          [
+            ...topicTemplate(day, divergence),
+            ...arrange(targetedPool(day, divergence), seed, `${slot}|div`),
+          ],
           mem,
         );
         if (pick) {

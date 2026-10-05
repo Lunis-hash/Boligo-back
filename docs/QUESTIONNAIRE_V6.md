@@ -1,17 +1,17 @@
-# Questionnaire BOLIGO V6
+# Questionnaire BOLIGO V6 (mise à jour V6.1)
 
 Date : 5 octobre 2026. Ce document compare le questionnaire V5 du Drive au Grand
 Entretien de l'application, puis décrit la V6 telle qu'elle est désormais
-appliquée.
+appliquée. La section 8 décrit la V6.1 (139 questions).
 
 Le document complet, question par question, est généré depuis le code
 (`npx ts-node -P tsconfig.json --transpile-only scripts/questionnaire-doc.ts`) :
-- `docs/questionnaire/BOLIGO_Questionnaire_V6_FR.html` ;
-- `docs/questionnaire/BOLIGO_Questionnaire_V6_EN.html`.
+- `docs/questionnaire/BOLIGO_Questionnaire_V6_1_FR.html` ;
+- `docs/questionnaire/BOLIGO_Questionnaire_V6_1_EN.html`.
 
 Les mêmes documents sont déposés dans le Drive, dossier « Questionnaire »
-(`BOLIGO_Questionnaire_V6_FRANCAIS`, `BOLIGO_Questionnaire_V6_ENGLISH`). Les
-fichiers V5 n'ont pas été modifiés.
+(`BOLIGO_Questionnaire_V6_1_FRANCAIS`, `BOLIGO_Questionnaire_V6_1_ENGLISH`,
+en Google Docs et en Word). Les fichiers V5 et V6 n'ont pas été modifiés.
 
 ## 1. Écart entre la V5 et l'application (avant la V6)
 
@@ -192,3 +192,132 @@ couvre :
 - le choix multiple ;
 - 113 questions répondues ;
 - l'affichage du profil relationnel au bilan.
+
+## 8. V6.1 : localisation, langues, orthographe et nouveaux sujets
+
+### 8.1 Localisation et périmètre (M0_Q02)
+
+- **Jamais posée deux fois** : le périmètre est choisi à l'inscription
+  (étape 3 : local, national, international) et enregistré comme réponse
+  M0_Q02 ; l'entretien ne la repose jamais, même sans réponse enregistrée
+  (test `meeting-scope.spec.ts`).
+- **Défauts corrigés** :
+  - le bouton « Détecter ma position » échouait toujours sur le site web (le
+    géocodeur d'Expo n'existe pas sur le web) : la position, arrondie à
+    environ un kilomètre, est désormais convertie en ville par OpenStreetMap
+    (Nominatim), ajouté à la politique de confidentialité ;
+  - une ville introuvable par le géocodeur retenait la première ville de la
+    liste (« Paris ») : c'est désormais la région, ou rien ;
+  - à l'inscription, la première ville du pays était présélectionnée : un
+    membre pouvait être enregistré à Paris sans l'avoir choisi. La ville est
+    maintenant à choisir, et une ville absente de la liste peut être saisie ;
+  - modifier sa ville dans le profil effaçait le pays : le membre sortait des
+    rencontres « national ». Le pays est conservé, et les filtres utilisent la
+    ville de résidence plutôt que la ville affichée ;
+  - l'écran d'inscription promettait « Vous pourrez modifier cette préférence
+    à tout moment » sans écran pour le faire : « Modifier le profil » permet
+    maintenant de changer de pays, de ville et de périmètre ;
+  - « Même région » comparait le pays au lieu de la région.
+
+### 8.2 Langues (M0_Q10)
+
+- Les langues du pays de résidence (choisi ou détecté à l'inscription) sont
+  pré-cochées : Sénégal → français et wolof ; Espagne → espagnol ;
+  Allemagne → « autre langue : allemand ». Le membre modifie librement.
+- Anglais et espagnol sont proposés pour tous ; « Une autre langue
+  (précisez) » se complète en toutes lettres (`M0_Q10_AUTRE`).
+- Deux membres qui écrivent la même langue sont rapprochés ; une langue
+  écrite n'exclut jamais personne (une faute de frappe ne doit pas séparer).
+
+### 8.3 Orthographe
+
+Audit complet, en français (une trentaine de corrections : « vs »,
+« + », « ET », « fun », virgules, « non-négociable », accord des énoncés et
+des réponses à M8_Q09) et en anglais (« Do you smoke yourself? », « accept
+to », « complicity », « joy of life »).
+
+### 8.4 Nouvelles questions (24)
+
+| Sujet | Questions | Fondement | Utilisation |
+|---|---|---|---|
+| Timidité et ouverture | M2_Q19 à M2_Q21 (accord) | Timidité (Cheek & Buss), échelle « Opener » (Miller, Berg & Archer) | Deux timidités ou timidité face à « on se parle de tout » : nuance abordée par le Sondeur ; conseil dans le profil relationnel |
+| Premier rendez-vous | M4_Q10 | Lever, Frederick & Hertz (2015) : qui paie reste un malaise fréquent | « L'homme paie » / « moitié-moitié » : à explorer |
+| Manque d'argent | M4_Q11 | Le stress financier est l'un des facteurs les plus liés aux ruptures (Conger ; Dew, 2008) | « Sans compter » / « raison de partir » : majeure |
+| Niveau de vie | M4_Q12 | Matérialisme et qualité du couple (Carroll et al., 2011) | « Essentiel » / « seul le cœur compte » : majeure |
+| Affaires personnelles | M4_Q13 | Limites et territoire personnel | « Tout est à toi » / « chacun ses affaires » : à explorer |
+| Signaux d'alerte actuels | M8_Q10 (3 au plus) | Love bombing, contrôle, ghosting, intentions floues… | Croisés avec les habitudes de l'autre (M9_Q10 à M9_Q15, M6_Q14) : « souvent » → à explorer, « très souvent » → majeure |
+| Maladie et handicap | M8_Q11 | Attitude, jamais l'état de santé | « Pour le meilleur et pour le pire » / « je ne sais pas » : à explorer |
+| Habitudes | M9_Q10 à M9_Q15 (fréquence) | — | Jamais pénalisées seules : seulement face au signal d'alerte de l'autre |
+| Caractère exigeant | M9_Q16 à M9_Q18 | Attente que l'autre devine (Eidelson & Epstein) | Face à « rédhibitoire » (M9_Q19) : majeure ; deux caractères exigeants : à explorer |
+| Patience | M9_Q19 | — | Voir ligne précédente |
+| Attirance physique | M10_Q11 à M10_Q15 | Préférences idéales peu prédictives (Eastwick & Finkel, 2008) ; « un type » existe (Park & MacDonald, 2019) | L'allure qui a fait chavirer l'un face à celle de l'autre, le déclic face à ce qu'on remarque chez l'autre : affinité du module 10. Rythme de l'attirance : à explorer |
+
+Aucune question ne porte sur le corps, la taille, le poids ou la couleur de
+peau (test dédié).
+
+**Mesure sur des profils fictifs** (mêmes réponses, une seule différence) :
+
+| Paire | Score |
+|---|---|
+| Deux profils identiques | 98 % |
+| « L'homme paie » / « moitié-moitié » | 98 %, sujet à explorer dans le Sondeur |
+| Signal « jalousie » et « disparitions » face à quelqu'un qui le fait très souvent | 69 %, deux divergences majeures |
+| Caractère exigeant face à « c'est rédhibitoire » | 79 %, une divergence majeure |
+| « Je soutiens sans compter » / « raison de partir » et niveau de vie | 69 % |
+| Chacun a « le type » de l'autre / aucun des deux | Alchimie (module 10) : 100 % / 85 % |
+
+### 8.5 Handicap : ce que dit la loi
+
+- **Aucune obligation de le signaler**, ni au site ni à un partenaire.
+- **Donnée de santé** : un handicap relève des données concernant la santé
+  (RGPD, articles 4 et 9). Les collecter exige un consentement explicite et
+  séparé, une finalité précise et, en pratique, une analyse d'impact (AIPD).
+- **Discrimination interdite** : le handicap fait partie des critères de
+  l'article 225-1 du Code pénal ; refuser un service pour ce motif est puni
+  (article 225-2). Un filtre « sans handicap » est donc exclu.
+- **Choix retenu** : BOLIGO ne demande pas si un membre a un handicap. Il
+  mesure l'attitude de chacun face à la maladie ou au handicap d'un
+  partenaire (M8_Q11), et le Sondeur en parle. Le membre reste libre d'en
+  parler lui-même, quand il le souhaite (description, conversation).
+- **Si l'on veut aller plus loin** : un champ facultatif « à savoir sur moi »,
+  rempli par le membre, avec consentement explicite, jamais filtrable, après
+  AIPD et validation juridique.
+- **Accessibilité** : la loi n° 2005-102 et l'Acte européen sur
+  l'accessibilité (en vigueur depuis le 28 juin 2025) visent les services
+  numériques ; les micro-entreprises en sont exemptées, mais c'est une bonne
+  pratique à prévoir.
+
+### 8.6 Sondeur : couverture et profondeur
+
+Avant la V6.1, le Sondeur couvrait la famille, le budget du foyer, la perte
+d'emploi et les dettes. Il ne traitait ni le premier rendez-vous, ni le
+50/50, ni le manque d'argent comme cause de rupture, ni le matérialisme, ni
+le prêt des affaires, ni l'attirance, ni les signaux d'alerte actuels, ni les
+caprices, ni la timidité, ni la maladie.
+
+- **Formulations propres à chaque sujet** (`TOPIC_DEEP`, trois par sujet, une
+  par jour) : une scène concrète plutôt qu'une question abstraite, par
+  exemple « Premier rendez-vous : l'un de vous pense “C'est à l'homme de
+  payer”, l'autre “On partage, moitié-moitié”. Le serveur pose l'addition sur
+  la table : que se passe-t-il concrètement ? ». Elles passent avant les
+  formulations génériques, et même une divergence mineure sur ces sujets est
+  traitée.
+- **Questions de fond dans chaque thème** (`DEEP_GENERIC`), posées à tout
+  couple.
+- **Consigne de l'IA** : liste des sujets de fond par thème, scènes précises,
+  jamais de question sur le corps ou la santé.
+
+### 8.7 Membres présents
+
+La suppression des 14 membres a été demandée et confirmée (sans
+sauvegarde). L'outil Supabase exige une autorisation qui ne parvient pas à
+la session : un script transactionnel a été remis au propriétaire, à
+exécuter dans l'éditeur SQL du projet BOLIGO (jamais dans le projet
+OWEKE). Il n'est pas versionné.
+
+### 8.8 Tests V6.1
+
+- Serveur : `src/matching/v61-rules.spec.ts`, `src/interview/meeting-scope.spec.ts`,
+  `src/matching/discover-filters.spec.ts`.
+- Application : `services/__tests__/location.test.ts`, `services/__tests__/interview.test.ts`.
+

@@ -18,7 +18,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Location from 'expo-location';
 import {
   ChevronLeft,
   ChevronRight,
@@ -43,6 +42,7 @@ import legal from '@/constants/legal.json';
 import { formatLegalDate } from '@/components/LegalDocument';
 
 import { COUNTRIES, Country, detectUserCountry } from '@/constants/countries';
+import { detectPlace, LocationPermissionError } from '@/services/location';
 
 // ─── Écran principal ───────────────────────────────────────────────
 import { useAuth } from '@/context/auth';
@@ -190,6 +190,7 @@ export default function ProfileDetailsScreen() {
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showRegionModal, setShowRegionModal]   = useState(false);
   const [countrySearch, setCountrySearch]       = useState('');
+  const [citySearch, setCitySearch]             = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
 
   // Step 3 — Préférences
@@ -213,13 +214,12 @@ export default function ProfileDetailsScreen() {
     if (token) {
       signOut().catch(() => {});
     }
+    // Pays deviné d'après le fuseau horaire ; la ville reste à choisir (une
+    // ville présélectionnée fausserait le périmètre « Local »).
     const detected = detectUserCountry();
     if (detected) {
       setCountry(detected);
       setPhoneDialCode(detected.dialCode);
-      if (detected.regions.length > 0) {
-        setRegion(detected.regions[0]);
-      }
     }
   }, []);
 
@@ -383,31 +383,26 @@ export default function ProfileDetailsScreen() {
   const handleGPS = async () => {
     setGpsLoading(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission refusée', 'Activez la localisation dans vos paramètres.');
-        setGpsLoading(false);
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync({});
-      const geo = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-      if (geo.length > 0) {
-        const g = geo[0];
-        const found = COUNTRIES.find(c => c.code === g.isoCountryCode);
-        if (found) {
-          setCountry(found);
-          setPhoneDialCode(found.dialCode);
-          const cityMatch = found.regions.find(r =>
-            r.toLowerCase().includes((g.city || '').toLowerCase())
-          );
-          setRegion(cityMatch || g.city || '');
+      const place = await detectPlace();
+      if (!place.country) {
+        Alert.alert(
+          'Pays non proposé',
+          'Votre pays ne figure pas encore dans la liste. Choisissez le pays le plus proche ou réessayez plus tard.',
+        );
+      } else {
+        setCountry(place.country);
+        setPhoneDialCode(place.country.dialCode);
+        setRegion(place.city);
+        if (!place.city) {
+          Alert.alert('Ville introuvable', 'Votre pays est détecté : choisissez votre ville dans la liste.');
         }
       }
-    } catch {
-      Alert.alert('Erreur', 'Impossible de récupérer votre position.');
+    } catch (e) {
+      if (e instanceof LocationPermissionError) {
+        Alert.alert('Permission refusée', 'Activez la localisation dans vos paramètres, ou choisissez votre ville manuellement.');
+      } else {
+        Alert.alert('Position introuvable', 'Impossible de détecter votre position. Choisissez votre pays et votre ville manuellement.');
+      }
     }
     setGpsLoading(false);
   };
@@ -459,6 +454,16 @@ export default function ProfileDetailsScreen() {
   const filteredCountries = COUNTRIES.filter(c =>
     c.name.toLowerCase().includes(countrySearch.toLowerCase())
   );
+
+  // Villes du pays filtrées par la saisie ; une ville absente peut être choisie telle quelle.
+  const citySearchTrim = citySearch.replace(/\s+/g, ' ').trim();
+  const filteredCities = (country?.regions || []).filter(r =>
+    r.toLowerCase().includes(citySearchTrim.toLowerCase())
+  );
+  const customCity =
+    citySearchTrim.length >= 2 && !filteredCities.some(r => r.toLowerCase() === citySearchTrim.toLowerCase())
+      ? citySearchTrim
+      : null;
 
   // ─── Validation par étape ────────────────────────────────────────
   const isStepValid = () => {
@@ -692,7 +697,7 @@ export default function ProfileDetailsScreen() {
     <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
       <Text style={styles.stepLabel}>Étape 3 sur 4</Text>
       <Text style={styles.stepTitle}>Où souhaitez-vous{'\n'}rencontrer ?</Text>
-      <Text style={styles.stepDesc}>Vous pourrez modifier cette préférence à tout moment.</Text>
+      <Text style={styles.stepDesc}>Vous pourrez la modifier à tout moment depuis « Modifier le profil ».</Text>
 
       <View style={styles.scopeList}>
         {MEETING_SCOPES.map((scope) => {
@@ -1278,14 +1283,36 @@ export default function ProfileDetailsScreen() {
             <Text style={styles.sheetTitle}>
               Ville / Région {country?.flag} {country?.name}
             </Text>
+
+            {/* Ville absente de la liste : saisie libre (sans virgule, réservée au pays). */}
+            <View style={styles.searchBar}>
+              <Search size={16} color={Colors.text.primary40} />
+              <TextInput
+                style={styles.searchInput}
+                value={citySearch}
+                onChangeText={(t) => setCitySearch(t.replace(/,/g, ' '))}
+                placeholder="Rechercher ou saisir votre ville…"
+                placeholderTextColor={Colors.text.primary40}
+                testID="city-search"
+              />
+            </View>
+            {customCity && (
+              <TouchableOpacity
+                style={styles.countryItem}
+                onPress={() => { setRegion(customCity); setCitySearch(''); setShowRegionModal(false); }}
+                activeOpacity={0.7}
+                testID="city-custom"
+              >
+                <Plus size={16} color={Colors.primary.red} />
+                <Text style={[styles.countryName, styles.countryNameActive]}>Choisir « {customCity} »</Text>
+              </TouchableOpacity>
+            )}
             <FlatList
-              data={country?.regions || []}
-              keyExtractor={r => r}
-              showsVerticalScrollIndicator={false}
+              data={filteredCities}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[styles.countryItem, region === item && styles.countryItemActive]}
-                  onPress={() => { setRegion(item); setShowRegionModal(false); }}
+                  onPress={() => { setRegion(item); setCitySearch(''); setShowRegionModal(false); }}
                   activeOpacity={0.7}
                 >
                   <MapPin size={16} color={region === item ? Colors.primary.red : Colors.text.primary40} />

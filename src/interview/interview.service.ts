@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { AiService } from '../ai/ai.service';
@@ -9,7 +13,14 @@ import {
 } from '../portrait/self-portrait';
 import { collectRawAnswers } from '../matching/divergence.engine';
 import { ageFromBirthDate, pendingQuestions } from './questions.service';
-import { QUESTIONS, isValidAnswer, normalizeAnswer } from './questions.data';
+import {
+  FREE_TEXT_SUFFIX,
+  QUESTIONS,
+  answerKeys,
+  cleanFreeText,
+  isValidAnswer,
+  normalizeAnswer,
+} from './questions.data';
 
 const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
 
@@ -53,8 +64,13 @@ export class InterviewService {
 
     // Un module n'est terminé que si plus aucune question applicable n'y reste à
     // poser : la réponse M0_Q02 enregistrée à l'inscription ne termine pas le module 0.
-    const completedModules = await this.completedModules(userId, interview.responses);
-    const firstPending = [...Array(11).keys()].find((m) => !completedModules.includes(m));
+    const completedModules = await this.completedModules(
+      userId,
+      interview.responses,
+    );
+    const firstPending = [...Array(11).keys()].find(
+      (m) => !completedModules.includes(m),
+    );
     return {
       interviewId: interview.id,
       status: interview.status,
@@ -77,7 +93,9 @@ export class InterviewService {
     const age = ageFromBirthDate(user?.birthDate ?? null);
     const saved = new Set(responses.map((r) => r.moduleNumber));
     return [...Array(11).keys()].filter(
-      (m) => saved.has(m) && pendingQuestions(m, answers, age, user?.gender).length === 0,
+      (m) =>
+        saved.has(m) &&
+        pendingQuestions(m, answers, age, user?.gender).length === 0,
     );
   }
 
@@ -102,7 +120,12 @@ export class InterviewService {
     // Seules les réponses prévues par ce module sont acceptées : une question
     // d'un autre module ou une option inexistante fausserait le matching.
     const answers: Record<string, string> = {};
+    const freeTexts: Array<[string, unknown]> = [];
     for (const [questionId, value] of Object.entries(dto.answers ?? {})) {
+      if (questionId.endsWith(FREE_TEXT_SUFFIX)) {
+        freeTexts.push([questionId, value]);
+        continue;
+      }
       const q = QUESTION_BY_ID.get(questionId);
       // Choix multiple (langues) : « A,B » ; sinon une seule option existante.
       if (
@@ -115,6 +138,34 @@ export class InterviewService {
         );
       }
       answers[questionId] = normalizeAnswer(q, value as string);
+    }
+    // Précision écrite (« une autre langue : bambara ») : gardée seulement si
+    // l'option à préciser est cochée dans la même réponse.
+    for (const [key, value] of freeTexts) {
+      const q = QUESTION_BY_ID.get(key.slice(0, -FREE_TEXT_SUFFIX.length));
+      const freeKey = q?.options.find((o) => o.freeText)?.key;
+      if (!q || q.moduleNumber !== dto.moduleNumber || !freeKey) {
+        throw new BadRequestException(
+          `Réponse invalide pour la question ${key.slice(0, 20)}.`,
+        );
+      }
+      if (!answerKeys(answers[q.id]).includes(freeKey)) continue;
+      const text = cleanFreeText(value);
+      if (!text) {
+        throw new BadRequestException(
+          'Précisez la langue en lettres (2 à 60 caractères).',
+        );
+      }
+      answers[key] = text;
+    }
+    // Option à préciser décochée : l'ancienne précision est effacée.
+    for (const [questionId, value] of Object.entries({ ...answers })) {
+      const freeKey = QUESTION_BY_ID.get(questionId)?.options.find(
+        (o) => o.freeText,
+      )?.key;
+      const key = `${questionId}${FREE_TEXT_SUFFIX}`;
+      if (freeKey && !answerKeys(value).includes(freeKey) && !(key in answers))
+        answers[key] = '';
     }
 
     let interview = await this.prisma.interviewIA.findFirst({
@@ -129,7 +180,11 @@ export class InterviewService {
         select: { id: true },
       });
       if (completed) {
-        return { success: true, allModulesCompleted: true, alreadyCompleted: true };
+        return {
+          success: true,
+          allModulesCompleted: true,
+          alreadyCompleted: true,
+        };
       }
       interview = await this.startInterview(userId);
     }
@@ -167,7 +222,8 @@ export class InterviewService {
       where: { interviewId: interview.id },
       select: { moduleNumber: true, rawResponses: true },
     });
-    const allModulesCompleted = (await this.completedModules(userId, responses)).length === 11;
+    const allModulesCompleted =
+      (await this.completedModules(userId, responses)).length === 11;
 
     if (allModulesCompleted) {
       await this.completeInterview(interview.id, userId);
@@ -250,7 +306,10 @@ export class InterviewService {
       clarityScore: portrait?.clarity ?? 0,
       // Ancien champ lu par les versions précédentes de l'app pour le « score de clarté ».
       maturityScore: portrait?.clarity ?? 0,
-      alchemyScore: mentalMap?.alchemyScore != null ? Math.round(mentalMap.alchemyScore * 100) : null,
+      alchemyScore:
+        mentalMap?.alchemyScore != null
+          ? Math.round(mentalMap.alchemyScore * 100)
+          : null,
       keyValues: portrait?.values.map((v) => v.label) ?? [],
       needsList: portrait?.expectations.map((e) => plain(e.text)) ?? [],
       redFlags: portrait?.redFlags ?? [],
@@ -279,8 +338,8 @@ export class InterviewService {
     });
 
     // 3. Calcul de l'âge simplifié
-    const age = user.birthDate 
-      ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() 
+    const age = user.birthDate
+      ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
       : 'inconnu';
 
     const userContext = {
@@ -291,7 +350,10 @@ export class InterviewService {
     };
 
     // 4. Appel à l'IA Gemini
-    const aiResult = await this.aiService.generateProfileSynthesis(userContext, responses);
+    const aiResult = await this.aiService.generateProfileSynthesis(
+      userContext,
+      responses,
+    );
 
     // 5. Enregistrement de la Carte Mentale
     await this.prisma.mentalMap.create({

@@ -1,6 +1,6 @@
 # Politique de confidentialité — BOLIGO
 
-Version du 2026-10-04.
+Version du 2026-10-05.
 
 Cette politique explique quelles données BOLIGO collecte, pourquoi, combien de temps, avec qui elles sont partagées et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.
 
@@ -42,7 +42,7 @@ Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et 
 
 ## 5. Destinataires et sous-traitants
 
-Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
+Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
 
 Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.
 
