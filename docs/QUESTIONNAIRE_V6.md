@@ -1,17 +1,19 @@
-# Questionnaire BOLIGO V6 (mise à jour V6.1)
+# Questionnaire BOLIGO V6 (mise à jour V6.2)
 
 Date : 5 octobre 2026. Ce document compare le questionnaire V5 du Drive au Grand
 Entretien de l'application, puis décrit la V6 telle qu'elle est désormais
-appliquée. La section 8 décrit la V6.1 (139 questions).
+appliquée. La section 8 décrit la V6.1 et la V6.2 (139 questions) ; la V6.2
+regroupe l'écart d'âge de 10 ans, les quatre propositions de langue et la double
+origine (section 8.2 bis).
 
 Le document complet, question par question, est généré depuis le code
 (`npx ts-node -P tsconfig.json --transpile-only scripts/questionnaire-doc.ts`) :
-- `docs/questionnaire/BOLIGO_Questionnaire_V6_1_FR.html` ;
-- `docs/questionnaire/BOLIGO_Questionnaire_V6_1_EN.html`.
+- `docs/questionnaire/BOLIGO_Questionnaire_V6_2_FR.html` ;
+- `docs/questionnaire/BOLIGO_Questionnaire_V6_2_EN.html`.
 
 Les mêmes documents sont déposés dans le Drive, dossier « Questionnaire »
-(`BOLIGO_Questionnaire_V6_1_FRANCAIS`, `BOLIGO_Questionnaire_V6_1_ENGLISH`,
-en Google Docs et en Word). Les fichiers V5 et V6 n'ont pas été modifiés.
+(`BOLIGO_Questionnaire_V6_2_FRANCAIS`, `BOLIGO_Questionnaire_V6_2_ENGLISH`,
+en Google Docs). Les fichiers V5, V6 et V6.1 n'ont pas été modifiés.
 
 ## 1. Écart entre la V5 et l'application (avant la V6)
 
