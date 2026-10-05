@@ -105,14 +105,22 @@ Tests : `src/matching/compatibility-scale.spec.ts`,
 `src/matching/dealbreaker-rules.spec.ts`, `src/matching/discover-filters.spec.ts`,
 `src/portrait/portrait.quality.spec.ts`, `src/ai/ai-bio-guard.spec.ts`.
 
-### Décisions qui vous reviennent (non modifiées)
+### Décisions prises (5 octobre 2026)
 
-- **Écart d'âge maximal :** un homme de 52 ans et une étudiante de 19 ans peuvent
-  encore se voir si leurs critères l'autorisent tous les deux (59 % après correction).
-  Faut-il un écart maximal par défaut ?
-- **Question sur le tabac :** la scinder en deux, « fumez-vous ? » et « l'acceptez-vous
-  chez l'autre ? ». Aujourd'hui, un fumeur qui répond « sans importance » n'est pas
-  repéré.
+- **Écart d'âge : 5 ans au plus**, quelle que soit la préférence (« plus jeune »,
+  « plus âgé(e) », « peu importe »), dans la Découverte comme à l'invitation. Les
+  libellés de la question l'indiquent désormais.
+- **Tabac : question scindée.**
+  - « Vous-même, fumez-vous ? » (nouvelle) s'ajoute à « Le tabac, l'alcool ou
+    d'autres substances chez votre partenaire ».
+  - Un fumeur est repéré même s'il a répondu « sans importance » pour l'autre :
+    face à « rédhibitoire », c'est une incompatibilité déclarée.
+  - La fiche affiche « Non-fumeur / Fumeur occasionnel / Fumeur ».
+  - Les entretiens déjà terminés ne sont pas rouverts : l'ancienne réponse
+    « je consomme moi-même » reste prise en compte.
+
+### Points encore ouverts
+
 - **Ouverture des analyses :** elles commencent souvent de la même façon. Une
   vraie lecture croisée des réponses, faite par l'IA, est la prochaine étape.
 - **« Passer » non mémorisé côté serveur :** un profil passé revient plus tard.

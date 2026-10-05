@@ -12,6 +12,7 @@ describe('pendingQuestions', () => {
       'M0_Q05',
       'M0_Q06',
       'M0_Q07',
+      'M0_Q09',
       'M0_Q08',
     ]);
   });

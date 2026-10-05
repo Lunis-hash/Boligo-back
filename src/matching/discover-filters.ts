@@ -21,6 +21,12 @@ export function cityParts(city: string | null | undefined): string[] {
   return (city ?? '').split(',').map(norm).filter(Boolean);
 }
 
+/**
+ * Règle BOLIGO : jamais plus de 5 ans d'écart entre deux membres, quelle que
+ * soit la préférence déclarée (« plus jeune », « plus âgé(e) », « peu importe »).
+ */
+export const MAX_AGE_GAP = 5;
+
 /** Le candidat entre-t-il dans les critères du Module 0 du membre ? */
 export function acceptsCandidate(
   viewer: FilterSubject,
@@ -28,10 +34,10 @@ export function acceptsCandidate(
 ): boolean {
   const agePref = viewer.answers.M0_Q01;
   if (viewer.age && candidate.age) {
-    if (agePref === 'A' && Math.abs(candidate.age - viewer.age) > 5)
-      return false;
-    if (agePref === 'B' && candidate.age >= viewer.age) return false;
-    if (agePref === 'C' && candidate.age <= viewer.age) return false;
+    const gap = candidate.age - viewer.age;
+    if (Math.abs(gap) > MAX_AGE_GAP) return false;
+    if (agePref === 'B' && gap >= 0) return false;
+    if (agePref === 'C' && gap <= 0) return false;
   }
 
   const v = cityParts(viewer.city);
@@ -67,11 +73,12 @@ export function birthDateBounds(
     d.setFullYear(d.getFullYear() - n);
     return d;
   };
-  if (agePref === 'A')
-    return { gte: yearsAgo(viewerAge + 7), lte: yearsAgo(viewerAge - 6) };
-  if (agePref === 'B') return { gte: yearsAgo(viewerAge + 1) };
-  if (agePref === 'C') return { lte: yearsAgo(viewerAge - 1) };
-  return undefined;
+  // Toujours dans la limite de MAX_AGE_GAP ans (un an de marge de chaque côté).
+  const oldest = yearsAgo(viewerAge + MAX_AGE_GAP + 2);
+  const youngest = yearsAgo(viewerAge - MAX_AGE_GAP - 1);
+  if (agePref === 'B') return { gte: yearsAgo(viewerAge + 1), lte: youngest };
+  if (agePref === 'C') return { gte: oldest, lte: yearsAgo(viewerAge - 1) };
+  return { gte: oldest, lte: youngest };
 }
 
 /**

@@ -34,6 +34,7 @@ import {
   DETAIL_CHILDREN_WISH,
   DETAIL_EDUCATION,
   DETAIL_LIFESTYLE,
+  DETAIL_SMOKING,
   DETAIL_RELIGION,
   DETAIL_SITUATION,
   EXPECT_ENERGY,
@@ -369,6 +370,7 @@ function details(input: PortraitInput): Record<string, string> {
     ['religion', pick(DETAIL_RELIGION, a, 'M1_Q05', g)],
     ['education', pick(DETAIL_EDUCATION, a, 'M0_Q07', g)],
     ['lifestyle', pick(DETAIL_LIFESTYLE, a, 'M7_Q01', g)],
+    ['smoking', pick(DETAIL_SMOKING, a, 'M0_Q09', g)],
     ['city', shortCity(input.city)],
   ];
   return Object.fromEntries(
