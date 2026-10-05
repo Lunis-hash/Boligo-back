@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import Groq from 'groq-sdk';
 import { OpenRouterService } from './openrouter.service';
 import {
@@ -9,11 +9,23 @@ import {
 import { decodeUserResponses } from '../interview/questions.data';
 import { collectRawAnswers } from '../matching/divergence.engine';
 import { buildPortrait } from '../portrait/portrait.writer';
+import {
+  GROQ_PREFERRED_MODELS,
+  isModelUnavailableError,
+  parseModelList,
+  pickGroqModel,
+} from './groq-model';
+
+/** La liste des modèles Groq est relue toutes les six heures. */
+const GROQ_MODEL_TTL_MS = 6 * 60 * 60 * 1000;
 
 @Injectable()
-export class AiService {
+export class AiService implements OnModuleInit {
   private readonly logger = new Logger(AiService.name);
   private groq: Groq | null = null;
+  private groqModel: { id: string; resolvedAt: number } | null = null;
+  /** Modèles qui ont répondu « introuvable » : écartés jusqu'au prochain redémarrage. */
+  private readonly groqUnavailable = new Set<string>();
   private readonly moderationCache = new Map<
     string,
     { result: { allowed: boolean; reason?: string; category?: string }; expiresAt: number }
@@ -26,6 +38,11 @@ export class AiService {
     if (groqApiKey) {
       this.groq = new Groq({ apiKey: groqApiKey, timeout: 20_000, maxRetries: 1 });
     }
+  }
+
+  /** Au démarrage, le modèle Groq retenu apparaît dans les journaux. */
+  onModuleInit() {
+    if (this.groq) void this.resolveGroqModel().catch(() => undefined);
   }
 
   /**
@@ -50,20 +67,57 @@ export class AiService {
     }
 
     if (this.groq) {
-      const completion = await this.groq.chat.completions.create({
-        // Modèle ultra-léger par défaut (coût quasi nul) ; surchargeable par GROQ_MODEL.
-        model: process.env.GROQ_MODEL?.trim() || 'llama-3.1-8b-instant',
-        messages: [
-          ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
-          { role: 'user' as const, content: prompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2048,
-      });
-      return completion.choices[0]?.message?.content ?? '';
+      // Un modèle retiré par Groq ne doit pas éteindre l'IA : on en change une fois.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const model = await this.resolveGroqModel();
+        try {
+          const completion = await this.groq.chat.completions.create({
+            model,
+            messages: [
+              ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
+              { role: 'user' as const, content: prompt },
+            ],
+            temperature: 0.7,
+            max_tokens: 2048,
+          });
+          return completion.choices[0]?.message?.content ?? '';
+        } catch (error) {
+          if (attempt === 0 && isModelUnavailableError(error)) {
+            this.logger.warn(`⚠️ [Groq] Modèle « ${model} » indisponible, choix d'un autre modèle.`);
+            this.groqUnavailable.add(model);
+            this.groqModel = null;
+            continue;
+          }
+          throw error;
+        }
+      }
     }
 
     throw new Error('Aucun fournisseur d\'IA disponible (OpenRouter et Groq absents ou en échec).');
+  }
+
+  /**
+   * Modèle Groq à utiliser : GROQ_MODEL (un ou plusieurs, séparés par des
+   * virgules) puis nos préférences, filtrés par la liste des modèles ouverts
+   * au compte. Sans réponse de Groq, on garde la première préférence.
+   */
+  private async resolveGroqModel(): Promise<string> {
+    if (this.groqModel && Date.now() - this.groqModel.resolvedAt < GROQ_MODEL_TTL_MS) {
+      return this.groqModel.id;
+    }
+    const preferred = [...parseModelList(process.env.GROQ_MODEL), ...GROQ_PREFERRED_MODELS];
+    let id: string | null = null;
+    try {
+      const list = await this.groq!.models.list();
+      const available = (list.data ?? []).map((m) => m.id);
+      id = pickGroqModel(available, preferred, this.groqUnavailable);
+    } catch (error) {
+      this.logger.warn(`⚠️ [Groq] Liste des modèles indisponible : ${(error as Error).message}`);
+    }
+    id ??= preferred.find((m) => !this.groqUnavailable.has(m)) ?? preferred[0];
+    if (this.groqModel?.id !== id) this.logger.log(`🧠 [Groq] Modèle retenu : ${id}`);
+    this.groqModel = { id, resolvedAt: Date.now() };
+    return id;
   }
 
   private formatMentalMapBlock(label: string, map: any): string {
@@ -157,7 +211,7 @@ Retourne UNIQUEMENT un tableau JSON de 21 objets:
     avoidTexts: string[] = [],
   ): Promise<HarmonyQuestionPayload[] | null> {
     const avoidBlock = avoidTexts.length
-      ? `\nQUESTIONS DÉJÀ POSÉES À CE COUPLE (ne pas reformuler) :\n${avoidTexts.slice(0, 40).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`
+      ? `\nQUESTIONS DÉJÀ POSÉES À CES MEMBRES DANS LEURS PARCOURS PRÉCÉDENTS (interdiction de les reposer ou de les reformuler ; propose des angles nouveaux) :\n${avoidTexts.slice(0, 60).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`
       : '';
     const systemPrompt = `Tu es l'analyste de couples de BOLIGO (rencontres sérieuses, valeurs profondes, approche Gottman / attachement). Tu écris en français, en vouvoyant, avec tact et précision.`;
     const prompt = `

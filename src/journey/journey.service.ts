@@ -301,20 +301,27 @@ export class JourneyService {
     return text.toLowerCase().replace(/\s+/g, ' ').trim();
   }
 
-  /** Questions déjà posées à ce couple (autres parcours inclus). */
-  private async getCouplePreviousQuestionTexts(
+  /** Nombre de parcours passés pris en compte pour éviter les redites. */
+  private static readonly QUESTION_HISTORY_JOURNEYS = 12;
+
+  /**
+   * Questions déjà posées à l'un ou l'autre membre lors de ses parcours
+   * précédents, quel que soit le partenaire (le couple actuel inclus) :
+   * le Sondeur les écarte pour ne pas resservir les mêmes questions.
+   */
+  private async getMembersPreviousQuestionTexts(
     userAId: string,
     userBId: string,
     excludeJourneyId?: string,
   ): Promise<string[]> {
+    const members = [userAId, userBId];
     const journeys = await this.prisma.journey.findMany({
       where: {
         id: excludeJourneyId ? { not: excludeJourneyId } : undefined,
-        OR: [
-          { userAId, userBId },
-          { userAId: userBId, userBId: userAId },
-        ],
+        OR: [{ userAId: { in: members } }, { userBId: { in: members } }],
       },
+      orderBy: { createdAt: 'desc' },
+      take: JourneyService.QUESTION_HISTORY_JOURNEYS,
       include: { harmonyQuestions: { select: { questionText: true } } },
     });
 
@@ -425,7 +432,7 @@ export class JourneyService {
       collectRawAnswers(interviewB?.responses),
     );
     const firstNames: [string, string] = [journey.userA.firstName, journey.userB.firstName];
-    const avoidTexts = await this.getCouplePreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
+    const history = await this.getMembersPreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
 
     // 2. Couche IA facultative (Groq / OpenRouter) : formulations ciblées sur ces divergences.
     let aiQuestions: HarmonyQuestionPayload[] | null = null;
@@ -434,7 +441,7 @@ export class JourneyService {
         describeReportForAi(report, firstNames),
         THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
         [1, 2, 3].map((day) => ({ day, label: DAY_ANGLES[day].label, intent: DAY_ANGLES[day].intent })),
-        avoidTexts,
+        history,
       );
     }
 
@@ -445,7 +452,8 @@ export class JourneyService {
       aiQuestions: (aiQuestions ?? []).filter((q): q is HarmonyQuestionPayload & { themeKey: Theme } =>
         THEME_LIST.includes(q.themeKey as Theme),
       ) as AiSondeurQuestion[],
-      avoidTexts,
+      history,
+      seed: journeyId,
     });
     const sources = questions.reduce<Record<string, number>>((acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }), {});
     console.log(`🧭 [Journey] Sondeur assemblé pour ${journeyId} :`, sources, `(${report.divergences.length} divergences)`);

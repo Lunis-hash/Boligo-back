@@ -26,6 +26,12 @@ import {
   HarmonyQuestionPayload,
   ensureAutreOption,
 } from './harmony-question.types';
+import {
+  CONVERGENT,
+  EXTRA_GENERIC,
+  EXTRA_TARGETED,
+  PoolTemplate,
+} from './sondeur.pool';
 
 export const SONDEUR_DAYS = 3;
 export const SONDEUR_QUESTIONS_PER_DAY = THEME_LIST.length; // 7
@@ -64,12 +70,23 @@ export interface SondeurInput {
   aiQuestions?: AiSondeurQuestion[] | null;
   /** Textes déjà posés à ce couple : on évite de les reposer. */
   avoidTexts?: string[];
+  /**
+   * Textes déjà posés à l'un ou l'autre membre lors de parcours précédents,
+   * avec d'autres partenaires : comparés par « signature » (sans les réponses
+   * citées), pour ne pas resservir la même question sous un autre habillage.
+   */
+  history?: string[];
+  /** Graine du tirage (l'identifiant du parcours) : deux couples ne reçoivent pas la même série. */
+  seed?: string;
 }
 
 export interface SondeurQuestion extends HarmonyQuestionPayload {
   themeKey: Theme;
-  /** 'divergence' : ciblée sur un écart réel ; 'ia' ; 'gabarit' : thème sans écart détecté. */
-  source: 'divergence' | 'ia' | 'gabarit';
+  /**
+   * 'divergence' : ciblée sur un écart réel ; 'ia' ; 'convergence' : approfondit
+   * un point d'accord réel ; 'gabarit' : question du thème.
+   */
+  source: 'divergence' | 'ia' | 'convergence' | 'gabarit';
 }
 
 // ─── Gabarits ciblés (une divergence réelle existe sur le thème) ──────────────
@@ -564,8 +581,86 @@ const GENERIC_B: Record<Theme, ThemeTemplates> = {
 
 // ─── Assemblage ────────────────────────────────────────────────────────────────
 
+/** Au plus deux questions d'accord par jour : le Sondeur reste centré sur les écarts. */
+const MAX_CONVERGENCE_PER_DAY = 2;
+
 function normalizeKey(text: string): string {
   return text.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Signature d'une question : le texte sans les réponses citées entre « » ni la
+ * ponctuation. Deux questions bâties sur le même gabarit avec des réponses
+ * différentes ont la même signature : un membre ne les verra qu'une fois.
+ */
+export function questionSignature(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/«[^»]*»/g, '«»')
+    .replace(/\([^)]*«»[^)]*\)/g, '')
+    .replace(/[^a-zàâäçéèêëîïôöùûüÿœæ«» ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Tirage pseudo-aléatoire reproductible (même graine → même série). */
+function seededRandom(seed: string): () => number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  let state = h >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Sans graine : ordre d'origine. Avec graine : mélange reproductible propre au créneau. */
+function arrange<T>(items: T[], seed: string | undefined, slot: string): T[] {
+  if (!seed) return items;
+  const rand = seededRandom(`${seed}|${slot}`);
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+interface Memory {
+  /** Signatures déjà vues par l'un des membres (parcours précédents). */
+  seenSig: Set<string>;
+  /** Textes exacts déjà vus par l'un des membres. */
+  seenText: Set<string>;
+  /** Signatures et textes déjà retenus dans ce Sondeur. */
+  usedSig: Set<string>;
+  usedText: Set<string>;
+}
+
+/**
+ * Choisit la formulation la plus neuve, par ordre de préférence :
+ * 1. gabarit jamais vu par les membres et pas encore utilisé dans ce Sondeur ;
+ * 2. gabarit jamais vu, déjà utilisé ici sur un autre sujet ;
+ * 3. gabarit déjà vu mais texte nouveau (appliqué à d'autres réponses) ;
+ * Retourne null si seuls des textes déjà posés restent disponibles.
+ */
+function pickFresh(candidates: PoolTemplate[], mem: Memory): PoolTemplate | null {
+  const tiers: Array<(c: PoolTemplate, sig: string, key: string) => boolean> = [
+    (_c, sig) => !mem.seenSig.has(sig) && !mem.usedSig.has(sig),
+    (_c, sig, key) => !mem.seenSig.has(sig) && !mem.usedText.has(key),
+    (_c, sig, key) => !mem.seenText.has(key) && !mem.usedSig.has(sig),
+    (_c, _sig, key) => !mem.seenText.has(key) && !mem.usedText.has(key),
+  ];
+  for (const ok of tiers) {
+    const hit = candidates.find((c) => ok(c, questionSignature(c.text), normalizeKey(c.text)));
+    if (hit) return hit;
+  }
+  return null;
 }
 
 /** Divergences d'un thème, de la plus grave à la moins grave (mineures exclues). */
@@ -582,81 +677,120 @@ function pickAi(
   aiQuestions: AiSondeurQuestion[],
   day: number,
   theme: Theme,
-  used: Set<string>,
+  mem: Memory,
 ): AiSondeurQuestion | null {
   const candidate = aiQuestions.find(
     (q) =>
-      q.day === day && q.themeKey === theme && !used.has(normalizeKey(q.text)),
+      q.day === day &&
+      q.themeKey === theme &&
+      !mem.usedText.has(normalizeKey(q.text)) &&
+      !mem.seenText.has(normalizeKey(q.text)) &&
+      !mem.seenSig.has(questionSignature(q.text)),
   );
   return candidate ?? null;
 }
 
+/** Les cinq formulations d'un créneau sans divergence. */
+function genericPool(theme: Theme, day: number): PoolTemplate[] {
+  return [GENERIC[theme][day], GENERIC_B[theme][day], ...EXTRA_GENERIC[theme][day]];
+}
+
+/** Les quatre formulations ciblées d'un jour, appliquées à une divergence. */
+function targetedPool(day: number, d: Divergence): PoolTemplate[] {
+  return [TARGETED[day], TARGETED_B[day], ...EXTRA_TARGETED[day]].map((t) => ({
+    text: t.text(d),
+    options: t.options,
+  }));
+}
+
 /**
  * Construit exactement 21 questions (3 jours × 7 thèmes), ordre : jour puis thème.
- * Priorité par créneau : divergence réelle → question IA conforme → gabarit du thème.
+ * Priorité par créneau : divergence réelle → question IA conforme → point
+ * d'accord réel → question du thème. Dans chaque réserve, la formulation retenue
+ * est une que ni l'un ni l'autre membre n'a déjà vue.
  */
 export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
-  const { report, aiQuestions, avoidTexts = [] } = input;
-  const used = new Set(avoidTexts.map(normalizeKey));
+  const { report, aiQuestions, avoidTexts = [], history = [], seed } = input;
+  const past = [...avoidTexts, ...history];
+  const mem: Memory = {
+    seenSig: new Set(past.map(questionSignature)),
+    seenText: new Set(past.map(normalizeKey)),
+    usedSig: new Set(),
+    usedText: new Set(),
+  };
   const ai = aiQuestions ?? [];
   const result: SondeurQuestion[] = [];
 
   for (let day = 1; day <= SONDEUR_DAYS; day++) {
     const angle = DAY_ANGLES[day];
+    let convergenceToday = 0;
     for (const theme of THEME_LIST) {
+      const slot = `${day}|${theme}`;
+      const base = { day, theme: angle.label, emoji: THEMES[theme].emoji, themeKey: theme };
       const divs = divergencesForTheme(report, theme);
       // Jour 1 → divergence la plus grave, jour 2 → la suivante, jour 3 → la suivante (cyclique).
       const divergence = divs.length ? divs[(day - 1) % divs.length] : null;
       let question: SondeurQuestion | null = null;
 
       if (divergence) {
-        for (const tpl of [TARGETED[day], TARGETED_B[day]]) {
-          const text = tpl.text(divergence);
-          if (used.has(normalizeKey(text))) continue;
+        const pick = pickFresh(arrange(targetedPool(day, divergence), seed, `${slot}|div`), mem);
+        if (pick) {
           question = {
-            day,
-            theme: angle.label,
-            emoji: THEMES[theme].emoji,
-            text,
-            options: ensureAutreOption(tpl.options),
-            themeKey: theme,
+            ...base,
+            text: pick.text,
+            options: ensureAutreOption(pick.options),
             source: 'divergence',
           };
-          break;
         }
       }
 
       if (!question) {
-        const fromAi = pickAi(ai, day, theme, used);
+        const fromAi = pickAi(ai, day, theme, mem);
         if (fromAi) {
           question = {
             ...fromAi,
-            theme: angle.label,
-            emoji: THEMES[theme].emoji,
+            ...base,
             options: ensureAutreOption(fromAi.options),
-            themeKey: theme,
             source: 'ia',
           };
         }
       }
 
+      if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
+        const convs = report.convergences.filter((c) => c.theme === theme);
+        const convergence = convs.length ? convs[(day - 1) % convs.length] : null;
+        if (convergence) {
+          const pool = CONVERGENT[day].map((t) => ({ text: t.text(convergence), options: t.options }));
+          const pick = pickFresh(arrange(pool, seed, `${slot}|conv`), mem);
+          if (pick) {
+            convergenceToday++;
+            question = {
+              ...base,
+              text: pick.text,
+              options: ensureAutreOption(pick.options),
+              source: 'convergence',
+            };
+          }
+        }
+      }
+
       if (!question) {
-        const candidates = [GENERIC[theme][day], GENERIC_B[theme][day]];
+        const pool = arrange(genericPool(theme, day), seed, `${slot}|gen`);
+        // Réserve épuisée (au-delà de cinq parcours) : une formulation déjà vue revient.
         const tpl =
-          candidates.find((t) => !used.has(normalizeKey(t.text))) ??
-          candidates[0];
+          pickFresh(pool, mem) ??
+          pool.find((t) => !mem.usedText.has(normalizeKey(t.text))) ??
+          pool[0];
         question = {
-          day,
-          theme: angle.label,
-          emoji: THEMES[theme].emoji,
+          ...base,
           text: tpl.text,
           options: ensureAutreOption(tpl.options),
-          themeKey: theme,
           source: 'gabarit',
         };
       }
 
-      used.add(normalizeKey(question.text));
+      mem.usedText.add(normalizeKey(question.text));
+      mem.usedSig.add(questionSignature(question.text));
       result.push(question);
     }
   }
