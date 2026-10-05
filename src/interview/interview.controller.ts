@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  Param,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { InterviewService } from './interview.service';
 import { QuestionsService } from './questions.service';
 import { SaveModuleDto } from './dto/save-module.dto';
+import { parseLanguage } from './questions.en';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Interview')
@@ -17,8 +33,17 @@ export class InterviewController {
 
   @Get('questions/:moduleNumber')
   @ApiOperation({ summary: 'Get filtered questions for a specific module' })
-  async getQuestions(@Req() req: any, @Param('moduleNumber') moduleNumber: string) {
-    return this.questionsService.getQuestionsForUser(req.user.id, parseInt(moduleNumber, 10));
+  @ApiQuery({ name: 'lang', required: false, description: 'fr (défaut) ou en' })
+  async getQuestions(
+    @Req() req: any,
+    @Param('moduleNumber') moduleNumber: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.questionsService.getQuestionsForUser(
+      req.user.id,
+      parseInt(moduleNumber, 10),
+      parseLanguage(lang),
+    );
   }
 
   @Get('status')
@@ -47,7 +72,9 @@ export class InterviewController {
   }
 
   @Get('mental-map')
-  @ApiOperation({ summary: 'Get generated mental map and dynamic pillars (alias)' })
+  @ApiOperation({
+    summary: 'Get generated mental map and dynamic pillars (alias)',
+  })
   async getMentalMap(@Req() req: any) {
     return this.interviewService.getMentalMap(req.user.id);
   }

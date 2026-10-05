@@ -1,4 +1,4 @@
-import { getResumeModule, LAST_MODULE } from '@/services/interview';
+import { deviceLanguage, getResumeModule, joinMultipleAnswer, LAST_MODULE } from '@/services/interview';
 
 describe('getResumeModule', () => {
   it('starts at module 0 for a brand new interview', () => {
@@ -21,5 +21,31 @@ describe('getResumeModule', () => {
   it('returns LAST_MODULE + 1 for a completed interview or no status', () => {
     expect(getResumeModule({ currentModule: 11, isCompleted: true, completedModules: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })).toBe(LAST_MODULE + 1);
     expect(getResumeModule(null)).toBe(LAST_MODULE + 1);
+  });
+});
+
+describe('Choix multiple et langue du Grand Entretien (V6)', () => {
+  const languages = {
+    id: 'M0_Q10',
+    text: 'Langues',
+    multiple: true,
+    options: [
+      { key: 'A', text: 'Français' },
+      { key: 'B', text: 'English' },
+      { key: 'G', text: 'Português' },
+    ],
+  };
+
+  it('envoie les langues cochées dans l’ordre des options', () => {
+    expect(joinMultipleAnswer(languages, ['G', 'A'])).toEqual({ key: 'A,G', text: 'Français, Português' });
+    expect(joinMultipleAnswer(languages, ['B'])).toEqual({ key: 'B', text: 'English' });
+  });
+
+  it('ignore une clé inconnue', () => {
+    expect(joinMultipleAnswer(languages, ['Z', 'B'])).toEqual({ key: 'B', text: 'English' });
+  });
+
+  it('choisit le français ou l’anglais selon l’appareil', () => {
+    expect(['fr', 'en']).toContain(deviceLanguage());
   });
 });

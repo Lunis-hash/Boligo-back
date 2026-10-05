@@ -1,4 +1,4 @@
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTIONS, V6_ADDED } from '../interview/questions.data';
 import { buildDivergenceReport, RawAnswers } from './divergence.engine';
 import { computeAnswerCompatibility } from '../portrait/module-affinity';
 import { buildMatchView, compatibilityLabel } from './match-view';
@@ -6,10 +6,12 @@ import { buildMatchView, compatibilityLabel } from './match-view';
 /** Réponses complètes et cohérentes : option n° `shift` partout. */
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  // Questions d'origine (avant « fumez-vous ? ») : réponses inchangées ; non-fumeur.
-  QUESTIONS.filter((q) => q.id !== 'M0_Q09').forEach((q, i) => {
-    out[q.id] = q.options[(i + shift) % q.options.length].key;
-  });
+  // Questions d'origine (avant « fumez-vous ? » et la V6) : réponses inchangées ; non-fumeur.
+  QUESTIONS.filter((q) => q.id !== 'M0_Q09' && !V6_ADDED.has(q.id)).forEach(
+    (q, i) => {
+      out[q.id] = q.options[(i + shift) % q.options.length].key;
+    },
+  );
   out.M0_Q09 = 'A';
   return out;
 }
@@ -24,6 +26,10 @@ const BASE: RawAnswers = {
   M6_Q10: 'A',
   M10_Q03: 'C',
   M10_Q09: 'C',
+  // Pas de réponse identique à risque (risques partagés V6).
+  M2_Q08: 'A',
+  M6_Q01: 'B',
+  M9_Q03: 'A',
 };
 
 const pct = (a: RawAnswers, b: RawAnswers) => {

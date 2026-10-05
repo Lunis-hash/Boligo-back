@@ -131,6 +131,7 @@ const DETAIL_LABELS: Record<string, { label: string }> = {
   education: { label: 'Études' },
   lifestyle: { label: 'Vie dans 5 ans' },
   smoking: { label: 'Tabac' },
+  languages: { label: 'Langues' },
   city: { label: 'Ville' },
 };
 

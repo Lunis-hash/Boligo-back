@@ -31,6 +31,7 @@ import {
   EXTRA_GENERIC,
   EXTRA_TARGETED,
   PoolTemplate,
+  SHARED_RISK,
 } from './sondeur.pool';
 
 export const SONDEUR_DAYS = 3;
@@ -704,9 +705,16 @@ function genericPool(theme: Theme, day: number): PoolTemplate[] {
   ];
 }
 
-/** Les quatre formulations ciblées d'un jour, appliquées à une divergence. */
+/**
+ * Les formulations ciblées d'un jour, appliquées à une divergence. Un risque
+ * partagé (même réponse des deux côtés) a ses propres formulations : il n'y a
+ * pas de « différence » à discuter.
+ */
 function targetedPool(day: number, d: Divergence): PoolTemplate[] {
-  return [TARGETED[day], TARGETED_B[day], ...EXTRA_TARGETED[day]].map((t) => ({
+  const templates = d.shared
+    ? SHARED_RISK[day]
+    : [TARGETED[day], TARGETED_B[day], ...EXTRA_TARGETED[day]];
+  return templates.map((t) => ({
     text: t.text(d),
     options: t.options,
   }));

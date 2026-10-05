@@ -1,13 +1,15 @@
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTIONS, V6_ADDED } from '../interview/questions.data';
 import { RawAnswers } from '../matching/divergence.engine';
 import { buildHeadline, buildPortrait, isUsableBio } from './portrait.writer';
 
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  // Questions d'origine (avant « fumez-vous ? ») : réponses inchangées ; non-fumeur.
-  QUESTIONS.filter((q) => q.id !== 'M0_Q09').forEach((q, i) => {
-    out[q.id] = q.options[(i + shift) % q.options.length].key;
-  });
+  // Questions d'origine (avant « fumez-vous ? » et la V6) : réponses inchangées ; non-fumeur.
+  QUESTIONS.filter((q) => q.id !== 'M0_Q09' && !V6_ADDED.has(q.id)).forEach(
+    (q, i) => {
+      out[q.id] = q.options[(i + shift) % q.options.length].key;
+    },
+  );
   out.M0_Q09 = 'A';
   return out;
 }
@@ -99,7 +101,7 @@ describe('Qualité des fiches', () => {
       firstName: 'Bernard',
       gender: 'H',
       age: 55,
-      answers: { ...answers, M0_Q05: 'C' },
+      answers: { ...answers, M0_Q05: 'C', M0_Q10: 'A' },
     });
     expect(p.modules.find((m) => m.module === 0)!.clarity).toBe(100);
   });

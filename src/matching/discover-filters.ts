@@ -1,9 +1,10 @@
 /**
- * Filtres « non négociables » du Module 0 : tranche d'âge (M0_Q01) et
- * périmètre géographique (M0_Q02). Ils s'appliquent dans LES DEUX SENS : un
- * profil n'est proposé (ou invitable) que si chacun entre dans les critères
- * de l'autre.
+ * Filtres « non négociables » du Module 0 : tranche d'âge (M0_Q01),
+ * périmètre géographique (M0_Q02) et langue commune (M0_Q10). Ils
+ * s'appliquent dans LES DEUX SENS : un profil n'est proposé (ou invitable)
+ * que si chacun entre dans les critères de l'autre.
  */
+import { answerKeys } from '../interview/questions.data';
 import { RawAnswers } from './divergence.engine';
 
 export interface FilterSubject {
@@ -53,9 +54,35 @@ export function acceptsCandidate(
   return true;
 }
 
-/** Chacun entre dans les critères de l'autre. */
+/** Clé de « Une autre langue » (M0_Q10) : trop vague pour rapprocher deux membres. */
+const OTHER_LANGUAGE = 'I';
+
+/**
+ * Langues dans lesquelles le membre peut vivre une relation (M0_Q10).
+ * Entretien antérieur à la question : le français, langue dans laquelle il a
+ * été passé. Seulement « une autre langue » : inconnu (aucun filtre).
+ */
+export function memberLanguages(answers: RawAnswers): string[] | null {
+  if (!answers.M0_Q10) return ['A'];
+  const keys = answerKeys(answers.M0_Q10).filter((k) => k !== OTHER_LANGUAGE);
+  return keys.length ? keys : null;
+}
+
+/** Les deux membres partagent-ils au moins une langue du quotidien ? */
+export function shareLanguage(a: RawAnswers, b: RawAnswers): boolean {
+  const la = memberLanguages(a);
+  const lb = memberLanguages(b);
+  if (!la || !lb) return true;
+  return la.some((k) => lb.includes(k));
+}
+
+/** Chacun entre dans les critères de l'autre, et ils ont une langue en commun. */
 export function mutuallyAccepted(a: FilterSubject, b: FilterSubject): boolean {
-  return acceptsCandidate(a, b) && acceptsCandidate(b, a);
+  return (
+    acceptsCandidate(a, b) &&
+    acceptsCandidate(b, a) &&
+    shareLanguage(a.answers, b.answers)
+  );
 }
 
 /**

@@ -1,29 +1,100 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Dimensions, ActivityIndicator, Alert, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { InterviewService, Question, LAST_MODULE } from '@/services/interview';
+import {
+  InterviewService,
+  Question,
+  LAST_MODULE,
+  InterviewLanguage,
+  getInterviewLanguage,
+  setInterviewLanguage,
+  joinMultipleAnswer,
+} from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles, Brain, ShieldCheck, CheckCircle2, LogOut, ArrowRight } from 'lucide-react-native';
+import { Sparkles, Brain, CheckCircle2, LogOut, Check } from 'lucide-react-native';
 import { ModuleIcon } from '@/components/BrandIcons';
 
-const { width } = Dimensions.get('window');
+const MODULE_INFO: Record<InterviewLanguage, Record<number, { title: string; subtitle: string }>> = {
+  fr: {
+    0: { title: 'Filtres non-négociables', subtitle: 'Vos critères et filtres essentiels' },
+    1: { title: 'Identité & Culture', subtitle: 'Origines, traditions et spiritualité' },
+    2: { title: 'Attachement & Régulation émotionnelle', subtitle: 'Gestion des émotions et sécurité affective' },
+    3: { title: 'Vécu & Contexte', subtitle: 'Parcours de vie et enseignements' },
+    4: { title: 'Vision économique', subtitle: 'Gestion financière et organisation du foyer' },
+    5: { title: 'Dynamique sociale & familiale', subtitle: 'Relations familiales et entourage' },
+    6: { title: 'Quotidien, Communication réelle & Limites', subtitle: 'Communication, intimité et limites' },
+    7: { title: 'Trajectoire de vie & Personnalité', subtitle: 'Ambitions, projets et tempérament' },
+    8: { title: 'Projet de couple', subtitle: 'Engagement et vision commune du couple' },
+    9: { title: 'Pouvoir, Effort & Capacité à aimer', subtitle: 'Leadership, compromis et don de soi' },
+    10: { title: 'Alchimie, Vibe & Désir', subtitle: 'Clef de voûte et alchimie relationnelle' },
+  },
+  en: {
+    0: { title: 'Non-negotiable filters', subtitle: 'Your essential criteria' },
+    1: { title: 'Identity & Culture', subtitle: 'Origins, traditions and spirituality' },
+    2: { title: 'Attachment & Emotional regulation', subtitle: 'Managing emotions and emotional security' },
+    3: { title: 'Past & Context', subtitle: 'Life journey and lessons learned' },
+    4: { title: 'Economic vision', subtitle: 'Money and running a household' },
+    5: { title: 'Social & family dynamics', subtitle: 'Family relationships and your circle' },
+    6: { title: 'Daily life, Real communication & Limits', subtitle: 'Communication, intimacy and limits' },
+    7: { title: 'Life trajectory & Personality', subtitle: 'Ambitions, projects and temperament' },
+    8: { title: 'Couple project', subtitle: 'Commitment and a shared vision' },
+    9: { title: 'Power, Effort & Capacity to love', subtitle: 'Leadership, compromise and giving' },
+    10: { title: 'Alchemy, Vibe & Desire', subtitle: 'The keystone of attraction' },
+  },
+};
 
-const MODULE_INFO: Record<number, { title: string; subtitle: string }> = {
-  0: { title: 'Filtres non-négociables', subtitle: 'Vos critères et filtres essentiels' },
-  1: { title: 'Identité & Culture', subtitle: 'Origines, traditions et spiritualité' },
-  2: { title: 'Attachement & Régulation émotionnelle', subtitle: 'Gestion des émotions et sécurité affective' },
-  3: { title: 'Vécu & Contexte', subtitle: 'Parcours de vie et enseignements' },
-  4: { title: 'Vision économique', subtitle: 'Gestion financière et organisation du foyer' },
-  5: { title: 'Dynamique sociale & familiale', subtitle: 'Relations familiales et entourage' },
-  6: { title: 'Quotidien, Communication réelle & Limites', subtitle: 'Communication, intimité et limites' },
-  7: { title: 'Trajectoire de vie & Personnalité', subtitle: 'Ambitions, projets et tempérament' },
-  8: { title: 'Projet de couple', subtitle: 'Engagement et vision commune du couple' },
-  9: { title: 'Pouvoir, Effort & Capacité à aimer', subtitle: 'Leadership, compromis et don de soi' },
-  10: { title: 'Alchimie, Vibe & Désir', subtitle: 'Clef de voûte et alchimie relationnelle' },
+/** Textes de l'écran dans la langue de l'entretien. */
+const UI: Record<InterviewLanguage, Record<string, string>> = {
+  fr: {
+    module: 'MODULE',
+    question: 'Question',
+    pause: 'Pause',
+    loading: 'Chargement des questions...',
+    saving: 'Enregistrement de vos réponses...',
+    savingSub: 'Mise à jour de votre fiche BOLIGO',
+    saved: 'Merci, vos réponses sont enregistrées. Passons au module suivant.',
+    validate: 'Valider',
+    severalAnswers: 'Plusieurs réponses possibles',
+    errorTitle: 'Erreur',
+    errorLoad: 'Impossible de charger les questions de ce module.',
+    retry: 'Réessayer',
+    cancel: 'Annuler',
+    saveFailTitle: 'Sauvegarde impossible',
+    saveFail: 'La connexion avec le serveur a été interrompue.',
+    saveRetry: 'Voulez-vous réessayer la sauvegarde ?',
+    pauseTitle: 'Faire une pause ?',
+    pauseText: 'Votre progression est automatiquement sauvegardée. L’entretien est obligatoire pour accéder aux profils et découvrir vos matchs compatibles.',
+    keepGoing: 'Continuer l’entretien',
+    signOut: 'Se déconnecter',
+    languageHint: 'Langue de l’entretien',
+  },
+  en: {
+    module: 'MODULE',
+    question: 'Question',
+    pause: 'Pause',
+    loading: 'Loading the questions...',
+    saving: 'Saving your answers...',
+    savingSub: 'Updating your BOLIGO profile',
+    saved: 'Thank you, your answers are saved. Let’s move on to the next module.',
+    validate: 'Confirm',
+    severalAnswers: 'Several answers possible',
+    errorTitle: 'Error',
+    errorLoad: 'The questions of this module could not be loaded.',
+    retry: 'Try again',
+    cancel: 'Cancel',
+    saveFailTitle: 'Saving failed',
+    saveFail: 'The connection to the server was interrupted.',
+    saveRetry: 'Do you want to try saving again?',
+    pauseTitle: 'Take a break?',
+    pauseText: 'Your progress is saved automatically. The interview is required to see profiles and discover your compatible matches.',
+    keepGoing: 'Continue the interview',
+    signOut: 'Sign out',
+    languageHint: 'Interview language',
+  },
 };
 
 interface Message {
@@ -32,6 +103,7 @@ interface Message {
   type: 'ai' | 'user';
   options?: { key: string; text: string }[];
   questionId?: string;
+  multiple?: boolean;
 }
 
 export default function DynamicInterviewScreen() {
@@ -42,7 +114,9 @@ export default function DynamicInterviewScreen() {
   const parsed = parseInt((moduleNumber || '0').replace(/^module-?/i, ''), 10);
   const modNum = isNaN(parsed) ? 0 : parsed;
 
-  const currentModuleInfo = MODULE_INFO[modNum] || { title: `Module ${modNum}`, subtitle: 'Grand Entretien BOLIGO' };
+  const [lang, setLang] = useState<InterviewLanguage | null>(null);
+  const t = UI[lang ?? 'fr'];
+  const currentModuleInfo = MODULE_INFO[lang ?? 'fr'][modNum] || { title: `Module ${modNum}`, subtitle: 'Grand Entretien BOLIGO' };
 
   const [isLoading, setIsLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -51,13 +125,22 @@ export default function DynamicInterviewScreen() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isAnswering, setIsAnswering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // Choix multiple en cours (langues) : clés cochées avant « Valider ».
+  const [picked, setPicked] = useState<string[]>([]);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
 
+  // Langue de l'entretien : choix enregistré, sinon celle de l'appareil.
   useEffect(() => {
-    loadQuestions();
-  }, [moduleNumber]);
+    getInterviewLanguage().then(setLang);
+  }, []);
+
+  useEffect(() => {
+    if (lang) loadQuestions(lang);
+    // La bascule de langue est gérée par switchLanguage (réponses conservées).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleNumber, lang === null]);
 
   const goToNextStep = () => {
     if (modNum < LAST_MODULE) {
@@ -67,18 +150,18 @@ export default function DynamicInterviewScreen() {
     }
   };
 
-  const loadQuestions = async () => {
+  const loadQuestions = async (language: InterviewLanguage) => {
     setIsLoading(true);
     try {
-      const data = await InterviewService.getQuestions(modNum);
+      const data = await InterviewService.getQuestions(modNum, language);
       setQuestions(data);
       setMessages([]);
       setCurrentQuestionIndex(0);
       setAnswers({});
+      setPicked([]);
 
       if (data.length > 0) {
-        const firstQ = data[0];
-        addAIMessage(firstQ.text, firstQ.options, firstQ.id);
+        addQuestionMessage(data[0]);
       } else {
         // Aucune question applicable (déjà répondues, filtres d'âge/genre…) :
         // on enregistre le module tel quel et on passe au suivant.
@@ -87,22 +170,70 @@ export default function DynamicInterviewScreen() {
         return;
       }
     } catch (error) {
-      Alert.alert('Erreur', getReadableError(error, 'Impossible de charger les questions de ce module.'), [
-        { text: 'Réessayer', onPress: () => loadQuestions() },
-        { text: 'Annuler', style: 'cancel' },
+      const ui = UI[language];
+      Alert.alert(ui.errorTitle, getReadableError(error, ui.errorLoad), [
+        { text: ui.retry, onPress: () => loadQuestions(language) },
+        { text: ui.cancel, style: 'cancel' },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const addAIMessage = (text: string, options?: { key: string; text: string }[], questionId?: string) => {
+  /**
+   * Change la langue en cours de module sans perdre les réponses déjà
+   * données : mêmes questions dans le même ordre, seuls les textes changent.
+   */
+  const switchLanguage = async (next: InterviewLanguage) => {
+    if (next === lang || isAnswering || isSaving) return;
+    setLang(next);
+    await setInterviewLanguage(next);
+    try {
+      const data = await InterviewService.getQuestions(modNum, next);
+      if (data.length !== questions.length) {
+        loadQuestions(next);
+        return;
+      }
+      setQuestions(data);
+      setPicked([]);
+      const current = data[currentQuestionIndex];
+      if (!current) return;
+      // La question en attente est réécrite dans la nouvelle langue (pas de doublon).
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        const translated: Message = {
+          id: Math.random().toString(36).substring(7),
+          text: current.text,
+          type: 'ai',
+          options: current.options,
+          questionId: current.id,
+          multiple: current.multiple,
+        };
+        return last?.type === 'ai' && last.questionId === current.id
+          ? [...prev.slice(0, -1), translated]
+          : [...prev, translated];
+      });
+    } catch {
+      /* la langue précédente reste affichée */
+    }
+  };
+
+  const addQuestionMessage = (q: Question) =>
+    addAIMessage(q.text, q.options, q.id, q.multiple);
+
+  const addAIMessage = (
+    text: string,
+    options?: { key: string; text: string }[],
+    questionId?: string,
+    multiple?: boolean,
+  ) => {
     const newMessage: Message = {
       id: Math.random().toString(36).substring(7),
       text,
       type: 'ai',
       options,
       questionId,
+      multiple,
     };
     setMessages((prev) => [...prev, newMessage]);
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
@@ -125,6 +256,7 @@ export default function DynamicInterviewScreen() {
     addUserMessage(optionText);
     const newAnswers = { ...answers, [currentQ.id]: optionKey };
     setAnswers(newAnswers);
+    setPicked([]);
 
     const nextIndex = currentQuestionIndex + 1;
     const progress = questions.length > 0 ? (nextIndex / questions.length) : 1;
@@ -136,13 +268,23 @@ export default function DynamicInterviewScreen() {
     if (nextIndex < questions.length) {
       setCurrentQuestionIndex(nextIndex);
       setTimeout(() => {
-        const nextQ = questions[nextIndex];
-        addAIMessage(nextQ.text, nextQ.options, nextQ.id);
+        addQuestionMessage(questions[nextIndex]);
         setIsAnswering(false);
       }, 700);
     } else {
       handleModuleComplete(newAnswers);
     }
+  };
+
+  /** Coche ou décoche une langue (question à choix multiple). */
+  const togglePicked = (key: string) =>
+    setPicked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+
+  const confirmPicked = () => {
+    const currentQ = questions[currentQuestionIndex];
+    if (!currentQ || picked.length === 0) return;
+    const { key, text } = joinMultipleAnswer(currentQ, picked);
+    handleAnswer(key, text);
   };
 
   const handleModuleComplete = async (finalAnswers: Record<string, string>) => {
@@ -152,7 +294,7 @@ export default function DynamicInterviewScreen() {
 
       if (modNum < LAST_MODULE) {
         setTimeout(() => {
-          addAIMessage('Merci, vos réponses sont enregistrées. Passons au module suivant.');
+          addAIMessage(t.saved);
           setTimeout(() => goToNextStep(), 1400);
         }, 800);
       } else {
@@ -160,11 +302,11 @@ export default function DynamicInterviewScreen() {
       }
     } catch (error) {
       Alert.alert(
-        'Sauvegarde impossible',
-        `${getReadableError(error, 'La connexion avec le serveur a été interrompue.')}\nVoulez-vous réessayer la sauvegarde ?`,
+        t.saveFailTitle,
+        `${getReadableError(error, t.saveFail)}\n${t.saveRetry}`,
         [
-          { text: 'Annuler', style: 'cancel', onPress: () => setIsAnswering(false) },
-          { text: 'Réessayer', onPress: () => handleModuleComplete(finalAnswers) },
+          { text: t.cancel, style: 'cancel', onPress: () => setIsAnswering(false) },
+          { text: t.retry, onPress: () => handleModuleComplete(finalAnswers) },
         ]
       );
     } finally {
@@ -174,12 +316,12 @@ export default function DynamicInterviewScreen() {
 
   const handlePause = () => {
     Alert.alert(
-      'Faire une pause ?',
-      'Votre progression est automatiquement sauvegardée. L\'entretien est obligatoire pour accéder aux profils et découvrir vos matchs compatibles.',
+      t.pauseTitle,
+      t.pauseText,
       [
-        { text: 'Continuer l\'entretien', style: 'cancel' },
+        { text: t.keepGoing, style: 'cancel' },
         {
-          text: 'Se déconnecter',
+          text: t.signOut,
           style: 'destructive',
           onPress: async () => {
             await signOut();
@@ -189,7 +331,7 @@ export default function DynamicInterviewScreen() {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || !lang) {
     return (
       <View style={styles.centerContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FAFAFC" />
@@ -206,7 +348,7 @@ export default function DynamicInterviewScreen() {
 
         <View style={styles.loadingBadge}>
           <Sparkles size={12} color={Colors.primary.red} />
-          <Text style={styles.loadingBadgeText}>MODULE {modNum} / 10</Text>
+          <Text style={styles.loadingBadgeText}>{t.module} {modNum} / 10</Text>
         </View>
 
         <Text style={styles.loadingTitle}>{currentModuleInfo.title}</Text>
@@ -214,7 +356,7 @@ export default function DynamicInterviewScreen() {
 
         <View style={styles.loadingStatusRow}>
           <ActivityIndicator size="small" color={Colors.primary.red} />
-          <Text style={styles.loadingStatusText}>Chargement des questions par l'IA...</Text>
+          <Text style={styles.loadingStatusText}>{t.loading}</Text>
         </View>
       </View>
     );
@@ -228,16 +370,35 @@ export default function DynamicInterviewScreen() {
         <View style={styles.headerTopRow}>
           <View style={styles.moduleBadge}>
             <ModuleIcon module={modNum} size={14} />
-            <Text style={styles.moduleBadgeText}>MODULE {modNum} / 10</Text>
+            <Text style={styles.moduleBadgeText}>{t.module} {modNum} / 10</Text>
           </View>
-          <TouchableOpacity
-            style={styles.pauseBtn}
-            onPress={handlePause}
-            activeOpacity={0.7}
-          >
-            <LogOut size={16} color={Colors.text.primary70} />
-            <Text style={styles.pauseBtnText}>Pause</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <View style={styles.langSwitch} accessibilityRole="radiogroup" accessibilityLabel={t.languageHint}>
+              {(['fr', 'en'] as const).map((l) => (
+                <TouchableOpacity
+                  key={l}
+                  testID={`interview-lang-${l}`}
+                  onPress={() => switchLanguage(l)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: lang === l }}
+                  style={[styles.langOption, lang === l && styles.langOptionActive]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.langOptionText, lang === l && styles.langOptionTextActive]}>
+                    {l.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={styles.pauseBtn}
+              onPress={handlePause}
+              activeOpacity={0.7}
+            >
+              <LogOut size={16} color={Colors.text.primary70} />
+              <Text style={styles.pauseBtnText}>{t.pause}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.headerInfoRow}>
@@ -246,7 +407,7 @@ export default function DynamicInterviewScreen() {
             <Text style={styles.headerModuleSub}>{currentModuleInfo.subtitle}</Text>
           </View>
           <Text style={styles.questionCounterText}>
-            Question {currentQuestionIndex + 1}/{questions.length || 4}
+            {t.question} {currentQuestionIndex + 1}/{questions.length || 4}
           </Text>
         </View>
 
@@ -299,23 +460,43 @@ export default function DynamicInterviewScreen() {
 
             {message.options && index === messages.length - 1 && !isSaving && (
               <View style={styles.optionsContainer}>
-                {message.options.map((option, optIdx) => {
-                  const letters = ['A', 'B', 'C', 'D', 'E'];
-                  const letter = letters[optIdx] || '•';
+                {message.multiple && <Text style={styles.multipleHint}>{t.severalAnswers}</Text>}
+                {message.options.map((option) => {
+                  const checked = message.multiple && picked.includes(option.key);
                   return (
                     <TouchableOpacity
                       key={option.key}
-                      style={styles.optionButton}
-                      onPress={() => handleAnswer(option.key, option.text)}
+                      style={[styles.optionButton, checked && styles.optionButtonChecked]}
+                      onPress={() =>
+                        message.multiple ? togglePicked(option.key) : handleAnswer(option.key, option.text)
+                      }
+                      accessibilityRole={message.multiple ? 'checkbox' : 'button'}
+                      accessibilityState={message.multiple ? { checked: !!checked } : undefined}
                       activeOpacity={0.75}
                       disabled={isAnswering}>
-                      <View style={styles.optionLetterCircle}>
-                        <Text style={styles.optionLetterText}>{letter}</Text>
+                      <View style={[styles.optionLetterCircle, checked && styles.optionLetterCircleChecked]}>
+                        {checked ? (
+                          <Check size={14} color="#FFF" strokeWidth={3} />
+                        ) : (
+                          <Text style={styles.optionLetterText}>{option.key}</Text>
+                        )}
                       </View>
                       <Text style={styles.optionText}>{option.text}</Text>
                     </TouchableOpacity>
                   );
                 })}
+                {message.multiple && (
+                  <TouchableOpacity
+                    testID="interview-validate"
+                    onPress={confirmPicked}
+                    disabled={picked.length === 0 || isAnswering}
+                    accessibilityRole="button"
+                    style={[styles.validateBtn, (picked.length === 0 || isAnswering) && styles.validateBtnDisabled]}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.validateBtnText}>{t.validate}</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>
@@ -327,8 +508,8 @@ export default function DynamicInterviewScreen() {
               <CheckCircle2 size={18} color={Colors.primary.red} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.savingTitle}>Enregistrement de vos réponses...</Text>
-              <Text style={styles.savingSub}>Mise à jour de votre fiche BOLIGO</Text>
+              <Text style={styles.savingTitle}>{t.saving}</Text>
+              <Text style={styles.savingSub}>{t.savingSub}</Text>
             </View>
             <ActivityIndicator size="small" color={Colors.primary.red} />
           </View>
@@ -455,6 +636,39 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.bold,
     color: Colors.primary.red,
     letterSpacing: 0.5,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  langSwitch: {
+    flexDirection: 'row',
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.neutral.backgroundLight,
+    padding: 2,
+  },
+  langOption: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.full,
+  },
+  langOptionActive: {
+    backgroundColor: Colors.neutral.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  langOptionText: {
+    fontSize: 11,
+    fontFamily: Typography.fontFamily.bold,
+    color: Colors.text.primary70,
+    letterSpacing: 0.4,
+  },
+  langOptionTextActive: {
+    color: Colors.primary.red,
   },
   pauseBtn: {
     flexDirection: 'row',
@@ -589,6 +803,34 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 3,
     elevation: 1,
+  },
+  optionButtonChecked: {
+    borderColor: Colors.primary.red,
+    backgroundColor: Colors.primary.red + '08',
+  },
+  optionLetterCircleChecked: {
+    backgroundColor: Colors.primary.red,
+  },
+  multipleHint: {
+    fontSize: 12,
+    fontFamily: Typography.fontFamily.medium,
+    color: Colors.text.primary70,
+  },
+  validateBtn: {
+    alignSelf: 'flex-end',
+    backgroundColor: Colors.primary.red,
+    borderRadius: BorderRadius.full,
+    paddingVertical: 11,
+    paddingHorizontal: 26,
+    marginTop: 2,
+  },
+  validateBtnDisabled: {
+    opacity: 0.45,
+  },
+  validateBtnText: {
+    fontSize: 14,
+    fontFamily: Typography.fontFamily.bold,
+    color: '#FFFFFF',
   },
   optionLetterCircle: {
     width: 26,

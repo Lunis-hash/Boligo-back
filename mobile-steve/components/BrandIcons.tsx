@@ -31,6 +31,7 @@ import {
   Target,
   Users,
   Wallet,
+  Languages,
 } from 'lucide-react-native';
 import { Brand } from '@/constants/brand';
 
@@ -107,6 +108,7 @@ const DETAIL_ICONS: Record<string, IconComponent> = {
   religion: Sun,
   education: GraduationCap,
   lifestyle: Sprout,
+  languages: Languages,
   city: MapPin,
 };
 
