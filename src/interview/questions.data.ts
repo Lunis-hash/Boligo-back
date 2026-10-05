@@ -419,7 +419,7 @@ export const QUESTIONS: Question[] = [
     text: 'Le rôle des anciens et des patriarches dans vos décisions de couple :',
     options: [
       { key: 'A', text: 'Fondamental — je ne décide pas sans leur avis' },
-      { key: 'B', text: 'Important mais la décision finale nous appartient' },
+      { key: 'B', text: 'Important, mais la décision finale nous appartient' },
       { key: 'C', text: 'Je les consulte par respect, pas par obligation' },
       { key: 'D', text: 'Nos décisions ne concernent que notre couple' },
     ],
@@ -720,7 +720,7 @@ export const QUESTIONS: Question[] = [
     text: 'Comment avez-vous vécu votre dernière rupture ?',
     options: [
       { key: 'A', text: "Très difficilement — je m'en remets encore" },
-      { key: 'B', text: 'Douloureusement mais je me suis reconstruit(e)' },
+      { key: 'B', text: 'Douloureusement, mais je me suis reconstruit(e)' },
       { key: 'C', text: 'Relativement bien — décision mutuelle' },
       { key: 'D', text: "C'est moi qui ai décidé — je me sens libéré(e)" },
     ],
@@ -786,7 +786,7 @@ export const QUESTIONS: Question[] = [
         key: 'A',
         text: "Oui, et j'ai travaillé là-dessus (seul(e) ou accompagné(e))",
       },
-      { key: 'B', text: "Oui, je le vois mais j'ai du mal à changer" },
+      { key: 'B', text: "Oui, je le vois, mais j'ai du mal à changer" },
       { key: 'C', text: 'Je ne sais pas vraiment' },
       { key: 'D', text: 'Non — chaque relation est différente pour moi' },
     ],
@@ -835,7 +835,7 @@ export const QUESTIONS: Question[] = [
       },
       {
         key: 'B',
-        text: 'Elle travaille mais la maison reste sa responsabilité principale',
+        text: 'Elle travaille, mais la maison reste sa responsabilité principale',
       },
       {
         key: 'C',
@@ -985,7 +985,7 @@ export const QUESTIONS: Question[] = [
     text: 'La place de votre famille dans vos décisions de couple :',
     options: [
       { key: 'A', text: 'Centrale — je ne décide pas sans leur avis' },
-      { key: 'B', text: 'Importante mais la décision finale nous appartient' },
+      { key: 'B', text: 'Importante, mais la décision finale nous appartient' },
       { key: 'C', text: 'Je les consulte par respect, pas par obligation' },
       { key: 'D', text: 'Nos décisions ne concernent que notre couple' },
     ],
@@ -1189,7 +1189,7 @@ export const QUESTIONS: Question[] = [
     text: 'La fidélité dans votre conception du couple :',
     options: [
       { key: 'A', text: 'Absolue et non négociable' },
-      { key: 'B', text: 'Importante mais je crois en la réconciliation' },
+      { key: 'B', text: 'Importante, mais je crois en la réconciliation' },
       { key: 'C', text: 'Je suis humain(e) — les tentations existent' },
       {
         key: 'D',
@@ -1594,7 +1594,7 @@ export const QUESTIONS: Question[] = [
       { key: 'C', text: "L'effort doit être réciproque sinon je me retire" },
       {
         key: 'D',
-        text: "Je donne beaucoup mais j'attends la même chose en retour",
+        text: "Je donne beaucoup, mais j'attends la même chose en retour",
       },
     ],
   },
@@ -1648,7 +1648,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: "Essentielles — c'est mon langage principal d'amour" },
       {
         key: 'B',
-        text: 'Importantes mais je ne suis pas très démonstratif(ve)',
+        text: 'Importantes, mais je ne suis pas très démonstratif(ve)',
       },
       { key: 'C', text: 'Appréciées mais pas indispensables' },
       {
