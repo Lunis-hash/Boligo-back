@@ -15,6 +15,7 @@ import {
   isModelUnavailableError,
   parseModelList,
   pickGroqModel,
+  reasoningOptions,
 } from './groq-model';
 
 /** La liste des modèles Groq est relue toutes les six heures. */
@@ -60,6 +61,8 @@ export class AiService implements OnModuleInit {
     agentName: 'sondeur' | 'cupidon' | 'coach' | 'parcours' | 'moderation',
     prompt: string,
     systemPrompt?: string,
+    /** Longueur maximale de la réponse (le Sondeur renvoie 21 questions en JSON). */
+    maxTokens = 4096,
   ): Promise<string> {
     if (this.openRouterService && process.env.OPENROUTER_API_KEY) {
       try {
@@ -88,7 +91,8 @@ export class AiService implements OnModuleInit {
               { role: 'user' as const, content: prompt },
             ],
             temperature: 0.7,
-            max_tokens: 2048,
+            max_completion_tokens: maxTokens,
+            ...reasoningOptions(model),
           });
           return completion.choices[0]?.message?.content ?? '';
         } catch (error) {
@@ -204,7 +208,13 @@ Retourne UNIQUEMENT un tableau JSON de 21 objets:
 `;
 
     try {
-      const text = await this.queryAiAgent('sondeur', prompt, systemPrompt);
+      // 21 questions × 4 options en JSON : environ 3 000 jetons de réponse.
+      const text = await this.queryAiAgent(
+        'sondeur',
+        prompt,
+        systemPrompt,
+        8000,
+      );
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
       const normalized = normalizeAiQuestions(parsed);
@@ -254,7 +264,13 @@ Retourne UNIQUEMENT un tableau JSON :
 [{ "day": 1, "themeKey": "famille", "theme": "Lignes rouges", "emoji": "👨‍👩‍👧", "text": "...", "options": ["...", "...", "...", "Autre..."] }]
 `;
     try {
-      const text = await this.queryAiAgent('sondeur', prompt, systemPrompt);
+      // 21 questions × 4 options en JSON : environ 3 000 jetons de réponse.
+      const text = await this.queryAiAgent(
+        'sondeur',
+        prompt,
+        systemPrompt,
+        8000,
+      );
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
       const normalized = normalizeAiQuestions(parsed);

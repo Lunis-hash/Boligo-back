@@ -98,4 +98,22 @@ describe('AiService — modèle Groq retiré', () => {
     ).rejects.toThrow('timeout');
     expect(g.calls).toHaveLength(1);
   });
+
+  it('limite la réflexion des modèles à raisonnement pour ne pas tronquer le JSON', async () => {
+    const g = fakeGroq(['openai/gpt-oss-20b'], () => '[]');
+    await serviceWith(g.client).queryAiAgent('sondeur', 'question');
+    const create = (g.client.chat.completions.create as jest.Mock).mock
+      .calls as Array<[Record<string, unknown>]>;
+    expect(create[0][0]).toMatchObject({
+      model: 'openai/gpt-oss-20b',
+      reasoning_effort: 'low',
+      include_reasoning: false,
+      max_completion_tokens: 4096,
+    });
+    const llama = fakeGroq(['llama-3.3-70b-versatile'], () => '[]');
+    await serviceWith(llama.client).queryAiAgent('sondeur', 'question');
+    const plain = (llama.client.chat.completions.create as jest.Mock).mock
+      .calls as Array<[Record<string, unknown>]>;
+    expect(plain[0][0]).not.toHaveProperty('reasoning_effort');
+  });
 });

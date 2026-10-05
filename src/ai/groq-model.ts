@@ -64,3 +64,18 @@ export function isModelUnavailableError(error: unknown): boolean {
     e?.message ?? '',
   );
 }
+
+/**
+ * Réglages propres aux modèles « à raisonnement » : leur réflexion consomme
+ * des jetons de la réponse. On la limite (gpt-oss) ou on la coupe (qwen3)
+ * pour que le JSON attendu ne soit pas tronqué.
+ */
+export function reasoningOptions(model: string): {
+  reasoning_effort?: 'none' | 'low';
+  include_reasoning?: boolean;
+} {
+  if (/gpt-oss/i.test(model))
+    return { reasoning_effort: 'low', include_reasoning: false };
+  if (/qwen3/i.test(model)) return { reasoning_effort: 'none' };
+  return {};
+}
