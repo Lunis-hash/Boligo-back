@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { MEETING_SCOPES } from '../../interview/meeting-scope';
 
 export class UpdateProfileDto {
   // ── Champs Profile ──
@@ -44,4 +45,10 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  // ── Préférence de rencontre (réponse M0_Q02 de l'entretien) ──
+  @ApiProperty({ example: 'national', enum: MEETING_SCOPES, required: false })
+  @IsOptional()
+  @IsIn(MEETING_SCOPES)
+  meetingScope?: (typeof MEETING_SCOPES)[number];
 }

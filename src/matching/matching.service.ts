@@ -6,6 +6,7 @@ import { ageFrom, buildMatchView, resolveScore } from './match-view';
 import {
   birthDateBounds,
   FilterSubject,
+  filterCity,
   mutuallyAccepted,
   scopeWhere,
 } from './discover-filters';
@@ -105,7 +106,7 @@ export class MatchingService {
     const viewerAnswers = collectRawAnswers(userInterview?.responses);
     const viewerSubject: FilterSubject = {
       age: ageFrom(currentUser.birthDate) ?? null,
-      city: currentUser.profile?.displayedCity || currentUser.city || null,
+      city: filterCity(currentUser),
       answers: viewerAnswers,
     };
     const birthDate = birthDateBounds(viewerSubject.age, viewerAnswers.M0_Q01);
@@ -138,7 +139,7 @@ export class MatchingService {
     const filteredMatches = matches.filter((candidate) =>
       mutuallyAccepted(viewerSubject, {
         age: ageFrom(candidate.birthDate) ?? null,
-        city: candidate.profile?.displayedCity || candidate.city || null,
+        city: filterCity(candidate),
         answers: answersByUser.get(candidate.id) ?? {},
       }),
     );
@@ -283,7 +284,7 @@ export class MatchingService {
       return u
         ? {
             age: ageFrom(u.birthDate) ?? null,
-            city: u.profile?.displayedCity || u.city || null,
+            city: filterCity(u),
             answers: answers.get(id) ?? {},
           }
         : null;

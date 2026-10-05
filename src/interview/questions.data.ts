@@ -1,6 +1,8 @@
 export interface QuestionOption {
   key: string;
   text: string;
+  /** Option à préciser en toutes lettres (réponse enregistrée sous `<id>_AUTRE`). */
+  freeText?: boolean;
 }
 
 export interface QuestionDependency {
@@ -31,7 +33,28 @@ export interface Question {
   rules?: QuestionRules;
   /** Plusieurs réponses possibles, enregistrées « A,B,… » (ordre des options). */
   multiple?: boolean;
+  /** Nombre maximal de réponses d'une question à choix multiple. */
+  maxChoices?: number;
   scale?: QuestionScale;
+  /** Réponses pré-cochées proposées au membre (langues de son pays), jamais enregistrées d'office. */
+  suggested?: string[];
+  /** Précision pré-remplie de l'option à préciser (« Allemand »). */
+  suggestedOther?: string;
+}
+
+/** Suffixe de la précision écrite d'une option `freeText` (« M0_Q10_AUTRE »). */
+export const FREE_TEXT_SUFFIX = '_AUTRE';
+const FREE_TEXT_MAX = 60;
+
+/**
+ * Précision écrite valide : lettres (tous alphabets), espaces, tirets,
+ * apostrophes et virgules (plusieurs langues), de 2 à 60 caractères.
+ */
+export function cleanFreeText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const text = value.replace(/\s+/g, ' ').trim();
+  if (text.length < 2 || text.length > FREE_TEXT_MAX) return null;
+  return /^[\p{L}\p{M}][\p{L}\p{M} '’,-]*$/u.test(text) ? text : null;
 }
 
 /** Échelle d'accord en 5 points (A = 1 … E = 5). */
@@ -66,6 +89,7 @@ export function isValidAnswer(q: Question, value: unknown): boolean {
   const keys = answerKeys(value);
   if (keys.length === 0) return false;
   if (!q.multiple && keys.length !== 1) return false;
+  if (q.maxChoices && keys.length > q.maxChoices) return false;
   if (new Set(keys).size !== keys.length) return false;
   return keys.every((k) => q.options.some((o) => o.key === k));
 }
@@ -95,11 +119,22 @@ export function dependencyMet(
   });
 }
 
-/** Texte d'une réponse, y compris à choix multiple (« Français, English »). */
-export function answerText(q: Question | undefined, value: string): string {
+/**
+ * Texte d'une réponse, y compris à choix multiple (« Français, English ») ;
+ * `other` remplace le libellé de l'option à préciser (« Bambara »).
+ */
+export function answerText(
+  q: Question | undefined,
+  value: string,
+  other?: string,
+): string {
   if (!q) return String(value);
   const keys = answerKeys(value);
-  const texts = keys.map((k) => q.options.find((o) => o.key === k)?.text ?? k);
+  const texts = keys.map((k) => {
+    const option = q.options.find((o) => o.key === k);
+    if (option?.freeText && other) return other;
+    return option?.text ?? k;
+  });
   return texts.length ? texts.join(', ') : String(value);
 }
 
@@ -120,11 +155,21 @@ export function decodeUserResponses(
     const qna: Array<{ question: string; answer: string }> = [];
 
     for (const [qId, optionKey] of Object.entries(raw)) {
+      // Précision écrite : rendue avec la question à laquelle elle se rapporte.
+      if (
+        qId.endsWith(FREE_TEXT_SUFFIX) &&
+        questionMap.has(qId.slice(0, -FREE_TEXT_SUFFIX.length))
+      )
+        continue;
       const qObj = questionMap.get(qId);
       if (qObj) {
         qna.push({
           question: qObj.text,
-          answer: answerText(qObj, String(optionKey)),
+          answer: answerText(
+            qObj,
+            String(optionKey),
+            raw[`${qId}${FREE_TEXT_SUFFIX}`],
+          ),
         });
       } else {
         qna.push({
@@ -171,7 +216,7 @@ export const QUESTIONS: Question[] = [
     text: 'Êtes-vous prêt(e) à déménager pour votre partenaire ?',
     options: [
       { key: 'A', text: 'Oui, sans condition' },
-      { key: 'B', text: 'Oui si le projet de vie est solide' },
+      { key: 'B', text: 'Oui, si le projet de vie est solide' },
       { key: 'C', text: 'Cela dépend de la distance' },
       { key: 'D', text: 'Non, je reste où je suis' },
     ],
@@ -195,7 +240,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: "Non, pas d'enfants" },
       { key: 'B', text: 'Oui, un enfant' },
       { key: 'C', text: 'Oui, deux enfants ou plus' },
-      { key: 'D', text: 'Oui mais ils sont autonomes (18+)' },
+      { key: 'D', text: 'Oui, mais ils sont autonomes (18 ans et plus)' },
     ],
   },
   {
@@ -204,7 +249,7 @@ export const QUESTIONS: Question[] = [
     text: "Souhaitez-vous des enfants à l'avenir ?",
     options: [
       { key: 'A', text: 'Oui, absolument' },
-      { key: 'B', text: 'Oui si les conditions sont réunies' },
+      { key: 'B', text: 'Oui, si les conditions sont réunies' },
       { key: 'C', text: 'Je ne suis pas certain(e)' },
       { key: 'D', text: "Non, c'est définitif" },
     ],
@@ -252,14 +297,14 @@ export const QUESTIONS: Question[] = [
     multiple: true,
     options: [
       { key: 'A', text: 'Français' },
-      { key: 'B', text: 'English' },
+      { key: 'B', text: 'Anglais — English' },
       { key: 'C', text: 'Arabe — العربية' },
       { key: 'D', text: 'Lingala' },
       { key: 'E', text: 'Kiswahili' },
       { key: 'F', text: 'Wolof' },
-      { key: 'G', text: 'Português' },
-      { key: 'H', text: 'Español' },
-      { key: 'I', text: 'Une autre langue' },
+      { key: 'G', text: 'Portugais — Português' },
+      { key: 'H', text: 'Espagnol — Español' },
+      { key: 'I', text: 'Une autre langue (précisez)', freeText: true },
     ],
   },
 
@@ -350,7 +395,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Ma langue maternelle uniquement' },
       { key: 'B', text: 'Français ou langue du pays de résidence' },
       { key: 'C', text: 'Bilingue — deux langues' },
-      { key: 'D', text: "Peu importe du moment qu'on se comprend" },
+      { key: 'D', text: "Peu importe, du moment qu'on se comprend" },
     ],
   },
   {
@@ -371,7 +416,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M1_Q10',
     moduleNumber: 1,
-    text: 'Le rôle des anciens et patriarches dans vos décisions de couple :',
+    text: 'Le rôle des anciens et des patriarches dans vos décisions de couple :',
     options: [
       { key: 'A', text: 'Fondamental — je ne décide pas sans leur avis' },
       { key: 'B', text: 'Important mais la décision finale nous appartient' },
@@ -424,7 +469,7 @@ export const QUESTIONS: Question[] = [
     text: "Si votre famille n'approuve pas votre partenaire pour des raisons culturelles :",
     options: [
       { key: 'A', text: 'Je respecte leur avis et je revois ma décision' },
-      { key: 'B', text: "J'en tiens compte mais je suis mon cœur" },
+      { key: 'B', text: "J'en tiens compte, mais je suis mon cœur" },
       { key: 'C', text: "J'explique ma position et je maintiens mon choix" },
       { key: 'D', text: "Leur approbation n'est pas nécessaire pour moi" },
     ],
@@ -452,8 +497,8 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: "J'essaie de m'adapter même si ça me coûte" },
       { key: 'B', text: "J'explique calmement mon besoin d'espace" },
-      { key: 'C', text: 'Je me sens envahi(e) et prends mes distances' },
-      { key: 'D', text: "J'ignore la demande et change de sujet" },
+      { key: 'C', text: 'Je me sens envahi(e) et je prends mes distances' },
+      { key: 'D', text: "J'ignore la demande et je change de sujet" },
     ],
   },
   {
@@ -526,7 +571,10 @@ export const QUESTIONS: Question[] = [
     text: 'Êtes-vous capable de vous excuser en premier, même si vous pensez avoir raison ?',
     options: [
       { key: 'A', text: "Oui — l'harmonie passe avant mon ego" },
-      { key: 'B', text: 'Oui si je réalise avoir commis une erreur' },
+      {
+        key: 'B',
+        text: "Oui, si je me rends compte que j'ai commis une erreur",
+      },
       { key: 'C', text: 'Difficilement — mon ego résiste' },
       { key: 'D', text: "Non — je n'ai pas à m'excuser si j'avais raison" },
     ],
@@ -618,6 +666,29 @@ export const QUESTIONS: Question[] = [
     text: 'Je garde mes émotions pour moi, même quand elles sont fortes.',
     options: AGREEMENT_OPTIONS,
   },
+  // V6.1 — Timidité et ouverture (timidité : Cheek & Buss ; confidence :
+  // échelle « Opener » de Miller, Berg & Archer). Formulations BOLIGO.
+  {
+    id: 'M2_Q19',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: "Au début d'une rencontre, je suis intimidé(e) et j'ai du mal à me montrer tel(le) que je suis.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M2_Q20',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: 'Il me faut du temps avant de parler de moi et de ce que je ressens.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M2_Q21',
+    moduleNumber: 2,
+    scale: 'accord',
+    text: 'Les gens se confient facilement à moi.',
+    options: AGREEMENT_OPTIONS,
+  },
 
   // --- MODULE 3 : VÉCU & CONTEXTE ---
   {
@@ -637,7 +708,7 @@ export const QUESTIONS: Question[] = [
     text: 'La cause principale de votre dernière rupture :',
     options: [
       { key: 'A', text: 'Incompatibilité de valeurs ou de projet de vie' },
-      { key: 'B', text: 'Manque de communication profond' },
+      { key: 'B', text: 'Un profond manque de communication' },
       { key: 'C', text: 'Infidélité ou trahison' },
       { key: 'D', text: 'Pression familiale ou culturelle' },
       { key: 'E', text: 'Violence ou manque de respect' },
@@ -659,8 +730,8 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 3,
     text: 'Votre vision de la famille recomposée :',
     options: [
-      { key: 'A', text: "Mon enfant c'est ton enfant — intégration totale" },
-      { key: 'B', text: "On s'aime mais les rôles parentaux restent définis" },
+      { key: 'A', text: "Mon enfant, c'est ton enfant — intégration totale" },
+      { key: 'B', text: "On s'aime, mais les rôles parentaux restent définis" },
       {
         key: 'C',
         text: 'Mon partenaire est présent sans autorité parentale directe',
@@ -729,7 +800,10 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: 'Tout en commun — un seul pot partagé' },
       { key: 'B', text: 'Contribution proportionnelle aux revenus' },
-      { key: 'C', text: 'Chacun ses dépenses + charges communes partagées' },
+      {
+        key: 'C',
+        text: 'Chacun ses dépenses, et les charges communes partagées',
+      },
       { key: 'D', text: "L'argent reste une affaire individuelle" },
     ],
   },
@@ -803,7 +877,7 @@ export const QUESTIONS: Question[] = [
     id: 'M4_Q07',
     moduleNumber: 4,
     rules: { dependsOn: { questionId: 'M1_Q01', values: ['A', 'B'] } },
-    text: 'La dot ou le Mahr dans votre culture :',
+    text: 'La dot ou le mahr dans votre culture :',
     options: [
       { key: 'A', text: 'Une obligation que je respecte pleinement' },
       { key: 'B', text: 'Une tradition symbolique importante' },
@@ -818,7 +892,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: 'On épargne ensemble pour des projets communs' },
       { key: 'B', text: 'Chacun épargne de son côté' },
-      { key: 'C', text: 'Épargne commune + épargne personnelle' },
+      { key: 'C', text: 'Une épargne commune et une épargne personnelle' },
       { key: 'D', text: "Je ne suis pas à l'aise pour épargner ensemble" },
     ],
   },
@@ -834,6 +908,73 @@ export const QUESTIONS: Question[] = [
         text: "Ça reste personnel tant que ça n'impacte pas le couple",
       },
       { key: 'D', text: 'Je ne me suis jamais posé la question' },
+    ],
+  },
+  // V6.1 — Argent pendant la fréquentation, manque d'argent, matérialisme,
+  // partage des affaires personnelles.
+  {
+    id: 'M4_Q10',
+    moduleNumber: 4,
+    text: "Au premier rendez-vous, l'addition :",
+    options: [
+      {
+        key: 'A',
+        text: "C'est à l'homme de payer — c'est une marque de respect",
+      },
+      { key: 'B', text: 'Celui ou celle qui a proposé la sortie paie' },
+      { key: 'C', text: 'On partage, moitié-moitié' },
+      { key: 'D', text: 'Peu importe, tant que personne ne se sent redevable' },
+    ],
+  },
+  {
+    id: 'M4_Q11',
+    moduleNumber: 4,
+    text: 'Si votre partenaire gagnait peu ou plus rien pendant une longue période :',
+    options: [
+      {
+        key: 'A',
+        text: "Je le ou la soutiens sans compter — c'est le sens du couple",
+      },
+      {
+        key: 'B',
+        text: 'Je soutiens, avec un plan pour nous en sortir ensemble',
+      },
+      {
+        key: 'C',
+        text: 'Je soutiens un temps, mais cela finirait par peser sur mes sentiments',
+      },
+      {
+        key: 'D',
+        text: 'Un manque d’argent durable serait une raison de partir',
+      },
+    ],
+  },
+  {
+    id: 'M4_Q12',
+    moduleNumber: 4,
+    text: "La place de l'argent et du niveau de vie dans le choix d'un(e) partenaire :",
+    options: [
+      { key: 'A', text: 'Essentielle — je veux un certain niveau de vie' },
+      {
+        key: 'B',
+        text: 'Importante — la stabilité compte plus que le montant',
+      },
+      { key: 'C', text: 'Secondaire — on construit ensemble' },
+      { key: 'D', text: 'Aucune — seul le cœur compte' },
+    ],
+  },
+  {
+    id: 'M4_Q13',
+    moduleNumber: 4,
+    text: 'Prêter vos affaires personnelles à votre partenaire (voiture, téléphone, ordinateur, vêtements) :',
+    options: [
+      { key: 'A', text: 'Ce qui est à moi est à toi' },
+      { key: 'B', text: "Volontiers, à condition qu'on me demande avant" },
+      {
+        key: 'C',
+        text: 'Certaines choses seulement — ma voiture ou mon téléphone, non',
+      },
+      { key: 'D', text: 'Je préfère que chacun garde ses affaires' },
     ],
   },
 
@@ -852,7 +993,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M5_Q02',
     moduleNumber: 5,
-    text: 'Votre mère (ou père) manque de respect à votre partenaire. Vous :',
+    text: 'Votre mère (ou votre père) manque de respect à votre partenaire. Vous :',
     options: [
       {
         key: 'A',
@@ -862,7 +1003,7 @@ export const QUESTIONS: Question[] = [
       { key: 'C', text: 'Attendez que ça se règle naturellement' },
       {
         key: 'D',
-        text: 'Dites à votre partenaire de ne pas trop prendre à cœur',
+        text: 'Dites à votre partenaire de ne pas le prendre trop à cœur',
       },
     ],
   },
@@ -885,7 +1026,7 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 5,
     text: 'Avez-vous des amis proches du sexe opposé ?',
     options: [
-      { key: 'A', text: "Oui — c'est non-négociable pour moi" },
+      { key: 'A', text: "Oui — c'est non négociable pour moi" },
       { key: 'B', text: 'Oui — mais je suis transparent(e) à ce sujet' },
       { key: 'C', text: "J'évite par respect pour mon partenaire" },
       { key: 'D', text: 'Non, je préfère ne pas en avoir' },
@@ -964,7 +1105,7 @@ export const QUESTIONS: Question[] = [
     text: "Avez-vous besoin de gagner le débat ou d'avoir le dernier mot ?",
     options: [
       { key: 'A', text: "Non — résoudre m'importe plus que gagner" },
-      { key: 'B', text: "Parfois je m'emporte mais je m'en rends compte" },
+      { key: 'B', text: "Parfois, je m'emporte, mais je m'en rends compte" },
       { key: 'C', text: "Souvent oui — c'est plus fort que moi" },
       { key: 'D', text: "Oui — et j'assume totalement" },
     ],
@@ -993,7 +1134,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Limite absolue pour moi — inacceptable' },
       { key: 'B', text: 'Grave, mais je peux pardonner une première fois' },
       { key: 'C', text: 'Difficile, mais ça peut arriver dans un couple' },
-      { key: 'D', text: "J'essaie d'ignorer si ce n'est pas récurrent" },
+      { key: 'D', text: "J'essaie de passer outre si ce n'est pas récurrent" },
     ],
   },
   {
@@ -1047,7 +1188,7 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 6,
     text: 'La fidélité dans votre conception du couple :',
     options: [
-      { key: 'A', text: 'Absolue et non-négociable' },
+      { key: 'A', text: 'Absolue et non négociable' },
       { key: 'B', text: 'Importante mais je crois en la réconciliation' },
       { key: 'C', text: 'Je suis humain(e) — les tentations existent' },
       {
@@ -1123,7 +1264,10 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 7,
     text: "Votre niveau d'ambition professionnelle :",
     options: [
-      { key: 'A', text: 'Élevé — je vise haut et je sacrifie pour ça' },
+      {
+        key: 'A',
+        text: 'Élevé — je vise haut et je fais des sacrifices pour y arriver',
+      },
       { key: 'B', text: "Modéré — j'aime réussir sans que ça prenne tout" },
       { key: 'C', text: "Faible — l'équilibre de vie prime sur la carrière" },
       { key: 'D', text: 'Accompli — je suis dans une phase de transmission' },
@@ -1295,7 +1439,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: 'Un acte religieux et spirituel fondamental' },
       { key: 'B', text: 'Un engagement civil et symbolique' },
-      { key: 'C', text: 'Les deux — civil ET religieux' },
+      { key: 'C', text: 'Les deux — civil et religieux' },
       { key: 'D', text: "Un choix optionnel — l'amour prime sur le papier" },
     ],
   },
@@ -1314,7 +1458,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M8_Q05',
     moduleNumber: 8,
-    text: 'Les ruptures non-négociables dans votre relation :',
+    text: 'Ce qui, pour vous, entraînerait une rupture sans discussion possible :',
     options: [
       { key: 'A', text: 'Infidélité ou mensonge grave' },
       { key: 'B', text: 'Violence ou manque de respect répété' },
@@ -1348,7 +1492,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M8_Q09',
     moduleNumber: 8,
-    text: 'Si vos projets de vie divergent sur un point clé (ville, enfants, religion), vous :',
+    text: 'Si vos projets de vie divergent sur un point clé (ville, enfants, religion) :',
     options: [
       {
         key: 'A',
@@ -1363,6 +1507,59 @@ export const QUESTIONS: Question[] = [
         key: 'D',
         text: "Je fais confiance à l'amour pour trouver une solution",
       },
+    ],
+  },
+  // V6.1 — Signaux d'alerte actuels (« red flags »), formulés pour les deux
+  // sexes : croisés avec les habitudes déclarées par l'autre (Module 9).
+  {
+    id: 'M8_Q10',
+    moduleNumber: 8,
+    multiple: true,
+    maxChoices: 3,
+    text: 'Parmi ces signaux, lesquels vous feraient fuir rapidement ? (3 au plus)',
+    options: [
+      {
+        key: 'A',
+        text: "Des déclarations d'amour très rapides et envahissantes",
+      },
+      {
+        key: 'B',
+        text: 'Une jalousie qui contrôle : téléphone fouillé, localisation exigée',
+      },
+      {
+        key: 'C',
+        text: 'Disparaître des jours sans explication, puis revenir comme si de rien n’était',
+      },
+      {
+        key: 'D',
+        text: 'Rester flou sur ses intentions : « on verra », sans engagement',
+      },
+      { key: 'E', text: 'Dire du mal de tous ses ex' },
+      {
+        key: 'F',
+        text: 'Mal parler aux serveurs, aux inconnus ou à sa famille',
+      },
+      { key: 'G', text: "Compter sur l'argent de l'autre pour vivre" },
+      { key: 'H', text: 'Ne jamais reconnaître ses torts' },
+      { key: 'I', text: 'Ne pas respecter un « non » ou une limite' },
+      {
+        key: 'J',
+        text: 'Avoir les yeux rivés sur son téléphone pendant les moments à deux',
+      },
+    ],
+  },
+  {
+    id: 'M8_Q11',
+    moduleNumber: 8,
+    text: "Si votre partenaire tombait gravement malade ou vivait avec un handicap, prendre soin de lui ou d'elle serait pour vous :",
+    options: [
+      { key: 'A', text: 'Évident — pour le meilleur et pour le pire' },
+      {
+        key: 'B',
+        text: 'Naturel, avec de l’aide extérieure pour tenir dans la durée',
+      },
+      { key: 'C', text: "Effrayant, mais j'essaierais" },
+      { key: 'D', text: 'Je ne sais pas si j’en serais capable' },
     ],
   },
 
@@ -1404,7 +1601,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'M9_Q03',
     moduleNumber: 9,
-    text: 'Tenez-vous une comptabilité mentale de ce que vous donnez vs recevez ?',
+    text: 'Tenez-vous une comptabilité mentale de ce que vous donnez et de ce que vous recevez ?',
     options: [
       { key: 'A', text: 'Non — je donne librement sans compter' },
       { key: 'B', text: 'Parfois, surtout quand je me sens lésé(e)' },
@@ -1419,7 +1616,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { key: 'A', text: "Je l'exprime clairement dès que possible" },
       { key: 'B', text: "J'attends le bon moment pour en parler" },
-      { key: 'C', text: 'Je garde pour moi en espérant que ça passe' },
+      { key: 'C', text: 'Je garde ça pour moi en espérant que ça passe' },
       { key: 'D', text: "Je laisse s'accumuler jusqu'à l'explosion" },
     ],
   },
@@ -1456,7 +1653,7 @@ export const QUESTIONS: Question[] = [
       { key: 'C', text: 'Appréciées mais pas indispensables' },
       {
         key: 'D',
-        text: "Je suis peu à l'aise avec le contact physique non-sexuel",
+        text: "Je suis peu à l'aise avec le contact physique non sexuel",
       },
     ],
   },
@@ -1476,6 +1673,87 @@ export const QUESTIONS: Question[] = [
     scale: 'accord',
     text: "Je n'ai jamais dit le moindre petit mensonge.",
     options: AGREEMENT_OPTIONS,
+  },
+  // V6.1 — Habitudes de relation (croisées avec les signaux d'alerte de
+  // l'autre) et caractère exigeant : bouderie, attente que l'autre devine
+  // (« mindreading », Eidelson & Epstein), impatience. Jamais pénalisées
+  // seules : seule la combinaison avec l'autre membre compte.
+  {
+    id: 'M9_Q10',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Au début d'une relation, je dis très vite à l'autre qu'il ou elle est la personne de ma vie.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q11',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand j'ai un doute, je regarde le téléphone de l'autre ou je lui demande où il ou elle se trouve.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q12',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand une relation ne me convient plus, je préfère disparaître plutôt que m'expliquer.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q13',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: 'Je préfère ne pas définir la relation trop tôt, pour garder mes options ouvertes.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q14',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand je parle de mes ex, c'est surtout pour dire ce qu'ils ou elles ont mal fait.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q15',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: 'Pendant un moment à deux, je consulte mon téléphone.',
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q16',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand je n'obtiens pas ce que je veux, je le fais sentir (bouderie, froideur).",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q17',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Dans un couple, j'attends que l'autre devine mes envies sans que j'aie à les dire.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q18',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Quand j'ai envie de quelque chose, j'ai du mal à attendre.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q19',
+    moduleNumber: 9,
+    text: "Face à un(e) partenaire qui boude quand il ou elle n'obtient pas ce qu'il ou elle veut :",
+    options: [
+      {
+        key: 'A',
+        text: 'Ça ne me dérange pas — je cède volontiers pour lui faire plaisir',
+      },
+      { key: 'B', text: 'Je laisse passer, puis on en parle calmement' },
+      { key: 'C', text: "Ça m'agace vite — je ne cède pas" },
+      { key: 'D', text: "C'est rédhibitoire pour moi" },
+    ],
   },
 
   // --- MODULE 10 : ALCHIMIE, VIBE & DÉSIR (CLEF DE VOÛTE) ---
@@ -1536,7 +1814,7 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: "Oui — l'humour est une de mes forces naturelles" },
       {
         key: 'B',
-        text: "Souvent — j'ai le sens de l'humour mais sans en faire une scène",
+        text: "Souvent — j'ai le sens de l'humour, sans chercher à me donner en spectacle",
       },
       { key: 'C', text: 'Parfois — surtout avec les gens que je connais bien' },
       {
@@ -1569,7 +1847,7 @@ export const QUESTIONS: Question[] = [
     options: [
       {
         key: 'A',
-        text: "Ma joie de vivre et ma légèreté — être avec moi, c'est fun",
+        text: "Ma joie de vivre et ma légèreté — avec moi, on s'amuse",
       },
       {
         key: 'B',
@@ -1591,6 +1869,80 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: 'Aventure' },
       { key: 'C', text: 'Profondeur' },
       { key: 'D', text: 'Joie' },
+    ],
+  },
+  // V6.1 — Attirance physique, sans critère de corps : les préférences
+  // idéales déclarées prédisent mal l'attirance réelle (Eastwick & Finkel,
+  // 2008), alors que les partenaires passés d'une même personne se
+  // ressemblent (Park & MacDonald, 2019). On demande donc ce qui a déjà fait
+  // chavirer, croisé avec ce que l'autre dégage.
+  {
+    id: 'M10_Q11',
+    moduleNumber: 10,
+    text: "Repensez aux personnes qui vous ont fait chavirer rapidement. Qu'avaient-elles surtout en commun dans leur allure ?",
+    options: [
+      { key: 'A', text: 'Une allure élégante et soignée' },
+      { key: 'B', text: 'Un style naturel et décontracté' },
+      { key: 'C', text: 'Une allure sportive et énergique' },
+      { key: 'D', text: 'Un style original, artistique, atypique' },
+      { key: 'E', text: 'Une allure ancrée dans sa culture (tenues, codes)' },
+      { key: 'F', text: 'Rien de commun : je suis surpris(e) à chaque fois' },
+    ],
+  },
+  {
+    id: 'M10_Q12',
+    moduleNumber: 10,
+    text: 'Votre propre allure, au quotidien :',
+    options: [
+      { key: 'A', text: 'Élégante et soignée' },
+      { key: 'B', text: 'Naturelle et décontractée' },
+      { key: 'C', text: 'Sportive et énergique' },
+      { key: 'D', text: 'Originale, artistique, atypique' },
+      { key: 'E', text: 'Ancrée dans ma culture (tenues, codes)' },
+      { key: 'F', text: "Je n'y prête pas vraiment attention" },
+    ],
+  },
+  {
+    id: 'M10_Q13',
+    moduleNumber: 10,
+    text: 'Chez quelqu’un, ce qui provoque le déclic en premier :',
+    options: [
+      { key: 'A', text: 'Le regard et le sourire' },
+      { key: 'B', text: 'La voix et la façon de parler' },
+      { key: 'C', text: "L'allure et la prestance" },
+      { key: 'D', text: "L'assurance, le charisme" },
+      { key: 'E', text: 'La gentillesse envers les autres' },
+      { key: 'F', text: "L'humour et la répartie" },
+    ],
+  },
+  {
+    id: 'M10_Q14',
+    moduleNumber: 10,
+    text: 'Ce que les gens remarquent en premier chez vous :',
+    options: [
+      { key: 'A', text: 'Mon regard et mon sourire' },
+      { key: 'B', text: 'Ma voix et ma façon de parler' },
+      { key: 'C', text: 'Mon allure et ma prestance' },
+      { key: 'D', text: 'Mon assurance, mon charisme' },
+      { key: 'E', text: 'Ma gentillesse envers les autres' },
+      { key: 'F', text: 'Mon humour et ma répartie' },
+    ],
+  },
+  {
+    id: 'M10_Q15',
+    moduleNumber: 10,
+    text: "Pour qu'une histoire commence, l'attirance physique doit être :",
+    options: [
+      {
+        key: 'A',
+        text: 'Immédiate — sans coup de cœur au premier regard, ça ne marchera pas',
+      },
+      {
+        key: 'B',
+        text: 'Présente, et elle grandit en apprenant à se connaître',
+      },
+      { key: 'C', text: 'Secondaire — elle naît de la connexion' },
+      { key: 'D', text: 'Ça dépend vraiment des personnes' },
     ],
   },
 ];
@@ -1644,7 +1996,59 @@ export const V6_CHANGES: Record<
   M9_Q08: 'nouvelle',
   M9_Q09: 'nouvelle',
   M10_Q02: 'retablie',
+  M2_Q19: 'nouvelle',
+  M2_Q20: 'nouvelle',
+  M2_Q21: 'nouvelle',
+  M4_Q10: 'nouvelle',
+  M4_Q11: 'nouvelle',
+  M4_Q12: 'nouvelle',
+  M4_Q13: 'nouvelle',
+  M8_Q10: 'nouvelle',
+  M8_Q11: 'nouvelle',
+  M9_Q10: 'nouvelle',
+  M9_Q11: 'nouvelle',
+  M9_Q12: 'nouvelle',
+  M9_Q13: 'nouvelle',
+  M9_Q14: 'nouvelle',
+  M9_Q15: 'nouvelle',
+  M9_Q16: 'nouvelle',
+  M9_Q17: 'nouvelle',
+  M9_Q18: 'nouvelle',
+  M9_Q19: 'nouvelle',
+  M10_Q11: 'nouvelle',
+  M10_Q12: 'nouvelle',
+  M10_Q13: 'nouvelle',
+  M10_Q14: 'nouvelle',
+  M10_Q15: 'nouvelle',
 };
+
+/** Questions ajoutées en V6.1 (argent, attirance, signaux d'alerte, caprices, timidité). */
+export const V61_ADDED = new Set([
+  'M2_Q19',
+  'M2_Q20',
+  'M2_Q21',
+  'M4_Q10',
+  'M4_Q11',
+  'M4_Q12',
+  'M4_Q13',
+  'M8_Q10',
+  'M8_Q11',
+  'M9_Q10',
+  'M9_Q11',
+  'M9_Q12',
+  'M9_Q13',
+  'M9_Q14',
+  'M9_Q15',
+  'M9_Q16',
+  'M9_Q17',
+  'M9_Q18',
+  'M9_Q19',
+  'M10_Q11',
+  'M10_Q12',
+  'M10_Q13',
+  'M10_Q14',
+  'M10_Q15',
+]);
 
 /** Questions ajoutées en V6 (nouvelles ou rétablies), absentes des entretiens antérieurs. */
 export const V6_ADDED = new Set(

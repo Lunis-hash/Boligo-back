@@ -886,6 +886,69 @@ export const DIVERGENCE_RULES: Rule[] = [
       CD: 'mineure',
     }),
   },
+
+  // ── V6.1 : argent pendant la fréquentation et dans l'adversité
+  {
+    questionId: 'M4_Q10',
+    theme: 'argent',
+    label: 'Qui paie au premier rendez-vous',
+    // « C'est à l'homme de payer » face à « moitié-moitié » : un malaise dès
+    // la première sortie (Lever, Frederick & Hertz, 2015).
+    severity: pairs({ AC: 'moderee' }, 'mineure'),
+    convergence: {
+      A: 'Pour vous deux, l’homme règle l’addition du premier rendez-vous',
+      C: 'Vous partagez tous les deux l’addition, moitié-moitié',
+    },
+  },
+  {
+    questionId: 'M4_Q11',
+    theme: 'argent',
+    label: 'Soutien quand l’argent manque',
+    // Les difficultés financières sont l'un des facteurs de stress les plus
+    // liés aux ruptures (Conger ; Dew, 2008).
+    severity: pairs(
+      { AD: 'majeure', BD: 'moderee', AC: 'moderee', BC: 'mineure' },
+      null,
+    ),
+    convergence: {
+      A: 'Vous vous soutiendriez tous les deux sans compter',
+      B: 'Vous traverseriez tous les deux un manque d’argent avec un plan',
+    },
+  },
+  {
+    questionId: 'M4_Q12',
+    theme: 'argent',
+    label: 'Place de l’argent dans le choix du partenaire',
+    severity: pairs(
+      { AD: 'majeure', AC: 'moderee', AB: 'mineure', BD: 'mineure' },
+      null,
+    ),
+  },
+  {
+    questionId: 'M4_Q13',
+    theme: 'lieu',
+    label: 'Partage des affaires personnelles',
+    severity: pairs({ AD: 'moderee', AC: 'mineure', BD: 'mineure' }, null),
+    convergence: { A: 'Pour vous deux, ce qui est à l’un est à l’autre' },
+  },
+  {
+    questionId: 'M8_Q11',
+    theme: 'projet',
+    label: 'Prendre soin de l’autre dans la maladie',
+    severity: pairs({ AD: 'moderee', AC: 'mineure', BD: 'mineure' }, null),
+    convergence: {
+      A: 'Pour vous deux, c’est pour le meilleur et pour le pire',
+    },
+  },
+  {
+    questionId: 'M10_Q15',
+    theme: 'intimite',
+    label: 'Rythme de l’attirance',
+    // L'attirance évolue avec la connaissance de l'autre (Hunt, Eastwick &
+    // Finkel, 2015) : un coup de foudre exigé face à une attirance qui se
+    // construit est à aborder tôt.
+    severity: pairs({ AC: 'moderee', AB: 'mineure' }, null),
+  },
 ];
 
 /** Règles croisées : la gravité dépend de deux questions (culture, religion). */

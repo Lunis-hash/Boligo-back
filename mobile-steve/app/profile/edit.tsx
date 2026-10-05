@@ -1,12 +1,24 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
-import { Save, ArrowLeft, Briefcase, MapPin, FileText, Heart, User, Phone, Mail, Calendar, ShieldCheck } from 'lucide-react-native';
+import { Save, ArrowLeft, Briefcase, MapPin, FileText, Heart, User, Phone, Mail, Calendar, ShieldCheck, Globe, Users, Navigation, ChevronRight, Search } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
+import { COUNTRIES, Country } from '@/constants/countries';
+import { detectPlace, LocationPermissionError, normName, splitResidence } from '@/services/location';
+
+type MeetingScope = 'local' | 'national' | 'international';
+
+/** Périmètres proposés à l'inscription (étape 3), modifiables ici. */
+const MEETING_SCOPES: { id: MeetingScope; label: string; hint: string; Icon: typeof MapPin }[] = [
+  { id: 'local', label: 'Local', hint: 'Même ville ou région', Icon: MapPin },
+  { id: 'national', label: 'National', hint: 'Tout mon pays', Icon: Users },
+  { id: 'international', label: 'International', hint: 'Partout dans le monde', Icon: Globe },
+];
+
 
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -14,11 +26,20 @@ export default function EditProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    firstName: '', lastName: '', telephone: '', city: '',
+    firstName: '', lastName: '', telephone: '',
     description: '', profession: '', displayedCity: '',
   });
   const [initialForm, setInitialForm] = useState(form);
   const [readOnly, setReadOnly] = useState<any>({});
+  // Ville de résidence (sert aux filtres de la Découverte) : pays de la liste + ville.
+  const [residenceCity, setResidenceCity] = useState('');
+  const [residenceCountry, setResidenceCountry] = useState<Country | null>(null);
+  const [initialResidence, setInitialResidence] = useState('');
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [locating, setLocating] = useState(false);
+  const [meetingScope, setMeetingScope] = useState<MeetingScope | null>(null);
+  const [initialScope, setInitialScope] = useState<MeetingScope | null>(null);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -30,12 +51,18 @@ export default function EditProfileScreen() {
       const u = d.user || {};
       const loaded = {
         firstName: u.firstName || '', lastName: u.lastName || '',
-        telephone: u.telephone || '', city: u.city || '',
+        telephone: u.telephone || '',
         description: d.description || '', profession: d.profession || '',
         displayedCity: d.displayedCity || '',
       };
       setForm(loaded);
       setInitialForm(loaded);
+      const residence = splitResidence(u.city || '');
+      setResidenceCity(residence.city);
+      setResidenceCountry(residence.country);
+      setInitialResidence(u.city || '');
+      setMeetingScope(d.meetingScope ?? null);
+      setInitialScope(d.meetingScope ?? null);
       setReadOnly({
         email: u.email || '',
         gender: u.gender || '',
@@ -73,6 +100,9 @@ export default function EditProfileScreen() {
       const value = form[key].trim();
       if (value && value !== (initialForm[key] || '').trim()) payload[key] = value;
     });
+    const residence = residenceValue();
+    if (residence && residence !== initialResidence.trim()) payload.city = residence;
+    if (meetingScope && meetingScope !== initialScope) payload.meetingScope = meetingScope;
 
     if (Object.keys(payload).length === 0) {
       Alert.alert('Aucune modification', 'Rien à enregistrer.');
@@ -94,6 +124,34 @@ export default function EditProfileScreen() {
   };
 
   const u = (key: string, val: string) => setForm(p => ({ ...p, [key]: val }));
+
+  /** « Ville, Pays » envoyé au serveur (la virgule sépare la ville du pays). */
+  const residenceValue = () => {
+    const city = residenceCity.replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!city) return '';
+    return residenceCountry ? `${city}, ${residenceCountry.name}` : city;
+  };
+
+  const handleLocate = async () => {
+    setLocating(true);
+    try {
+      const place = await detectPlace();
+      if (place.country) setResidenceCountry(place.country);
+      if (place.city) setResidenceCity(place.city);
+      if (!place.country || !place.city) {
+        Alert.alert('Position partielle', 'Complétez votre pays ou votre ville à la main.');
+      }
+    } catch (e) {
+      Alert.alert(
+        e instanceof LocationPermissionError ? 'Permission refusée' : 'Position introuvable',
+        'Choisissez votre pays et saisissez votre ville à la main.',
+      );
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  const filteredCountries = COUNTRIES.filter((c) => normName(c.name).includes(normName(countrySearch)));
 
   if (loading) {
     return <View style={styles.loader}><ActivityIndicator size="large" color={Colors.primary.red} /></View>;
@@ -185,9 +243,51 @@ export default function EditProfileScreen() {
           <View style={styles.fieldWrap}>
             <View style={styles.fieldHeader}>
               <View style={styles.iconCircle}><MapPin size={16} color={Colors.primary.red} /></View>
+              <Text style={styles.fieldLabel}>Pays de résidence</Text>
+            </View>
+            <TouchableOpacity style={styles.selector} onPress={() => setShowCountryModal(true)} activeOpacity={0.7} testID="residence-country">
+              <Text style={[styles.selectorText, !residenceCountry && styles.selectorPlaceholder]}>
+                {residenceCountry ? `${residenceCountry.flag}  ${residenceCountry.name}` : 'Choisir un pays'}
+              </Text>
+              <ChevronRight size={18} color={Colors.text.primary40} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.fieldWrap}>
+            <View style={styles.fieldHeader}>
+              <View style={styles.iconCircle}><MapPin size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Ville de résidence</Text>
             </View>
-            <TextInput style={styles.input} value={form.city} onChangeText={t => u('city', t)} placeholder="Abidjan, Dakar…" placeholderTextColor={Colors.text.inactive} />
+            <TextInput style={styles.input} value={residenceCity} onChangeText={setResidenceCity} placeholder="Abidjan, Dakar…" placeholderTextColor={Colors.text.inactive} testID="residence-city" />
+            <TouchableOpacity style={styles.locateBtn} onPress={handleLocate} disabled={locating} activeOpacity={0.7}>
+              <Navigation size={14} color={Colors.primary.red} />
+              <Text style={styles.locateText}>{locating ? 'Détection en cours…' : 'Détecter ma position'}</Text>
+            </TouchableOpacity>
+            <Text style={styles.fieldHint}>Votre pays et votre ville déterminent les profils proposés selon votre périmètre.</Text>
+          </View>
+        </View>
+
+        {/* ═══ PÉRIMÈTRE DE RENCONTRE (réponse M0_Q02) ═══ */}
+        <Text style={styles.sectionTitle}>Où souhaitez-vous rencontrer ?</Text>
+        <View style={styles.card}>
+          <View style={styles.scopeRow}>
+            {MEETING_SCOPES.map(({ id, label, hint, Icon }) => {
+              const selected = meetingScope === id;
+              return (
+                <TouchableOpacity
+                  key={id}
+                  style={[styles.scopeChip, selected && styles.scopeChipActive]}
+                  onPress={() => setMeetingScope(id)}
+                  activeOpacity={0.8}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  testID={`scope-${id}`}
+                >
+                  <Icon size={18} color={selected ? Colors.primary.red : Colors.text.primary40} />
+                  <Text style={[styles.scopeLabel, selected && styles.scopeLabelActive]}>{label}</Text>
+                  <Text style={styles.scopeHint}>{hint}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
@@ -266,6 +366,33 @@ export default function EditProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      <Modal visible={showCountryModal} transparent animationType="slide" onRequestClose={() => setShowCountryModal(false)}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setShowCountryModal(false)} />
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>Pays de résidence</Text>
+            <View style={styles.searchBar}>
+              <Search size={16} color={Colors.text.primary40} />
+              <TextInput style={styles.searchInput} value={countrySearch} onChangeText={setCountrySearch} placeholder="Rechercher…" placeholderTextColor={Colors.text.primary40} />
+            </View>
+            <FlatList
+              data={filteredCountries}
+              keyExtractor={(c) => c.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.countryItem}
+                  onPress={() => { setResidenceCountry(item); setCountrySearch(''); setShowCountryModal(false); }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.countryFlag}>{item.flag}</Text>
+                  <Text style={[styles.countryName, residenceCountry?.code === item.code && styles.countryNameActive]}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -301,6 +428,29 @@ const styles = StyleSheet.create({
   readOnlyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.neutral.backgroundLight, borderRadius: BorderRadius.lg, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: Colors.neutral.border },
   readOnlyText: { flex: 1, minWidth: 0, marginRight: 8, fontSize: 15, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary40 },
   lockBadge: { flexShrink: 0, fontSize: 10, fontFamily: Typography.fontFamily.medium, color: Colors.text.inactive, backgroundColor: Colors.neutral.border, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, overflow: 'hidden' },
+
+  // Lieu et périmètre
+  selector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.neutral.backgroundLight, borderRadius: BorderRadius.lg, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: Colors.neutral.border },
+  selectorText: { fontSize: 15, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary100 },
+  selectorPlaceholder: { color: Colors.text.inactive },
+  locateBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 4 },
+  locateText: { fontSize: 13, fontFamily: Typography.fontFamily.medium, color: Colors.primary.red },
+  fieldHint: { fontSize: 12, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary40, lineHeight: 18 },
+  scopeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  scopeChip: { flexGrow: 1, flexBasis: 140, gap: 4, padding: 14, borderRadius: BorderRadius.lg, borderWidth: 1, borderColor: Colors.neutral.border, backgroundColor: Colors.neutral.backgroundLight },
+  scopeChipActive: { borderColor: Colors.primary.red, backgroundColor: Colors.primary.red + '08' },
+  scopeLabel: { fontSize: 15, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary70 },
+  scopeLabelActive: { color: Colors.primary.red },
+  scopeHint: { fontSize: 12, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary40 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
+  sheet: { maxHeight: '75%', backgroundColor: Colors.neutral.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20 },
+  sheetTitle: { fontSize: 17, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary100, marginBottom: 12 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.neutral.backgroundLight, borderRadius: BorderRadius.md, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary100 },
+  countryItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.neutral.border + '40' },
+  countryFlag: { fontSize: 22 },
+  countryName: { fontSize: 15, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary100 },
+  countryNameActive: { fontFamily: Typography.fontFamily.bold, color: Colors.primary.red },
 
   // Footer
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: Colors.neutral.white, borderTopWidth: 1, borderTopColor: Colors.neutral.border },

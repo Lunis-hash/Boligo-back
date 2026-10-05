@@ -1,4 +1,13 @@
-import { deviceLanguage, getResumeModule, joinMultipleAnswer, LAST_MODULE } from '@/services/interview';
+import {
+  deviceLanguage,
+  getResumeModule,
+  initialPicked,
+  isValidFreeText,
+  joinMultipleAnswer,
+  LAST_MODULE,
+  Question,
+  togglePick,
+} from '@/services/interview';
 
 describe('getResumeModule', () => {
   it('starts at module 0 for a brand new interview', () => {
@@ -47,5 +56,52 @@ describe('Choix multiple et langue du Grand Entretien (V6)', () => {
 
   it('choisit le français ou l’anglais selon l’appareil', () => {
     expect(['fr', 'en']).toContain(deviceLanguage());
+  });
+});
+
+describe('Langues proposées et signaux d’alerte (V6.1)', () => {
+  const languages: Question = {
+    id: 'M0_Q10',
+    text: 'Langues',
+    multiple: true,
+    suggested: ['A', 'F', 'Z'],
+    options: [
+      { key: 'A', text: 'Français' },
+      { key: 'B', text: 'Anglais — English' },
+      { key: 'F', text: 'Wolof' },
+      { key: 'I', text: 'Une autre langue (précisez)', freeText: true },
+    ],
+  };
+  const flags: Question = {
+    id: 'M8_Q10',
+    text: 'Signaux',
+    multiple: true,
+    maxChoices: 3,
+    options: ['A', 'B', 'C', 'D'].map((key) => ({ key, text: key })),
+  };
+
+  it('coche d’office les langues du pays, sans clé inconnue', () => {
+    expect(initialPicked(languages)).toEqual(['A', 'F']);
+    expect(initialPicked({ ...languages, multiple: false })).toEqual([]);
+  });
+
+  it('ne dépasse jamais le nombre maximal de réponses', () => {
+    let picked: string[] = [];
+    for (const k of ['A', 'B', 'C', 'D']) picked = togglePick(flags, picked, k);
+    expect(picked).toEqual(['A', 'B', 'C']);
+    expect(togglePick(flags, picked, 'B')).toEqual(['A', 'C']);
+  });
+
+  it('affiche la langue écrite à la place de « une autre langue »', () => {
+    expect(joinMultipleAnswer(languages, ['I', 'A'], ' Bambara ')).toEqual({
+      key: 'A,I',
+      text: 'Français, Bambara',
+    });
+  });
+
+  it('valide la précision écrite comme le serveur', () => {
+    expect(isValidFreeText('Créole haïtien')).toBe(true);
+    expect(isValidFreeText('b')).toBe(false);
+    expect(isValidFreeText('<script>')).toBe(false);
   });
 });

@@ -256,6 +256,15 @@ RÈGLES :
 - Chaque question cible en priorité une divergence listée (cite les deux positions sans dire qui a répondu quoi : la même question est posée aux deux membres).
 - Pas de divergence sur un thème → question profonde sur ce thème, adaptée aux convergences connues.
 - 3 options concrètes + "Autre..." ; scénarios réalistes ; jamais de jugement ; aucune donnée de contact.
+- De la vraie profondeur : une scène précise de la vie à deux (« le serveur pose l'addition », « il ou elle prend votre voiture sans demander »), jamais une question abstraite.
+- Sujets de fond à couvrir quand le thème n'a pas de divergence :
+  argent → qui paie au premier rendez-vous (l'homme, celui qui invite, moitié-moitié), manque d'argent durable, place du niveau de vie, normes culturelles ;
+  lieu → partage des affaires personnelles (voiture, téléphone, logement), espace à soi ;
+  communication → bouderie et caprices, timidité, signaux d'alerte actuels (disparaître sans explication, jalousie qui contrôle, déclarations trop rapides, intentions floues), téléphone pendant les moments à deux ;
+  intimite → attirance physique, ce qui fait chavirer, rythme de l'attirance ;
+  famille → prendre soin de l'autre dans la maladie ou le handicap ;
+  projet → engagement clair face à « on verra ».
+- Jamais de question sur le corps, la taille, la couleur de peau ou un diagnostic de santé.
 ${avoidBlock}
 ANALYSE DU COUPLE :
 ${reportSummary}

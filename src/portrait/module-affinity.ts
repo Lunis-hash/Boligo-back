@@ -83,8 +83,22 @@ const NOT_COMPARED = new Set([
   'M10_Q02',
   'M10_Q03',
   'M10_Q09',
+  // V6.1 : lus seulement croisés (signaux d'alerte, patience, attirance).
+  'M8_Q10',
+  'M9_Q19',
+  'M10_Q11',
+  'M10_Q12',
+  'M10_Q13',
+  'M10_Q14',
   ...SCALE_ITEM_IDS,
 ]);
+
+/**
+ * Divergences croisées V6.1 (signaux d'alerte, caractère exigeant, timidité) :
+ * leur question n'est pas comparée telle quelle, leur gravité compte donc
+ * directement dans le module.
+ */
+const CROSS_COUNTED = new Set(['M8_Q10', 'M9_Q19', 'M9_Q16', 'M2_Q19']);
 
 /** Ce que l'un recherche (M10_Q03) face à ce que l'autre apporte (M10_Q09). */
 const SEEK_MATCHES_BRING: Record<string, string[]> = {
@@ -223,6 +237,23 @@ function similaritiesByModule(
     [b.M10_Q03, a.M10_Q02],
   ]) {
     if (seek && seen) push(10, seek === seen ? 1 : 0.6);
+  }
+
+  // Attirance (V6.1) : l'allure qui a déjà fait chavirer l'un face à celle de
+  // l'autre, et ce qui provoque son déclic face à ce qu'on remarque chez l'autre.
+  for (const [crush, look, spark, noticed] of [
+    [a.M10_Q11, b.M10_Q12, a.M10_Q13, b.M10_Q14],
+    [b.M10_Q11, a.M10_Q12, b.M10_Q13, a.M10_Q14],
+  ]) {
+    if (crush && look && crush !== 'F' && look !== 'F')
+      push(10, crush === look ? 1 : 0.6);
+    if (spark && noticed) push(10, spark === noticed ? 1 : 0.6);
+  }
+
+  for (const d of report.divergences) {
+    const module = MODULE_OF.get(d.questionId);
+    if (CROSS_COUNTED.has(d.questionId) && module !== undefined)
+      push(module, SEVERITY_SIMILARITY[d.severity]);
   }
 
   // Échelles V6 : sécurité d'attachement, régulation, dispute, personnalité.

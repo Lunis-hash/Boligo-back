@@ -14,11 +14,12 @@
  * aux échelles (V5) gardent une estimation de l'attachement tirée des
  * questions-scénarios du Module 2.
  */
-import { answerKeys } from '../interview/questions.data';
+import { answerKeys, QUESTIONS } from '../interview/questions.data';
 import type {
   Divergence,
   RawAnswers,
   Severity,
+  Theme,
 } from '../matching/divergence.engine';
 import { agree, Gender } from '../portrait/portrait.text';
 
@@ -53,6 +54,90 @@ export const BIG_FIVE: Record<BigFiveTrait, Item[]> = {
 };
 export const SOCIAL_DESIRABILITY = ['M9_Q08', 'M9_Q09'];
 
+/**
+ * V6.1 — Timidité au début d'une relation (inhibition face à l'inconnu, Cheek
+ * & Buss) et lenteur à se confier ; « les gens se confient à moi » (échelle
+ * « Opener », Miller, Berg & Archer) compte à l'inverse.
+ */
+export const SHYNESS: Item[] = [
+  { id: 'M2_Q19' },
+  { id: 'M2_Q20' },
+  { id: 'M2_Q21', reverse: true },
+];
+/**
+ * V6.1 — Caractère exigeant (« capricieux ») : faire sentir sa frustration,
+ * attendre que l'autre devine ses envies (croyance « mindreading »,
+ * Eidelson & Epstein), impatience face à une envie.
+ */
+export const DEMANDINGNESS: Item[] = [
+  { id: 'M9_Q16' },
+  { id: 'M9_Q17' },
+  { id: 'M9_Q18' },
+];
+
+/**
+ * Signaux d'alerte (M8_Q10) croisés avec l'habitude correspondante déclarée
+ * par l'autre. Les signaux sans habitude déclarable (impolitesse, argent,
+ * limite non respectée) restent des sujets de Sondeur.
+ */
+export const RED_FLAG_HABITS: Record<
+  string,
+  { item: string; label: string; theme: Theme; habit: string }
+> = {
+  A: {
+    item: 'M9_Q10',
+    label: 'Déclarations d’amour très rapides',
+    theme: 'intimite',
+    habit: 'je dis très vite à l’autre qu’il ou elle est la personne de ma vie',
+  },
+  B: {
+    item: 'M9_Q11',
+    label: 'Jalousie et contrôle',
+    theme: 'communication',
+    habit:
+      'quand je doute, je regarde le téléphone de l’autre ou je lui demande où il ou elle se trouve',
+  },
+  C: {
+    item: 'M9_Q12',
+    label: 'Disparaître sans explication',
+    theme: 'communication',
+    habit: 'je préfère disparaître plutôt que m’expliquer',
+  },
+  D: {
+    item: 'M9_Q13',
+    label: 'Intentions floues',
+    theme: 'projet',
+    habit: 'je préfère ne pas définir la relation trop tôt',
+  },
+  E: {
+    item: 'M9_Q14',
+    label: 'Parler de ses ex',
+    theme: 'communication',
+    habit: 'je parle surtout de ce que mes ex ont mal fait',
+  },
+  H: {
+    item: 'M6_Q14',
+    label: 'Reconnaître ses torts',
+    theme: 'communication',
+    habit: 'face à un reproche, je me justifie plutôt que d’écouter',
+  },
+  J: {
+    item: 'M9_Q15',
+    label: 'Le téléphone pendant les moments à deux',
+    theme: 'intimite',
+    habit: 'je consulte mon téléphone pendant les moments à deux',
+  },
+};
+/** Habitudes déclarées (V6.1), lues uniquement face aux signaux d'alerte de l'autre. */
+export const HABIT_ITEM_IDS = [
+  'M9_Q10',
+  'M9_Q11',
+  'M9_Q12',
+  'M9_Q13',
+  'M9_Q14',
+  'M9_Q15',
+];
+
 /** Toutes les affirmations notées sur 5 points (jamais comparées une à une entre membres). */
 export const SCALE_ITEM_IDS: string[] = [
   ...ATTACHMENT_ANXIETY,
@@ -64,9 +149,11 @@ export const SCALE_ITEM_IDS: string[] = [
   ...DEFENSIVENESS,
   ...STONEWALLING,
   ...Object.values(BIG_FIVE).flat(),
+  ...SHYNESS,
+  ...DEMANDINGNESS,
 ]
   .map((i) => i.id)
-  .concat(SOCIAL_DESIRABILITY);
+  .concat(SOCIAL_DESIRABILITY, HABIT_ITEM_IDS);
 
 export type BigFiveTrait =
   | 'extraversion'
@@ -95,6 +182,10 @@ export interface PsychProfile {
     index: number | null;
   };
   bigFive: Record<BigFiveTrait, number | null>;
+  /** Timidité au début d'une relation (V6.1). */
+  shyness: number | null;
+  /** Caractère exigeant : bouderie, attentes non dites, impatience (V6.1). */
+  demandingness: number | null;
   /** D'accord avec les deux affirmations de sincérité : portrait idéalisé. */
   idealized: boolean;
   /** Écarts entre ce que la personne déclare et ce qu'on lui a reproché. */
@@ -229,6 +320,8 @@ export function buildPsychProfile(answers: RawAnswers): PsychProfile {
       index: mean([criticism, contempt, defensiveness, stonewalling], 2),
     },
     bigFive,
+    shyness: scaleScore(answers, SHYNESS),
+    demandingness: scaleScore(answers, DEMANDINGNESS),
     idealized,
     mirrorGaps,
   };
@@ -373,7 +466,164 @@ export function psychometricDivergences(
     });
   }
 
+  out.push(...redFlagDivergences(a, b));
+  out.push(...demandingnessDivergences(pa, pb, a, b));
+  out.push(...shynessDivergences(pa, pb, a, b));
   return out;
+}
+
+// Textes des questions (sans importer le moteur de divergences, qui importe ce module).
+const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
+const questionText = (id: string) => QUESTION_BY_ID.get(id)?.text ?? id;
+const optionText = (id: string, key: string) =>
+  QUESTION_BY_ID.get(id)?.options.find((o) => o.key === key)?.text ?? key;
+
+const OFTEN: Record<string, { word: string; severity: Severity }> = {
+  D: { word: 'souvent', severity: 'moderee' },
+  E: { word: 'très souvent', severity: 'majeure' },
+};
+
+/**
+ * Signal d'alerte de l'un (M8_Q10) face à la même habitude déclarée par
+ * l'autre, souvent (modérée) ou très souvent (majeure). Une habitude avouée
+ * n'est jamais pénalisée seule : seulement face au signal d'alerte de l'autre.
+ */
+export function redFlagDivergences(a: RawAnswers, b: RawAnswers): Divergence[] {
+  const out: Divergence[] = [];
+  for (const [x, y, xIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    for (const flag of answerKeys(x.M8_Q10)) {
+      const map = RED_FLAG_HABITS[flag];
+      const level = map ? OFTEN[y[map.item]] : undefined;
+      if (!map || !level) continue;
+      const alert = {
+        key: flag,
+        text: `Ce qui me ferait fuir : ${map.label.toLowerCase()}`,
+      };
+      const habit = {
+        key: y[map.item],
+        text: `Il m’arrive ${level.word} que ${map.habit}`,
+      };
+      out.push({
+        questionId: 'M8_Q10',
+        theme: map.theme,
+        severity: level.severity,
+        label: `Signal d’alerte : ${map.label.toLowerCase()}`,
+        question:
+          'Un signal d’alerte de l’un correspond à une habitude de l’autre',
+        a: xIsA ? alert : habit,
+        b: xIsA ? habit : alert,
+      });
+    }
+  }
+  return out;
+}
+
+const DEMANDING = 70;
+
+/** Caractère exigeant de l'un face à la patience de l'autre (M9_Q19). */
+function demandingnessDivergences(
+  pa: PsychProfile,
+  pb: PsychProfile,
+  a: RawAnswers,
+  b: RawAnswers,
+): Divergence[] {
+  const out: Divergence[] = [];
+  const da = pa.demandingness;
+  const db = pb.demandingness;
+  if (da !== null && db !== null && da >= DEMANDING && db >= DEMANDING) {
+    const both = Math.min(da, db);
+    out.push({
+      questionId: 'M9_Q16',
+      theme: 'communication',
+      severity: 'moderee',
+      label: 'Deux caractères exigeants',
+      question:
+        'Quand une envie n’est pas satisfaite, vous le faites sentir tous les deux',
+      shared: true,
+      a: trait('Caractère exigeant', both),
+      b: trait('Caractère exigeant', both),
+    });
+    return out;
+  }
+  const TOLERANCE: Record<string, Severity> = {
+    D: 'majeure',
+    C: 'moderee',
+    A: 'mineure',
+  };
+  for (const [x, yScore, xIsA] of [
+    [a, db, true],
+    [b, da, false],
+  ] as const) {
+    const severity = TOLERANCE[x.M9_Q19];
+    if (yScore === null || yScore < DEMANDING || !severity) continue;
+    const patience = { key: x.M9_Q19, text: optionText('M9_Q19', x.M9_Q19) };
+    const demanding = trait(
+      'Caractère exigeant (bouderie, attentes non dites, impatience)',
+      yScore,
+    );
+    out.push({
+      questionId: 'M9_Q19',
+      theme: 'communication',
+      severity,
+      label: 'Caprices et patience',
+      question: questionText('M9_Q19'),
+      a: xIsA ? patience : demanding,
+      b: xIsA ? demanding : patience,
+    });
+  }
+  return out;
+}
+
+const SHY = 70;
+
+/** Deux timidités (qui fera le premier pas ?), ou une timidité face à un grand besoin de parler. */
+function shynessDivergences(
+  pa: PsychProfile,
+  pb: PsychProfile,
+  a: RawAnswers,
+  b: RawAnswers,
+): Divergence[] {
+  const sa = pa.shyness;
+  const sb = pb.shyness;
+  if (sa !== null && sb !== null && sa >= SHY && sb >= SHY) {
+    const both = Math.min(sa, sb);
+    return [
+      {
+        questionId: 'M2_Q19',
+        theme: 'communication',
+        severity: 'mineure',
+        label: 'Deux timidités',
+        question: 'Vous avez tous les deux besoin de temps pour vous livrer',
+        shared: true,
+        a: trait('Timidité au début', both),
+        b: trait('Timidité au début', both),
+      },
+    ];
+  }
+  for (const [shy, other, xIsA] of [
+    [sa, b, true],
+    [sb, a, false],
+  ] as const) {
+    if (shy === null || shy < SHY || other.M8_Q06 !== 'A') continue;
+    const slow = trait('Timidité au début', shy);
+    const talk = { key: 'A', text: optionText('M8_Q06', 'A') };
+    return [
+      {
+        questionId: 'M2_Q19',
+        theme: 'communication',
+        severity: 'mineure',
+        label: 'Rythme de confidence',
+        question:
+          'Besoin de temps pour se livrer face à l’envie de tout se dire',
+        a: xIsA ? slow : talk,
+        b: xIsA ? talk : slow,
+      },
+    ];
+  }
+  return [];
 }
 
 /** Ramène un indice 0–1 sur l'échelle de similarité des modules (0,3–1). */
@@ -475,6 +725,8 @@ export interface RelationalProfile {
   attachment: { style: AttachmentStyle; title: string; text: string } | null;
   regulation: { title: string; text: string } | null;
   conflict: { title: string; text: string } | null;
+  /** Timidité ou ouverture au début d'une relation (V6.1). */
+  openness: { title: string; text: string } | null;
   personality: Array<{ trait: BigFiveTrait; label: string; value: number }>;
   /** Points à observer (questions miroir, sincérité) : visibles du seul membre. */
   observations: string[];
@@ -595,7 +847,47 @@ export function buildRelationalProfile(
         x.value !== null,
     );
 
+  // Timidité : le parcours BOLIGO (Sondeur écrit avant la vidéo) est déjà le
+  // bon cadre ; on le dit au membre plutôt que d'en faire un défaut.
+  let openness: RelationalProfile['openness'] = null;
+  if (p.shyness !== null) {
+    openness =
+      p.shyness >= 60
+        ? {
+            title: 'Une timidité de départ',
+            text: 'Vous avez besoin de temps pour vous montrer {tel|telle} que vous êtes. Le Sondeur, à l’écrit et à votre rythme, laisse vos réponses parler pour vous avant l’appel vidéo.',
+          }
+        : p.shyness <= 35
+          ? {
+              title: 'Ouvert{e} d’emblée',
+              text: 'Vous vous livrez facilement et les autres se confient à vous. Avec une personne plus réservée, laissez-lui le temps de venir vers vous.',
+            }
+          : {
+              title: 'Une ouverture progressive',
+              text: 'Vous vous livrez à mesure que la confiance s’installe : un rythme qui rassure la plupart des partenaires.',
+            };
+    openness = {
+      title: agree(openness.title, gender),
+      text: agree(openness.text, gender),
+    };
+  }
+
   const observations = p.mirrorGaps.map((g) => agree(MIRROR_TEXT[g], gender));
+  if ((p.demandingness ?? 0) >= 70) {
+    observations.push(
+      'Quand une envie n’est pas satisfaite, vous le faites sentir. La dire avec des mots, plutôt que d’attendre que l’autre devine, l’aide à y répondre.',
+    );
+  }
+  if (['D', 'E'].includes(answers.M9_Q12)) {
+    observations.push(
+      'Vous préférez parfois disparaître plutôt que vous expliquer. Sur BOLIGO, la sortie polie vous permet de clore un parcours en une phrase, sans blesser.',
+    );
+  }
+  if (['D', 'E'].includes(answers.M9_Q11)) {
+    observations.push(
+      'Quand vous doutez, vous vérifiez. Dire votre inquiétude à voix haute rassure souvent mieux, et préserve la confiance de l’autre.',
+    );
+  }
   if (p.idealized) {
     observations.push(
       agree(
@@ -605,12 +897,19 @@ export function buildRelationalProfile(
     );
   }
 
-  if (!attachment && !regulation && !conflict && personality.length === 0)
+  if (
+    !attachment &&
+    !regulation &&
+    !conflict &&
+    !openness &&
+    personality.length === 0
+  )
     return null;
   return {
     attachment,
     regulation,
     conflict,
+    openness,
     personality,
     observations,
     disclaimer: RELATIONAL_DISCLAIMER,

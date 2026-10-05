@@ -8,6 +8,7 @@ import { EmailService } from '../common/email.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomInt, timingSafeEqual } from 'crypto';
+import { meetingScopeAnswer } from '../interview/meeting-scope';
 
 /**
  * Mode de test des codes à usage unique : code passe-partout « 1234 » et code
@@ -162,14 +163,7 @@ export class AuthService {
                       moduleNumber: 0,
                       moduleName: 'Filtres non-négociables',
                       rawResponses: {
-                        M0_Q02:
-                          dto.meetingScope === 'local'
-                            ? 'A'
-                            : dto.meetingScope === 'national'
-                            ? 'C'
-                            : dto.meetingScope === 'international'
-                            ? 'D'
-                            : 'A',
+                        M0_Q02: meetingScopeAnswer(dto.meetingScope),
                       },
                     },
                   },

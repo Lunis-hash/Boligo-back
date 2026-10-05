@@ -2,6 +2,7 @@ import {
   acceptsCandidate,
   birthDateBounds,
   FilterSubject,
+  filterCity,
   mutuallyAccepted,
   scopeWhere,
 } from './discover-filters';
@@ -112,4 +113,42 @@ describe('Filtres non négociables du Module 0', () => {
     expect(acceptsCandidate(wantsYounger, anyAge(30))).toBe(false);
     expect(acceptsCandidate(wantsYounger, anyAge(41))).toBe(false);
   });
+
+  it('filtre sur la ville de résidence, pas sur la ville affichée', () => {
+    expect(
+      filterCity({
+        city: 'Paris, France',
+        profile: { displayedCity: 'Paris 11e' },
+      }),
+    ).toBe('Paris, France');
+    expect(
+      filterCity({ city: null, profile: { displayedCity: 'Lyon, France' } }),
+    ).toBe('Lyon, France');
+    expect(filterCity({ city: null, profile: null })).toBeNull();
+  });
+
+  it('compare la région (« même région ») et non le pays', () => {
+    const at = (city: string): FilterSubject => ({
+      age: 30,
+      city,
+      answers: { M0_Q02: 'B' },
+    });
+    expect(
+      mutuallyAccepted(
+        at('Lyon, Auvergne-Rhône-Alpes, France'),
+        at('Grenoble, Auvergne-Rhône-Alpes, France'),
+      ),
+    ).toBe(true);
+    expect(
+      mutuallyAccepted(
+        at('Lyon, Auvergne-Rhône-Alpes, France'),
+        at('Paris, Île-de-France, France'),
+      ),
+    ).toBe(false);
+    // « Région, Pays » (inscription) : la région est le premier élément.
+    expect(mutuallyAccepted(at('Paris, France'), at('Lyon, France'))).toBe(
+      false,
+    );
+  });
 });
+

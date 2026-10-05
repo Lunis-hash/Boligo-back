@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert, StatusBar, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -11,6 +11,11 @@ import {
   getInterviewLanguage,
   setInterviewLanguage,
   joinMultipleAnswer,
+  freeTextOption,
+  initialPicked,
+  togglePick,
+  isValidFreeText,
+  FREE_TEXT_SUFFIX,
 } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
@@ -59,6 +64,9 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     saved: 'Merci, vos réponses sont enregistrées. Passons au module suivant.',
     validate: 'Valider',
     severalAnswers: 'Plusieurs réponses possibles',
+    maxAnswers: '{n} réponses au plus',
+    suggested: 'Pré-coché selon votre pays : modifiez librement.',
+    otherPlaceholder: 'Précisez (ex. : bambara, allemand)',
     errorTitle: 'Erreur',
     errorLoad: 'Impossible de charger les questions de ce module.',
     retry: 'Réessayer',
@@ -82,6 +90,9 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     saved: 'Thank you, your answers are saved. Let’s move on to the next module.',
     validate: 'Confirm',
     severalAnswers: 'Several answers possible',
+    maxAnswers: '{n} answers at most',
+    suggested: 'Pre-selected for your country: change it freely.',
+    otherPlaceholder: 'Please specify (e.g. Bambara, German)',
     errorTitle: 'Error',
     errorLoad: 'The questions of this module could not be loaded.',
     retry: 'Try again',
@@ -101,9 +112,12 @@ interface Message {
   id: string;
   text: string;
   type: 'ai' | 'user';
-  options?: { key: string; text: string }[];
+  options?: { key: string; text: string; freeText?: boolean }[];
   questionId?: string;
   multiple?: boolean;
+  maxChoices?: number;
+  /** Réponses pré-cochées selon le pays (langues). */
+  suggested?: boolean;
 }
 
 export default function DynamicInterviewScreen() {
@@ -125,8 +139,10 @@ export default function DynamicInterviewScreen() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isAnswering, setIsAnswering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // Choix multiple en cours (langues) : clés cochées avant « Valider ».
+  // Choix multiple en cours (langues, signaux d'alerte) : clés cochées avant « Valider ».
   const [picked, setPicked] = useState<string[]>([]);
+  // Précision écrite de l'option « une autre langue ».
+  const [otherText, setOtherText] = useState('');
 
   const scrollViewRef = useRef<ScrollView>(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -195,9 +211,10 @@ export default function DynamicInterviewScreen() {
         return;
       }
       setQuestions(data);
-      setPicked([]);
       const current = data[currentQuestionIndex];
       if (!current) return;
+      setPicked(initialPicked(current));
+      setOtherText(current.suggestedOther ?? '');
       // La question en attente est réécrite dans la nouvelle langue (pas de doublon).
       setMessages((prev) => {
         const last = prev[prev.length - 1];
@@ -208,6 +225,8 @@ export default function DynamicInterviewScreen() {
           options: current.options,
           questionId: current.id,
           multiple: current.multiple,
+          maxChoices: current.maxChoices,
+          suggested: !!current.suggested?.length,
         };
         return last?.type === 'ai' && last.questionId === current.id
           ? [...prev.slice(0, -1), translated]
@@ -218,14 +237,20 @@ export default function DynamicInterviewScreen() {
     }
   };
 
-  const addQuestionMessage = (q: Question) =>
-    addAIMessage(q.text, q.options, q.id, q.multiple);
+  const addQuestionMessage = (q: Question) => {
+    // Langues : celles du pays de résidence sont cochées d'office.
+    setPicked(initialPicked(q));
+    setOtherText(q.suggestedOther ?? '');
+    addAIMessage(q.text, q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
+  };
 
   const addAIMessage = (
     text: string,
-    options?: { key: string; text: string }[],
+    options?: { key: string; text: string; freeText?: boolean }[],
     questionId?: string,
     multiple?: boolean,
+    maxChoices?: number,
+    suggested?: boolean,
   ) => {
     const newMessage: Message = {
       id: Math.random().toString(36).substring(7),
@@ -234,6 +259,8 @@ export default function DynamicInterviewScreen() {
       options,
       questionId,
       multiple,
+      maxChoices,
+      suggested,
     };
     setMessages((prev) => [...prev, newMessage]);
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
@@ -249,14 +276,19 @@ export default function DynamicInterviewScreen() {
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
   };
 
-  const handleAnswer = async (optionKey: string, optionText: string) => {
+  const handleAnswer = async (
+    optionKey: string,
+    optionText: string,
+    extra: Record<string, string> = {},
+  ) => {
     if (isAnswering) return;
     setIsAnswering(true);
     const currentQ = questions[currentQuestionIndex];
     addUserMessage(optionText);
-    const newAnswers = { ...answers, [currentQ.id]: optionKey };
+    const newAnswers = { ...answers, [currentQ.id]: optionKey, ...extra };
     setAnswers(newAnswers);
     setPicked([]);
+    setOtherText('');
 
     const nextIndex = currentQuestionIndex + 1;
     const progress = questions.length > 0 ? (nextIndex / questions.length) : 1;
@@ -276,15 +308,25 @@ export default function DynamicInterviewScreen() {
     }
   };
 
-  /** Coche ou décoche une langue (question à choix multiple). */
-  const togglePicked = (key: string) =>
-    setPicked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  /** Coche ou décoche une réponse (choix multiple, dans la limite du maximum). */
+  const togglePicked = (key: string) => {
+    const currentQ = questions[currentQuestionIndex];
+    if (currentQ) setPicked((prev) => togglePick(currentQ, prev, key));
+  };
+
+  const currentFree = questions[currentQuestionIndex]
+    ? freeTextOption(questions[currentQuestionIndex])
+    : undefined;
+  // « Une autre langue » cochée : la langue doit être écrite avant de valider.
+  const needsOtherText = !!currentFree && picked.includes(currentFree.key);
+  const canConfirm = picked.length > 0 && (!needsOtherText || isValidFreeText(otherText));
 
   const confirmPicked = () => {
     const currentQ = questions[currentQuestionIndex];
-    if (!currentQ || picked.length === 0) return;
-    const { key, text } = joinMultipleAnswer(currentQ, picked);
-    handleAnswer(key, text);
+    if (!currentQ || !canConfirm) return;
+    const other = needsOtherText ? otherText.replace(/\s+/g, ' ').trim() : undefined;
+    const { key, text } = joinMultipleAnswer(currentQ, picked, other);
+    handleAnswer(key, text, other ? { [`${currentQ.id}${FREE_TEXT_SUFFIX}`]: other } : {});
   };
 
   const handleModuleComplete = async (finalAnswers: Record<string, string>) => {
@@ -460,7 +502,12 @@ export default function DynamicInterviewScreen() {
 
             {message.options && index === messages.length - 1 && !isSaving && (
               <View style={styles.optionsContainer}>
-                {message.multiple && <Text style={styles.multipleHint}>{t.severalAnswers}</Text>}
+                {message.multiple && (
+                  <Text style={styles.multipleHint}>
+                    {message.maxChoices ? t.maxAnswers.replace('{n}', String(message.maxChoices)) : t.severalAnswers}
+                  </Text>
+                )}
+                {message.suggested && <Text style={styles.multipleHint}>{t.suggested}</Text>}
                 {message.options.map((option) => {
                   const checked = message.multiple && picked.includes(option.key);
                   return (
@@ -485,13 +532,24 @@ export default function DynamicInterviewScreen() {
                     </TouchableOpacity>
                   );
                 })}
+                {message.multiple && needsOtherText && (
+                  <TextInput
+                    testID="interview-other"
+                    value={otherText}
+                    onChangeText={setOtherText}
+                    placeholder={t.otherPlaceholder}
+                    placeholderTextColor={Colors.text.inactive}
+                    maxLength={60}
+                    style={styles.otherInput}
+                  />
+                )}
                 {message.multiple && (
                   <TouchableOpacity
                     testID="interview-validate"
                     onPress={confirmPicked}
-                    disabled={picked.length === 0 || isAnswering}
+                    disabled={!canConfirm || isAnswering}
                     accessibilityRole="button"
-                    style={[styles.validateBtn, (picked.length === 0 || isAnswering) && styles.validateBtnDisabled]}
+                    style={[styles.validateBtn, (!canConfirm || isAnswering) && styles.validateBtnDisabled]}
                     activeOpacity={0.85}
                   >
                     <Text style={styles.validateBtnText}>{t.validate}</Text>
@@ -810,6 +868,17 @@ const styles = StyleSheet.create({
   },
   optionLetterCircleChecked: {
     backgroundColor: Colors.primary.red,
+  },
+  otherInput: {
+    borderWidth: 1,
+    borderColor: Colors.neutral.border,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: Typography.fontFamily.regular,
+    color: Colors.text.primary100,
+    backgroundColor: Colors.neutral.white,
   },
   multipleHint: {
     fontSize: 12,

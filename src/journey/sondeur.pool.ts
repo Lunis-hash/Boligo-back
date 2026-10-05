@@ -809,3 +809,456 @@ export const CONVERGENT: Record<number, PairTemplate<Convergence>[]> = {
     },
   ],
 };
+
+/**
+ * V6.1 — Formulations de fond propres à un sujet (argent pendant la
+ * fréquentation, signaux d'alerte, caprices, timidité, maladie, attirance).
+ * Elles passent avant les formulations ciblées génériques : une scène
+ * concrète fait parler plus vrai qu'une question abstraite.
+ */
+export const TOPIC_DEEP: Record<
+  string,
+  Record<number, PairTemplate<Divergence>>
+> = {
+  M4_Q10: {
+    1: {
+      text: (d) =>
+        `Premier rendez-vous : l'un de vous pense « ${d.a.text} », l'autre « ${d.b.text} ». Le serveur pose l'addition sur la table : que se passe-t-il concrètement ?`,
+      options: opts(
+        'Je paie, sans en faire un sujet',
+        'Je propose de partager',
+        'J’attends de voir ce que fait l’autre',
+      ),
+    },
+    2: {
+      text: (d) =>
+        `Qui paie au premier rendez-vous (« ${d.a.text} » / « ${d.b.text} ») : d'où vous vient votre règle ?`,
+      options: opts(
+        'De mon éducation et de ma culture',
+        'D’une expérience où je me suis senti(e) mal à l’aise',
+        'De ma conception de l’égalité',
+      ),
+    },
+    3: {
+      text: (d) =>
+        `Après le premier rendez-vous, comment partagerez-vous les sorties au quotidien, vu vos réponses (« ${d.a.text} » / « ${d.b.text} ») ?`,
+      options: opts(
+        'Chacun son tour',
+        'Au prorata de nos revenus',
+        'Celui ou celle qui gagne le plus paie davantage',
+      ),
+    },
+  },
+  M4_Q11: {
+    1: {
+      text: (d) =>
+        `Votre partenaire perd son emploi et ne retrouve rien depuis six mois. Vos réponses : « ${d.a.text} » / « ${d.b.text} ». Jusqu'où va votre soutien ?`,
+      options: opts(
+        'Je paie tout, aussi longtemps qu’il le faut',
+        'Je soutiens, si je le ou la vois chercher activement',
+        'Au-delà d’un an, je ne sais pas si je resterais',
+      ),
+    },
+    2: {
+      text: (d) =>
+        `Avez-vous déjà vu une relation se briser à cause du manque d'argent ? Sur ce point, vos réponses diffèrent (« ${d.a.text} » / « ${d.b.text} »).`,
+      options: opts(
+        'Oui, dans ma famille',
+        'Oui, dans une de mes relations',
+        'Non, mais c’est ma plus grande crainte',
+      ),
+    },
+    3: {
+      text: (d) =>
+        `Vu vos réponses (« ${d.a.text} » / « ${d.b.text} »), quel filet de sécurité voulez-vous construire pour qu'un coup dur financier ne vous sépare pas ?`,
+      options: opts(
+        'Une épargne de précaution commune',
+        'Une règle écrite : qui paie quoi en cas de coup dur',
+        'L’aide de nos familles',
+      ),
+    },
+  },
+  M4_Q12: {
+    1: {
+      text: (d) =>
+        `Votre partenaire gagne bien moins que ce que vous espériez. Vos réponses sur la place de l'argent : « ${d.a.text} » / « ${d.b.text} ». Est-ce que cela change vos sentiments ?`,
+      options: opts(
+        'Oui, honnêtement',
+        'Non, si son projet est sérieux',
+        'Non, l’argent n’entre pas en compte',
+      ),
+    },
+    2: {
+      text: (d) =>
+        `Pour vous, que représente un « bon niveau de vie » ? Vos réponses ne se rejoignent pas (« ${d.a.text} » / « ${d.b.text} »).`,
+      options: opts(
+        'La sécurité de notre famille',
+        'Le confort et le plaisir',
+        'Ne dépendre de personne',
+      ),
+    },
+    3: {
+      text: (d) =>
+        `Dans cinq ans, quel train de vie vous rendrait fier(ère) de votre couple, vu vos réponses (« ${d.a.text} » / « ${d.b.text} ») ?`,
+      options: opts(
+        'Un logement à nous et des projets',
+        'Voyager et profiter',
+        'Aider nos familles sans nous priver',
+      ),
+    },
+  },
+  M4_Q13: {
+    1: {
+      text: (d) =>
+        `Votre partenaire prend votre voiture sans demander et la ramène le réservoir vide. Vos réponses : « ${d.a.text} » / « ${d.b.text} ». Comment réagissez-vous ?`,
+      options: opts(
+        'Ça ne me dérange pas',
+        'Je lui demande de me prévenir la prochaine fois',
+        'Je suis vraiment contrarié(e)',
+      ),
+    },
+    2: {
+      text: (d) =>
+        `Dans votre famille, les affaires de chacun étaient-elles partagées ? Vos réponses diffèrent (« ${d.a.text} » / « ${d.b.text} »).`,
+      options: opts(
+        'Tout était à tout le monde',
+        'Chacun avait ses affaires, et on demandait',
+        'On ne touchait pas aux affaires des autres',
+      ),
+    },
+    3: {
+      text: (d) =>
+        `Une fois ensemble, qu'est-ce qui restera à chacun (voiture, téléphone, espace à soi) ? Vos réponses : « ${d.a.text} » / « ${d.b.text} ».`,
+      options: opts(
+        'Rien : tout sera commun',
+        'Le téléphone et quelques objets personnels',
+        'Chacun garde ses affaires et son espace',
+      ),
+    },
+  },
+  M8_Q10: {
+    1: {
+      text: (d) =>
+        `« ${d.label} » : pour l'un de vous c'est un signal pour fuir, pour l'autre une habitude (« ${d.a.text} » / « ${d.b.text} »). Que faudrait-il pour que ce point ne vous sépare pas ?`,
+      options: opts(
+        'Que l’habitude cesse complètement',
+        'Qu’on s’explique à chaque fois',
+        'Que la confiance s’installe d’abord',
+      ),
+    },
+    2: {
+      text: (d) =>
+        `D'où vient votre sensibilité sur ce point (« ${lower(d.label)} ») ?`,
+      options: opts(
+        'Une relation passée qui m’a blessé(e)',
+        'Ce que j’ai vu dans ma famille',
+        'Mes valeurs, tout simplement',
+      ),
+    },
+    3: {
+      text: (d) =>
+        `Dans six mois, à quoi verrez-vous que « ${lower(d.label)} » n'est plus un sujet entre vous ?`,
+      options: opts(
+        'Je n’y pense plus',
+        'Nous en avons parlé franchement',
+        'Les habitudes ont vraiment changé',
+      ),
+    },
+  },
+  M9_Q19: {
+    1: {
+      text: (d) =>
+        `Votre partenaire boude parce que vous refusez une sortie. Vos réponses : « ${d.a.text} » / « ${d.b.text} ». Que faites-vous ?`,
+      options: opts(
+        'Je cède pour retrouver la paix',
+        'J’explique mon refus et j’attends',
+        'Je le ou la laisse bouder : je ne céderai pas',
+      ),
+    },
+    2: {
+      text: () =>
+        "Quand vous étiez enfant, que se passait-il quand vous n'obteniez pas ce que vous vouliez ?",
+      options: opts(
+        'On me cédait souvent',
+        'On m’expliquait, puis on tenait bon',
+        'Je devais m’en contenter sans rien dire',
+      ),
+    },
+    3: {
+      text: () =>
+        "Quelle règle poseriez-vous pour qu'une envie non satisfaite ne gâche pas votre journée à deux ?",
+      options: opts(
+        'Dire clairement ce qu’on veut, sans bouder',
+        'Accepter un « non » sans le prendre mal',
+        'Chercher un compromis le jour même',
+      ),
+    },
+  },
+  M9_Q16: {
+    1: {
+      text: () =>
+        'Vous avez tous les deux tendance à faire sentir une frustration. Le jour où vous voudrez deux choses opposées en même temps, qui cédera ?',
+      options: opts(
+        'Celui ou celle pour qui c’est le plus important',
+        'Chacun son tour',
+        'On cherchera une troisième option',
+      ),
+    },
+    2: {
+      text: () => "Qu'est-ce qui se cache, chez vous, derrière une bouderie ?",
+      options: opts(
+        'Le sentiment de ne pas compter',
+        'La fatigue ou le stress',
+        'L’envie qu’on devine ce que je veux',
+      ),
+    },
+    3: {
+      text: () =>
+        "Quelle règle poseriez-vous pour qu'une envie non satisfaite ne gâche pas votre journée à deux ?",
+      options: opts(
+        'Dire clairement ce qu’on veut, sans bouder',
+        'Accepter un « non » sans le prendre mal',
+        'Chercher un compromis le jour même',
+      ),
+    },
+  },
+  M2_Q19: {
+    1: {
+      text: (d) =>
+        d.shared
+          ? 'Vous avez tous les deux besoin de temps pour vous livrer. Lors de votre premier appel vidéo, qui brisera la glace, et comment ?'
+          : `L'un de vous a besoin de temps pour se livrer, l'autre aime tout se dire (« ${d.a.text} » / « ${d.b.text} »). Lors de votre premier appel vidéo, comment trouverez-vous votre rythme ?`,
+      options: opts(
+        'Je commencerai par une question préparée',
+        'On commence par un sujet léger',
+        'On s’appuie sur nos réponses au Sondeur',
+      ),
+    },
+    2: {
+      text: () =>
+        "Qu'est-ce qui vous aide à vous ouvrir à quelqu'un de nouveau ?",
+      options: opts(
+        'Écrire avant de parler',
+        'Un cadre calme, sans pression',
+        'Sentir que l’autre s’ouvre aussi',
+      ),
+    },
+    3: {
+      text: () =>
+        'Quel signe vous montrera que vous êtes vraiment à l’aise l’un avec l’autre ?',
+      options: opts(
+        'Les silences ne sont plus gênants',
+        'Je peux parler de mes doutes',
+        'On rit facilement ensemble',
+      ),
+    },
+  },
+  M8_Q11: {
+    1: {
+      text: (d) =>
+        `Si l'un de vous tombait gravement malade ou devenait handicapé, que seriez-vous prêt(e) à changer dans votre vie ? Vos réponses : « ${d.a.text} » / « ${d.b.text} ».`,
+      options: opts(
+        'Mon travail et mon rythme de vie',
+        'Mon logement, pour l’adapter',
+        'Je ne sais pas encore, et c’est honnête',
+      ),
+    },
+    2: {
+      text: () => "Avez-vous déjà pris soin d'un proche malade ou dépendant ?",
+      options: opts(
+        'Oui, et cela m’a transformé(e)',
+        'Oui, et cela m’a épuisé(e)',
+        'Non, jamais',
+      ),
+    },
+    3: {
+      text: () =>
+        'Pour tenir dans la durée face à la maladie, sur qui compteriez-vous ?',
+      options: opts(
+        'Sur nous deux avant tout',
+        'Sur nos familles',
+        'Sur des professionnels et des aides',
+      ),
+    },
+  },
+  M10_Q15: {
+    1: {
+      text: (d) =>
+        `L'un de vous a besoin d'un coup de cœur immédiat, l'autre d'une attirance qui se construit (« ${d.a.text} » / « ${d.b.text} »). Si l'étincelle n'est pas là au premier appel vidéo, que faites-vous ?`,
+      options: opts(
+        'J’arrête, c’est plus honnête',
+        'Je me donne encore un ou deux échanges',
+        'Je laisse le Sondeur parler pour nous',
+      ),
+    },
+    2: {
+      text: () =>
+        "Avez-vous déjà été attiré(e) par quelqu'un que vous n'aviez pas remarqué au début ?",
+      options: opts(
+        'Oui, et c’était une belle histoire',
+        'Oui, mais ça n’a pas duré',
+        'Non : chez moi, c’est tout de suite ou jamais',
+      ),
+    },
+    3: {
+      text: () =>
+        "Dans dix ans, qu'est-ce qui entretiendra votre désir l'un pour l'autre ?",
+      options: opts(
+        'Prendre soin de soi et de son allure',
+        'Se surprendre et sortir de la routine',
+        'La complicité et la tendresse au quotidien',
+      ),
+    },
+  },
+};
+
+/**
+ * V6.1 — Questions de fond ajoutées aux réserves des thèmes : elles peuvent
+ * être posées à tout couple, même sans divergence sur le sujet.
+ */
+export const DEEP_GENERIC: Partial<
+  Record<Theme, Record<number, PoolTemplate[]>>
+> = {
+  argent: {
+    1: [
+      {
+        text: "Premier rendez-vous : le serveur pose l'addition entre vous deux. Qui paie ?",
+        options: opts(
+          'L’homme : c’est une marque de respect',
+          'Celui ou celle qui a invité',
+          'Moitié-moitié',
+        ),
+      },
+    ],
+    2: [
+      {
+        text: 'Dans votre culture ou votre entourage, qui paie quand un couple sort ensemble ?',
+        options: opts(
+          'L’homme : c’est la norme',
+          'Ça dépend des revenus de chacun',
+          'Chacun paie sa part',
+        ),
+      },
+    ],
+    3: [
+      {
+        text: "Si l'argent venait à manquer durablement, qu'est-ce qui vous retiendrait dans la relation ?",
+        options: opts(
+          'L’amour et le projet commun',
+          'Le plan pour nous en sortir',
+          'Je ne suis pas sûr(e) de rester',
+        ),
+      },
+    ],
+  },
+  lieu: {
+    1: [
+      {
+        text: 'Votre partenaire emprunte votre voiture sans demander. Où est votre limite ?',
+        options: opts(
+          'Aucune : ce qui est à moi est à toi',
+          'Il ou elle doit me prévenir',
+          'Ma voiture, c’est non',
+        ),
+      },
+    ],
+    3: [
+      {
+        text: "Quand vous vivrez ensemble, qu'est-ce qui restera à chacun ?",
+        options: opts(
+          'Rien : tout sera commun',
+          'Le téléphone et quelques objets personnels',
+          'Chacun garde ses affaires et un espace à soi',
+        ),
+      },
+    ],
+  },
+  communication: {
+    1: [
+      {
+        text: 'Disparaître sans explication, fouiller le téléphone, dire « je t’aime » trop vite : lequel de ces signaux vous ferait partir sans attendre ?',
+        options: opts(
+          'Disparaître sans explication',
+          'Fouiller mon téléphone',
+          'Me dire « je t’aime » trop vite',
+        ),
+      },
+    ],
+    2: [
+      {
+        text: "Quand vous n'obtenez pas ce que vous voulez, comment le montrez-vous ?",
+        options: opts(
+          'Je le dis clairement',
+          'Je boude un peu, puis ça passe',
+          'Je garde ça pour moi',
+        ),
+      },
+    ],
+    3: [
+      {
+        text: "Si l'un de vous est timide, comment ferez-vous pour que chacun ose dire ce qu'il ressent ?",
+        options: opts(
+          'Écrire quand c’est difficile à dire',
+          'Prendre un moment calme chaque semaine',
+          'Poser des questions sans brusquer',
+        ),
+      },
+    ],
+  },
+  intimite: {
+    1: [
+      {
+        text: 'Sans étincelle physique au premier appel vidéo, continuez-vous ?',
+        options: opts(
+          'Non, l’attirance doit être là',
+          'Oui, elle peut venir avec le temps',
+          'Je laisse une deuxième chance',
+        ),
+      },
+    ],
+    2: [
+      {
+        text: "Les personnes qui vous ont fait chavirer : qu'est-ce qui vous a touché(e) en premier ?",
+        options: opts(
+          'Le regard et le sourire',
+          'La voix et la façon de parler',
+          'L’assurance et l’allure',
+        ),
+      },
+    ],
+    3: [
+      {
+        text: "Dans dix ans, comment entretiendrez-vous votre attirance l'un pour l'autre ?",
+        options: opts(
+          'Prendre soin de soi et de son allure',
+          'Se surprendre et sortir de la routine',
+          'La complicité et la tendresse au quotidien',
+        ),
+      },
+    ],
+  },
+  famille: {
+    3: [
+      {
+        text: "Si l'un de vous tombait malade durablement ou vivait avec un handicap, comment organiseriez-vous votre vie ?",
+        options: opts(
+          'On s’adapte ensemble, quoi qu’il arrive',
+          'On s’appuie sur nos familles',
+          'On fait appel à des aides extérieures',
+        ),
+      },
+    ],
+  },
+  projet: {
+    1: [
+      {
+        text: 'Après trois mois, votre partenaire répond « on verra » quand vous parlez d’avenir. Que faites-vous ?',
+        options: opts(
+          'Je pose la question franchement',
+          'Je lui laisse encore du temps',
+          'Je mets fin à la relation',
+        ),
+      },
+    ],
+  },
+};
