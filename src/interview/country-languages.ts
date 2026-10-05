@@ -1,7 +1,8 @@
 /**
- * Langues proposées d'office à M0_Q10 selon le pays de résidence choisi (ou
- * détecté par géolocalisation) à l'inscription. Ce n'est qu'une
- * pré-sélection : le membre coche ou décoche librement.
+ * Langues proposées à M0_Q10 selon le pays de résidence choisi (ou détecté
+ * par géolocalisation) à l'inscription. Quatre propositions : la langue du
+ * pays, l'anglais, l'espagnol et « une autre langue » à écrire. Ce n'est
+ * qu'une pré-sélection : le membre coche ou décoche librement.
  *
  * Clés de M0_Q10 : A français, B anglais, C arabe, D lingala, E kiswahili,
  * F wolof, G portugais, H espagnol, I autre langue (à préciser).
@@ -93,4 +94,65 @@ export function suggestLanguages(
   return found.other
     ? { keys: [...found.keys, 'I'], other: found.other[lang] }
     : { keys: [...found.keys] };
+}
+
+/** Toujours proposées : anglais, espagnol et « une autre langue » (à écrire). */
+const ALWAYS_SHOWN = ['B', 'H', 'I'];
+
+/** Noms des options non affichées, reportés dans « une autre langue ». */
+const LANGUAGE_NAME: Record<InterviewLanguage, Record<string, string>> = {
+  fr: {
+    A: 'Français',
+    C: 'Arabe',
+    D: 'Lingala',
+    E: 'Kiswahili',
+    F: 'Wolof',
+    G: 'Portugais',
+  },
+  en: {
+    A: 'French',
+    C: 'Arabic',
+    D: 'Lingala',
+    E: 'Kiswahili',
+    F: 'Wolof',
+    G: 'Portuguese',
+  },
+};
+
+export interface LanguageChoices {
+  /** Les quatre options proposées, dans l'ordre : langue du pays, anglais, espagnol, autre. */
+  optionKeys: string[];
+  /** Options cochées d'office. */
+  suggested: string[];
+  /** Langue(s) pré-écrite(s) dans « une autre langue » (« Wolof »). */
+  other?: string;
+}
+
+/**
+ * Les quatre propositions de M0_Q10 pour un lieu « Ville, Pays » : la langue
+ * principale du pays (le français par défaut), l'anglais, l'espagnol et
+ * « une autre langue ». Les autres langues du pays (wolof, lingala…) sont
+ * pré-écrites dans « une autre langue ».
+ */
+export function languageChoices(
+  city: string | null | undefined,
+  lang: InterviewLanguage = 'fr',
+): LanguageChoices {
+  const s = suggestLanguages(city, lang);
+  const primary = s?.keys.find((k) => !ALWAYS_SHOWN.includes(k)) ?? 'A';
+  const optionKeys = [primary, ...ALWAYS_SHOWN];
+  if (!s) return { optionKeys, suggested: [] };
+  const others = [
+    ...s.keys
+      .filter((k) => !optionKeys.includes(k))
+      .map((k) => LANGUAGE_NAME[lang][k]),
+    ...(s.other ? [s.other] : []),
+  ].filter(Boolean);
+  const suggested = s.keys.filter((k) => optionKeys.includes(k) && k !== 'I');
+  if (others.length) suggested.push('I');
+  return {
+    optionKeys,
+    suggested,
+    ...(others.length ? { other: others.join(', ') } : {}),
+  };
 }

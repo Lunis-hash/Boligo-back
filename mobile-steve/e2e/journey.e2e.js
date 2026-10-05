@@ -210,9 +210,12 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
     if (await validate.isVisible().catch(() => false)) {
       const body = await page.locator('body').innerText();
       if (/Pré-coché selon votre pays/.test(body)) {
+        // Quatre propositions : langue du pays, anglais, espagnol, autre langue.
+        const shown = await page.locator('[data-testid^="option-"]').count();
+        record('Langues : quatre propositions (pays, anglais, espagnol, autre)', shown === 4, `${shown}`);
         // Langues : français pré-coché (France) ; on ajoute « bambara » écrit en toutes lettres.
         languagesSuggested = true;
-        await page.getByText(/^I$/).first().click();
+        await page.getByTestId('option-I').click();
         await page.getByTestId('interview-other').fill('Bambara');
         await shot('09c-langues-autre');
       } else if ((await validate.getAttribute('aria-disabled')) === 'true') {
@@ -235,7 +238,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
     }
   }
   record('Entretien : langues du pays pré-cochées, autre langue écrite', languagesSuggested);
-  record(`Entretien : deux questions à choix multiple validées (langues, signaux d’alerte)`, multiple === 2, `${multiple}`);
+  record(`Entretien : trois questions à choix multiple validées (langues, double origine, signaux d’alerte)`, multiple === 3, `${multiple}`);
   record(`Entretien : ${answered} questions répondues, modules 0→10`, /interview\/(generation|summary)/.test(page.url()), page.url());
   await shot('10-generation');
   await page.waitForURL(/interview\/summary/, { timeout: 30000 });

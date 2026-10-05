@@ -12,7 +12,7 @@
  * Inspiration : lignes rouges et besoins fondamentaux (Gottman), styles
  * d'attachement (Bowlby), valeurs et projet de vie partagés.
  */
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTIONS, answerKeys, answerText } from '../interview/questions.data';
 import { psychometricDivergences } from '../psychometrics/psychometrics';
 
 export type Theme =
@@ -956,7 +956,8 @@ function crossRules(a: RawAnswers, b: RawAnswers): Divergence[] {
   const out: Divergence[] = [];
   const view = (id: string, key: string): AnswerView => ({
     key,
-    text: optionText(id, key),
+    // Choix multiple (double origine) : « Afrique subsaharienne, Europe ».
+    text: answerText(QUESTION_INDEX.get(id), key),
   });
 
   // Religion : « même foi obligatoire » (M1_Q06 = A) alors que les religions (M1_Q05) diffèrent.
@@ -982,11 +983,12 @@ function crossRules(a: RawAnswers, b: RawAnswers): Divergence[] {
     });
   }
 
-  // Culture : l'un veut « la même culture » (M1_Q02 = A) alors que les origines (M1_Q01) diffèrent.
+  // Culture : l'un veut « la même culture » (M1_Q02 = A) alors que les origines
+  // (M1_Q01, deux au plus pour une double origine) n'ont rien en commun.
   if (
     a.M1_Q01 &&
     b.M1_Q01 &&
-    a.M1_Q01 !== b.M1_Q01 &&
+    !answerKeys(a.M1_Q01).some((k) => answerKeys(b.M1_Q01).includes(k)) &&
     (a.M1_Q02 === 'A' || b.M1_Q02 === 'A')
   ) {
     out.push({

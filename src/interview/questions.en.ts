@@ -40,7 +40,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Same generation (±5 years)',
       'Younger (no more than 5 years apart)',
       'Older (no more than 5 years apart)',
-      'Doesn’t matter, within 5 years either way',
+      'Doesn’t matter, within 10 years either way',
     ],
   },
   M0_Q02: {
@@ -127,7 +127,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
 
   // ── Module 1 — Identity & culture
   M1_Q01: {
-    text: 'Your continent of origin or cultural reference:',
+    text: 'Your continent of origin or cultural reference (two at most if you have mixed heritage):',
     options: [
       'Sub-Saharan Africa',
       'Maghreb / Middle East',

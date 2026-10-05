@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { QUESTIONS, Question, dependencyMet } from './questions.data';
 import { InterviewLanguage, localizeQuestion } from './questions.en';
-import { suggestLanguages } from './country-languages';
+import { languageChoices } from './country-languages';
 
 /**
  * Questions d'un module encore à poser à ce membre : non répondues et
@@ -91,8 +91,9 @@ export class QuestionsService {
 }
 
 /**
- * Langues du pays de résidence pré-cochées à M0_Q10 (pays choisi ou détecté
- * par géolocalisation à l'inscription). Le membre reste libre de modifier.
+ * M0_Q10 : quatre propositions (langue du pays, anglais, espagnol, autre
+ * langue à écrire), les langues du pays de résidence étant pré-cochées. Le
+ * pays est celui choisi ou détecté par géolocalisation à l'inscription.
  */
 export function withSuggestion(
   q: Question,
@@ -100,11 +101,14 @@ export function withSuggestion(
   lang: InterviewLanguage,
 ): Question {
   if (q.id !== 'M0_Q10') return q;
-  const s = suggestLanguages(city, lang);
-  if (!s) return q;
+  const choices = languageChoices(city, lang);
+  const options = choices.optionKeys
+    .map((k) => q.options.find((o) => o.key === k))
+    .filter((o): o is NonNullable<typeof o> => !!o);
   return {
     ...q,
-    suggested: s.keys,
-    ...(s.other ? { suggestedOther: s.other } : {}),
+    options,
+    ...(choices.suggested.length ? { suggested: choices.suggested } : {}),
+    ...(choices.other ? { suggestedOther: choices.other } : {}),
   };
 }

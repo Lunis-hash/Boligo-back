@@ -40,10 +40,17 @@ function regionOf(parts: string[]): string {
 }
 
 /**
- * Règle BOLIGO : jamais plus de 5 ans d'écart entre deux membres, quelle que
- * soit la préférence déclarée (« plus jeune », « plus âgé(e) », « peu importe »).
+ * Règle BOLIGO : jamais plus de 5 ans d'écart entre deux membres (même
+ * génération, plus jeune, plus âgé), et 10 ans au plus pour qui a répondu
+ * « peu importe » (M0_Q01 = D). Chacun doit entrer dans la limite de l'autre.
  */
 export const MAX_AGE_GAP = 5;
+export const MAX_AGE_GAP_ANY = 10;
+
+/** Écart d'âge maximal accepté par un membre selon sa réponse à M0_Q01. */
+export function maxAgeGap(agePref: string | undefined): number {
+  return agePref === 'D' ? MAX_AGE_GAP_ANY : MAX_AGE_GAP;
+}
 
 /** Le candidat entre-t-il dans les critères du Module 0 du membre ? */
 export function acceptsCandidate(
@@ -53,7 +60,7 @@ export function acceptsCandidate(
   const agePref = viewer.answers.M0_Q01;
   if (viewer.age && candidate.age) {
     const gap = candidate.age - viewer.age;
-    if (Math.abs(gap) > MAX_AGE_GAP) return false;
+    if (Math.abs(gap) > maxAgeGap(agePref)) return false;
     if (agePref === 'B' && gap >= 0) return false;
     if (agePref === 'C' && gap <= 0) return false;
   }
@@ -75,14 +82,53 @@ export function acceptsCandidate(
 const OTHER_LANGUAGE = 'I';
 
 /**
- * Langues dans lesquelles le membre peut vivre une relation (M0_Q10).
+ * Langue écrite en toutes lettres qui correspond à une option de M0_Q10 :
+ * « Wolof » écrit dans « autre langue » vaut l'option Wolof (F).
+ */
+const LANGUAGE_KEY_BY_NAME: Record<string, string> = {
+  francais: 'A',
+  french: 'A',
+  anglais: 'B',
+  english: 'B',
+  arabe: 'C',
+  arabic: 'C',
+  lingala: 'D',
+  swahili: 'E',
+  kiswahili: 'E',
+  wolof: 'F',
+  portugais: 'G',
+  portuguese: 'G',
+  portugues: 'G',
+  espagnol: 'H',
+  spanish: 'H',
+  espanol: 'H',
+};
+
+/** Langues écrites par le membre (« une autre langue »), sans accents ni casse. */
+function writtenLanguages(answers: RawAnswers): string[] {
+  if (!answerKeys(answers.M0_Q10).includes(OTHER_LANGUAGE)) return [];
+  return (answers.M0_Q10_AUTRE ?? '')
+    .split(/[,;/]| et | and /)
+    .map(norm)
+    .filter((l) => l.length >= 2);
+}
+
+/**
+ * Langues dans lesquelles le membre peut vivre une relation (M0_Q10), y
+ * compris celles écrites en toutes lettres qui correspondent à une option.
  * Entretien antérieur à la question : le français, langue dans laquelle il a
- * été passé. Seulement « une autre langue » : inconnu (aucun filtre).
+ * été passé. Seulement une langue écrite inconnue : aucun filtre.
  */
 export function memberLanguages(answers: RawAnswers): string[] | null {
   if (!answers.M0_Q10) return ['A'];
-  const keys = answerKeys(answers.M0_Q10).filter((k) => k !== OTHER_LANGUAGE);
-  return keys.length ? keys : null;
+  const keys = new Set(
+    answerKeys(answers.M0_Q10).filter((k) => k !== OTHER_LANGUAGE),
+  );
+  for (const name of writtenLanguages(answers)) {
+    const key = LANGUAGE_KEY_BY_NAME[name];
+    if (key) keys.add(key);
+  }
+  return keys.size ? [...keys] : null;
 }
 
 /**
@@ -91,11 +137,7 @@ export function memberLanguages(answers: RawAnswers): string[] | null {
  * servent qu'à rapprocher deux membres, jamais à les séparer.
  */
 export function otherLanguages(answers: RawAnswers): string[] {
-  if (!answerKeys(answers.M0_Q10).includes(OTHER_LANGUAGE)) return [];
-  return (answers.M0_Q10_AUTRE ?? '')
-    .split(/[,;/]| et | and /)
-    .map(norm)
-    .filter((l) => l.length >= 2);
+  return writtenLanguages(answers).filter((l) => !LANGUAGE_KEY_BY_NAME[l]);
 }
 
 /** Les deux membres partagent-ils au moins une langue du quotidien ? */
@@ -132,9 +174,10 @@ export function birthDateBounds(
     d.setFullYear(d.getFullYear() - n);
     return d;
   };
-  // Toujours dans la limite de MAX_AGE_GAP ans (un an de marge de chaque côté).
-  const oldest = yearsAgo(viewerAge + MAX_AGE_GAP + 2);
-  const youngest = yearsAgo(viewerAge - MAX_AGE_GAP - 1);
+  // Toujours dans la limite d'écart du membre (un an de marge de chaque côté).
+  const gap = maxAgeGap(agePref);
+  const oldest = yearsAgo(viewerAge + gap + 2);
+  const youngest = yearsAgo(viewerAge - gap - 1);
   if (agePref === 'B') return { gte: yearsAgo(viewerAge + 1), lte: youngest };
   if (agePref === 'C') return { gte: oldest, lte: yearsAgo(viewerAge - 1) };
   return { gte: oldest, lte: youngest };

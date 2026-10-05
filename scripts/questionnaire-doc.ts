@@ -395,8 +395,8 @@ function render(lang: Lang): string {
       if (q.id === 'M0_Q10')
         tags.push(
           fr
-            ? 'Langues du pays de résidence pré-cochées ; « autre langue » à préciser en toutes lettres'
-            : 'Languages of the country of residence pre-selected; "another language" to be written in',
+            ? 'Quatre propositions : langue du pays (selon la géolocalisation ou le pays d’inscription), anglais, espagnol, autre langue à écrire'
+            : 'Four choices: the language of the country (from geolocation or the sign-up country), English, Spanish, another language to write in',
         );
       const cond = condition(q, lang);
       if (cond) tags.push((fr ? 'Condition : ' : 'Condition: ') + cond);
@@ -407,6 +407,26 @@ function render(lang: Lang): string {
       if (q.scale) {
         html.push(
           `<p style="margin-left:18pt">${fr ? 'Réponse :' : 'Answer:'} ${q.scale === 'accord' ? (fr ? 'échelle d’accord (A à E)' : 'agreement scale (A to E)') : fr ? 'échelle de fréquence (A à E)' : 'frequency scale (A to E)'}${scale ? ` — ${esc(scale)}` : ''}</p>`,
+        );
+      } else if (q.id === 'M0_Q10') {
+        // Le membre ne voit que quatre propositions, lues A à D.
+        html.push(
+          `<p style="margin-left:18pt">${(fr
+            ? [
+                'A. La langue du pays de résidence (français par défaut ; portugais au Portugal…), cochée d’office',
+                'B. Anglais — English',
+                'C. Espagnol — Español',
+                'D. Une autre langue (précisez) — les autres langues du pays y sont pré-écrites (wolof au Sénégal, lingala en RDC, allemand en Allemagne…)',
+              ]
+            : [
+                'A. The language of the country of residence (French by default; Portuguese in Portugal…), pre-selected',
+                'B. English',
+                'C. Spanish — Español',
+                'D. Another language (please specify) — the country’s other languages are pre-filled (Wolof in Senegal, Lingala in the DRC, German in Germany…)',
+              ]
+          )
+            .map(esc)
+            .join('<br>')}</p>`,
         );
       } else {
         html.push(

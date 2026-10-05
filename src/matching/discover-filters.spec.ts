@@ -75,8 +75,10 @@ describe('Filtres non négociables du Module 0', () => {
       d.setFullYear(d.getFullYear() - age);
       return d.getTime();
     };
-    expect(born(30)).toBeGreaterThanOrEqual(any.gte!.getTime());
-    expect(born(18)).toBeGreaterThan(any.lte!.getTime());
+    // « Peu importe » : jusqu'à 10 ans d'écart.
+    expect(born(35)).toBeGreaterThanOrEqual(any.gte!.getTime());
+    expect(born(15)).toBeLessThanOrEqual(any.lte!.getTime());
+    expect(born(13)).toBeGreaterThan(any.lte!.getTime());
     expect(birthDateBounds(null, 'D', now)).toBeUndefined();
   });
 
@@ -95,7 +97,7 @@ describe('Filtres non négociables du Module 0', () => {
     expect(scopeWhere(null, 'A')).toBeUndefined();
   });
 
-  it("n'accepte jamais plus de 5 ans d'écart, même quand l'âge « importe peu »", () => {
+  it("n'accepte jamais plus de 5 ans d'écart, sauf « peu importe » (10 ans au plus)", () => {
     const anyAge = (age: number): FilterSubject => ({
       age,
       city: 'Paris, France',
@@ -103,7 +105,15 @@ describe('Filtres non négociables du Module 0', () => {
     });
     expect(mutuallyAccepted(anyAge(52), anyAge(19))).toBe(false);
     expect(mutuallyAccepted(anyAge(30), anyAge(35))).toBe(true);
-    expect(mutuallyAccepted(anyAge(30), anyAge(36))).toBe(false);
+    expect(mutuallyAccepted(anyAge(30), anyAge(40))).toBe(true);
+    expect(mutuallyAccepted(anyAge(30), anyAge(41))).toBe(false);
+    // Chacun doit entrer dans la limite de l'autre : « même génération » = 5 ans.
+    const sameGeneration: FilterSubject = {
+      ...anyAge(38),
+      answers: { M0_Q01: 'A', M0_Q02: 'D' },
+    };
+    expect(acceptsCandidate(anyAge(30), sameGeneration)).toBe(true);
+    expect(mutuallyAccepted(anyAge(30), sameGeneration)).toBe(false);
     // « Plus jeune » : de 1 à 5 ans de moins.
     const wantsYounger: FilterSubject = {
       ...anyAge(40),
@@ -151,4 +161,3 @@ describe('Filtres non négociables du Module 0', () => {
     );
   });
 });
-
