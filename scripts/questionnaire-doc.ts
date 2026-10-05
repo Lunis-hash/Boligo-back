@@ -1,11 +1,11 @@
 /**
- * Génère le document du questionnaire BOLIGO (V6.1), en français et en anglais,
+ * Génère le document du questionnaire BOLIGO (V6.2), en français et en anglais,
  * à partir des données du Grand Entretien : le document et l'application ne
  * peuvent donc pas diverger.
  *
  *   npx ts-node -P tsconfig.json --transpile-only scripts/questionnaire-doc.ts
  *
- * Sortie : docs/questionnaire/BOLIGO_Questionnaire_V6_1_FR.html et _EN.html
+ * Sortie : docs/questionnaire/BOLIGO_Questionnaire_V6_2_FR.html et _EN.html
  * (importables tels quels dans Google Docs ou Word).
  */
 import * as fs from 'fs';
@@ -235,8 +235,16 @@ function condition(q: Question, lang: Lang): string | null {
 
 const INTRO: Record<Lang, string> = {
   fr: `
-<h1>BOLIGO — Questionnaire de compatibilité V6.1</h1>
+<h1>BOLIGO — Questionnaire de compatibilité V6.2</h1>
 <p><b>Grand Entretien — version française.</b> ${QUESTIONS.length} questions en 11 modules (0 à 10). Document généré à partir de l'application : chaque question, chaque option et chaque signal ci-dessous est celui que l'application utilise réellement.</p>
+
+<h2>Ce qui change en V6.2 (5 octobre 2026)</h2>
+<ul>
+<li><b>Écart d'âge</b> (M0_Q01) : « Peu importe » accepte désormais jusqu'à 10 ans d'écart, dans les deux sens ; les autres réponses gardent la limite de 5 ans.</li>
+<li><b>Langues</b> (M0_Q10) : quatre propositions seulement, lues A à D. A est la langue du pays, cochée d'office. B est l'anglais, C l'espagnol. D est « une autre langue », à écrire ; les autres langues du pays y sont pré-écrites.</li>
+<li><b>Double origine</b> (M1_Q01) : deux continents au plus pour les personnes métisses. Deux membres se rapprochent dès qu'ils partagent une origine.</li>
+<li><b>Zone de rencontre</b> (M0_Q02) : renseignée une seule fois, à l'inscription, et jamais redemandée pendant l'entretien. Elle se modifie dans le profil.</li>
+</ul>
 
 <h2>Ce qui change en V6.1 (5 octobre 2026)</h2>
 <ul>
@@ -300,8 +308,16 @@ const INTRO: Record<Lang, string> = {
 <b>Fréquence</b> : A Jamais · B Rarement · C Parfois · D Souvent · E Très souvent.</p>
 `,
   en: `
-<h1>BOLIGO — Compatibility Questionnaire V6.1</h1>
+<h1>BOLIGO — Compatibility Questionnaire V6.2</h1>
 <p><b>Mental Map Interview — English version.</b> ${QUESTIONS.length} questions in 11 modules (0 to 10). Generated from the app: every question, option and signal below is exactly what the app uses.</p>
+
+<h2>What changes in V6.2 (5 October 2026)</h2>
+<ul>
+<li><b>Age gap</b> (M0_Q01): "It doesn't matter" now allows up to 10 years either way; the other answers keep the 5-year limit.</li>
+<li><b>Languages</b> (M0_Q10): only four choices, read A to D. A is the language of the country, pre-selected. B is English and C is Spanish. D is "another language", written in, with the country's other languages pre-filled.</li>
+<li><b>Mixed heritage</b> (M1_Q01): up to two continents for people of mixed heritage. Two members are brought closer as soon as they share one origin.</li>
+<li><b>Meeting area</b> (M0_Q02): given once, at sign-up, and never asked again during the interview. It can be changed in the profile.</li>
+</ul>
 
 <h2>What changes in V6.1 (5 October 2026)</h2>
 <ul>
@@ -369,7 +385,7 @@ const INTRO: Record<Lang, string> = {
 function render(lang: Lang): string {
   const fr = lang === 'fr';
   const html: string[] = [
-    '<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Questionnaire V6.1</title></head><body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4">',
+    '<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Questionnaire V6.2</title></head><body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4">',
     INTRO[lang],
   ];
   for (let m = 0; m <= 10; m++) {
@@ -452,7 +468,7 @@ fs.mkdirSync(outDir, { recursive: true });
 for (const lang of ['fr', 'en'] as const) {
   const file = path.join(
     outDir,
-    `BOLIGO_Questionnaire_V6_1_${lang === 'fr' ? 'FR' : 'EN'}.html`,
+    `BOLIGO_Questionnaire_V6_2_${lang === 'fr' ? 'FR' : 'EN'}.html`,
   );
   fs.writeFileSync(file, render(lang));
   console.log(file);
