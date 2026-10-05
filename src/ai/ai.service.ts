@@ -74,7 +74,9 @@ export class AiService implements OnModuleInit {
           const completion = await this.groq.chat.completions.create({
             model,
             messages: [
-              ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
+              ...(systemPrompt
+                ? [{ role: 'system' as const, content: systemPrompt }]
+                : []),
               { role: 'user' as const, content: prompt },
             ],
             temperature: 0.7,
@@ -83,7 +85,9 @@ export class AiService implements OnModuleInit {
           return completion.choices[0]?.message?.content ?? '';
         } catch (error) {
           if (attempt === 0 && isModelUnavailableError(error)) {
-            this.logger.warn(`⚠️ [Groq] Modèle « ${model} » indisponible, choix d'un autre modèle.`);
+            this.logger.warn(
+              `⚠️ [Groq] Modèle « ${model} » indisponible, choix d'un autre modèle.`,
+            );
             this.groqUnavailable.add(model);
             this.groqModel = null;
             continue;
@@ -102,20 +106,29 @@ export class AiService implements OnModuleInit {
    * au compte. Sans réponse de Groq, on garde la première préférence.
    */
   private async resolveGroqModel(): Promise<string> {
-    if (this.groqModel && Date.now() - this.groqModel.resolvedAt < GROQ_MODEL_TTL_MS) {
+    if (
+      this.groqModel &&
+      Date.now() - this.groqModel.resolvedAt < GROQ_MODEL_TTL_MS
+    ) {
       return this.groqModel.id;
     }
-    const preferred = [...parseModelList(process.env.GROQ_MODEL), ...GROQ_PREFERRED_MODELS];
+    const preferred = [
+      ...parseModelList(process.env.GROQ_MODEL),
+      ...GROQ_PREFERRED_MODELS,
+    ];
     let id: string | null = null;
     try {
       const list = await this.groq!.models.list();
       const available = (list.data ?? []).map((m) => m.id);
       id = pickGroqModel(available, preferred, this.groqUnavailable);
     } catch (error) {
-      this.logger.warn(`⚠️ [Groq] Liste des modèles indisponible : ${(error as Error).message}`);
+      this.logger.warn(
+        `⚠️ [Groq] Liste des modèles indisponible : ${(error as Error).message}`,
+      );
     }
     id ??= preferred.find((m) => !this.groqUnavailable.has(m)) ?? preferred[0];
-    if (this.groqModel?.id !== id) this.logger.log(`🧠 [Groq] Modèle retenu : ${id}`);
+    if (this.groqModel?.id !== id)
+      this.logger.log(`🧠 [Groq] Modèle retenu : ${id}`);
     this.groqModel = { id, resolvedAt: Date.now() };
     return id;
   }

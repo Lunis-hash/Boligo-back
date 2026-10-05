@@ -124,7 +124,10 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     const partners = [
       buildDivergenceReport({}, {}),
       report,
-      buildDivergenceReport({ M0_Q06: 'A', M4_Q01: 'B' }, { M0_Q06: 'A', M4_Q01: 'D' }),
+      buildDivergenceReport(
+        { M0_Q06: 'A', M4_Q01: 'B' },
+        { M0_Q06: 'A', M4_Q01: 'D' },
+      ),
       buildDivergenceReport({ M7_Q07: 'A' }, { M7_Q07: 'D' }),
       buildDivergenceReport({}, {}),
     ];
@@ -160,9 +163,21 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     });
 
     it('donne des séries différentes à deux couples, mais reproductibles', () => {
-      const a = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'parcours-1' });
-      const again = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'parcours-1' });
-      const b = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'parcours-2' });
+      const a = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: 'parcours-1',
+      });
+      const again = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: 'parcours-1',
+      });
+      const b = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: 'parcours-2',
+      });
       expect(again.map((q) => q.text)).toEqual(a.map((q) => q.text));
       const common = a.filter((q, i) => q.text === b[i].text).length;
       expect(common).toBeLessThan(21);
@@ -179,8 +194,14 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     });
 
     it("reconnaît un gabarit déjà vu même avec d'autres réponses citées", () => {
-      expect(questionSignature('Sur « argent », vos réponses diffèrent : « A » / « B ».')).toBe(
-        questionSignature('Sur « famille », vos réponses diffèrent : « C » / « D ».'),
+      expect(
+        questionSignature(
+          'Sur « argent », vos réponses diffèrent : « A » / « B ».',
+        ),
+      ).toBe(
+        questionSignature(
+          'Sur « famille », vos réponses diffèrent : « C » / « D ».',
+        ),
       );
     });
   });

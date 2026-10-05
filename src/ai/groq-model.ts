@@ -22,7 +22,8 @@ export const GROQ_PREFERRED_MODELS = [
 ];
 
 /** Modèles qui ne font pas de conversation écrite (audio, filtres de sécurité…). */
-const NON_CHAT = /whisper|tts|playai|orpheus|guard|prompt-guard|distil|compound/i;
+const NON_CHAT =
+  /whisper|tts|playai|orpheus|guard|prompt-guard|distil|compound/i;
 
 /** GROQ_MODEL peut lister plusieurs modèles, séparés par des virgules. */
 export function parseModelList(value: string | undefined): string[] {
@@ -50,8 +51,16 @@ export function pickGroqModel(
 
 /** Erreur « modèle introuvable / retiré » renvoyée par Groq. */
 export function isModelUnavailableError(error: unknown): boolean {
-  const e = error as { status?: number; code?: string; message?: string; error?: { code?: string } };
+  const e = error as {
+    status?: number;
+    code?: string;
+    message?: string;
+    error?: { code?: string };
+  };
   const code = e?.code ?? e?.error?.code;
-  if (code === 'model_not_found' || code === 'model_decommissioned') return true;
-  return /model_not_found|model_decommissioned|does not exist|has been decommissioned/i.test(e?.message ?? '');
+  if (code === 'model_not_found' || code === 'model_decommissioned')
+    return true;
+  return /model_not_found|model_decommissioned|does not exist|has been decommissioned/i.test(
+    e?.message ?? '',
+  );
 }

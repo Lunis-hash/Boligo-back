@@ -649,7 +649,10 @@ interface Memory {
  * 3. gabarit déjà vu mais texte nouveau (appliqué à d'autres réponses) ;
  * Retourne null si seuls des textes déjà posés restent disponibles.
  */
-function pickFresh(candidates: PoolTemplate[], mem: Memory): PoolTemplate | null {
+function pickFresh(
+  candidates: PoolTemplate[],
+  mem: Memory,
+): PoolTemplate | null {
   const tiers: Array<(c: PoolTemplate, sig: string, key: string) => boolean> = [
     (_c, sig) => !mem.seenSig.has(sig) && !mem.usedSig.has(sig),
     (_c, sig, key) => !mem.seenSig.has(sig) && !mem.usedText.has(key),
@@ -657,7 +660,9 @@ function pickFresh(candidates: PoolTemplate[], mem: Memory): PoolTemplate | null
     (_c, _sig, key) => !mem.seenText.has(key) && !mem.usedText.has(key),
   ];
   for (const ok of tiers) {
-    const hit = candidates.find((c) => ok(c, questionSignature(c.text), normalizeKey(c.text)));
+    const hit = candidates.find((c) =>
+      ok(c, questionSignature(c.text), normalizeKey(c.text)),
+    );
     if (hit) return hit;
   }
   return null;
@@ -692,7 +697,11 @@ function pickAi(
 
 /** Les cinq formulations d'un créneau sans divergence. */
 function genericPool(theme: Theme, day: number): PoolTemplate[] {
-  return [GENERIC[theme][day], GENERIC_B[theme][day], ...EXTRA_GENERIC[theme][day]];
+  return [
+    GENERIC[theme][day],
+    GENERIC_B[theme][day],
+    ...EXTRA_GENERIC[theme][day],
+  ];
 }
 
 /** Les quatre formulations ciblées d'un jour, appliquées à une divergence. */
@@ -726,14 +735,22 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
     let convergenceToday = 0;
     for (const theme of THEME_LIST) {
       const slot = `${day}|${theme}`;
-      const base = { day, theme: angle.label, emoji: THEMES[theme].emoji, themeKey: theme };
+      const base = {
+        day,
+        theme: angle.label,
+        emoji: THEMES[theme].emoji,
+        themeKey: theme,
+      };
       const divs = divergencesForTheme(report, theme);
       // Jour 1 → divergence la plus grave, jour 2 → la suivante, jour 3 → la suivante (cyclique).
       const divergence = divs.length ? divs[(day - 1) % divs.length] : null;
       let question: SondeurQuestion | null = null;
 
       if (divergence) {
-        const pick = pickFresh(arrange(targetedPool(day, divergence), seed, `${slot}|div`), mem);
+        const pick = pickFresh(
+          arrange(targetedPool(day, divergence), seed, `${slot}|div`),
+          mem,
+        );
         if (pick) {
           question = {
             ...base,
@@ -758,9 +775,14 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
 
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
         const convs = report.convergences.filter((c) => c.theme === theme);
-        const convergence = convs.length ? convs[(day - 1) % convs.length] : null;
+        const convergence = convs.length
+          ? convs[(day - 1) % convs.length]
+          : null;
         if (convergence) {
-          const pool = CONVERGENT[day].map((t) => ({ text: t.text(convergence), options: t.options }));
+          const pool = CONVERGENT[day].map((t) => ({
+            text: t.text(convergence),
+            options: t.options,
+          }));
           const pick = pickFresh(arrange(pool, seed, `${slot}|conv`), mem);
           if (pick) {
             convergenceToday++;

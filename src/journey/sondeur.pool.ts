@@ -7,7 +7,11 @@
  * gabarits ciblés (divergence réelle) et des gabarits d'accord (convergence
  * réelle), instanciés avec les réponses du couple.
  */
-import type { Convergence, Divergence, Theme } from '../matching/divergence.engine';
+import type {
+  Convergence,
+  Divergence,
+  Theme,
+} from '../matching/divergence.engine';
 
 export interface PoolTemplate {
   text: string;
@@ -158,7 +162,7 @@ export const EXTRA_GENERIC: Record<Theme, Record<number, PoolTemplate[]>> = {
     ],
     3: [
       {
-        text: "Dans cinq ans, quel projet financier aimeriez-vous avoir réalisé ensemble ?",
+        text: 'Dans cinq ans, quel projet financier aimeriez-vous avoir réalisé ensemble ?',
         options: opts(
           'Devenir propriétaires',
           'Une épargne de sécurité solide',
@@ -246,7 +250,7 @@ export const EXTRA_GENERIC: Record<Theme, Record<number, PoolTemplate[]>> = {
         ),
       },
       {
-        text: "Si vos enfants choisissaient une autre voie spirituelle que la vôtre, comment réagiriez-vous ?",
+        text: 'Si vos enfants choisissaient une autre voie spirituelle que la vôtre, comment réagiriez-vous ?',
         options: opts(
           'Ce serait une vraie peine',
           'Je l’accepterais en gardant le dialogue',
@@ -274,7 +278,7 @@ export const EXTRA_GENERIC: Record<Theme, Record<number, PoolTemplate[]>> = {
         ),
       },
       {
-        text: "Faut-il, selon vous, attendre un engagement officiel avant toute intimité physique ?",
+        text: 'Faut-il, selon vous, attendre un engagement officiel avant toute intimité physique ?',
         options: opts(
           'Oui, c’est une conviction',
           'Je préfère prendre le temps',
