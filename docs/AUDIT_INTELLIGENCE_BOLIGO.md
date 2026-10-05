@@ -51,7 +51,88 @@ reproductibilité, points d'accord), `src/ai/groq-model.spec.ts`,
 
 ## 2. Fiches et compatibilité
 
-<!-- complété après l'audit par personas -->
+### Méthode
+
+Neuf profils fictifs mais complets ont été créés, avec des réponses réalistes à
+tout le Grand Entretien :
+- une femme de 25 ans musulmane qui veut des enfants ;
+- un homme de 52 ans divorcé, père, qui n'en veut plus ;
+- une femme de 34 ans tournée vers sa carrière ;
+- un homme de 41 ans qui consomme (alcool, tabac) ;
+- un « quasi-jumeau » de la première ;
+- une femme de 30 ans aux réponses vagues ;
+- un homme de 29 ans dont la saisie contient des fautes ;
+- une étudiante de 19 ans ;
+- un profil à moitié rempli.
+
+Ils sont passés dans le vrai code de rédaction des fiches, de calcul de
+compatibilité et de la Découverte. Toutes les paires ont été comparées dans les
+deux sens (72 paires orientées).
+
+### Ce qui fonctionnait déjà
+
+- **Score symétrique :** A→B = B→A sur les 72 paires orientées.
+- **Classement juste :** le quasi-jumeau sort premier à 98 %.
+- **Lignes rouges reconnues :** les 4 règles critiques se déclenchent (désir
+  d'enfants, même foi exigée, polygamie, fidélité).
+- **Sujets à aborder pertinents :** ils sont classés par gravité.
+- **Français correct :** grammaire et accords de genre justes.
+
+### Constats et corrections
+
+| Gravité | Constat (mesuré) | Correction |
+|---|---|---|
+| Critique | Une **incompatibilité déclarée** (par exemple : enfants oui / enfants jamais) s'affichait « Compatibilité à explorer » à 60 %, quel que soit le nombre de lignes rouges, et le profil restait proposé et invitable. | Score ramené sous 55 % avec le libellé « Incompatibilité déclarée » ; profil masqué en Découverte et invitation refusée. |
+| Critique | Les critères **non négociables** du Module 0 (tranche d'âge, ville ou pays) ne s'appliquaient que dans un sens, et pas du tout à l'invitation. L'homme de 52 ans voyait et pouvait inviter la femme de 25 ans qui avait demandé « ± 5 ans, même ville ». | Critères appliqués dans les deux sens, en Découverte et à l'invitation. Mesure : 7 expositions à sens unique avant, 0 après. |
+| Majeur | Une divergence majeure ne coûtait qu'environ 4 points. Un fumeur face à « rédhibitoire » restait à 94 % « Très forte compatibilité » ; le pire profil sans ligne rouge restait à 56 %. Médiane de deux inconnus : 71 %. | Plafond selon le nombre de divergences majeures. Le tabac « rédhibitoire » devient une incompatibilité ; ajout de la place de la foi et de la ligne rouge « enfants ou religion ». Médiane de deux inconnus : 59 %. |
+| Majeur | La Découverte chargeait 500 comptes avant de filtrer : un bon profil pouvait disparaître derrière 500 comptes hors périmètre. | L'âge et le périmètre sont filtrés dans la requête elle-même. |
+| Majeur | Bios interchangeables : construites sur 3 réponses seulement, 3 des 4 hommes avaient **exactement** la même bio. | Bio construite sur des réponses distinctives (tempérament, humour, façon d'aimer, ce que la personne recherche) : 9 bios différentes sur 9. |
+| Majeur | Contradiction pour un parent : « Il est déjà parent de deux enfants. Il ne souhaite pas d'enfants ». | « Il ne souhaite pas d'autres enfants. » |
+| Majeur | Une bio saisie avec un numéro de téléphone, un compte Instagram ou une grossièreté était publiée telle quelle. | Refusée, la bio rédigée par BOLIGO s'affiche à la place. |
+| Majeur | La bio rédigée par l'IA n'était jamais vérifiée (enfants ou religion inventés possibles). | La bio de l'IA est écartée si elle contredit les réponses. |
+| Mineur | « Congo » confondu avec « Congo RDC » ; Découverte servie avant la fin du Grand Entretien (72 % inventé pour tous) ; prénom tout en minuscules ; « product Manager ». | Corrigés. |
+
+Résultat sur les 16 paires homme–femme :
+
+| | Avant | Après |
+|---|---|---|
+| Incompatibilités affichées « à explorer » | 6 | 0 |
+| Incompatibilités proposées en Découverte | 6 | 0 |
+| Expositions à sens unique | 7 | 0 |
+| Bios distinctes | 7 sur 9 | 9 sur 9 |
+
+Tests : `src/matching/compatibility-scale.spec.ts`,
+`src/matching/dealbreaker-rules.spec.ts`, `src/matching/discover-filters.spec.ts`,
+`src/portrait/portrait.quality.spec.ts`, `src/ai/ai-bio-guard.spec.ts`.
+
+### Décisions qui vous reviennent (non modifiées)
+
+- **Écart d'âge maximal :** un homme de 52 ans et une étudiante de 19 ans peuvent
+  encore se voir si leurs critères l'autorisent tous les deux (59 % après correction).
+  Faut-il un écart maximal par défaut ?
+- **Question sur le tabac :** la scinder en deux, « fumez-vous ? » et « l'acceptez-vous
+  chez l'autre ? ». Aujourd'hui, un fumeur qui répond « sans importance » n'est pas
+  repéré.
+- **Ouverture des analyses :** elles commencent souvent de la même façon. Une
+  vraie lecture croisée des réponses, faite par l'IA, est la prochaine étape.
+- **« Passer » non mémorisé côté serveur :** un profil passé revient plus tard.
+
+## 2 bis. L'IA : ce qui est indispensable, et ce qui ne l'est pas
+
+Le produit **fonctionne entièrement sans IA**. Le score, les fiches, le Sondeur et la
+modération de premier niveau sont calculés par des règles écrites et testées.
+L'IA apporte un supplément, sans jamais être un point de passage obligé :
+
+| Usage | Sans IA | Avec IA | Fréquence d'appel |
+|---|---|---|---|
+| Sondeur | 21 questions tirées d'une réserve, ciblées sur les écarts réels | Formulations inédites pour chaque couple | 1 appel par parcours |
+| Bio et synthèse du profil | Bio rédigée par règles | Texte plus personnel (vérifié contre les réponses) | 1 appel par membre, en fin d'entretien |
+| Modération du chat | Filtre local (insultes, coordonnées) | Second avis sur les messages ambigus | Rare (messages suspects seulement) |
+
+Besoin réel : **une seule clé d'API de modèle de langage, propre à BOLIGO**.
+Groq est déjà configuré sur Render ; avec la correction du choix de modèle, la
+clé existante redevient utilisable. Coût estimé : de l'ordre de 1 à 4 € pour
+1 000 parcours.
 
 ## 3. Présentation sur ordinateur et finition
 
