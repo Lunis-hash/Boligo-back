@@ -5,6 +5,7 @@ import {
 import {
   assembleSondeur,
   describeReportForAi,
+  questionSignature,
   validateSondeurGrid,
 } from './sondeur.generator';
 
@@ -50,7 +51,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(famille?.text).toContain('Oui, absolument');
     const intimite = qs.find((q) => q.day === 2 && q.themeKey === 'intimite');
     expect(intimite?.source).toBe('divergence');
-    expect(intimite?.text).toMatch(/Fidélité/);
+    expect(intimite?.text).toMatch(/fidélité/i);
     // aucun écart détecté sur la spiritualité → gabarit du thème
     expect(qs.find((q) => q.themeKey === 'spiritualite')?.source).toBe(
       'gabarit',
@@ -116,5 +117,92 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     const qs = assembleSondeur({ report: empty, firstNames: ['A', 'B'] });
     expect(validateSondeurGrid(qs)).toBe(true);
     expect(qs.every((q) => q.source === 'gabarit')).toBe(true);
+  });
+
+  describe('variété entre parcours', () => {
+    // Un même membre enchaîne des parcours avec des partenaires différents.
+    const partners = [
+      buildDivergenceReport({}, {}),
+      report,
+      buildDivergenceReport(
+        { M0_Q06: 'A', M4_Q01: 'B' },
+        { M0_Q06: 'A', M4_Q01: 'D' },
+      ),
+      buildDivergenceReport({ M7_Q07: 'A' }, { M7_Q07: 'D' }),
+      buildDivergenceReport({}, {}),
+    ];
+
+    function run(count: number) {
+      const history: string[] = [];
+      const series: string[][] = [];
+      partners.slice(0, count).forEach((r, i) => {
+        const qs = assembleSondeur({
+          report: r,
+          firstNames: ['Awa', `Partenaire ${i}`],
+          history: [...history],
+          seed: `parcours-${i}`,
+        });
+        expect(validateSondeurGrid(qs)).toBe(true);
+        series.push(qs.map((q) => q.text));
+        history.push(...qs.map((q) => q.text));
+      });
+      return series;
+    }
+
+    it("ne repose jamais une question déjà vue sur cinq parcours d'affilée", () => {
+      const all = run(5).flat();
+      expect(new Set(all).size).toBe(all.length);
+    });
+
+    it('change de formulation, pas seulement de réponses citées, sur quatre parcours', () => {
+      const sigs = run(4).flat().map(questionSignature);
+      const repeats = sigs.length - new Set(sigs).size;
+      // Les gabarits ciblés peuvent se répéter d'un sujet à l'autre ; les questions
+      // de thème, elles, ne reviennent jamais.
+      expect(repeats).toBeLessThanOrEqual(4);
+    });
+
+    it('donne des séries différentes à deux couples, mais reproductibles', () => {
+      const a = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: 'parcours-1',
+      });
+      const again = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: 'parcours-1',
+      });
+      const b = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: 'parcours-2',
+      });
+      expect(again.map((q) => q.text)).toEqual(a.map((q) => q.text));
+      const common = a.filter((q, i) => q.text === b[i].text).length;
+      expect(common).toBeLessThan(21);
+    });
+
+    it('approfondit les points d’accord réels, deux fois par jour au plus', () => {
+      const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'x' });
+      const conv = qs.filter((q) => q.source === 'convergence');
+      expect(conv.length).toBeGreaterThan(0);
+      for (const day of [1, 2, 3]) {
+        expect(conv.filter((q) => q.day === day).length).toBeLessThanOrEqual(2);
+      }
+      conv.forEach((q) => expect(q.text).toMatch(/mariage/i));
+    });
+
+    it("reconnaît un gabarit déjà vu même avec d'autres réponses citées", () => {
+      expect(
+        questionSignature(
+          'Sur « argent », vos réponses diffèrent : « A » / « B ».',
+        ),
+      ).toBe(
+        questionSignature(
+          'Sur « famille », vos réponses diffèrent : « C » / « D ».',
+        ),
+      );
+    });
   });
 });

@@ -1,6 +1,6 @@
 # Recette navigateur — résultats
 
-Date : 2026-10-04T15:44:01.111Z · App : http://localhost:8081 · API : http://localhost:3000/api
+Date : 2026-10-05T10:17:12.686Z · App : http://localhost:8081 · API : http://localhost:3000/api
 
 | Étape | Résultat | Détail |
 |---|---|---|
@@ -38,15 +38,15 @@ Date : 2026-10-04T15:44:01.111Z · App : http://localhost:8081 · API : http://l
 | Jour 1 terminé → jour 2 verrouillé jusqu'au lendemain | ✅ |  |
 | Jour 2 terminé → jour 3 verrouillé jusqu'au lendemain | ✅ |  |
 | Sondeur : 21 réponses envoyées via l'UI | ✅ |  |
-| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"94200101-70 |
-| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"94200101-7040-4403-9075-6f242f07259d","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"Nadia","isCompleted":true,"ghosting":{ |
+| Progression Sondeur côté backend = 21/21 | ✅ | {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":21,"totalQuestions":21,"partnerName":"Nadia","journeyId":"f9dd8b01-1e |
+| Parcours en chat libre après les réponses des deux membres | ✅ | {"id":"f9dd8b01-1ea3-4ab2-aba8-7af1e17db8ba","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"Nadia","isCompleted":true,"ghosting":{ |
 | Onglet Matchs : CTA « Accéder à la messagerie » affiché | ✅ |  |
 | Message envoyé depuis l'app (bulle affichée) | ✅ |  |
 | Message persisté côté backend | ✅ | messages=1 |
 | Anti-ghosting : bandeau « Vous attendez la réponse » après mon message | ✅ |  |
 | Message du partenaire reçu en temps réel (WebSocket) | ✅ |  |
 | Anti-ghosting : bandeau « Nadia attend votre réponse » avec échéance | ✅ |  |
-| Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance | ✅ | {"waitingOn":"partner","since":"2026-10-04T15:42:27.975Z","closeAt":"2026-10-06T15:42:27.975Z","refundOnClose":true} |
+| Anti-ghosting : le partenaire voit qu’il attend, crédit rendu à l’échéance | ✅ | {"waitingOn":"partner","since":"2026-10-05T10:15:39.759Z","closeAt":"2026-10-07T10:15:39.759Z","refundOnClose":true} |
 | Message insultant bloqué avant envoi (modération locale) | ✅ | Message non envoyé
 
 Votre message contient des termes inappropriés non autorisés. |

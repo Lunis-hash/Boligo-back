@@ -58,6 +58,32 @@ async function createPartner(gender) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Sur le web, Alert.alert ouvre une fenêtre de l'app (components/WebAlertHost),
+ * plus la boîte du navigateur : on relève son texte et on clique l'action principale.
+ */
+function watchAppDialogs(pg, sink) {
+  let busy = false;
+  const timer = setInterval(async () => {
+    if (busy || pg.isClosed()) return;
+    busy = true;
+    try {
+      const box = pg.locator('[data-testid="app-dialog"]');
+      if (await box.count()) {
+        const title = await pg.locator('[data-testid="app-dialog-title"]').first().innerText().catch(() => '');
+        const msg = await pg.locator('[data-testid="app-dialog-message"]').first().innerText().catch(() => '');
+        sink.push([title, msg].filter(Boolean).join('\n\n'));
+        await pg.locator('[data-testid="app-dialog-confirm"]').first().click({ timeout: 2000 }).catch(() => {});
+      }
+    } catch {
+      /* page en cours de navigation */
+    } finally {
+      busy = false;
+    }
+  }, 250);
+  pg.on('close', () => clearInterval(timer));
+}
+
 // Diagnostic partagé avec le gestionnaire d'erreur final.
 const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
 
@@ -70,6 +96,8 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
   page.on('pageerror', (e) => pageErrors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') diag.consoleErrors.push(m.text().slice(0, 300)); });
   page.on('dialog', async (d) => { dialogs.push(d.message()); await d.accept(); });
+  // Fenêtres de dialogue de l'app (web) : lues puis validées, comme le ferait un membre.
+  watchAppDialogs(page, dialogs);
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
   const text = (t, opts = {}) => page.getByText(t, { exact: false, ...opts }).first();
   const clickText = async (t, opts) => { await text(t, opts).click(); };
@@ -450,6 +478,7 @@ const diag = { page: null, dialogs: [], pageErrors: [], consoleErrors: [] };
     const c2 = await browser.newContext({ viewport: { width: w, height: h }, isMobile: w < 700, hasTouch: true, locale: 'fr-FR' });
     const p2 = await c2.newPage();
     p2.on('dialog', (d) => d.accept());
+    watchAppDialogs(p2, []);
     await p2.goto(APP_URL, { waitUntil: 'networkidle' });
     await p2.waitForTimeout(1200);
     await p2.screenshot({ path: path.join(SHOTS, `40-accueil-${label}.png`) });

@@ -400,6 +400,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
+    questionId: 'M1_Q06',
+    theme: 'spiritualite',
+    label: 'Place de la foi dans le couple',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      A: 'Partager la même foi compte pour vous deux',
+      D: 'La religion relève de l’intime pour vous deux',
+    },
+  },
+  {
     questionId: 'M1_Q11',
     theme: 'spiritualite',
     label: 'Polygamie',
@@ -598,7 +615,7 @@ export const DIVERGENCE_RULES: Rule[] = [
   {
     questionId: 'M8_Q01',
     theme: 'projet',
-    label: 'Objectif sur BOLIGO',
+    label: 'Objectif de rencontre',
     severity: pairs({
       AC: 'majeure',
       AD: 'majeure',
@@ -694,8 +711,9 @@ export const DIVERGENCE_RULES: Rule[] = [
     questionId: 'M0_Q08',
     theme: 'projet',
     label: 'Tabac, alcool, substances',
+    // « Rédhibitoire — je ne pourrais pas vivre avec » face à « Je consomme moi-même ».
     severity: pairs({
-      AC: 'majeure',
+      AC: 'critique',
       AB: 'mineure',
       AD: 'moderee',
       BC: 'mineure',
@@ -825,6 +843,20 @@ export function buildDivergenceReport(
   }
 
   divergences.push(...crossRules(a, b));
+
+  // Ligne rouge déclarée (M8_Q05 = « Désaccord profond sur les enfants ou la
+  // religion ») : un désaccord majeur sur ces deux sujets devient une incompatibilité.
+  if (a.M8_Q05 === 'C' || b.M8_Q05 === 'C') {
+    for (const d of divergences) {
+      if (
+        d.severity === 'majeure' &&
+        (d.questionId === 'M0_Q06' || d.questionId === 'M1_Q05')
+      ) {
+        d.severity = 'critique';
+      }
+    }
+  }
+
   divergences.sort(
     (x, y) =>
       SEVERITY_RANK[y.severity] - SEVERITY_RANK[x.severity] ||

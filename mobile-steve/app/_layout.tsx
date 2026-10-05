@@ -7,10 +7,14 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { StripeProvider } from '@/services/stripe';
 import { addNotificationResponseListener, configureNotificationHandler } from '@/services/notifications';
 import { installWebAlert } from '@/services/webAlert';
+import { installWebStyles } from '@/services/webStyles';
 import { warmUpBackend } from '@/services/api';
 import { useBrandFonts } from '@/services/brandFonts';
+import { DesktopShell } from '@/components/DesktopShell';
+import { WebAlertHost } from '@/components/WebAlertHost';
 
 installWebAlert();
+installWebStyles();
 // L'écran de démarrage reste affiché jusqu'au chargement des polices.
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -64,6 +68,7 @@ export default function RootLayout() {
           <AppProvider>
           <NotificationRouter />
           <BackendWarmUp />
+          <DesktopShell>
           <Stack
             screenOptions={{
               headerShown: false,
@@ -78,6 +83,8 @@ export default function RootLayout() {
             <Stack.Screen name="video-call" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
+          </DesktopShell>
+          <WebAlertHost />
         </AppProvider>
         </AuthProvider>
       </StripeProvider>

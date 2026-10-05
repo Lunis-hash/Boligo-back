@@ -75,7 +75,7 @@ Grand Entretien (11 modules, 76 questions en banque, 60–70 posées)
   Deux variantes par gabarit : un couple qui recommence un parcours ne revoit jamais les mêmes
   textes (`avoidTexts`).
 - **IA** : `generateTargetedHarmonyQuestions(rapport, grille, angles, déjàPosées)` ; fournisseur
-  OpenRouter (modèles gratuits configurés) puis Groq (`GROQ_MODEL`, défaut `llama-3.1-8b-instant`).
+  OpenRouter (modèles gratuits configurés) puis Groq : le modèle est choisi dans la liste des modèles ouverts au compte (`GROQ_MODEL` d'abord, puis une liste de préférences du moins cher au plus capable, voir `src/ai/groq-model.ts`) ; un modèle retiré est remplacé automatiquement.
   Le prompt ne contient que prénoms, âges et réponses : aucune coordonnée. Désactivable par
   `HARMONY_QUESTIONS_SOURCE=bank` (gabarits uniquement).
 - **Plus jamais de banque générique** : l'ancienne banque de 21 questions n'est plus utilisée pour
@@ -103,7 +103,7 @@ Grand Entretien (11 modules, 76 questions en banque, 60–70 posées)
 |---|---|---|
 | `DATABASE_URL`, `DIRECT_URL` | Supabase BOLIGO | existantes |
 | `JWT_SECRET` | sessions | existante |
-| `GROQ_API_KEY`, `GROQ_MODEL` | IA ultra-légère (Sondeur, modération) | clé à créer sur console.groq.com (offre gratuite) ; modèle défaut `llama-3.1-8b-instant` |
+| `GROQ_API_KEY`, `GROQ_MODEL` | IA ultra-légère (Sondeur, modération) | clé à créer sur console.groq.com (offre gratuite) ; `GROQ_MODEL` facultatif (un ou plusieurs modèles séparés par des virgules), sinon choix automatique parmi les modèles disponibles |
 | `OPENROUTER_API_KEY` | IA alternative (modèles gratuits) | facultative |
 | `HARMONY_QUESTIONS_SOURCE` | `bank` = gabarits seuls, sinon IA + gabarits | facultative |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | paiement test | **compte Stripe BOLIGO à créer** (le seul compte connecté est celui d'OWEKE, non utilisé) |

@@ -83,7 +83,7 @@ describe('Moteur de rédaction des fiches', () => {
       storedBio: legacy,
     });
     expect(p.bio).toBe(
-      'Je cherche un engagement sincère, de ceux qui mènent au mariage. Ce que j’apporte : ma stabilité et ma fiabilité. J’aimerais offrir de la sécurité à la personne qui partagera ma vie.',
+      'Je cherche un engagement sincère, de ceux qui mènent au mariage. J’aime autant les soirées entre amis que les moments au calme, et l’humour est l’une de mes forces. Ce que j’apporte : ma stabilité et ma fiabilité. Je dis facilement les mots qui comptent, et j’aime les entendre. J’aimerais rencontrer quelqu’un de calme, qui équilibre mon énergie.',
     );
   });
 

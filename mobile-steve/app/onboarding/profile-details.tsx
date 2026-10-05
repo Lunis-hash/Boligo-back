@@ -9,7 +9,6 @@ import {
   ScrollView,
   Modal,
   Animated,
-  Dimensions,
   Alert,
   FlatList,
   StatusBar,
@@ -49,7 +48,6 @@ import { COUNTRIES, Country, detectUserCountry } from '@/constants/countries';
 import { useAuth } from '@/context/auth';
 import { AuthService } from '@/services/auth';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const ERROR_COLOR = Brand.danger;
 
@@ -1710,7 +1708,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   calDayLabel: {
-    width: (SCREEN_WIDTH - Spacing.xl * 2 - Spacing.lg * 2) / 7,
+    width: `${100 / 7}%`,
     textAlign: 'center',
     fontFamily: Typography.fontFamily.bold,
     fontSize: 11,
@@ -1723,7 +1721,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   calCell: {
-    width: (SCREEN_WIDTH - Spacing.xl * 2 - Spacing.lg * 2) / 7,
+    width: `${100 / 7}%`,
     height: 42,
     justifyContent: 'center',
     alignItems: 'center',

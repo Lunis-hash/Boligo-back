@@ -62,12 +62,15 @@ export function truncateAtWord(text: string, max: number): string {
   return `${base}…`;
 }
 
-/** « Pilote de ligne » → « pilote de ligne », mais « DRH » reste « DRH ». */
+/**
+ * Métier en milieu de phrase : « Pilote de ligne » → « pilote de ligne »,
+ * « Product Manager / PO » → « product manager / PO ». Les sigles (« DRH »,
+ * « IA ») et les mots à majuscules internes (« DevOps ») restent inchangés.
+ */
 export function lowerFirstWord(text: string): string {
-  if (/^\p{Lu}\p{Ll}/u.test(text)) {
-    return text.charAt(0).toLowerCase() + text.slice(1);
-  }
-  return text;
+  return text.replace(/(?<!\p{L})\p{Lu}(?=\p{Ll}+(?!\p{L}))/gu, (c) =>
+    c.toLowerCase(),
+  );
 }
 
 /** « à Lyon », « au Havre », « aux Andelys ». */

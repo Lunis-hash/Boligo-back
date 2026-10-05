@@ -12,6 +12,7 @@ import {
   RawAnswers,
 } from './divergence.engine';
 import {
+  capForDivergences,
   computeAnswerCompatibility,
   ModuleAffinity,
 } from '../portrait/module-affinity';
@@ -58,7 +59,8 @@ export function ageFrom(
   return age >= 18 && age < 120 ? age : undefined;
 }
 
-export function compatibilityLabel(percent: number): string {
+export function compatibilityLabel(percent: number, hardStop = false): string {
+  if (hardStop) return 'Incompatibilité déclarée';
   if (percent >= 80) return 'Très forte compatibilité';
   if (percent >= 70) return 'Belle compatibilité';
   if (percent >= 55) return 'Compatibilité à explorer';
@@ -79,7 +81,13 @@ export function resolveScore(
   const fallback = computeCompatibility(viewer.mentalMap, candidate.mentalMap);
   const score =
     answers.score ??
-    Math.max(0.2, Math.min(0.98, fallback.score - report.penalty));
+    Math.max(
+      0.2,
+      Math.min(
+        0.98,
+        capForDivergences(fallback.score - report.penalty, report),
+      ),
+    );
   return {
     score,
     percent: Math.round(score * 100),
@@ -166,7 +174,7 @@ export function buildMatchView(viewer: ViewerInput, candidate: CandidateInput) {
     profession,
     headline: portrait.headline,
     compatibility: percent,
-    compatibilityLabel: compatibilityLabel(percent),
+    compatibilityLabel: compatibilityLabel(percent, report.hardStop),
     compatibilitySheet: {
       rassemble: sheet.rassemble,
       vigilance: sheet.vigilance,

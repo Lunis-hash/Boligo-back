@@ -20,10 +20,15 @@ import {
   APPROACH_BY_GOAL,
   BIO_BRINGS,
   BIO_GOAL,
+  BIO_HUMOUR,
+  BIO_LOVE,
   BIO_OFFERS,
+  BIO_SEEK,
+  BIO_TEMPERAMENT,
   BRINGS,
   CHILDREN_NOW,
   CHILDREN_WISH,
+  CHILDREN_WISH_PARENT,
   CONFLICT,
   DETAIL_CHILDREN,
   DETAIL_CHILDREN_WISH,
@@ -40,6 +45,7 @@ import {
   FAMILY,
   GOAL,
   MODULES,
+  MODULE0_SELF_PARENT,
   MODULE_KEY_QUESTIONS,
   MODULE_SELF_SENTENCE,
   MONEY,
@@ -65,6 +71,7 @@ import {
   shortCity,
   usableProfession,
 } from './portrait.text';
+import { moderateMessageLocally } from '../moderation/chat-moderation';
 
 export interface PortraitInput {
   firstName: string;
@@ -137,9 +144,24 @@ function optionText(questionId: string, key: string): string | null {
   );
 }
 
+/** Prénom saisi tout en minuscules (« yannick ») → « Yannick » ; sinon inchangé. */
+export function displayName(firstName: string): string {
+  const t = firstName.trim();
+  if (t !== t.toLowerCase()) return t;
+  return t.replace(
+    /(^|[\s-])(\p{Ll})/gu,
+    (_m, sep: string, c: string) => sep + c.toUpperCase(),
+  );
+}
+
+/** Un membre déjà parent (enfants à charge ou autonomes). */
+function isParent(a: RawAnswers): boolean {
+  return a.M0_Q05 === 'B' || a.M0_Q05 === 'C' || a.M0_Q05 === 'D';
+}
+
 /** « Oli, 38 ans, pilote de ligne à Écouis ». */
 export function buildHeadline(input: PortraitInput): string {
-  const parts: string[] = [input.firstName.trim()];
+  const parts: string[] = [displayName(input.firstName)];
   if (typeof input.age === 'number' && input.age >= 18 && input.age < 120) {
     parts.push(`${input.age} ans`);
   }
@@ -156,7 +178,7 @@ export function buildHeadline(input: PortraitInput): string {
 /** Sujet de la phrase d'ouverture : « Oli, 38 ans, …, » ou simplement « Oli ». */
 function subjectOf(input: PortraitInput): string {
   const headline = buildHeadline(input);
-  return headline === input.firstName.trim() ? headline : `${headline},`;
+  return headline === displayName(input.firstName) ? headline : `${headline},`;
 }
 
 function analysisSentences(input: PortraitInput): string[] {
@@ -185,7 +207,13 @@ function analysisSentences(input: PortraitInput): string[] {
   }
 
   // 3. Enfants (désir et situation actuelle).
-  const wish = pick(CHILDREN_WISH, a, 'M0_Q06', g);
+  // Un parent ne « ne souhaite pas d'enfants » : il ne souhaite pas d'AUTRES enfants.
+  const wish = pick(
+    isParent(a) ? CHILDREN_WISH_PARENT : CHILDREN_WISH,
+    a,
+    'M0_Q06',
+    g,
+  );
   const now = pick(CHILDREN_NOW, a, 'M0_Q05', g);
   if (wish && now) out.push(`${agree(`{Il} est ${now}`, g)}. ${wish}`);
   else if (wish) out.push(wish);
@@ -253,6 +281,15 @@ export function isUsableBio(bio: string | null | undefined): boolean {
   if (/démarche sur Harmonie/i.test(t)) return false;
   if (/c'est (oui|non)[ ,]|à (oui|non)[ ,]/i.test(t)) return false;
   if (/\b(?:\p{L}+)\s*,\s*$/u.test(t)) return false;
+  // Coordonnées (téléphone, e-mail, réseaux, liens) : réservées à l'étape « contacts ».
+  if (
+    /(?:\d[\s.-]?){8,}|@\w|\b[\w.+-]+@[\w-]+\.\w+|https?:\/\/|www\.|\b(?:insta(?:gram)?|snap(?:chat)?|whats?app|telegram|tiktok|facebook)\b/i.test(
+      t,
+    )
+  )
+    return false;
+  // Insultes ou contenu explicite : même règle que la messagerie.
+  if (!moderateMessageLocally(t).allowed) return false;
   return true;
 }
 
@@ -265,10 +302,20 @@ export function brandBoligo(text: string): string {
 
 function generatedBio(input: PortraitInput): string {
   const { answers: a, gender: g } = input;
+  // Tempérament + humour, langage de l'amour et énergie recherchée : les réponses
+  // qui distinguent le plus deux membres au même projet de couple.
+  const temperament = pick(BIO_TEMPERAMENT, a, 'M7_Q03', g);
+  const humour = pick(BIO_HUMOUR, a, 'M10_Q04', g);
+  const personality = temperament ? `${temperament}${humour ?? ''}` : null;
+  const love = pick(BIO_LOVE, a, 'M8_Q04', g);
+  const seek = pick(BIO_SEEK, a, 'M10_Q03', g);
   const parts = [
     pick(BIO_GOAL, a, 'M8_Q01', g),
+    personality,
     pick(BIO_BRINGS, a, 'M10_Q09', g),
-    pick(BIO_OFFERS, a, 'M10_Q10', g),
+    love,
+    // Sans recherche connue, la phrase « ce que j'aimerais offrir » prend sa place.
+    seek ?? pick(BIO_OFFERS, a, 'M10_Q10', g),
   ].filter((p): p is string => !!p);
   if (parts.length === 0) {
     return 'Je suis ici pour une rencontre sincère, construite avec le temps.';
@@ -343,7 +390,8 @@ function applies(q: Question, input: PortraitInput): boolean {
   const r = q.rules;
   if (!r) return true;
   const age = typeof input.age === 'number' ? input.age : null;
-  if (r.maxAge !== undefined && age !== null && age > r.maxAge) return false;
+  // Même règle que questions.service.ts (pendingQuestions) : non posée à partir de maxAge.
+  if (r.maxAge !== undefined && age !== null && age >= r.maxAge) return false;
   if (r.minAge !== undefined && age !== null && age < r.minAge) return false;
   if (r.gender && input.gender && r.gender !== input.gender) return false;
   if (r.dependsOn) {
@@ -367,7 +415,9 @@ function moduleSelfViews(input: PortraitInput): ModuleSelfView[] {
     );
     const clarity = Math.round((decided.length / questions.length) * 100);
 
-    const [anchor, phrases] = MODULE_SELF_SENTENCE[info.number];
+    const [anchor, basePhrases] = MODULE_SELF_SENTENCE[info.number];
+    const phrases =
+      info.number === 0 && isParent(a) ? MODULE0_SELF_PARENT : basePhrases;
     const description =
       pick(phrases, a, anchor, g) ??
       `Vos réponses sur ${info.focus} sont prises en compte dans vos rencontres.`;
