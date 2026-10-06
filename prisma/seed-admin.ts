@@ -31,7 +31,7 @@ async function main() {
   });
 
   console.log(`✅ Compte admin prêt : ${admin.email}`);
-  console.log('   Mot de passe : celui défini dans ADMIN_PASSWORD (ou défaut du script)');
+  console.log('   Mot de passe : celui défini dans ADMIN_PASSWORD.');
 }
 
 main()
