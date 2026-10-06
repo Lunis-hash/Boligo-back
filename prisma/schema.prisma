@@ -515,27 +515,31 @@ enum PartnerStatus {
 }
 
 model PartnerApplication {
-  id             String        @id @default(uuid())
-  type           PartnerType
-  status         PartnerStatus @default(NOUVEAU)
-  name           String
-  email          String
-  company        String?
-  country        String
-  city           String?
-  website        String?
+  id               String        @id @default(uuid())
+  type             PartnerType
+  status           PartnerStatus @default(NOUVEAU)
+  name             String
+  email            String
+  company          String?
+  country          String
+  city             String?
+  website          String?
   /// Réseaux et taille d'audience (créateurs), zone couverte (ambassadeurs), budget (marques).
-  audience       String?
-  message        String
-  language       String        @default("fr")
+  audience         String?
+  message          String
+  language         String        @default("fr")
   /// Notes internes de l'équipe (jamais montrées au candidat).
-  notes          String?
+  notes            String?
   /// Commission en % sur chaque Parcours payé avec son code (ambassadeurs, créateurs).
-  commissionRate Int?
-  promoCodeId    String?       @unique
-  promoCode      PromoCode?    @relation(fields: [promoCodeId], references: [id])
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  commissionRate   Int?
+  promoCodeId      String?       @unique
+  promoCode        PromoCode?    @relation(fields: [promoCodeId], references: [id])
+  /// Espace partenaire : empreinte SHA-256 du lien privé (le lien n'est jamais stocké).
+  portalTokenHash  String?       @unique
+  /// Date d'envoi du dernier lien vers l'Espace partenaire.
+  portalLinkSentAt DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@index([type, status])
   @@index([email])

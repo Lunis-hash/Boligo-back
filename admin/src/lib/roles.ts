@@ -23,12 +23,13 @@ export type Section =
   | "reports"
   | "moderation"
   | "partners"
+  | "promo"
   | "team";
 
 const ACCESS: Record<StaffRole, Section[]> = {
-  ADMIN: ["overview", "finance", "users", "matches", "journeys", "reports", "moderation", "partners", "team"],
+  ADMIN: ["overview", "finance", "users", "matches", "journeys", "reports", "moderation", "partners", "promo", "team"],
   MODERATOR: ["overview", "users", "matches", "journeys", "reports", "moderation"],
-  MARKETING: ["overview", "partners"],
+  MARKETING: ["overview", "partners", "promo"],
 };
 
 export function canSee(role: string | undefined, section: Section): boolean {

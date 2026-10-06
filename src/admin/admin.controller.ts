@@ -18,6 +18,7 @@ import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { AdminGuard } from './guards/admin.guard';
 import { AllowRoles } from './guards/admin-roles';
 import { SetTeamRoleDto } from './dto/set-team-role.dto';
+import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
 import { AuthRateLimitGuard } from '../auth/auth-rate-limit.guard';
 
 @Controller('admin')
@@ -203,11 +204,13 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('isActive') isActive?: string,
+    @Query('q') q?: string,
   ) {
     return this.adminService.listPromoCodes({
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
       isActive,
+      q,
     });
   }
 
@@ -224,34 +227,14 @@ export class AdminController {
   @Post('promo/codes')
   @UseGuards(AdminGuard)
   @AllowRoles(UserRole.MARKETING)
-  createPromoCode(
-    @Body() body: {
-      code: string;
-      discountType: string;
-      discountValue: number;
-      maxUses?: number | null;
-      expiresAt?: string | null;
-      isActive?: boolean;
-      description?: string;
-    }
-  ) {
+  createPromoCode(@Body() body: CreatePromoCodeDto) {
     return this.adminService.createPromoCode(body);
   }
 
   @Patch('promo/codes/:id')
   @UseGuards(AdminGuard)
   @AllowRoles(UserRole.MARKETING)
-  updatePromoCode(
-    @Param('id') id: string,
-    @Body() body: {
-      discountType?: string;
-      discountValue?: number;
-      maxUses?: number | null;
-      expiresAt?: string | null;
-      isActive?: boolean;
-      description?: string;
-    }
-  ) {
+  updatePromoCode(@Param('id') id: string, @Body() body: UpdatePromoCodeDto) {
     return this.adminService.updatePromoCode(id, body);
   }
 
@@ -262,8 +245,10 @@ export class AdminController {
     return this.adminService.togglePromoCode(id);
   }
 
+  /** Un code jamais utilisé est supprimé ; un code déjà utilisé est mis en pause. */
   @Delete('promo/codes/:id')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
   deletePromoCode(@Param('id') id: string) {
     return this.adminService.deletePromoCode(id);
   }

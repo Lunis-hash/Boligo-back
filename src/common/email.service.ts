@@ -173,6 +173,7 @@ export class EmailService implements OnModuleInit {
     title: string,
     paragraphs: string[],
     lang = 'fr',
+    cta?: { label: string; url: string },
   ) {
     const esc = (v: string) =>
       v
@@ -186,12 +187,15 @@ export class EmailService implements OnModuleInit {
           `<p style="margin: 0 0 14px; font-size: 14.5px; line-height: 1.6; color: #5E4F6E; white-space: pre-line;">${esc(p)}</p>`,
       )
       .join('');
+    const button = cta
+      ? `<p style="margin: 22px 0 6px;"><a href="${esc(cta.url)}" style="display: inline-block; background-color: #C62A6E; color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 24px; border-radius: 999px;">${esc(cta.label)}</a></p><p style="margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: #8A7B99; word-break: break-all;">${esc(cta.url)}</p>`
+      : '';
     const html = `<!DOCTYPE html><html lang="${lang === 'en' ? 'en' : 'fr'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${esc(subject)}</title></head>
 <body style="margin: 0; padding: 0; background-color: #FFF8FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FFF8FA; padding: 40px 16px;"><tr><td align="center">
 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 560px; background-color: #FFFFFF; border-radius: 24px; border: 1px solid #F3E4EC;">
 <tr><td style="padding: 32px 36px 8px;"><p style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 3px; color: #C62A6E;">BOLIGO</p></td></tr>
-<tr><td style="padding: 8px 36px 32px;"><h1 style="margin: 0 0 16px; font-size: 20px; color: #2A1B3D;">${esc(title)}</h1>${body}</td></tr>
+<tr><td style="padding: 8px 36px 32px;"><h1 style="margin: 0 0 16px; font-size: 20px; color: #2A1B3D;">${esc(title)}</h1>${body}${button}</td></tr>
 </table></td></tr></table></body></html>`;
     await this.dispatchEmail(to, subject, html);
   }

@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -14,6 +16,8 @@ import { AuthRateLimitGuard } from '../auth/auth-rate-limit.guard';
 import { AdminGuard } from '../admin/guards/admin.guard';
 import { AllowRoles } from '../admin/guards/admin-roles';
 import { PartnersService } from './partners.service';
+import { PortalRateLimitGuard } from './portal-rate-limit.guard';
+import { PartnerPortalDto } from './dto/portal.dto';
 import { ApplyPartnerDto } from './dto/apply-partner.dto';
 import {
   CreatePartnerCodeDto,
@@ -29,6 +33,14 @@ export class PartnersController {
   @UseGuards(AuthRateLimitGuard)
   apply(@Body() dto: ApplyPartnerDto) {
     return this.partners.apply(dto);
+  }
+
+  /** Espace partenaire : le jeton voyage dans le corps, jamais dans l'adresse. */
+  @Post('partners/portal')
+  @HttpCode(200)
+  @UseGuards(PortalRateLimitGuard)
+  portal(@Body() dto: PartnerPortalDto) {
+    return this.partners.portal(dto.token);
   }
 
   @Get('admin/partners')
@@ -82,5 +94,20 @@ export class PartnersController {
     @Body() dto: CreatePartnerCodeDto,
   ) {
     return this.partners.createCode(id, dto);
+  }
+
+  /** Nouveau lien vers l'Espace partenaire, envoyé par e-mail (l'ancien ne marche plus). */
+  @Post('admin/partners/:id/portal')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  sendPortalLink(@Param('id', ParseUUIDPipe) id: string) {
+    return this.partners.sendPortalLink(id);
+  }
+
+  @Delete('admin/partners/:id/portal')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  revokePortal(@Param('id', ParseUUIDPipe) id: string) {
+    return this.partners.revokePortal(id);
   }
 }

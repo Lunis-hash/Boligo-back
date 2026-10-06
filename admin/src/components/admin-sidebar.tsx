@@ -12,6 +12,7 @@ import {
   LogOut,
   Wallet,
   Handshake,
+  Ticket,
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const nav: { href: string; label: string; icon: typeof Users; section: Section }
   { href: "/dashboard/reports", label: "Signalements", icon: Flag, section: "reports" },
   { href: "/dashboard/moderation", label: "Modération", icon: MessageSquareOff, section: "moderation" },
   { href: "/dashboard/partners", label: "Partenaires", icon: Handshake, section: "partners" },
+  { href: "/dashboard/promo", label: "Codes promo", icon: Ticket, section: "promo" },
   { href: "/dashboard/team", label: "Équipe", icon: ShieldCheck, section: "team" },
 ];
 
