@@ -42,7 +42,8 @@ export const CRITIC_RULES = `Refuse une question si :
 5. elle répète une autre question de la liste ou une question déjà posée (même sens, autres mots) ;
 6. elle est banale : les deux membres se la seraient posée d'eux-mêmes ;
 7. elle contient une faute de français, oublie le vouvoiement ou dit qui a répondu quoi ;
-8. ses options de réponse manquent, orientent ou se recoupent.`;
+8. ses options de réponse manquent, orientent ou se recoupent ;
+9. elle affirme ou suppose sur le couple un fait absent de l'analyse fournie (invention).`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur

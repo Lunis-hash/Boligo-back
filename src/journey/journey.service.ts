@@ -158,6 +158,21 @@ export class JourneyService {
     };
   }
 
+  /**
+   * Prépare le Sondeur en arrière-plan dès l'acceptation du parcours : rédigé
+   * puis relu par l'IA, il prend environ une minute.
+   */
+  prepareSondeur(journeyId: string): void {
+    void this.ensureHarmonyQuestions(journeyId).catch((err) =>
+      console.warn(
+        `⚠️ [Journey] Préparation du Sondeur ${journeyId} : ${(err as Error).message}`,
+      ),
+    );
+  }
+
+  /** Attente maximale d'une préparation en cours avant de répondre à l'app. */
+  private static readonly SONDEUR_WAIT_MS = 25_000;
+
   /** Génère les 21 questions (3 jours × 7) une seule fois par parcours — IA par défaut. */
   async ensureHarmonyQuestions(journeyId: string) {
     const journey = await this.prisma.journey.findUnique({
@@ -278,7 +293,17 @@ export class JourneyService {
       userId,
     );
 
-    await this.ensureHarmonyQuestions(journeyId);
+    // Préparation en cours (IA lente) : on attend un peu, puis l'app réessaie.
+    // Jamais de liste à moitié écrite : tant que la préparation tourne, rien.
+    let waitTimer: NodeJS.Timeout | undefined;
+    await Promise.race([
+      this.ensureHarmonyQuestions(journeyId),
+      new Promise<void>((resolve) => {
+        waitTimer = setTimeout(resolve, JourneyService.SONDEUR_WAIT_MS);
+      }),
+    ]);
+    clearTimeout(waitTimer);
+    if (JourneyService.harmonyGenLocks.has(journeyId)) return [];
 
     const questions = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
@@ -469,6 +494,7 @@ export class JourneyService {
             inGrid,
             history,
             drafted?.model,
+            describeReportForAi(report, firstNames),
           )
         : null;
       aiQuestions = review

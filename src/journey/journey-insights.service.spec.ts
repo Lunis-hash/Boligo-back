@@ -129,6 +129,24 @@ const dayAnswer = (followUpTheme = 'argent') =>
     },
   });
 
+/** Réponse du rédacteur simulé, avec le modèle qui l'a écrite. */
+const written = (content: string) =>
+  Promise.resolve({ content, model: 'anthropic/claude-sonnet-5' });
+
+/** Vérification de fidélité simulée : fidèle, refusée ou indisponible. */
+const critic = (verdict: 'fidele' | 'refus' | 'absent' = 'fidele') =>
+  jest.fn(() =>
+    Promise.resolve(
+      verdict === 'absent'
+        ? null
+        : JSON.stringify(
+            verdict === 'fidele'
+              ? { fidele: true }
+              : { fidele: false, raisons: ['invente un souvenir'] },
+          ),
+    ),
+  );
+
 /** Relecteur indépendant simulé : accepte tout, refuse tout, ou indisponible. */
 const reviewer = (verdict: 'ok' | 'refus' | 'absent' = 'ok') =>
   jest.fn(() =>
@@ -147,7 +165,8 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const id = newJourneyId();
     const db = memoryDb(id);
     const ai = {
-      journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+      journeyCompletion: jest.fn(() => written(dayAnswer())),
+      journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
@@ -186,7 +205,8 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const id = newJourneyId();
     const db = memoryDb(id);
     const ai = {
-      journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+      journeyCompletion: jest.fn(() => written(dayAnswer())),
+      journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
@@ -204,6 +224,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const db = memoryDb(id);
     const ai = {
       journeyCompletion: jest.fn(() => Promise.resolve(null)),
+      journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
@@ -237,10 +258,9 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     });
     const ai = {
       journeyCompletion: jest.fn((_id: string, _s: string, prompt: string) =>
-        Promise.resolve(
-          prompt.includes('bilan Harmonie') ? review : dayAnswer(),
-        ),
+        written(prompt.includes('bilan Harmonie') ? review : dayAnswer()),
       ),
+      journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
@@ -265,6 +285,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const db = memoryDb(id);
     const ai = {
       journeyCompletion: jest.fn(() => Promise.resolve(null)),
+      journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
@@ -282,7 +303,8 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       const id = newJourneyId();
       const db = memoryDb(id);
       const ai = {
-        journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+        journeyCompletion: jest.fn(() => written(dayAnswer())),
+        journeyCritique: critic(),
         reviewSondeurQuestions: reviewer(verdict),
       };
       const service = new JourneyInsightsService(
@@ -304,12 +326,43 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     db.questions[0].questionText =
       'Votre partenaire règle seul une grosse dépense commune sans vous prévenir : que faites-vous ?';
     const ai = {
-      journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+      journeyCompletion: jest.fn(() => written(dayAnswer())),
+      journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1);
     await service.refresh(id);
     expect(db.questions.some((q) => q.followUp)).toBe(false);
+  });
+
+  it('anti-invention : lecture refusée ou non vérifiée par le relecteur → rien de publié, version des règles', async () => {
+    for (const verdict of ['refus', 'absent'] as const) {
+      const id = newJourneyId();
+      const db = memoryDb(id);
+      const ai = {
+        journeyCompletion: jest.fn(() => written(dayAnswer())),
+        journeyCritique: critic(verdict),
+        reviewSondeurQuestions: reviewer(),
+      };
+      const service = new JourneyInsightsService(
+        db.prisma as never,
+        ai as never,
+      );
+      db.answerDay(1);
+      await service.refresh(id);
+      expect(ai.journeyCritique).toHaveBeenCalledTimes(1);
+      // Le relecteur reçoit le rédacteur à éviter et les réponses à comparer.
+      const [, , prompt, writer] = ai.journeyCritique.mock
+        .calls[0] as unknown as [string, string, string, string];
+      expect(writer).toBe('anthropic/claude-sonnet-5');
+      expect(prompt).toContain('Inès : « Réponse de a »');
+      expect(prompt).toContain("Question d'approfondissement");
+      expect(db.insights).toHaveLength(0);
+      // Pas de lecture vérifiée : pas de question d'approfondissement non plus.
+      expect(db.questions.some((q) => q.followUp)).toBe(false);
+      const view = await service.view(id);
+      expect(view.days[0].source).toBe('regles');
+    }
   });
 });

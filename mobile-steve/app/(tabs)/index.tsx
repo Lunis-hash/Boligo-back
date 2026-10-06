@@ -188,6 +188,8 @@ export default function MatchesScreen() {
   // Lectures du Sondeur (chaque journée terminée par les deux, puis le bilan).
   const [insights, setInsights] = useState<SondeurInsights>(EMPTY_INSIGHTS);
   const insightsRetry = useRef<{ timer: ReturnType<typeof setTimeout> | null; count: number }>({ timer: null, count: 0 });
+  // Sondeur en préparation (rédigé puis relu par l'IA) : rechargement automatique.
+  const questionsRetry = useRef<{ timer: ReturnType<typeof setTimeout> | null; count: number }>({ timer: null, count: 0 });
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -278,6 +280,7 @@ export default function MatchesScreen() {
     journeyIdRef.current = firstMatch?.journeyId ?? null;
     setInsights(EMPTY_INSIGHTS);
     insightsRetry.current.count = 0;
+    questionsRetry.current.count = 0;
     if (firstMatch?.journeyId) {
       setJourneyId(firstMatch.journeyId);
       const cached = cacheService.peek<any>(`journey_${firstMatch.journeyId}`);
@@ -296,6 +299,7 @@ export default function MatchesScreen() {
   useEffect(
     () => () => {
       if (insightsRetry.current.timer) clearTimeout(insightsRetry.current.timer);
+      if (questionsRetry.current.timer) clearTimeout(questionsRetry.current.timer);
     },
     [],
   );
@@ -356,6 +360,21 @@ export default function MatchesScreen() {
       cacheService.set(`journey_${jId}`, { status, questions });
       applyJourneyData(status, questions);
       void loadInsights(jId);
+      // Questions encore en préparation : nouvel essai toutes les 8 s (2 minutes au plus).
+      const retry = questionsRetry.current;
+      if (
+        Array.isArray(questions) &&
+        questions.length === 0 &&
+        status?.currentStep === 'phase_harmonie' &&
+        !retry.timer &&
+        retry.count < 15
+      ) {
+        retry.count += 1;
+        retry.timer = setTimeout(() => {
+          retry.timer = null;
+          if (journeyIdRef.current === jId) loadJourney(jId, true);
+        }, 8000);
+      }
     } catch (e) {
       console.error('Failed to load journey:', e);
     } finally {
@@ -754,7 +773,9 @@ export default function MatchesScreen() {
 
               {!loading && sondeurInProgress && firstMatch?.journeyId && dbQuestions.length === 0 && (
                 <View style={styles.preparingCard}>
-                  <Text style={styles.preparingText}>Génération des questions du Sondeur…</Text>
+                  <Text style={styles.preparingText}>
+                    BOLIGO prépare vos questions, écrites pour vous deux (environ une minute)…
+                  </Text>
                   <TouchableOpacity
                     onPress={() => firstMatch.journeyId && loadJourney(firstMatch.journeyId)}
                     style={styles.refreshLink}

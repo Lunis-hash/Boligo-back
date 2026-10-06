@@ -59,10 +59,13 @@ diagnostic. BOLIGO ne présente jamais l'IA comme psychologue.
 
 **Les garde-fous contre les erreurs et les répétitions** :
 
-1. **Relecture par une autre famille d'IA.** Le rédacteur est gpt-oss-120b
-   (famille OpenAI), le relecteur est Llama 3.3 70B (famille Meta) : ils ne font
-   pas les mêmes erreurs. Si le rédacteur passe sur Llama, le relecteur change de
-   modèle. Le relecteur refuse une question au moindre défaut :
+1. **Relecture par une autre famille d'IA.** Le relecteur n'est jamais de la
+   même famille que le rédacteur, pour ne pas reproduire ses erreurs :
+   - avec OpenRouter : Claude Sonnet (Anthropic) rédige, GPT (OpenAI) relit ;
+   - sans OpenRouter, ou en secours : gpt-oss-120b (OpenAI) rédige, Llama 3.3 70B
+     (Meta) relit.
+
+   Le relecteur refuse une question au moindre défaut :
    - question orientée, morale ou jugeante ;
    - jargon, étiquette ou diagnostic ;
    - corps, couleur de peau, santé, coordonnées ;
@@ -71,7 +74,8 @@ diagnostic. BOLIGO ne présente jamais l'IA comme psychologue.
    - question banale ;
    - faute de français, oubli du vouvoiement, ou question qui dit qui a répondu
      quoi ;
-   - options manquantes, orientées ou qui se recoupent.
+   - options manquantes, orientées ou qui se recoupent ;
+   - fait sur le couple absent de l'analyse fournie (invention).
 
    Les questions refusées sont écartées.
 2. **Priorité à l'IA seulement après relecture.** Les questions de l'IA passent
@@ -86,6 +90,19 @@ diagnostic. BOLIGO ne présente jamais l'IA comme psychologue.
 4. **Question d'approfondissement** : elle n'est posée que si le relecteur
    l'accepte et qu'elle ne ressemble à aucune question du Sondeur. Sinon, la
    question prévue reste en place.
+5. **Aucune invention dans les lectures et le bilan.** Avant d'être montrée,
+   chaque lecture est comparée par le relecteur aux réponses réelles. Elle est
+   refusée si une seule phrase :
+   - invente ou exagère un fait, un sentiment ou un souvenir ;
+   - attribue à l'un la réponse de l'autre ;
+   - présente une interprétation comme une vérité ou pose une étiquette ;
+   - prédit l'avenir du couple ;
+   - juge l'un des membres.
+
+   Refusée ou non vérifiée, la lecture n'est pas publiée : la version des
+   règles s'affiche. Les températures sont basses (0,6 pour les questions, 0,4
+   pour les lectures, 0 pour les relectures) : moins de fantaisie, plus de
+   fidélité.
 
 Ce qui est en place pour chaque **parcours payé** :
 
@@ -135,35 +152,66 @@ Garde-fous :
 
 ## 3. Coût d'un parcours payé
 
-Le modèle « qualité » est `openai/gpt-oss-120b` (0,15 $ par million de jetons
-lus, 0,60 $ par million écrits), puis `llama-3.3-70b-versatile` s'il n'est pas
-disponible.
+Avec OpenRouter (clé `OPENROUTER_API_KEY`), le rédacteur est Claude Sonnet
+(≈ 2 $ par million de jetons lus, 10 $ par million écrits) et le relecteur est
+GPT (≈ 1,25 $ / 10 $). Les prix réels sont relus en direct sur OpenRouter.
 
-| Tâche | Appels | Jetons lus / écrits par appel | Coût |
+| Tâche | Appels | Avec OpenRouter | Groq seul |
 |---|---|---|---|
-| Questions du Sondeur (hypothèses + 21 questions) | 1 | ≈ 3 500 / 3 600 | ≈ 0,003 € |
-| Relecture du Sondeur (Llama 3.3 70B) | 1 | ≈ 4 500 / 300 | ≈ 0,003 € |
-| Lectures du jour (avec la question d'approfondissement) | 3 | ≈ 2 200 / 650 | ≈ 0,003 € |
-| Relecture des 2 questions d'approfondissement | 2 | ≈ 1 500 / 100 | ≈ 0,002 € |
-| Bilan Harmonie | 1 | ≈ 4 200 / 800 | ≈ 0,001 € |
-| **Total par parcours** | **8** | | **≈ 0,012 €** |
+| Questions du Sondeur (hypothèses + 21 questions) | 1 | ≈ 0,043 € | ≈ 0,003 € |
+| Relecture du Sondeur | 1 | ≈ 0,017 € | ≈ 0,003 € |
+| Lectures du jour (avec la question d'approfondissement) | 3 | ≈ 0,036 € | ≈ 0,003 € |
+| Vérification anti-invention (3 lectures + bilan) | 4 | ≈ 0,036 € | ≈ 0,003 € |
+| Relecture des 2 questions d'approfondissement | 2 | ≈ 0,018 € | ≈ 0,002 € |
+| Bilan Harmonie | 1 | ≈ 0,018 € | ≈ 0,001 € |
+| **Total par parcours** | **12** | **≈ 0,17 €** | **≈ 0,015 €** |
 
-Avec des réponses très longues (500 caractères chacune), le total monte à
-≈ 0,02 €.
+Avec des réponses très longues (500 caractères chacune), le total avec
+OpenRouter monte à ≈ 0,25 €.
 
-**Un parcours payé coûte donc environ 1 à 2 centimes d'IA**, pour un budget
-autorisé de 1 € (`AI_JOURNEY_BUDGET_EUR`) et une recette de 30 € (15 € par
-membre). Pour 1 000 000 de parcours payés : 12 000 € à 20 000 € d'IA.
+**Un parcours payé coûte donc environ 0,17 à 0,25 € d'IA avec OpenRouter**
+(1,5 à 2 centimes avec Groq seul), pour un budget autorisé de 1 €
+(`AI_JOURNEY_BUDGET_EUR`) et une recette de 30 € (15 € par membre). Pour
+1 000 000 de parcours payés : 170 000 € à 250 000 € avec OpenRouter, soit
+moins de 1 % de la recette.
 
-Le budget de 1 € par parcours est un plafond de sécurité : chaque appel est
-estimé avant d'être lancé (réponse de longueur maximale) puis compté au réel
-dans `Journey.aiCostMicroEur`.
+Le Sondeur est préparé en arrière-plan dès que le parcours est accepté : rédigé
+puis relu, il prend environ une minute et il est prêt quand les membres ouvrent
+l'application. Si ce n'est pas le cas, l'app recharge toute seule.
 
-- Un appel qui dépasserait le budget n'est pas lancé : la version sans IA prend
-  le relais.
-- Ces dépenses sont comptées à part, sans entamer le plafond mensuel de 10 €
-  qui couvre le reste.
-- Un parcours est « payé » quand au moins un crédit a été dépensé pour lui.
+## Les limites de dépense
+
+| Limite | Valeur par défaut | Où |
+|---|---|---|
+| Budget d'un parcours payé | 1 € | `AI_JOURNEY_BUDGET_EUR` |
+| Plafond mensuel de tous les parcours payés | 100 € | `AI_JOURNEY_MONTHLY_CAP_EUR` |
+| Plafond mensuel du reste (modération…) | 10 € | `AI_MONTHLY_BUDGET_EUR` |
+| Prix plafond d'un modèle OpenRouter | 5 $ lus / 25 $ écrits par million de jetons | `OPENROUTER_MAX_PRICE_PROMPT` / `_COMPLETION` |
+| Plafond de la clé OpenRouter | à régler par vous | tableau de bord OpenRouter |
+
+Fonctionnement des limites :
+
+- **Avant chaque appel** :
+  - le coût est estimé au prix réel du modèle, avec une réponse de longueur
+    maximale ;
+  - si l'appel ferait dépasser une limite, il n'est pas lancé et la version
+    sans IA prend le relais.
+- **Après chaque appel** : le coût réel facturé par OpenRouter est enregistré,
+  pas une estimation.
+- **Modèles autorisés** :
+  - jamais de modèle gratuit ;
+  - uniquement des fournisseurs qui n'utilisent pas les données pour entraîner
+    leurs modèles (réglage `data_collection: deny`) ;
+  - jamais au-dessus du prix plafond : OpenRouter refuse lui-même tout
+    fournisseur plus cher.
+- **Plafond mensuel de 100 €** : il correspond à environ 500 parcours payés par
+  mois avec OpenRouter, soit 15 000 € de recette.
+  - À 80 % du plafond, un avertissement apparaît dans les journaux.
+  - Au-delà, les parcours passent aux versions sans IA jusqu'au mois suivant.
+  - Augmentez-le avec la croissance.
+- **Plafond sur la clé OpenRouter** : à régler vous-même dans le tableau de bord
+  OpenRouter, par exemple 100 $ par mois. C'est un second verrou, indépendant de
+  BOLIGO.
 
 ## 4. Plafond mensuel pour le reste
 
@@ -207,12 +255,17 @@ Il faudra des offres payantes adaptées au volume, à prévoir à part.
 |---|---|---|
 | `AI_JOURNEY_BUDGET_EUR` | `1` | budget IA de chaque parcours payé ; `0` coupe ce suivi |
 | `GROQ_QUALITY_MODEL` | gpt-oss-120b puis Llama 3.3 70B | rédacteur des parcours payés (un ou plusieurs, séparés par des virgules) |
-| `GROQ_CRITIC_MODEL` | Llama 3.3 70B puis gpt-oss-120b | relecteur indépendant (jamais le même modèle que le rédacteur) |
+| `GROQ_CRITIC_MODEL` | Llama 3.3 70B puis gpt-oss-120b | relecteur indépendant sur Groq (jamais de la même famille que le rédacteur) |
+| `OPENROUTER_API_KEY` | absente | active Claude (rédaction) et GPT (relecture) pour les parcours payés |
+| `OPENROUTER_QUALITY_MODEL` | Claude Sonnet (5.5, 5 puis 4.6) | rédacteur OpenRouter |
+| `OPENROUTER_CRITIC_MODEL` | GPT (5.1 puis 5) puis Gemini 2.5 Pro | relecteur OpenRouter |
+| `OPENROUTER_MAX_PRICE_PROMPT` / `_COMPLETION` | `5` / `25` | prix plafond d'un modèle, en dollars par million de jetons |
+| `AI_JOURNEY_MONTHLY_CAP_EUR` | `100` | plafond mensuel de tous les parcours payés ; `0` coupe ce suivi |
 | `AI_MONTHLY_BUDGET_EUR` | `10` | plafond mensuel du reste ; `0` coupe ces usages |
 | `AI_PROFILE_MODE` | sans IA | `ai` pour faire rédiger les portraits par l'IA (dans le plafond mensuel) |
 | `HARMONY_QUESTIONS_SOURCE` | `ai` | `bank` pour des questions du Sondeur sans IA |
 
-Aucune variable n'est à ajouter : les valeurs par défaut conviennent.
+Seule `OPENROUTER_API_KEY` est à ajouter pour passer à Claude et GPT ; les autres valeurs par défaut conviennent.
 
 Prix de référence : [eesel.ai — Groq pricing](https://eesel.ai/blog/groq-pricing),
 [Trevor Fox — Llama 3.3 70B sur Groq](https://trevorfox.com/tools/calculators/llm-cost/groq/llama-3.3-70b/),

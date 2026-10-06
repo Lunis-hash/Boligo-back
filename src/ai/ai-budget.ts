@@ -41,6 +41,22 @@ export function costMicroEur(
   return Math.ceil(inputTokens * p.input + outputTokens * p.output);
 }
 
+/** Coût à partir d'un prix en dollars par million de jetons (1 $ compté 1 €). */
+export function costFromPrice(
+  price: { prompt: number; completion: number },
+  inputTokens: number,
+  outputTokens: number,
+): number {
+  return Math.ceil(
+    inputTokens * price.prompt + outputTokens * price.completion,
+  );
+}
+
+/** Coût réel facturé en dollars → millionièmes d'euro (1 $ compté 1 €, arrondi au-dessus). */
+export function usdToMicroEur(usd: number): number {
+  return Math.ceil(usd * 1_000_000);
+}
+
 /** Estimation prudente : environ 3 caractères par jeton en français. */
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 3);
@@ -76,6 +92,24 @@ export function journeyBudgetMicroEur(
   return monthlyBudgetMicroEur(
     value === undefined || value.trim() === ''
       ? String(DEFAULT_JOURNEY_BUDGET_EUR)
+      : value,
+  );
+}
+
+/**
+ * Filet de sécurité global : dépense totale du mois pour le suivi des parcours
+ * payés (AI_JOURNEY_MONTHLY_CAP_EUR, 100 € par défaut, soit plusieurs milliers
+ * de parcours). Au-delà, les parcours passent aux versions sans IA jusqu'au
+ * mois suivant. 0 coupe ce suivi.
+ */
+export const DEFAULT_JOURNEY_MONTHLY_CAP_EUR = 100;
+
+export function journeyMonthlyCapMicroEur(
+  value: string | undefined = process.env.AI_JOURNEY_MONTHLY_CAP_EUR,
+): number {
+  return monthlyBudgetMicroEur(
+    value === undefined || value.trim() === ''
+      ? String(DEFAULT_JOURNEY_MONTHLY_CAP_EUR)
       : value,
   );
 }

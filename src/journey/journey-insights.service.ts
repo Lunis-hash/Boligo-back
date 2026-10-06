@@ -15,7 +15,9 @@ import {
   answeredItems,
   dayComplete,
   dayReadingPrompt,
+  fidelityPrompt,
   parseDayReading,
+  parseFidelity,
   parseReview,
   reviewPrompt,
   ruleDayReading,
@@ -141,19 +143,37 @@ export class JourneyInsightsService {
         userBId,
       );
       const { system, prompt } = dayReadingPrompt(day, items, names);
-      const raw = await this.ai.journeyCompletion(
+      const written = await this.ai.journeyCompletion(
         journeyId,
         system,
         prompt,
         1500,
       );
-      const parsed = raw === null ? null : parseDayReading(raw, day);
-      if (!parsed) {
+      const parsed = written ? parseDayReading(written.content, day) : null;
+      // Garde-fou anti-invention : publiée seulement si le relecteur confirme
+      // que chaque phrase s'appuie sur les réponses. Sinon, version des règles.
+      if (
+        !parsed ||
+        !(await this.isFaithful(
+          journeyId,
+          items,
+          names,
+          parsed.reading,
+          parsed.followUp,
+          written?.model,
+        ))
+      ) {
         this.markFailure(journeyId, day);
         continue;
       }
       if (parsed.followUp) {
-        await this.placeFollowUp(journeyId, day + 1, parsed.followUp, qs);
+        await this.placeFollowUp(
+          journeyId,
+          day + 1,
+          parsed.followUp,
+          qs,
+          written?.model,
+        );
       }
       await this.save(journeyId, parsed.reading);
     }
@@ -167,22 +187,51 @@ export class JourneyInsightsService {
       this.coolingDown(journeyId, REVIEW_DAY)
     )
       return;
-    const { system, prompt } = reviewPrompt(
-      answeredItems(qs, userAId, userBId),
-      names,
-    );
-    const raw = await this.ai.journeyCompletion(
+    const all = answeredItems(qs, userAId, userBId);
+    const { system, prompt } = reviewPrompt(all, names);
+    const written = await this.ai.journeyCompletion(
       journeyId,
       system,
       prompt,
       2000,
     );
-    const review = raw === null ? null : parseReview(raw);
-    if (!review) {
+    const review = written ? parseReview(written.content) : null;
+    if (
+      !review ||
+      !(await this.isFaithful(
+        journeyId,
+        all,
+        names,
+        review,
+        null,
+        written?.model,
+      ))
+    ) {
       this.markFailure(journeyId, REVIEW_DAY);
       return;
     }
     await this.save(journeyId, review);
+  }
+
+  /** Le relecteur indépendant confirme-t-il que la lecture n'invente rien ? */
+  private async isFaithful(
+    journeyId: string,
+    items: Parameters<typeof fidelityPrompt>[0],
+    names: [string, string],
+    reading: SondeurReading,
+    followUp: FollowUpProposal | null,
+    writerModel?: string,
+  ): Promise<boolean> {
+    const { system, prompt } = fidelityPrompt(items, names, reading, followUp);
+    const verdict = parseFidelity(
+      await this.ai.journeyCritique(journeyId, system, prompt, writerModel),
+    );
+    if (verdict !== true) {
+      this.logger.warn(
+        `Parcours ${journeyId} : lecture ${reading.day === REVIEW_DAY ? 'du bilan' : `du jour ${reading.day}`} ${verdict === false ? 'refusée (fidélité)' : 'non vérifiée'}, version des règles.`,
+      );
+    }
+    return verdict === true;
   }
 
   /**
@@ -196,6 +245,7 @@ export class JourneyInsightsService {
     day: number,
     proposal: FollowUpProposal,
     asked: Array<{ questionText: string }>,
+    writerModel?: string,
   ): Promise<string | null> {
     // Garde-fou : la question est relue par un second modèle, d'une autre
     // famille. Refusée, ou relecture impossible : rien n'est remplacé.
@@ -210,6 +260,7 @@ export class JourneyInsightsService {
         },
       ],
       asked.map((q) => q.questionText),
+      writerModel,
     );
     if (!review || review.rejected.size > 0) return null;
     const all = await this.prisma.harmonyQuestion.findMany({

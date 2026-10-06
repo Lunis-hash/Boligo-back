@@ -382,7 +382,7 @@ export default function DashboardPage() {
             <StatCard
               title="IA des parcours payés"
               value={formatEuro(aiSpend.journeySpentEur ?? 0)}
-              hint={`${aiSpend.journeyCalls ?? 0} appel(s) · au plus ${formatEuro(aiSpend.journeyBudgetEur ?? 1)} par parcours`}
+              hint={`${aiSpend.journeyCalls ?? 0} appel(s) · ${formatEuro(aiSpend.journeyBudgetEur ?? 1)} max. par parcours · plafond ${formatEuro(aiSpend.journeyMonthlyCapEur ?? 100)} / mois`}
               icon={Sparkles}
             />
           )}
@@ -404,6 +404,7 @@ interface AiSpend {
   journeyCalls?: number;
   journeySpentEur?: number;
   journeyBudgetEur?: number;
+  journeyMonthlyCapEur?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────

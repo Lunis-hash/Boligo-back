@@ -99,3 +99,18 @@ export function reasoningOptions(model: string): {
   if (/qwen3/i.test(model)) return { reasoning_effort: 'none' };
   return {};
 }
+
+/**
+ * Famille d'un modèle (éditeur) : le relecteur ne doit jamais être de la même
+ * famille que le rédacteur, pour ne pas reproduire ses erreurs.
+ */
+export function modelFamily(model: string): string {
+  const id = model.toLowerCase();
+  if (/llama|meta-llama/.test(id)) return 'meta';
+  if (/gpt|openai\/|\bo\d/.test(id)) return 'openai';
+  if (/claude|anthropic\//.test(id)) return 'anthropic';
+  if (/gemini|gemma|google\//.test(id)) return 'google';
+  if (/qwen/.test(id)) return 'qwen';
+  if (/mistral|mixtral/.test(id)) return 'mistral';
+  return id.split('/')[0];
+}
