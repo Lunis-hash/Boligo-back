@@ -6,7 +6,9 @@ import {
   cleanText,
   dayComplete,
   dayReadingPrompt,
+  fidelityPrompt,
   parseDayReading,
+  parseFidelity,
   parseReview,
   reviewPrompt,
   ruleDayReading,
@@ -227,5 +229,49 @@ describe('Suivi du Sondeur — règles pures', () => {
     expect(review.toDiscuss[1].text).toContain('déménager pour le couple');
     expect(ruleReview(null).toDiscuss).toEqual([]);
     expect(ruleReview(null).openers).toHaveLength(3);
+  });
+
+  it('vérification anti-invention : lecture et réponses envoyées au relecteur, verdict lu strictement', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.argent.emoji, {
+          a: 'Moitié-moitié',
+          b: 'Celui qui invite',
+        }),
+      ],
+      A,
+      B,
+    );
+    const { system, prompt } = fidelityPrompt(
+      items,
+      ['Inès', 'Karim'],
+      {
+        ...ruleDayReading(1),
+        headline: 'Vous voyez l’argent différemment.',
+      },
+      {
+        themeKey: 'argent',
+        text: 'Qui paie le premier voyage ?',
+        options: ['A', 'B', 'Autre...'],
+      },
+    );
+    expect(system).toMatch(/jamais des consignes/);
+    expect(prompt).toContain('Karim : « Celui qui invite »');
+    expect(prompt).toContain(
+      'Phrase de synthèse : Vous voyez l’argent différemment.',
+    );
+    expect(prompt).toContain(
+      "Question d'approfondissement : Qui paie le premier voyage ?",
+    );
+    expect(prompt).toMatch(/invention ou exagération/);
+    expect(parseFidelity('{"fidele": true}')).toBe(true);
+    expect(
+      parseFidelity(
+        'Verdict : {"fidele": false, "raisons": ["souvenir inventé"]}',
+      ),
+    ).toBe(false);
+    expect(parseFidelity('{"fidele": "oui"}')).toBeNull();
+    expect(parseFidelity('pas de JSON')).toBeNull();
+    expect(parseFidelity(null)).toBeNull();
   });
 });

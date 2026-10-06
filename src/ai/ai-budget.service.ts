@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   costMicroEur,
   journeyBudgetMicroEur,
+  journeyMonthlyCapMicroEur,
   monthKey,
   monthlyBudgetMicroEur,
 } from './ai-budget';
@@ -56,10 +57,18 @@ export class AiBudgetService {
     }
   }
 
-  /** Enregistre la consommation réelle d'un appel. */
-  async record(model: string, inputTokens: number, outputTokens: number) {
+  /**
+   * Enregistre la consommation réelle d'un appel. `actualMicro` : coût réel
+   * facturé par le fournisseur, quand il le donne (OpenRouter).
+   */
+  async record(
+    model: string,
+    inputTokens: number,
+    outputTokens: number,
+    actualMicro?: number,
+  ) {
     const month = monthKey();
-    const cost = costMicroEur(model, inputTokens, outputTokens);
+    const cost = actualMicro ?? costMicroEur(model, inputTokens, outputTokens);
     try {
       const row = await this.prisma.aiSpend.upsert({
         where: { month },
@@ -111,22 +120,39 @@ export class AiBudgetService {
     }
   }
 
-  /** L'appel prévu tient-il dans le budget restant du parcours ? */
+  /**
+   * L'appel prévu tient-il dans le budget restant du parcours, et dans le
+   * plafond mensuel de tous les parcours payés ?
+   */
   async allowJourney(journeyId: string, estimateMicro: number) {
     const budget = journeyBudgetMicroEur();
-    if (budget <= 0) return false;
+    const monthlyCap = journeyMonthlyCapMicroEur();
+    if (budget <= 0 || monthlyCap <= 0) return false;
     try {
-      const journey = await this.prisma.journey.findUnique({
-        where: { id: journeyId },
-        select: { aiCostMicroEur: true },
-      });
+      const [journey, month] = await Promise.all([
+        this.prisma.journey.findUnique({
+          where: { id: journeyId },
+          select: { aiCostMicroEur: true },
+        }),
+        this.prisma.aiSpend.findUnique({
+          where: { month: monthKey() },
+          select: { journeyCostMicroEur: true },
+        }),
+      ]);
       if (!journey) return false;
       const ok = journey.aiCostMicroEur + estimateMicro <= budget;
       if (!ok)
         this.logger.warn(
           `Parcours ${journeyId} : budget IA du parcours atteint, suite sans IA.`,
         );
-      return ok;
+      const monthSpent = Number(month?.journeyCostMicroEur ?? 0);
+      const monthOk = monthSpent + estimateMicro <= monthlyCap;
+      if (!monthOk)
+        this.warnOnce(
+          `${monthKey()}:parcours-plein`,
+          'plafond mensuel du suivi des parcours atteint : suite sans IA jusqu’au mois prochain.',
+        );
+      return ok && monthOk;
     } catch (err) {
       this.logger.warn(
         `Parcours ${journeyId} : compteur illisible, IA suspendue : ${(err as Error).message}`,
@@ -141,9 +167,10 @@ export class AiBudgetService {
     model: string,
     inputTokens: number,
     outputTokens: number,
+    actualMicro?: number,
   ) {
     const month = monthKey();
-    const cost = costMicroEur(model, inputTokens, outputTokens);
+    const cost = actualMicro ?? costMicroEur(model, inputTokens, outputTokens);
     try {
       await this.prisma.journey.update({
         where: { id: journeyId },
@@ -188,6 +215,7 @@ export class AiBudgetService {
       journeyCalls,
       journeySpentEur,
       journeyBudgetEur: journeyBudgetMicroEur() / 1_000_000,
+      journeyMonthlyCapEur: journeyMonthlyCapMicroEur() / 1_000_000,
     };
   }
 

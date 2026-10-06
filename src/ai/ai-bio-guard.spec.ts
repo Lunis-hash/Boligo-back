@@ -48,6 +48,8 @@ describe('Garde-fou de la bio rédigée par l’IA', () => {
   it('publie la bio déterministe quand la bio IA contredit les réponses', async () => {
     process.env.OPENROUTER_API_KEY = 'mock-key';
     const openRouter = {
+      candidates: jest.fn(() => Promise.resolve(['openai/gpt-oss-120b'])),
+      priceOf: jest.fn(() => null),
       executeAgentPrompt: jest.fn().mockResolvedValue({
         content: JSON.stringify({
           synthesis: 'Synthèse.',

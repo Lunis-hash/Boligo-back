@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { MatchProposal, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { JourneyService } from '../journey/journey.service';
 import { collectRawAnswers, RawAnswers } from './divergence.engine';
 import { ageFrom, buildMatchView, resolveScore } from './match-view';
 import {
@@ -36,6 +37,7 @@ export class MatchingService {
   constructor(
     private prisma: PrismaService,
     private readonly notificationService: NotificationService,
+    @Optional() private readonly journeyService?: JourneyService,
   ) {}
 
   async getDiscoverProfiles(userId: string) {
@@ -806,6 +808,11 @@ export class MatchingService {
 
     if (!outcome.success || !('match' in outcome) || !outcome.match) return outcome;
     const match = outcome.match;
+    // Le Sondeur se prépare tout de suite, en arrière-plan : rédigé et relu par
+    // l'IA, il prend environ une minute et doit être prêt à l'ouverture.
+    if ('journey' in outcome && outcome.journey) {
+      this.journeyService?.prepareSondeur(outcome.journey.id);
+    }
 
     // Les autres invitations en attente des deux membres se ferment (crédit rendu).
     const others = await this.prisma.matchProposal.findMany({

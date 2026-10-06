@@ -11,6 +11,8 @@ describe('AiService (5 Intelligences Harmonie)', () => {
 
     openRouterService = {
       executeAgentPrompt: jest.fn(),
+      candidates: jest.fn(() => Promise.resolve(['openai/gpt-oss-120b'])),
+      priceOf: jest.fn(() => null),
       extractJson: jest.fn((text: string) => JSON.parse(text)),
     };
 
@@ -84,7 +86,11 @@ describe('AiService (5 Intelligences Harmonie)', () => {
       expect(result.bio).toBe(mockSynthesis.bio);
       expect(result.maturityScore).toBe(0.9);
       expect(result.needsList).toContain('Écoute active');
-      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith('sondeur', expect.any(Array));
+      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith(
+        'sondeur',
+        expect.any(Array),
+        expect.any(Object),
+      );
     });
 
     it('doit fusionner avec le fallback de sécurité si la réponse IA est incomplète', async () => {
@@ -161,7 +167,11 @@ describe('AiService (5 Intelligences Harmonie)', () => {
 
       expect(result.globalScore).toBe(89);
       expect(result.dimensionScores.values).toBe(95);
-      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith('cupidon', expect.any(Array));
+      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith(
+        'cupidon',
+        expect.any(Array),
+        expect.any(Object),
+      );
     });
   });
 
@@ -192,7 +202,11 @@ describe('AiService (5 Intelligences Harmonie)', () => {
 
       expect(result.suggestions.length).toBe(3);
       expect(result.coachTip).toBe('Privilégie les questions ouvertes.');
-      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith('coach', expect.any(Array));
+      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith(
+        'coach',
+        expect.any(Array),
+        expect.any(Object),
+      );
     });
   });
 
@@ -218,7 +232,11 @@ describe('AiService (5 Intelligences Harmonie)', () => {
 
       expect(result.stepTitle).toBe('Les langages de l\'amour');
       expect(result.durationMinutes).toBe(5);
-      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith('parcours', expect.any(Array));
+      expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith(
+        'parcours',
+        expect.any(Array),
+        expect.any(Object),
+      );
     });
   });
 

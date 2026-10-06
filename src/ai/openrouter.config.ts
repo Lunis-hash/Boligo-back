@@ -1,74 +1,53 @@
-export interface AgentModelConfig {
-  primaryModel: string;
-  fallbackModels: string[];
-  temperature: number;
-  maxTokens: number;
-}
+/**
+ * OpenRouter (offre payante) : un modèle par rôle, jamais de modèle gratuit.
+ * Les réponses des membres sont des données sensibles : les modèles gratuits
+ * peuvent passer par des fournisseurs qui conservent ou réutilisent les données.
+ */
 
-export interface HarmonieAgentsConfig {
-  sondeur: AgentModelConfig;
-  cupidon: AgentModelConfig;
-  coach: AgentModelConfig;
-  parcours: AgentModelConfig;
-  moderation: AgentModelConfig;
-}
+export type OpenRouterRole = 'default' | 'quality' | 'critic';
 
-export const HARMONIE_AI_ROUTING: HarmonieAgentsConfig = {
-  // 🧠 Sondeur IA : Analyse psychologique profonde, cartes mentales et questions Hard-Mode (100% Gratuit)
-  sondeur: {
-    primaryModel: 'openrouter/free',
-    fallbackModels: [
-      'minimax/minimax-m2.7:free',
-      'minimax/minimax-m3:free',
-      'google/gemma-4-31b-it:free',
-    ],
-    temperature: 0.7,
-    // Les 21 questions du Sondeur demandent environ 3 000 jetons en JSON.
-    maxTokens: 4000,
-  },
-
-  // 💖 Cupidon IA & Compatibilité : Calcul du score d'affinité 6D et matching (100% Gratuit)
-  cupidon: {
-    primaryModel: 'openrouter/free',
-    fallbackModels: [
-      'minimax/minimax-m2.7:free',
-      'minimax/minimax-m3:free',
-      'google/gemma-4-26b-a4b-it:free',
-    ],
-    temperature: 0.5,
-    maxTokens: 2000,
-  },
-
-  // 💬 Coach de Conversation : Accompagnement en temps réel dans le chat (100% Gratuit)
-  coach: {
-    primaryModel: 'openrouter/free',
-    fallbackModels: [
-      'minimax/minimax-m2.7:free',
-      'dots-studio/dots-3-note-preview:free',
-    ],
-    temperature: 0.7,
-    maxTokens: 1024,
-  },
-
-  // 🌱 Parcours Harmonie : Programme d'évolution personnelle (100% Gratuit)
-  parcours: {
-    primaryModel: 'openrouter/free',
-    fallbackModels: [
-      'minimax/minimax-m2.7:free',
-      'minimax/minimax-m3:free',
-    ],
-    temperature: 0.6,
-    maxTokens: 1500,
-  },
-
-  // 🛡️ Médiateur & Modération IA : Modèle de sécurité spécialisé & gratuit (100% Gratuit)
-  moderation: {
-    primaryModel: 'nvidia/nemotron-3.5-content-safety:free',
-    fallbackModels: [
-      'openrouter/free',
-      'minimax/minimax-m2.7:free',
-    ],
-    temperature: 0.2,
-    maxTokens: 512,
-  },
+/**
+ * Préférences par rôle : on retient le premier modèle ouvert au compte et sous
+ * le prix plafond. Une variable d'environnement passe devant (un ou plusieurs
+ * modèles, séparés par des virgules).
+ * - quality : rédacteur du Sondeur, des lectures et du bilan (parcours payés) ;
+ * - critic : relecteur indépendant, d'une autre famille que le rédacteur ;
+ * - default : usages courants (modération si Groq est absent).
+ */
+export const OPENROUTER_PREFERENCES: Record<OpenRouterRole, string[]> = {
+  quality: [
+    'anthropic/claude-sonnet-5.5',
+    'anthropic/claude-sonnet-5',
+    'anthropic/claude-sonnet-4.6',
+  ],
+  critic: ['openai/gpt-5.1', 'openai/gpt-5', 'google/gemini-2.5-pro'],
+  default: ['openai/gpt-oss-120b', 'meta-llama/llama-3.3-70b-instruct'],
 };
+
+export const OPENROUTER_MODEL_ENV: Record<OpenRouterRole, string> = {
+  quality: 'OPENROUTER_QUALITY_MODEL',
+  critic: 'OPENROUTER_CRITIC_MODEL',
+  default: 'OPENROUTER_MODEL',
+};
+
+/**
+ * Prix plafond, en dollars par million de jetons : OpenRouter refuse tout
+ * fournisseur plus cher (paramètre max_price), et BOLIGO écarte les modèles
+ * au-dessus. Réglable par OPENROUTER_MAX_PRICE_PROMPT / _COMPLETION.
+ */
+export const DEFAULT_MAX_PRICE = { prompt: 5, completion: 25 };
+
+/** Réglages par défaut de chaque usage (l'appelant peut les préciser). */
+export const AGENT_DEFAULTS: Record<
+  'sondeur' | 'cupidon' | 'coach' | 'parcours' | 'moderation',
+  { temperature: number; maxTokens: number }
+> = {
+  // Les 21 questions du Sondeur demandent environ 3 500 jetons en JSON.
+  sondeur: { temperature: 0.6, maxTokens: 8000 },
+  cupidon: { temperature: 0.5, maxTokens: 2000 },
+  coach: { temperature: 0.5, maxTokens: 2000 },
+  parcours: { temperature: 0.6, maxTokens: 1500 },
+  moderation: { temperature: 0, maxTokens: 400 },
+};
+
+export type OpenRouterAgent = keyof typeof AGENT_DEFAULTS;

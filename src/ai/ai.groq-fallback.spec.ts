@@ -125,7 +125,7 @@ describe('AiService — modèle Groq retiré', () => {
         system: string,
         prompt: string,
         maxTokens: number,
-      ) => Promise<string | null>;
+      ) => Promise<{ content: string; model: string } | null>;
       generateTargetedHarmonyQuestions: (...args: unknown[]) => Promise<{
         questions: Array<{ text: string }>;
         model: string;
@@ -176,7 +176,10 @@ describe('AiService — modèle Groq retiré', () => {
         'lecture',
         1500,
       );
-      expect(out).toBe('{"ok": true}');
+      expect(out).toEqual({
+        content: '{"ok": true}',
+        model: 'openai/gpt-oss-120b',
+      });
       expect(g.calls).toEqual(['openai/gpt-oss-120b']);
       expect(budget.allowJourney).toHaveBeenCalledWith(
         'j1',
@@ -184,11 +187,13 @@ describe('AiService — modèle Groq retiré', () => {
       );
       expect(budget.allow).not.toHaveBeenCalled();
       await new Promise((r) => setImmediate(r));
+      // Groq ne donne pas de coût facturé : il est calculé sur ses tarifs.
       expect(budget.recordJourney).toHaveBeenCalledWith(
         'j1',
         'openai/gpt-oss-120b',
         expect.any(Number),
         expect.any(Number),
+        undefined,
       );
       expect(budget.record).not.toHaveBeenCalled();
     });

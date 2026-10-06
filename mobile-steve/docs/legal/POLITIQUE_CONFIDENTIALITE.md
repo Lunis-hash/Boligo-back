@@ -46,7 +46,7 @@ Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et 
 
 ## 5. Destinataires et sous-traitants
 
-Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
+Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), Groq et OpenRouter (modèles d'IA ; par OpenRouter, les modèles d'Anthropic et d'OpenAI, uniquement chez des fournisseurs qui n'utilisent pas les données transmises pour entraîner leurs modèles), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
 
 Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.
 

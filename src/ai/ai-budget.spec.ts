@@ -1,7 +1,10 @@
 import {
+  costFromPrice,
   costMicroEur,
   estimateTokens,
   journeyBudgetMicroEur,
+  journeyMonthlyCapMicroEur,
+  usdToMicroEur,
   modelPrice,
   monthKey,
   monthlyBudgetMicroEur,
@@ -175,5 +178,31 @@ describe('Budget IA', () => {
     expect(await budget.journeyEligible('paye')).toBe(false);
     if (old === undefined) delete process.env.AI_JOURNEY_BUDGET_EUR;
     else process.env.AI_JOURNEY_BUDGET_EUR = old;
+  });
+
+  it('prix réels (OpenRouter) et plafond mensuel des parcours payés', async () => {
+    // Claude Sonnet à 2 $ / 10 $ : 1 000 jetons lus + 500 écrits = 7 000 millionièmes.
+    expect(costFromPrice({ prompt: 2, completion: 10 }, 1000, 500)).toBe(7000);
+    expect(usdToMicroEur(0.0071)).toBe(7100);
+    expect(journeyMonthlyCapMicroEur(undefined)).toBe(100_000_000);
+    expect(journeyMonthlyCapMicroEur('0')).toBe(0);
+
+    const prisma = {
+      journey: {
+        findUnique: jest.fn(() => Promise.resolve({ aiCostMicroEur: 0 })),
+      },
+      aiSpend: {
+        findUnique: jest.fn(() =>
+          Promise.resolve({ journeyCostMicroEur: 99_990_000n }),
+        ),
+      },
+    };
+    const old = process.env.AI_JOURNEY_MONTHLY_CAP_EUR;
+    delete process.env.AI_JOURNEY_MONTHLY_CAP_EUR;
+    const budget = new AiBudgetService(prisma as never);
+    // 99,99 € déjà dépensés ce mois : un appel de 0,02 € dépasserait les 100 €.
+    expect(await budget.allowJourney('j', 20_000)).toBe(false);
+    expect(await budget.allowJourney('j', 5_000)).toBe(true);
+    if (old !== undefined) process.env.AI_JOURNEY_MONTHLY_CAP_EUR = old;
   });
 });
