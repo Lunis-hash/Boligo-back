@@ -31,6 +31,16 @@ export const GROQ_QUALITY_MODELS = [
   'llama-3.3-70b-versatile',
 ];
 
+/**
+ * Relecteur indépendant des questions du Sondeur : une autre famille de modèle
+ * que le rédacteur (Meta face à OpenAI), pour ne pas reproduire ses erreurs.
+ * GROQ_CRITIC_MODEL les remplace.
+ */
+export const GROQ_CRITIC_MODELS = [
+  'llama-3.3-70b-versatile',
+  'openai/gpt-oss-120b',
+];
+
 /** Modèles qui ne font pas de conversation écrite (audio, filtres de sécurité…). */
 const NON_CHAT =
   /whisper|tts|playai|orpheus|guard|prompt-guard|distil|compound/i;

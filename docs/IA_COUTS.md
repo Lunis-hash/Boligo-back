@@ -34,11 +34,64 @@ règles ne savent pas dire si « Celui qui invite paie » et « Moitié-moitié 
 début » s'accordent : seule l'IA peut lire ces réponses. Avant ce changement,
 personne ne les lisait.
 
+**Le regard clinique.** Pour le Sondeur, l'IA raisonne comme un clinicien du
+couple formé à plusieurs écoles :
+
+- l'attachement ;
+- la méthode Gottman ;
+- la thérapie centrée sur les émotions ;
+- les approches psychodynamique et psychanalytique ;
+- l'approche systémique ;
+- les thérapies cognitives et des schémas ;
+- l'approche orientée solutions ;
+- les valeurs, et le désir face à la sécurité.
+
+Elle choisit pour chaque question la technique la plus juste : question
+circulaire, question d'origine, échelle, scène concrète, besoin caché, futur.
+Elle ne cherche pas la faille : elle cherche **la question que les deux membres
+ne se seraient jamais posée eux-mêmes**.
+
+Avant d'écrire, elle formule des hypothèses sur le couple (besoins, héritages
+familiaux, attentes jamais dites). Pour chaque question, elle note la méthode
+utilisée et ce qu'elle cherche à révéler. Rien de tout cela n'est montré aux
+membres : la méthode reste invisible, sans jargon, sans étiquette, sans
+diagnostic. BOLIGO ne présente jamais l'IA comme psychologue.
+
+**Les garde-fous contre les erreurs et les répétitions** :
+
+1. **Relecture par une autre famille d'IA.** Le rédacteur est gpt-oss-120b
+   (famille OpenAI), le relecteur est Llama 3.3 70B (famille Meta) : ils ne font
+   pas les mêmes erreurs. Si le rédacteur passe sur Llama, le relecteur change de
+   modèle. Le relecteur refuse une question au moindre défaut :
+   - question orientée, morale ou jugeante ;
+   - jargon, étiquette ou diagnostic ;
+   - corps, couleur de peau, santé, coordonnées ;
+   - plusieurs idées ou question abstraite ;
+   - répétition (même sens, autres mots) ;
+   - question banale ;
+   - faute de français, oubli du vouvoiement, ou question qui dit qui a répondu
+     quoi ;
+   - options manquantes, orientées ou qui se recoupent.
+
+   Les questions refusées sont écartées.
+2. **Priorité à l'IA seulement après relecture.** Les questions de l'IA passent
+   avant les questions modèles de BOLIGO uniquement si la relecture a eu lieu et
+   en garde au moins la moitié. Sinon, les questions modèles gardent la priorité
+   sur les écarts réels.
+3. **Contrôles faits par le code**, qui s'appliquent même si une IA se trompe :
+   - jargon clinique interdit dans tout texte montré ;
+   - question trop proche d'une question déjà posée à l'un des deux membres
+     (12 derniers parcours) ou d'une autre question du même Sondeur : écartée ;
+   - grille fixe : 21 questions, 7 thèmes chaque jour.
+4. **Question d'approfondissement** : elle n'est posée que si le relecteur
+   l'accepte et qu'elle ne ressemble à aucune question du Sondeur. Sinon, la
+   question prévue reste en place.
+
 Ce qui est en place pour chaque **parcours payé** :
 
-1. **Questions du Sondeur** : rédigées par le modèle « qualité », à partir des
-   écarts réels des deux entretiens. Les gabarits de BOLIGO gardent la priorité
-   sur les écarts nets et complètent si l'IA échoue.
+1. **Questions du Sondeur** : rédigées avec ce regard clinique par le modèle
+   « qualité », à partir des écarts réels des deux entretiens, puis relues. Si
+   l'IA échoue, les questions modèles de BOLIGO complètent.
 2. **Lecture du jour** : dès que les deux membres ont fini une journée, l'IA
    écrit une lecture visible par les deux :
    - une phrase de synthèse ;
@@ -88,17 +141,19 @@ disponible.
 
 | Tâche | Appels | Jetons lus / écrits par appel | Coût |
 |---|---|---|---|
-| Questions du Sondeur | 1 | ≈ 3 000 / 3 000 | ≈ 0,002 € |
-| Lectures du jour (avec la question d'approfondissement) | 3 | ≈ 1 500 / 650 | ≈ 0,002 € |
-| Bilan Harmonie | 1 | ≈ 3 500 / 800 | ≈ 0,001 € |
-| **Total par parcours** | **5** | | **≈ 0,005 €** |
+| Questions du Sondeur (hypothèses + 21 questions) | 1 | ≈ 3 500 / 3 600 | ≈ 0,003 € |
+| Relecture du Sondeur (Llama 3.3 70B) | 1 | ≈ 4 500 / 300 | ≈ 0,003 € |
+| Lectures du jour (avec la question d'approfondissement) | 3 | ≈ 2 200 / 650 | ≈ 0,003 € |
+| Relecture des 2 questions d'approfondissement | 2 | ≈ 1 500 / 100 | ≈ 0,002 € |
+| Bilan Harmonie | 1 | ≈ 4 200 / 800 | ≈ 0,001 € |
+| **Total par parcours** | **8** | | **≈ 0,012 €** |
 
 Avec des réponses très longues (500 caractères chacune), le total monte à
-≈ 0,01 €. Avec Llama 3.3 70B, il est d'environ 0,01 €.
+≈ 0,02 €.
 
-**Un parcours payé coûte donc environ 0,5 à 1 centime d'IA**, pour un budget
+**Un parcours payé coûte donc environ 1 à 2 centimes d'IA**, pour un budget
 autorisé de 1 € (`AI_JOURNEY_BUDGET_EUR`) et une recette de 30 € (15 € par
-membre). Pour 1 000 000 de parcours payés : 5 000 € à 10 000 € d'IA.
+membre). Pour 1 000 000 de parcours payés : 12 000 € à 20 000 € d'IA.
 
 Le budget de 1 € par parcours est un plafond de sécurité : chaque appel est
 estimé avant d'être lancé (réponse de longueur maximale) puis compté au réel
@@ -151,7 +206,8 @@ Il faudra des offres payantes adaptées au volume, à prévoir à part.
 | Variable | Défaut | Effet |
 |---|---|---|
 | `AI_JOURNEY_BUDGET_EUR` | `1` | budget IA de chaque parcours payé ; `0` coupe ce suivi |
-| `GROQ_QUALITY_MODEL` | gpt-oss-120b puis Llama 3.3 70B | modèle des parcours payés (un ou plusieurs, séparés par des virgules) |
+| `GROQ_QUALITY_MODEL` | gpt-oss-120b puis Llama 3.3 70B | rédacteur des parcours payés (un ou plusieurs, séparés par des virgules) |
+| `GROQ_CRITIC_MODEL` | Llama 3.3 70B puis gpt-oss-120b | relecteur indépendant (jamais le même modèle que le rédacteur) |
 | `AI_MONTHLY_BUDGET_EUR` | `10` | plafond mensuel du reste ; `0` coupe ces usages |
 | `AI_PROFILE_MODE` | sans IA | `ai` pour faire rédiger les portraits par l'IA (dans le plafond mensuel) |
 | `HARMONY_QUESTIONS_SOURCE` | `ai` | `bank` pour des questions du Sondeur sans IA |

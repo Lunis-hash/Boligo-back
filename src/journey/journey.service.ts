@@ -444,28 +444,48 @@ export class JourneyService {
     const firstNames: [string, string] = [journey.userA.firstName, journey.userB.firstName];
     const history = await this.getMembersPreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
 
-    // 2. Couche IA facultative (Groq / OpenRouter) : formulations ciblées sur ces divergences.
-    let aiQuestions: HarmonyQuestionPayload[] | null = null;
+    // 2. Couche IA facultative (Groq / OpenRouter) : questions écrites avec un
+    //    regard clinique, ciblées sur ces divergences. Parcours payé : modèle
+    //    « qualité » et budget propre au parcours.
+    let aiQuestions: HarmonyQuestionPayload[] = [];
+    let preferAi = false;
     if (this.useAiHarmonyQuestions()) {
-      // Parcours payé : modèle « qualité » et budget propre au parcours.
-      aiQuestions = await this.aiService.generateTargetedHarmonyQuestions(
+      const drafted = await this.aiService.generateTargetedHarmonyQuestions(
         describeReportForAi(report, firstNames),
         THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
         [1, 2, 3].map((day) => ({ day, label: DAY_ANGLES[day].label, intent: DAY_ANGLES[day].intent })),
         history,
         { journeyId },
       );
+      const inGrid = (drafted?.questions ?? []).filter((q) =>
+        THEME_LIST.includes(q.themeKey as Theme),
+      );
+      // 2 bis. Relecture par un second modèle, d'une autre famille : les
+      //    questions refusées sont écartées. Les questions de l'IA ne passent
+      //    avant les gabarits que si la relecture a eu lieu et en garde la majorité.
+      const review = inGrid.length
+        ? await this.aiService.reviewSondeurQuestions(
+            journeyId,
+            inGrid,
+            history,
+            drafted?.model,
+          )
+        : null;
+      aiQuestions = review
+        ? inGrid.filter((_, i) => !review.rejected.has(i))
+        : inGrid;
+      preferAi = !!review && aiQuestions.length >= Math.ceil(inGrid.length / 2);
     }
 
-    // 3. Assemblage : divergence réelle → IA conforme → gabarit du thème. Toujours 21 (3 × 7).
+    // 3. Assemblage : toujours 21 (3 × 7). Questions de l'IA relues en premier ;
+    //    sinon divergence réelle → IA conforme → gabarit du thème.
     const questions = assembleSondeur({
       report,
       firstNames,
-      aiQuestions: (aiQuestions ?? []).filter((q): q is HarmonyQuestionPayload & { themeKey: Theme } =>
-        THEME_LIST.includes(q.themeKey as Theme),
-      ) as AiSondeurQuestion[],
+      aiQuestions: aiQuestions as AiSondeurQuestion[],
       history,
       seed: journeyId,
+      preferAi,
     });
     const sources = questions.reduce<Record<string, number>>((acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }), {});
     console.log(`🧭 [Journey] Sondeur assemblé pour ${journeyId} :`, sources, `(${report.divergences.length} divergences)`);

@@ -126,9 +126,21 @@ describe('AiService — modèle Groq retiré', () => {
         prompt: string,
         maxTokens: number,
       ) => Promise<string | null>;
-      generateTargetedHarmonyQuestions: (
-        ...args: unknown[]
-      ) => Promise<unknown>;
+      generateTargetedHarmonyQuestions: (...args: unknown[]) => Promise<{
+        questions: Array<{ text: string }>;
+        model: string;
+      } | null>;
+      reviewSondeurQuestions: (
+        journeyId: string,
+        questions: Array<{
+          day: number;
+          themeKey?: string;
+          text: string;
+          options: string[];
+        }>,
+        alreadyAsked?: string[],
+        writerModel?: string,
+      ) => Promise<{ rejected: Set<number> } | null>;
     };
     function budgetFor(paid: boolean) {
       return {
@@ -217,6 +229,107 @@ describe('AiService — modèle Groq retiré', () => {
       );
       expect(g.calls).toEqual(['openai/gpt-oss-20b']);
       delete process.env.GROQ_QUALITY_MODEL;
+    });
+
+    const draft = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        day: 1 + Math.floor(i / 7),
+        theme: 'Lignes rouges',
+        themeKey: 'famille',
+        text: `Question clinique numéro ${i + 1} sur la famille, assez longue ?`,
+        options: ['Oui', 'Non', 'Ça dépend', 'Autre...'],
+      }));
+
+    it('rédige avec le regard clinique et renvoie le modèle rédacteur', async () => {
+      const g = fakeGroq(models, () =>
+        JSON.stringify({
+          analyse: ['Hypothèse : besoin de sécurité.'],
+          questions: draft(4),
+        }),
+      );
+      const out = await journeyService(
+        g.client,
+        budgetFor(true),
+      ).generateTargetedHarmonyQuestions(
+        'rapport',
+        [{ key: 'famille', label: 'Famille' }],
+        [{ day: 1, label: 'Lignes rouges', intent: 'limites' }],
+        [],
+        { journeyId: 'j5' },
+      );
+      expect(out?.model).toBe('openai/gpt-oss-120b');
+      expect(out?.questions).toHaveLength(4);
+      const create = (g.client.chat.completions.create as jest.Mock).mock
+        .calls as Array<[{ messages: Array<{ content: string }> }]>;
+      const [system, user] = create[0][0].messages;
+      expect(system.content).toContain('Gottman');
+      expect(system.content).toContain('aucun diagnostic');
+      expect(user.content).toContain('ÉTAPE 1');
+      expect(user.content).toContain('"methode"');
+    });
+
+    it('relecture par une autre famille de modèle que le rédacteur, à température 0', async () => {
+      const g = fakeGroq(
+        models.concat('llama-3.3-70b-versatile'),
+        () =>
+          'Verdict : {"rejets": [{"n": 2, "raison": "orientée"}, {"n": 9, "raison": "hors liste"}]}',
+      );
+      const budget = budgetFor(true);
+      const review = await journeyService(
+        g.client,
+        budget,
+      ).reviewSondeurQuestions(
+        'j6',
+        draft(3),
+        ['Une question déjà posée ?'],
+        'openai/gpt-oss-120b',
+      );
+      expect([...(review?.rejected ?? [])]).toEqual([1]);
+      expect(g.calls).toEqual(['llama-3.3-70b-versatile']);
+      const create = (g.client.chat.completions.create as jest.Mock).mock
+        .calls as Array<
+        [{ temperature: number; messages: Array<{ content: string }> }]
+      >;
+      expect(create[0][0].temperature).toBe(0);
+      expect(create[0][0].messages[1].content).toContain(
+        'Une question déjà posée ?',
+      );
+      expect(budget.allowJourney).toHaveBeenCalledWith(
+        'j6',
+        expect.any(Number),
+      );
+    });
+
+    it('si le rédacteur est Llama, le relecteur en change', async () => {
+      const g = fakeGroq(
+        models.concat('llama-3.3-70b-versatile'),
+        () => '{"rejets": []}',
+      );
+      await journeyService(g.client, budgetFor(true)).reviewSondeurQuestions(
+        'j7',
+        draft(1),
+        [],
+        'llama-3.3-70b-versatile',
+      );
+      expect(g.calls).toEqual(['openai/gpt-oss-120b']);
+    });
+
+    it('relecture impossible (parcours non payé, réponse illisible) : null', async () => {
+      const unpaid = fakeGroq(models, () => '{"rejets": []}');
+      expect(
+        await journeyService(
+          unpaid.client,
+          budgetFor(false),
+        ).reviewSondeurQuestions('j8', draft(2)),
+      ).toBeNull();
+      expect(unpaid.calls).toEqual([]);
+      const garbled = fakeGroq(models, () => 'je ne sais pas');
+      expect(
+        await journeyService(
+          garbled.client,
+          budgetFor(true),
+        ).reviewSondeurQuestions('j9', draft(2)),
+      ).toBeNull();
     });
   });
 });

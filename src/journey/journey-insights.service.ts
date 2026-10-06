@@ -7,6 +7,7 @@ import {
   THEMES,
 } from '../matching/divergence.engine';
 import { PrismaService } from '../prisma/prisma.service';
+import { similarQuestions } from './clinical-lens';
 import {
   FollowUpProposal,
   REVIEW_DAY,
@@ -152,7 +153,7 @@ export class JourneyInsightsService {
         continue;
       }
       if (parsed.followUp) {
-        await this.placeFollowUp(journeyId, day + 1, parsed.followUp);
+        await this.placeFollowUp(journeyId, day + 1, parsed.followUp, qs);
       }
       await this.save(journeyId, parsed.reading);
     }
@@ -194,7 +195,23 @@ export class JourneyInsightsService {
     journeyId: string,
     day: number,
     proposal: FollowUpProposal,
+    asked: Array<{ questionText: string }>,
   ): Promise<string | null> {
+    // Garde-fou : la question est relue par un second modèle, d'une autre
+    // famille. Refusée, ou relecture impossible : rien n'est remplacé.
+    const review = await this.ai.reviewSondeurQuestions(
+      journeyId,
+      [
+        {
+          day,
+          themeKey: proposal.themeKey,
+          text: proposal.text,
+          options: proposal.options,
+        },
+      ],
+      asked.map((q) => q.questionText),
+    );
+    if (!review || review.rejected.size > 0) return null;
     const all = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
       orderBy: { sentAt: 'asc' },
@@ -202,8 +219,15 @@ export class JourneyInsightsService {
     });
     const ofDay = all.filter((q) => q.day === day);
     if (ofDay.some((q) => q.responses.length > 0 || q.followUp)) return null;
+    // Ni redite exacte, ni question de même sens déjà posée dans ce Sondeur.
     const key = (t: string) => t.toLowerCase().replace(/\s+/g, ' ').trim();
-    if (all.some((q) => key(q.questionText) === key(proposal.text)))
+    if (
+      all.some(
+        (q) =>
+          key(q.questionText) === key(proposal.text) ||
+          similarQuestions(q.questionText, proposal.text),
+      )
+    )
       return null;
     const target = ofDay.find(
       (q) => q.emoji === THEMES[proposal.themeKey].emoji,
