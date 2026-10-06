@@ -163,6 +163,39 @@ export class EmailService implements OnModuleInit {
     console.log('==================================================\n');
   }
 
+  /**
+   * E-mail court aux couleurs de BOLIGO (titre + paragraphes). Le texte est
+   * échappé : il peut contenir des données saisies par un visiteur.
+   */
+  async sendSimpleEmail(
+    to: string,
+    subject: string,
+    title: string,
+    paragraphs: string[],
+    lang = 'fr',
+  ) {
+    const esc = (v: string) =>
+      v
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    const body = paragraphs
+      .map(
+        (p) =>
+          `<p style="margin: 0 0 14px; font-size: 14.5px; line-height: 1.6; color: #5E4F6E; white-space: pre-line;">${esc(p)}</p>`,
+      )
+      .join('');
+    const html = `<!DOCTYPE html><html lang="${lang === 'en' ? 'en' : 'fr'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${esc(subject)}</title></head>
+<body style="margin: 0; padding: 0; background-color: #FFF8FA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FFF8FA; padding: 40px 16px;"><tr><td align="center">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 560px; background-color: #FFFFFF; border-radius: 24px; border: 1px solid #F3E4EC;">
+<tr><td style="padding: 32px 36px 8px;"><p style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 3px; color: #C62A6E;">BOLIGO</p></td></tr>
+<tr><td style="padding: 8px 36px 32px;"><h1 style="margin: 0 0 16px; font-size: 20px; color: #2A1B3D;">${esc(title)}</h1>${body}</td></tr>
+</table></td></tr></table></body></html>`;
+    await this.dispatchEmail(to, subject, html);
+  }
+
   async sendVerificationEmail(email: string, code: string) {
     const subject = `${code} est votre code de confirmation BOLIGO`;
     const html = `

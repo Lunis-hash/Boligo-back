@@ -1,8 +1,9 @@
 # BOLIGO — Tableau de bord d'administration
 
-Tableau de bord Next.js de l'équipe BOLIGO : membres, rencontres, parcours,
-signalements, messages bloqués et finances. Il ne contient aucune donnée : il
-appelle les routes `/api/admin/*` de l'API BOLIGO (dossier `src/` de ce dépôt).
+Tableau de bord Next.js de l'équipe BOLIGO, aux couleurs de l'application :
+membres, rencontres, parcours, signalements, messages bloqués, finances,
+partenaires et équipe. Il ne contient aucune donnée : il appelle les routes
+`/api/admin/*` de l'API BOLIGO (dossier `src/` de ce dépôt).
 
 ## En ligne
 
@@ -29,22 +30,33 @@ appelle les routes `/api/admin/*` de l'API BOLIGO (dossier `src/` de ce dépôt)
   pas d'indexation par les moteurs de recherche, pas d'affichage dans un cadre,
   et une politique de contenu qui n'autorise que l'API BOLIGO.
 
-## Compte administrateur
+## Accès de l'équipe
 
-Seul un compte dont le rôle est `ADMIN` peut se connecter. Aucun mot de passe
-n'est fourni par défaut, et aucun ne doit être écrit dans ce dépôt.
+Trois rôles peuvent se connecter ; le menu et l'API s'adaptent au rôle :
 
-Deux façons de créer le compte :
+| Rôle | Pages |
+|---|---|
+| Administrateur (`ADMIN`) | toutes, dont Finances, Partenaires et Équipe |
+| Modération (`MODERATOR`) | Vue d'ensemble, Membres, Rencontres, Parcours, Signalements, Modération |
+| Marketing (`MARKETING`) | Vue d'ensemble, Partenaires |
 
-1. **Depuis l'application** (le mot de passe ne passe par personne d'autre) :
-   - créer un compte BOLIGO normal avec l'adresse de l'administrateur ;
-   - passer son rôle à `ADMIN` dans la base BOLIGO (Supabase, projet
-     « Lunis-hash's Project ») :
-     `update "User" set role = 'ADMIN' where email = '<adresse>';`
-   - un compte `ADMIN` n'apparaît jamais dans la Découverte des membres.
-2. **Par le script de ce dépôt** :
-   `ADMIN_EMAIL=<adresse> ADMIN_PASSWORD=<12 caractères minimum> npx ts-node prisma/seed-admin.ts`,
-   avec `DATABASE_URL` pointant vers la base BOLIGO.
+Aucun mot de passe n'est fourni par défaut, et aucun ne doit être écrit dans ce
+dépôt.
+
+- **Premier administrateur** : créer un compte normal dans l'application
+  BOLIGO (code e-mail validé), puis ajouter sur Render, service `Boligo-back`, la
+  variable `ADMIN_BOOTSTRAP_EMAIL` avec cette adresse. Le compte devient
+  administrateur au redémarrage de l'API ou à sa première connexion ici. La
+  variable n'agit que tant qu'il n'existe aucun administrateur.
+- **Autres membres de l'équipe** : page **Équipe** (administrateurs), à partir
+  d'un compte BOLIGO déjà vérifié. « Retirer l'accès » coupe l'accès
+  immédiatement.
+- Un compte d'équipe n'apparaît jamais dans la Découverte des membres.
+- En dépannage, le script `prisma/seed-admin.ts` reste disponible :
+  `ADMIN_EMAIL=<adresse> ADMIN_PASSWORD=<12 caractères minimum> npx ts-node prisma/seed-admin.ts`,
+  avec `DATABASE_URL` pointant vers la base BOLIGO.
+
+Le programme partenaires est décrit dans `docs/PROGRAMME_PARTENAIRES.md`.
 
 La session dure 8 heures.
 

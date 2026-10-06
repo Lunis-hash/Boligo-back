@@ -11,20 +11,25 @@ import {
   MessageSquareOff,
   LogOut,
   Wallet,
-  Activity,
+  Handshake,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearSession, getAdminUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
+import { canSee, ROLE_LABELS, type Section } from "@/lib/roles";
 
-const nav = [
-  { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard },
-  { href: "/dashboard/finance", label: "Finances", icon: Wallet },
-  { href: "/dashboard/users", label: "Utilisateurs", icon: Users },
-  { href: "/dashboard/matches", label: "Matchs & likes", icon: GitMerge },
-  { href: "/dashboard/journeys", label: "Parcours", icon: Route },
-  { href: "/dashboard/reports", label: "Signalements", icon: Flag },
-  { href: "/dashboard/moderation", label: "Modération", icon: MessageSquareOff },
+const nav: { href: string; label: string; icon: typeof Users; section: Section }[] = [
+  { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, section: "overview" },
+  { href: "/dashboard/finance", label: "Finances", icon: Wallet, section: "finance" },
+  { href: "/dashboard/users", label: "Utilisateurs", icon: Users, section: "users" },
+  { href: "/dashboard/matches", label: "Matchs & likes", icon: GitMerge, section: "matches" },
+  { href: "/dashboard/journeys", label: "Parcours", icon: Route, section: "journeys" },
+  { href: "/dashboard/reports", label: "Signalements", icon: Flag, section: "reports" },
+  { href: "/dashboard/moderation", label: "Modération", icon: MessageSquareOff, section: "moderation" },
+  { href: "/dashboard/partners", label: "Partenaires", icon: Handshake, section: "partners" },
+  { href: "/dashboard/team", label: "Équipe", icon: ShieldCheck, section: "team" },
 ];
 
 export function AdminSidebar() {
@@ -41,17 +46,10 @@ export function AdminSidebar() {
     <aside className="sticky top-0 flex h-screen w-[250px] shrink-0 flex-col border-r border-neutral-200/80 bg-white">
       {/* Logo */}
       <header className="border-b border-neutral-100 px-5 py-5">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-900 shadow-sm">
-            <Activity className="h-4 w-4 text-white" />
-          </span>
-          <div>
-            <p className="text-sm font-semibold tracking-tight text-neutral-900">BOLIGO</p>
-            <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-400">
-              Admin
-            </p>
-          </div>
-        </div>
+        <BrandLogo size={24} />
+        <p className="mt-1 pl-0.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+          Tableau de bord · {ROLE_LABELS[user?.role ?? ""] ?? "Équipe"}
+        </p>
       </header>
 
       {/* Navigation */}
@@ -59,7 +57,7 @@ export function AdminSidebar() {
         <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
           Navigation
         </p>
-        {nav.map((item) => {
+        {nav.filter((item) => canSee(user?.role, item.section)).map((item) => {
           const active =
             pathname === item.href ||
             (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -71,8 +69,8 @@ export function AdminSidebar() {
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all",
                 active
-                  ? "bg-neutral-900 text-white shadow-sm"
-                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900",
+                  ? "bg-gradient-to-r from-framboise to-lavande text-white shadow-sm"
+                  : "text-neutral-500 hover:bg-rose/60 hover:text-encre",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -86,7 +84,7 @@ export function AdminSidebar() {
       <footer className="border-t border-neutral-100 p-4">
         {user && (
           <div className="mb-3 flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lilas text-xs font-semibold text-nuit">
               {user.firstName?.[0]}{user.lastName?.[0]}
             </div>
             <div className="min-w-0">

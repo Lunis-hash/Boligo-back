@@ -20,6 +20,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 
+import { PartnersModule } from './partners/partners.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +45,7 @@ import { APP_GUARD } from '@nestjs/core';
     ReportModule,
     PaymentModule,
     VideoModule,
+    PartnersModule,
     ThrottlerModule.forRoot([{
       ttl: 60000, // 1 minute
       limit: 120, // max 120 requêtes par minute

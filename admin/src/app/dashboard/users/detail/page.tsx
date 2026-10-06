@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, User as UserIcon, Shield, Wallet, Route, Flag, Video, FileText, CheckCircle2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getAdminUser, getToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate, statusLabel, formatEuro } from "@/lib/format";
@@ -163,14 +163,19 @@ function UserDetailPage() {
               Réactiver
             </Button>
           )}
-          <Button variant="outline" size="sm" className="border-neutral-200 text-neutral-700" disabled={saving} onClick={() => patch({ isVerified: !user.isVerified })}>
-            <Shield className="mr-2 h-3.5 w-3.5" />
-            {user.isVerified ? "Révoquer certif" : "Certifier"}
-          </Button>
-          <Button size="sm" className="bg-neutral-900 text-white hover:bg-neutral-800" disabled={saving} onClick={() => patch({ creditBalance: user.creditBalance + 10 })}>
-            <Wallet className="mr-2 h-3.5 w-3.5" />
-            +10 Crédits
-          </Button>
+          {/* Certification et crédits : réservés à l'administrateur (règle de l'API). */}
+          {getAdminUser()?.role === "ADMIN" && (
+            <>
+              <Button variant="outline" size="sm" className="border-neutral-200 text-neutral-700" disabled={saving} onClick={() => patch({ isVerified: !user.isVerified })}>
+                <Shield className="mr-2 h-3.5 w-3.5" />
+                {user.isVerified ? "Révoquer certif" : "Certifier"}
+              </Button>
+              <Button size="sm" className="bg-gradient-to-r from-framboise to-lavande text-white hover:opacity-90" disabled={saving} onClick={() => patch({ creditBalance: user.creditBalance + 10 })}>
+                <Wallet className="mr-2 h-3.5 w-3.5" />
+                +10 Crédits
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

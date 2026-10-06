@@ -1,5 +1,6 @@
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AuthGuard } from "@/components/auth-guard";
+import { RoleGate } from "@/components/role-gate";
 
 export default function DashboardLayout({
   children,
@@ -11,7 +12,9 @@ export default function DashboardLayout({
       <div className="flex min-h-screen">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="mx-auto max-w-7xl p-8">{children}</div>
+          <div className="mx-auto max-w-7xl p-8">
+            <RoleGate>{children}</RoleGate>
+          </div>
         </main>
       </div>
     </AuthGuard>

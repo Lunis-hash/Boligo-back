@@ -9,12 +9,15 @@ import {
   Query,
   UseGuards,
   Header,
+  Req,
 } from '@nestjs/common';
-import { ReportStatus } from '@prisma/client';
+import { ReportStatus, UserRole } from '@prisma/client';
 import { AdminService } from './admin.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { AdminGuard } from './guards/admin.guard';
+import { AllowRoles } from './guards/admin-roles';
+import { SetTeamRoleDto } from './dto/set-team-role.dto';
 import { AuthRateLimitGuard } from '../auth/auth-rate-limit.guard';
 
 @Controller('admin')
@@ -29,12 +32,14 @@ export class AdminController {
 
   @Get('stats')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR, UserRole.MARKETING)
   getStats() {
     return this.adminService.getStats();
   }
 
   @Get('users')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   listUsers(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -59,18 +64,25 @@ export class AdminController {
 
   @Get('users/:id')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   getUser(@Param('id') id: string) {
     return this.adminService.getUser(id);
   }
 
   @Patch('users/:id')
   @UseGuards(AdminGuard)
-  updateUser(@Param('id') id: string, @Body() dto: UpdateUserAdminDto) {
-    return this.adminService.updateUser(id, dto);
+  @AllowRoles(UserRole.MODERATOR)
+  updateUser(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserAdminDto,
+    @Req() req: { user: { role: UserRole } },
+  ) {
+    return this.adminService.updateUser(id, dto, req.user.role);
   }
 
   @Get('matches')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   listMatches(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -85,6 +97,7 @@ export class AdminController {
 
   @Get('journeys')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   listJourneys(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -101,12 +114,14 @@ export class AdminController {
 
   @Get('journeys/:id')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   getJourney(@Param('id') id: string) {
     return this.adminService.getJourney(id);
   }
 
   @Get('reports')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   listReports(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -121,6 +136,7 @@ export class AdminController {
 
   @Patch('reports/:id')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   updateReport(
     @Param('id') id: string,
     @Body('status') status: ReportStatus,
@@ -130,6 +146,7 @@ export class AdminController {
 
   @Get('messages/blocked')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   listBlockedMessages(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -174,12 +191,14 @@ export class AdminController {
 
   @Get('promo/stats')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
   getPromoStats() {
     return this.adminService.getPromoStats();
   }
 
   @Get('promo/codes')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
   listPromoCodes(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -194,12 +213,17 @@ export class AdminController {
 
   @Get('promo/codes/:id')
   @UseGuards(AdminGuard)
-  getPromoCode(@Param('id') id: string) {
-    return this.adminService.getPromoCode(id);
+  @AllowRoles(UserRole.MARKETING)
+  getPromoCode(
+    @Param('id') id: string,
+    @Req() req: { user: { role: UserRole } },
+  ) {
+    return this.adminService.getPromoCode(id, req.user.role);
   }
 
   @Post('promo/codes')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
   createPromoCode(
     @Body() body: {
       code: string;
@@ -216,6 +240,7 @@ export class AdminController {
 
   @Patch('promo/codes/:id')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
   updatePromoCode(
     @Param('id') id: string,
     @Body() body: {
@@ -232,6 +257,7 @@ export class AdminController {
 
   @Patch('promo/codes/:id/toggle')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
   togglePromoCode(@Param('id') id: string) {
     return this.adminService.togglePromoCode(id);
   }
@@ -248,12 +274,14 @@ export class AdminController {
 
   @Get('video/stats')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   getVideoStats() {
     return this.adminService.getVideoStats();
   }
 
   @Get('video/sessions')
   @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR)
   listVideoSessions(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -296,5 +324,44 @@ export class AdminController {
       limit: limit ? parseInt(limit, 10) : undefined,
       userId,
     });
+  }
+
+  // ═══════════════════════════════════════════════
+  // ÉQUIPE : qui accède au tableau de bord (administrateur seulement)
+  // ═══════════════════════════════════════════════
+
+  /** Profil de la personne connectée (rôle à jour). */
+  @Get('me')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MODERATOR, UserRole.MARKETING)
+  me(
+    @Req()
+    req: {
+      user: {
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: UserRole;
+      };
+    },
+  ) {
+    const { id, email, firstName, lastName, role } = req.user;
+    return { id, email, firstName, lastName, role };
+  }
+
+  @Get('team')
+  @UseGuards(AdminGuard)
+  listTeam() {
+    return this.adminService.listTeam();
+  }
+
+  @Patch('team')
+  @UseGuards(AdminGuard)
+  setTeamRole(
+    @Body() dto: SetTeamRoleDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    return this.adminService.setTeamRole(req.user.id, dto.email, dto.role);
   }
 }

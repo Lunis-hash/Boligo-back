@@ -454,6 +454,9 @@ export function LandingPage() {
               <Pressable onPress={() => router.push('/legal/confidentialite' as never)} accessibilityRole="link">
                 <Text style={[styles.footerLink, ff.medium]}>Confidentialité</Text>
               </Pressable>
+              <Pressable onPress={() => router.push('/partenaires' as never)} accessibilityRole="link" testID="footer-partners">
+                <Text style={[styles.footerLink, ff.medium]}>Devenir partenaire</Text>
+              </Pressable>
               <Pressable onPress={login} accessibilityRole="link">
                 <Text style={[styles.footerLink, ff.medium]}>J’ai déjà un compte</Text>
               </Pressable>
@@ -466,7 +469,7 @@ export function LandingPage() {
   );
 }
 
-function Logo({ ff, size }: { ff: LandingFonts; size: number }) {
+export function Logo({ ff, size }: { ff: LandingFonts; size: number }) {
   return (
     <View style={styles.logo} accessibilityRole="header" accessibilityLabel="BOLIGO">
       <RingsLogo height={size} />

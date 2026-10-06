@@ -157,7 +157,8 @@
           "Certaines réponses peuvent révéler des convictions religieuses ou philosophiques, votre origine culturelle, votre vie sexuelle ou votre état de santé psychologique. Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli à l'inscription, et uniquement pour établir votre compatibilité.",
           "Échanges : messages du chat, réponses comparées, consentements à l'échange de contacts, métadonnées des appels vidéo (date, durée). Le contenu audio et vidéo des appels n'est ni enregistré ni conservé.",
           "Paiement : montant, date, identifiant de transaction Stripe, codes promotionnels utilisés. Les numéros de carte ne transitent jamais par nos serveurs.",
-          "Technique : identifiant d'appareil pour les notifications, journaux de connexion et d'erreur, signalements et décisions de modération."
+          "Technique : identifiant d'appareil pour les notifications, journaux de connexion et d'erreur, signalements et décisions de modération.",
+          "Programme partenaires (marques, ambassadeurs commerciaux, créateurs de contenu) : nom, adresse e-mail, société, pays et ville, site ou réseaux, audience déclarée, message de candidature et langue. Pour un partenaire retenu : le code partenaire attribué, le taux de commission, ainsi que le nombre et le montant total des achats réalisés avec ce code, sans l'identité des membres qui l'ont utilisé."
         ]
       },
       {
@@ -168,7 +169,8 @@
           "Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment en supprimant votre compte.",
           "Assurer la sécurité, prévenir les fraudes et modérer les contenus : intérêt légitime de BOLIGO et de ses membres.",
           "Gérer les paiements et la comptabilité : exécution du contrat et obligation légale.",
-          "Envoyer les e-mails de service (vérification, réinitialisation, notifications de parcours) : exécution du contrat. Aucune prospection commerciale n'est réalisée sans consentement distinct."
+          "Envoyer les e-mails de service (vérification, réinitialisation, notifications de parcours) : exécution du contrat. Aucune prospection commerciale n'est réalisée sans consentement distinct.",
+          "Étudier une candidature au programme partenaires, y répondre et gérer la relation avec les partenaires retenus (code, suivi et paiement des commissions) : mesures précontractuelles prises à la demande du candidat, puis exécution du contrat de partenariat."
         ]
       },
       {
@@ -186,7 +188,8 @@
           "Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), OpenRouter et Groq (modèles d'IA), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.",
           "Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.",
           "Votre interlocuteur dans un parcours voit votre prénom, votre âge, votre ville, votre profession, votre carte mentale, vos réponses au Sondeur et vos messages. Votre téléphone et votre e-mail ne lui sont révélés qu'après votre consentement explicite.",
-          "Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale."
+          "Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale.",
+          "Un partenaire ne reçoit jamais de données sur les membres : seuls le nombre d'achats et le montant total réalisés avec son code lui sont communiqués."
         ]
       },
       {
@@ -196,7 +199,8 @@
           "Compte et profil : pendant toute la durée du compte, puis suppression dans les 30 jours suivant la demande de suppression.",
           "Messages et réponses au Sondeur : durée du parcours, puis 12 mois en archive restreinte à des fins de modération et de preuve, puis suppression.",
           "Données de paiement et factures : 10 ans (obligation comptable). Journaux techniques et de sécurité : 12 mois. Signalements et décisions de modération : 3 ans.",
-          "Les données d'un compte suspendu pour manquement grave peuvent être conservées en liste restreinte pendant 3 ans afin d'empêcher une réinscription."
+          "Les données d'un compte suspendu pour manquement grave peuvent être conservées en liste restreinte pendant 3 ans afin d'empêcher une réinscription.",
+          "Candidatures au programme partenaires : 2 ans après le dernier échange lorsqu'elles ne sont pas retenues ; pour un partenaire retenu, durée du partenariat puis 5 ans, les pièces comptables liées aux commissions étant conservées 10 ans."
         ]
       },
       {

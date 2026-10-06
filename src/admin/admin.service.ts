@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, ReportStatus, UserRole, DiscountType } from '@prisma/client';
@@ -11,6 +12,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { NotificationService } from '../notifications/notification.service';
+import { isStaff } from './guards/admin-roles';
 
 const userListSelect = {
   id: true,
@@ -58,11 +60,57 @@ export class AdminService {
     private notificationService: NotificationService,
   ) {}
 
-  async login(dto: AdminLoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+  /** Au démarrage : premier administrateur désigné par ADMIN_BOOTSTRAP_EMAIL. */
+  async onModuleInit() {
+    try {
+      await this.ensureBootstrapAdmin();
+    } catch (err) {
+      console.warn(
+        '[ADMIN] Vérification de l’administrateur initial impossible :',
+        (err as Error).message,
+      );
+    }
+  }
+
+  /**
+   * Tant qu'aucun administrateur n'existe, le compte BOLIGO vérifié dont
+   * l'adresse est ADMIN_BOOTSTRAP_EMAIL devient administrateur. Une fois un
+   * administrateur en place, cette variable n'a plus aucun effet : les accès
+   * se gèrent depuis la page Équipe du tableau de bord.
+   */
+  async ensureBootstrapAdmin(): Promise<boolean> {
+    const email = process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase();
+    if (!email) return false;
+    const adminCount = await this.prisma.user.count({
+      where: { role: UserRole.ADMIN },
     });
-    if (!user || user.role !== UserRole.ADMIN) {
+    if (adminCount > 0) return false;
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || !user.isVerified || user.accountStatus === 'suspendu') {
+      console.log(
+        '[ADMIN] Administrateur initial : le compte désigné doit d’abord être créé et vérifié dans l’application.',
+      );
+      return false;
+    }
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { role: UserRole.ADMIN },
+    });
+    console.log(
+      '[ADMIN] Administrateur initial attribué au compte désigné (ADMIN_BOOTSTRAP_EMAIL).',
+    );
+    return true;
+  }
+
+  async login(dto: AdminLoginDto) {
+    const email = dto.email.trim().toLowerCase();
+    if (email === process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase()) {
+      await this.ensureBootstrapAdmin();
+    }
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user || !isStaff(user.role) || user.accountStatus === 'suspendu') {
       throw new UnauthorizedException('Identifiants invalides');
     }
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash || '');
@@ -345,7 +393,15 @@ export class AdminService {
     return { ...safe, hasPushToken: Boolean(user.pushToken) };
   }
 
-  async updateUser(id: string, dto: UpdateUserAdminDto) {
+  async updateUser(id: string, dto: UpdateUserAdminDto, actorRole?: UserRole) {
+    // La modération suspend ou réactive un compte ; crédits et vérification
+    // restent réservés à l'administrateur.
+    if (
+      actorRole !== UserRole.ADMIN &&
+      (dto.creditBalance !== undefined || dto.isVerified !== undefined)
+    ) {
+      throw new ForbiddenException('Action réservée à l’administrateur');
+    }
     const user = await this.prisma.user.findFirst({
       where: { id, role: UserRole.USER },
     });
@@ -739,7 +795,8 @@ export class AdminService {
     };
   }
 
-  async getPromoCode(id: string) {
+  /** Hors administrateurs, les utilisations sont rendues sans l'identifiant du membre. */
+  async getPromoCode(id: string, actorRole?: UserRole) {
     const promo = await this.prisma.promoCode.findUnique({
       where: { id },
       include: {
@@ -754,7 +811,16 @@ export class AdminService {
       },
     });
     if (!promo) throw new NotFoundException('Code promo introuvable');
-    return promo;
+    if (actorRole === UserRole.ADMIN) return promo;
+    return {
+      ...promo,
+      usages: promo.usages.map((u) => ({
+        id: u.id,
+        promoCodeId: u.promoCodeId,
+        usedAt: u.usedAt,
+        promoCode: u.promoCode,
+      })),
+    };
   }
 
   async createPromoCode(dto: {
@@ -1032,5 +1098,73 @@ export class AdminService {
       data: notifications,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  // ═══════════════════════════════════════════════
+  // ÉQUIPE (accès au tableau de bord)
+  // ═══════════════════════════════════════════════
+
+  async listTeam() {
+    return this.prisma.user.findMany({
+      where: { role: { not: UserRole.USER } },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        lastLogin: true,
+        accountStatus: true,
+      },
+      orderBy: [{ role: 'asc' }, { email: 'asc' }],
+    });
+  }
+
+  /**
+   * Donne, change ou retire un accès d'équipe. Le compte doit exister et être
+   * vérifié (il est créé depuis l'application). On ne peut pas modifier son
+   * propre accès, ni retirer le dernier administrateur.
+   */
+  async setTeamRole(actorId: string, emailInput: string, role: UserRole) {
+    const email = emailInput.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new NotFoundException(
+        'Aucun compte BOLIGO avec cette adresse : la personne doit d’abord s’inscrire dans l’application.',
+      );
+    }
+    if (!user.isVerified) {
+      throw new BadRequestException(
+        'Ce compte n’a pas encore confirmé son adresse e-mail.',
+      );
+    }
+    if (user.id === actorId) {
+      throw new BadRequestException(
+        'Vous ne pouvez pas modifier votre propre accès.',
+      );
+    }
+    if (user.role === UserRole.ADMIN && role !== UserRole.ADMIN) {
+      const admins = await this.prisma.user.count({
+        where: { role: UserRole.ADMIN },
+      });
+      if (admins <= 1) {
+        throw new BadRequestException(
+          'Il doit rester au moins un administrateur.',
+        );
+      }
+    }
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: { role },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        lastLogin: true,
+        accountStatus: true,
+      },
+    });
   }
 }

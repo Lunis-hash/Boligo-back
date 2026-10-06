@@ -29,46 +29,50 @@ enum Gender {
 enum UserRole {
   USER
   ADMIN
+  /// Équipe : signalements, modération, membres (sans finances ni partenaires).
+  MODERATOR
+  /// Équipe : programme partenaires et codes promo (sans données des membres).
+  MARKETING
 }
 
 model User {
-  id                String           @id @default(uuid())
-  email             String           @unique
-  telephone         String?          @unique
-  passwordHash      String?          // Optionnel pour l'Auth sociale
-  googleId          String?          @unique
-  facebookId        String?          @unique
+  id                 String        @id @default(uuid())
+  email              String        @unique
+  telephone          String?       @unique
+  passwordHash       String? // Optionnel pour l'Auth sociale
+  googleId           String?       @unique
+  facebookId         String?       @unique
   hashedRefreshToken String?
-  firstName         String
-  lastName          String
-  birthDate         DateTime
-  gender            Gender
-  city              String?
-  role              UserRole         @default(USER)
-  accountStatus     AccountStatus    @default(nouveau)
-  creditBalance     Int              @default(0)
-  isVerified        Boolean          @default(false)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  lastLogin         DateTime?
-  pushToken         String?
-  verificationCode  String?
-  resetCode         String?
-  resetCodeExpires  DateTime?
-  termsAcceptedAt   DateTime?        // Date d'acceptation expresse des CGU à l'inscription
-  termsVersion      String?          // Version des textes légaux acceptée (ex. « 2026-10-02 »)
+  firstName          String
+  lastName           String
+  birthDate          DateTime
+  gender             Gender
+  city               String?
+  role               UserRole      @default(USER)
+  accountStatus      AccountStatus @default(nouveau)
+  creditBalance      Int           @default(0)
+  isVerified         Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  lastLogin          DateTime?
+  pushToken          String?
+  verificationCode   String?
+  resetCode          String?
+  resetCodeExpires   DateTime?
+  termsAcceptedAt    DateTime? // Date d'acceptation expresse des CGU à l'inscription
+  termsVersion       String? // Version des textes légaux acceptée (ex. « 2026-10-02 »)
 
   profile           Profile?
   interviews        InterviewIA[]
   mentalMaps        MentalMap[]
-  receivedProposals MatchProposal[]  @relation("ReceivedProposals")
-  targetedProposals MatchProposal[]  @relation("TargetedProposals")
-  journeysA         Journey[]        @relation("UserA")
-  journeysB         Journey[]        @relation("UserB")
+  receivedProposals MatchProposal[]     @relation("ReceivedProposals")
+  targetedProposals MatchProposal[]     @relation("TargetedProposals")
+  journeysA         Journey[]           @relation("UserA")
+  journeysB         Journey[]           @relation("UserB")
   transactions      CreditTransaction[]
   sentMessages      Message[]
-  sentReports       Report[]         @relation("Reporter")
-  receivedReports   Report[]         @relation("Reported")
+  sentReports       Report[]            @relation("Reporter")
+  receivedReports   Report[]            @relation("Reported")
   notifications     Notification[]
   responses         HarmonyResponse[]
 }
@@ -81,15 +85,15 @@ enum ProfileStatus {
 }
 
 model Profile {
-  id                String        @id @default(uuid())
-  userId            String        @unique
-  user              User          @relation(fields: [userId], references: [id])
-  mainPhoto         String?
-  secondaryPhotos   Json?         // Array of URLs
-  description       String?       @db.Text
-  displayedCity     String?
-  profession        String?
-  profileStatus     ProfileStatus @default(incomplet)
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  user            User          @relation(fields: [userId], references: [id])
+  mainPhoto       String?
+  secondaryPhotos Json? // Array of URLs
+  description     String?       @db.Text
+  displayedCity   String?
+  profession      String?
+  profileStatus   ProfileStatus @default(incomplet)
 }
 
 // ---------------------------------------------------------
@@ -103,49 +107,49 @@ enum InterviewStatus {
 }
 
 model InterviewIA {
-  id            String            @id @default(uuid())
-  userId        String
-  user          User              @relation(fields: [userId], references: [id])
-  startDate     DateTime          @default(now())
-  endDate       DateTime?
-  status        InterviewStatus   @default(en_cours)
-  version       Int               @default(1)
-  responses     ModuleResponse[]
-  mentalMap     MentalMap?
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  startDate DateTime         @default(now())
+  endDate   DateTime?
+  status    InterviewStatus  @default(en_cours)
+  version   Int              @default(1)
+  responses ModuleResponse[]
+  mentalMap MentalMap?
 
   @@index([userId, status])
 }
 
 model ModuleResponse {
-  id               String      @id @default(uuid())
-  interviewId      String
-  interview        InterviewIA @relation(fields: [interviewId], references: [id])
-  moduleNumber     Int         // 0 to 10
-  moduleName       String
-  rawResponses     Json        // The answers A, B, C, D...
-  iaAnalysis       Json?       // AI feedback
-  moduleScore      Float?
-  completedAt      DateTime    @default(now())
+  id           String      @id @default(uuid())
+  interviewId  String
+  interview    InterviewIA @relation(fields: [interviewId], references: [id])
+  moduleNumber Int // 0 to 10
+  moduleName   String
+  rawResponses Json // The answers A, B, C, D...
+  iaAnalysis   Json? // AI feedback
+  moduleScore  Float?
+  completedAt  DateTime    @default(now())
 
   @@index([interviewId])
 }
 
 model MentalMap {
-  id              String      @id @default(uuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id])
-  interviewId     String      @unique
-  interview       InterviewIA @relation(fields: [interviewId], references: [id])
-  generatedAt     DateTime    @default(now())
-  synthesis       String?     @db.Text
-  bio             String?     @db.Text
-  needsList       Json?       // Values, project, family, etc.
-  redFlags        Json?
-  keyValues       Json?
-  maturityScore   Float?
-  alchemyScore    Float?
-  signals         Json?       // All algorithmic signals (Red, Orange, etc.)
-  version         Int         @default(1)
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  interviewId   String      @unique
+  interview     InterviewIA @relation(fields: [interviewId], references: [id])
+  generatedAt   DateTime    @default(now())
+  synthesis     String?     @db.Text
+  bio           String?     @db.Text
+  needsList     Json? // Values, project, family, etc.
+  redFlags      Json?
+  keyValues     Json?
+  maturityScore Float?
+  alchemyScore  Float?
+  signals       Json? // All algorithmic signals (Red, Orange, etc.)
+  version       Int         @default(1)
 
   @@index([userId, generatedAt])
 }
@@ -163,18 +167,18 @@ enum ProposalStatus {
 }
 
 model MatchProposal {
-  id                  String         @id @default(uuid())
-  sourceUserId        String
-  sourceUser          User           @relation("ReceivedProposals", fields: [sourceUserId], references: [id])
-  targetUserId        String
-  targetUser          User           @relation("TargetedProposals", fields: [targetUserId], references: [id])
-  compatibilityScore  Float
-  iaExplanation       String?        @db.Text
-  proposedAt          DateTime       @default(now())
-  expiresAt           DateTime
-  status              ProposalStatus @default(en_attente)
-  weekNumber          Int
-  journey             Journey?
+  id                 String         @id @default(uuid())
+  sourceUserId       String
+  sourceUser         User           @relation("ReceivedProposals", fields: [sourceUserId], references: [id])
+  targetUserId       String
+  targetUser         User           @relation("TargetedProposals", fields: [targetUserId], references: [id])
+  compatibilityScore Float
+  iaExplanation      String?        @db.Text
+  proposedAt         DateTime       @default(now())
+  expiresAt          DateTime
+  status             ProposalStatus @default(en_attente)
+  weekNumber         Int
+  journey            Journey?
 
   @@index([sourceUserId, status])
   @@index([targetUserId, status])
@@ -196,26 +200,26 @@ enum JourneyResult {
 }
 
 model Journey {
-  id                String          @id @default(uuid())
-  proposalId        String          @unique
-  proposal          MatchProposal   @relation(fields: [proposalId], references: [id])
-  userAId           String
-  userA             User            @relation("UserA", fields: [userAId], references: [id])
-  userBId           String
-  userB             User            @relation("UserB", fields: [userBId], references: [id])
-  createdAt         DateTime        @default(now())
-  currentStep       JourneyStep     @default(phase_harmonie)
-  stepStartDate     DateTime        @default(now())
-  endDate           DateTime?
-  result            JourneyResult   @default(en_cours)
-  closingReason     String?         @db.Text
+  id            String        @id @default(uuid())
+  proposalId    String        @unique
+  proposal      MatchProposal @relation(fields: [proposalId], references: [id])
+  userAId       String
+  userA         User          @relation("UserA", fields: [userAId], references: [id])
+  userBId       String
+  userB         User          @relation("UserB", fields: [userBId], references: [id])
+  createdAt     DateTime      @default(now())
+  currentStep   JourneyStep   @default(phase_harmonie)
+  stepStartDate DateTime      @default(now())
+  endDate       DateTime?
+  result        JourneyResult @default(en_cours)
+  closingReason String?       @db.Text
 
-  harmonyQuestions  HarmonyQuestion[]
-  messages          Message[]
-  videoSession      VideoSession?
-  contactExchange   ContactExchange?
+  harmonyQuestions   HarmonyQuestion[]
+  messages           Message[]
+  videoSession       VideoSession?
+  contactExchange    ContactExchange?
   creditTransactions CreditTransaction[]
-  alumniCouple      AlumniCouple?
+  alumniCouple       AlumniCouple?
 
   @@index([userAId])
   @@index([userBId])
@@ -226,29 +230,29 @@ model Journey {
 // ---------------------------------------------------------
 
 model HarmonyQuestion {
-  id            String            @id @default(uuid())
-  journeyId     String
-  journey       Journey           @relation(fields: [journeyId], references: [id])
-  day           Int               // 1, 2, 3
-  theme         String
-  emoji         String?
-  questionText  String            @db.Text
-  options       Json?             // QCM options (dont "Autre...")
-  sentAt        DateTime          @default(now())
-  responses     HarmonyResponse[]
+  id           String            @id @default(uuid())
+  journeyId    String
+  journey      Journey           @relation(fields: [journeyId], references: [id])
+  day          Int // 1, 2, 3
+  theme        String
+  emoji        String?
+  questionText String            @db.Text
+  options      Json? // QCM options (dont "Autre...")
+  sentAt       DateTime          @default(now())
+  responses    HarmonyResponse[]
 
   @@index([journeyId])
 }
 
 model HarmonyResponse {
-  id              String          @id @default(uuid())
-  questionId      String
-  question        HarmonyQuestion @relation(fields: [questionId], references: [id])
-  userId          String
-  user            User            @relation(fields: [userId], references: [id])
-  responseText    String          @db.Text
-  respondedAt     DateTime        @default(now())
-  delayHours      Float?
+  id           String          @id @default(uuid())
+  questionId   String
+  question     HarmonyQuestion @relation(fields: [questionId], references: [id])
+  userId       String
+  user         User            @relation(fields: [userId], references: [id])
+  responseText String          @db.Text
+  respondedAt  DateTime        @default(now())
+  delayHours   Float?
 
   @@index([questionId])
   @@index([userId])
@@ -271,20 +275,19 @@ enum ModerationStatus {
 }
 
 model Message {
-  id                String           @id @default(uuid())
-  journeyId         String
-  journey           Journey          @relation(fields: [journeyId], references: [id])
-  senderId          String
-  sender            User             @relation(fields: [senderId], references: [id])
-  content           String           @db.Text
-  type              MessageType      @default(texte)
-  sentAt            DateTime         @default(now())
-  isRead            Boolean          @default(false)
-  moderationStatus  ModerationStatus @default(ok)
-  report            Report?
+  id               String           @id @default(uuid())
+  journeyId        String
+  journey          Journey          @relation(fields: [journeyId], references: [id])
+  senderId         String
+  sender           User             @relation(fields: [senderId], references: [id])
+  content          String           @db.Text
+  type             MessageType      @default(texte)
+  sentAt           DateTime         @default(now())
+  isRead           Boolean          @default(false)
+  moderationStatus ModerationStatus @default(ok)
+  report           Report?
 
   @@index([journeyId, sentAt])
-
   @@index([senderId])
 }
 
@@ -303,17 +306,17 @@ enum ReportStatus {
 }
 
 model Report {
-  id              String       @id @default(uuid())
-  reporterId      String
-  reporter        User         @relation("Reporter", fields: [reporterId], references: [id])
-  reportedId      String
-  reported        User         @relation("Reported", fields: [reportedId], references: [id])
-  messageId       String?      @unique
-  message         Message?     @relation(fields: [messageId], references: [id])
-  reason          ReportReason
-  description     String?      @db.Text
-  reportedAt      DateTime     @default(now())
-  status          ReportStatus @default(en_attente)
+  id          String       @id @default(uuid())
+  reporterId  String
+  reporter    User         @relation("Reporter", fields: [reporterId], references: [id])
+  reportedId  String
+  reported    User         @relation("Reported", fields: [reportedId], references: [id])
+  messageId   String?      @unique
+  message     Message?     @relation(fields: [messageId], references: [id])
+  reason      ReportReason
+  description String?      @db.Text
+  reportedAt  DateTime     @default(now())
+  status      ReportStatus @default(en_attente)
 
   @@index([reporterId])
   @@index([reportedId])
@@ -330,19 +333,19 @@ enum TransactionType {
 }
 
 model CreditTransaction {
-  id              String          @id @default(uuid())
-  userId          String
-  user            User            @relation(fields: [userId], references: [id])
-  journeyId       String?
-  journey         Journey?        @relation(fields: [journeyId], references: [id])
-  promoCodeId     String?
-  promoCode       PromoCode?      @relation(fields: [promoCodeId], references: [id])
-  type            TransactionType
-  creditAmount    Int
-  euroAmount      Float?
-  paymentRef      String?
-  date            DateTime        @default(now())
-  description     String?
+  id           String          @id @default(uuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id])
+  journeyId    String?
+  journey      Journey?        @relation(fields: [journeyId], references: [id])
+  promoCodeId  String?
+  promoCode    PromoCode?      @relation(fields: [promoCodeId], references: [id])
+  type         TransactionType
+  creditAmount Int
+  euroAmount   Float?
+  paymentRef   String?
+  date         DateTime        @default(now())
+  description  String?
 
   @@index([userId])
   @@index([journeyId])
@@ -354,32 +357,33 @@ model CreditTransaction {
 // ---------------------------------------------------------
 
 enum DiscountType {
-  percent   // % de réduction (discountValue = %)
-  fixed     // Réduction fixe (discountValue = centimes)
-  free      // Gratuit (discountValue ignoré)
+  percent // % de réduction (discountValue = %)
+  fixed // Réduction fixe (discountValue = centimes)
+  free // Gratuit (discountValue ignoré)
 }
 
 model PromoCode {
-  id            String        @id @default(uuid())
-  code          String        @unique
+  id            String              @id @default(uuid())
+  code          String              @unique
   discountType  DiscountType
-  discountValue Int           @default(0)  // 50 = 50%, 500 = 5€, ou 0 si free
-  maxUses       Int?                       // null = illimité
-  usedCount     Int           @default(0)
-  expiresAt     DateTime?                  // null = pas d'expiration
-  isActive      Boolean       @default(true)
+  discountValue Int                 @default(0) // 50 = 50%, 500 = 5€, ou 0 si free
+  maxUses       Int? // null = illimité
+  usedCount     Int                 @default(0)
+  expiresAt     DateTime? // null = pas d'expiration
+  isActive      Boolean             @default(true)
   description   String?
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime            @default(now())
   usages        PromoUsage[]
   transactions  CreditTransaction[]
+  partner       PartnerApplication?
 }
 
 model PromoUsage {
-  id          String     @id @default(uuid())
+  id          String    @id @default(uuid())
   promoCodeId String
-  promoCode   PromoCode  @relation(fields: [promoCodeId], references: [id])
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id])
   userId      String
-  usedAt      DateTime   @default(now())
+  usedAt      DateTime  @default(now())
 
   @@unique([promoCodeId, userId]) // Un user = un seul usage par code
   @@index([userId])
@@ -412,14 +416,14 @@ model VideoSession {
 }
 
 model ContactExchange {
-  id              String    @id @default(uuid())
-  journeyId       String    @unique
-  journey         Journey   @relation(fields: [journeyId], references: [id])
-  consentA        Boolean   @default(false)
-  consentB        Boolean   @default(false)
-  phoneShared     Boolean   @default(false)
-  emailShared     Boolean   @default(false)
-  exchangedAt     DateTime?
+  id          String    @id @default(uuid())
+  journeyId   String    @unique
+  journey     Journey   @relation(fields: [journeyId], references: [id])
+  consentA    Boolean   @default(false)
+  consentB    Boolean   @default(false)
+  phoneShared Boolean   @default(false)
+  emailShared Boolean   @default(false)
+  exchangedAt DateTime?
 }
 
 // ---------------------------------------------------------
@@ -427,12 +431,12 @@ model ContactExchange {
 // ---------------------------------------------------------
 
 model AlumniCouple {
-  id              String    @id @default(uuid())
-  journeyId       String    @unique
-  journey         Journey   @relation(fields: [journeyId], references: [id])
-  validatedAt     DateTime  @default(now())
-  testimony       String?   @db.Text
-  status          String    @default("actif") // e.g., actif, archive
+  id          String   @id @default(uuid())
+  journeyId   String   @unique
+  journey     Journey  @relation(fields: [journeyId], references: [id])
+  validatedAt DateTime @default(now())
+  testimony   String?  @db.Text
+  status      String   @default("actif") // e.g., actif, archive
 }
 
 enum NotificationType {
@@ -445,14 +449,14 @@ enum NotificationType {
 }
 
 model Notification {
-  id              String           @id @default(uuid())
-  userId          String
-  user            User             @relation(fields: [userId], references: [id])
-  type            NotificationType
-  title           String
-  content         String           @db.Text
-  sentAt          DateTime         @default(now())
-  isRead          Boolean          @default(false)
+  id      String           @id @default(uuid())
+  userId  String
+  user    User             @relation(fields: [userId], references: [id])
+  type    NotificationType
+  title   String
+  content String           @db.Text
+  sentAt  DateTime         @default(now())
+  isRead  Boolean          @default(false)
 
   @@index([userId, isRead])
 }
@@ -466,10 +470,10 @@ model JobOffer {
   title        String
   description  String           @db.Text
   requirements String           @db.Text
-  location     String           // Ex: Paris, Abidjan, Télétravail
-  type         String           // Ex: CDI, CDD, Stage, Alternance, Freelance
-  department   String?          // Ex: Tech, Operations, Marketing
-  salary       String?          // Ex: 40k-50k
+  location     String // Ex: Paris, Abidjan, Télétravail
+  type         String // Ex: CDI, CDD, Stage, Alternance, Freelance
+  department   String? // Ex: Tech, Operations, Marketing
+  salary       String? // Ex: 40k-50k
   isActive     Boolean          @default(true)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
@@ -477,16 +481,62 @@ model JobOffer {
 }
 
 model JobApplication {
-  id           String     @id @default(uuid())
-  jobId        String
-  job          JobOffer   @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  firstName    String
-  lastName     String
-  email        String
-  telephone    String?
-  coverLetter  String?    @db.Text
-  cvUrl        String?    // Chemin local ou URL externe du CV
-  cvFilename   String?    // Nom d'origine du fichier CV
-  createdAt    DateTime   @default(now())
+  id          String   @id @default(uuid())
+  jobId       String
+  job         JobOffer @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  email       String
+  telephone   String?
+  coverLetter String?  @db.Text
+  cvUrl       String? // Chemin local ou URL externe du CV
+  cvFilename  String? // Nom d'origine du fichier CV
+  createdAt   DateTime @default(now())
 }
 
+// ---------------------------------------------------------
+// PROGRAMME PARTENAIRES (marques, ambassadeurs, créateurs)
+// ---------------------------------------------------------
+
+enum PartnerType {
+  /// Marque ou annonceur : visibilité auprès de la communauté BOLIGO.
+  ANNONCEUR
+  /// Ambassadeur commercial : recommande BOLIGO dans sa ville ou son réseau.
+  AMBASSADEUR
+  /// Créateur de contenu ou influenceur.
+  CREATEUR
+}
+
+enum PartnerStatus {
+  NOUVEAU
+  EN_COURS
+  ACCEPTE
+  REFUSE
+}
+
+model PartnerApplication {
+  id             String        @id @default(uuid())
+  type           PartnerType
+  status         PartnerStatus @default(NOUVEAU)
+  name           String
+  email          String
+  company        String?
+  country        String
+  city           String?
+  website        String?
+  /// Réseaux et taille d'audience (créateurs), zone couverte (ambassadeurs), budget (marques).
+  audience       String?
+  message        String
+  language       String        @default("fr")
+  /// Notes internes de l'équipe (jamais montrées au candidat).
+  notes          String?
+  /// Commission en % sur chaque Parcours payé avec son code (ambassadeurs, créateurs).
+  commissionRate Int?
+  promoCodeId    String?       @unique
+  promoCode      PromoCode?    @relation(fields: [promoCodeId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([type, status])
+  @@index([email])
+}

@@ -22,6 +22,8 @@ Paiement : montant, date, identifiant de transaction Stripe, codes promotionnels
 
 Technique : identifiant d'appareil pour les notifications, journaux de connexion et d'erreur, signalements et décisions de modération.
 
+Programme partenaires (marques, ambassadeurs commerciaux, créateurs de contenu) : nom, adresse e-mail, société, pays et ville, site ou réseaux, audience déclarée, message de candidature et langue. Pour un partenaire retenu : le code partenaire attribué, le taux de commission, ainsi que le nombre et le montant total des achats réalisés avec ce code, sans l'identité des membres qui l'ont utilisé.
+
 ## 3. Finalités et bases légales
 
 Fournir le service de mise en relation (création du compte, entretien, compatibilité, parcours, messagerie, vidéo) : exécution du contrat.
@@ -33,6 +35,8 @@ Assurer la sécurité, prévenir les fraudes et modérer les contenus : intérê
 Gérer les paiements et la comptabilité : exécution du contrat et obligation légale.
 
 Envoyer les e-mails de service (vérification, réinitialisation, notifications de parcours) : exécution du contrat. Aucune prospection commerciale n'est réalisée sans consentement distinct.
+
+Étudier une candidature au programme partenaires, y répondre et gérer la relation avec les partenaires retenus (code, suivi et paiement des commissions) : mesures précontractuelles prises à la demande du candidat, puis exécution du contrat de partenariat.
 
 ## 4. Traitements automatisés et intelligence artificielle
 
@@ -50,6 +54,8 @@ Votre interlocuteur dans un parcours voit votre prénom, votre âge, votre ville
 
 Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale.
 
+Un partenaire ne reçoit jamais de données sur les membres : seuls le nombre d'achats et le montant total réalisés avec son code lui sont communiqués.
+
 ## 6. Durées de conservation
 
 Compte et profil : pendant toute la durée du compte, puis suppression dans les 30 jours suivant la demande de suppression.
@@ -59,6 +65,8 @@ Messages et réponses au Sondeur : durée du parcours, puis 12 mois en archive r
 Données de paiement et factures : 10 ans (obligation comptable). Journaux techniques et de sécurité : 12 mois. Signalements et décisions de modération : 3 ans.
 
 Les données d'un compte suspendu pour manquement grave peuvent être conservées en liste restreinte pendant 3 ans afin d'empêcher une réinscription.
+
+Candidatures au programme partenaires : 2 ans après le dernier échange lorsqu'elles ne sont pas retenues ; pour un partenaire retenu, durée du partenariat puis 5 ans, les pièces comptables liées aux commissions étant conservées 10 ans.
 
 ## 7. Vos droits
 
