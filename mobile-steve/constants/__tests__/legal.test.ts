@@ -38,8 +38,16 @@ describe('Textes légaux (CGU et politique de confidentialité)', () => {
 
   it("signale clairement les mentions que l'éditeur doit compléter", () => {
     const placeholders = Object.values(legal.company).filter((v) => v.startsWith('[À COMPLÉTER'));
-    expect(placeholders.length).toBeGreaterThanOrEqual(7);
+    expect(placeholders.length).toBeGreaterThanOrEqual(5);
     const all = JSON.stringify(docs);
     placeholders.forEach((p) => expect(all).toContain(p));
+  });
+
+  it('donne une seule adresse de contact BOLIGO, sur le domaine boligo.fr', () => {
+    expect(legal.company.contactEmail).toBe('contact@boligo.fr');
+    expect(legal.company.dpoEmail).toBe('contact@boligo.fr');
+    const all = JSON.stringify(docs);
+    expect(all).toContain('contact@boligo.fr');
+    expect(all).not.toMatch(/@boligo\.app|@harmonie\.app/);
   });
 });

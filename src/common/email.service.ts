@@ -102,7 +102,7 @@ export class EmailService implements OnModuleInit {
           },
           body: JSON.stringify({
             personalizations: [{ to: [{ email: to }] }],
-            from: { email: process.env.EMAIL_FROM || 'contact@boligo.app', name: 'BOLIGO' },
+            from: { email: process.env.EMAIL_FROM || 'no-reply@boligo.fr', name: 'BOLIGO' },
             subject: subject,
             content: [{ type: 'text/html', value: html }],
           }),
@@ -134,7 +134,7 @@ export class EmailService implements OnModuleInit {
             'Accept': 'application/json',
           },
           body: JSON.stringify({
-            sender: { name: 'BOLIGO', email: process.env.EMAIL_FROM || 'contact@boligo.app' },
+            sender: { name: 'BOLIGO', email: process.env.EMAIL_FROM || 'no-reply@boligo.fr' },
             to: [{ email: to }],
             subject: subject,
             htmlContent: html,
