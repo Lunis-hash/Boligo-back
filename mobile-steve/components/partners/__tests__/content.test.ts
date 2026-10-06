@@ -1,4 +1,5 @@
-import { CONTENT, PartnerForm, initialPartnerLang, isPartnerFormValid, partnerPayload } from '../content';
+import { CONTENT, PartnerForm, initialPartnerLang, isPartnerFormValid, partnerPayload, registrationError } from '../content';
+import { isRegistrationValid } from '../registration';
 
 const filled: PartnerForm = {
   type: 'AMBASSADEUR',
@@ -10,6 +11,8 @@ const filled: PartnerForm = {
   website: '',
   audience: 'Diaspora ghanéenne à Londres',
   message: 'Je connais bien les associations de la diaspora.',
+  registrationType: 'AUTRE',
+  registrationNumber: 'CS 2019-123456',
   consent: true,
 };
 
@@ -42,5 +45,23 @@ describe('Programme Partenaires : page publique', () => {
   it('respecte la langue imposée par l’adresse', () => {
     expect(initialPartnerLang('en')).toBe('en');
     expect(['fr', 'en']).toContain(initialPartnerLang());
+  });
+
+  it('exige un numéro d’entreprise valide, avec un message précis', () => {
+    expect(isPartnerFormValid({ ...filled, registrationType: null })).toBe(false);
+    expect(isPartnerFormValid({ ...filled, registrationType: 'SIRENE', registrationNumber: '552 100 554' })).toBe(true);
+    expect(isPartnerFormValid({ ...filled, registrationType: 'SIRENE', registrationNumber: '552100555' })).toBe(false);
+    expect(registrationError({ ...filled, registrationType: 'SIRENE', registrationNumber: '552100555' }, 'fr')).toMatch(
+      /SIREN ou SIRET invalide/,
+    );
+    expect(registrationError(filled, 'en')).toBeNull();
+    expect(isRegistrationValid('TVA_UE', 'gr094259216')).toBe(true);
+    expect(isRegistrationValid('TVA_UE', 'US123')).toBe(false);
+    expect(isRegistrationValid('UK_COMPANY', 'SC123456')).toBe(true);
+    expect(isRegistrationValid('SIRENE', '35600000000001')).toBe(true);
+    expect(partnerPayload({ ...filled, registrationType: 'SIRENE', registrationNumber: '552 100 554' }, 'fr')).toMatchObject({
+      registrationType: 'SIRENE',
+      registrationNumber: '552100554',
+    });
   });
 });

@@ -19,11 +19,23 @@ import { AdminGuard } from './guards/admin.guard';
 import { AllowRoles } from './guards/admin-roles';
 import { SetTeamRoleDto } from './dto/set-team-role.dto';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
+import { DeleteUserDto } from './dto/delete-user.dto';
+import { AiBudgetService } from '../ai/ai-budget.service';
 import { AuthRateLimitGuard } from '../auth/auth-rate-limit.guard';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private aiBudget: AiBudgetService,
+  ) {}
+
+  /** Dépense IA du mois et plafond (AI_MONTHLY_BUDGET_EUR) : administrateurs. */
+  @Get('ai/spend')
+  @UseGuards(AdminGuard)
+  aiSpend() {
+    return this.aiBudget.summary();
+  }
 
   @Post('auth/login')
   @UseGuards(AuthRateLimitGuard)
@@ -79,6 +91,17 @@ export class AdminController {
     @Req() req: { user: { role: UserRole } },
   ) {
     return this.adminService.updateUser(id, dto, req.user.role);
+  }
+
+  /** Suppression définitive d'un membre : administrateurs uniquement. */
+  @Delete('users/:id')
+  @UseGuards(AdminGuard)
+  deleteUser(
+    @Param('id') id: string,
+    @Body() dto: DeleteUserDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    return this.adminService.deleteUser(req.user.id, id, dto.confirmEmail);
   }
 
   @Get('matches')

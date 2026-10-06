@@ -2,6 +2,15 @@ import { AiService } from './ai.service';
 import { aiBioContradicts } from './ai-bio-guard';
 
 describe('Garde-fou de la bio rédigée par l’IA', () => {
+  const previousMode = process.env.AI_PROFILE_MODE;
+  beforeAll(() => {
+    process.env.AI_PROFILE_MODE = 'ai';
+  });
+  afterAll(() => {
+    if (previousMode === undefined) delete process.env.AI_PROFILE_MODE;
+    else process.env.AI_PROFILE_MODE = previousMode;
+  });
+
   it('repère une bio qui contredit le désir d’enfants ou la religion déclarés', () => {
     expect(
       aiBioContradicts('Je rêve de fonder une famille nombreuse.', {

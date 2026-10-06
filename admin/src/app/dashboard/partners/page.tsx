@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Handshake, Megaphone, Ticket, Wallet } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getAdminUser, getToken } from "@/lib/auth";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,43 @@ interface Partner {
   /** Un lien privé vers l'Espace partenaire est en service. */
   portalActive: boolean;
   portalLinkSentAt: string | null;
+  registrationType: RegistrationType | null;
+  registrationNumber: string | null;
+  verificationStatus: Verification;
+  verificationMethod: string | null;
+  verifiedName: string | null;
+  verificationNote: string | null;
+  verifiedAt: string | null;
+  verifiedBy: string | null;
+}
+
+type RegistrationType = "SIRENE" | "TVA_UE" | "UK_COMPANY" | "AUTRE";
+type Verification = "A_VERIFIER" | "VERIFIE" | "REJETE";
+
+const REG_LABELS: Record<RegistrationType, string> = {
+  SIRENE: "SIREN / SIRET (France)",
+  TVA_UE: "TVA intracommunautaire (UE)",
+  UK_COMPANY: "Company number (Royaume-Uni)",
+  AUTRE: "Immatriculation (autre pays)",
+};
+const VERIF_LABELS: Record<Verification, string> = {
+  A_VERIFIER: "À vérifier",
+  VERIFIE: "Vérifiée",
+  REJETE: "Rejetée",
+};
+const VERIF_VARIANT: Record<Verification, "warning" | "success" | "outline"> = {
+  A_VERIFIER: "warning",
+  VERIFIE: "success",
+  REJETE: "outline",
+};
+
+/** Registre officiel où l'équipe peut contrôler le numéro elle-même. */
+function registryLink(type: RegistrationType | null, number: string | null): string | null {
+  if (!type || !number) return null;
+  if (type === "SIRENE") return `https://annuaire-entreprises.data.gouv.fr/entreprise/${number.slice(0, 9)}`;
+  if (type === "TVA_UE") return "https://ec.europa.eu/taxation_customs/vies/#/vat-validation";
+  if (type === "UK_COMPANY") return `https://find-and-update.company-information.service.gov.uk/company/${number}`;
+  return `https://opencorporates.com/companies?q=${encodeURIComponent(number)}`;
 }
 
 interface PortalLinkResult {
@@ -183,6 +220,7 @@ export default function PartnersPage() {
               <TableHead>Profil</TableHead>
               <TableHead>Pays</TableHead>
               <TableHead>Statut</TableHead>
+              <TableHead>Entreprise</TableHead>
               <TableHead>Code</TableHead>
               <TableHead className="text-right">Ventes</TableHead>
               <TableHead className="text-right">Commission</TableHead>
@@ -192,7 +230,7 @@ export default function PartnersPage() {
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-sm text-neutral-500">
+                <TableCell colSpan={9} className="py-10 text-center text-sm text-neutral-500">
                   Aucune candidature pour l’instant. Partagez la page /partenaires du site.
                 </TableCell>
               </TableRow>
@@ -246,6 +284,15 @@ function PartnerRow({
         <TableCell>
           <Badge variant={STATUS_VARIANT[p.status]}>{STATUS_LABELS[p.status]}</Badge>
         </TableCell>
+        <TableCell>
+          <Badge
+            variant={VERIF_VARIANT[p.verificationStatus]}
+            className="whitespace-nowrap"
+            data-testid={`partner-verif-${p.email}`}
+          >
+            {VERIF_LABELS[p.verificationStatus]}
+          </Badge>
+        </TableCell>
         <TableCell className="font-mono text-sm">{p.promoCode?.code ?? "—"}</TableCell>
         <TableCell className="text-right text-sm">
           {p.sales.purchases > 0 ? `${formatEuro(p.sales.revenue)} (${p.sales.purchases})` : "—"}
@@ -264,7 +311,7 @@ function PartnerRow({
       </TableRow>
       {open && (
         <TableRow>
-          <TableCell colSpan={8} className="bg-fond">
+          <TableCell colSpan={9} className="bg-fond">
             <PartnerDetail partner={p} onSaved={onSaved} />
           </TableCell>
         </TableRow>
@@ -414,6 +461,7 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
             écrire à {p.email}
           </a>
         </p>
+        <BusinessCheck partner={p} onSaved={onSaved} />
       </div>
       <div className="space-y-4">
         <p className="font-title text-lg text-encre">Suivi</p>
@@ -478,6 +526,11 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
                 Créer son code personnel accepte la candidature. Les membres qui l’utilisent obtiennent la réduction ;
                 chaque Parcours payé avec ce code compte pour sa commission.
               </p>
+              {p.verificationStatus !== "VERIFIE" && (
+                <p className="rounded-xl bg-rose px-3 py-2 text-sm text-framboise" data-testid="partner-code-blocked">
+                  Entreprise non vérifiée : le code ne peut pas être créé tant que son numéro n’est pas contrôlé.
+                </p>
+              )}
               <div className="flex flex-wrap items-end gap-3">
                 <label className="text-sm">
                   <span className="mb-1 block text-neutral-500">Code (facultatif)</span>
@@ -499,7 +552,7 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
                 </label>
                 <Button
                   onClick={createCode}
-                  disabled={busy}
+                  disabled={busy || p.verificationStatus !== "VERIFIE"}
                   className="rounded-xl bg-gradient-to-r from-framboise to-lavande hover:opacity-90"
                   data-testid="partner-create-code"
                 >
@@ -567,6 +620,168 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
         )}
         {msg && <p className="text-sm text-nuit" data-testid="partner-msg">{msg}</p>}
       </div>
+    </div>
+  );
+}
+
+/** Entreprise du partenaire : numéro, contrôle du registre, décision manuelle. */
+function BusinessCheck({ partner: p, onSaved }: { partner: Partner; onSaved: () => void }) {
+  const isAdmin = getAdminUser()?.role === "ADMIN";
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [note, setNote] = useState("");
+  const [editType, setEditType] = useState<RegistrationType>(p.registrationType ?? "SIRENE");
+  const [editNumber, setEditNumber] = useState("");
+  const link = registryLink(p.registrationType, p.registrationNumber);
+
+  async function run(fn: () => Promise<unknown>, ok: string) {
+    setBusy(true);
+    setMsg("");
+    try {
+      await fn();
+      setMsg(ok);
+      onSaved();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const verify = () =>
+    run(
+      () => apiFetch(`/admin/partners/${p.id}/verify`, { method: "POST", token: getToken() }),
+      "Registre interrogé.",
+    );
+  const decide = (status: "VERIFIE" | "REJETE") =>
+    run(
+      () =>
+        apiFetch(`/admin/partners/${p.id}/verification`, {
+          method: "PATCH",
+          token: getToken(),
+          body: JSON.stringify({ status, note }),
+        }),
+      status === "VERIFIE" ? "Entreprise validée manuellement." : "Entreprise rejetée.",
+    );
+  const correct = () =>
+    run(
+      () =>
+        apiFetch(`/admin/partners/${p.id}`, {
+          method: "PATCH",
+          token: getToken(),
+          body: JSON.stringify({ registrationType: editType, registrationNumber: editNumber }),
+        }),
+      "Numéro corrigé et vérifié à nouveau.",
+    );
+
+  return (
+    <div className="space-y-3 rounded-xl border border-lilas bg-white p-4" data-testid="partner-business">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-title text-lg text-encre">Entreprise</p>
+        <Badge variant={VERIF_VARIANT[p.verificationStatus]} data-testid="partner-verif-status">
+          {VERIF_LABELS[p.verificationStatus]}
+        </Badge>
+      </div>
+      {p.registrationType && p.registrationNumber ? (
+        <p>
+          <span className="text-neutral-500">{REG_LABELS[p.registrationType]} : </span>
+          <span className="font-mono font-semibold text-nuit">{p.registrationNumber}</span>
+          {link && (
+            <>
+              {" · "}
+              <a className="text-framboise underline" href={link} target="_blank" rel="noreferrer noopener">
+                voir le registre
+              </a>
+            </>
+          )}
+        </p>
+      ) : (
+        <p className="text-framboise">Aucun numéro d’entreprise fourni.</p>
+      )}
+      {p.verifiedName && (
+        <p data-testid="partner-official-name">
+          <span className="text-neutral-500">Nom officiel : </span>
+          <span className="font-semibold">{p.verifiedName}</span>
+          <span className="text-neutral-500"> (déclaré : {p.company || p.name})</span>
+        </p>
+      )}
+      {p.verificationNote && <p className="text-neutral-700">{p.verificationNote}</p>}
+      {p.verificationMethod && (
+        <p className="text-xs text-neutral-500">
+          {p.verificationMethod}
+          {p.verifiedAt ? ` · ${formatDate(p.verifiedAt)}` : ""}
+          {p.verifiedBy ? ` · par ${p.verifiedBy}` : ""}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" className="rounded-xl" onClick={verify} disabled={busy || !p.registrationNumber} data-testid="partner-verify">
+          Vérifier dans le registre
+        </Button>
+      </div>
+      {isAdmin && (
+        <div className="space-y-2 border-t border-lilas pt-3">
+          <p className="text-xs text-neutral-500">
+            Décision manuelle (administrateurs) : indiquez la source consultée, par exemple « extrait RCCM du 01/10/2026
+            vérifié sur le registre national ».
+          </p>
+          <textarea
+            className="min-h-[60px] w-full rounded-xl border border-input bg-white p-3 text-sm"
+            placeholder="Source et référence du contrôle (10 caractères minimum)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            data-testid="partner-manual-note"
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              className="rounded-xl"
+              onClick={() => decide("VERIFIE")}
+              disabled={busy || note.trim().length < 10}
+              data-testid="partner-manual-ok"
+            >
+              Valider l’entreprise
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl border-framboise/40 text-framboise hover:bg-rose"
+              onClick={() => decide("REJETE")}
+              disabled={busy || note.trim().length < 10}
+              data-testid="partner-manual-reject"
+            >
+              Rejeter
+            </Button>
+          </div>
+        </div>
+      )}
+      <details className="text-xs text-neutral-600">
+        <summary className="cursor-pointer">Corriger le numéro</summary>
+        <div className="mt-2 flex flex-wrap items-end gap-2">
+          <select
+            className="h-9 rounded-xl border border-input bg-white px-2 text-xs"
+            value={editType}
+            onChange={(e) => setEditType(e.target.value as RegistrationType)}
+          >
+            {Object.entries(REG_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
+          <Input
+            className="h-9 w-48 rounded-xl"
+            value={editNumber}
+            onChange={(e) => setEditNumber(e.target.value)}
+            placeholder="Nouveau numéro"
+          />
+          <Button size="sm" variant="outline" className="rounded-xl" onClick={correct} disabled={busy || editNumber.trim().length < 3}>
+            Enregistrer et vérifier
+          </Button>
+        </div>
+      </details>
+      {msg && (
+        <p className="text-sm text-nuit" data-testid="partner-business-msg">
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

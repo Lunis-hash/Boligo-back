@@ -235,16 +235,22 @@ export default function FinancePage() {
                       {formatDate(row.date)}
                     </TableCell>
                     <TableCell>
-                      <Link
-                        href={userHref(row.user.id)}
-                        className="font-medium text-[#2d2224] hover:text-[#b84d63]"
-                      >
-                        {row.user.firstName} {row.user.lastName}
-                      </Link>
-                      <p className="text-xs text-[#8a6b6f]">{row.user.email}</p>
-                      <p className="text-xs text-[#b0a0a3]">
-                        Solde : {row.user.creditBalance} cr.
-                      </p>
+                      {row.user ? (
+                        <>
+                          <Link
+                            href={userHref(row.user.id)}
+                            className="font-medium text-[#2d2224] hover:text-[#b84d63]"
+                          >
+                            {row.user.firstName} {row.user.lastName}
+                          </Link>
+                          <p className="text-xs text-[#8a6b6f]">{row.user.email}</p>
+                          <p className="text-xs text-[#b0a0a3]">
+                            Solde : {row.user.creditBalance} cr.
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm italic text-[#8a6b6f]">Compte supprimé (paiement conservé)</p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={row.type} />

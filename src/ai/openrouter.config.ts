@@ -23,7 +23,8 @@ export const HARMONIE_AI_ROUTING: HarmonieAgentsConfig = {
       'google/gemma-4-31b-it:free',
     ],
     temperature: 0.7,
-    maxTokens: 2500,
+    // Les 21 questions du Sondeur demandent environ 3 000 jetons en JSON.
+    maxTokens: 4000,
   },
 
   // 💖 Cupidon IA & Compatibilité : Calcul du score d'affinité 6D et matching (100% Gratuit)

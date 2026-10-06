@@ -1,4 +1,4 @@
-import { PartnerType } from '@prisma/client';
+import { PartnerRegistrationType, PartnerType } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
   Equals,
@@ -69,6 +69,15 @@ export class ApplyPartnerDto {
   @IsOptional()
   @IsIn(['fr', 'en'])
   language?: 'fr' | 'en';
+
+  /** Entreprise du partenaire : obligatoire, vérifiée auprès des registres publics. */
+  @IsEnum(PartnerRegistrationType)
+  registrationType: PartnerRegistrationType;
+
+  @Transform(trim)
+  @IsString()
+  @Length(3, 40)
+  registrationNumber: string;
 
   /** Accord explicite pour être recontacté au sujet de la candidature. */
   @IsBoolean()

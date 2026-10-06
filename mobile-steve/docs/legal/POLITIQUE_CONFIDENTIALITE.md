@@ -22,7 +22,7 @@ Paiement : montant, date, identifiant de transaction Stripe, codes promotionnels
 
 Technique : identifiant d'appareil pour les notifications, journaux de connexion et d'erreur, signalements et décisions de modération.
 
-Programme partenaires (marques, ambassadeurs commerciaux, créateurs de contenu) : nom, adresse e-mail, société, pays et ville, site ou réseaux, audience déclarée, message de candidature et langue. Pour un partenaire retenu : le code partenaire attribué, le taux de commission, ainsi que le nombre et le montant total des achats réalisés avec ce code, sans l'identité des membres qui l'ont utilisé.
+Programme partenaires (marques, ambassadeurs commerciaux, créateurs de contenu) : nom, adresse e-mail, société, pays et ville, site ou réseaux, audience déclarée, message de candidature, langue, numéro d'immatriculation de l'entreprise (SIREN, SIRET, numéro de TVA ou équivalent) et résultat de sa vérification. Pour un partenaire retenu : le code partenaire attribué, le taux de commission, ainsi que le nombre et le montant total des achats réalisés avec ce code, sans l'identité des membres qui l'ont utilisé.
 
 ## 3. Finalités et bases légales
 
@@ -36,11 +36,11 @@ Gérer les paiements et la comptabilité : exécution du contrat et obligation l
 
 Envoyer les e-mails de service (vérification, réinitialisation, notifications de parcours) : exécution du contrat. Aucune prospection commerciale n'est réalisée sans consentement distinct.
 
-Étudier une candidature au programme partenaires, y répondre et gérer la relation avec les partenaires retenus (code, suivi et paiement des commissions) : mesures précontractuelles prises à la demande du candidat, puis exécution du contrat de partenariat.
+Étudier une candidature au programme partenaires, vérifier que l'entreprise du candidat est immatriculée et active, y répondre et gérer la relation avec les partenaires retenus (code, suivi et paiement des commissions) : mesures précontractuelles prises à la demande du candidat, puis exécution du contrat de partenariat.
 
 ## 4. Traitements automatisés et intelligence artificielle
 
-BOLIGO utilise des modèles d'intelligence artificielle pour rédiger votre carte mentale, calculer un score de compatibilité, générer les questions du Sondeur et assister la modération. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.
+BOLIGO peut utiliser des modèles d'intelligence artificielle pour proposer des questions du Sondeur et assister la modération des messages. Votre portrait (synthèse, biographie, valeurs, besoins) et vos scores de compatibilité sont calculés par des règles automatiques, sans modèle d'IA, sauf si BOLIGO active la rédaction assistée du portrait. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.
 
 Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et associées à votre prénom et à votre âge, jamais à votre adresse e-mail ni à votre téléphone. Vous pouvez demander une explication des éléments ayant conduit à un score et une intervention humaine en écrivant à l'adresse de contact.
 
@@ -54,7 +54,7 @@ Votre interlocuteur dans un parcours voit votre prénom, votre âge, votre ville
 
 Vos données ne sont jamais vendues. Elles peuvent être communiquées aux autorités sur réquisition légale.
 
-Un partenaire ne reçoit jamais de données sur les membres : seuls le nombre d'achats et le montant total réalisés avec son code lui sont communiqués.
+Un partenaire ne reçoit jamais de données sur les membres : seuls le nombre d'achats et le montant total réalisés avec son code lui sont communiqués. Pour vérifier l'entreprise d'un candidat partenaire, son numéro d'immatriculation est consulté dans les registres publics officiels (Annuaire des entreprises de l'État pour les données INSEE, service VIES de la Commission européenne, Companies House au Royaume-Uni).
 
 ## 6. Durées de conservation
 

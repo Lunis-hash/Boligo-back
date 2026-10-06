@@ -34,19 +34,21 @@ profils ou des données des membres.
    `contact@boligo.fr`). Une même adresse ne peut pas déposer deux fois la même
    candidature en 24 heures, et le formulaire est limité à 8 envois par adresse
    toutes les 10 minutes.
-3. **Étude** dans le tableau de bord, page **Partenaires** :
+3. **Vérification de l'entreprise**, automatique dès la candidature (voir § 3).
+   Sans entreprise vérifiée, le code ne peut pas être créé.
+4. **Étude** dans le tableau de bord, page **Partenaires** :
    - statut : Nouveau → En cours → Accepté ou Refusé ;
    - notes internes ;
    - taux de commission.
-4. **Accord écrit** signé hors de l'application (voir § 4).
-5. **Code partenaire** créé depuis la fiche (bouton « Créer le code ») :
+5. **Accord écrit** signé hors de l'application (voir § 5).
+6. **Code partenaire** créé depuis la fiche (bouton « Créer le code ») :
    - BOLIGO propose un code tiré du nom, par exemple `CAMILLE42` ; l'équipe
      peut aussi saisir le sien ;
    - le code est un code promo BOLIGO ordinaire, réservé au partenaire ;
    - la candidature passe alors à « Accepté » ;
    - le partenaire reçoit aussitôt un e-mail de bienvenue, dans sa langue, avec
-     son code et le lien vers son **Espace partenaire** (voir § 3).
-6. **Suivi** :
+     son code et le lien vers son **Espace partenaire** (voir § 4).
+7. **Suivi** :
    - l'équipe voit, pour chaque partenaire, le nombre d'achats payés avec son
      code, le montant encaissé et la commission due ;
    - le partenaire voit les mêmes chiffres dans son Espace partenaire, mois par
@@ -58,7 +60,51 @@ Un code se met en pause ou se réactive depuis la fiche du partenaire (bouton
 « Mettre en pause » / « Réactiver ») ou depuis la page **Codes promo**, par
 exemple à la fin d'un partenariat.
 
-## 3. L'Espace partenaire
+## 3. Vérification de l'entreprise (obligatoire)
+
+BOLIGO ne travaille qu'avec des professionnels immatriculés : un créateur de
+contenu sans statut (par exemple sans SIRET en France) ne peut pas devenir
+partenaire. Toute personne qui perçoit régulièrement des commissions doit
+déclarer cette activité ; le statut de micro-entrepreneur se crée gratuitement
+en ligne (formalites.entreprises.gouv.fr).
+
+**Sur le formulaire**, le candidat choisit le type de numéro et le saisit. La
+forme du numéro est contrôlée tout de suite (clé de contrôle des SIREN et
+SIRET, préfixe de pays des numéros de TVA…).
+
+**Vérification automatique**, auprès des registres publics officiels et
+gratuits :
+
+| Pays | Numéro demandé | Registre consulté | Résultat |
+|---|---|---|---|
+| France | SIREN (9 chiffres) ou SIRET (14 chiffres) | Annuaire des entreprises de l'État (données INSEE Sirene) | active, cessée ou introuvable ; nom officiel et commune du siège |
+| Union européenne (27 pays) et Irlande du Nord | numéro de TVA intracommunautaire | VIES, Commission européenne | valide ou non ; nom officiel quand le pays le communique |
+| Royaume-Uni | company number | Companies House (avec une clé gratuite `COMPANIES_HOUSE_API_KEY`, sinon contrôle manuel) | active ou non ; nom officiel |
+| Tous les autres pays | numéro officiel d'immatriculation (RCCM, ICE, NEQ, EIN…) | contrôle manuel | voir ci-dessous |
+
+Chaque dossier porte un état : **Vérifiée**, **À vérifier** ou **Rejetée**.
+Le tableau de bord affiche le nom officiel renvoyé par le registre à côté du
+nom déclaré : il reste à l'équipe de vérifier qu'ils correspondent.
+
+**Contrôle manuel** (pays sans registre interrogeable, entreprise française non
+diffusible, registre indisponible) :
+
+1. demander au partenaire un extrait officiel et récent de son immatriculation
+   (Kbis ou avis de situation INSEE en France, extrait RCCM dans l'espace
+   OHADA, certificat d'immatriculation ailleurs) ;
+2. le comparer au registre public du pays. Le lien « voir le registre » de la
+   fiche ouvre l'annuaire officiel français, VIES ou Companies House, ou une
+   recherche OpenCorporates (agrégateur des registres officiels de plus de 140
+   pays) pour les autres pays ;
+3. un **administrateur** valide ou rejette l'entreprise en notant la source
+   consultée. Son nom et la date sont enregistrés.
+
+Le numéro peut être corrigé depuis la fiche : la vérification repart de zéro.
+Ces contrôles n'utilisent que des registres publics, consultés pour vérifier
+un statut professionnel déclaré par le candidat lui-même. La politique de
+confidentialité le mentionne.
+
+## 4. L'Espace partenaire
 
 Chaque partenaire accepté a une page privée, en français
 (`/espace-partenaire`) ou en anglais (`/partner-space`), sur le site BOLIGO :
@@ -68,7 +114,7 @@ Chaque partenaire accepté a une page privée, en français
 - le nombre de Parcours payés avec son code, le montant encaissé et sa
   commission ;
 - l'historique des douze derniers mois ;
-- le rappel des règles de publication (§ 4).
+- le rappel des règles de publication (§ 5).
 
 **Accès par lien privé, sans mot de passe** :
 
@@ -95,7 +141,7 @@ partenaires et leur durée de conservation :
 - partenaire retenu : durée du partenariat puis 5 ans ;
 - pièces comptables : 10 ans.
 
-## 4. Règles à inscrire dans chaque accord
+## 5. Règles à inscrire dans chaque accord
 
 À faire valider par un conseil juridique avant le premier partenariat.
 
@@ -129,7 +175,7 @@ partenaires et leur durée de conservation :
 - **Fin** : résiliation possible à tout moment par écrit, le code est alors mis
   en pause.
 
-## 5. La page Codes promo
+## 6. La page Codes promo
 
 Tous les codes de réduction, partenaires ou non (promotion de lancement, salon,
 offre ponctuelle), dans le menu **Codes promo** du tableau de bord :
@@ -150,7 +196,7 @@ cas échéant, le partenaire à qui il appartient. Les membres saisissent le cod
 sur l'écran de paiement du Parcours, dans l'application. Un membre ne peut
 utiliser un même code qu'une fois.
 
-## 6. Accès de l'équipe au tableau de bord
+## 7. Accès de l'équipe au tableau de bord
 
 Le tableau de bord (`https://boligo-admin.onrender.com`) affiche un menu
 différent selon le rôle. L'API applique les mêmes règles : un rôle ne peut pas
@@ -187,12 +233,13 @@ La variable ne sert que tant qu'il n'existe **aucun** administrateur. Dès que
 le premier existe, elle n'a plus d'effet et peut être retirée. Les autres
 membres de l'équipe sont ensuite nommés depuis la page **Équipe**.
 
-## 7. Variables Render (service `Boligo-back`)
+## 8. Variables Render (service `Boligo-back`)
 
 | Variable | Rôle | Valeur |
 |---|---|---|
-| `ADMIN_BOOTSTRAP_EMAIL` | adresse du premier administrateur (voir § 6) | adresse du titulaire |
+| `ADMIN_BOOTSTRAP_EMAIL` | adresse du premier administrateur (voir § 7) | adresse du titulaire |
 | `PARTNERS_NOTIFY_EMAIL` | adresse qui reçoit les nouvelles candidatures | facultatif, `contact@boligo.fr` par défaut |
+| `COMPANIES_HOUSE_API_KEY` | vérification automatique des sociétés britanniques | facultatif, clé gratuite à créer sur developer.company-information.service.gov.uk |
 | `PUBLIC_WEB_URL` | adresse du site utilisée dans les liens de l'Espace partenaire | facultatif, `https://boligo-web.onrender.com` par défaut (à changer le jour où le site passe sur `boligo.fr`) |
 
 Les e-mails (accusé de réception, alerte à l'équipe, bienvenue et lien de
@@ -202,7 +249,7 @@ configuré, les candidatures sont bien enregistrées et visibles dans le tableau
 de bord ; seuls les e-mails ne partent pas. Le lien de l'Espace partenaire
 s'affiche alors à l'équipe pour l'envoyer à la main.
 
-## 8. Base de données
+## 9. Base de données
 
 Ajouts dans la base BOLIGO (Supabase, projet « Lunis-hash's Project ») :
 
@@ -210,7 +257,10 @@ Ajouts dans la base BOLIGO (Supabase, projet « Lunis-hash's Project ») :
 - types `PartnerType` et `PartnerStatus` ;
 - valeurs `MODERATOR` et `MARKETING` du type `UserRole` ;
 - colonnes `portalTokenHash` (empreinte du lien privé) et `portalLinkSentAt`
-  de `PartnerApplication`.
+  de `PartnerApplication` ;
+- colonnes de vérification d'entreprise (`registrationType`,
+  `registrationNumber`, `verificationStatus`, `verificationMethod`,
+  `verifiedName`, `verificationNote`, `verifiedAt`, `verifiedBy`).
 
 Ces ajouts ne modifient aucune donnée existante. La table est protégée par la
 sécurité par ligne, comme les autres : seule l'API y accède.
