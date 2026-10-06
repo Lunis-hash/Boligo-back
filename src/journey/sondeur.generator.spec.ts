@@ -104,6 +104,66 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(validateSondeurGrid(qs)).toBe(true);
   });
 
+  it('questions de l’IA relues : elles passent avant les gabarits, sauf jargon ou redite', () => {
+    const aiFor = (
+      day: number,
+      themeKey: (typeof THEME_LIST)[number],
+      text: string,
+    ) => ({
+      day,
+      theme: 'x',
+      emoji: '💬',
+      text,
+      options: ['A', 'B', 'C'],
+      themeKey,
+    });
+    const ai = [
+      aiFor(
+        1,
+        'famille',
+        'Qui, dans votre famille, décidait du nombre d’enfants, et l’avez-vous déjà remis en question ?',
+      ),
+      aiFor(
+        1,
+        'argent',
+        'Êtes-vous plutôt anxieux quand votre compte en banque baisse en fin de mois ?',
+      ),
+      aiFor(
+        1,
+        'spiritualite',
+        'Votre partenaire règle seul une grosse dépense commune sans vous prévenir : que faites-vous ?',
+      ),
+    ];
+    const history = [
+      'Votre partenaire paie seul une grosse dépense commune sans vous en parler : comment réagissez-vous ?',
+    ];
+    const base = {
+      report,
+      firstNames: ['Steve', 'Nadia'] as [string, string],
+      aiQuestions: ai,
+      history,
+    };
+
+    // Sans relecture, la divergence réelle garde la priorité.
+    const plain = assembleSondeur(base);
+    expect(
+      plain.find((q) => q.day === 1 && q.themeKey === 'famille')?.source,
+    ).toBe('divergence');
+
+    const reviewed = assembleSondeur({ ...base, preferAi: true });
+    const famille = reviewed.find(
+      (q) => q.day === 1 && q.themeKey === 'famille',
+    );
+    expect(famille?.source).toBe('ia');
+    expect(famille?.text).toMatch(/Qui, dans votre famille/);
+    // Jargon clinique : écartée. Redite d'une question déjà posée : écartée.
+    expect(reviewed.some((q) => /anxieux/.test(q.text))).toBe(false);
+    expect(reviewed.some((q) => /grosse dépense commune/.test(q.text))).toBe(
+      false,
+    );
+    expect(validateSondeurGrid(reviewed)).toBe(true);
+  });
+
   it('résume le rapport pour le prompt IA sans coordonnées', () => {
     const text = describeReportForAi(report, ['Steve', 'Nadia']);
     expect(text).toMatch(/DIVERGENCES/);

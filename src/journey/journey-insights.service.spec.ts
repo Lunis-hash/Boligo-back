@@ -129,6 +129,16 @@ const dayAnswer = (followUpTheme = 'argent') =>
     },
   });
 
+/** Relecteur indépendant simulé : accepte tout, refuse tout, ou indisponible. */
+const reviewer = (verdict: 'ok' | 'refus' | 'absent' = 'ok') =>
+  jest.fn(() =>
+    Promise.resolve(
+      verdict === 'absent'
+        ? null
+        : { rejected: new Set<number>(verdict === 'refus' ? [0] : []) },
+    ),
+  );
+
 describe('JourneyInsightsService — lectures du Sondeur', () => {
   let seq = 0;
   const newJourneyId = () => `journey-${++seq}`;
@@ -138,6 +148,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const db = memoryDb(id);
     const ai = {
       journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+      reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
 
@@ -176,6 +187,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const db = memoryDb(id);
     const ai = {
       journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+      reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1);
@@ -190,7 +202,10 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
   it('sans IA (parcours non payé, budget atteint) : lecture des règles, sans relance immédiate', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
-    const ai = { journeyCompletion: jest.fn(() => Promise.resolve(null)) };
+    const ai = {
+      journeyCompletion: jest.fn(() => Promise.resolve(null)),
+      reviewSondeurQuestions: reviewer(),
+    };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1);
 
@@ -226,6 +241,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
           prompt.includes('bilan Harmonie') ? review : dayAnswer(),
         ),
       ),
+      reviewSondeurQuestions: reviewer(),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1);
@@ -247,7 +263,10 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
   it('sans IA, le bilan s’appuie sur les écarts des entretiens', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
-    const ai = { journeyCompletion: jest.fn(() => Promise.resolve(null)) };
+    const ai = {
+      journeyCompletion: jest.fn(() => Promise.resolve(null)),
+      reviewSondeurQuestions: reviewer(),
+    };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1);
     db.answerDay(2);
@@ -256,5 +275,41 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     expect(view.review).toMatchObject({ day: 0, source: 'regles' });
     expect(view.review?.openers).toHaveLength(3);
     expect(db.prisma.interviewIA.findFirst).toHaveBeenCalledTimes(2);
+  });
+
+  it('question d’approfondissement refusée par le relecteur, ou relecture impossible : rien n’est remplacé', async () => {
+    for (const verdict of ['refus', 'absent'] as const) {
+      const id = newJourneyId();
+      const db = memoryDb(id);
+      const ai = {
+        journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+        reviewSondeurQuestions: reviewer(verdict),
+      };
+      const service = new JourneyInsightsService(
+        db.prisma as never,
+        ai as never,
+      );
+      db.answerDay(1);
+      await service.refresh(id);
+      expect(ai.reviewSondeurQuestions).toHaveBeenCalledTimes(1);
+      // La lecture est enregistrée, la question du jour 2 reste inchangée.
+      expect(db.insights).toHaveLength(1);
+      expect(db.questions.some((q) => q.followUp)).toBe(false);
+    }
+  });
+
+  it('écarte une question d’approfondissement de même sens qu’une question déjà posée', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    db.questions[0].questionText =
+      'Votre partenaire règle seul une grosse dépense commune sans vous prévenir : que faites-vous ?';
+    const ai = {
+      journeyCompletion: jest.fn(() => Promise.resolve(dayAnswer())),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1);
+    await service.refresh(id);
+    expect(db.questions.some((q) => q.followUp)).toBe(false);
   });
 });

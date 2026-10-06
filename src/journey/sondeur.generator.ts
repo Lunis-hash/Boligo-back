@@ -36,6 +36,8 @@ import {
   TOPIC_DEEP,
 } from './sondeur.pool';
 
+import { hasClinicalJargon, similarQuestions } from './clinical-lens';
+
 export const SONDEUR_DAYS = 3;
 export const SONDEUR_QUESTIONS_PER_DAY = THEME_LIST.length; // 7
 
@@ -81,6 +83,11 @@ export interface SondeurInput {
   history?: string[];
   /** Graine du tirage (l'identifiant du parcours) : deux couples ne reçoivent pas la même série. */
   seed?: string;
+  /**
+   * Questions de l'IA relues et validées par un second modèle indépendant :
+   * elles passent alors avant les gabarits, dans chaque créneau.
+   */
+  preferAi?: boolean;
 }
 
 export interface SondeurQuestion extends HarmonyQuestionPayload {
@@ -643,6 +650,8 @@ interface Memory {
   /** Signatures et textes déjà retenus dans ce Sondeur. */
   usedSig: Set<string>;
   usedText: Set<string>;
+  /** Textes complets (passés et retenus) : repère les questions de l'IA trop proches. */
+  raw: string[];
 }
 
 /**
@@ -701,7 +710,10 @@ function pickAi(
       q.themeKey === theme &&
       !mem.usedText.has(normalizeKey(q.text)) &&
       !mem.seenText.has(normalizeKey(q.text)) &&
-      !mem.seenSig.has(questionSignature(q.text)),
+      !mem.seenSig.has(questionSignature(q.text)) &&
+      // Garde-fous : ni jargon clinique, ni redite d'une question déjà posée.
+      !hasClinicalJargon(q.text) &&
+      !mem.raw.some((t) => similarQuestions(t, q.text)),
   );
   return candidate ?? null;
 }
@@ -740,17 +752,26 @@ function targetedPool(day: number, d: Divergence): PoolTemplate[] {
 /**
  * Construit exactement 21 questions (3 jours × 7 thèmes), ordre : jour puis thème.
  * Priorité par créneau : divergence réelle → question IA conforme → point
- * d'accord réel → question du thème. Dans chaque réserve, la formulation retenue
+ * d'accord réel → question du thème. Questions de l'IA relues par un second
+ * modèle (`preferAi`) : elles passent en premier. Dans chaque réserve, la formulation retenue
  * est une que ni l'un ni l'autre membre n'a déjà vue.
  */
 export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
-  const { report, aiQuestions, avoidTexts = [], history = [], seed } = input;
+  const {
+    report,
+    aiQuestions,
+    avoidTexts = [],
+    history = [],
+    seed,
+    preferAi = false,
+  } = input;
   const past = [...avoidTexts, ...history];
   const mem: Memory = {
     seenSig: new Set(past.map(questionSignature)),
     seenText: new Set(past.map(normalizeKey)),
     usedSig: new Set(),
     usedText: new Set(),
+    raw: [...past],
   };
   const ai = aiQuestions ?? [];
   const result: SondeurQuestion[] = [];
@@ -770,8 +791,21 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       // Jour 1 → divergence la plus grave, jour 2 → la suivante, jour 3 → la suivante (cyclique).
       const divergence = divs.length ? divs[(day - 1) % divs.length] : null;
       let question: SondeurQuestion | null = null;
+      const tryAi = () => {
+        const fromAi = pickAi(ai, day, theme, mem);
+        return fromAi
+          ? {
+              ...fromAi,
+              ...base,
+              options: ensureAutreOption(fromAi.options),
+              source: 'ia' as const,
+            }
+          : null;
+      };
 
-      if (divergence) {
+      if (preferAi) question = tryAi();
+
+      if (!question && divergence) {
         const pick = pickFresh(
           [
             ...topicTemplate(day, divergence),
@@ -789,17 +823,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         }
       }
 
-      if (!question) {
-        const fromAi = pickAi(ai, day, theme, mem);
-        if (fromAi) {
-          question = {
-            ...fromAi,
-            ...base,
-            options: ensureAutreOption(fromAi.options),
-            source: 'ia',
-          };
-        }
-      }
+      if (!question && !preferAi) question = tryAi();
 
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
         const convs = report.convergences.filter((c) => c.theme === theme);
@@ -841,6 +865,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
 
       mem.usedText.add(normalizeKey(question.text));
       mem.usedSig.add(questionSignature(question.text));
+      mem.raw.push(question.text);
       result.push(question);
     }
   }
