@@ -5,6 +5,7 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { NotificationModule } from '../notifications/notification.module';
+import { AccountDeletionService } from '../account/account-deletion.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { NotificationModule } from '../notifications/notification.module';
     NotificationModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, JwtStrategy],
+  providers: [AdminService, JwtStrategy, AccountDeletionService],
 })
 export class AdminModule {}

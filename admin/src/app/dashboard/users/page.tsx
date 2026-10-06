@@ -46,6 +46,12 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+
+  // Retour de la fiche après une suppression définitive.
+  useEffect(() => {
+    setDeleted(new URLSearchParams(window.location.search).get("deleted") === "1");
+  }, []);
 
   const exportCsv = async () => {
     try {
@@ -88,6 +94,11 @@ export default function UsersPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      {deleted && (
+        <p className="rounded-xl bg-lilas px-4 py-3 text-sm text-nuit" role="status" data-testid="user-deleted-msg">
+          Le compte a été supprimé définitivement. Ses paiements restent, anonymisés, pour la comptabilité.
+        </p>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Utilisateurs</h1>

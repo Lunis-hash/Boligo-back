@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
@@ -21,6 +22,7 @@ import { PartnerPortalDto } from './dto/portal.dto';
 import { ApplyPartnerDto } from './dto/apply-partner.dto';
 import {
   CreatePartnerCodeDto,
+  ManualVerificationDto,
   UpdatePartnerDto,
 } from './dto/update-partner.dto';
 
@@ -109,5 +111,24 @@ export class PartnersController {
   @AllowRoles(UserRole.MARKETING)
   revokePortal(@Param('id', ParseUUIDPipe) id: string) {
     return this.partners.revokePortal(id);
+  }
+
+  /** Relance la vérification de l'entreprise auprès du registre public. */
+  @Post('admin/partners/:id/verify')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  verify(@Param('id', ParseUUIDPipe) id: string) {
+    return this.partners.verify(id);
+  }
+
+  /** Validation ou rejet manuel de l'entreprise : administrateurs uniquement. */
+  @Patch('admin/partners/:id/verification')
+  @UseGuards(AdminGuard)
+  manualVerification(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ManualVerificationDto,
+    @Req() req: { user: { email: string } },
+  ) {
+    return this.partners.manualVerification(id, dto, req.user.email);
   }
 }

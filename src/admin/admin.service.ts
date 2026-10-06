@@ -13,6 +13,7 @@ import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { NotificationService } from '../notifications/notification.service';
 import { isStaff } from './guards/admin-roles';
+import { AccountDeletionService } from '../account/account-deletion.service';
 import { checkDiscount, normalizePromoCode } from './promo-rules';
 import { revenueByCode } from '../partners/partner-sales';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
@@ -61,7 +62,39 @@ export class AdminService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private notificationService: NotificationService,
+    private accountDeletion: AccountDeletionService,
   ) {}
+
+  /**
+   * Suppression définitive d'un membre par un administrateur, comme si le
+   * membre l'avait demandée : profil, entretien, parcours et messages effacés,
+   * paiements gardés anonymisés. Un compte d'équipe perd d'abord son accès.
+   */
+  async deleteUser(actorId: string, id: string, confirmEmail: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, role: true },
+    });
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+    if (user.id === actorId) {
+      throw new BadRequestException(
+        'Vous ne pouvez pas supprimer votre propre compte depuis le tableau de bord.',
+      );
+    }
+    if (user.role !== UserRole.USER) {
+      throw new BadRequestException(
+        'Ce compte fait partie de l’équipe : retirez d’abord son accès (page Équipe).',
+      );
+    }
+    if (confirmEmail.trim().toLowerCase() !== user.email.toLowerCase()) {
+      throw new BadRequestException(
+        'L’adresse saisie ne correspond pas à ce compte.',
+      );
+    }
+    await this.accountDeletion.deleteUser(id);
+    console.log(`[ADMIN] Compte ${id} supprimé par l'administrateur ${actorId}.`);
+    return { deleted: true };
+  }
 
   /** Au démarrage : premier administrateur désigné par ADMIN_BOOTSTRAP_EMAIL. */
   async onModuleInit() {
@@ -757,9 +790,9 @@ export class AdminService {
         t.euroAmount ?? 0,
         escapeCsv(t.paymentRef),
         escapeCsv(t.description),
-        t.userId,
-        escapeCsv(t.user.email),
-        escapeCsv(`${t.user.firstName} ${t.user.lastName}`)
+        t.userId ?? '',
+        escapeCsv(t.user ? t.user.email : 'compte supprimé'),
+        escapeCsv(t.user ? `${t.user.firstName} ${t.user.lastName}` : ''),
       ].join(',');
     });
 

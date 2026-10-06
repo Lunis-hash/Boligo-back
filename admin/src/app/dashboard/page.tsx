@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Clock,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import {
   AreaChart,
@@ -53,6 +54,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [aiSpend, setAiSpend] = useState<AiSpend | null>(null);
 
   const fetchData = useCallback(async (silent = false) => {
     try {
@@ -60,12 +62,14 @@ export default function DashboardPage() {
       const token = getToken();
       // Les finances ne sont lues que par l'administrateur (même règle que l'API).
       const isAdmin = getAdminUser()?.role === "ADMIN";
-      const [s, f] = await Promise.all([
+      const [s, f, ai] = await Promise.all([
         apiFetch<DashboardStats>("/admin/stats", { token }),
         isAdmin ? apiFetch<FinanceStats>("/admin/finance/stats", { token }) : Promise.resolve(null),
+        isAdmin ? apiFetch<AiSpend>("/admin/ai/spend", { token }).catch(() => null) : Promise.resolve(null),
       ]);
       setStats(s);
       setFinance(f);
+      setAiSpend(ai);
       setLastRefresh(new Date());
       setError("");
     } catch (e) {
@@ -346,7 +350,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Moderation & Video */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className={aiSpend ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-4" : "grid gap-4 sm:grid-cols-3"}>
           <StatCard
             title="Signalements"
             value={stats.moderation.reportsPending}
@@ -366,10 +370,26 @@ export default function DashboardPage() {
             hint="terminés"
             icon={Video}
           />
+          {aiSpend && (
+            <StatCard
+              title="IA ce mois-ci"
+              value={formatEuro(aiSpend.spentEur)}
+              hint={`plafond ${formatEuro(aiSpend.budgetEur)} · ${aiSpend.calls} appel(s)`}
+              icon={Sparkles}
+            />
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+/** Dépense IA du mois (garde-fou AI_MONTHLY_BUDGET_EUR). */
+interface AiSpend {
+  month: string;
+  calls: number;
+  spentEur: number;
+  budgetEur: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────

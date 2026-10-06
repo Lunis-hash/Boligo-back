@@ -25,7 +25,9 @@ import {
   initialPartnerLang,
   isPartnerFormValid,
   partnerPayload,
+  registrationError,
 } from './content';
+import { REGISTRATION_TYPES } from './registration';
 
 const TINTS: Record<PartnerType, [string, string]> = {
   ANNONCEUR: [Brand.rose, Brand.framboise],
@@ -43,6 +45,8 @@ const EMPTY: PartnerForm = {
   website: '',
   audience: '',
   message: '',
+  registrationType: null,
+  registrationNumber: '',
   consent: false,
 };
 
@@ -77,7 +81,7 @@ export function PartnersPage({ lang: forcedLang }: { lang?: PartnerLang }) {
   const submit = async () => {
     setError(null);
     if (!isPartnerFormValid(form)) {
-      setError(t.missing);
+      setError(registrationError(form, lang) ?? t.missing);
       return;
     }
     setSending(true);
@@ -253,6 +257,41 @@ export function PartnersPage({ lang: forcedLang }: { lang?: PartnerLang }) {
                   multiline
                 />
 
+                <View style={styles.regBox} testID="partner-registration">
+                  <Text style={[styles.label, ff.semi]}>{t.registration.title}</Text>
+                  <Text style={[styles.regIntro, ff.text]}>{t.registration.intro}</Text>
+                  <View style={styles.chips}>
+                    {REGISTRATION_TYPES.map((rt) => {
+                      const active = form.registrationType === rt;
+                      return (
+                        <Pressable
+                          key={rt}
+                          onPress={() => set('registrationType', rt)}
+                          accessibilityRole="radio"
+                          accessibilityState={{ checked: active }}
+                          style={[styles.chip, active && { backgroundColor: Brand.nuit, borderColor: Brand.nuit }]}
+                          testID={`partner-reg-${rt}`}
+                        >
+                          <Text style={[styles.chipText, ff.semi, active && { color: Brand.blanc }]}>
+                            {t.registration.types[rt]}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  {form.registrationType && (
+                    <Field
+                      label={t.registration.numberLabel}
+                      placeholder={t.registration.hints[form.registrationType]}
+                      value={form.registrationNumber}
+                      onChange={(v) => set('registrationNumber', v)}
+                      ff={ff}
+                      testID="partner-reg-number"
+                    />
+                  )}
+                  <Text style={[styles.regHint, ff.text]}>{t.registration.noStatus}</Text>
+                </View>
+
                 <Pressable
                   onPress={() => set('consent', !form.consent)}
                   accessibilityRole="checkbox"
@@ -383,6 +422,9 @@ const styles = StyleSheet.create({
     color: Brand.encre,
     backgroundColor: Brand.blanc,
   },
+  regBox: { gap: 10, backgroundColor: Brand.fond, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: Brand.bordLilas },
+  regIntro: { fontSize: 14, color: Brand.encreDouce, lineHeight: 21 },
+  regHint: { fontSize: 13, color: Brand.encrePale, lineHeight: 19 },
   consent: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', marginTop: 4 },
   box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: Brand.lavande, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
   boxOn: { backgroundColor: Brand.lavande },

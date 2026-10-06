@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import type { Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
@@ -18,6 +19,12 @@ async function bootstrap() {
     console.error('[SÉCURITÉ] JWT_SECRET absent en production : les jetons ne sont pas protégés.');
   }
   app.setGlobalPrefix('api');
+  // Render interroge la racine « / » au démarrage : réponse simple plutôt qu'une 404.
+  app
+    .getHttpAdapter()
+    .get('/', (_req: Request, res: Response) =>
+      res.json({ service: 'BOLIGO API', status: 'ok' }),
+    );
 
   // HTTP Response Compression
   app.use(compression());

@@ -1,0 +1,72 @@
+/**
+ * Garde-fou de dépense IA : BOLIGO ne dépasse jamais le budget mensuel fixé
+ * (AI_MONTHLY_BUDGET_EUR, 10 € par défaut). Au-delà, chaque fonction bascule
+ * sur sa version sans IA (portrait rédigé, questions du Sondeur sur modèles,
+ * filtre de modération local).
+ */
+
+export const DEFAULT_MONTHLY_BUDGET_EUR = 10;
+
+/**
+ * Tarifs publics Groq en dollars par million de jetons (entrée, sortie),
+ * arrondis vers le haut et comptés 1 $ = 1 € : la dépense réelle est toujours
+ * un peu inférieure à celle comptée. À mettre à jour si Groq change ses prix.
+ */
+export const MODEL_PRICES: Record<string, { input: number; output: number }> = {
+  'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
+  'meta-llama/llama-4-scout-17b-16e-instruct': { input: 0.11, output: 0.34 },
+  'llama-3.3-70b-versatile': { input: 0.59, output: 0.79 },
+  'openai/gpt-oss-20b': { input: 0.1, output: 0.5 },
+  'openai/gpt-oss-120b': { input: 0.15, output: 0.75 },
+  'qwen/qwen3-32b': { input: 0.29, output: 0.59 },
+};
+
+/** Un modèle inconnu est compté cher : prudence sur le budget. */
+export const UNKNOWN_MODEL_PRICE = { input: 1, output: 2 };
+
+export function modelPrice(model: string): { input: number; output: number } {
+  if (/:free$/.test(model)) return { input: 0, output: 0 };
+  return MODEL_PRICES[model] ?? UNKNOWN_MODEL_PRICE;
+}
+
+/** Coût en millionièmes d'euro, arrondi au-dessus. */
+export function costMicroEur(
+  model: string,
+  inputTokens: number,
+  outputTokens: number,
+): number {
+  const p = modelPrice(model);
+  return Math.ceil(inputTokens * p.input + outputTokens * p.output);
+}
+
+/** Estimation prudente : environ 3 caractères par jeton en français. */
+export function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 3);
+}
+
+export function monthKey(date: Date = new Date()): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+/** Budget du mois en millionièmes d'euro ; 0 coupe toute IA. */
+export function monthlyBudgetMicroEur(
+  value: string | undefined = process.env.AI_MONTHLY_BUDGET_EUR,
+): number {
+  const eur =
+    value === undefined || value.trim() === ''
+      ? DEFAULT_MONTHLY_BUDGET_EUR
+      : Number(value.replace(',', '.'));
+  if (!Number.isFinite(eur) || eur <= 0) return 0;
+  return Math.round(eur * 1_000_000);
+}
+
+/**
+ * Portrait des membres : rédigé sans IA par défaut (coût nul, réponse
+ * immédiate). AI_PROFILE_MODE=ai réactive la rédaction par l'IA, toujours
+ * sous le plafond mensuel.
+ */
+export function profileAiEnabled(
+  value: string | undefined = process.env.AI_PROFILE_MODE,
+): boolean {
+  return (value ?? '').trim().toLowerCase() === 'ai';
+}

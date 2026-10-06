@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, User as UserIcon, Shield, Wallet, Route, Flag, Video, FileText, CheckCircle2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 // Types matching backend returned fields
 type UserDetail = {
+  role: string;
   id: string;
   email: string;
   firstName: string;
@@ -423,6 +424,85 @@ function UserDetailPage() {
         </Card>
       )}
 
+      {getAdminUser()?.role === "ADMIN" && user.role === "USER" && (
+        <DeleteAccountCard userId={user.id} email={user.email} />
+      )}
+    </div>
+  );
+}
+
+/** Suppression définitive : l'administrateur retape l'adresse du compte. */
+function DeleteAccountCard({ userId, email }: { userId: string; email: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const matches = typed.trim().toLowerCase() === email.toLowerCase();
+
+  async function remove() {
+    setBusy(true);
+    setError("");
+    try {
+      await apiFetch(`/admin/users/${userId}`, {
+        method: "DELETE",
+        token: getToken(),
+        body: JSON.stringify({ confirmEmail: typed.trim() }),
+      });
+      router.push("/dashboard/users?deleted=1");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Suppression impossible");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-framboise/30 bg-rose/40 p-6" data-testid="user-delete-card">
+      <p className="font-title text-lg text-encre">Supprimer ce compte</p>
+      <p className="mt-1 text-sm text-neutral-600">
+        Suppression définitive, comme si le membre la demandait : profil, entretien, parcours, messages et
+        signalements sont effacés. Les paiements restent, anonymisés, pour la comptabilité. Pour un simple
+        écart de conduite, préférez « Suspendre ».
+      </p>
+      {!open ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4 border-framboise/40 text-framboise hover:bg-rose"
+          onClick={() => setOpen(true)}
+          data-testid="user-delete-open"
+        >
+          Supprimer le compte…
+        </Button>
+      ) : (
+        <div className="mt-4 space-y-3">
+          <label className="block text-sm text-neutral-700">
+            Pour confirmer, tapez l’adresse e-mail du compte : <span className="font-medium">{email}</span>
+            <input
+              className="mt-2 h-10 w-full max-w-md rounded-xl border border-input bg-white px-3 text-sm"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              autoComplete="off"
+              data-testid="user-delete-email"
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              disabled={!matches || busy}
+              className="bg-framboise text-white hover:bg-framboise/90"
+              onClick={remove}
+              data-testid="user-delete-confirm"
+            >
+              {busy ? "Suppression…" : "Supprimer définitivement"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={busy}>
+              Annuler
+            </Button>
+          </div>
+          {error && <p className="text-sm text-framboise">{error}</p>}
+        </div>
+      )}
     </div>
   );
 }

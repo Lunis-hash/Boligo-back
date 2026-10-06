@@ -334,8 +334,9 @@ enum TransactionType {
 
 model CreditTransaction {
   id           String          @id @default(uuid())
-  userId       String
-  user         User            @relation(fields: [userId], references: [id])
+  /// Vide après suppression du compte : le paiement est gardé anonymisé (obligation comptable).
+  userId       String?
+  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   journeyId    String?
   journey      Journey?        @relation(fields: [journeyId], references: [id])
   promoCodeId  String?
@@ -350,6 +351,8 @@ model CreditTransaction {
   @@index([userId])
   @@index([journeyId])
   @@index([paymentRef])
+  /// Ventes par code promo (partenaires, page Codes promo, Espace partenaire).
+  @@index([promoCodeId])
 }
 
 // ---------------------------------------------------------
@@ -507,6 +510,24 @@ enum PartnerType {
   CREATEUR
 }
 
+/// Type de numéro d'entreprise fourni par le partenaire.
+enum PartnerRegistrationType {
+  /// France : SIREN (9 chiffres) ou SIRET (14 chiffres)
+  SIRENE
+  /// Union européenne : numéro de TVA intracommunautaire
+  TVA_UE
+  /// Royaume-Uni : company number (Companies House)
+  UK_COMPANY
+  /// Autre pays : numéro officiel d'immatriculation
+  AUTRE
+}
+
+enum PartnerVerification {
+  A_VERIFIER
+  VERIFIE
+  REJETE
+}
+
 enum PartnerStatus {
   NOUVEAU
   EN_COURS
@@ -515,32 +536,54 @@ enum PartnerStatus {
 }
 
 model PartnerApplication {
-  id               String        @id @default(uuid())
-  type             PartnerType
-  status           PartnerStatus @default(NOUVEAU)
-  name             String
-  email            String
-  company          String?
-  country          String
-  city             String?
-  website          String?
+  id                 String                   @id @default(uuid())
+  type               PartnerType
+  status             PartnerStatus            @default(NOUVEAU)
+  name               String
+  email              String
+  company            String?
+  country            String
+  city               String?
+  website            String?
   /// Réseaux et taille d'audience (créateurs), zone couverte (ambassadeurs), budget (marques).
-  audience         String?
-  message          String
-  language         String        @default("fr")
+  audience           String?
+  message            String
+  language           String                   @default("fr")
   /// Notes internes de l'équipe (jamais montrées au candidat).
-  notes            String?
+  notes              String?
   /// Commission en % sur chaque Parcours payé avec son code (ambassadeurs, créateurs).
-  commissionRate   Int?
-  promoCodeId      String?       @unique
-  promoCode        PromoCode?    @relation(fields: [promoCodeId], references: [id])
+  commissionRate     Int?
+  promoCodeId        String?                  @unique
+  promoCode          PromoCode?               @relation(fields: [promoCodeId], references: [id])
+  /// Immatriculation de l'entreprise du partenaire (obligatoire pour travailler avec BOLIGO).
+  registrationType   PartnerRegistrationType?
+  registrationNumber String?
+  /// Contrôle auprès des registres publics (INSEE, VIES, Companies House) ou contrôle manuel.
+  verificationStatus PartnerVerification      @default(A_VERIFIER)
+  verificationMethod String?
+  /// Nom officiel renvoyé par le registre, à comparer au nom déclaré.
+  verifiedName       String?
+  verificationNote   String?
+  verifiedAt         DateTime?
+  /// Adresse e-mail de l'administrateur, pour un contrôle manuel.
+  verifiedBy         String?
   /// Espace partenaire : empreinte SHA-256 du lien privé (le lien n'est jamais stocké).
-  portalTokenHash  String?       @unique
+  portalTokenHash    String?                  @unique
   /// Date d'envoi du dernier lien vers l'Espace partenaire.
-  portalLinkSentAt DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  portalLinkSentAt   DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
 
   @@index([type, status])
   @@index([email])
+}
+
+/// Dépense IA du mois : garde-fou budgétaire (AI_MONTHLY_BUDGET_EUR), en millionièmes d'euro.
+model AiSpend {
+  month        String   @id
+  calls        Int      @default(0)
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  costMicroEur Int      @default(0)
+  updatedAt    DateTime @updatedAt
 }

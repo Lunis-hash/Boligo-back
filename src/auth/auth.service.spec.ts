@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
+import { AccountDeletionService } from '../account/account-deletion.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../common/email.service';
@@ -67,7 +68,7 @@ describe('AuthService', () => {
     videoSession: { deleteMany: jest.fn() },
     contactExchange: { deleteMany: jest.fn() },
     alumniCouple: { deleteMany: jest.fn() },
-    creditTransaction: { deleteMany: jest.fn() },
+    creditTransaction: { deleteMany: jest.fn(), updateMany: jest.fn() },
     matchProposal: { deleteMany: jest.fn() },
     moduleResponse: { deleteMany: jest.fn() },
     mentalMap: { deleteMany: jest.fn() },
@@ -88,6 +89,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: EmailService, useValue: { sendVerificationEmail: jest.fn().mockResolvedValue(undefined), sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined) } },
+        AccountDeletionService,
       ],
     }).compile();
 
@@ -441,6 +443,16 @@ describe('AuthService', () => {
       expect(prisma.$transaction).toHaveBeenCalled();
       expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'user-id' } });
       expect(result).toEqual({ success: true, message: 'Compte supprimé avec succès' });
+      // Paiements gardés (comptabilité) : anonymisés, jamais supprimés.
+      expect(mockPrismaService.creditTransaction.deleteMany).not.toHaveBeenCalled();
+      expect(mockPrismaService.creditTransaction.updateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-id' },
+        data: { userId: null, journeyId: null },
+      });
+      expect(mockPrismaService.creditTransaction.updateMany).toHaveBeenCalledWith({
+        where: { journeyId: { in: ['journey-1'] } },
+        data: { journeyId: null },
+      });
     });
   });
 });

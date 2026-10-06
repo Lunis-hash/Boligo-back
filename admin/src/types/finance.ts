@@ -31,13 +31,14 @@ export type TransactionRow = {
   paymentRef: string | null;
   date: string;
   description: string | null;
+  /** null : compte supprimé, paiement conservé anonymisé. */
   user: {
     id: string;
     email: string;
     firstName: string;
     lastName: string;
     creditBalance: number;
-  };
+  } | null;
   journey: {
     id: string;
     userA: { firstName: string };

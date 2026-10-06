@@ -35,6 +35,27 @@ describe('AiService (5 Intelligences Harmonie)', () => {
   // 🧠 1. Sondeur IA — Génération de Profil & Questions
   // =========================================================================
   describe('🧠 Sondeur IA', () => {
+    // Le portrait par l'IA n'est actif qu'avec AI_PROFILE_MODE=ai (sans IA par défaut).
+    const previousMode = process.env.AI_PROFILE_MODE;
+    beforeEach(() => {
+      process.env.AI_PROFILE_MODE = 'ai';
+    });
+    afterAll(() => {
+      if (previousMode === undefined) delete process.env.AI_PROFILE_MODE;
+      else process.env.AI_PROFILE_MODE = previousMode;
+    });
+
+    it('rédige le portrait sans IA par défaut (coût nul)', async () => {
+      delete process.env.AI_PROFILE_MODE;
+      const spy = jest.spyOn(service as any, 'queryAiAgent');
+      const result = await service.generateProfileSynthesis(
+        { firstName: 'Awa', age: 30, gender: 'F', city: 'Lyon' },
+        [],
+      );
+      expect(spy).not.toHaveBeenCalled();
+      expect(result.bio).toEqual(expect.any(String));
+    });
+
     it('doit générer la synthèse et la carte mentale 6D avec succès', async () => {
       const mockSynthesis = {
         synthesis: 'Profil axé sur la sincérité et le partage.',

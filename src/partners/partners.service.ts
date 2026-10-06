@@ -8,6 +8,7 @@ import {
   DiscountType,
   PartnerStatus,
   PartnerType,
+  PartnerVerification,
   Prisma,
   TransactionType,
 } from '@prisma/client';
@@ -17,8 +18,11 @@ import { EmailService, emailDeliveryMode } from '../common/email.service';
 import { ApplyPartnerDto } from './dto/apply-partner.dto';
 import {
   CreatePartnerCodeDto,
+  ManualVerificationDto,
   UpdatePartnerDto,
 } from './dto/update-partner.dto';
+import { checkRegistration, REGISTRATION_LABELS } from './registration';
+import { RegistryService } from './registry.service';
 import {
   codeStem,
   commissionDue,
@@ -53,11 +57,17 @@ export class PartnersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
+    private readonly registry: RegistryService,
   ) {}
 
   /** Candidature publique : enregistrement, puis e-mails (sans bloquer la réponse). */
   async apply(dto: ApplyPartnerDto) {
     const lang = dto.language === 'en' ? 'en' : 'fr';
+    const registration = checkRegistration(
+      dto.registrationType,
+      dto.registrationNumber,
+    );
+    if (!registration.ok) throw new BadRequestException(registration.error);
     const recent = await this.prisma.partnerApplication.findFirst({
       where: {
         email: dto.email,
@@ -81,10 +91,80 @@ export class PartnersService {
         message: dto.message,
         language: lang,
         commissionRate: defaultCommission(dto.type),
+        registrationType: dto.registrationType,
+        registrationNumber: registration.number,
       },
     });
     void this.notify(created.id, dto, lang);
+    // Contrôle auprès du registre officiel, sans faire attendre le candidat.
+    void this.runVerification(created.id).catch((err: Error) =>
+      this.logger.warn(`Vérification d'entreprise différée : ${err.message}`),
+    );
     return { ok: true, id: created.id };
+  }
+
+  /** Interroge le registre public correspondant au numéro déclaré. */
+  private async runVerification(id: string) {
+    const row = await this.prisma.partnerApplication.findUnique({
+      where: { id },
+    });
+    if (!row) throw new NotFoundException('Candidature introuvable');
+    if (!row.registrationType || !row.registrationNumber) {
+      return this.prisma.partnerApplication.update({
+        where: { id },
+        data: {
+          verificationStatus: PartnerVerification.A_VERIFIER,
+          verificationMethod: null,
+          verificationNote:
+            'Aucun numéro d’entreprise : demandez-le au partenaire avant tout accord.',
+        },
+      });
+    }
+    const result = await this.registry.verify(
+      row.registrationType,
+      row.registrationNumber,
+    );
+    return this.prisma.partnerApplication.update({
+      where: { id },
+      data: {
+        verificationStatus: result.status,
+        verificationMethod: result.method,
+        verifiedName: result.officialName,
+        verificationNote: result.note,
+        verifiedAt:
+          result.status === PartnerVerification.VERIFIE ? new Date() : null,
+        verifiedBy: null,
+      },
+    });
+  }
+
+  /** Relance la vérification automatique (bouton du tableau de bord). */
+  async verify(id: string) {
+    await this.runVerification(id);
+    return this.get(id);
+  }
+
+  /**
+   * Décision d'un administrateur quand aucun registre public ne répond pour le
+   * pays : il note la source consultée (justificatif, registre national…).
+   */
+  async manualVerification(
+    id: string,
+    dto: ManualVerificationDto,
+    actorEmail: string,
+  ) {
+    await this.get(id);
+    await this.prisma.partnerApplication.update({
+      where: { id },
+      data: {
+        verificationStatus: dto.status,
+        verificationMethod: 'Contrôle manuel',
+        verificationNote: dto.note.trim(),
+        verifiedAt: new Date(),
+        verifiedBy: actorEmail,
+      },
+    });
+    return this.get(id);
   }
 
   private async notify(id: string, dto: ApplyPartnerDto, lang: 'fr' | 'en') {
@@ -97,6 +177,7 @@ export class PartnersService {
         [
           `${dto.name}${dto.company ? ` (${dto.company})` : ''} — ${dto.country}${dto.city ? `, ${dto.city}` : ''}`,
           `E-mail : ${dto.email}`,
+          `Entreprise : ${REGISTRATION_LABELS[dto.registrationType]} ${dto.registrationNumber}`,
           dto.website ? `Site ou réseaux : ${dto.website}` : '',
           dto.audience ? `Audience / zone / budget : ${dto.audience}` : '',
           `Message :\n${dto.message}`,
@@ -212,10 +293,36 @@ export class PartnersService {
   }
 
   async update(id: string, dto: UpdatePartnerDto) {
-    await this.get(id);
+    const current = await this.get(id);
+    let registration: Prisma.PartnerApplicationUpdateInput = {};
+    if (
+      dto.registrationType !== undefined ||
+      dto.registrationNumber !== undefined
+    ) {
+      const type = dto.registrationType ?? current.registrationType;
+      const raw = dto.registrationNumber ?? current.registrationNumber;
+      if (!type || !raw) {
+        throw new BadRequestException(
+          'Indiquez le type et le numéro d’entreprise.',
+        );
+      }
+      const check = checkRegistration(type, raw);
+      if (!check.ok) throw new BadRequestException(check.error);
+      registration = {
+        registrationType: type,
+        registrationNumber: check.number,
+        verificationStatus: PartnerVerification.A_VERIFIER,
+        verificationMethod: null,
+        verifiedName: null,
+        verificationNote: null,
+        verifiedAt: null,
+        verifiedBy: null,
+      };
+    }
     const row = await this.prisma.partnerApplication.update({
       where: { id },
       data: {
+        ...registration,
         status: dto.status,
         notes: dto.notes,
         commissionRate: dto.commissionRate,
@@ -225,6 +332,9 @@ export class PartnersService {
           : {}),
       },
     });
+    if (registration.registrationNumber) {
+      return this.verify(id);
+    }
     return withoutSecret(row);
   }
 
@@ -233,6 +343,11 @@ export class PartnersService {
     const partner = await this.get(id);
     if (partner.promoCodeId)
       throw new BadRequestException('Ce partenaire a déjà un code.');
+    if (partner.verificationStatus !== PartnerVerification.VERIFIE) {
+      throw new BadRequestException(
+        'Entreprise non vérifiée : contrôlez son numéro (SIREN, TVA…) avant de créer son code.',
+      );
+    }
     let code: string | null;
     if (dto.code) {
       code = normalizeCode(dto.code);

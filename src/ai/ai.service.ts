@@ -2,6 +2,12 @@ import { createHash } from 'crypto';
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import Groq from 'groq-sdk';
 import { OpenRouterService } from './openrouter.service';
+import { AiBudgetService } from './ai-budget.service';
+import {
+  costMicroEur,
+  estimateTokens,
+  profileAiEnabled,
+} from './ai-budget';
 import {
   HarmonyQuestionPayload,
   normalizeAiQuestions,
@@ -42,6 +48,7 @@ export class AiService implements OnModuleInit {
 
   constructor(
     @Optional() private readonly openRouterService?: OpenRouterService,
+    @Optional() private readonly budget?: AiBudgetService,
   ) {
     const groqApiKey = process.env.GROQ_API_KEY;
     if (groqApiKey) {
@@ -63,14 +70,28 @@ export class AiService implements OnModuleInit {
     systemPrompt?: string,
     /** Longueur maximale de la réponse (le Sondeur renvoie 21 questions en JSON). */
     maxTokens = 4096,
+    /** 0 pour une décision stable (modération), 0,7 pour une rédaction variée. */
+    temperature = 0.7,
   ): Promise<string> {
+    const inputTokens = estimateTokens(`${systemPrompt ?? ''}${prompt}`);
+
     if (this.openRouterService && process.env.OPENROUTER_API_KEY) {
       try {
+        await this.ensureBudget('openrouter', inputTokens, maxTokens);
         const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
         if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
         messages.push({ role: 'user', content: prompt });
 
         const res = await this.openRouterService.executeAgentPrompt(agentName, messages);
+        const usage = (res.usage ?? {}) as {
+          prompt_tokens?: number;
+          completion_tokens?: number;
+        };
+        void this.budget?.record(
+          res.modelUsed ?? 'openrouter',
+          usage.prompt_tokens ?? inputTokens,
+          usage.completion_tokens ?? estimateTokens(res.content ?? ''),
+        );
         return res.content;
       } catch (error: any) {
         this.logger.warn(`⚠️ [OpenRouter] Échec agent ${agentName}: ${error.message}. Fallback sur Groq...`);
@@ -81,6 +102,7 @@ export class AiService implements OnModuleInit {
       // Un modèle retiré par Groq ne doit pas éteindre l'IA : on en change une fois.
       for (let attempt = 0; attempt < 2; attempt++) {
         const model = await this.resolveGroqModel();
+        await this.ensureBudget(model, inputTokens, maxTokens);
         try {
           const completion = await this.groq.chat.completions.create({
             model,
@@ -90,11 +112,17 @@ export class AiService implements OnModuleInit {
                 : []),
               { role: 'user' as const, content: prompt },
             ],
-            temperature: 0.7,
+            temperature,
             max_completion_tokens: maxTokens,
             ...reasoningOptions(model),
           });
-          return completion.choices[0]?.message?.content ?? '';
+          const content = completion.choices[0]?.message?.content ?? '';
+          void this.budget?.record(
+            model,
+            completion.usage?.prompt_tokens ?? inputTokens,
+            completion.usage?.completion_tokens ?? estimateTokens(content),
+          );
+          return content;
         } catch (error) {
           if (attempt === 0 && isModelUnavailableError(error)) {
             this.logger.warn(
@@ -110,6 +138,23 @@ export class AiService implements OnModuleInit {
     }
 
     throw new Error('Aucun fournisseur d\'IA disponible (OpenRouter et Groq absents ou en échec).');
+  }
+
+  /**
+   * Refuse l'appel s'il risque de dépasser le budget IA du mois (estimation
+   * haute : réponse de longueur maximale). L'appelant passe alors à sa
+   * version sans IA.
+   */
+  private async ensureBudget(
+    model: string,
+    inputTokens: number,
+    maxTokens: number,
+  ) {
+    if (!this.budget) return;
+    const estimate = costMicroEur(model, inputTokens, maxTokens);
+    if (!(await this.budget.allow(estimate))) {
+      throw new Error('Budget IA du mois atteint : réponse sans IA.');
+    }
   }
 
   /**
@@ -337,6 +382,11 @@ Retourne UNIQUEMENT un tableau JSON de 21 IDs distincts:
 
 
   async generateProfileSynthesis(userContext: any, allResponses: any[]) {
+    // Par défaut, le portrait est rédigé sans IA : coût nul et réponse
+    // immédiate, même avec un million d'inscrits (AI_PROFILE_MODE=ai pour l'IA).
+    if (!profileAiEnabled()) {
+      return this.fallbackDynamicSynthesis(userContext, allResponses);
+    }
     this.logger.log(`🧠 [SONDEUR IA] Génération de la Carte Mentale 6D pour ${userContext.firstName}`);
 
     const decoded = decodeUserResponses(allResponses);
@@ -599,11 +649,17 @@ Retourne UNIQUEMENT un JSON:
 `;
 
     try {
-      const text = await this.queryAiAgent('moderation', prompt);
+      // Décision stable et courte : température 0, réponse JSON de quelques mots.
+      const text = await this.queryAiAgent('moderation', prompt, undefined, 400, 0);
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
       const result = typeof parsed.allowed === 'boolean' ? parsed : { allowed: true };
 
+      // Mémoire bornée : au-delà de 5 000 messages, les plus anciens sortent.
+      if (this.moderationCache.size >= 5000) {
+        const oldest = this.moderationCache.keys().next().value;
+        if (oldest !== undefined) this.moderationCache.delete(oldest);
+      }
       this.moderationCache.set(cacheKey, {
         result,
         expiresAt: Date.now() + 60 * 60 * 1000,

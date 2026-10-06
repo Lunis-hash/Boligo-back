@@ -1,5 +1,10 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { PartnerStatus, PartnerType } from '@prisma/client';
+import {
+  PartnerRegistrationType,
+  PartnerStatus,
+  PartnerType,
+  PartnerVerification,
+} from '@prisma/client';
 import { PartnersService } from './partners.service';
 
 type Row = Record<string, unknown>;
@@ -92,8 +97,23 @@ function setup() {
     },
   };
   const email = { sendSimpleEmail: jest.fn(() => Promise.resolve()) };
+  const registry = {
+    verify: jest.fn(() =>
+      Promise.resolve({
+        status: PartnerVerification.VERIFIE as PartnerVerification,
+        method: 'Annuaire des entreprises (INSEE)',
+        officialName: 'AWA DIOP',
+        note: 'Entreprise active.',
+      }),
+    ),
+  };
   return {
-    service: new PartnersService(prisma as never, email as never),
+    registry,
+    service: new PartnersService(
+      prisma as never,
+      email as never,
+      registry as never,
+    ),
     prisma,
     email,
     apps,
@@ -109,7 +129,12 @@ const base = {
   message: 'Je crée du contenu sur les relations sérieuses pour la diaspora.',
   language: 'fr' as const,
   consent: true,
+  registrationType: PartnerRegistrationType.SIRENE,
+  registrationNumber: '552 100 554',
 };
+
+/** Laisse finir la vérification lancée en arrière-plan après la candidature. */
+const flush = () => new Promise((r) => setImmediate(r));
 
 describe('Programme Partenaires : service', () => {
   it('enregistre la candidature avec la commission du profil et prévient l’équipe et le candidat', async () => {
@@ -130,6 +155,7 @@ describe('Programme Partenaires : service', () => {
   it('ignore un doublon envoyé dans les 24 heures', async () => {
     const { service, apps } = setup();
     await service.apply(base);
+    await flush();
     const again = await service.apply(base);
     expect(again).toMatchObject({ ok: true, duplicate: true });
     expect(apps).toHaveLength(1);
@@ -138,6 +164,7 @@ describe('Programme Partenaires : service', () => {
   it('crée un code personnel, valide la candidature et refuse un second code', async () => {
     const { service, apps, codes } = setup();
     await service.apply(base);
+    await flush();
     const id = apps[0].id;
     const res = await service.createCode(id, { discountPercent: 10 });
     expect(res.status).toBe(PartnerStatus.ACCEPTE);
@@ -156,6 +183,7 @@ describe('Programme Partenaires : service', () => {
     const { service, apps, codes } = setup();
     codes.push({ id: 'x', code: 'AWA2026' });
     await service.apply(base);
+    await flush();
     await expect(
       service.createCode(apps[0].id, { code: 'awa-2026' }),
     ).rejects.toBeInstanceOf(BadRequestException);
@@ -167,6 +195,7 @@ describe('Programme Partenaires : service', () => {
   it('calcule ventes et commission du partenaire', async () => {
     const { service, apps } = setup();
     await service.apply(base);
+    await flush();
     await service.createCode(apps[0].id, {});
     const detail = await service.get(apps[0].id);
     expect(detail.sales).toEqual({
@@ -179,6 +208,7 @@ describe('Programme Partenaires : service', () => {
   it('accueille le partenaire avec un lien privé dont seule l’empreinte est gardée', async () => {
     const { service, apps, email } = setup();
     await service.apply(base);
+    await flush();
     email.sendSimpleEmail.mockClear();
     const res = await service.createCode(apps[0].id, {});
     expect(res.portalLink).toMatch(
@@ -205,6 +235,7 @@ describe('Programme Partenaires : service', () => {
   it('montre au partenaire ses totaux, sans aucune donnée de membre', async () => {
     const { service, apps } = setup();
     await service.apply(base);
+    await flush();
     const { portalLink } = await service.createCode(apps[0].id, {});
     const data = await service.portal(portalLink.split('#')[1]);
     expect(data.code.code).toMatch(/^AWADIOP/);
@@ -223,6 +254,7 @@ describe('Programme Partenaires : service', () => {
   it('un nouveau lien remplace l’ancien ; un accès coupé ou refusé ne s’ouvre plus', async () => {
     const { service, apps } = setup();
     await service.apply(base);
+    await flush();
     const first = (await service.createCode(apps[0].id, {})).portalLink;
     const second = (await service.sendPortalLink(apps[0].id)).portalLink;
     await expect(service.portal(first.split('#')[1])).rejects.toBeInstanceOf(
@@ -246,8 +278,75 @@ describe('Programme Partenaires : service', () => {
   it('refuse d’ouvrir un Espace partenaire avant la création du code', async () => {
     const { service, apps } = setup();
     await service.apply(base);
+    await flush();
     await expect(service.sendPortalLink(apps[0].id)).rejects.toBeInstanceOf(
       BadRequestException,
     );
+  });
+
+  it('vérifie l’entreprise après la candidature et refuse un numéro mal formé', async () => {
+    const { service, apps, registry } = setup();
+    await expect(
+      service.apply({ ...base, registrationNumber: '552100555' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await service.apply(base);
+    await flush();
+    expect(apps[0]).toMatchObject({
+      registrationType: 'SIRENE',
+      registrationNumber: '552100554',
+      verificationStatus: 'VERIFIE',
+      verifiedName: 'AWA DIOP',
+    });
+    expect(registry.verify).toHaveBeenCalledWith('SIRENE', '552100554');
+  });
+
+  it('refuse de créer le code tant que l’entreprise n’est pas vérifiée', async () => {
+    const { service, apps, registry } = setup();
+    registry.verify.mockResolvedValueOnce({
+      status: PartnerVerification.A_VERIFIER,
+      method: 'Contrôle manuel',
+      officialName: null as unknown as string,
+      note: 'À contrôler.',
+    });
+    await service.apply({
+      ...base,
+      registrationType: PartnerRegistrationType.AUTRE,
+      registrationNumber: 'RC-ABJ-2019-B-12345',
+    });
+    await flush();
+    expect(apps[0].verificationStatus).toBe('A_VERIFIER');
+    await expect(service.createCode(apps[0].id, {})).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    // Décision manuelle de l'administrateur, avec la source consultée.
+    await service.manualVerification(
+      apps[0].id,
+      {
+        status: PartnerVerification.VERIFIE,
+        note: 'Extrait RCCM du 01/10/2026 vérifié sur le registre ivoirien.',
+      },
+      'admin@boligo.fr',
+    );
+    expect(apps[0]).toMatchObject({
+      verificationStatus: 'VERIFIE',
+      verificationMethod: 'Contrôle manuel',
+      verifiedBy: 'admin@boligo.fr',
+    });
+    await expect(service.createCode(apps[0].id, {})).resolves.toBeTruthy();
+  });
+
+  it('un numéro corrigé repart en vérification', async () => {
+    const { service, apps, registry } = setup();
+    await service.apply(base);
+    await flush();
+    registry.verify.mockClear();
+    await service.update(apps[0].id, {
+      registrationType: PartnerRegistrationType.TVA_UE,
+      registrationNumber: 'fr40303265045',
+    });
+    expect(registry.verify).toHaveBeenCalledWith('TVA_UE', 'FR40303265045');
+    await expect(
+      service.update(apps[0].id, { registrationNumber: 'US1' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

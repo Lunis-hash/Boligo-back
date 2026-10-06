@@ -1,3 +1,5 @@
+import { RegistrationType, compactNumber, isRegistrationValid } from './registration';
+
 /** Textes du Programme Partenaires, en français et en anglais (BOLIGO est international). */
 export type PartnerLang = 'fr' | 'en';
 export type PartnerType = 'ANNONCEUR' | 'AMBASSADEUR' | 'CREATEUR';
@@ -37,6 +39,15 @@ export interface PartnerContent {
     website: string;
     message: string;
     messageHint: string;
+  };
+  registration: {
+    title: string;
+    intro: string;
+    types: Record<RegistrationType, string>;
+    numberLabel: string;
+    hints: Record<RegistrationType, string>;
+    invalid: Record<RegistrationType, string>;
+    noStatus: string;
   };
   consent: string;
   privacyLink: string;
@@ -136,6 +147,32 @@ export const CONTENT: Record<PartnerLang, PartnerContent> = {
       message: 'Votre projet *',
       messageHint: 'Qui êtes-vous, que proposez-vous, pourquoi BOLIGO ? (20 caractères minimum)',
     },
+    registration: {
+      title: 'Votre entreprise *',
+      intro:
+        'BOLIGO travaille uniquement avec des professionnels immatriculés. Votre numéro est vérifié auprès des registres publics officiels.',
+      types: {
+        SIRENE: 'SIREN / SIRET (France)',
+        TVA_UE: 'N° de TVA (Union européenne)',
+        UK_COMPANY: 'Company number (Royaume-Uni)',
+        AUTRE: 'Autre pays',
+      },
+      numberLabel: 'Numéro *',
+      hints: {
+        SIRENE: '9 chiffres (SIREN) ou 14 chiffres (SIRET)',
+        TVA_UE: 'Avec le code du pays, par exemple BE0123456789',
+        UK_COMPANY: '8 chiffres, ou 2 lettres et 6 chiffres',
+        AUTRE: 'Numéro officiel d’immatriculation de votre pays (RCCM, ICE, NEQ, EIN…)',
+      },
+      invalid: {
+        SIRENE: 'SIREN ou SIRET invalide : vérifiez les chiffres.',
+        TVA_UE: 'Numéro de TVA invalide : il commence par le code du pays (FR, BE, DE…).',
+        UK_COMPANY: 'Company number invalide : 8 chiffres, ou 2 lettres et 6 chiffres.',
+        AUTRE: 'Numéro d’immatriculation invalide (4 à 30 lettres ou chiffres).',
+      },
+      noStatus:
+        'Pas encore immatriculé ? En France, le statut de micro-entrepreneur se crée gratuitement en ligne (formalites.entreprises.gouv.fr).',
+    },
     consent:
       'J’accepte que BOLIGO utilise ces informations pour étudier ma candidature et me recontacter. Elles ne sont jamais partagées.',
     privacyLink: 'Politique de confidentialité',
@@ -227,6 +264,32 @@ export const CONTENT: Record<PartnerLang, PartnerContent> = {
       message: 'Your project *',
       messageHint: 'Who are you, what do you offer, why BOLIGO? (at least 20 characters)',
     },
+    registration: {
+      title: 'Your business *',
+      intro:
+        'BOLIGO only works with registered businesses. Your number is checked against official public registers.',
+      types: {
+        SIRENE: 'SIREN / SIRET (France)',
+        TVA_UE: 'VAT number (European Union)',
+        UK_COMPANY: 'Company number (United Kingdom)',
+        AUTRE: 'Other country',
+      },
+      numberLabel: 'Number *',
+      hints: {
+        SIRENE: '9 digits (SIREN) or 14 digits (SIRET)',
+        TVA_UE: 'With the country code, for example BE0123456789',
+        UK_COMPANY: '8 digits, or 2 letters and 6 digits',
+        AUTRE: 'Official business registration number in your country (RCCM, ICE, NEQ, EIN…)',
+      },
+      invalid: {
+        SIRENE: 'Invalid SIREN or SIRET: please check the digits.',
+        TVA_UE: 'Invalid VAT number: it starts with the country code (FR, BE, DE…).',
+        UK_COMPANY: 'Invalid company number: 8 digits, or 2 letters and 6 digits.',
+        AUTRE: 'Invalid registration number (4 to 30 letters or digits).',
+      },
+      noStatus:
+        'Not registered yet? Register your activity with your country’s official business registry first (in France, the micro-entrepreneur status is free).',
+    },
     consent:
       'I agree that BOLIGO may use this information to review my application and contact me. It is never shared.',
     privacyLink: 'Privacy policy',
@@ -261,6 +324,8 @@ export interface PartnerForm {
   website: string;
   audience: string;
   message: string;
+  registrationType: RegistrationType | null;
+  registrationNumber: string;
   consent: boolean;
 }
 
@@ -272,8 +337,17 @@ export function isPartnerFormValid(f: PartnerForm): boolean {
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) &&
       f.country.trim().length >= 2 &&
       f.message.trim().length >= 20 &&
+      isRegistrationValid(f.registrationType, f.registrationNumber) &&
       f.consent,
   );
+}
+
+/** Message à afficher si seul le numéro d'entreprise pose problème. */
+export function registrationError(f: PartnerForm, lang: PartnerLang): string | null {
+  if (!f.registrationType || !f.registrationNumber.trim()) return null;
+  return isRegistrationValid(f.registrationType, f.registrationNumber)
+    ? null
+    : CONTENT[lang].registration.invalid[f.registrationType];
 }
 
 /** Corps envoyé à POST /partners/apply (champs vides retirés). */
@@ -289,6 +363,8 @@ export function partnerPayload(f: PartnerForm, lang: PartnerLang) {
     website: opt(f.website),
     audience: opt(f.audience),
     message: f.message.trim(),
+    registrationType: f.registrationType,
+    registrationNumber: compactNumber(f.registrationNumber),
     language: lang,
     consent: f.consent,
   };

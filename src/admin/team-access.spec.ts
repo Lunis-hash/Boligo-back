@@ -53,7 +53,7 @@ function makeService(users: U[]) {
     },
   };
   const jwt = { signAsync: jest.fn(() => Promise.resolve('jeton')) };
-  const service = new AdminService(prisma as never, jwt as never, {} as never);
+  const service = new AdminService(prisma as never, jwt as never, {} as never, {} as never);
   return { service, prisma, users };
 }
 
@@ -268,7 +268,7 @@ describe('Accès d’équipe au tableau de bord', () => {
     const prisma = {
       promoCode: { findUnique: jest.fn(() => Promise.resolve(promo)) },
     };
-    const service = new AdminService(prisma as never, {} as never, {} as never);
+    const service = new AdminService(prisma as never, {} as never, {} as never, {} as never);
 
     const forMarketing = await service.getPromoCode('p1', UserRole.MARKETING);
     expect(forMarketing.usages[0]).not.toHaveProperty('userId');
