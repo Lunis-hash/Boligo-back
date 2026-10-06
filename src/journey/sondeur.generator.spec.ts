@@ -164,6 +164,48 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(validateSondeurGrid(reviewed)).toBe(true);
   });
 
+  it('sécurité : jamais de compromis sur la violence, seulement des questions de limite', () => {
+    // L'un : rupture immédiate ; l'autre : « ça dépend des circonstances ».
+    const violent = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'C' });
+    expect(violent.divergences.some((d) => d.questionId === 'M6_Q04')).toBe(
+      true,
+    );
+    const qs = assembleSondeur({
+      report: violent,
+      firstNames: ['A', 'B'],
+      seed: 'v',
+    });
+    const texts = qs.map((q) => q.text).join(' | ');
+    expect(texts).not.toMatch(/violence physique/i);
+    expect(texts).not.toMatch(/vivable/i);
+    const comm = qs.filter((q) => q.themeKey === 'communication');
+    expect(comm.every((q) => !/«/.test(q.text))).toBe(true);
+    expect(comm.map((q) => q.text).join(' ')).toMatch(
+      /plus en sécurité|jamais être franchie|sans se faire de mal|dispute était terminée|signal pour arrêter|baisser les armes/,
+    );
+    const ai = describeReportForAi(violent, ['A', 'B']);
+    expect(ai).toMatch(/LIMITE DE SÉCURITÉ/);
+    expect(ai).not.toMatch(/Ça dépend/);
+    // Même réponse sur la violence : pas de question d'accord non plus.
+    const same = buildDivergenceReport({ M6_Q04: 'D' }, { M6_Q04: 'D' });
+    const sameTexts = assembleSondeur({ report: same, firstNames: ['A', 'B'] })
+      .map((q) => q.text)
+      .join(' | ');
+    expect(sameTexts).not.toMatch(/violence/i);
+  });
+
+  it('accords : le sujet de la règle, jamais « sur « même réponse sur « … » » »', () => {
+    for (let i = 0; i < 30; i++) {
+      for (const q of assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: `c${i}`,
+      })) {
+        expect(q.text).not.toMatch(/«[^»]*«/);
+      }
+    }
+  });
+
   it('résume le rapport pour le prompt IA sans coordonnées', () => {
     const text = describeReportForAi(report, ['Steve', 'Nadia']);
     expect(text).toMatch(/DIVERGENCES/);
