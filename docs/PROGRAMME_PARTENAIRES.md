@@ -43,28 +43,57 @@ profils ou des données des membres.
    - BOLIGO propose un code tiré du nom, par exemple `CAMILLE42` ; l'équipe
      peut aussi saisir le sien ;
    - le code est un code promo BOLIGO ordinaire, réservé au partenaire ;
-   - la candidature passe alors à « Accepté ».
-6. **Suivi** : pour chaque partenaire, le tableau de bord affiche le nombre
-   d'achats payés avec son code, le montant encaissé et la commission due.
-   Le paiement des commissions se fait à la main, sur facture du partenaire
-   (mensuelle ou trimestrielle, selon l'accord).
+   - la candidature passe alors à « Accepté » ;
+   - le partenaire reçoit aussitôt un e-mail de bienvenue, dans sa langue, avec
+     son code et le lien vers son **Espace partenaire** (voir § 3).
+6. **Suivi** :
+   - l'équipe voit, pour chaque partenaire, le nombre d'achats payés avec son
+     code, le montant encaissé et la commission due ;
+   - le partenaire voit les mêmes chiffres dans son Espace partenaire, mois par
+     mois ;
+   - le paiement des commissions se fait à la main, sur facture du partenaire
+     (mensuelle ou trimestrielle, selon l'accord).
 
 Un code se met en pause ou se réactive depuis la fiche du partenaire (bouton
-« Mettre en pause » / « Réactiver »), par exemple à la fin d'un partenariat.
+« Mettre en pause » / « Réactiver ») ou depuis la page **Codes promo**, par
+exemple à la fin d'un partenariat.
 
-## 3. Ce que voit un partenaire, et ce qu'il ne voit jamais
+## 3. L'Espace partenaire
 
-- Il reçoit son code, son taux, et sur demande le nombre d'achats et le montant
-  réalisés avec son code.
-- Il ne reçoit **jamais** de données sur les membres : ni nom, ni profil, ni
-  e-mail, ni fiche de compatibilité. Le tableau de bord ne relie pas les achats
-  aux personnes dans la vue partenaire.
-- La politique de confidentialité (`mobile-steve/constants/legal.json` et
-  `mobile-steve/docs/legal/POLITIQUE_CONFIDENTIALITE.md`) décrit ces données et
-  leur durée de conservation :
-  - candidature non retenue : 2 ans après le dernier échange ;
-  - partenaire retenu : durée du partenariat puis 5 ans ;
-  - pièces comptables : 10 ans.
+Chaque partenaire accepté a une page privée, en français
+(`/espace-partenaire`) ou en anglais (`/partner-space`), sur le site BOLIGO :
+
+- son code, la réduction offerte à son audience et l'état du code (actif ou en
+  pause) ;
+- le nombre de Parcours payés avec son code, le montant encaissé et sa
+  commission ;
+- l'historique des douze derniers mois ;
+- le rappel des règles de publication (§ 4).
+
+**Accès par lien privé, sans mot de passe** :
+
+- le lien est envoyé par e-mail à l'acceptation ; il contient une clé
+  aléatoire de 256 bits, placée après « # » pour qu'elle ne parte jamais dans
+  les journaux du site ;
+- BOLIGO n'enregistre que l'empreinte de cette clé : même avec un accès à la
+  base, on ne peut pas reconstituer le lien ;
+- depuis la fiche du partenaire, l'équipe peut **envoyer un nouveau lien**
+  (l'ancien cesse aussitôt de fonctionner) ou **couper l'accès** ;
+- le lien s'affiche une seule fois à l'équipe, pour le copier si l'e-mail
+  n'est pas configuré ;
+- une candidature passée à « Refusé » perd son accès ;
+- la page est limitée à 60 consultations par adresse IP toutes les 10 minutes.
+
+**Ce que le partenaire ne voit jamais** : aucune donnée sur les membres, ni
+nom, ni profil, ni e-mail, ni fiche de compatibilité, ni date précise d'achat.
+Il ne voit que des totaux par mois.
+La politique de confidentialité (`mobile-steve/constants/legal.json` et
+`mobile-steve/docs/legal/POLITIQUE_CONFIDENTIALITE.md`) décrit les données des
+partenaires et leur durée de conservation :
+
+- candidature non retenue : 2 ans après le dernier échange ;
+- partenaire retenu : durée du partenariat puis 5 ans ;
+- pièces comptables : 10 ans.
 
 ## 4. Règles à inscrire dans chaque accord
 
@@ -100,7 +129,28 @@ Un code se met en pause ou se réactive depuis la fiche du partenaire (bouton
 - **Fin** : résiliation possible à tout moment par écrit, le code est alors mis
   en pause.
 
-## 5. Accès de l'équipe au tableau de bord
+## 5. La page Codes promo
+
+Tous les codes de réduction, partenaires ou non (promotion de lancement, salon,
+offre ponctuelle), dans le menu **Codes promo** du tableau de bord :
+
+- **créer** un code : 3 à 30 lettres ou chiffres ;
+- **choisir la réduction** :
+  - pourcentage (1 à 100 %) ;
+  - montant fixe (0,01 € à 1 000 €) ;
+  - Parcours offert ;
+- **limiter** si besoin le nombre d'utilisations et la date de fin ;
+- **modifier**, **mettre en pause** ou **réactiver** un code ;
+- **supprimer** un code jamais utilisé. Un code déjà utilisé est conservé pour
+  l'historique des paiements et mis en pause. Le code d'un partenaire ne se
+  supprime pas : il se met en pause.
+
+Chaque ligne montre les utilisations, les ventes réalisées avec le code et, le
+cas échéant, le partenaire à qui il appartient. Les membres saisissent le code
+sur l'écran de paiement du Parcours, dans l'application. Un membre ne peut
+utiliser un même code qu'une fois.
+
+## 6. Accès de l'équipe au tableau de bord
 
 Le tableau de bord (`https://boligo-admin.onrender.com`) affiche un menu
 différent selon le rôle. L'API applique les mêmes règles : un rôle ne peut pas
@@ -110,7 +160,7 @@ contourner le menu en appelant directement une adresse.
 |---|---|---|
 | **Administrateur** (`ADMIN`) | tout, dont finances, exports, notifications, codes promo, partenaires et équipe | — |
 | **Modération** (`MODERATOR`) | vue d'ensemble, membres, rencontres, parcours, signalements, messages bloqués, appels vidéo ; peut suspendre un membre | finances, crédits, certification, partenaires, codes promo, exports, équipe |
-| **Marketing** (`MARKETING`) | vue d'ensemble (chiffres globaux), partenaires et leurs codes | toutes les données des membres, y compris l'identité de ceux qui utilisent un code ; finances, exports, équipe |
+| **Marketing** (`MARKETING`) | vue d'ensemble (chiffres globaux), partenaires, Espace partenaire (liens), page Codes promo | toutes les données des membres, y compris l'identité de ceux qui utilisent un code ; finances, exports, équipe |
 
 - Les rôles se donnent et se retirent depuis la page **Équipe**
   (administrateurs seulement). La personne doit d'abord avoir créé et vérifié
@@ -137,25 +187,30 @@ La variable ne sert que tant qu'il n'existe **aucun** administrateur. Dès que
 le premier existe, elle n'a plus d'effet et peut être retirée. Les autres
 membres de l'équipe sont ensuite nommés depuis la page **Équipe**.
 
-## 6. Variables Render (service `Boligo-back`)
+## 7. Variables Render (service `Boligo-back`)
 
 | Variable | Rôle | Valeur |
 |---|---|---|
-| `ADMIN_BOOTSTRAP_EMAIL` | adresse du premier administrateur (voir § 5) | adresse du titulaire |
+| `ADMIN_BOOTSTRAP_EMAIL` | adresse du premier administrateur (voir § 6) | adresse du titulaire |
 | `PARTNERS_NOTIFY_EMAIL` | adresse qui reçoit les nouvelles candidatures | facultatif, `contact@boligo.fr` par défaut |
+| `PUBLIC_WEB_URL` | adresse du site utilisée dans les liens de l'Espace partenaire | facultatif, `https://boligo-web.onrender.com` par défaut (à changer le jour où le site passe sur `boligo.fr`) |
 
-Les e-mails (accusé de réception et alerte à l'équipe) partent par le SMTP
+Les e-mails (accusé de réception, alerte à l'équipe, bienvenue et lien de
+l'Espace partenaire) partent par le SMTP
 BOLIGO décrit dans `docs/EMAIL_ZOHO_BOLIGO.md`. Tant que ce SMTP n'est pas
 configuré, les candidatures sont bien enregistrées et visibles dans le tableau
-de bord ; seuls les e-mails ne partent pas.
+de bord ; seuls les e-mails ne partent pas. Le lien de l'Espace partenaire
+s'affiche alors à l'équipe pour l'envoyer à la main.
 
-## 7. Base de données
+## 8. Base de données
 
 Ajouts dans la base BOLIGO (Supabase, projet « Lunis-hash's Project ») :
 
 - table `PartnerApplication` ;
 - types `PartnerType` et `PartnerStatus` ;
-- valeurs `MODERATOR` et `MARKETING` du type `UserRole`.
+- valeurs `MODERATOR` et `MARKETING` du type `UserRole` ;
+- colonnes `portalTokenHash` (empreinte du lien privé) et `portalLinkSentAt`
+  de `PartnerApplication`.
 
 Ces ajouts ne modifient aucune donnée existante. La table est protégée par la
 sécurité par ligne, comme les autres : seule l'API y accède.

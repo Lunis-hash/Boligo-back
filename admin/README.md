@@ -36,9 +36,9 @@ Trois rôles peuvent se connecter ; le menu et l'API s'adaptent au rôle :
 
 | Rôle | Pages |
 |---|---|
-| Administrateur (`ADMIN`) | toutes, dont Finances, Partenaires et Équipe |
+| Administrateur (`ADMIN`) | toutes, dont Finances, Partenaires, Codes promo et Équipe |
 | Modération (`MODERATOR`) | Vue d'ensemble, Membres, Rencontres, Parcours, Signalements, Modération |
-| Marketing (`MARKETING`) | Vue d'ensemble, Partenaires |
+| Marketing (`MARKETING`) | Vue d'ensemble, Partenaires, Codes promo |
 
 Aucun mot de passe n'est fourni par défaut, et aucun ne doit être écrit dans ce
 dépôt.
@@ -56,7 +56,8 @@ dépôt.
   `ADMIN_EMAIL=<adresse> ADMIN_PASSWORD=<12 caractères minimum> npx ts-node prisma/seed-admin.ts`,
   avec `DATABASE_URL` pointant vers la base BOLIGO.
 
-Le programme partenaires est décrit dans `docs/PROGRAMME_PARTENAIRES.md`.
+Le programme partenaires (dont l'Espace partenaire et la page Codes promo) est
+décrit dans `docs/PROGRAMME_PARTENAIRES.md`.
 
 La session dure 8 heures.
 

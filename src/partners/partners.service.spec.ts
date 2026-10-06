@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PartnerStatus, PartnerType } from '@prisma/client';
 import { PartnersService } from './partners.service';
 
@@ -10,7 +10,13 @@ type App = Row & {
   promoCodeId: string | null;
 };
 type Code = Row & { id: string; code: string };
-type Where = { id?: string; email?: string; type?: string; code?: string };
+type Where = {
+  id?: string;
+  email?: string;
+  type?: string;
+  code?: string;
+  portalTokenHash?: string;
+};
 
 function setup() {
   const apps: App[] = [];
@@ -28,7 +34,11 @@ function setup() {
         ),
       ),
       findUnique: jest.fn(({ where }: { where: Where }) => {
-        const a = apps.find((x) => x.id === where.id);
+        const a = apps.find((x) =>
+          where.portalTokenHash !== undefined
+            ? x.portalTokenHash === where.portalTokenHash
+            : x.id === where.id,
+        );
         return Promise.resolve(a ? withCode(a) : null);
       }),
       create: jest.fn(({ data }: { data: Row }) => {
@@ -70,6 +80,13 @@ function setup() {
             _count: { _all: 3 },
             _sum: { euroAmount: 40.5 },
           },
+        ]),
+      ),
+      findMany: jest.fn(() =>
+        Promise.resolve([
+          { date: new Date(), euroAmount: 13.5 },
+          { date: new Date(), euroAmount: 13.5 },
+          { date: new Date('2020-01-01T00:00:00Z'), euroAmount: 13.5 },
         ]),
       ),
     },
@@ -157,5 +174,80 @@ describe('Programme Partenaires : service', () => {
       revenue: 40.5,
       commission: 6.08,
     });
+  });
+
+  it('accueille le partenaire avec un lien privé dont seule l’empreinte est gardée', async () => {
+    const { service, apps, email } = setup();
+    await service.apply(base);
+    email.sendSimpleEmail.mockClear();
+    const res = await service.createCode(apps[0].id, {});
+    expect(res.portalLink).toMatch(
+      /^https:\/\/boligo-web\.onrender\.com\/espace-partenaire#[A-Za-z0-9_-]{43}$/,
+    );
+    expect(res).not.toHaveProperty('portalTokenHash');
+    expect(res.portalActive).toBe(true);
+    const token = res.portalLink.split('#')[1];
+    expect(apps[0].portalTokenHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(apps[0].portalTokenHash).not.toContain(token);
+    const call = email.sendSimpleEmail.mock.calls[0] as unknown as [
+      string,
+      string,
+      string,
+      string[],
+      string,
+      { url: string },
+    ];
+    expect(call[0]).toBe('awa@exemple.com');
+    expect(call[1]).toContain('Bienvenue');
+    expect(call[5].url).toBe(res.portalLink);
+  });
+
+  it('montre au partenaire ses totaux, sans aucune donnée de membre', async () => {
+    const { service, apps } = setup();
+    await service.apply(base);
+    const { portalLink } = await service.createCode(apps[0].id, {});
+    const data = await service.portal(portalLink.split('#')[1]);
+    expect(data.code.code).toMatch(/^AWADIOP/);
+    expect(data.code.isActive).toBe(true);
+    expect(data.totals).toEqual({
+      purchases: 3,
+      revenue: 40.5,
+      commission: 6.08,
+    });
+    expect(data.months).toHaveLength(12);
+    expect(data.months[0]).toMatchObject({ purchases: 2, revenue: 27 });
+    const json = JSON.stringify(data);
+    expect(json).not.toMatch(/userId|email|notes|portalTokenHash/);
+  });
+
+  it('un nouveau lien remplace l’ancien ; un accès coupé ou refusé ne s’ouvre plus', async () => {
+    const { service, apps } = setup();
+    await service.apply(base);
+    const first = (await service.createCode(apps[0].id, {})).portalLink;
+    const second = (await service.sendPortalLink(apps[0].id)).portalLink;
+    await expect(service.portal(first.split('#')[1])).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.portal(second.split('#')[1])).resolves.toBeTruthy();
+    await service.revokePortal(apps[0].id);
+    await expect(service.portal(second.split('#')[1])).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    const third = (await service.sendPortalLink(apps[0].id)).portalLink;
+    await service.update(apps[0].id, { status: PartnerStatus.REFUSE });
+    await expect(service.portal(third.split('#')[1])).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.portal('pas-un-jeton')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('refuse d’ouvrir un Espace partenaire avant la création du code', async () => {
+    const { service, apps } = setup();
+    await service.apply(base);
+    await expect(service.sendPortalLink(apps[0].id)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 });

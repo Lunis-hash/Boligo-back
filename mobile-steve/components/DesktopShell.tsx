@@ -53,7 +53,7 @@ const POINTS = [
   { Icon: Sparkles, text: 'Des profils sans photo : on se découvre par les valeurs' },
 ];
 
-const FULL_WIDTH_SECTIONS = new Set(['legal', 'partenaires', 'partners']);
+const FULL_WIDTH_SECTIONS = new Set(['legal', 'partenaires', 'partners', 'espace-partenaire', 'partner-space']);
 
 export function DesktopShell({ children }: { children: ReactNode }) {
   const { width } = useWindowDimensions();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Handshake, Megaphone, Sparkles, Ticket, Wallet } from "lucide-react";
+import { Handshake, Megaphone, Ticket, Wallet } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { PageHeader } from "@/components/page-header";
@@ -34,6 +34,14 @@ interface Partner {
   createdAt: string;
   promoCode: { id: string; code: string; isActive: boolean; usedCount: number } | null;
   sales: { purchases: number; revenue: number; commission: number };
+  /** Un lien privé vers l'Espace partenaire est en service. */
+  portalActive: boolean;
+  portalLinkSentAt: string | null;
+}
+
+interface PortalLinkResult {
+  portalLink: string;
+  emailAttempted: boolean;
 }
 
 interface Summary {
@@ -267,12 +275,16 @@ function PartnerRow({
 
 function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () => void }) {
   const [status, setStatus] = useState<PartnerStatus>(p.status);
+  // Le statut change aussi côté serveur (création du code → Accepté) : on suit.
+  useEffect(() => setStatus(p.status), [p.status]);
   const [notes, setNotes] = useState(p.notes ?? "");
   const [rate, setRate] = useState(p.commissionRate != null ? String(p.commissionRate) : "");
   const [code, setCode] = useState("");
   const [discount, setDiscount] = useState("10");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [link, setLink] = useState<PortalLinkResult | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   async function save() {
     setBusy(true);
@@ -300,7 +312,7 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
     setBusy(true);
     setMsg("");
     try {
-      await apiFetch(`/admin/partners/${p.id}/code`, {
+      const res = await apiFetch<PortalLinkResult>(`/admin/partners/${p.id}/code`, {
         method: "POST",
         token: getToken(),
         body: JSON.stringify({
@@ -308,12 +320,58 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
           discountPercent: Number(discount) || 0,
         }),
       });
-      setMsg("Code créé : la candidature est acceptée.");
+      setLink({ portalLink: res.portalLink, emailAttempted: res.emailAttempted });
+      setMsg("Code créé : la candidature est acceptée et le partenaire reçoit son lien.");
       onSaved();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Erreur");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function sendLink() {
+    setBusy(true);
+    setMsg("");
+    try {
+      const res = await apiFetch<PortalLinkResult>(`/admin/partners/${p.id}/portal`, {
+        method: "POST",
+        token: getToken(),
+      });
+      setLink(res);
+      setMsg("Nouveau lien créé : l’ancien ne fonctionne plus.");
+      onSaved();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function revokeLink() {
+    if (!window.confirm("Couper l’accès de ce partenaire à son Espace partenaire ?")) return;
+    setBusy(true);
+    setMsg("");
+    try {
+      await apiFetch(`/admin/partners/${p.id}/portal`, { method: "DELETE", token: getToken() });
+      setLink(null);
+      setMsg("Accès à l’Espace partenaire coupé.");
+      onSaved();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyLink() {
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link.portalLink);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      setLinkCopied(false);
     }
   }
 
@@ -451,6 +509,62 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
             </div>
           )}
         </div>
+        {p.promoCode && (
+          <div className="space-y-3 rounded-xl border border-lilas bg-white p-4" data-testid="partner-portal">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-encre">Espace partenaire</p>
+                <p className="text-xs text-neutral-500">
+                  {p.portalActive
+                    ? `Lien actif, envoyé le ${formatDate(p.portalLinkSentAt)}.`
+                    : "Aucun lien actif : le partenaire ne voit pas son activité."}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={sendLink}
+                  disabled={busy}
+                  className="rounded-xl"
+                  data-testid="partner-send-link"
+                >
+                  {p.portalActive ? "Envoyer un nouveau lien" : "Envoyer le lien"}
+                </Button>
+                {p.portalActive && (
+                  <Button
+                    variant="outline"
+                    onClick={revokeLink}
+                    disabled={busy}
+                    className="rounded-xl border-framboise/40 text-framboise hover:bg-rose"
+                    data-testid="partner-revoke-link"
+                  >
+                    Couper l’accès
+                  </Button>
+                )}
+              </div>
+            </div>
+            {link && (
+              <div className="space-y-2 rounded-xl bg-fond p-3">
+                <p className="text-xs text-neutral-600">
+                  {link.emailAttempted
+                    ? `Lien envoyé par e-mail à ${p.email}. Il ne s’affiche qu’une fois : copiez-le si besoin.`
+                    : "E-mail non configuré : copiez ce lien et envoyez-le vous-même au partenaire. Il ne s’affiche qu’une fois."}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <code
+                    className="min-w-0 flex-1 break-all rounded-lg bg-white px-3 py-2 text-xs text-nuit"
+                    data-testid="partner-portal-link"
+                  >
+                    {link.portalLink}
+                  </code>
+                  <Button variant="outline" onClick={copyLink} className="rounded-xl">
+                    {linkCopied ? "Copié" : "Copier"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {msg && <p className="text-sm text-nuit" data-testid="partner-msg">{msg}</p>}
       </div>
     </div>

@@ -6,13 +6,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, ReportStatus, UserRole, DiscountType } from '@prisma/client';
+import { Prisma, ReportStatus, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { NotificationService } from '../notifications/notification.service';
 import { isStaff } from './guards/admin-roles';
+import { checkDiscount, normalizePromoCode } from './promo-rules';
+import { revenueByCode } from '../partners/partner-sales';
+import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
 
 const userListSelect = {
   id: true,
@@ -767,7 +770,12 @@ export class AdminService {
   // GESTION DES CODES PROMO
   // ════════════════════════════════════════════════════════════════════════════
 
-  async listPromoCodes(params: { page?: number; limit?: number; isActive?: string }) {
+  async listPromoCodes(params: {
+    page?: number;
+    limit?: number;
+    isActive?: string;
+    q?: string;
+  }) {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(100, Math.max(1, params.limit ?? 20));
     const skip = (page - 1) * limit;
@@ -775,12 +783,22 @@ export class AdminService {
     const where: Prisma.PromoCodeWhereInput = {};
     if (params.isActive === 'true') where.isActive = true;
     if (params.isActive === 'false') where.isActive = false;
+    if (params.q?.trim()) {
+      const q = params.q.trim();
+      where.OR = [
+        { code: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
+    }
 
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.promoCode.findMany({
         where,
         include: {
           _count: { select: { usages: true } },
+          partner: {
+            select: { id: true, name: true, company: true, type: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -788,6 +806,14 @@ export class AdminService {
       }),
       this.prisma.promoCode.count({ where }),
     ]);
+    const sales = await revenueByCode(
+      this.prisma,
+      rows.map((r) => r.id),
+    );
+    const data = rows.map((r) => ({
+      ...r,
+      sales: sales.get(r.id) ?? { purchases: 0, revenue: 0 },
+    }));
 
     return {
       data,
@@ -823,68 +849,66 @@ export class AdminService {
     };
   }
 
-  async createPromoCode(dto: {
-    code: string;
-    discountType: string;
-    discountValue: number;
-    maxUses?: number | null;
-    expiresAt?: string | null;
-    isActive?: boolean;
-    description?: string;
-  }) {
+  async createPromoCode(dto: CreatePromoCodeDto) {
+    const code = normalizePromoCode(dto.code);
+    if (!code) {
+      throw new BadRequestException(
+        'Code : 3 à 30 lettres ou chiffres, sans espace ni accent.',
+      );
+    }
     const existing = await this.prisma.promoCode.findUnique({
-      where: { code: dto.code.trim().toUpperCase() },
+      where: { code },
     });
-    if (existing) throw new BadRequestException(`Le code "${dto.code}" existe déjà.`);
+    if (existing) throw new BadRequestException(`Le code ${code} existe déjà.`);
 
-    const discountTypeMap: Record<string, DiscountType> = {
-      percent: DiscountType.percent,
-      fixed: DiscountType.fixed,
-      free: DiscountType.free,
-    };
-
-    const discountType = discountTypeMap[dto.discountType];
-    if (!discountType) throw new BadRequestException('discountType invalide (percent | fixed | free)');
+    const discount = checkDiscount(dto.discountType, dto.discountValue);
+    if ('error' in discount) throw new BadRequestException(discount.error);
 
     return this.prisma.promoCode.create({
       data: {
-        code: dto.code.trim().toUpperCase(),
-        discountType,
-        discountValue: dto.discountValue ?? 0,
+        code,
+        discountType: dto.discountType,
+        discountValue: discount.value,
         maxUses: dto.maxUses ?? null,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
         isActive: dto.isActive !== false,
-        description: dto.description ?? null,
+        description: dto.description?.trim() || null,
       },
     });
   }
 
-  async updatePromoCode(id: string, dto: {
-    discountType?: string;
-    discountValue?: number;
-    maxUses?: number | null;
-    expiresAt?: string | null;
-    isActive?: boolean;
-    description?: string;
-  }) {
+  async updatePromoCode(id: string, dto: UpdatePromoCodeDto) {
     const promo = await this.prisma.promoCode.findUnique({ where: { id } });
     if (!promo) throw new NotFoundException('Code promo introuvable');
 
-    const discountTypeMap: Record<string, DiscountType> = {
-      percent: DiscountType.percent,
-      fixed: DiscountType.fixed,
-      free: DiscountType.free,
-    };
+    let discountValue: number | undefined;
+    const type = dto.discountType ?? promo.discountType;
+    if (dto.discountType !== undefined || dto.discountValue !== undefined) {
+      const discount = checkDiscount(
+        type,
+        dto.discountValue ??
+          (dto.discountType === undefined ||
+          dto.discountType === promo.discountType
+            ? promo.discountValue
+            : undefined),
+      );
+      if ('error' in discount) throw new BadRequestException(discount.error);
+      discountValue = discount.value;
+    }
 
     return this.prisma.promoCode.update({
       where: { id },
       data: {
-        ...(dto.discountType ? { discountType: discountTypeMap[dto.discountType] } : {}),
-        ...(dto.discountValue !== undefined ? { discountValue: dto.discountValue } : {}),
+        ...(dto.discountType !== undefined ? { discountType: type } : {}),
+        ...(discountValue !== undefined ? { discountValue } : {}),
         ...(dto.maxUses !== undefined ? { maxUses: dto.maxUses } : {}),
-        ...(dto.expiresAt !== undefined ? { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null } : {}),
+        ...(dto.expiresAt !== undefined
+          ? { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null }
+          : {}),
         ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
-        ...(dto.description !== undefined ? { description: dto.description } : {}),
+        ...(dto.description !== undefined
+          ? { description: dto.description.trim() || null }
+          : {}),
       },
     });
   }
@@ -898,21 +922,34 @@ export class AdminService {
     });
   }
 
+  /**
+   * Supprime un code jamais utilisé. Un code déjà utilisé reste pour
+   * l'historique des paiements : il est mis en pause. Le code d'un partenaire
+   * se gère depuis sa fiche.
+   */
   async deletePromoCode(id: string) {
     const promo = await this.prisma.promoCode.findUnique({
       where: { id },
-      include: { _count: { select: { usages: true } } },
+      include: {
+        _count: { select: { usages: true, transactions: true } },
+        partner: { select: { id: true } },
+      },
     });
     if (!promo) throw new NotFoundException('Code promo introuvable');
-    if (promo._count.usages > 0) {
-      // Désactiver plutôt que supprimer si déjà utilisé
-      return this.prisma.promoCode.update({
+    if (promo.partner) {
+      throw new BadRequestException(
+        'Ce code appartient à un partenaire : mettez-le en pause plutôt que de le supprimer.',
+      );
+    }
+    if (promo._count.usages > 0 || promo._count.transactions > 0) {
+      await this.prisma.promoCode.update({
         where: { id },
         data: { isActive: false },
       });
+      return { deleted: false, paused: true };
     }
     await this.prisma.promoCode.delete({ where: { id } });
-    return { deleted: true };
+    return { deleted: true, paused: false };
   }
 
   async getPromoStats() {

@@ -13,7 +13,7 @@ import {
 } from '@prisma/client';
 import { randomInt } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { EmailService } from '../common/email.service';
+import { EmailService, emailDeliveryMode } from '../common/email.service';
 import { ApplyPartnerDto } from './dto/apply-partner.dto';
 import {
   CreatePartnerCodeDto,
@@ -26,6 +26,22 @@ import {
   normalizeCode,
   partnerTypeLabel,
 } from './partners.logic';
+import {
+  hashPortalToken,
+  isPortalToken,
+  monthlyHistory,
+  newPortalToken,
+  portalLink,
+} from './partner-portal.logic';
+import { revenueByCode } from './partner-sales';
+
+type PartnerRow = { portalTokenHash?: string | null } & Record<string, unknown>;
+
+/** Jamais l'empreinte du lien privé dans les réponses du tableau de bord. */
+function withoutSecret<T extends PartnerRow>(row: T) {
+  const { portalTokenHash, ...rest } = row;
+  return { ...rest, portalActive: Boolean(portalTokenHash) };
+}
 
 const TEAM_EMAIL = () =>
   process.env.PARTNERS_NOTIFY_EMAIL || 'contact@boligo.fr';
@@ -168,7 +184,7 @@ export class PartnersService {
         revenue: 0,
       };
       return {
-        ...r,
+        ...withoutSecret(r),
         sales: { ...s, commission: commissionDue(s.revenue, r.commissionRate) },
       };
     });
@@ -190,21 +206,26 @@ export class PartnersService {
       revenue: 0,
     };
     return {
-      ...row,
+      ...withoutSecret(row),
       sales: { ...s, commission: commissionDue(s.revenue, row.commissionRate) },
     };
   }
 
   async update(id: string, dto: UpdatePartnerDto) {
     await this.get(id);
-    return this.prisma.partnerApplication.update({
+    const row = await this.prisma.partnerApplication.update({
       where: { id },
       data: {
         status: dto.status,
         notes: dto.notes,
         commissionRate: dto.commissionRate,
+        // Une candidature refusée perd aussi son Espace partenaire.
+        ...(dto.status === PartnerStatus.REFUSE
+          ? { portalTokenHash: null, portalLinkSentAt: null }
+          : {}),
       },
     });
+    return withoutSecret(row);
   }
 
   /** Crée le code promo personnel du partenaire et valide la candidature. */
@@ -249,11 +270,148 @@ export class PartnersService {
         description: `Partenaire : ${partner.company || partner.name} (${partnerTypeLabel(partner.type)})`,
       },
     });
-    return this.prisma.partnerApplication.update({
+    await this.prisma.partnerApplication.update({
       where: { id },
       data: { promoCodeId: promo.id, status: PartnerStatus.ACCEPTE },
+    });
+    // Bienvenue : le code et le lien vers l'Espace partenaire, dans sa langue.
+    const portal = await this.sendPortalLink(id, true);
+    return { ...(await this.get(id)), ...portal };
+  }
+
+  /**
+   * Crée un nouveau lien privé vers l'Espace partenaire (l'ancien cesse de
+   * fonctionner) et l'envoie au partenaire. Le lien est rendu une seule fois
+   * à l'équipe, pour le copier si l'e-mail n'est pas configuré.
+   */
+  async sendPortalLink(id: string, welcome = false) {
+    const partner = await this.prisma.partnerApplication.findUnique({
+      where: { id },
       include: { promoCode: true },
     });
+    if (!partner) throw new NotFoundException('Candidature introuvable');
+    if (!partner.promoCode) {
+      throw new BadRequestException(
+        'Créez d’abord le code du partenaire : l’Espace partenaire montre son activité.',
+      );
+    }
+    const { token, hash } = newPortalToken();
+    await this.prisma.partnerApplication.update({
+      where: { id },
+      data: { portalTokenHash: hash, portalLinkSentAt: new Date() },
+    });
+    const link = portalLink(token, partner.language);
+    const fr = partner.language !== 'en';
+    const code = partner.promoCode.code;
+    try {
+      await this.email.sendSimpleEmail(
+        partner.email,
+        fr
+          ? welcome
+            ? 'Bienvenue dans le Programme Partenaires BOLIGO'
+            : 'Votre lien vers l’Espace partenaire BOLIGO'
+          : welcome
+            ? 'Welcome to the BOLIGO Partner Program'
+            : 'Your link to the BOLIGO Partner space',
+        fr
+          ? welcome
+            ? `Bienvenue ${partner.name}, votre candidature est acceptée`
+            : `Bonjour ${partner.name}, voici votre nouveau lien`
+          : welcome
+            ? `Welcome ${partner.name}, your application is accepted`
+            : `Hello ${partner.name}, here is your new link`,
+        fr
+          ? [
+              `Votre code personnel : ${code}.`,
+              'Votre Espace partenaire montre en temps réel les Parcours payés avec votre code, le montant encaissé et votre commission, mois par mois.',
+              'Ce lien est personnel : ne le partagez pas. Si vous le perdez, écrivez-nous et nous vous en enverrons un nouveau.',
+              'Rappel : chaque publication doit porter la mention « Collaboration commerciale » ou « Publicité ».',
+            ]
+          : [
+              `Your personal code: ${code}.`,
+              'Your Partner space shows, in real time, the Journeys paid with your code, the amount collected and your commission, month by month.',
+              'This link is personal: do not share it. If you lose it, write to us and we will send you a new one.',
+              'Reminder: every post must be clearly labelled as an ad or a paid partnership.',
+            ],
+        partner.language,
+        {
+          label: fr ? 'Ouvrir mon Espace partenaire' : 'Open my Partner space',
+          url: link,
+        },
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Lien de l'Espace partenaire non envoyé : ${(err as Error).message}`,
+      );
+    }
+    return {
+      portalLink: link,
+      emailAttempted: emailDeliveryMode() !== 'simulation',
+    };
+  }
+
+  /** Coupe l'accès à l'Espace partenaire (le code, lui, reste tel quel). */
+  async revokePortal(id: string) {
+    await this.get(id);
+    await this.prisma.partnerApplication.update({
+      where: { id },
+      data: { portalTokenHash: null, portalLinkSentAt: null },
+    });
+    return { ok: true };
+  }
+
+  /**
+   * Espace partenaire : totaux et historique des achats payés avec son code.
+   * Aucune donnée de membre : ni nom, ni identifiant, ni date précise d'achat.
+   */
+  async portal(token: unknown) {
+    const invalid = new NotFoundException(
+      'Lien invalide ou expiré. Demandez un nouveau lien à contact@boligo.fr.',
+    );
+    if (!isPortalToken(token)) throw invalid;
+    const partner = await this.prisma.partnerApplication.findUnique({
+      where: { portalTokenHash: hashPortalToken(token) },
+      include: { promoCode: true },
+    });
+    if (
+      !partner ||
+      !partner.promoCode ||
+      partner.status === PartnerStatus.REFUSE
+    ) {
+      throw invalid;
+    }
+    const promo = partner.promoCode;
+    const sales = await this.prisma.creditTransaction.findMany({
+      where: { promoCodeId: promo.id, type: TransactionType.achat },
+      select: { date: true, euroAmount: true },
+    });
+    const revenue =
+      Math.round(sales.reduce((sum, s) => sum + (s.euroAmount ?? 0), 0) * 100) /
+      100;
+    return {
+      partner: {
+        name: partner.name,
+        company: partner.company,
+        type: partner.type,
+        language: partner.language,
+        commissionRate: partner.commissionRate,
+      },
+      code: {
+        code: promo.code,
+        discountType: promo.discountType,
+        discountValue: promo.discountValue,
+        isActive: promo.isActive,
+        expiresAt: promo.expiresAt,
+        uses: promo.usedCount,
+      },
+      totals: {
+        purchases: sales.length,
+        revenue,
+        commission: commissionDue(revenue, partner.commissionRate),
+      },
+      months: monthlyHistory(sales, partner.commissionRate),
+      updatedAt: new Date().toISOString(),
+    };
   }
 
   /** Synthèse : candidatures par profil et statut, ventes et commissions dues. */
@@ -297,24 +455,7 @@ export class PartnersService {
     };
   }
 
-  /** Achats payés avec chaque code : nombre et chiffre d'affaires en euros. */
-  private async revenueByCode(codeIds: string[]) {
-    const map = new Map<string, { purchases: number; revenue: number }>();
-    if (!codeIds.length) return map;
-    const rows = await this.prisma.creditTransaction.groupBy({
-      by: ['promoCodeId'],
-      where: { promoCodeId: { in: codeIds }, type: TransactionType.achat },
-      _count: { _all: true },
-      _sum: { euroAmount: true },
-    });
-    for (const r of rows) {
-      if (r.promoCodeId) {
-        map.set(r.promoCodeId, {
-          purchases: r._count._all,
-          revenue: Math.round((r._sum.euroAmount ?? 0) * 100) / 100,
-        });
-      }
-    }
-    return map;
+  private revenueByCode(codeIds: string[]) {
+    return revenueByCode(this.prisma, codeIds);
   }
 }

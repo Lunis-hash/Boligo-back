@@ -82,6 +82,8 @@ export default function RootLayout() {
             <Stack.Screen name="legal" options={{ headerShown: false }} />
             <Stack.Screen name="partenaires" options={{ headerShown: false }} />
             <Stack.Screen name="partners" options={{ headerShown: false }} />
+            <Stack.Screen name="espace-partenaire" options={{ headerShown: false }} />
+            <Stack.Screen name="partner-space" options={{ headerShown: false }} />
             <Stack.Screen name="video-call" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
