@@ -21,7 +21,7 @@ export function StatCard({
     <Card
       className={cn(
         "border-neutral-200/60 shadow-none hover:shadow-sm transition-shadow",
-        variant === "highlight" && "border-neutral-300/60 bg-neutral-900 text-white",
+        variant === "highlight" && "border-transparent bg-gradient-to-br from-nuit to-lavande text-white",
       )}
     >
       <CardContent className="p-5">
@@ -29,7 +29,7 @@ export function StatCard({
           <div className="space-y-2">
             <p className={cn(
               "text-xs font-medium",
-              variant === "highlight" ? "text-neutral-400" : "text-neutral-500",
+              variant === "highlight" ? "text-white/70" : "text-neutral-500",
             )}>
               {title}
             </p>
@@ -53,7 +53,7 @@ export function StatCard({
               {hint && (
                 <p className={cn(
                   "text-[11px]",
-                  variant === "highlight" ? "text-neutral-500" : "text-neutral-400",
+                  variant === "highlight" ? "text-white/70" : "text-neutral-400",
                 )}>
                   {hint}
                 </p>

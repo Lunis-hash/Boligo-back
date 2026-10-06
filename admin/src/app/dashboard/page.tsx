@@ -31,7 +31,7 @@ import {
   Legend,
 } from "recharts";
 import { apiFetch } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getAdminUser, getToken } from "@/lib/auth";
 import type { DashboardStats } from "@/types/admin";
 import type { FinanceStats } from "@/types/finance";
 import { StatCard } from "@/components/stat-card";
@@ -43,8 +43,9 @@ import { statusLabel, formatEuro } from "@/lib/format";
 const REFRESH_INTERVAL = 30_000; // 30 seconds
 
 // Neutral chart colors
-const CHART_COLORS = ["#171717", "#525252", "#a3a3a3", "#d4d4d4", "#e5e5e5"];
-const AREA_COLOR = "#171717";
+// Couleurs de la marque : framboise, lavande, bleu nuit, puis leurs teintes claires.
+const CHART_COLORS = ["#C62A6E", "#7C5CDB", "#33287A", "#E2679A", "#B3A1F0"];
+const AREA_COLOR = "#C62A6E";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -57,9 +58,11 @@ export default function DashboardPage() {
     try {
       if (!silent) setIsRefreshing(true);
       const token = getToken();
+      // Les finances ne sont lues que par l'administrateur (même règle que l'API).
+      const isAdmin = getAdminUser()?.role === "ADMIN";
       const [s, f] = await Promise.all([
         apiFetch<DashboardStats>("/admin/stats", { token }),
-        apiFetch<FinanceStats>("/admin/finance/stats", { token }),
+        isAdmin ? apiFetch<FinanceStats>("/admin/finance/stats", { token }) : Promise.resolve(null),
       ]);
       setStats(s);
       setFinance(f);
@@ -132,12 +135,14 @@ export default function DashboardPage() {
               <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
               Rafraîchir
             </Button>
-            <Button asChild size="sm" className="rounded-lg bg-neutral-900 hover:bg-neutral-800">
-              <Link href="/dashboard/finance">
-                Finances
-                <ArrowRight className="ml-2 h-3.5 w-3.5" />
-              </Link>
-            </Button>
+            {getAdminUser()?.role === "ADMIN" && (
+              <Button asChild size="sm" className="rounded-lg bg-gradient-to-r from-framboise to-lavande hover:opacity-90">
+                <Link href="/dashboard/finance">
+                  Finances
+                  <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            )}
           </div>
         }
       />

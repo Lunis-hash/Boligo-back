@@ -13,7 +13,7 @@ export function PageHeader({
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">
+          <h1 className="text-2xl tracking-tight text-encre sm:text-3xl">
             {title}
           </h1>
           {live && (

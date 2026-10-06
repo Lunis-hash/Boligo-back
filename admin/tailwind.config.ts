@@ -9,7 +9,34 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)", "system-ui", "-apple-system", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+      },
       colors: {
+        // Identité BOLIGO (mêmes valeurs que mobile-steve/constants/brand.ts).
+        framboise: "#C62A6E",
+        lavande: "#7C5CDB",
+        nuit: "#33287A",
+        rose: "#FDE6EF",
+        lilas: "#EEE8FF",
+        ciel: "#E3ECFF",
+        fond: "#FFF8FA",
+        encre: "#2A1B3D",
+        // Gris remplacés par des tons prune : tout l'écran prend la couleur de la marque.
+        neutral: {
+          50: "#FBF6F9",
+          100: "#F5EDF2",
+          200: "#ECE1EA",
+          300: "#DACBD9",
+          400: "#9A8BA8",
+          500: "#76668A",
+          600: "#5E4F6E",
+          700: "#4A3C5A",
+          800: "#382A49",
+          900: "#2A1B3D",
+          950: "#1C1029",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
