@@ -263,14 +263,69 @@ describe('AiService — modèle Groq retiré', () => {
         { journeyId: 'j5' },
       );
       expect(out?.model).toBe('openai/gpt-oss-120b');
-      expect(out?.questions).toHaveLength(4);
+      // Deux propositions par thème et par jour, au plus.
+      expect(out?.questions).toHaveLength(2);
       const create = (g.client.chat.completions.create as jest.Mock).mock
         .calls as Array<[{ messages: Array<{ content: string }> }]>;
       const [system, user] = create[0][0].messages;
       expect(system.content).toContain('Gottman');
       expect(system.content).toContain('aucun diagnostic');
+      expect(system.content).toContain('CHOIX DE LA TECHNIQUE SELON LE SIGNAL');
       expect(user.content).toContain('ÉTAPE 1');
+      expect(user.content).toContain('DEUX propositions');
       expect(user.content).toContain('"methode"');
+    });
+
+    it('un appel par jour, en parallèle : un jour en échec n’empêche pas les autres', async () => {
+      let n = 0;
+      const g = fakeGroq(models, () => {
+        n++;
+        if (n === 2) throw new Error('HTTP 500');
+        return JSON.stringify({
+          questions: [1, 2].flatMap((day) =>
+            ['famille', 'argent'].map((themeKey) => ({
+              day,
+              theme: 'Lignes rouges',
+              themeKey,
+              text: `Jour ${day}, ${themeKey} : qu'est-ce qui vous apaise vraiment ?`,
+              methode: 'besoin caché',
+              cible: 'ce qui apaise chacun',
+            })),
+          ),
+        });
+      });
+      const out = await journeyService(
+        g.client,
+        budgetFor(true),
+      ).generateTargetedHarmonyQuestions(
+        'rapport',
+        [
+          { key: 'famille', label: 'Famille' },
+          { key: 'argent', label: 'Argent' },
+        ],
+        [
+          { day: 1, label: 'Lignes rouges', intent: 'limites' },
+          { day: 2, label: 'Valeurs profondes', intent: 'origine' },
+        ],
+        [],
+        { journeyId: 'j5b', paidOnly: true },
+        '- Inès : femme, 29 ans, vit à Lyon',
+      );
+      expect(g.calls).toHaveLength(2);
+      // Le jour 1 répond ; chaque appel ne garde que les questions de son jour.
+      expect(out?.questions.map((q) => q.text)).toEqual([
+        "Jour 1, famille : qu'est-ce qui vous apaise vraiment ?",
+        "Jour 1, argent : qu'est-ce qui vous apaise vraiment ?",
+      ]);
+      expect(out?.questions[0]).toMatchObject({
+        method: 'besoin caché',
+        target: 'ce qui apaise chacun',
+      });
+      const create = (g.client.chat.completions.create as jest.Mock).mock
+        .calls as Array<[{ messages: Array<{ content: string }> }]>;
+      expect(create[0][0].messages[1].content).toContain(
+        '- Inès : femme, 29 ans, vit à Lyon',
+      );
     });
 
     it('relecture par une autre famille de modèle que le rédacteur, à température 0', async () => {
@@ -295,6 +350,10 @@ describe('AiService — modèle Groq retiré', () => {
         .calls as Array<
         [{ temperature: number; messages: Array<{ content: string }> }]
       >;
+      // Le relecteur voit la méthode et la cible de chaque question.
+      expect(create[0][0].messages[1].content).toContain(
+        'Méthode : — · Cible : —',
+      );
       expect(create[0][0].temperature).toBe(0);
       expect(create[0][0].messages[1].content).toContain(
         'Une question déjà posée ?',
@@ -303,6 +362,23 @@ describe('AiService — modèle Groq retiré', () => {
         'j6',
         expect.any(Number),
       );
+    });
+
+    it('le relecteur départage deux propositions acceptées', async () => {
+      const g = fakeGroq(
+        models.concat('llama-3.3-70b-versatile'),
+        () =>
+          '{"rejets": [{"n": 1, "regle": 8, "raison": "fermée"}], "meilleures": [1, 3, 7]}',
+      );
+      const review = await journeyService(
+        g.client,
+        budgetFor(true),
+      ).reviewSondeurQuestions('j6b', draft(3), [], 'openai/gpt-oss-120b');
+      // Une question refusée n'est jamais « meilleure » ; numéro hors liste ignoré.
+      expect([...(review?.rejected ?? [])]).toEqual([0]);
+      expect([
+        ...((review as { preferred?: Set<number> })?.preferred ?? []),
+      ]).toEqual([2]);
     });
 
     it('si le rédacteur est Llama, le relecteur en change', async () => {

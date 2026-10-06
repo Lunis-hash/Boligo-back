@@ -65,7 +65,9 @@ describe('AiService — OpenRouter (payant) et Groq', () => {
       expect.objectContaining({
         role: 'quality',
         maxTokens: 1500,
-        temperature: 0.4,
+        temperature: 0.3,
+        // Délai proportionnel à la longueur demandée (30 ms par jeton).
+        timeoutMs: 45_000,
       }),
     );
     // Estimation : jetons lus × 2 $ + 1 500 jetons écrits × 10 $ (par million).

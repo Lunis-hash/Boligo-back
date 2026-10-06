@@ -8,7 +8,9 @@ import {
 } from '../matching/divergence.engine';
 import { PrismaService } from '../prisma/prisma.service';
 import { similarQuestions } from './clinical-lens';
+import { SAFETY_QUESTIONS } from './sondeur.generator';
 import {
+  AnsweredItem,
   FollowUpProposal,
   REVIEW_DAY,
   SondeurReading,
@@ -16,8 +18,11 @@ import {
   dayComplete,
   dayReadingPrompt,
   fidelityPrompt,
+  followUpPrompt,
+  itemsBlock,
   parseDayReading,
   parseFidelity,
+  parseFollowUps,
   parseReview,
   reviewPrompt,
   ruleDayReading,
@@ -147,35 +152,33 @@ export class JourneyInsightsService {
         journeyId,
         system,
         prompt,
-        1500,
+        1800,
       );
-      const parsed = written ? parseDayReading(written.content, day) : null;
-      // Garde-fou anti-invention : publiée seulement si le relecteur confirme
-      // que chaque phrase s'appuie sur les réponses. Sinon, version des règles.
+      const reading = written
+        ? parseDayReading(written.content, day, items, names)
+        : null;
+      // Garde-fou anti-invention : chaque point cite les réponses (vérifié par
+      // le code), puis le relecteur confirme que rien n'est inventé.
       if (
-        !parsed ||
+        !reading ||
         !(await this.isFaithful(
           journeyId,
           items,
           names,
-          parsed.reading,
-          parsed.followUp,
+          reading,
           written?.model,
         ))
       ) {
         this.markFailure(journeyId, day);
         continue;
       }
-      if (parsed.followUp) {
-        await this.placeFollowUp(
-          journeyId,
-          day + 1,
-          parsed.followUp,
-          qs,
-          written?.model,
-        );
+      if (day < 3) {
+        await this.writeFollowUp(journeyId, day, items, names, reading, qs, [
+          userAId,
+          userBId,
+        ]);
       }
-      await this.save(journeyId, parsed.reading);
+      await this.save(journeyId, reading);
     }
 
     const allDone = [1, 2, 3].every((d) =>
@@ -193,19 +196,12 @@ export class JourneyInsightsService {
       journeyId,
       system,
       prompt,
-      2000,
+      2500,
     );
-    const review = written ? parseReview(written.content) : null;
+    const review = written ? parseReview(written.content, all, names) : null;
     if (
       !review ||
-      !(await this.isFaithful(
-        journeyId,
-        all,
-        names,
-        review,
-        null,
-        written?.model,
-      ))
+      !(await this.isFaithful(journeyId, all, names, review, written?.model))
     ) {
       this.markFailure(journeyId, REVIEW_DAY);
       return;
@@ -219,10 +215,9 @@ export class JourneyInsightsService {
     items: Parameters<typeof fidelityPrompt>[0],
     names: [string, string],
     reading: SondeurReading,
-    followUp: FollowUpProposal | null,
     writerModel?: string,
   ): Promise<boolean> {
-    const { system, prompt } = fidelityPrompt(items, names, reading, followUp);
+    const { system, prompt } = fidelityPrompt(items, names, reading);
     const verdict = parseFidelity(
       await this.ai.journeyCritique(journeyId, system, prompt, writerModel),
     );
@@ -235,6 +230,79 @@ export class JourneyInsightsService {
   }
 
   /**
+   * Question d'approfondissement de la journée suivante : deux propositions
+   * écrites à part (elles ne voient que les réponses et les écarts décrits),
+   * relues par un modèle d'une autre famille ; la meilleure acceptée est
+   * placée. Refus, relecture impossible ou thème de sécurité : rien ne change.
+   */
+  private async writeFollowUp(
+    journeyId: string,
+    day: number,
+    items: AnsweredItem[],
+    names: [string, string],
+    reading: SondeurReading,
+    asked: Array<{ day: number; questionText: string; responses: unknown[] }>,
+    members: [string, string],
+  ): Promise<string | null> {
+    // Journée suivante déjà commencée : la question ne pourrait plus changer.
+    if (asked.some((q) => q.day === day + 1 && q.responses.length > 0))
+      return null;
+    const askedTexts = asked.map((q) => q.questionText);
+    const { system, prompt } = followUpPrompt(
+      day,
+      items,
+      names,
+      reading.toDiscuss,
+      askedTexts,
+    );
+    const written = await this.ai.journeyCompletion(
+      journeyId,
+      system,
+      prompt,
+      1200,
+      0.6,
+    );
+    if (!written) return null;
+    // Un thème qui porte un écart de sécurité garde sa question de limite.
+    const report = await this.interviewReport(...members);
+    const safety = new Set(
+      (report?.divergences ?? [])
+        .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
+        .map((d) => d.theme),
+    );
+    const candidates = parseFollowUps(written.content).filter(
+      (c) => !safety.has(c.themeKey),
+    );
+    if (candidates.length === 0) return null;
+    const review = await this.ai.reviewSondeurQuestions(
+      journeyId,
+      candidates.map((c) => ({
+        day: day + 1,
+        themeKey: c.themeKey,
+        text: c.text,
+        method: c.method,
+        target: c.target,
+      })),
+      askedTexts,
+      written.model,
+      itemsBlock(items, names),
+    );
+    if (!review) return null;
+    const accepted = candidates
+      .map((c, i) => ({ c, i }))
+      .filter(({ i }) => !review.rejected.has(i))
+      .sort(
+        (x, y) =>
+          Number(review.preferred.has(y.i)) - Number(review.preferred.has(x.i)),
+      );
+    for (const { c } of accepted) {
+      const placed = await this.placeFollowUp(journeyId, day + 1, c);
+      if (placed) return placed;
+    }
+    return null;
+  }
+
+  /**
    * Remplace une question de la journée suivante, du même thème, par la
    * question d'approfondissement. Seulement si personne n'a encore commencé
    * cette journée : une question déjà affichée ne change pas sous les yeux
@@ -244,25 +312,7 @@ export class JourneyInsightsService {
     journeyId: string,
     day: number,
     proposal: FollowUpProposal,
-    asked: Array<{ questionText: string }>,
-    writerModel?: string,
   ): Promise<string | null> {
-    // Garde-fou : la question est relue par un second modèle, d'une autre
-    // famille. Refusée, ou relecture impossible : rien n'est remplacé.
-    const review = await this.ai.reviewSondeurQuestions(
-      journeyId,
-      [
-        {
-          day,
-          themeKey: proposal.themeKey,
-          text: proposal.text,
-          options: proposal.options,
-        },
-      ],
-      asked.map((q) => q.questionText),
-      writerModel,
-    );
-    if (!review || review.rejected.size > 0) return null;
     const all = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
       orderBy: { sentAt: 'asc' },

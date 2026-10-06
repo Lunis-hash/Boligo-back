@@ -127,7 +127,7 @@ export class AiBudgetService {
   async allowJourney(journeyId: string, estimateMicro: number) {
     const budget = journeyBudgetMicroEur();
     const monthlyCap = journeyMonthlyCapMicroEur();
-    if (budget <= 0 || monthlyCap <= 0) return false;
+    if (budget <= 0) return false;
     try {
       const [journey, month] = await Promise.all([
         this.prisma.journey.findUnique({
@@ -146,7 +146,8 @@ export class AiBudgetService {
           `Parcours ${journeyId} : budget IA du parcours atteint, suite sans IA.`,
         );
       const monthSpent = Number(month?.journeyCostMicroEur ?? 0);
-      const monthOk = monthSpent + estimateMicro <= monthlyCap;
+      const monthOk =
+        monthlyCap === null || monthSpent + estimateMicro <= monthlyCap;
       if (!monthOk)
         this.warnOnce(
           `${monthKey()}:parcours-plein`,
@@ -215,7 +216,7 @@ export class AiBudgetService {
       journeyCalls,
       journeySpentEur,
       journeyBudgetEur: journeyBudgetMicroEur() / 1_000_000,
-      journeyMonthlyCapEur: journeyMonthlyCapMicroEur() / 1_000_000,
+      journeyMonthlyCapEur: (journeyMonthlyCapMicroEur() ?? 0) / 1_000_000,
     };
   }
 

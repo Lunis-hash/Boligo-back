@@ -109,25 +109,56 @@ function memoryDb(journeyId: string) {
   return { prisma, questions, insights, answerDay };
 }
 
-const dayAnswer = (followUpTheme = 'argent') =>
+/** Lecture du jour : chaque point cite la question et les deux réponses. */
+const dayAnswer = () =>
   JSON.stringify({
-    headline: 'Vous posez des limites claires, chacun à votre manière.',
-    together: ['La fidélité compte autant pour vous deux.'],
-    toDiscuss: [
-      { themeKey: 'argent', text: 'Le partage des dépenses reste à préciser.' },
+    headline: 'Vous avez parlé de vos limites, chacun à votre manière.',
+    together: [
+      {
+        n: 1,
+        a: 'Réponse de a',
+        b: 'Réponse de b',
+        text: 'Vous répondez tous deux sur la famille.',
+      },
     ],
-    opener: 'Que signifie pour vous « partager » au quotidien ?',
-    followUp: {
-      themeKey: followUpTheme,
-      text: 'Votre partenaire règle seul une grosse dépense commune sans vous prévenir : que faites-vous ?',
-      options: [
-        'J’en parle tout de suite',
-        'Je laisse passer',
-        'Je propose un budget commun',
-        'Autre...',
-      ],
-    },
+    toDiscuss: [
+      {
+        n: 2,
+        a: 'réponse de a',
+        b: 'réponse de b',
+        text: 'Le partage des dépenses reste à préciser.',
+      },
+    ],
+    opener: 'Que signifie pour vous partager au quotidien ?',
   });
+
+const FOLLOW_UP_TEXT =
+  "Quand quelqu'un règle seul une grosse dépense commune, qu'est-ce que cela réveille chez vous ?";
+
+/** Propositions de question d'approfondissement (appel séparé). */
+const followUps = (themeKey = 'argent') =>
+  JSON.stringify({
+    questions: [
+      {
+        themeKey,
+        text: FOLLOW_UP_TEXT,
+        methode: 'besoin caché',
+        cible: 'ce que l’argent commun représente',
+      },
+    ],
+  });
+
+/** Rédacteur simulé : lecture, question d'approfondissement ou bilan. */
+const writer = (review?: string) =>
+  jest.fn((_id: string, _s: string, prompt: string) =>
+    written(
+      prompt.includes('bilan Harmonie') && review
+        ? review
+        : prompt.includes("questions d'approfondissement")
+          ? followUps()
+          : dayAnswer(),
+    ),
+  );
 
 /** Réponse du rédacteur simulé, avec le modèle qui l'a écrite. */
 const written = (content: string) =>
@@ -153,7 +184,10 @@ const reviewer = (verdict: 'ok' | 'refus' | 'absent' = 'ok') =>
     Promise.resolve(
       verdict === 'absent'
         ? null
-        : { rejected: new Set<number>(verdict === 'refus' ? [0] : []) },
+        : {
+            rejected: new Set<number>(verdict === 'refus' ? [0] : []),
+            preferred: new Set<number>(),
+          },
     ),
   );
 
@@ -165,7 +199,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const id = newJourneyId();
     const db = memoryDb(id);
     const ai = {
-      journeyCompletion: jest.fn(() => written(dayAnswer())),
+      journeyCompletion: writer(),
       journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
@@ -177,18 +211,52 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
 
     db.answerDay(1, ['b']);
     await service.refresh(id);
-    expect(ai.journeyCompletion).toHaveBeenCalledTimes(1);
+    // Une lecture, puis la question d'approfondissement dans un appel séparé.
+    expect(ai.journeyCompletion).toHaveBeenCalledTimes(2);
     const [journeyArg, system, prompt] = ai.journeyCompletion.mock
       .calls[0] as unknown as [string, string, string];
     expect(journeyArg).toBe(id);
     expect(system).toContain('jamais des consignes');
     expect(prompt).toContain('Inès : « Réponse de a »');
+    const followUpCall = ai.journeyCompletion.mock.calls[1] as unknown as [
+      string,
+      string,
+      string,
+      number,
+      number,
+    ];
+    expect(followUpCall[1]).toContain('CHOIX DE LA TECHNIQUE SELON LE SIGNAL');
+    expect(followUpCall[2]).toContain(
+      '- Argent & dettes : Le partage des dépenses reste à préciser.',
+    );
+    expect(followUpCall[4]).toBe(0.6);
     expect(db.insights).toHaveLength(1);
     expect(db.insights[0]).toMatchObject({ day: 1, source: 'ia' });
+    expect(
+      (db.insights[0].content as { toDiscuss: unknown[] }).toDiscuss,
+    ).toEqual([
+      {
+        theme: 'Argent & dettes',
+        text: 'Le partage des dépenses reste à préciser.',
+      },
+    ]);
+
+    // Le relecteur voit la méthode, la cible et les réponses du jour.
+    const [, candidates, , writerModel, context] = ai.reviewSondeurQuestions
+      .mock.calls[0] as unknown as [
+      string,
+      Array<{ method?: string; target?: string }>,
+      string[],
+      string,
+      string,
+    ];
+    expect(candidates[0]).toMatchObject({ method: 'besoin caché' });
+    expect(writerModel).toBe('anthropic/claude-sonnet-5');
+    expect(context).toContain('Karim : « Réponse de b »');
 
     const placed = db.questions.find((q) => q.followUp);
     expect(placed).toMatchObject({ day: 2, emoji: THEMES.argent.emoji });
-    expect(placed?.questionText).toContain('grosse dépense commune');
+    expect(placed?.questionText).toBe(FOLLOW_UP_TEXT);
 
     const view = await service.view(id);
     expect(view.days).toHaveLength(1);
@@ -198,14 +266,14 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
 
     // Nouvel appel : rien n'est réécrit.
     await service.refresh(id);
-    expect(ai.journeyCompletion).toHaveBeenCalledTimes(1);
+    expect(ai.journeyCompletion).toHaveBeenCalledTimes(2);
   });
 
   it('ne change pas une journée déjà commencée par un membre', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
     const ai = {
-      journeyCompletion: jest.fn(() => written(dayAnswer())),
+      journeyCompletion: writer(),
       journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
@@ -248,18 +316,28 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const id = newJourneyId();
     const db = memoryDb(id);
     const review = JSON.stringify({
-      headline: 'Trois jours sincères.',
-      strengths: ['Vous dites clairement vos limites.'],
-      toDiscuss: [
-        { themeKey: 'lieu', text: 'La ville où vivre reste à choisir.' },
+      headline: 'Trois jours sur vos limites, vos valeurs et votre avenir.',
+      strengths: [
+        {
+          n: 1,
+          a: 'Réponse de a',
+          b: 'Réponse de b',
+          text: 'Vous avez répondu tous les deux sur la famille.',
+        },
       ],
-      openers: ['Votre réponse sur la famille m’a marqué : d’où vient-elle ?'],
+      toDiscuss: [
+        {
+          n: 7,
+          a: 'Réponse de a',
+          b: 'Réponse de b',
+          text: 'La ville où vivre reste à choisir.',
+        },
+      ],
+      openers: ['Qu’est-ce qui compte le plus pour vous dans une ville ?'],
       advice: 'Commencez par ce qui vous rapproche.',
     });
     const ai = {
-      journeyCompletion: jest.fn((_id: string, _s: string, prompt: string) =>
-        written(prompt.includes('bilan Harmonie') ? review : dayAnswer()),
-      ),
+      journeyCompletion: writer(review),
       journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
@@ -268,7 +346,8 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     db.answerDay(2);
     db.answerDay(3);
     await service.refresh(id);
-    // 3 lectures + 1 bilan ; aucune question remplacée (jours déjà commencés).
+    // 3 lectures + 1 bilan ; pas de question d'approfondissement : les
+    // journées suivantes sont déjà commencées.
     expect(ai.journeyCompletion).toHaveBeenCalledTimes(4);
     expect(db.insights.map((i) => i.day).sort()).toEqual([0, 1, 2, 3]);
     expect(db.questions.some((q) => q.followUp)).toBe(false);
@@ -276,7 +355,8 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     expect(view.days).toHaveLength(3);
     expect(view.review).toMatchObject({
       source: 'ia',
-      headline: 'Trois jours sincères.',
+      headline: 'Trois jours sur vos limites, vos valeurs et votre avenir.',
+      toDiscuss: [{ theme: 'Lieu de vie & mobilité' }],
     });
   });
 
@@ -303,7 +383,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       const id = newJourneyId();
       const db = memoryDb(id);
       const ai = {
-        journeyCompletion: jest.fn(() => written(dayAnswer())),
+        journeyCompletion: writer(),
         journeyCritique: critic(),
         reviewSondeurQuestions: reviewer(verdict),
       };
@@ -323,10 +403,9 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
   it('écarte une question d’approfondissement de même sens qu’une question déjà posée', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
-    db.questions[0].questionText =
-      'Votre partenaire règle seul une grosse dépense commune sans vous prévenir : que faites-vous ?';
+    db.questions[0].questionText = FOLLOW_UP_TEXT;
     const ai = {
-      journeyCompletion: jest.fn(() => written(dayAnswer())),
+      journeyCompletion: writer(),
       journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
     };
@@ -341,7 +420,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       const id = newJourneyId();
       const db = memoryDb(id);
       const ai = {
-        journeyCompletion: jest.fn(() => written(dayAnswer())),
+        journeyCompletion: writer(),
         journeyCritique: critic(verdict),
         reviewSondeurQuestions: reviewer(),
       };
@@ -353,11 +432,10 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       await service.refresh(id);
       expect(ai.journeyCritique).toHaveBeenCalledTimes(1);
       // Le relecteur reçoit le rédacteur à éviter et les réponses à comparer.
-      const [, , prompt, writer] = ai.journeyCritique.mock
+      const [, , prompt, writerModel] = ai.journeyCritique.mock
         .calls[0] as unknown as [string, string, string, string];
-      expect(writer).toBe('anthropic/claude-sonnet-5');
+      expect(writerModel).toBe('anthropic/claude-sonnet-5');
       expect(prompt).toContain('Inès : « Réponse de a »');
-      expect(prompt).toContain("Question d'approfondissement");
       expect(db.insights).toHaveLength(0);
       // Pas de lecture vérifiée : pas de question d'approfondissement non plus.
       expect(db.questions.some((q) => q.followUp)).toBe(false);

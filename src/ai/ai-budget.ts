@@ -80,10 +80,11 @@ export function monthlyBudgetMicroEur(
 
 /**
  * Suivi IA d'un parcours payé (Sondeur, lectures de chaque journée, bilan) :
- * 1 € par parcours au plus, hors plafond mensuel. Un parcours coûte 15 € à
- * chacun des deux membres ; le suivi consomme en pratique environ 1 centime.
+ * 3 € par parcours au plus, hors plafond mensuel. Un parcours coûte 15 € à
+ * chacun des deux membres ; avec les meilleurs modèles, le suivi consomme en
+ * pratique moins d'un euro.
  */
-export const DEFAULT_JOURNEY_BUDGET_EUR = 1;
+export const DEFAULT_JOURNEY_BUDGET_EUR = 3;
 
 /** Budget IA d'un parcours payé en millionièmes d'euro ; 0 coupe ce suivi. */
 export function journeyBudgetMicroEur(
@@ -97,21 +98,16 @@ export function journeyBudgetMicroEur(
 }
 
 /**
- * Filet de sécurité global : dépense totale du mois pour le suivi des parcours
- * payés (AI_JOURNEY_MONTHLY_CAP_EUR, 100 € par défaut, soit plusieurs milliers
- * de parcours). Au-delà, les parcours passent aux versions sans IA jusqu'au
- * mois suivant. 0 coupe ce suivi.
+ * Plafond mensuel facultatif pour l'ensemble des parcours payés
+ * (AI_JOURNEY_MONTHLY_CAP_EUR). Aucun par défaut : chaque parcours payé a déjà
+ * son propre budget. null = pas de plafond mensuel.
  */
-export const DEFAULT_JOURNEY_MONTHLY_CAP_EUR = 100;
-
 export function journeyMonthlyCapMicroEur(
   value: string | undefined = process.env.AI_JOURNEY_MONTHLY_CAP_EUR,
-): number {
-  return monthlyBudgetMicroEur(
-    value === undefined || value.trim() === ''
-      ? String(DEFAULT_JOURNEY_MONTHLY_CAP_EUR)
-      : value,
-  );
+): number | null {
+  if (value === undefined || value.trim() === '') return null;
+  const micro = monthlyBudgetMicroEur(value);
+  return micro > 0 ? micro : null;
 }
 
 /**

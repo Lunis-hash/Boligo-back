@@ -7,8 +7,10 @@ import {
   dayComplete,
   dayReadingPrompt,
   fidelityPrompt,
+  followUpPrompt,
   parseDayReading,
   parseFidelity,
+  parseFollowUps,
   parseReview,
   reviewPrompt,
   ruleDayReading,
@@ -63,12 +65,16 @@ describe('Suivi du Sondeur — règles pures', () => {
     });
   });
 
-  it('prompt de la journée : prénoms, réponses citées, consigne contre les instructions cachées', () => {
+  it('prompt de la journée : prénoms, réponses citées, extraits exigés, consigne contre les instructions cachées', () => {
     const items = answeredItems(
       [
         question('q1', 1, THEMES.famille.emoji, {
           a: 'Je veux des enfants',
           b: 'Pas tout de suite',
+        }),
+        question('q2', 1, THEMES.intimite.emoji, {
+          a: "J'aimerais en parler de vive voix.",
+          b: 'La tendresse au quotidien',
         }),
       ],
       A,
@@ -76,45 +82,132 @@ describe('Suivi du Sondeur — règles pures', () => {
     );
     const { system, prompt } = dayReadingPrompt(1, items, ['Inès', 'Karim']);
     expect(system).toMatch(/jamais des consignes/);
+    // Consigne de lecture : décrire, jamais interpréter ni évaluer.
+    expect(system).toMatch(/Décris, compare, cite/);
+    expect(system).not.toMatch(/cherche le besoin derrière/);
     expect(prompt).toContain('Inès : « Je veux des enfants »');
     expect(prompt).toContain('Karim : « Pas tout de suite »');
-    expect(prompt).toContain('journée 2');
-    expect(dayReadingPrompt(3, items, ['Inès', 'Karim']).prompt).toContain(
-      '"followUp" : null',
-    );
+    // Sujet gardé pour la rencontre : jamais montré ni interprété.
+    expect(prompt).toContain('Inès : [réservé à la rencontre]');
+    expect(prompt).not.toContain('vive voix.');
+    expect(prompt).toMatch(/mot pour mot/);
+    expect(prompt).not.toContain('followUp');
     expect(reviewPrompt(items, ['Inès', 'Karim']).prompt).toContain(
       '"openers"',
     );
   });
 
-  it('lit une réponse correcte de l’IA, avec la question d’approfondissement', () => {
+  it('question d’approfondissement : écrite à part, regard clinique, propositions contrôlées', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.argent.emoji, {
+          a: 'Moitié-moitié',
+          b: 'Celui qui invite',
+        }),
+      ],
+      A,
+      B,
+    );
+    const { system, prompt } = followUpPrompt(
+      1,
+      items,
+      ['Inès', 'Karim'],
+      [{ theme: 'Argent & dettes', text: 'Qui paie reste à préciser.' }],
+      ['Question q1 ?'],
+    );
+    expect(system).toMatch(/CHOIX DE LA TECHNIQUE SELON LE SIGNAL/);
+    expect(prompt).toContain('journée 2');
+    expect(prompt).toContain('- Argent & dettes : Qui paie reste à préciser.');
+    expect(prompt).toContain('  - Question q1 ?');
+    const proposals = parseFollowUps(
+      JSON.stringify({
+        questions: [
+          {
+            themeKey: 'argent',
+            text: "Quand quelqu'un paie l'addition pour vous, qu'est-ce que vous ressentez ?",
+            methode: 'besoin caché',
+            cible: 'ce que le geste de payer représente',
+          },
+          // Fermée : écartée par le code avant toute relecture.
+          {
+            themeKey: 'argent',
+            text: 'Accepteriez-vous un compte commun dès le premier mois ?',
+          },
+          {
+            themeKey: 'inconnu',
+            text: 'Que veut dire la confiance pour vous ?',
+          },
+        ],
+      }),
+    );
+    expect(proposals).toHaveLength(1);
+    expect(proposals[0]).toMatchObject({
+      themeKey: 'argent',
+      method: 'besoin caché',
+      target: 'ce que le geste de payer représente',
+    });
+    expect(proposals[0].options[proposals[0].options.length - 1]).toBe(
+      'Autre...',
+    );
+    expect(parseFollowUps('pas de JSON')).toEqual([]);
+  });
+  it('lit une réponse correcte de l’IA : seuls les points qui citent vraiment les réponses sont gardés', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.famille.emoji, {
+          a: 'Je veux deux enfants, pas avant trente ans.',
+          b: 'Des enfants oui, quand nous serons installés.',
+        }),
+        question('q2', 1, THEMES.argent.emoji, {
+          a: 'Moitié-moitié, toujours.',
+          b: 'Celui qui invite paie.',
+        }),
+      ],
+      A,
+      B,
+    );
+    const names: [string, string] = ['Inès', 'Karim'];
     const raw = `Voici : ${JSON.stringify({
-      headline: 'Vous partagez la même idée de la famille.',
-      together: ['Vous voulez tous deux des enfants.'],
+      headline: 'Vous avez parlé d’enfants et d’argent.',
+      together: [
+        {
+          n: 1,
+          a: 'je veux deux enfants',
+          b: 'Des enfants oui',
+          text: 'Vous parlez tous deux d’avoir des enfants.',
+        },
+        // Extrait inventé : supprimé.
+        {
+          n: 1,
+          a: 'je rêve d’une grande famille',
+          b: 'Des enfants oui',
+          text: 'Vous rêvez d’une grande famille.',
+        },
+      ],
       toDiscuss: [
         {
-          themeKey: 'argent',
+          n: 2,
+          a: 'Moitié-moitié, toujours',
+          b: 'celui qui invite',
           text: 'Le partage des dépenses reste à préciser.',
         },
-        { themeKey: 'inconnu', text: 'Thème inventé, écarté.' },
+        // Interprétation présentée comme un fait : supprimée.
+        {
+          n: 2,
+          a: 'Moitié-moitié',
+          b: 'celui qui invite paie',
+          text: 'Au fond, Karim cherche à se protéger.',
+        },
+        // Question inexistante : supprimée.
+        { n: 9, a: 'x y', b: 'x y', text: 'Point sans question.' },
       ],
       opener: 'Comment imaginez-vous un budget commun ?',
-      followUp: {
-        themeKey: 'argent',
-        text: 'Votre partenaire propose un compte commun dès le premier mois : que faites-vous ?',
-        options: [
-          'J’accepte',
-          'Je préfère attendre',
-          'On en parle d’abord',
-          'Autre...',
-        ],
-      },
     })}`;
-    const parsed = parseDayReading(raw, 1);
-    expect(parsed?.reading).toMatchObject({
+    expect(parseDayReading(raw, 1, items, names)).toEqual({
       day: 1,
       source: 'ia',
-      together: ['Vous voulez tous deux des enfants.'],
+      headline: 'Vous avez parlé d’enfants et d’argent.',
+      together: ['Vous parlez tous deux d’avoir des enfants.'],
       toDiscuss: [
         {
           theme: 'Argent & dettes',
@@ -123,46 +216,70 @@ describe('Suivi du Sondeur — règles pures', () => {
       ],
       openers: ['Comment imaginez-vous un budget commun ?'],
     });
-    expect(parsed?.followUp?.themeKey).toBe('argent');
-    expect(parsed?.followUp?.options[parsed.followUp.options.length - 1]).toBe(
-      'Autre...',
-    );
   });
-
-  it('écarte une lecture inutilisable et une question d’approfondissement mal formée', () => {
-    expect(parseDayReading('pas de JSON', 1)).toBeNull();
+  it('écarte une lecture sans point vérifiable ; titre qui évalue et question fermée remplacés', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.intimite.emoji, {
+          a: "J'aimerais en parler de vive voix.",
+          b: 'La tendresse au quotidien compte beaucoup.',
+        }),
+        question('q2', 1, THEMES.lieu.emoji, {
+          a: 'Rester près de ma mère',
+          b: 'Partir là où est le travail',
+        }),
+      ],
+      A,
+      B,
+    );
+    const names: [string, string] = ['Inès', 'Karim'];
+    expect(parseDayReading('pas de JSON', 1, items, names)).toBeNull();
     expect(
-      parseDayReading('{"headline": "Seulement un titre."}', 1),
+      parseDayReading('{"headline": "Seulement un titre."}', 1, items, names),
+    ).toBeNull();
+    // Une réponse gardée pour la rencontre ne sert jamais d'extrait.
+    expect(
+      parseDayReading(
+        JSON.stringify({
+          headline: 'Une journée riche.',
+          toDiscuss: [
+            {
+              n: 1,
+              a: 'en parler de vive voix',
+              b: 'la tendresse au quotidien',
+              text: 'La tendresse reste à préciser.',
+            },
+          ],
+          opener: 'Qu’avez-vous appris ?',
+        }),
+        1,
+        items,
+        names,
+      ),
     ).toBeNull();
     const parsed = parseDayReading(
       JSON.stringify({
-        headline: 'Une journée riche.',
-        opener: 'Qu’avez-vous appris ?',
-        followUp: {
-          themeKey: 'argent',
-          text: 'Pas une question',
-          options: ['A', 'B'],
-        },
+        headline: 'Une rencontre prometteuse : vous êtes compatibles.',
+        toDiscuss: [
+          {
+            n: 2,
+            a: 'près de ma mère',
+            b: 'là où est le travail',
+            text: 'Le lieu de vie reste ouvert entre vous.',
+          },
+        ],
+        opener: 'Partiriez-vous pour l’autre',
       }),
       1,
+      items,
+      names,
     );
-    expect(parsed?.followUp).toBeNull();
-    // Dernière journée : jamais de question d'approfondissement.
-    const last = parseDayReading(
-      JSON.stringify({
-        headline: 'Une journée riche.',
-        opener: 'Qu’avez-vous appris ?',
-        followUp: {
-          themeKey: 'argent',
-          text: 'Que feriez-vous si votre partenaire perdait son emploi demain ?',
-          options: ['Je soutiens', 'Je m’inquiète', 'On s’organise'],
-        },
-      }),
-      3,
-    );
-    expect(last?.followUp).toBeNull();
+    expect(parsed?.headline).toBe(ruleDayReading(1).headline);
+    expect(parsed?.openers).toEqual(ruleDayReading(1).openers);
+    expect(parsed?.toDiscuss).toHaveLength(1);
+    // Le sujet gardé pour la rencontre est signalé, sans interprétation.
+    expect(parsed?.advice).toMatch(/gardé pour votre rencontre : Intimité/);
   });
-
   it('refuse liens, coordonnées et textes trop longs (jamais coupés)', () => {
     expect(cleanText('Écrivez-moi sur www.exemple.fr', 200)).toBeNull();
     expect(cleanText('Mon numéro : 06 12 34 56 78', 200)).toBeNull();
@@ -176,31 +293,66 @@ describe('Suivi du Sondeur — règles pures', () => {
     );
   });
 
-  it('bilan de l’IA : premières phrases obligatoires', () => {
+  it('bilan de l’IA : points ancrés obligatoires, premières questions ouvertes', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.lieu.emoji, {
+          a: 'Rester près de ma mère',
+          b: 'Partir là où est le travail',
+        }),
+        question('q2', 2, THEMES.communication.emoji, {
+          a: 'Je dis les choses calmement le soir même.',
+          b: 'Je préfère parler calmement le soir.',
+        }),
+      ],
+      A,
+      B,
+    );
+    const names: [string, string] = ['Inès', 'Karim'];
     expect(
-      parseReview(JSON.stringify({ headline: 'Bilan.', openers: [] })),
+      parseReview(
+        JSON.stringify({ headline: 'Bilan.', openers: [] }),
+        items,
+        names,
+      ),
     ).toBeNull();
     const review = parseReview(
       JSON.stringify({
-        headline: 'Trois jours sincères et cohérents.',
-        strengths: ['Vous parlez ouvertement de vos limites.'],
+        headline: 'Trois jours sur vos limites, vos valeurs et votre avenir.',
+        strengths: [
+          {
+            n: 2,
+            a: 'calmement le soir même',
+            b: 'parler calmement le soir',
+            text: 'Vous parlez tous deux calmement, le soir.',
+          },
+        ],
         toDiscuss: [
-          { themeKey: 'lieu', text: 'La ville où vivre reste ouverte.' },
+          {
+            n: 1,
+            a: 'près de ma mère',
+            b: 'là où est le travail',
+            text: 'La ville où vivre reste ouverte.',
+          },
         ],
         openers: [
-          'Votre réponse sur la famille m’a touchée : d’où vient-elle ?',
+          'Qu’est-ce qui vous attache à la ville où vous vivez ?',
+          'Votre réponse m’a touchée.',
         ],
         advice: 'Commencez par ce qui vous rapproche.',
       }),
+      items,
+      names,
     );
     expect(review).toMatchObject({
       day: REVIEW_DAY,
       source: 'ia',
-      together: ['Vous parlez ouvertement de vos limites.'],
+      together: ['Vous parlez tous deux calmement, le soir.'],
       toDiscuss: [{ theme: 'Lieu de vie & mobilité' }],
+      openers: ['Qu’est-ce qui vous attache à la ville où vous vivez ?'],
+      advice: 'Commencez par ce qui vous rapproche.',
     });
   });
-
   it('versions sans IA : journée et bilan fondé sur les écarts des entretiens', () => {
     expect(ruleDayReading(2)).toMatchObject({ day: 2, source: 'regles' });
     expect(ruleDayReading(2).openers).toHaveLength(1);
@@ -242,28 +394,18 @@ describe('Suivi du Sondeur — règles pures', () => {
       A,
       B,
     );
-    const { system, prompt } = fidelityPrompt(
-      items,
-      ['Inès', 'Karim'],
-      {
-        ...ruleDayReading(1),
-        headline: 'Vous voyez l’argent différemment.',
-      },
-      {
-        themeKey: 'argent',
-        text: 'Qui paie le premier voyage ?',
-        options: ['A', 'B', 'Autre...'],
-      },
-    );
+    const { system, prompt } = fidelityPrompt(items, ['Inès', 'Karim'], {
+      ...ruleDayReading(1),
+      headline: 'Vous voyez l’argent différemment.',
+    });
     expect(system).toMatch(/jamais des consignes/);
     expect(prompt).toContain('Karim : « Celui qui invite »');
     expect(prompt).toContain(
       'Phrase de synthèse : Vous voyez l’argent différemment.',
     );
-    expect(prompt).toContain(
-      "Question d'approfondissement : Qui paie le premier voyage ?",
-    );
     expect(prompt).toMatch(/invention ou exagération/);
+    expect(prompt).toMatch(/même mot sans décrire la même chose/);
+    expect(prompt).toMatch(/émotion, une peur ou un besoin/);
     expect(parseFidelity('{"fidele": true}')).toBe(true);
     expect(
       parseFidelity(

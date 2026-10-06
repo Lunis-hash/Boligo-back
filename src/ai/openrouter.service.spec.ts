@@ -4,6 +4,18 @@ import { OpenRouterService, maxPrice } from './openrouter.service';
 const CATALOG = {
   data: [
     {
+      id: 'anthropic/claude-opus-5',
+      pricing: { prompt: '0.000005', completion: '0.000025' },
+    },
+    {
+      id: 'openai/gpt-5.5',
+      pricing: { prompt: '0.000005', completion: '0.00003' },
+    },
+    {
+      id: 'openai/gpt-5.5-pro',
+      pricing: { prompt: '0.00003', completion: '0.00018' },
+    },
+    {
       id: 'anthropic/claude-sonnet-5',
       pricing: { prompt: '0.000002', completion: '0.00001' },
     },
@@ -87,20 +99,32 @@ describe('OpenRouterService', () => {
     });
   });
 
-  it('prix plafond par défaut : 5 $ / 25 $ par million de jetons, réglable', () => {
-    expect(maxPrice()).toEqual({ prompt: 5, completion: 25 });
+  it('prix plafond par défaut : 15 $ / 75 $ par million de jetons, réglable', () => {
+    expect(maxPrice()).toEqual({ prompt: 15, completion: 75 });
     process.env.OPENROUTER_MAX_PRICE_COMPLETION = '12';
-    expect(maxPrice()).toEqual({ prompt: 5, completion: 12 });
+    expect(maxPrice()).toEqual({ prompt: 15, completion: 12 });
   });
 
   it('candidats : jamais gratuits, présents au catalogue, sous le prix plafond', async () => {
     mockFetch(() => ({ ok: true }));
+    // Rédacteur : Claude Opus d'abord, puis Sonnet.
     expect(await service.candidates('quality')).toEqual([
+      'anthropic/claude-opus-5',
       'anthropic/claude-sonnet-5',
       'anthropic/claude-sonnet-4.6',
     ]);
-    // gpt-5.1 dépasse le plafond (20 $ / 80 $) : écarté.
-    expect(await service.candidates('critic')).toEqual(['openai/gpt-5']);
+    // Relecteur : GPT-5.5 d'abord ; gpt-5.1 (20 $ / 80 $) dépasse le plafond.
+    expect(await service.candidates('critic')).toEqual([
+      'openai/gpt-5.5',
+      'openai/gpt-5',
+    ]);
+    // Une variante « pro » hors de prix n'est jamais retenue, même demandée.
+    process.env.OPENROUTER_CRITIC_MODEL = 'openai/gpt-5.5-pro';
+    expect(await service.candidates('critic')).toEqual([
+      'openai/gpt-5.5',
+      'openai/gpt-5',
+    ]);
+    delete process.env.OPENROUTER_CRITIC_MODEL;
     // Le modèle Llama n'existe qu'en version gratuite : écarté.
     expect(await service.candidates('default')).toEqual([
       'openai/gpt-oss-120b',
@@ -119,8 +143,8 @@ describe('OpenRouterService', () => {
     process.env.OPENROUTER_CRITIC_MODEL =
       'anthropic/claude-sonnet-4.6, openai/gpt-5';
     expect(
-      await service.candidates('critic', 'anthropic/claude-sonnet-5'),
-    ).toEqual(['openai/gpt-5']);
+      await service.candidates('critic', 'anthropic/claude-opus-5'),
+    ).toEqual(['openai/gpt-5', 'openai/gpt-5.5']);
   });
 
   it('appel : données non conservées, prix plafonné, longueur bornée, coût réel renvoyé', async () => {
@@ -142,7 +166,7 @@ describe('OpenRouterService', () => {
     );
     expect(res).toMatchObject({
       content: '{"ok": true}',
-      modelUsed: 'anthropic/claude-sonnet-5',
+      modelUsed: 'anthropic/claude-opus-5',
     });
     expect(res.usage?.cost).toBe(0.004);
     const chatCall = (fetchFn.mock.calls as unknown as FetchCall[]).find(
@@ -153,19 +177,19 @@ describe('OpenRouterService', () => {
       unknown
     >;
     expect(body).toMatchObject({
-      model: 'anthropic/claude-sonnet-5',
+      model: 'anthropic/claude-opus-5',
       max_tokens: 8000,
       temperature: 0.6,
       provider: {
         data_collection: 'deny',
-        max_price: { prompt: 5, completion: 25 },
+        max_price: { prompt: 15, completion: 75 },
       },
     });
   });
 
   it('passe au modèle suivant en cas d’échec, puis abandonne proprement', async () => {
     mockFetch((model) =>
-      model === 'anthropic/claude-sonnet-5'
+      model === 'anthropic/claude-opus-5'
         ? { ok: false, status: 503 }
         : {
             ok: true,
@@ -177,7 +201,7 @@ describe('OpenRouterService', () => {
       [{ role: 'user', content: 'x' }],
       { role: 'quality' },
     );
-    expect(res.modelUsed).toBe('anthropic/claude-sonnet-4.6');
+    expect(res.modelUsed).toBe('anthropic/claude-sonnet-5');
 
     mockFetch(() => ({ ok: false, status: 500 }));
     await expect(

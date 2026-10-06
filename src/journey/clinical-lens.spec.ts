@@ -1,8 +1,11 @@
 import {
   CLINICAL_LENS,
   CRITIC_RULES,
+  READING_LENS,
   contentWords,
   hasClinicalJargon,
+  hasInterpretation,
+  isWellFormedQuestion,
   similarQuestions,
 } from './clinical-lens';
 
@@ -72,5 +75,53 @@ describe('Regard clinique du Sondeur', () => {
     ).toBe(false);
     // Trop peu de mots porteurs de sens : on ne conclut pas.
     expect(similarQuestions('Et vous ?', 'Et vous ?')).toBe(false);
+  });
+
+  it('cadre adapté à deux inconnus, technique choisie selon le signal, exemples contrastés', () => {
+    expect(CLINICAL_LENS).toMatch(/jamais parlé/);
+    expect(CLINICAL_LENS).toMatch(/CHOIX DE LA TECHNIQUE SELON LE SIGNAL/);
+    expect(CLINICAL_LENS).toMatch(/180 caractères/);
+    expect(CLINICAL_LENS).toMatch(/Mauvais : .* Bon : /);
+    expect(CLINICAL_LENS).toMatch(/un proche qui vous connaît bien/);
+    expect(CRITIC_RULES).toMatch(/14\. /);
+    expect(CRITIC_RULES).toMatch(/oui ou par non/);
+    expect(CRITIC_RULES).toMatch(/passé commun/);
+    expect(READING_LENS).toMatch(/Décris, compare, cite/);
+    expect(READING_LENS).toMatch(/même mot/);
+  });
+
+  it('repère une interprétation présentée comme un fait', () => {
+    expect(hasInterpretation('Au fond, vous cherchez la sécurité.')).toBe(true);
+    expect(hasInterpretation('Cette réponse révèle une peur ancienne.')).toBe(
+      true,
+    );
+    expect(hasInterpretation('Vous avez tendance à fuir le conflit.')).toBe(
+      true,
+    );
+    expect(hasInterpretation('Une vieille blessure se rejoue ici.')).toBe(true);
+    expect(
+      hasInterpretation('Vous parlez tous deux de la famille le dimanche.'),
+    ).toBe(false);
+  });
+
+  it('contrôle de forme : question ouverte, courte, sans citation ni interprétation', () => {
+    for (const ok of [
+      'Dans votre famille, comment savait-on qu’une dispute était terminée ?',
+      "Qu'est-ce que votre façon de gérer l'argent vous permet de protéger ?",
+      'De 0 à 10, à quel point tenez-vous à vivre près des vôtres ? Pourquoi pas un point de moins ?',
+    ]) {
+      expect(isWellFormedQuestion(ok)).toBe(true);
+    }
+    for (const bad of [
+      'Est-ce une ligne rouge pour vous ?',
+      'Accepteriez-vous de déménager pour l’autre ?',
+      'Vous avez répondu « jamais » : pourquoi ?',
+      'Que pensez-vous de la famille.',
+      `Comment ${'vivez-vous ce moment très particulier '.repeat(6)}?`,
+      'Votre style d’attachement vous pousse-t-il à fuir ?',
+      'Au fond, que cherchez-vous vraiment dans le couple ?',
+    ]) {
+      expect(isWellFormedQuestion(bad)).toBe(false);
+    }
   });
 });

@@ -156,6 +156,9 @@ function pickActiveMatch(allMatches: any[]) {
   return matches.find((m) => m.phase !== 'attente') ?? matches[0];
 }
 
+/** Réponse qui garde un sujet pour la rencontre : jamais interprétée par l'IA. */
+const VIVE_VOIX = "J'aimerais en parler de vive voix.";
+
 export default function MatchesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -360,14 +363,15 @@ export default function MatchesScreen() {
       cacheService.set(`journey_${jId}`, { status, questions });
       applyJourneyData(status, questions);
       void loadInsights(jId);
-      // Questions encore en préparation : nouvel essai toutes les 8 s (2 minutes au plus).
+      // Questions encore en préparation (rédigées puis relues par l'IA) :
+      // nouvel essai toutes les 8 s, 4 minutes au plus.
       const retry = questionsRetry.current;
       if (
         Array.isArray(questions) &&
         questions.length === 0 &&
         status?.currentStep === 'phase_harmonie' &&
         !retry.timer &&
-        retry.count < 15
+        retry.count < 30
       ) {
         retry.count += 1;
         retry.timer = setTimeout(() => {
@@ -622,6 +626,18 @@ export default function MatchesScreen() {
               multiline
               maxLength={500}
             />
+            {/* Pudeur : chacun peut garder un sujet pour la rencontre. */}
+            <TouchableOpacity
+              onPress={() => setCustomText(VIVE_VOIX)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              testID="sondeur-vive-voix"
+              style={{ marginTop: Spacing.sm }}
+            >
+              <Text style={styles.questionHint}>
+                Sujet trop personnel pour l'écrire ? Vous pouvez répondre : « {VIVE_VOIX} » (touchez pour l'utiliser).
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleAnswer}
               activeOpacity={0.8}
