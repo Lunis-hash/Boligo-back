@@ -1,0 +1,230 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { Search, ChevronLeft, ChevronRight, User as UserIcon, Download, Loader2 } from "lucide-react";
+import { apiFetch, API_URL } from "@/lib/api";
+import { userHref } from "@/lib/routes";
+import { getToken } from "@/lib/auth";
+import type { Paginated, UserRow } from "@/types/admin";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatDate, statusLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+function StatusPill({ status }: { status: string }) {
+  let type = "neutral";
+  if (status === "actif") type = "success";
+  if (status === "suspendu") type = "danger";
+  if (status === "en_entretien" || status === "nouveau") type = "warning";
+
+  const colors: Record<string, string> = {
+    success: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    danger: "bg-red-50 text-red-600 border-red-100",
+    warning: "bg-amber-50 text-amber-600 border-amber-100",
+    neutral: "bg-neutral-50 text-neutral-600 border-neutral-200",
+  };
+  return (
+    <span className={cn("inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium", colors[type])}>
+      {statusLabel(status)}
+    </span>
+  );
+}
+
+export default function UsersPage() {
+  const [data, setData] = useState<Paginated<UserRow> | null>(null);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const exportCsv = async () => {
+    try {
+      setExporting(true);
+      const res = await fetch(`${API_URL}/admin/users/export/csv`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error("Erreur lors de l'export CSV");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `harmonie_utilisateurs_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert("Erreur lors de l'export CSV");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const load = useCallback(() => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page), limit: "15" });
+    if (search) params.set("search", search);
+    if (status) params.set("status", status);
+    apiFetch<Paginated<UserRow>>(`/admin/users?${params}`, { token: getToken() })
+      .then(setData)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [page, search, status]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return (
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Utilisateurs</h1>
+          <p className="mt-1 text-sm text-neutral-500">Gestion des comptes membres et de la modération.</p>
+        </div>
+        <Button size="sm" variant="outline" className="border-neutral-200 text-neutral-700 hover:bg-neutral-50" onClick={exportCsv} disabled={exporting}>
+          {exporting ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
+          Exporter CSV
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-neutral-200/60 bg-white p-4 shadow-sm">
+        <div className="relative min-w-[280px] flex-1">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+          <Input
+            className="h-9 w-full rounded-lg border-neutral-200 pl-9 text-sm focus-visible:ring-neutral-900"
+            placeholder="Rechercher par nom, email, ville…"
+            value={search}
+            onChange={(e) => {
+              setPage(1);
+              setSearch(e.target.value);
+            }}
+          />
+        </div>
+        <select
+          className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-neutral-900 focus:outline-none"
+          value={status}
+          onChange={(e) => {
+            setPage(1);
+            setStatus(e.target.value);
+          }}
+        >
+          <option value="">Tous les statuts</option>
+          <option value="nouveau">Nouveau</option>
+          <option value="en_entretien">En entretien</option>
+          <option value="actif">Actif</option>
+          <option value="en_parcours">En parcours</option>
+          <option value="suspendu">Suspendu</option>
+        </select>
+        <Button size="sm" className="h-9 bg-neutral-900 text-white hover:bg-neutral-800" onClick={load} disabled={loading}>
+          Actualiser
+        </Button>
+      </div>
+
+      <div className="rounded-xl border border-neutral-200/60 bg-white shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-neutral-50/50">
+            <TableRow className="border-neutral-200 hover:bg-transparent">
+              <TableHead className="font-medium text-neutral-500">Membre</TableHead>
+              <TableHead className="font-medium text-neutral-500">Statut</TableHead>
+              <TableHead className="font-medium text-neutral-500 text-right">Crédits</TableHead>
+              <TableHead className="font-medium text-neutral-500 text-right">Likes</TableHead>
+              <TableHead className="font-medium text-neutral-500 text-right">Parcours</TableHead>
+              <TableHead className="font-medium text-neutral-500 text-right">Inscription</TableHead>
+              <TableHead className="w-[80px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-48 text-center text-sm text-neutral-400">
+                  Chargement des utilisateurs…
+                </TableCell>
+              </TableRow>
+            ) : !data?.data.length ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-48 text-center text-sm text-neutral-500">
+                  <div className="flex flex-col items-center justify-center">
+                    <UserIcon className="mb-2 h-8 w-8 text-neutral-300" />
+                    Aucun utilisateur trouvé
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.data.map((u) => (
+                <TableRow key={u.id} className="border-neutral-100 hover:bg-neutral-50/50 transition-colors">
+                  <TableCell>
+                    <Link href={userHref(u.id)} className="font-medium text-neutral-900 hover:underline">
+                      {u.firstName} {u.lastName}
+                    </Link>
+                    <p className="text-[11px] text-neutral-400">{u.email}</p>
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill status={u.accountStatus} />
+                  </TableCell>
+                  <TableCell className="text-right text-[13px] font-medium text-neutral-700">{u.creditBalance}</TableCell>
+                  <TableCell className="text-right text-[13px] text-neutral-500">
+                    {u._count.receivedProposals + u._count.targetedProposals}
+                  </TableCell>
+                  <TableCell className="text-right text-[13px] text-neutral-500">
+                    {u._count.journeysA + u._count.journeysB}
+                  </TableCell>
+                  <TableCell className="text-right text-[13px] text-neutral-400">
+                    {formatDate(u.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild variant="ghost" size="sm" className="h-8 text-[11px] text-neutral-500 hover:text-neutral-900">
+                      <Link href={userHref(u.id)}>Détails</Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {data && data.meta.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-neutral-100 pt-4">
+          <p className="text-[13px] text-neutral-500">
+            Affichage de <strong>{data.data.length}</strong> sur <strong>{data.meta.total}</strong> utilisateurs
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-lg border-neutral-200 text-neutral-600 px-2"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-[13px] font-medium text-neutral-700 min-w-[32px] text-center">
+              {page}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-lg border-neutral-200 text-neutral-600 px-2"
+              disabled={page >= data.meta.totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
