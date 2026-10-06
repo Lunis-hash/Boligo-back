@@ -15,12 +15,14 @@ import { AdminService } from './admin.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
 import { AdminGuard } from './guards/admin.guard';
+import { AuthRateLimitGuard } from '../auth/auth-rate-limit.guard';
 
 @Controller('admin')
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
   @Post('auth/login')
+  @UseGuards(AuthRateLimitGuard)
   login(@Body() dto: AdminLoginDto) {
     return this.adminService.login(dto);
   }

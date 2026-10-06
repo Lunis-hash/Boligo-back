@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { runDbTransfer } from './maintenance/db-transfer';
+import { adminOrigins, corsDelegate } from './common/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
@@ -37,11 +38,9 @@ async function bootstrap() {
   }));
 
 
-  // CORS Config supporting Admin dashboard, Front-end website & Mobile App
-  app.enableCors({
-    origin: true,
-    credentials: true,
-  });
+  // CORS : application et site ouverts ; tableau de bord admin limité à ses adresses BOLIGO.
+  const allowedAdmin = adminOrigins(process.env.ADMIN_ALLOWED_ORIGINS);
+  app.enableCors(corsDelegate(allowedAdmin));
 
   // Swagger Documentation
   const config = new DocumentBuilder()
