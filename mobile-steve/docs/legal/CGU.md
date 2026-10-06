@@ -1,6 +1,6 @@
 # Conditions Générales d'Utilisation et de Vente — BOLIGO
 
-Version du 2026-10-05.
+Version du 2026-10-06.
 
 Les présentes Conditions Générales d'Utilisation et de Vente (« CGU ») régissent l'accès et l'utilisation de l'application BOLIGO (mobile et web), service de rencontre fondé sur la compatibilité profonde. En créant un compte, vous déclarez les avoir lues et les accepter sans réserve.
 
@@ -12,7 +12,7 @@ L'acceptation des CGU est matérialisée par la case cochée lors de l'inscripti
 
 ## 2. Éditeur et hébergeurs
 
-Éditeur : [À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : forme juridique et capital], [À COMPLÉTER : adresse du siège social], [À COMPLÉTER : RCS / SIREN]. Directeur de la publication : [À COMPLÉTER : directeur de la publication]. Contact : [À COMPLÉTER : adresse e-mail de contact].
+Éditeur : [À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : forme juridique et capital], [À COMPLÉTER : adresse du siège social], [À COMPLÉTER : RCS / SIREN]. Directeur de la publication : [À COMPLÉTER : directeur de la publication]. Contact : contact@boligo.fr.
 
 Hébergement de l'application et de l'API : Render Services, Inc. (États-Unis). Hébergement de la base de données : Supabase Inc., région Union européenne (Francfort, Allemagne). Paiements : Stripe Payments Europe Ltd. Appels vidéo : Daily.co (Daily, Inc.).
 
@@ -96,7 +96,7 @@ Les CGU sont soumises au droit français. En cas de litige, vous pouvez recourir
 
 ## 14. Contact
 
-Pour toute question relative aux CGU, à un paiement ou à un signalement : [À COMPLÉTER : adresse e-mail de contact].
+Pour toute question relative aux CGU, à un paiement ou à un signalement : contact@boligo.fr.
 
 ---
 

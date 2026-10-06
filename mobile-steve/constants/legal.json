@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-05",
+  "version": "2026-10-06",
   "company": {
     "brand": "BOLIGO",
     "legalName": "[À COMPLÉTER : raison sociale de l'éditeur]",
@@ -7,8 +7,8 @@
     "address": "[À COMPLÉTER : adresse du siège social]",
     "registration": "[À COMPLÉTER : RCS / SIREN]",
     "publicationDirector": "[À COMPLÉTER : directeur de la publication]",
-    "contactEmail": "[À COMPLÉTER : adresse e-mail de contact]",
-    "dpoEmail": "[À COMPLÉTER : adresse e-mail du délégué à la protection des données]",
+    "contactEmail": "contact@boligo.fr",
+    "dpoEmail": "contact@boligo.fr",
     "mediator": "[À COMPLÉTER : médiateur de la consommation (nom et site)]",
     "jurisdiction": "France"
   },
@@ -29,7 +29,7 @@
         "id": "editeur",
         "title": "2. Éditeur et hébergeurs",
         "paragraphs": [
-          "Éditeur : [À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : forme juridique et capital], [À COMPLÉTER : adresse du siège social], [À COMPLÉTER : RCS / SIREN]. Directeur de la publication : [À COMPLÉTER : directeur de la publication]. Contact : [À COMPLÉTER : adresse e-mail de contact].",
+          "Éditeur : [À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : forme juridique et capital], [À COMPLÉTER : adresse du siège social], [À COMPLÉTER : RCS / SIREN]. Directeur de la publication : [À COMPLÉTER : directeur de la publication]. Contact : contact@boligo.fr.",
           "Hébergement de l'application et de l'API : Render Services, Inc. (États-Unis). Hébergement de la base de données : Supabase Inc., région Union européenne (Francfort, Allemagne). Paiements : Stripe Payments Europe Ltd. Appels vidéo : Daily.co (Daily, Inc.)."
         ]
       },
@@ -131,7 +131,7 @@
         "id": "contact",
         "title": "14. Contact",
         "paragraphs": [
-          "Pour toute question relative aux CGU, à un paiement ou à un signalement : [À COMPLÉTER : adresse e-mail de contact]."
+          "Pour toute question relative aux CGU, à un paiement ou à un signalement : contact@boligo.fr."
         ]
       }
     ]
@@ -145,7 +145,7 @@
         "id": "responsable",
         "title": "1. Responsable du traitement",
         "paragraphs": [
-          "[À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : adresse du siège social]. Contact pour la protection des données : [À COMPLÉTER : adresse e-mail du délégué à la protection des données]."
+          "[À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : adresse du siège social]. Contact pour la protection des données : contact@boligo.fr."
         ]
       },
       {
@@ -204,7 +204,7 @@
         "title": "7. Vos droits",
         "paragraphs": [
           "Vous disposez des droits d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition, ainsi que du droit de retirer votre consentement à tout moment et de définir des directives post-mortem.",
-          "Exercice des droits : depuis l'application (modification du profil, suppression du compte) ou par e-mail à [À COMPLÉTER : adresse e-mail du délégué à la protection des données]. Une réponse vous sera apportée dans un délai d'un mois. Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr)."
+          "Exercice des droits : depuis l'application (modification du profil, suppression du compte) ou par e-mail à contact@boligo.fr. Une réponse vous sera apportée dans un délai d'un mois. Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr)."
         ]
       },
       {

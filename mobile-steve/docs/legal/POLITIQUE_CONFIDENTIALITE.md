@@ -1,12 +1,12 @@
 # Politique de confidentialité — BOLIGO
 
-Version du 2026-10-05.
+Version du 2026-10-06.
 
 Cette politique explique quelles données BOLIGO collecte, pourquoi, combien de temps, avec qui elles sont partagées et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.
 
 ## 1. Responsable du traitement
 
-[À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : adresse du siège social]. Contact pour la protection des données : [À COMPLÉTER : adresse e-mail du délégué à la protection des données].
+[À COMPLÉTER : raison sociale de l'éditeur], [À COMPLÉTER : adresse du siège social]. Contact pour la protection des données : contact@boligo.fr.
 
 ## 2. Données collectées
 
@@ -64,7 +64,7 @@ Les données d'un compte suspendu pour manquement grave peuvent être conservée
 
 Vous disposez des droits d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition, ainsi que du droit de retirer votre consentement à tout moment et de définir des directives post-mortem.
 
-Exercice des droits : depuis l'application (modification du profil, suppression du compte) ou par e-mail à [À COMPLÉTER : adresse e-mail du délégué à la protection des données]. Une réponse vous sera apportée dans un délai d'un mois. Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr).
+Exercice des droits : depuis l'application (modification du profil, suppression du compte) ou par e-mail à contact@boligo.fr. Une réponse vous sera apportée dans un délai d'un mois. Vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr).
 
 ## 8. Sécurité
 

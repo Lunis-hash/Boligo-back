@@ -133,7 +133,7 @@ export default function LoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="vous@boligo.app"
+                placeholder="vous@boligo.fr"
                 required
                 className="h-12 rounded-xl border-[#ead8d4] bg-white/80 px-4 shadow-sm transition-all placeholder:text-[#c4aba8] focus-visible:border-[#d4a5a5] focus-visible:ring-[#e8b4bc]/40"
               />
