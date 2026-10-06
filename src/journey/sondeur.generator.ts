@@ -681,15 +681,112 @@ function pickFresh(
 }
 
 /**
+ * Sujets de sécurité : jamais présentés comme un compromis ni « à rendre
+ * vivables ». Le Sondeur n'y pose que des questions de limite et d'origine.
+ */
+export const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
+
+/**
+ * Auto-évaluations (aveux, fréquences sur soi) : la réponse d'un membre n'est
+ * jamais citée à l'autre.
+ */
+export const SELF_DISCLOSURE_QUESTIONS = new Set([
+  'M2_Q11',
+  'M6_Q13',
+  'M6_Q15',
+  'M8_Q10',
+]);
+
+/** Écart tiré d'une échelle (clé = score) : un score ne se cite pas comme une réponse. */
+function isScaleDivergence(d: Divergence): boolean {
+  return /^\d+$/.test(d.a.key) || /^\d+$/.test(d.b.key);
+}
+
+/** Écart citable dans une question : ni sécurité, ni aveu, ni score. */
+export function isQuotableDivergence(d: Divergence): boolean {
+  return (
+    !SAFETY_QUESTIONS.has(d.questionId) &&
+    !SELF_DISCLOSURE_QUESTIONS.has(d.questionId) &&
+    !isScaleDivergence(d)
+  );
+}
+
+/**
+ * Questions de limite (sécurité), sans citer les réponses : où commence
+ * l'insécurité, qui a appris à se disputer sans se faire de mal, quel signal
+ * d'arrêt.
+ */
+const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
+  1: [
+    {
+      text: "Dans une dispute, à quel moment sentiriez-vous que vous n'êtes plus en sécurité ?",
+      options: [
+        'Dès un mot blessant',
+        'Dès un geste brusque',
+        'Je le saurais sur le moment',
+      ],
+    },
+    {
+      text: 'Quelle limite, en dispute, ne pourrait jamais être franchie avec vous, même une seule fois ?',
+      options: ['Les insultes', 'Toute violence', 'Les menaces'],
+    },
+  ],
+  2: [
+    {
+      text: "Qui vous a appris, par l'exemple, qu'on peut se disputer sans se faire de mal ?",
+      options: [
+        'Mes parents',
+        'Un proche',
+        "Personne : je l'ai appris seul(e)",
+      ],
+    },
+    {
+      text: "Dans votre famille, comment savait-on qu'une dispute était terminée ?",
+      options: [
+        'On en reparlait calmement',
+        'On faisait comme si de rien',
+        'On ne le savait jamais vraiment',
+      ],
+    },
+  ],
+  3: [
+    {
+      text: 'Si la colère montait trop haut un jour, quel serait votre signal pour arrêter et reprendre plus tard ?',
+      options: [
+        'Un mot convenu',
+        'Sortir prendre l’air',
+        'Se donner rendez-vous plus tard',
+      ],
+    },
+    {
+      text: 'Après une dispute, quel petit geste de l’autre vous fait baisser les armes ?',
+      options: [
+        'Une excuse sincère',
+        'Un geste tendre',
+        'Un moment pour en reparler',
+      ],
+    },
+  ],
+};
+
+/**
  * Divergences d'un thème, de la plus grave à la moins grave. Les mineures sont
  * écartées, sauf sur les sujets de fond V6.1 (premier rendez-vous, timidité…)
  * qui ont leurs propres formulations : elles passent alors en dernier.
+ * Les écarts de sécurité, les aveux et les scores ne sont jamais cités.
  */
 function divergencesForTheme(
   report: DivergenceReport,
   theme: Theme,
 ): Divergence[] {
-  const ofTheme = report.divergences.filter((d) => d.theme === theme);
+  // Écart non citable (aveu, score) : gardé seulement s'il a une question de
+  // fond propre, qui ne cite pas les réponses. Écart de sécurité : jamais ici.
+  const ofTheme = report.divergences.filter(
+    (d) =>
+      d.theme === theme &&
+      !SAFETY_QUESTIONS.has(d.questionId) &&
+      (isQuotableDivergence(d) || d.questionId in TOPIC_DEEP),
+  );
   return [
     ...ofTheme.filter((d) => d.severity !== 'mineure'),
     ...ofTheme.filter(
@@ -731,7 +828,15 @@ function genericPool(theme: Theme, day: number): PoolTemplate[] {
 /** Formulation de fond propre au sujet de la divergence (V6.1), si elle existe. */
 function topicTemplate(day: number, d: Divergence): PoolTemplate[] {
   const t = TOPIC_DEEP[d.questionId]?.[day];
-  return t ? [{ text: t.text(d), options: t.options }] : [];
+  if (!t) return [];
+  const text = t.text(d);
+  // Écart non citable : seulement une formulation qui ne reprend pas les réponses.
+  if (
+    !isQuotableDivergence(d) &&
+    (text.includes(d.a.text) || text.includes(d.b.text))
+  )
+    return [];
+  return [{ text, options: t.options }];
 }
 
 /**
@@ -805,11 +910,35 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
 
       if (preferAi) question = tryAi();
 
+      // Écart de sécurité sur ce thème : une question de limite, jamais un compromis.
+      if (
+        !question &&
+        report.divergences.some(
+          (d) => d.theme === theme && SAFETY_QUESTIONS.has(d.questionId),
+        )
+      ) {
+        const pick = pickFresh(
+          arrange(SAFETY_TEMPLATES[day], seed, `${slot}|limite`),
+          mem,
+        );
+        if (pick) {
+          question = {
+            ...base,
+            text: pick.text,
+            options: ensureAutreOption(pick.options),
+            source: 'divergence',
+          };
+        }
+      }
+
       if (!question && divergence) {
         const pick = pickFresh(
           [
             ...topicTemplate(day, divergence),
-            ...arrange(targetedPool(day, divergence), seed, `${slot}|div`),
+            // Les gabarits ciblés citent les réponses : écarts citables seulement.
+            ...(isQuotableDivergence(divergence)
+              ? arrange(targetedPool(day, divergence), seed, `${slot}|div`)
+              : []),
           ],
           mem,
         );
@@ -826,7 +955,16 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       if (!question && !preferAi) question = tryAi();
 
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
-        const convs = report.convergences.filter((c) => c.theme === theme);
+        // Accord citable : jamais une auto-évaluation ; le sujet de la règle,
+        // pas la phrase d'accord (sinon « sur « même réponse sur « … » » »).
+        const convs = report.convergences
+          .filter(
+            (c) =>
+              c.theme === theme &&
+              !SELF_DISCLOSURE_QUESTIONS.has(c.questionId) &&
+              !SAFETY_QUESTIONS.has(c.questionId),
+          )
+          .map((c) => ({ ...c, label: c.topic ?? c.label }));
         const convergence = convs.length
           ? convs[(day - 1) % convs.length]
           : null;
@@ -886,9 +1024,19 @@ export function describeReportForAi(
   if (report.divergences.length) {
     lines.push('DIVERGENCES (de la plus grave à la moins grave) :');
     for (const d of report.divergences.slice(0, 12)) {
-      lines.push(
-        `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »`,
-      );
+      if (SAFETY_QUESTIONS.has(d.questionId)) {
+        lines.push(
+          `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions de limite et de signal d'arrêt, jamais de compromis ni « comment le rendre vivable ».`,
+        );
+      } else if (!isQuotableDivergence(d)) {
+        lines.push(
+          `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : tendance tirée de l'entretien, à explorer sans jamais citer les réponses ni un niveau.`,
+        );
+      } else {
+        lines.push(
+          `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »`,
+        );
+      }
     }
   } else {
     lines.push('Aucune divergence notable détectée dans les entretiens.');

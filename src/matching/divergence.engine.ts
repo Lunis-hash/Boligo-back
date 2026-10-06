@@ -85,6 +85,8 @@ export interface Convergence {
   theme: Theme;
   label: string;
   answer: string;
+  /** Sujet de la règle (« Limite face à la violence physique »), sans phrase d'accord. */
+  topic?: string;
 }
 
 export interface ThemeSummary {
@@ -1102,6 +1104,7 @@ export function buildDivergenceReport(
             rule.convergence?.[ka] ??
             `Même réponse sur « ${rule.label.toLowerCase()} »`,
           answer: optionText(rule.questionId, ka),
+          topic: rule.label,
         });
       }
       continue;

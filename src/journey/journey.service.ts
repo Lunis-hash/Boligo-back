@@ -497,9 +497,10 @@ export class JourneyService {
             describeReportForAi(report, firstNames),
           )
         : null;
+      // Jamais de question de l'IA servie sans relecture.
       aiQuestions = review
         ? inGrid.filter((_, i) => !review.rejected.has(i))
-        : inGrid;
+        : [];
       preferAi = !!review && aiQuestions.length >= Math.ceil(inGrid.length / 2);
     }
 
