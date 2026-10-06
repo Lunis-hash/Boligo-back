@@ -40,6 +40,16 @@ const userListSelect = {
   },
 } satisfies Prisma.UserSelect;
 
+/** Rappel affiché sur la page Finances : d'où viennent les montants et si Stripe débite réellement. */
+export function financeNote(stripeSecretKey?: string): string {
+  const source =
+    'Les montants en euros sont ceux enregistrés à chaque achat (0 € pour un code promo gratuit).';
+  if (!stripeSecretKey) return `${source} Stripe n'est pas configuré : aucun paiement possible.`;
+  return stripeSecretKey.startsWith('sk_live_')
+    ? `${source} Stripe est en mode réel.`
+    : `${source} Stripe est en mode test : aucune carte n'est débitée.`;
+}
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -612,8 +622,7 @@ export class AdminService {
       },
       transactionsTotal,
       byType,
-      note:
-        'Les montants € proviennent des champs euroAmount renseignés à l\'achat. Stripe/CinetPay à brancher pour les paiements réels.',
+      note: financeNote(process.env.STRIPE_SECRET_KEY),
     };
   }
 
