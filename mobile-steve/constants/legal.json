@@ -177,7 +177,7 @@
         "id": "ia",
         "title": "4. Traitements automatisés et intelligence artificielle",
         "paragraphs": [
-          "BOLIGO peut utiliser des modèles d'intelligence artificielle pour proposer des questions du Sondeur et assister la modération des messages. Votre portrait (synthèse, biographie, valeurs, besoins) et vos scores de compatibilité sont calculés par des règles automatiques, sans modèle d'IA, sauf si BOLIGO active la rédaction assistée du portrait. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.",
+          "BOLIGO peut utiliser des modèles d'intelligence artificielle pour proposer des questions du Sondeur et assister la modération des messages. Pour un parcours payé, un modèle d'IA lit aussi les réponses des deux membres au Sondeur afin de rédiger une lecture de chaque journée, une question d'approfondissement pour la journée suivante et un bilan à la fin des trois jours. Une lecture n'est rédigée que lorsque les deux membres ont répondu à toute la journée ; elle n'est visible que par eux deux et elle est effacée avec le parcours. Votre portrait (synthèse, biographie, valeurs, besoins) et vos scores de compatibilité sont calculés par des règles automatiques, sans modèle d'IA, sauf si BOLIGO active la rédaction assistée du portrait. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.",
           "Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et associées à votre prénom et à votre âge, jamais à votre adresse e-mail ni à votre téléphone. Vous pouvez demander une explication des éléments ayant conduit à un score et une intervention humaine en écrivant à l'adresse de contact."
         ]
       },
@@ -197,7 +197,7 @@
         "title": "6. Durées de conservation",
         "paragraphs": [
           "Compte et profil : pendant toute la durée du compte, puis suppression dans les 30 jours suivant la demande de suppression.",
-          "Messages et réponses au Sondeur : durée du parcours, puis 12 mois en archive restreinte à des fins de modération et de preuve, puis suppression.",
+          "Messages, réponses au Sondeur et lectures du Sondeur : durée du parcours, puis 12 mois en archive restreinte à des fins de modération et de preuve, puis suppression.",
           "Données de paiement et factures : 10 ans (obligation comptable). Journaux techniques et de sécurité : 12 mois. Signalements et décisions de modération : 3 ans.",
           "Les données d'un compte suspendu pour manquement grave peuvent être conservées en liste restreinte pendant 3 ans afin d'empêcher une réinscription.",
           "Candidatures au programme partenaires : 2 ans après le dernier échange lorsqu'elles ne sont pas retenues ; pour un partenaire retenu, durée du partenariat puis 5 ans, les pièces comptables liées aux commissions étant conservées 10 ans."

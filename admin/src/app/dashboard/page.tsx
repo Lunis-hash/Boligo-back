@@ -350,7 +350,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Moderation & Video */}
-        <div className={aiSpend ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-4" : "grid gap-4 sm:grid-cols-3"}>
+        <div className={aiSpend ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-5" : "grid gap-4 sm:grid-cols-3"}>
           <StatCard
             title="Signalements"
             value={stats.moderation.reportsPending}
@@ -378,18 +378,32 @@ export default function DashboardPage() {
               icon={Sparkles}
             />
           )}
+          {aiSpend && (
+            <StatCard
+              title="IA des parcours payés"
+              value={formatEuro(aiSpend.journeySpentEur ?? 0)}
+              hint={`${aiSpend.journeyCalls ?? 0} appel(s) · au plus ${formatEuro(aiSpend.journeyBudgetEur ?? 1)} par parcours`}
+              icon={Sparkles}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-/** Dépense IA du mois (garde-fou AI_MONTHLY_BUDGET_EUR). */
+/**
+ * Dépense IA du mois : plafond général (AI_MONTHLY_BUDGET_EUR) et suivi des
+ * parcours payés, compté à part (AI_JOURNEY_BUDGET_EUR par parcours).
+ */
 interface AiSpend {
   month: string;
   calls: number;
   spentEur: number;
   budgetEur: number;
+  journeyCalls?: number;
+  journeySpentEur?: number;
+  journeyBudgetEur?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────

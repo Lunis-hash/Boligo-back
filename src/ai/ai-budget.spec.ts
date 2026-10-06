@@ -1,6 +1,7 @@
 import {
   costMicroEur,
   estimateTokens,
+  journeyBudgetMicroEur,
   modelPrice,
   monthKey,
   monthlyBudgetMicroEur,
@@ -96,5 +97,83 @@ describe('Budget IA', () => {
     );
     expect(groqCreate).not.toHaveBeenCalled();
     expect(res).toHaveProperty('allowed');
+  });
+
+  it('donne 1 € à chaque parcours payé par défaut ; 0 coupe ce suivi', () => {
+    expect(journeyBudgetMicroEur(undefined)).toBe(1_000_000);
+    expect(journeyBudgetMicroEur('0,5')).toBe(500_000);
+    expect(journeyBudgetMicroEur('0')).toBe(0);
+  });
+
+  it('parcours payé : budget propre, compté à part du plafond mensuel', async () => {
+    const journeys = new Map([
+      ['paye', { aiCostMicroEur: 0, paid: 1 }],
+      ['gratuit', { aiCostMicroEur: 0, paid: 0 }],
+    ]);
+    const month = { costMicroEur: 0, journeyCalls: 0, journeyCostMicroEur: 0n };
+    const prisma = {
+      creditTransaction: {
+        count: jest.fn(({ where }: { where: { journeyId: string } }) =>
+          Promise.resolve(journeys.get(where.journeyId)?.paid ?? 0),
+        ),
+      },
+      journey: {
+        findUnique: jest.fn(({ where }: { where: { id: string } }) =>
+          Promise.resolve(journeys.get(where.id) ?? null),
+        ),
+        update: jest.fn(
+          ({
+            where,
+            data,
+          }: {
+            where: { id: string };
+            data: { aiCostMicroEur: { increment: number } };
+          }) => {
+            journeys.get(where.id)!.aiCostMicroEur +=
+              data.aiCostMicroEur.increment;
+            return Promise.resolve({});
+          },
+        ),
+      },
+      aiSpend: {
+        upsert: jest.fn(
+          ({
+            update,
+          }: {
+            update: {
+              journeyCalls: { increment: number };
+              journeyCostMicroEur: { increment: bigint };
+            };
+          }) => {
+            month.journeyCalls += update.journeyCalls.increment;
+            month.journeyCostMicroEur += update.journeyCostMicroEur.increment;
+            return Promise.resolve(month);
+          },
+        ),
+        findUnique: jest.fn(() => Promise.resolve(month)),
+      },
+    };
+    const old = process.env.AI_JOURNEY_BUDGET_EUR;
+    delete process.env.AI_JOURNEY_BUDGET_EUR;
+    const budget = new AiBudgetService(prisma as never);
+    expect(await budget.journeyEligible('paye')).toBe(true);
+    expect(await budget.journeyEligible('gratuit')).toBe(false);
+    expect(await budget.allowJourney('paye', 900_000)).toBe(true);
+    // gpt-oss-120b : 2 000 jetons lus, 1 000 écrits = 300 + 750 millionièmes.
+    await budget.recordJourney('paye', 'openai/gpt-oss-120b', 2000, 1000);
+    expect(journeys.get('paye')!.aiCostMicroEur).toBe(1050);
+    expect(await budget.allowJourney('paye', 999_000)).toBe(false);
+    expect(await budget.allowJourney('inconnu', 1)).toBe(false);
+    const summary = await budget.summary();
+    expect(summary).toMatchObject({
+      spentEur: 0,
+      journeyCalls: 1,
+      journeySpentEur: 0.00105,
+      journeyBudgetEur: 1,
+    });
+    process.env.AI_JOURNEY_BUDGET_EUR = '0';
+    expect(await budget.journeyEligible('paye')).toBe(false);
+    if (old === undefined) delete process.env.AI_JOURNEY_BUDGET_EUR;
+    else process.env.AI_JOURNEY_BUDGET_EUR = old;
   });
 });

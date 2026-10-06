@@ -1,8 +1,10 @@
 /**
- * Garde-fou de dépense IA : BOLIGO ne dépasse jamais le budget mensuel fixé
- * (AI_MONTHLY_BUDGET_EUR, 10 € par défaut). Au-delà, chaque fonction bascule
- * sur sa version sans IA (portrait rédigé, questions du Sondeur sur modèles,
- * filtre de modération local).
+ * Garde-fous de dépense IA :
+ * - budget mensuel (AI_MONTHLY_BUDGET_EUR, 10 € par défaut) pour tout ce qui
+ *   n'est pas le suivi d'un parcours payé ;
+ * - budget par parcours payé (AI_JOURNEY_BUDGET_EUR, 1 € par défaut).
+ * Au-delà, chaque fonction bascule sur sa version sans IA (portrait rédigé,
+ * questions du Sondeur sur modèles, lectures par les règles, filtre local).
  */
 
 export const DEFAULT_MONTHLY_BUDGET_EUR = 10;
@@ -48,7 +50,7 @@ export function monthKey(date: Date = new Date()): string {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
-/** Budget du mois en millionièmes d'euro ; 0 coupe toute IA. */
+/** Budget du mois (hors parcours payés) en millionièmes d'euro ; 0 coupe ces usages. */
 export function monthlyBudgetMicroEur(
   value: string | undefined = process.env.AI_MONTHLY_BUDGET_EUR,
 ): number {
@@ -58,6 +60,24 @@ export function monthlyBudgetMicroEur(
       : Number(value.replace(',', '.'));
   if (!Number.isFinite(eur) || eur <= 0) return 0;
   return Math.round(eur * 1_000_000);
+}
+
+/**
+ * Suivi IA d'un parcours payé (Sondeur, lectures de chaque journée, bilan) :
+ * 1 € par parcours au plus, hors plafond mensuel. Un parcours coûte 15 € à
+ * chacun des deux membres ; le suivi consomme en pratique environ 1 centime.
+ */
+export const DEFAULT_JOURNEY_BUDGET_EUR = 1;
+
+/** Budget IA d'un parcours payé en millionièmes d'euro ; 0 coupe ce suivi. */
+export function journeyBudgetMicroEur(
+  value: string | undefined = process.env.AI_JOURNEY_BUDGET_EUR,
+): number {
+  return monthlyBudgetMicroEur(
+    value === undefined || value.trim() === ''
+      ? String(DEFAULT_JOURNEY_BUDGET_EUR)
+      : value,
+  );
 }
 
 /**

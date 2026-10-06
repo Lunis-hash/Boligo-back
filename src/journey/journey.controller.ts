@@ -21,6 +21,14 @@ export class JourneyController {
     return this.journeyService.getDailyQuestions(id, req.user.id);
   }
 
+  @Get(':id/insights')
+  async getInsights(
+    @Param('id') id: string,
+    @Request() req: { user: { id: string } },
+  ) {
+    return this.journeyService.getInsights(id, req.user.id);
+  }
+
   @Post('respond')
   async respond(
     @Body() body: { questionId: string; text: string },

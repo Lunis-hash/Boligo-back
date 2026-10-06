@@ -8,11 +8,18 @@ import { VideoCallService } from '../video/video-call.service';
 import { ChatModule } from '../chat/chat.module';
 import { CreditModule } from '../credit/credit.module';
 import { GhostingService } from './ghosting.service';
+import { JourneyInsightsService } from './journey-insights.service';
 
 @Module({
   imports: [PrismaModule, AiModule, CreditModule, forwardRef(() => ChatModule)],
   controllers: [JourneyController],
-  providers: [JourneyService, GhostingService, DailyService, VideoCallService],
+  providers: [
+    JourneyService,
+    GhostingService,
+    JourneyInsightsService,
+    DailyService,
+    VideoCallService,
+  ],
   exports: [JourneyService, GhostingService, VideoCallService],
 })
 export class JourneyModule {}

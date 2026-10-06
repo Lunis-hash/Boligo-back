@@ -200,21 +200,24 @@ enum JourneyResult {
 }
 
 model Journey {
-  id            String        @id @default(uuid())
-  proposalId    String        @unique
-  proposal      MatchProposal @relation(fields: [proposalId], references: [id])
-  userAId       String
-  userA         User          @relation("UserA", fields: [userAId], references: [id])
-  userBId       String
-  userB         User          @relation("UserB", fields: [userBId], references: [id])
-  createdAt     DateTime      @default(now())
-  currentStep   JourneyStep   @default(phase_harmonie)
-  stepStartDate DateTime      @default(now())
-  endDate       DateTime?
-  result        JourneyResult @default(en_cours)
-  closingReason String?       @db.Text
+  id             String        @id @default(uuid())
+  proposalId     String        @unique
+  proposal       MatchProposal @relation(fields: [proposalId], references: [id])
+  userAId        String
+  userA          User          @relation("UserA", fields: [userAId], references: [id])
+  userBId        String
+  userB          User          @relation("UserB", fields: [userBId], references: [id])
+  createdAt      DateTime      @default(now())
+  currentStep    JourneyStep   @default(phase_harmonie)
+  stepStartDate  DateTime      @default(now())
+  endDate        DateTime?
+  result         JourneyResult @default(en_cours)
+  closingReason  String?       @db.Text
+  /// Dépense IA de ce parcours en millionièmes d'euro (plafond : AI_JOURNEY_BUDGET_EUR, 1 € par défaut).
+  aiCostMicroEur Int           @default(0)
 
   harmonyQuestions   HarmonyQuestion[]
+  insights           JourneyInsight[]
   messages           Message[]
   videoSession       VideoSession?
   contactExchange    ContactExchange?
@@ -239,9 +242,27 @@ model HarmonyQuestion {
   questionText String            @db.Text
   options      Json? // QCM options (dont "Autre...")
   sentAt       DateTime          @default(now())
+  /// Question d'approfondissement écrite par l'IA après la lecture de la journée précédente.
+  followUp     Boolean           @default(false)
   responses    HarmonyResponse[]
 
   @@index([journeyId])
+}
+
+/// Lecture du Sondeur : une par journée terminée par les deux membres (day 1 à 3)
+/// et le bilan Harmonie (day 0). Rédigée par l'IA pour un parcours payé,
+/// sinon par les règles de BOLIGO. Effacée avec le parcours.
+model JourneyInsight {
+  id        String   @id @default(uuid())
+  journeyId String
+  journey   Journey  @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  day       Int
+  /// 'ia' ou 'regles'
+  source    String
+  content   Json
+  createdAt DateTime @default(now())
+
+  @@unique([journeyId, day])
 }
 
 model HarmonyResponse {
@@ -580,10 +601,13 @@ model PartnerApplication {
 
 /// Dépense IA du mois : garde-fou budgétaire (AI_MONTHLY_BUDGET_EUR), en millionièmes d'euro.
 model AiSpend {
-  month        String   @id
-  calls        Int      @default(0)
-  inputTokens  Int      @default(0)
-  outputTokens Int      @default(0)
-  costMicroEur Int      @default(0)
-  updatedAt    DateTime @updatedAt
+  month               String   @id
+  calls               Int      @default(0)
+  inputTokens         Int      @default(0)
+  outputTokens        Int      @default(0)
+  costMicroEur        Int      @default(0)
+  /// Suivi IA des parcours payés : budget propre à chaque parcours, hors plafond mensuel.
+  journeyCalls        Int      @default(0)
+  journeyCostMicroEur BigInt   @default(0)
+  updatedAt           DateTime @updatedAt
 }
