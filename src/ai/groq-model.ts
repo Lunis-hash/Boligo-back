@@ -21,6 +21,16 @@ export const GROQ_PREFERRED_MODELS = [
   'qwen/qwen3-32b',
 ];
 
+/**
+ * Modèles du suivi des parcours payés (Sondeur, lectures, bilan) : la qualité
+ * d'écriture prime. gpt-oss-120b d'abord (rapide, bon français, 0,15 $ / 0,60 $
+ * par million de jetons), puis Llama 3.3 70B. GROQ_QUALITY_MODEL les remplace.
+ */
+export const GROQ_QUALITY_MODELS = [
+  'openai/gpt-oss-120b',
+  'llama-3.3-70b-versatile',
+];
+
 /** Modèles qui ne font pas de conversation écrite (audio, filtres de sécurité…). */
 const NON_CHAT =
   /whisper|tts|playai|orpheus|guard|prompt-guard|distil|compound/i;

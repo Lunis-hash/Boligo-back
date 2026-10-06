@@ -25,6 +25,8 @@ import client, { getReadableError } from '@/services/api';
 import { GhostingBanner } from '@/components/GhostingBanner';
 import { GhostingView, isGhostingView } from '@/services/ghosting';
 import { clampDay, getSondeurDayState, getSondeurDayStatus, getSondeurLockedLabel } from '@/services/sondeur';
+import { EMPTY_INSIGHTS, SondeurInsights, parseSondeurInsights, readingForDay } from '@/services/sondeurInsights';
+import { SondeurReadingCard } from '@/components/SondeurReadingCard';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 import {
@@ -183,6 +185,9 @@ export default function MatchesScreen() {
   const [submittingAnswer, setSubmittingAnswer] = useState(false);
   // Pacte anti-ghosting : compte à rebours renvoyé avec le statut du parcours.
   const [ghosting, setGhosting] = useState<GhostingView | null>(null);
+  // Lectures du Sondeur (chaque journée terminée par les deux, puis le bilan).
+  const [insights, setInsights] = useState<SondeurInsights>(EMPTY_INSIGHTS);
+  const insightsRetry = useRef<{ timer: ReturnType<typeof setTimeout> | null; count: number }>({ timer: null, count: 0 });
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -271,6 +276,8 @@ export default function MatchesScreen() {
   // Charger le journey depuis l'API ou le cache instantané
   useEffect(() => {
     journeyIdRef.current = firstMatch?.journeyId ?? null;
+    setInsights(EMPTY_INSIGHTS);
+    insightsRetry.current.count = 0;
     if (firstMatch?.journeyId) {
       setJourneyId(firstMatch.journeyId);
       const cached = cacheService.peek<any>(`journey_${firstMatch.journeyId}`);
@@ -285,6 +292,34 @@ export default function MatchesScreen() {
       setLoading(false);
     }
   }, [firstMatch?.journeyId, userId]);
+
+  useEffect(
+    () => () => {
+      if (insightsRetry.current.timer) clearTimeout(insightsRetry.current.timer);
+    },
+    [],
+  );
+
+  // Lectures du Sondeur : facultatives, l'écran s'affiche sans elles.
+  const loadInsights = async (jId: string) => {
+    try {
+      const res = await client.get(`/journey/${jId}/insights`);
+      if (journeyIdRef.current !== jId) return;
+      const parsed = parseSondeurInsights(res.data);
+      setInsights(parsed);
+      // Lecture de l'IA en cours d'écriture : quelques nouveaux essais espacés.
+      const retry = insightsRetry.current;
+      if (parsed.writing && !retry.timer && retry.count < 3) {
+        retry.count += 1;
+        retry.timer = setTimeout(() => {
+          retry.timer = null;
+          if (journeyIdRef.current === jId) void loadInsights(jId);
+        }, 8000);
+      }
+    } catch {
+      // Lectures indisponibles : les réponses comparées restent affichées.
+    }
+  };
 
   // Animation d'entrée
   useEffect(() => {
@@ -320,6 +355,7 @@ export default function MatchesScreen() {
       const questions = questionsRes.data;
       cacheService.set(`journey_${jId}`, { status, questions });
       applyJourneyData(status, questions);
+      void loadInsights(jId);
     } catch (e) {
       console.error('Failed to load journey:', e);
     } finally {
@@ -545,6 +581,11 @@ export default function MatchesScreen() {
               </LinearGradient>
               <Text style={styles.boligoName}>BOLIGO</Text>
             </View>
+            {currentDbQ?.followUp ? (
+              <Text style={styles.followUpTag} testID="sondeur-follow-up">
+                Question écrite pour vous deux après la lecture de la journée précédente
+              </Text>
+            ) : null}
             <Text style={styles.questionText}>{currentQ?.question}</Text>
             <Text style={styles.questionHint}>
               Répondez sincèrement : {firstMatch.name} répond de son côté, sans voir votre réponse.
@@ -778,12 +819,16 @@ export default function MatchesScreen() {
                 </TouchableOpacity>
               )}
 
+              {/* ── Bilan Harmonie (fin des 3 jours) ────────────────── */}
+              {insights.review && <SondeurReadingCard reading={insights.review} review />}
+
               {/* ── Réponses comparées ──────────────────────────────── */}
               {answeredDays.length > 0 && (
                 <View style={styles.answersSection}>
                   <Text style={styles.sectionTitle}>Vos réponses comparées</Text>
                   {answeredDays.map(day => {
                     const dayDbQs = dbQuestions.filter((q: any) => q.day === day);
+                    const reading = readingForDay(insights, day);
                     return (
                       <View key={day} style={styles.dayAnswersBlock}>
                         <LinearGradient
@@ -796,6 +841,7 @@ export default function MatchesScreen() {
                             Jour {day} · {dayDbQs[0]?.theme ?? 'Question'}
                           </Text>
                         </LinearGradient>
+                        {reading && <SondeurReadingCard reading={reading} />}
 
                         {dayDbQs.map((q: any) => {
                           const myAns = userAnswers[q.id];
@@ -1088,6 +1134,17 @@ const styles = StyleSheet.create({
   dayActiveLabel: { fontFamily: Typography.fontFamily.medium, fontSize: 11, color: Colors.primary.purple },
   dayLockedLabel: { fontFamily: Typography.fontFamily.regular, fontSize: 11, color: Colors.text.primary40 },
   nextDayNotice: { marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: Brand.lilas },
+  followUpTag: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: Brand.lilas,
+    color: Brand.nuit,
+    fontFamily: Typography.fontFamily.medium,
+    fontSize: 12,
+  },
   nextDayNoticeText: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Colors.text.primary70 },
 
   // Question du jour

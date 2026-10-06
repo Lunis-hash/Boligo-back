@@ -116,4 +116,107 @@ describe('AiService — modèle Groq retiré', () => {
       .calls as Array<[Record<string, unknown>]>;
     expect(plain[0][0]).not.toHaveProperty('reasoning_effort');
   });
+
+  describe('suivi des parcours payés', () => {
+    type JourneyInternals = {
+      groq: unknown;
+      journeyCompletion: (
+        journeyId: string,
+        system: string,
+        prompt: string,
+        maxTokens: number,
+      ) => Promise<string | null>;
+      generateTargetedHarmonyQuestions: (
+        ...args: unknown[]
+      ) => Promise<unknown>;
+    };
+    function budgetFor(paid: boolean) {
+      return {
+        journeyEligible: jest.fn(() => Promise.resolve(paid)),
+        allowJourney: jest.fn(() => Promise.resolve(true)),
+        recordJourney: jest.fn(() => Promise.resolve()),
+        allow: jest.fn(() => Promise.resolve(true)),
+        record: jest.fn(() => Promise.resolve()),
+      };
+    }
+    function journeyService(groq: unknown, budget: unknown): JourneyInternals {
+      const service = new AiService(
+        undefined,
+        budget as never,
+      ) as unknown as JourneyInternals;
+      service.groq = groq;
+      return service;
+    }
+    const models = [
+      'llama-3.1-8b-instant',
+      'openai/gpt-oss-20b',
+      'openai/gpt-oss-120b',
+    ];
+
+    beforeEach(() => delete process.env.GROQ_QUALITY_MODEL);
+
+    it('parcours payé : modèle « qualité » et budget du parcours, hors plafond mensuel', async () => {
+      const g = fakeGroq(models, () => '{"ok": true}');
+      const budget = budgetFor(true);
+      const out = await journeyService(g.client, budget).journeyCompletion(
+        'j1',
+        'sys',
+        'lecture',
+        1500,
+      );
+      expect(out).toBe('{"ok": true}');
+      expect(g.calls).toEqual(['openai/gpt-oss-120b']);
+      expect(budget.allowJourney).toHaveBeenCalledWith(
+        'j1',
+        expect.any(Number),
+      );
+      expect(budget.allow).not.toHaveBeenCalled();
+      await new Promise((r) => setImmediate(r));
+      expect(budget.recordJourney).toHaveBeenCalledWith(
+        'j1',
+        'openai/gpt-oss-120b',
+        expect.any(Number),
+        expect.any(Number),
+      );
+      expect(budget.record).not.toHaveBeenCalled();
+    });
+
+    it('parcours sans paiement : aucune lecture par l’IA', async () => {
+      const g = fakeGroq(models, () => 'ne doit pas servir');
+      const out = await journeyService(
+        g.client,
+        budgetFor(false),
+      ).journeyCompletion('j2', 'sys', 'lecture', 1500);
+      expect(out).toBeNull();
+      expect(g.calls).toEqual([]);
+    });
+
+    it('questions du Sondeur d’un parcours sans paiement : modèle économique et plafond du mois', async () => {
+      const g = fakeGroq(models, () => '[]');
+      const budget = budgetFor(false);
+      await journeyService(g.client, budget).generateTargetedHarmonyQuestions(
+        'rapport',
+        [{ key: 'famille', label: 'Famille' }],
+        [{ day: 1, label: 'Lignes rouges', intent: 'limites' }],
+        [],
+        { journeyId: 'j3' },
+      );
+      expect(g.calls).toEqual(['llama-3.1-8b-instant']);
+      expect(budget.allow).toHaveBeenCalled();
+      expect(budget.allowJourney).not.toHaveBeenCalled();
+    });
+
+    it('GROQ_QUALITY_MODEL choisit le modèle des parcours payés', async () => {
+      process.env.GROQ_QUALITY_MODEL = 'openai/gpt-oss-20b';
+      const g = fakeGroq(models, () => 'ok');
+      await journeyService(g.client, budgetFor(true)).journeyCompletion(
+        'j4',
+        'sys',
+        'lecture',
+        1500,
+      );
+      expect(g.calls).toEqual(['openai/gpt-oss-20b']);
+      delete process.env.GROQ_QUALITY_MODEL;
+    });
+  });
 });

@@ -1,4 +1,12 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+  forwardRef,
+} from '@nestjs/common';
 import { ChatGateway } from '../chat/chat.gateway';
 import { moderateMessageLocally, maskProfanityForDisplay } from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
@@ -16,6 +24,7 @@ import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
 import { farewellText } from './farewell';
+import { JourneyInsightsService } from './journey-insights.service';
 
 @Injectable()
 export class JourneyService {
@@ -30,6 +39,7 @@ export class JourneyService {
     private chatGateway: ChatGateway,
     private creditService: CreditService,
     private ghostingService: GhostingService,
+    @Optional() private insights?: JourneyInsightsService,
   ) {}
 
   // Vérifier si l'utilisateur peut accéder aux messages
@@ -437,11 +447,13 @@ export class JourneyService {
     // 2. Couche IA facultative (Groq / OpenRouter) : formulations ciblées sur ces divergences.
     let aiQuestions: HarmonyQuestionPayload[] | null = null;
     if (this.useAiHarmonyQuestions()) {
+      // Parcours payé : modèle « qualité » et budget propre au parcours.
       aiQuestions = await this.aiService.generateTargetedHarmonyQuestions(
         describeReportForAi(report, firstNames),
         THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
         [1, 2, 3].map((day) => ({ day, label: DAY_ANGLES[day].label, intent: DAY_ANGLES[day].intent })),
         history,
+        { journeyId },
       );
     }
 
@@ -562,8 +574,23 @@ export class JourneyService {
 
     // Vérifier si toutes les questions sont répondues pour débloquer l'étape suivante
     await this.checkProgression(questionId);
+    // Journée terminée par les deux : lecture de l'IA écrite en arrière-plan.
+    void this.insights?.refresh(journey.id);
 
     return response;
+  }
+
+  /** Lectures du Sondeur (chaque journée terminée par les deux, puis le bilan). */
+  async getInsights(journeyId: string, userId: string) {
+    this.requireMember(
+      await this.prisma.journey.findUnique({
+        where: { id: journeyId },
+        select: { userAId: true, userBId: true },
+      }),
+      userId,
+    );
+    if (!this.insights) return { days: [], review: null, writing: false };
+    return this.insights.view(journeyId);
   }
 
   // Chat libre : envoyer un message (modération locale + IA)

@@ -65,6 +65,7 @@ describe('AuthService', () => {
     message: { deleteMany: jest.fn() },
     harmonyResponse: { deleteMany: jest.fn() },
     harmonyQuestion: { deleteMany: jest.fn() },
+    journeyInsight: { deleteMany: jest.fn() },
     videoSession: { deleteMany: jest.fn() },
     contactExchange: { deleteMany: jest.fn() },
     alumniCouple: { deleteMany: jest.fn() },

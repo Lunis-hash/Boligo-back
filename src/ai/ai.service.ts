@@ -18,6 +18,7 @@ import { collectRawAnswers } from '../matching/divergence.engine';
 import { buildPortrait } from '../portrait/portrait.writer';
 import {
   GROQ_PREFERRED_MODELS,
+  GROQ_QUALITY_MODELS,
   isModelUnavailableError,
   parseModelList,
   pickGroqModel,
@@ -26,6 +27,19 @@ import {
 
 /** La liste des modèles Groq est relue toutes les six heures. */
 const GROQ_MODEL_TTL_MS = 6 * 60 * 60 * 1000;
+
+/** 'default' : modèle économique ; 'quality' : suivi des parcours payés. */
+type ModelTier = 'default' | 'quality';
+
+/**
+ * Appel rattaché à un parcours. S'il est payé, l'appel passe par le modèle
+ * « qualité » et le budget du parcours (AI_JOURNEY_BUDGET_EUR) au lieu du
+ * plafond mensuel. `paidOnly` : sans paiement, pas d'appel du tout.
+ */
+export interface AiJourneyScope {
+  journeyId: string;
+  paidOnly?: boolean;
+}
 
 /** Genre en toutes lettres pour le prompt (« H » / « F » en base). */
 function genderWord({ gender }: { gender?: string }): string {
@@ -38,7 +52,10 @@ function genderWord({ gender }: { gender?: string }): string {
 export class AiService implements OnModuleInit {
   private readonly logger = new Logger(AiService.name);
   private groq: Groq | null = null;
-  private groqModel: { id: string; resolvedAt: number } | null = null;
+  private groqModels: Record<
+    ModelTier,
+    { id: string; resolvedAt: number } | null
+  > = { default: null, quality: null };
   /** Modèles qui ont répondu « introuvable » : écartés jusqu'au prochain redémarrage. */
   private readonly groqUnavailable = new Set<string>();
   private readonly moderationCache = new Map<
@@ -62,7 +79,9 @@ export class AiService implements OnModuleInit {
   }
 
   /**
-   * Exécute un prompt via OpenRouter si disponible, sinon bascule sur Groq
+   * Exécute un prompt via OpenRouter si disponible, sinon bascule sur Groq.
+   * Un appel rattaché à un parcours payé passe d'abord par Groq (modèle
+   * « qualité ») : les modèles gratuits d'OpenRouter ne servent qu'en secours.
    */
   private async queryAiAgent(
     agentName: 'sondeur' | 'cupidon' | 'coach' | 'parcours' | 'moderation',
@@ -72,12 +91,33 @@ export class AiService implements OnModuleInit {
     maxTokens = 4096,
     /** 0 pour une décision stable (modération), 0,7 pour une rédaction variée. */
     temperature = 0.7,
+    scope?: AiJourneyScope,
   ): Promise<string> {
     const inputTokens = estimateTokens(`${systemPrompt ?? ''}${prompt}`);
+    const journeyId =
+      scope &&
+      this.budget &&
+      (await this.budget.journeyEligible(scope.journeyId))
+        ? scope.journeyId
+        : null;
+    if (scope?.paidOnly && !journeyId) {
+      throw new Error('Parcours sans paiement : suivi rédigé sans IA.');
+    }
+    const record = (model: string, input: number, output: number) =>
+      journeyId
+        ? this.budget?.recordJourney(journeyId, model, input, output)
+        : this.budget?.record(model, input, output);
 
-    if (this.openRouterService && process.env.OPENROUTER_API_KEY) {
+    const viaOpenRouter = async (): Promise<string | null> => {
+      if (!this.openRouterService || !process.env.OPENROUTER_API_KEY)
+        return null;
       try {
-        await this.ensureBudget('openrouter', inputTokens, maxTokens);
+        await this.ensureBudget(
+          'openrouter',
+          inputTokens,
+          maxTokens,
+          journeyId,
+        );
         const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
         if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
         messages.push({ role: 'user', content: prompt });
@@ -87,22 +127,27 @@ export class AiService implements OnModuleInit {
           prompt_tokens?: number;
           completion_tokens?: number;
         };
-        void this.budget?.record(
+        void record(
           res.modelUsed ?? 'openrouter',
           usage.prompt_tokens ?? inputTokens,
           usage.completion_tokens ?? estimateTokens(res.content ?? ''),
         );
         return res.content;
       } catch (error: any) {
-        this.logger.warn(`⚠️ [OpenRouter] Échec agent ${agentName}: ${error.message}. Fallback sur Groq...`);
+        this.logger.warn(
+          `⚠️ [OpenRouter] Échec agent ${agentName}: ${error.message}.`,
+        );
+        return null;
       }
-    }
+    };
 
-    if (this.groq) {
+    const viaGroq = async (): Promise<string | null> => {
+      if (!this.groq) return null;
+      const tier: ModelTier = journeyId ? 'quality' : 'default';
       // Un modèle retiré par Groq ne doit pas éteindre l'IA : on en change une fois.
       for (let attempt = 0; attempt < 2; attempt++) {
-        const model = await this.resolveGroqModel();
-        await this.ensureBudget(model, inputTokens, maxTokens);
+        const model = await this.resolveGroqModel(tier);
+        await this.ensureBudget(model, inputTokens, maxTokens, journeyId);
         try {
           const completion = await this.groq.chat.completions.create({
             model,
@@ -117,7 +162,7 @@ export class AiService implements OnModuleInit {
             ...reasoningOptions(model),
           });
           const content = completion.choices[0]?.message?.content ?? '';
-          void this.budget?.record(
+          void record(
             model,
             completion.usage?.prompt_tokens ?? inputTokens,
             completion.usage?.completion_tokens ?? estimateTokens(content),
@@ -129,29 +174,57 @@ export class AiService implements OnModuleInit {
               `⚠️ [Groq] Modèle « ${model} » indisponible, choix d'un autre modèle.`,
             );
             this.groqUnavailable.add(model);
-            this.groqModel = null;
+            this.groqModels = { default: null, quality: null };
             continue;
           }
           throw error;
         }
       }
+      return null;
+    };
+
+    if (journeyId && this.groq) {
+      try {
+        const out = await viaGroq();
+        if (out !== null) return out;
+      } catch (error) {
+        if (!this.openRouterService || !process.env.OPENROUTER_API_KEY)
+          throw error;
+        this.logger.warn(
+          `⚠️ [Groq] Échec agent ${agentName} (parcours) : ${(error as Error).message}. Secours OpenRouter...`,
+        );
+      }
+      const fallback = await viaOpenRouter();
+      if (fallback !== null) return fallback;
+    } else {
+      const first = await viaOpenRouter();
+      if (first !== null) return first;
+      const out = await viaGroq();
+      if (out !== null) return out;
     }
 
     throw new Error('Aucun fournisseur d\'IA disponible (OpenRouter et Groq absents ou en échec).');
   }
 
   /**
-   * Refuse l'appel s'il risque de dépasser le budget IA du mois (estimation
-   * haute : réponse de longueur maximale). L'appelant passe alors à sa
-   * version sans IA.
+   * Refuse l'appel s'il risque de dépasser le budget IA (estimation haute :
+   * réponse de longueur maximale) : celui du parcours payé, sinon celui du
+   * mois. L'appelant passe alors à sa version sans IA.
    */
   private async ensureBudget(
     model: string,
     inputTokens: number,
     maxTokens: number,
+    journeyId: string | null = null,
   ) {
     if (!this.budget) return;
     const estimate = costMicroEur(model, inputTokens, maxTokens);
+    if (journeyId) {
+      if (!(await this.budget.allowJourney(journeyId, estimate))) {
+        throw new Error('Budget IA du parcours atteint : suite sans IA.');
+      }
+      return;
+    }
     if (!(await this.budget.allow(estimate))) {
       throw new Error('Budget IA du mois atteint : réponse sans IA.');
     }
@@ -162,14 +235,18 @@ export class AiService implements OnModuleInit {
    * virgules) puis nos préférences, filtrés par la liste des modèles ouverts
    * au compte. Sans réponse de Groq, on garde la première préférence.
    */
-  private async resolveGroqModel(): Promise<string> {
-    if (
-      this.groqModel &&
-      Date.now() - this.groqModel.resolvedAt < GROQ_MODEL_TTL_MS
-    ) {
-      return this.groqModel.id;
+  private async resolveGroqModel(tier: ModelTier = 'default'): Promise<string> {
+    const cached = this.groqModels[tier];
+    if (cached && Date.now() - cached.resolvedAt < GROQ_MODEL_TTL_MS) {
+      return cached.id;
     }
     const preferred = [
+      ...(tier === 'quality'
+        ? [
+            ...parseModelList(process.env.GROQ_QUALITY_MODEL),
+            ...GROQ_QUALITY_MODELS,
+          ]
+        : []),
       ...parseModelList(process.env.GROQ_MODEL),
       ...GROQ_PREFERRED_MODELS,
     ];
@@ -184,9 +261,11 @@ export class AiService implements OnModuleInit {
       );
     }
     id ??= preferred.find((m) => !this.groqUnavailable.has(m)) ?? preferred[0];
-    if (this.groqModel?.id !== id)
-      this.logger.log(`🧠 [Groq] Modèle retenu : ${id}`);
-    this.groqModel = { id, resolvedAt: Date.now() };
+    if (this.groqModels[tier]?.id !== id)
+      this.logger.log(
+        `🧠 [Groq] Modèle retenu${tier === 'quality' ? ' (parcours payés)' : ''} : ${id}`,
+      );
+    this.groqModels[tier] = { id, resolvedAt: Date.now() };
     return id;
   }
 
@@ -285,6 +364,8 @@ Retourne UNIQUEMENT un tableau JSON de 21 objets:
     themeGrid: Array<{ key: string; label: string }>,
     dayAngles: Array<{ day: number; label: string; intent: string }>,
     avoidTexts: string[] = [],
+    /** Parcours payé : modèle « qualité », budget du parcours. */
+    scope?: AiJourneyScope,
   ): Promise<HarmonyQuestionPayload[] | null> {
     const avoidBlock = avoidTexts.length
       ? `\nQUESTIONS DÉJÀ POSÉES À CES MEMBRES DANS LEURS PARCOURS PRÉCÉDENTS (interdiction de les reposer ou de les reformuler ; propose des angles nouveaux) :\n${avoidTexts.slice(0, 60).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`
@@ -324,6 +405,8 @@ Retourne UNIQUEMENT un tableau JSON :
         prompt,
         systemPrompt,
         8000,
+        0.7,
+        scope,
       );
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
@@ -332,6 +415,37 @@ Retourne UNIQUEMENT un tableau JSON :
       return normalized;
     } catch (error) {
       this.logger.warn(`⚠️ [SONDEUR IA] Génération ciblée indisponible, gabarits déterministes utilisés : ${(error as Error).message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Suivi du Sondeur d'un parcours payé (lecture d'une journée, bilan) : texte
+   * brut de l'IA, ou null (parcours sans paiement, budget atteint, IA
+   * absente). L'appelant garde alors la version rédigée par les règles.
+   */
+  async journeyCompletion(
+    journeyId: string,
+    systemPrompt: string,
+    prompt: string,
+    maxTokens: number,
+  ): Promise<string | null> {
+    try {
+      return await this.queryAiAgent(
+        'coach',
+        prompt,
+        systemPrompt,
+        maxTokens,
+        0.5,
+        {
+          journeyId,
+          paidOnly: true,
+        },
+      );
+    } catch (error) {
+      this.logger.warn(
+        `⚠️ [Suivi Sondeur] Parcours ${journeyId} : lecture sans IA (${(error as Error).message})`,
+      );
       return null;
     }
   }

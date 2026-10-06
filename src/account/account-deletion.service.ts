@@ -53,6 +53,9 @@ export class AccountDeletionService {
       await tx.harmonyQuestion.deleteMany({
         where: { journeyId: { in: journeyIds } },
       });
+      await tx.journeyInsight.deleteMany({
+        where: { journeyId: { in: journeyIds } },
+      });
       await tx.videoSession.deleteMany({
         where: { journeyId: { in: journeyIds } },
       });
