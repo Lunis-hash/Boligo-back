@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BOLIGO Admin",
   description: "Back-office BOLIGO — gestion utilisateurs, matchs et modération",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

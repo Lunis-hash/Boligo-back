@@ -17,6 +17,18 @@ appelle les routes `/api/admin/*` de l'API BOLIGO (dossier `src/` de ce dépôt)
   `/dashboard/users/detail/?id=…` et `/dashboard/journeys/detail/?id=…`, ce qui
   permet de tout servir en fichiers statiques.
 
+## Sécurité
+
+- L'API n'accepte les appels du tableau de bord (`/api/admin/*`) que depuis
+  `https://boligo-admin.onrender.com` et `http://localhost:3001`. Une autre
+  adresse s'ajoute avec la variable Render `ADMIN_ALLOWED_ORIGINS` du service
+  `Boligo-back` (adresses séparées par des virgules). L'ancienne copie sur
+  Vercel ne peut donc plus appeler l'API depuis un navigateur.
+- La connexion est limitée à 8 essais par adresse e-mail toutes les 10 minutes.
+- Le site envoie des en-têtes de protection (déclarés dans `render.yaml`) :
+  pas d'indexation par les moteurs de recherche, pas d'affichage dans un cadre,
+  et une politique de contenu qui n'autorise que l'API BOLIGO.
+
 ## Compte administrateur
 
 Seul un compte dont le rôle est `ADMIN` peut se connecter. Aucun mot de passe
