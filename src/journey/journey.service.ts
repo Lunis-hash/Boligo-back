@@ -14,15 +14,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { QUESTIONS_BANK } from './questions.bank';
 import { HarmonyQuestionPayload } from './harmony-question.types';
-import { buildDivergenceReport, collectRawAnswers, THEMES, THEME_LIST, Theme } from '../matching/divergence.engine';
-import {
-  AiSondeurQuestion,
-  DAY_ANGLES,
-  SAFETY_QUESTIONS,
-  assembleSondeur,
-  describeReportForAi,
-} from './sondeur.generator';
-import { isWellFormedQuestion } from './clinical-lens';
+import { buildDivergenceReport, collectRawAnswers } from '../matching/divergence.engine';
+import { AiSondeurQuestion, assembleSondeur } from './sondeur.generator';
+import { draftReviewedSondeur } from './sondeur-ai';
 import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
@@ -466,75 +460,20 @@ export class JourneyService {
     const history = await this.getMembersPreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
 
     // 2. Couche IA des parcours payés : deux propositions par créneau, écrites
-    //    avec un regard clinique et ciblées sur ces divergences, puis relues
-    //    par un modèle d'une autre famille. Parcours sans paiement : gabarits.
+    //    avec un regard clinique, contrôlées par le code puis relues jour par
+    //    jour par un modèle d'une autre famille. Sans paiement : gabarits.
     let aiQuestions: HarmonyQuestionPayload[] = [];
     let preferAi = false;
     if (this.useAiHarmonyQuestions()) {
-      const analysis = describeReportForAi(report, firstNames);
-      // Thème qui porte un écart de sécurité : toujours une question de limite
-      // écrite et vérifiée à l'avance, jamais une question de l'IA.
-      const safetyThemes = new Set(
-        report.divergences
-          .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
-          .map((d) => d.theme),
-      );
-      const drafted = await this.aiService.generateTargetedHarmonyQuestions(
-        analysis,
-        THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
-        [1, 2, 3].map((day) => ({ day, label: DAY_ANGLES[day].label, intent: DAY_ANGLES[day].intent })),
+      const ai = await draftReviewedSondeur(this.aiService, {
+        report,
+        firstNames,
         history,
-        { journeyId, paidOnly: true },
-        describeCoupleContext([journey.userA, journey.userB]),
-      );
-      // Contrôle de forme par le code avant la relecture : question ouverte,
-      // courte, sans citation, sans jargon ni interprétation.
-      const inGrid = (drafted?.questions ?? []).filter(
-        (q) =>
-          THEME_LIST.includes(q.themeKey as Theme) &&
-          !safetyThemes.has(q.themeKey as Theme) &&
-          isWellFormedQuestion(q.text),
-      );
-      // 2 bis. Relecture jour par jour, par un modèle d'une autre famille que
-      //    le rédacteur de ce jour : seules les questions explicitement
-      //    acceptées sont gardées ; dans chaque créneau, la meilleure d'abord.
-      const couple = describeCoupleContext([journey.userA, journey.userB]);
-      const days = [1, 2, 3]
-        .map(
-          (d) => `jour ${d} = ${DAY_ANGLES[d].label} (${DAY_ANGLES[d].intent})`,
-        )
-        .join(' ; ');
-      const reviewed = await Promise.all(
-        [1, 2, 3].map(async (day) => {
-          const ofDay = inGrid.filter((q) => q.day === day);
-          if (ofDay.length === 0) return [];
-          const review = await this.aiService.reviewSondeurQuestions(
-            journeyId,
-            ofDay,
-            history,
-            ofDay[0].writer ?? drafted?.model,
-            { analysis, couple, days },
-          );
-          // Jamais de question de l'IA servie sans relecture complète.
-          if (!review) return [];
-          return ofDay
-            .map((q, i) => ({ q, i }))
-            .filter(({ i }) => !review.rejected.has(i))
-            .sort(
-              (x, y) =>
-                Number(review.preferred.has(y.i)) -
-                Number(review.preferred.has(x.i)),
-            )
-            .map(({ q }) => ({ ...q, reviewer: review.model }));
-        }),
-      );
-      aiQuestions = reviewed.flat();
-      // L'IA passe devant les gabarits si elle couvre au moins les deux tiers
-      // des créneaux qui lui sont ouverts.
-      const covered = new Set(aiQuestions.map((q) => `${q.day}|${q.themeKey}`))
-        .size;
-      const open = 3 * (THEME_LIST.length - safetyThemes.size);
-      preferAi = open > 0 && covered >= Math.ceil((2 * open) / 3);
+        couple: describeCoupleContext([journey.userA, journey.userB]),
+        scope: { journeyId, paidOnly: true },
+      });
+      aiQuestions = ai.questions;
+      preferAi = ai.preferAi;
     }
 
     // 3. Assemblage : toujours 21 (3 × 7). Questions de l'IA relues en premier ;

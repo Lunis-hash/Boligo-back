@@ -52,6 +52,16 @@ export interface AiJourneyScope {
   /** Relecture : modèle d'une autre famille que `avoidModel` (le rédacteur). */
   role?: 'critic';
   avoidModel?: string;
+  /** Laboratoire (administrateur) : mêmes modèles qu'un parcours payé, budget propre. */
+  lab?: AiLabBudget;
+}
+
+/** Enveloppe d'une évaluation du laboratoire IA : coût estimé, puis réel. */
+export interface AiLabBudget {
+  /** L'appel peut-il être lancé sans dépasser l'enveloppe ? */
+  allow(estimateMicroEur: number): boolean;
+  /** Coût réel de l'appel, en millionièmes d'euro. */
+  add(costMicroEur: number): void;
 }
 
 /** Ce que le relecteur reçoit en plus des questions. */
@@ -68,7 +78,7 @@ export interface ReviewContext {
 export interface SondeurReview {
   rejected: Set<number>;
   preferred: Set<number>;
-  refusals: Array<{ n: number; rule: number | null }>;
+  refusals: Array<{ n: number; rule: number | null; reason?: string }>;
   /** Modèle relecteur (traçabilité). */
   model?: string;
 }
@@ -167,16 +177,20 @@ export class AiService implements OnModuleInit {
     scope?: AiJourneyScope,
   ): Promise<{ content: string; model: string }> {
     const inputTokens = estimateTokens(`${systemPrompt ?? ''}${prompt}`);
+    const lab = scope?.lab;
     const journeyId =
+      !lab &&
       scope &&
       this.budget &&
       (await this.budget.journeyEligible(scope.journeyId))
         ? scope.journeyId
         : null;
-    if (scope?.paidOnly && !journeyId) {
+    // Parcours payé, ou évaluation du laboratoire : modèles « qualité ».
+    const paid = !!journeyId || !!lab;
+    if (scope?.paidOnly && !paid) {
       throw new Error('Parcours sans paiement : suivi rédigé sans IA.');
     }
-    const tier: ModelTier = !journeyId
+    const tier: ModelTier = !paid
       ? 'default'
       : scope?.role === 'critic'
         ? 'critic'
@@ -186,8 +200,13 @@ export class AiService implements OnModuleInit {
       input: number,
       output: number,
       actualMicro?: number,
-    ) =>
-      journeyId
+    ) => {
+      if (lab) {
+        lab.add(actualMicro ?? costMicroEur(model, input, output));
+        // Compté aussi dans la dépense du mois, pour qu'elle reste visible.
+        return this.budget?.record(model, input, output, actualMicro);
+      }
+      return journeyId
         ? this.budget?.recordJourney(
             journeyId,
             model,
@@ -196,6 +215,15 @@ export class AiService implements OnModuleInit {
             actualMicro,
           )
         : this.budget?.record(model, input, output, actualMicro);
+    };
+    const checkBudget = async (estimate: number) => {
+      if (lab) {
+        if (!lab.allow(estimate))
+          throw new Error('Enveloppe de l’évaluation atteinte.');
+        return;
+      }
+      await this.ensureBudgetMicro(estimate, journeyId);
+    };
     // Délai proportionnel à la longueur demandée (30 ms par jeton, entre 20 s
     // et 3 min) : un modèle haut de gamme plus lent a le temps de finir.
     const timeoutMs = Math.min(180_000, Math.max(20_000, maxTokens * 30));
@@ -221,10 +249,7 @@ export class AiService implements OnModuleInit {
               completion: Math.max(...known.map((p) => p.completion)),
             }
           : maxPrice();
-        await this.ensureBudgetMicro(
-          costFromPrice(price, inputTokens, maxTokens),
-          journeyId,
-        );
+        await checkBudget(costFromPrice(price, inputTokens, maxTokens));
         const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
         if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
         messages.push({ role: 'user', content: prompt });
@@ -267,7 +292,7 @@ export class AiService implements OnModuleInit {
       // Un modèle retiré par Groq ne doit pas éteindre l'IA : on en change une fois.
       for (let attempt = 0; attempt < 2; attempt++) {
         const model = await this.resolveGroqModel(tier, scope?.avoidModel);
-        await this.ensureBudget(model, inputTokens, maxTokens, journeyId);
+        await checkBudget(costMicroEur(model, inputTokens, maxTokens));
         try {
           const completion = await this.groq.chat.completions.create({
             model,
@@ -303,7 +328,7 @@ export class AiService implements OnModuleInit {
       return null;
     };
 
-    if (journeyId) {
+    if (paid) {
       // Parcours payé : le meilleur rédacteur (OpenRouter) d'abord, Groq en secours.
       const first = await viaOpenRouter();
       if (first !== null) return first;
@@ -577,6 +602,7 @@ Retourne UNIQUEMENT ce JSON (${themeGrid.length * 2} questions, deux par thème)
     writerModel?: string,
     /** Seules sources de faits admises, et repères du Sondeur. */
     context: ReviewContext = {},
+    lab?: AiLabBudget,
   ): Promise<SondeurReview | null> {
     if (questions.length === 0)
       return { rejected: new Set(), preferred: new Set(), refusals: [] };
@@ -624,7 +650,13 @@ Retourne UNIQUEMENT ce JSON :
         systemPrompt,
         4000,
         0,
-        { journeyId, paidOnly: true, role: 'critic', avoidModel: writerModel },
+        {
+          journeyId,
+          paidOnly: true,
+          role: 'critic',
+          avoidModel: writerModel,
+          lab,
+        },
       );
       const match = content.match(/\{[\s\S]*\}/);
       const parsed = match
@@ -639,11 +671,12 @@ Retourne UNIQUEMENT ce JSON :
       };
       const accepted = new Set<number>();
       const judged = new Set<number>();
-      const refusals: Array<{ n: number; rule: number | null }> = [];
+      const refusals: SondeurReview['refusals'] = [];
       for (const v of parsed.verdicts as Array<{
         n?: unknown;
         ok?: unknown;
         regle?: unknown;
+        raison?: unknown;
       }>) {
         const i = index(v?.n);
         if (i === null) continue;
@@ -652,7 +685,13 @@ Retourne UNIQUEMENT ce JSON :
         else {
           accepted.delete(i);
           const rule = Number(v.regle);
-          refusals.push({ n: i, rule: Number.isInteger(rule) ? rule : null });
+          refusals.push({
+            n: i,
+            rule: Number.isInteger(rule) ? rule : null,
+            ...(typeof v.raison === 'string'
+              ? { reason: v.raison.slice(0, 160) }
+              : {}),
+          });
         }
       }
       // Relecture incomplète : rien n'est servi par défaut.
@@ -700,6 +739,7 @@ Retourne UNIQUEMENT ce JSON :
     maxTokens: number,
     /** Basse pour une lecture fidèle aux réponses ; plus haute pour une question. */
     temperature = 0.3,
+    lab?: AiLabBudget,
   ): Promise<{ content: string; model: string } | null> {
     try {
       return await this.queryAiAgentDetailed(
@@ -708,7 +748,7 @@ Retourne UNIQUEMENT ce JSON :
         systemPrompt,
         maxTokens,
         temperature,
-        { journeyId, paidOnly: true },
+        { journeyId, paidOnly: true, lab },
       );
     } catch (error) {
       this.logger.warn(
@@ -728,6 +768,7 @@ Retourne UNIQUEMENT ce JSON :
     systemPrompt: string,
     prompt: string,
     writerModel?: string,
+    lab?: AiLabBudget,
   ): Promise<string | null> {
     try {
       return await this.queryAiAgent('coach', prompt, systemPrompt, 1000, 0, {
@@ -735,6 +776,7 @@ Retourne UNIQUEMENT ce JSON :
         paidOnly: true,
         role: 'critic',
         avoidModel: writerModel,
+        lab,
       });
     } catch (error) {
       this.logger.warn(
