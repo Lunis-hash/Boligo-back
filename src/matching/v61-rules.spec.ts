@@ -253,11 +253,10 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
     expect(validateSondeurGrid(qs)).toBe(true);
     const money = qs.filter((q) => q.themeKey === 'argent');
     expect(money[0].text).toMatch(/serveur pose l'addition/);
-    expect(money.map((q) => q.source)).toEqual([
-      'divergence',
-      'divergence',
-      'divergence',
-    ]);
+    expect(money[0].source).toBe('divergence');
+    // Un même écart n'est posé qu'un jour : les autres jours explorent autre chose.
+    expect(money.slice(1).map((q) => q.source)).not.toContain('divergence');
+    for (const q of money.slice(1)) expect(q.text).not.toMatch(/addition/);
   });
 
   it('traite un sujet de fond même en divergence mineure (timidité)', () => {
@@ -267,10 +266,11 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
       firstNames: ['A', 'B'],
     });
     const day1 = qs.find((q) => q.day === 1 && q.themeKey === 'communication')!;
-    expect(day1.text).toMatch(/besoin de temps pour vous livrer/);
+    expect(day1.source).toBe('divergence');
+    expect(day1.text).toMatch(/quelqu'un de nouveau/);
   });
 
-  it('les réserves de thème contiennent les questions de fond', () => {
+  it('les réserves de thème posent les techniques cliniques, jamais une redite de l’entretien ni la santé', () => {
     const texts = new Set<string>();
     for (let i = 0; i < 40; i++) {
       for (const q of assembleSondeur({
@@ -281,9 +281,11 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
         texts.add(q.text);
     }
     const all = [...texts].join(' | ');
-    expect(all).toMatch(/Qui paie \?/);
-    expect(all).toMatch(/voiture/);
-    expect(all).toMatch(/handicap/);
+    expect(all).toMatch(/De 0 à 10/);
+    expect(all).toMatch(/un proche/);
+    expect(all).toMatch(/Imaginez qu/);
+    expect(all).toMatch(/addition/);
+    expect(all).not.toMatch(/Qui paie \?|voiture|handicap|malad/);
   });
 });
 

@@ -7,17 +7,27 @@
  *   jour 1 — lignes rouges, jour 2 — valeurs profondes, jour 3 — futur & intimité.
  *
  * Chaque question cible en priorité une divergence réelle détectée entre les deux
- * entretiens (moteur de divergences) ; à défaut, un gabarit du thème, personnalisé
- * par les convergences connues. Jamais de questionnaire générique partagé par tous
- * les couples : les gabarits sont instanciés avec les réponses du couple.
+ * entretiens (moteur de divergences) ; à défaut, un point d'accord réel (« même
+ * mot, même sens ? »), puis une question du thème. Les questions nomment le
+ * sujet (« l'argent que l'on envoie à sa famille »), jamais ce que chacun a
+ * répondu : les réponses restent indépendantes.
+ *
+ * Un même écart n'est posé qu'un seul jour, celui dont l'angle lui convient :
+ * les autres jours du thème piochent dans les autres réserves.
+ *
+ * Un thème qui porte un écart de sécurité (violence, mots blessants) ne reçoit
+ * que des questions de limite et de protection, écrites à l'avance.
  *
  * Une couche IA (Groq / OpenRouter) peut proposer des formulations plus fines ;
- * ses questions ne sont retenues que si elles respectent la grille, le reste est
- * complété ici. Coût : zéro sans IA, quelques millièmes d'euro par parcours avec.
+ * ses questions, toujours relues en amont, passent avant les gabarits si elles
+ * respectent la grille ; le reste est complété ici. Coût : zéro sans IA,
+ * quelques millièmes d'euro par parcours avec.
  */
 import {
+  Convergence,
   Divergence,
   DivergenceReport,
+  Severity,
   THEMES,
   THEME_LIST,
   Theme,
@@ -28,12 +38,24 @@ import {
 } from './harmony-question.types';
 import {
   CONVERGENT,
-  DEEP_GENERIC,
-  EXTRA_GENERIC,
-  EXTRA_TARGETED,
   PoolTemplate,
   SHARED_RISK,
-  TOPIC_DEEP,
+  SUBJECT_FRAGMENTS,
+  TARGETED,
+  THEME_POOL,
+  agreementFor,
+  agreementKey,
+  TopicSource,
+  isAgreementWorthAsking,
+  isDeferredAgreement,
+  isDeferredDivergence,
+  isNonNegotiable,
+  relatedTopics,
+  topicDays,
+  topicDeep,
+  topicKey,
+  topicPhrase,
+  topicWords,
 } from './sondeur.pool';
 
 import { hasClinicalJargon, similarQuestions } from './clinical-lens';
@@ -48,7 +70,7 @@ export const DAY_ANGLES: Record<
   1: {
     label: 'Lignes rouges',
     emoji: '🚩',
-    intent: 'ce qui est non négociable',
+    intent: 'ce que chacun protège',
   },
   2: {
     label: 'Valeurs profondes',
@@ -84,8 +106,10 @@ export interface SondeurInput {
   /** Graine du tirage (l'identifiant du parcours) : deux couples ne reçoivent pas la même série. */
   seed?: string;
   /**
-   * Questions de l'IA relues et validées par un second modèle indépendant :
-   * elles passent alors avant les gabarits, dans chaque créneau.
+   * Questions de l'IA relues et validées par un second modèle indépendant.
+   * Conservé pour compatibilité : toute question de l'IA transmise ici a été
+   * relue (jamais de question non relue), elle passe donc toujours avant les
+   * gabarits, et seules les questions de sécurité la précèdent.
    */
   preferAi?: boolean;
 }
@@ -97,520 +121,84 @@ export interface SondeurQuestion extends HarmonyQuestionPayload {
    * un point d'accord réel ; 'gabarit' : question du thème.
    */
   source: 'divergence' | 'ia' | 'convergence' | 'gabarit';
+  /**
+   * Sujet visé (identifiant de la question d'entretien, « securite » pour une
+   * question de limite), pour la traçabilité. Jamais affiché.
+   */
+  subject?: string;
 }
-
-// ─── Gabarits ciblés (une divergence réelle existe sur le thème) ──────────────
-
-const TARGETED_B: Record<
-  number,
-  { text: (d: Divergence) => string; options: string[] }
-> = {
-  1: {
-    text: (d) =>
-      `Vous ne voyez pas « ${d.label.toLowerCase()} » de la même façon (« ${d.a.text} » / « ${d.b.text} »). Si rien ne bougeait, pourriez-vous construire quand même ?`,
-    options: [
-      'Non, ce point me bloquerait',
-      'Oui, si le reste est solide',
-      'Je ne sais pas encore',
-      'Autre...',
-    ],
-  },
-  2: {
-    text: (d) =>
-      `Qu'est-ce que vous aimeriez que l'autre comprenne de votre réponse sur « ${d.label.toLowerCase()} » (« ${d.a.text} » / « ${d.b.text} ») ?`,
-    options: [
-      "Que ce n'est pas un caprice mais une valeur",
-      "Que j'ai déjà souffert de l'inverse",
-      'Que je peux évoluer si on en parle',
-      'Autre...',
-    ],
-  },
-  3: {
-    text: (d) =>
-      `Concrètement, quel premier pas feriez-vous dans les prochains mois pour rapprocher vos positions sur « ${d.label.toLowerCase()} » ?`,
-    options: [
-      'En parler avec nos proches ou un tiers',
-      'Tester une période à sa façon',
-      'Poser un cadre écrit à deux',
-      'Autre...',
-    ],
-  },
-};
-
-const TARGETED: Record<
-  number,
-  { text: (d: Divergence) => string; options: string[] }
-> = {
-  1: {
-    text: (d) =>
-      `Sur « ${d.label.toLowerCase()} », vos réponses diffèrent : « ${d.a.text} » d'un côté, « ${d.b.text} » de l'autre. Est-ce une ligne rouge pour vous ?`,
-    options: [
-      'Oui, non négociable',
-      'Négociable si on en parle vraiment',
-      "Je peux m'adapter sans me trahir",
-      'Autre...',
-    ],
-  },
-  2: {
-    text: (d) =>
-      `« ${d.label} » : l'un de vous a répondu « ${d.a.text} », l'autre « ${d.b.text} ». D'où vient votre position, et qu'est-ce qu'elle protège en vous ?`,
-    options: [
-      'Mon éducation et ma famille',
-      'Mes convictions personnelles',
-      'Une expérience passée qui a marqué',
-      'Autre...',
-    ],
-  },
-  3: {
-    text: (d) =>
-      `Dans cinq ans, si vous êtes ensemble, comment aurez-vous réglé votre différence sur « ${d.label.toLowerCase()} » (« ${d.a.text} » / « ${d.b.text} ») ?`,
-    options: [
-      'On aura construit un compromis clair',
-      "L'un de nous aura cédé, et ça ira",
-      'Ce sera resté une tension entre nous',
-      'Autre...',
-    ],
-  },
-};
-
-// ─── Gabarits par thème (aucune divergence détectée sur le thème) ─────────────
-
-type ThemeTemplates = Record<number, { text: string; options: string[] }>;
-
-const GENERIC: Record<Theme, ThemeTemplates> = {
-  famille: {
-    1: {
-      text: 'Votre famille désapprouve ouvertement votre partenaire. Que faites-vous ?',
-      options: [
-        "Je défends mon couple, quoi qu'il en coûte",
-        'Je cherche à réconcilier les deux',
-        'Je prends du recul avant de choisir',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: 'Quelle place votre famille doit-elle avoir dans les décisions de votre couple ?',
-      options: [
-        'Consultée, mais nous décidons seuls',
-        'Impliquée sur les grands choix',
-        'Aucune : notre couple nous appartient',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Comment imaginez-vous votre foyer dans cinq ans : enfants, parents, rythme de vie ?',
-      options: [
-        'Un foyer avec enfants et famille proche',
-        "Un couple d'abord, le reste viendra",
-        'Je ne me projette pas encore',
-        'Autre...',
-      ],
-    },
-  },
-  argent: {
-    1: {
-      text: 'Vous découvrez une dette importante que votre partenaire ne vous avait pas dite. Votre réaction ?',
-      options: [
-        'Rupture de confiance difficile à réparer',
-        'On en parle et on construit un plan ensemble',
-        "Je l'aide sans le lui reprocher",
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Dans le couple, l'argent sert d'abord à quoi, selon vous ?",
-      options: [
-        "À sécuriser le foyer et l'avenir",
-        'À profiter de la vie ensemble',
-        'À aider aussi la famille élargie',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: "Si l'un de vous gagne beaucoup plus que l'autre, comment partagez-vous les dépenses ?",
-      options: [
-        'Tout en commun, sans compter',
-        'Chacun selon ses revenus',
-        'Chacun ses dépenses, charges partagées',
-        'Autre...',
-      ],
-    },
-  },
-  spiritualite: {
-    1: {
-      text: "Sur la foi ou la spiritualité, qu'est-ce que vous ne pourriez pas accepter chez votre partenaire ?",
-      options: [
-        "Qu'il ou elle rejette ma pratique",
-        "Qu'il ou elle ne partage aucune de mes valeurs",
-        "Rien, tant qu'il y a du respect",
-        'Autre...',
-      ],
-    },
-    2: {
-      text: 'Quelle place votre spiritualité ou vos convictions prennent-elles dans votre quotidien ?',
-      options: [
-        'Centrale : elle guide mes choix',
-        'Importante dans les grands moments',
-        'Personnelle et discrète',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Comment souhaitez-vous transmettre (ou non) vos convictions à vos futurs enfants ?',
-      options: [
-        'Dans ma tradition, clairement',
-        'En leur laissant le choix',
-        'On décidera à deux le moment venu',
-        'Autre...',
-      ],
-    },
-  },
-  intimite: {
-    1: {
-      text: "En matière d'intimité et de fidélité, quelle est votre limite absolue ?",
-      options: [
-        'Toute infidélité, même émotionnelle',
-        "Le mensonge plus que l'acte",
-        'Le manque de respect de mes besoins',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Pour vous, la tendresse et le désir dans un couple, ça s'entretient comment ?",
-      options: [
-        'Par des gestes et des mots au quotidien',
-        'Par des moments à deux préservés',
-        'Ça doit rester naturel, sans effort',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: "Si vos envies d'intimité ne se rejoignent pas à un moment de la vie, que faites-vous ?",
-      options: [
-        "On en parle sans tabou et on s'ajuste",
-        'Je prends sur moi sans le dire',
-        'Ce serait un vrai problème pour moi',
-        'Autre...',
-      ],
-    },
-  },
-  communication: {
-    1: {
-      text: "Pendant une dispute, quel comportement de l'autre vous ferait quitter la pièce ?",
-      options: [
-        'Les cris ou les insultes',
-        'Le silence et le mépris',
-        'Les reproches sur le passé',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: 'Quand vous êtes blessé(e), de quoi avez-vous besoin en premier ?',
-      options: [
-        "Qu'on m'écoute sans me couper",
-        "Qu'on reconnaisse le tort",
-        "D'un peu de temps seul(e)",
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Comment aimeriez-vous que votre couple règle ses désaccords dans cinq ans ?',
-      options: [
-        'Un rituel de discussion calme',
-        "En demandant de l'aide si besoin",
-        'En laissant passer, sans drame',
-        'Autre...',
-      ],
-    },
-  },
-  projet: {
-    1: {
-      text: "Qu'est-ce qui, dans un projet de vie, vous ferait renoncer à cette relation ?",
-      options: [
-        "Le refus de s'engager",
-        'Des ambitions incompatibles',
-        'Un désaccord sur les enfants',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: 'Pour vous, un engagement sérieux se prouve par quoi ?',
-      options: [
-        'Des actes concrets au quotidien',
-        'Une date et un cadre clairs',
-        'La présence dans les moments durs',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Imaginez votre dimanche idéal dans cinq ans. À quoi ressemble-t-il ?',
-      options: [
-        'En famille, à la maison',
-        'En sortie ou en voyage à deux',
-        'Chacun son activité, puis ensemble',
-        'Autre...',
-      ],
-    },
-  },
-  lieu: {
-    1: {
-      text: "Votre partenaire obtient une opportunité à l'étranger. Jusqu'où pouvez-vous le ou la suivre ?",
-      options: [
-        "Je pars, le couple d'abord",
-        'Seulement si mon projet y trouve sa place',
-        'Je ne quitterai pas ma ville',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Qu'est-ce qui vous rattache le plus à votre lieu de vie actuel ?",
-      options: [
-        'Ma famille et mes proches',
-        'Mon travail et ma stabilité',
-        'Rien de décisif, je suis mobile',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Où vous voyez-vous vivre dans cinq ans, et qui aura choisi ?',
-      options: [
-        'Là où vit ma famille',
-        'Là où nos carrières nous mènent',
-        'Un nouveau départ choisi à deux',
-        'Autre...',
-      ],
-    },
-  },
-};
-
-const GENERIC_B: Record<Theme, ThemeTemplates> = {
-  famille: {
-    1: {
-      text: "Un proche de votre partenaire s'invite chez vous plusieurs semaines sans prévenir. Que faites-vous ?",
-      options: [
-        "J'accepte, la famille passe avant",
-        "J'accepte avec des règles claires",
-        "Je refuse : notre foyer d'abord",
-        'Autre...',
-      ],
-    },
-    2: {
-      text: 'Quel souvenir de votre propre famille voulez-vous absolument reproduire, ou éviter, dans votre couple ?',
-      options: [
-        'La chaleur et les repas ensemble',
-        'Le respect des aînés',
-        'Éviter les silences et les non-dits',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: "Si vous devenez parents, qui s'adapte professionnellement la première année ?",
-      options: [
-        'Moi, naturellement',
-        "L'autre, naturellement",
-        "À parts égales, quoi qu'il en coûte",
-        'Autre...',
-      ],
-    },
-  },
-  argent: {
-    1: {
-      text: "Votre partenaire envoie chaque mois de l'argent à sa famille sans vous en parler. Votre réaction ?",
-      options: [
-        "C'est son droit tant que le foyer ne manque de rien",
-        'On doit en décider ensemble',
-        'Inacceptable sans transparence',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Un cadeau cher ou une épargne commune : lequel vous rassure le plus sur l'engagement de l'autre ?",
-      options: [
-        "L'épargne commune",
-        "Le cadeau, pour l'attention",
-        "Ni l'un ni l'autre : la présence",
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Dans cinq ans, comment sont gérés vos comptes ?',
-      options: [
-        'Un compte commun unique',
-        'Trois comptes : le sien, le mien, le nôtre',
-        'Séparés, avec une règle de partage',
-        'Autre...',
-      ],
-    },
-  },
-  spiritualite: {
-    1: {
-      text: 'Votre partenaire remet en question une de vos pratiques devant votre famille. Que ressentez-vous ?',
-      options: [
-        'Une trahison difficile à passer',
-        'De la gêne, mais on en parle après',
-        'Rien de grave, chacun ses idées',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Si votre foi ou vos convictions évoluaient avec le temps, en parleriez-vous à l'autre ?",
-      options: [
-        'Oui, immédiatement et sans filtre',
-        'Oui, une fois sûr(e) de moi',
-        'Ce serait mon jardin secret',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Quelle place prendront vos différences de convictions dans les grandes fêtes et cérémonies ?',
-      options: [
-        'On honore les deux traditions',
-        'On suit la tradition la plus pratiquante',
-        'On invente nos propres rituels',
-        'Autre...',
-      ],
-    },
-  },
-  intimite: {
-    1: {
-      text: 'Votre partenaire garde des contacts réguliers avec un ex. Où est votre limite ?',
-      options: [
-        "Aucun contact, c'est clair",
-        'Acceptable si tout est transparent',
-        'Ça ne me regarde pas',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Qu'est-ce qui vous fait vous sentir vraiment désiré(e) dans une relation ?",
-      options: [
-        'Les attentions inattendues',
-        'Les mots et les compliments',
-        'Le temps pris pour moi',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Dans dix ans, à quoi ressemble la tendresse entre vous ?',
-      options: [
-        "À la même complicité qu'au début",
-        'À une tendresse plus calme mais présente',
-        'Je ne sais pas, ça dépendra de la vie',
-        'Autre...',
-      ],
-    },
-  },
-  communication: {
-    1: {
-      text: 'Après une dispute, votre partenaire ne vous parle plus pendant deux jours. Que faites-vous ?',
-      options: [
-        'Je fais le premier pas',
-        "J'attends qu'il ou elle revienne",
-        'Je pose une limite : pas de silence punitif',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: 'Quelle phrase aimeriez-vous entendre plus souvent dans votre couple ?',
-      options: [
-        '« Je comprends ce que tu ressens »',
-        '« Tu as raison, excuse-moi »',
-        '« On va trouver une solution ensemble »',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Si un sujet revient sans cesse entre vous sans solution, que proposez-vous ?',
-      options: [
-        'Un temps dédié chaque semaine pour en parler',
-        "Demander l'aide d'un tiers",
-        'Accepter le désaccord et avancer',
-        'Autre...',
-      ],
-    },
-  },
-  projet: {
-    1: {
-      text: "Votre partenaire veut repousser l'engagement de plusieurs années. Votre réaction ?",
-      options: [
-        'Je ne peux pas attendre sans date',
-        "J'attends si le projet reste clair",
-        "Le temps ne compte pas si l'amour est là",
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Qu'est-ce qui compte le plus pour vous dans un projet à deux : la sécurité, l'aventure ou la transmission ?",
-      options: [
-        'La sécurité et la stabilité',
-        "L'aventure et la découverte",
-        'Transmettre et bâtir pour la suite',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: "Quel projet aimeriez-vous avoir réalisé ensemble d'ici cinq ans ?",
-      options: [
-        'Un foyer ou un bien à nous',
-        'Un voyage ou une expérience marquante',
-        'Un engagement officiel',
-        'Autre...',
-      ],
-    },
-  },
-  lieu: {
-    1: {
-      text: 'Vivre à distance plusieurs mois pour une raison professionnelle : envisageable pour vous ?',
-      options: [
-        'Non, je veux une vie commune au quotidien',
-        "Oui, si c'est limité et planifié",
-        'Oui, la confiance suffit',
-        'Autre...',
-      ],
-    },
-    2: {
-      text: "Entre votre ville, celle de l'autre et un lieu neutre, laquelle vous semble la plus juste pour s'installer ?",
-      options: [
-        'Ma ville, pour mes repères',
-        "La sienne, si c'est mieux pour nous",
-        'Un lieu neutre choisi ensemble',
-        'Autre...',
-      ],
-    },
-    3: {
-      text: 'Comment imaginez-vous votre maison idéale dans cinq ans ?',
-      options: [
-        'Proche de nos familles',
-        'En ville, près du travail',
-        "Au calme, loin de l'agitation",
-        'Autre...',
-      ],
-    },
-  },
-};
 
 // ─── Assemblage ────────────────────────────────────────────────────────────────
 
 /** Au plus deux questions d'accord par jour : le Sondeur reste centré sur les écarts. */
 const MAX_CONVERGENCE_PER_DAY = 2;
 
+/**
+ * Écarts mineurs gardés malgré tout : sujets de fond V6.1 (premier rendez-vous,
+ * timidité, caprices…) qui ont leurs propres formulations.
+ */
+const MINOR_WORTH_ASKING = new Set([
+  'M4_Q10',
+  'M4_Q11',
+  'M4_Q12',
+  'M4_Q13',
+  'M8_Q10',
+  'M9_Q19',
+  'M9_Q16',
+  'M2_Q19',
+  'M8_Q11',
+  'M10_Q15',
+]);
+
 function normalizeKey(text: string): string {
   return text.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
+/** Lettres et espaces seulement, comme une signature. */
+function lettersOnly(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-zàâäçéèêëîïôöùûüÿœæ«» ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const ARTICLE = /^(?:le|la|les|l) /;
+
 /**
- * Signature d'une question : le texte sans les réponses citées entre « » ni la
- * ponctuation. Deux questions bâties sur le même gabarit avec des réponses
- * différentes ont la même signature : un membre ne les verra qu'une fois.
+ * Sujets nommés dans les gabarits (tournures et phrases d'accord), du plus long
+ * au plus court, avec l'article ou la préposition qui peut les précéder.
+ */
+const SUBJECT_PATTERNS: RegExp[] = [
+  ...new Set(SUBJECT_FRAGMENTS.map((f) => lettersOnly(f).replace(ARTICLE, ''))),
+]
+  .filter((core) => core.length >= 4)
+  .sort((a, b) => b.length - a.length)
+  .map(
+    (core) =>
+      new RegExp(
+        `(?<=^| )(?:(?:du|des|de la|de l|de|d|le|la|les|l|au|aux|à la|à l|à|sur) )?${core}(?= |$)`,
+        'g',
+      ),
+  );
+
+/**
+ * Signature d'une question : le texte sans les réponses citées entre « », sans
+ * le sujet nommé (« l'argent que l'on envoie à sa famille ») ni la
+ * ponctuation. Deux questions bâties sur le même gabarit, appliqué à d'autres
+ * réponses ou à un autre sujet, ont la même signature : un membre ne les verra
+ * qu'une fois.
  */
 export function questionSignature(text: string): string {
-  return text
+  let sig = text
     .toLowerCase()
     .replace(/«[^»]*»/g, '«»')
     .replace(/\([^)]*«»[^)]*\)/g, '')
     .replace(/[^a-zàâäçéèêëîïôöùûüÿœæ«» ]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+  for (const pattern of SUBJECT_PATTERNS) sig = sig.replace(pattern, '«»');
+  return sig;
 }
 
 /** Tirage pseudo-aléatoire reproductible (même graine → même série). */
@@ -658,7 +246,7 @@ interface Memory {
  * Choisit la formulation la plus neuve, par ordre de préférence :
  * 1. gabarit jamais vu par les membres et pas encore utilisé dans ce Sondeur ;
  * 2. gabarit jamais vu, déjà utilisé ici sur un autre sujet ;
- * 3. gabarit déjà vu mais texte nouveau (appliqué à d'autres réponses) ;
+ * 3. gabarit déjà vu mais texte nouveau (appliqué à un autre sujet) ;
  * Retourne null si seuls des textes déjà posés restent disponibles.
  */
 function pickFresh(
@@ -671,11 +259,14 @@ function pickFresh(
     (_c, sig, key) => !mem.seenText.has(key) && !mem.usedSig.has(sig),
     (_c, _sig, key) => !mem.seenText.has(key) && !mem.usedText.has(key),
   ];
+  const keyed = candidates.map((c) => ({
+    c,
+    sig: questionSignature(c.text),
+    key: normalizeKey(c.text),
+  }));
   for (const ok of tiers) {
-    const hit = candidates.find((c) =>
-      ok(c, questionSignature(c.text), normalizeKey(c.text)),
-    );
-    if (hit) return hit;
+    const hit = keyed.find((k) => ok(k.c, k.sig, k.key));
+    if (hit) return hit.c;
   }
   return null;
 }
@@ -697,6 +288,18 @@ export const SELF_DISCLOSURE_QUESTIONS = new Set([
   'M8_Q10',
 ]);
 
+/**
+ * Même réponse à risque sur une question de sécurité (« ça dépend des
+ * circonstances », « ça peut arriver dans un couple ») : traitée comme un
+ * écart de sécurité, même avant que le moteur ne la signale lui-même.
+ */
+const RISKY_SAFETY_AGREEMENTS = new Set([
+  'M6_Q04:C',
+  'M6_Q04:D',
+  'M6_Q05:C',
+  'M6_Q05:D',
+]);
+
 /** Écart tiré d'une échelle (clé = score) : un score ne se cite pas comme une réponse. */
 function isScaleDivergence(d: Divergence): boolean {
   return /^\d+$/.test(d.a.key) || /^\d+$/.test(d.b.key);
@@ -712,11 +315,12 @@ export function isQuotableDivergence(d: Divergence): boolean {
 }
 
 /**
- * Questions de limite (sécurité), sans citer les réponses : où commence
- * l'insécurité, qui a appris à se disputer sans se faire de mal, quel signal
- * d'arrêt.
+ * Questions de limite (sécurité), sans citer les réponses. Face à la violence
+ * ou aux mots blessants, jamais de réconciliation ni de signal pour « reprendre
+ * plus tard » : seulement où chacun place sa limite de sécurité, d'où il la
+ * tient, et ce qu'il ferait pour se protéger si elle était franchie.
  */
-const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
+export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
   1: [
     {
       text: "Dans une dispute, à quel moment sentiriez-vous que vous n'êtes plus en sécurité ?",
@@ -741,57 +345,188 @@ const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       ],
     },
     {
-      text: "Dans votre famille, comment savait-on qu'une dispute était terminée ?",
-      options: [
-        'On en reparlait calmement',
-        'On faisait comme si de rien',
-        'On ne le savait jamais vraiment',
-      ],
+      text: "Qu'avez-vous appris, en grandissant, sur ce qu'on ne fait jamais à quelqu'un qu'on aime ?",
+      options: ['Lever la main', 'Humilier', 'Menacer'],
     },
   ],
   3: [
     {
-      text: 'Si la colère montait trop haut un jour, quel serait votre signal pour arrêter et reprendre plus tard ?',
-      options: [
-        'Un mot convenu',
-        'Sortir prendre l’air',
-        'Se donner rendez-vous plus tard',
-      ],
+      text: "Pour vous sentir en sécurité dans une vie à deux, quelle limite aimeriez-vous que l'autre connaisse dès le début ?",
+      options: ['Aucun geste violent', 'Aucune insulte', 'Aucune menace'],
     },
     {
-      text: 'Après une dispute, quel petit geste de l’autre vous fait baisser les armes ?',
+      text: "Si quelqu'un franchissait un jour votre limite de sécurité, que feriez-vous pour vous protéger ?",
       options: [
-        'Une excuse sincère',
-        'Un geste tendre',
-        'Un moment pour en reparler',
+        'Partir aussitôt',
+        'Demander de l’aide à un proche',
+        'Appeler une association ou les secours',
       ],
     },
   ],
 };
 
+/** Une formulation propre au sujet existe-t-elle pour l'un des jours ? */
+function hasTopicDeep(d: Divergence): boolean {
+  return [1, 2, 3].some((day) => !!topicDeep(d, day));
+}
+
 /**
  * Divergences d'un thème, de la plus grave à la moins grave. Les mineures sont
  * écartées, sauf sur les sujets de fond V6.1 (premier rendez-vous, timidité…)
  * qui ont leurs propres formulations : elles passent alors en dernier.
- * Les écarts de sécurité, les aveux et les scores ne sont jamais cités.
+ * Les écarts de sécurité ne sont jamais ciblés ici ; les aveux et les scores
+ * seulement par une formulation propre, qui ne cite rien. Un sujet que l'un des
+ * deux a préféré garder pour une conversation en personne n'est pas relancé.
  */
 function divergencesForTheme(
   report: DivergenceReport,
   theme: Theme,
 ): Divergence[] {
-  // Écart non citable (aveu, score) : gardé seulement s'il a une question de
-  // fond propre, qui ne cite pas les réponses. Écart de sécurité : jamais ici.
   const ofTheme = report.divergences.filter(
     (d) =>
       d.theme === theme &&
       !SAFETY_QUESTIONS.has(d.questionId) &&
-      (isQuotableDivergence(d) || d.questionId in TOPIC_DEEP),
+      !isDeferredDivergence(d) &&
+      (isQuotableDivergence(d) || hasTopicDeep(d)),
   );
   return [
     ...ofTheme.filter((d) => d.severity !== 'mineure'),
     ...ofTheme.filter(
-      (d) => d.severity === 'mineure' && d.questionId in TOPIC_DEEP,
+      (d) =>
+        d.severity === 'mineure' &&
+        MINOR_WORTH_ASKING.has(d.questionId) &&
+        hasTopicDeep(d),
     ),
+  ];
+}
+
+/**
+ * Gabarits ciblés d'un jour pour cet écart : risque partagé (même réponse qui
+ * pose problème) ou écart de positions. Jamais de gabarit qui suppose de
+ * « vivre avec » la différence sur un point non négociable. Aveux et scores :
+ * aucun gabarit générique, seulement leurs formulations propres.
+ */
+function topicTemplates(day: number, d: Divergence) {
+  if (!isQuotableDivergence(d)) return [];
+  if (d.shared) return SHARED_RISK[day];
+  const strict = isNonNegotiable(d);
+  return TARGETED[day].filter((t) => !(strict && t.compromise));
+}
+
+/** Formulations d'un jour pour un écart : la formulation propre d'abord. */
+function divergenceCandidates(
+  day: number,
+  d: Divergence,
+  seed: string | undefined,
+  slot: string,
+): PoolTemplate[] {
+  const deep = topicDeep(d, day);
+  const words = topicWords(topicPhrase(d));
+  const generic = topicTemplates(day, d).map((t) => ({
+    text: t.text(words),
+    options: t.options,
+  }));
+  return [...(deep ? [deep] : []), ...arrange(generic, seed, `${slot}|div`)];
+}
+
+const SEVERITY_RANK: Record<Severity, number> = {
+  critique: 3,
+  majeure: 2,
+  moderee: 1,
+  mineure: 0,
+};
+
+/**
+ * Plan des écarts : chaque écart est posé un seul jour, le premier de ses
+ * jours possibles (jour préféré d'abord) encore libre dans son thème. Les plus
+ * graves choisissent en premier, tous thèmes confondus. Un seul sujet par
+ * famille de sujets voisins (la colère et la dispute, la foi et la religion…).
+ * Un thème qui n'a qu'un écart le pose au jour dont l'angle convient ; ses
+ * autres jours piochent dans les autres réserves.
+ */
+function planDivergences(report: DivergenceReport): Map<string, Divergence> {
+  const plan = new Map<string, Divergence>();
+  const planned = new Set<string>();
+  const candidates = THEME_LIST.flatMap((theme) =>
+    divergencesForTheme(report, theme),
+  );
+  // Tri stable : à gravité égale, l'ordre des thèmes, puis celui du moteur.
+  const ordered = [...candidates].sort(
+    (x, y) => SEVERITY_RANK[y.severity] - SEVERITY_RANK[x.severity],
+  );
+  for (const d of ordered) {
+    const related = relatedTopics(d);
+    if (related.some((k) => planned.has(k))) continue;
+    for (const day of topicDays(d)) {
+      const slot = `${day}|${d.theme}`;
+      if (plan.has(slot)) continue;
+      if (!topicDeep(d, day) && topicTemplates(day, d).length === 0) continue;
+      plan.set(slot, d);
+      for (const k of related) planned.add(k);
+      break;
+    }
+  }
+  return plan;
+}
+
+/** Un sujet et ses voisins : rien de tout cela ne sera reposé un autre jour. */
+function markTaken(taken: Set<string>, src: TopicSource): void {
+  taken.add(src.questionId);
+  for (const k of relatedTopics(src)) taken.add(k);
+}
+
+/**
+ * Accords d'un thème qui valent une question ce jour-là : jamais une
+ * auto-évaluation, une limite de sécurité, une réponse différée ou un simple
+ * fait ; jamais un sujet déjà abordé. Ceux qui ont leur question « même mot,
+ * même sens ? » passent en premier.
+ */
+function convergencesFor(
+  report: DivergenceReport,
+  theme: Theme,
+  day: number,
+  taken: Set<string>,
+): Convergence[] {
+  const eligible = report.convergences.filter(
+    (c) =>
+      c.theme === theme &&
+      !SELF_DISCLOSURE_QUESTIONS.has(c.questionId) &&
+      !SAFETY_QUESTIONS.has(c.questionId) &&
+      !taken.has(c.questionId) &&
+      isAgreementWorthAsking(c) &&
+      topicDays({ ...c, label: c.topic ?? c.label }).includes(day),
+  );
+  return [
+    ...eligible.filter((c) => agreementFor(c).probe),
+    ...eligible.filter((c) => !agreementFor(c).probe),
+  ];
+}
+
+/**
+ * Formulations d'un accord : la phrase qui le nomme, puis une question. Sans
+ * phrase (risque partagé non signalé), la question propre seule.
+ */
+function convergenceCandidates(
+  day: number,
+  c: Convergence,
+  seed: string | undefined,
+  slot: string,
+): PoolTemplate[] {
+  const { statement, probe } = agreementFor(c);
+  if (!statement) return probe ? [probe] : [];
+  const withStatement = (t: PoolTemplate) => ({
+    text: `${statement} ${t.text}`,
+    options: t.options,
+  });
+  // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
+  // solidité d'un accord que les deux tiennent pour essentiel.
+  const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
+  const generic = CONVERGENT[day].filter(
+    (t) => !(strict && t.technique === 'limite'),
+  );
+  return [
+    ...(probe ? [withStatement(probe)] : []),
+    ...arrange(generic.map(withStatement), seed, `${slot}|conv`),
   ];
 }
 
@@ -815,61 +550,16 @@ function pickAi(
   return candidate ?? null;
 }
 
-/** Les formulations d'un créneau sans divergence (cinq, plus les questions de fond V6.1). */
-function genericPool(theme: Theme, day: number): PoolTemplate[] {
-  return [
-    GENERIC[theme][day],
-    GENERIC_B[theme][day],
-    ...EXTRA_GENERIC[theme][day],
-    ...(DEEP_GENERIC[theme]?.[day] ?? []),
-  ];
-}
-
-/** Formulation de fond propre au sujet de la divergence (V6.1), si elle existe. */
-function topicTemplate(day: number, d: Divergence): PoolTemplate[] {
-  const t = TOPIC_DEEP[d.questionId]?.[day];
-  if (!t) return [];
-  const text = t.text(d);
-  // Écart non citable : seulement une formulation qui ne reprend pas les réponses.
-  if (
-    !isQuotableDivergence(d) &&
-    (text.includes(d.a.text) || text.includes(d.b.text))
-  )
-    return [];
-  return [{ text, options: t.options }];
-}
-
-/**
- * Les formulations ciblées d'un jour, appliquées à une divergence. Un risque
- * partagé (même réponse des deux côtés) a ses propres formulations : il n'y a
- * pas de « différence » à discuter.
- */
-function targetedPool(day: number, d: Divergence): PoolTemplate[] {
-  const templates = d.shared
-    ? SHARED_RISK[day]
-    : [TARGETED[day], TARGETED_B[day], ...EXTRA_TARGETED[day]];
-  return templates.map((t) => ({
-    text: t.text(d),
-    options: t.options,
-  }));
-}
-
 /**
  * Construit exactement 21 questions (3 jours × 7 thèmes), ordre : jour puis thème.
- * Priorité par créneau : divergence réelle → question IA conforme → point
- * d'accord réel → question du thème. Questions de l'IA relues par un second
- * modèle (`preferAi`) : elles passent en premier. Dans chaque réserve, la formulation retenue
- * est une que ni l'un ni l'autre membre n'a déjà vue.
+ * Priorité par créneau : question de limite si le thème porte un écart de
+ * sécurité (absolue) → question de l'IA (toujours relue en amont) → écart
+ * réel prévu ce jour-là → point d'accord réel → question du thème. Dans chaque
+ * réserve, la formulation retenue est une que ni l'un ni l'autre membre n'a
+ * déjà vue, et un même sujet n'est jamais reposé un autre jour.
  */
 export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
-  const {
-    report,
-    aiQuestions,
-    avoidTexts = [],
-    history = [],
-    seed,
-    preferAi = false,
-  } = input;
+  const { report, aiQuestions, avoidTexts = [], history = [], seed } = input;
   const past = [...avoidTexts, ...history];
   const mem: Memory = {
     seenSig: new Set(past.map(questionSignature)),
@@ -880,6 +570,24 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   };
   const ai = aiQuestions ?? [];
   const result: SondeurQuestion[] = [];
+  const plan = planDivergences(report);
+  // Sujets déjà abordés ou prévus (et leurs voisins) : on ne les repose pas un
+  // autre jour.
+  const taken = new Set<string>();
+  for (const d of plan.values()) markTaken(taken, d);
+  // Écart de sécurité, partagé ou non, ou même réponse qui n'est pas la limite
+  // absolue (« ça dépend » des deux côtés) : le thème ne reçoit que des
+  // questions de limite.
+  const safetyThemes = new Set([
+    ...report.divergences
+      .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
+      .map((d) => d.theme),
+    ...report.convergences
+      .filter((c) =>
+        RISKY_SAFETY_AGREEMENTS.has(`${c.questionId}:${agreementKey(c)}`),
+      )
+      .map((c) => c.theme),
+  ]);
 
   for (let day = 1; day <= SONDEUR_DAYS; day++) {
     const angle = DAY_ANGLES[day];
@@ -892,54 +600,46 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         emoji: THEMES[theme].emoji,
         themeKey: theme,
       };
-      const divs = divergencesForTheme(report, theme);
-      // Jour 1 → divergence la plus grave, jour 2 → la suivante, jour 3 → la suivante (cyclique).
-      const divergence = divs.length ? divs[(day - 1) % divs.length] : null;
       let question: SondeurQuestion | null = null;
-      const tryAi = () => {
+
+      // 1. Écart de sécurité sur ce thème : une question de limite, jamais un
+      // compromis ni une réconciliation, jamais une question de l'IA. Trois
+      // angles distincts : limite, origine, protection. Déjà vues lors d'un
+      // parcours précédent : elles reviennent plutôt que de laisser la place
+      // à une autre question.
+      if (safetyThemes.has(theme)) {
+        const limits = arrange(SAFETY_TEMPLATES[day], seed, `${slot}|limite`);
+        const pick =
+          pickFresh(limits, mem) ??
+          limits.find((t) => !mem.usedText.has(normalizeKey(t.text))) ??
+          limits[0];
+        question = {
+          ...base,
+          text: pick.text,
+          options: ensureAutreOption(pick.options),
+          source: 'divergence',
+          subject: 'securite',
+        };
+      }
+
+      // 2. Question de l'IA, relue par un second modèle : avant les gabarits.
+      if (!question) {
         const fromAi = pickAi(ai, day, theme, mem);
-        return fromAi
-          ? {
-              ...fromAi,
-              ...base,
-              options: ensureAutreOption(fromAi.options),
-              source: 'ia' as const,
-            }
-          : null;
-      };
-
-      if (preferAi) question = tryAi();
-
-      // Écart de sécurité sur ce thème : une question de limite, jamais un compromis.
-      if (
-        !question &&
-        report.divergences.some(
-          (d) => d.theme === theme && SAFETY_QUESTIONS.has(d.questionId),
-        )
-      ) {
-        const pick = pickFresh(
-          arrange(SAFETY_TEMPLATES[day], seed, `${slot}|limite`),
-          mem,
-        );
-        if (pick) {
+        if (fromAi) {
           question = {
+            ...fromAi,
             ...base,
-            text: pick.text,
-            options: ensureAutreOption(pick.options),
-            source: 'divergence',
+            options: ensureAutreOption(fromAi.options),
+            source: 'ia',
           };
         }
       }
 
+      // 3. Écart réel prévu ce jour-là.
+      const divergence = plan.get(slot);
       if (!question && divergence) {
         const pick = pickFresh(
-          [
-            ...topicTemplate(day, divergence),
-            // Les gabarits ciblés citent les réponses : écarts citables seulement.
-            ...(isQuotableDivergence(divergence)
-              ? arrange(targetedPool(day, divergence), seed, `${slot}|div`)
-              : []),
-          ],
+          divergenceCandidates(day, divergence, seed, slot),
           mem,
         );
         if (pick) {
@@ -948,51 +648,47 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
             text: pick.text,
             options: ensureAutreOption(pick.options),
             source: 'divergence',
+            subject: topicKey(divergence),
           };
         }
       }
 
-      if (!question && !preferAi) question = tryAi();
-
+      // 4. Point d'accord réel (deux par jour au plus).
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
-        // Accord citable : jamais une auto-évaluation ; le sujet de la règle,
-        // pas la phrase d'accord (sinon « sur « même réponse sur « … » » »).
-        const convs = report.convergences
-          .filter(
-            (c) =>
-              c.theme === theme &&
-              !SELF_DISCLOSURE_QUESTIONS.has(c.questionId) &&
-              !SAFETY_QUESTIONS.has(c.questionId),
-          )
-          .map((c) => ({ ...c, label: c.topic ?? c.label }));
-        const convergence = convs.length
-          ? convs[(day - 1) % convs.length]
-          : null;
-        if (convergence) {
-          const pool = CONVERGENT[day].map((t) => ({
-            text: t.text(convergence),
-            options: t.options,
-          }));
-          const pick = pickFresh(arrange(pool, seed, `${slot}|conv`), mem);
-          if (pick) {
-            convergenceToday++;
-            question = {
-              ...base,
-              text: pick.text,
-              options: ensureAutreOption(pick.options),
-              source: 'convergence',
-            };
-          }
+        for (const c of convergencesFor(report, theme, day, taken)) {
+          const pick = pickFresh(
+            convergenceCandidates(day, c, seed, slot),
+            mem,
+          );
+          if (!pick) continue;
+          convergenceToday++;
+          markTaken(taken, { ...c, label: c.topic ?? c.label });
+          question = {
+            ...base,
+            text: pick.text,
+            options: ensureAutreOption(pick.options),
+            source: 'convergence',
+            subject: c.questionId,
+          };
+          break;
         }
       }
 
+      // 5. Question du thème ; celles qui touchent un sujet déjà abordé passent en dernier.
       if (!question) {
-        const pool = arrange(genericPool(theme, day), seed, `${slot}|gen`);
-        // Réserve épuisée (au-delà de cinq parcours) : une formulation déjà vue revient.
+        const pool = arrange(THEME_POOL[theme][day], seed, `${slot}|gen`);
+        const touches = (t: PoolTemplate) =>
+          (t.about ?? []).some((id) => taken.has(id));
+        const ordered = [
+          ...pool.filter((t) => !touches(t)),
+          ...pool.filter(touches),
+        ];
+        // Réserve épuisée (au-delà de sept parcours) : une formulation déjà vue revient.
         const tpl =
-          pickFresh(pool, mem) ??
-          pool.find((t) => !mem.usedText.has(normalizeKey(t.text))) ??
-          pool[0];
+          pickFresh(ordered, mem) ??
+          ordered.find((t) => !mem.usedText.has(normalizeKey(t.text))) ??
+          ordered[0];
+        for (const id of tpl.about ?? []) taken.add(id);
         question = {
           ...base,
           text: tpl.text,
@@ -1024,27 +720,44 @@ export function describeReportForAi(
   if (report.divergences.length) {
     lines.push('DIVERGENCES (de la plus grave à la moins grave) :');
     for (const d of report.divergences.slice(0, 12)) {
+      const head = `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label}`;
       if (SAFETY_QUESTIONS.has(d.questionId)) {
         lines.push(
-          `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions de limite et de signal d'arrêt, jamais de compromis ni « comment le rendre vivable ».`,
+          `${head} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions de limite et de protection, jamais de compromis, de réconciliation ni « comment le rendre vivable ».`,
         );
       } else if (!isQuotableDivergence(d)) {
         lines.push(
-          `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : tendance tirée de l'entretien, à explorer sans jamais citer les réponses ni un niveau.`,
+          `${head} : tendance tirée de l'entretien, à explorer sans jamais citer les réponses ni un niveau.`,
+        );
+      } else if (isDeferredDivergence(d)) {
+        lines.push(
+          `${head} : l'un préfère en parler en personne. Ne pas relancer ce sujet.`,
         );
       } else {
-        lines.push(
-          `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »`,
-        );
+        lines.push(`${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »`);
       }
     }
   } else {
     lines.push('Aucune divergence notable détectée dans les entretiens.');
   }
   if (report.convergences.length) {
-    lines.push('CONVERGENCES :');
-    for (const c of report.convergences.slice(0, 6))
-      lines.push(`- ${THEMES[c.theme].label} — ${c.label}`);
+    lines.push('CONVERGENCES (même réponse des deux côtés) :');
+    for (const c of report.convergences.slice(0, 6)) {
+      const head = `- ${THEMES[c.theme].label} — ${c.topic ?? c.label}`;
+      if (SAFETY_QUESTIONS.has(c.questionId)) {
+        lines.push(
+          `${head} : même réponse « ${c.answer} » — LIMITE DE SÉCURITÉ : uniquement des questions de limite, jamais de compromis.`,
+        );
+      } else if (SELF_DISCLOSURE_QUESTIONS.has(c.questionId)) {
+        lines.push(`${head} : même tendance, à explorer sans la citer.`);
+      } else if (isDeferredAgreement(c)) {
+        lines.push(
+          `${head} : les deux préfèrent en parler en personne. Ne pas relancer ce sujet.`,
+        );
+      } else {
+        lines.push(`${head} : même réponse des deux, « ${c.answer} »`);
+      }
+    }
   }
   return lines.join('\n');
 }
