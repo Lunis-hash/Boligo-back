@@ -1,5 +1,6 @@
 import {
   QUESTIONS,
+  QUESTION_INDEX,
   V61_ADDED,
   cleanFreeText,
   isValidAnswer,
@@ -28,16 +29,18 @@ const find = (a: RawAnswers, b: RawAnswers, id: string) =>
   report(a, b).divergences.filter((d) => d.questionId === id);
 
 describe('Questionnaire V6.1 : intégrité', () => {
-  it('ajoute 24 questions, toutes traduites avec le bon nombre d’options', () => {
+  it('ajoute 24 questions, toutes traduites quand elles sont encore posées (V7 : 160 questions)', () => {
     expect(V61_ADDED.size).toBe(24);
     for (const id of V61_ADDED) {
-      const q = QUESTION_BY_ID_FOR_TESTS.get(id)!;
-      expect(q).toBeDefined();
+      expect(QUESTION_INDEX.get(id)).toBeDefined();
+      const q = QUESTION_BY_ID_FOR_TESTS.get(id);
+      // M2_Q21 (« les gens se confient à moi ») est retirée en V7.
+      if (!q) continue;
       const en = QUESTIONS_EN[id];
       expect(en).toBeDefined();
       if (!q.scale) expect(en.options).toHaveLength(q.options.length);
     }
-    expect(QUESTIONS).toHaveLength(139);
+    expect(QUESTIONS).toHaveLength(160);
   });
 
   it('limite les signaux d’alerte à trois réponses', () => {
@@ -57,7 +60,7 @@ describe('Questionnaire V6.1 : intégrité', () => {
   it('ne demande ni corps, ni taille, ni couleur de peau', () => {
     const text = [...V61_ADDED]
       .map((id) => {
-        const q = QUESTION_BY_ID_FOR_TESTS.get(id)!;
+        const q = QUESTION_INDEX.get(id)!;
         return [q.text, ...q.options.map((o) => o.text)].join(' ');
       })
       .join(' ')
@@ -150,8 +153,19 @@ describe('Argent, partage et maladie (V6.1)', () => {
 
 describe('Signaux d’alerte croisés avec les habitudes (V6.1)', () => {
   it('jalousie qui contrôle face à quelqu’un qui fouille souvent le téléphone', () => {
-    const d = find({ M8_Q10: 'B,C' }, { M9_Q11: 'D', M9_Q12: 'E' }, 'M8_Q10');
+    // « Très souvent » confirmé par une autre réponse (partir sans rien
+    // expliquer quand la tension monte) : majeure ; sinon, à explorer.
+    const d = find(
+      { M8_Q10: 'B,C' },
+      { M9_Q11: 'D', M9_Q12: 'E', M6_Q16: 'D' },
+      'M8_Q10',
+    );
     expect(d.map((x) => x.severity).sort()).toEqual(['majeure', 'moderee']);
+    expect(
+      find({ M8_Q10: 'B,C' }, { M9_Q11: 'D', M9_Q12: 'E' }, 'M8_Q10').map(
+        (x) => x.severity,
+      ),
+    ).toEqual(['moderee', 'moderee']);
     expect(d[0].a.text).toMatch(/^Ce qui me ferait fuir/);
     expect(d.find((x) => x.severity === 'majeure')!.b.text).toMatch(
       /très souvent/,
@@ -166,7 +180,8 @@ describe('Signaux d’alerte croisés avec les habitudes (V6.1)', () => {
 
   it('compte la gravité dans le module 8', () => {
     const a = { M8_Q10: 'B', M8_Q01: 'A' };
-    const b = { M9_Q11: 'E', M8_Q01: 'A' };
+    // Fouiller le téléphone « très souvent », confirmé par « transparence totale ».
+    const b = { M9_Q11: 'E', M8_Q01: 'A', M5_Q08: 'A' };
     const m8 = buildModuleAffinities(a, b, report(a, b)).find(
       (m) => m.module === 8,
     )!;

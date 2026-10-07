@@ -1,5 +1,6 @@
 import {
   QUESTIONS,
+  QUESTION_INDEX,
   V6_CHANGES,
   answerText,
   isValidAnswer,
@@ -10,15 +11,16 @@ import { QUESTIONS_EN, localizeQuestion, parseLanguage } from './questions.en';
 const byId = new Map(QUESTIONS.map((q) => [q.id, q]));
 const languages = byId.get('M0_Q10')!;
 
-describe('Questionnaire V6', () => {
+describe('Questionnaire V6, lu par la V7', () => {
   it('a des identifiants uniques et 11 modules', () => {
     const ids = QUESTIONS.map((q) => q.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(QUESTIONS.map((q) => q.moduleNumber)).size).toBe(11);
   });
 
-  it('ne référence que des questions existantes dans le suivi des évolutions', () => {
-    for (const id of Object.keys(V6_CHANGES)) expect(byId.has(id)).toBe(true);
+  it('ne référence que des questions connues (posées ou retirées) dans le suivi des évolutions', () => {
+    for (const id of Object.keys(V6_CHANGES))
+      expect(QUESTION_INDEX.has(id)).toBe(true);
   });
 
   it('dépend uniquement de questions posées avant (même module ou module antérieur)', () => {
@@ -38,7 +40,7 @@ describe('Questionnaire V6', () => {
     expect(isValidAnswer(languages, 'A,A')).toBe(false);
     expect(isValidAnswer(languages, 'A,Z')).toBe(false);
     expect(isValidAnswer(languages, '')).toBe(false);
-    const religion = byId.get('M1_Q05')!;
+    const religion = byId.get('M1_Q16')!;
     expect(isValidAnswer(religion, 'A')).toBe(true);
     expect(isValidAnswer(religion, 'A,B')).toBe(false);
     expect(isValidAnswer(religion, 42)).toBe(false);
@@ -73,8 +75,8 @@ describe('Traduction anglaise', () => {
   });
 
   it('garde les clés de réponse et traduit les échelles', () => {
-    const q = localizeQuestion(byId.get('M2_Q11')!, 'en');
-    expect(q.text).toMatch(/I often worry/);
+    const q = localizeQuestion(byId.get('M2_Q23')!, 'en');
+    expect(q.text).toMatch(/takes a long time to reply/);
     expect(q.options.map((o) => o.key)).toEqual(['A', 'B', 'C', 'D', 'E']);
     expect(q.options[4].text).toBe('Strongly agree');
     const freq = localizeQuestion(byId.get('M6_Q13')!, 'en');
