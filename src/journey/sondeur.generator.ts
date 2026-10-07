@@ -418,10 +418,15 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
 
 /**
  * Formulations propres à l'écart pour ce jour (la principale, puis la
- * variante) : jamais une formulation de compromis sur un point non négociable.
+ * variante) : jamais une formulation de compromis sur un point non négociable,
+ * ni sur un autre sujet d'un thème qui en porte un (`strictTheme`).
  */
-function usableDeep(d: Divergence, day: number): PoolTemplate[] {
-  const strict = isNonNegotiable(d);
+function usableDeep(
+  d: Divergence,
+  day: number,
+  strictTheme = false,
+): PoolTemplate[] {
+  const strict = strictTheme || isNonNegotiable(d);
   return topicDeepAll(d, day).filter((t) => !(strict && t.compromise));
 }
 
@@ -506,32 +511,65 @@ function divergencesForTheme(
 /**
  * Gabarits ciblés d'un jour pour cet écart : risque partagé (même réponse qui
  * pose problème) ou écart de positions. Jamais de gabarit qui suppose de
- * « vivre avec » la différence sur un point non négociable. Aveux et scores :
- * aucun gabarit générique, seulement leurs formulations propres.
+ * « vivre avec » la différence sur un point non négociable, ni dans un thème
+ * qui en porte un. Aveux et scores : aucun gabarit générique, seulement leurs
+ * formulations propres.
  */
-function topicTemplates(day: number, d: Divergence) {
+function topicTemplates(day: number, d: Divergence, strictTheme = false) {
   if (!isQuotableDivergence(d)) return [];
-  if (d.shared) return SHARED_RISK[day];
-  const strict = isNonNegotiable(d);
-  return TARGETED[day].filter((t) => !(strict && t.compromise));
+  const strict = strictTheme || isNonNegotiable(d);
+  const pool = d.shared ? SHARED_RISK[day] : TARGETED[day];
+  return pool.filter((t) => !(strict && t.compromise));
+}
+
+/**
+ * Ouverture d'une question (jusqu'à la première virgule, quatre mots au plus) :
+ * « avant de vous engager », « de 0 à 10 », « dans votre famille »…
+ */
+export function questionOpening(text: string): string {
+  return (text.toLowerCase().split(/[,:?]/)[0] ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 4)
+    .join(' ');
+}
+
+/**
+ * Dans chaque groupe, les formulations dont l'ouverture n'a pas encore servi
+ * ce jour-là passent en premier (ordre conservé) : une journée n'enchaîne pas
+ * trois « Avant de vous engager… » quand une autre tournure existe.
+ */
+function preferNewOpenings(
+  list: PoolTemplate[],
+  usedOpenings: Set<string>,
+): PoolTemplate[] {
+  const fresh = (t: PoolTemplate) => !usedOpenings.has(questionOpening(t.text));
+  return [...list.filter(fresh), ...list.filter((t) => !fresh(t))];
 }
 
 /**
  * Formulations d'un jour pour un écart : les formulations propres d'abord
- * (sauf un compromis sur un point non négociable), puis les gabarits ciblés.
+ * (sauf un compromis sur un point non négociable ou dans son thème), puis les
+ * gabarits ciblés ; dans chacun des deux groupes, une ouverture neuve ce
+ * jour-là d'abord (jamais un gabarit avant une formulation propre).
  */
 function divergenceCandidates(
   day: number,
   d: Divergence,
   seed: string | undefined,
   slot: string,
+  strictTheme: boolean,
+  usedOpenings: Set<string>,
 ): PoolTemplate[] {
   const words = topicWords(topicPhrase(d));
-  const generic = topicTemplates(day, d).map((t) => ({
+  const generic = topicTemplates(day, d, strictTheme).map((t) => ({
     text: t.text(words),
     options: t.options,
   }));
-  return [...usableDeep(d, day), ...arrange(generic, seed, `${slot}|div`)];
+  return [
+    ...preferNewOpenings(usableDeep(d, day, strictTheme), usedOpenings),
+    ...preferNewOpenings(arrange(generic, seed, `${slot}|div`), usedOpenings),
+  ];
 }
 
 const SEVERITY_RANK: Record<Severity, number> = {
@@ -551,13 +589,15 @@ function dayFor(
   d: Divergence,
   plan: Map<string, Divergence>,
   reserved: Set<string>,
+  strictTheme: boolean,
 ): number | undefined {
   const fits = (day: number) => {
     const slot = `${day}|${d.theme}`;
     return (
       !plan.has(slot) &&
       !reserved.has(slot) &&
-      (usableDeep(d, day).length > 0 || topicTemplates(day, d).length > 0)
+      (usableDeep(d, day, strictTheme).length > 0 ||
+        topicTemplates(day, d, strictTheme).length > 0)
     );
   };
   const preferred = topicDays(d);
@@ -581,6 +621,7 @@ function planDivergences(
   report: DivergenceReport,
   reserved: Set<string>,
   excluded: Set<string>,
+  strictThemes: Set<Theme>,
 ): Map<string, Divergence> {
   const plan = new Map<string, Divergence>();
   const planned = new Set<string>();
@@ -597,7 +638,7 @@ function planDivergences(
   for (const d of ordered) {
     const related = relatedTopics(d);
     if (related.some((k) => planned.has(k))) continue;
-    const day = dayFor(d, plan, reserved);
+    const day = dayFor(d, plan, reserved, strictThemes.has(d.theme));
     if (!day) continue;
     plan.set(`${day}|${d.theme}`, d);
     for (const k of related) planned.add(k);
@@ -635,15 +676,21 @@ function convergencesFor(
       !(childFree && agreementFor(c).needsChildren) &&
       topicDays({ ...c, label: c.topic ?? c.label }).includes(day),
   );
+  const hasProbe = (c: Convergence) => {
+    const a = agreementFor(c);
+    return !!(a.probe || a.probeVariant);
+  };
   return [
-    ...eligible.filter((c) => agreementFor(c).probe),
-    ...eligible.filter((c) => !agreementFor(c).probe),
+    ...eligible.filter(hasProbe),
+    ...eligible.filter((c) => !hasProbe(c)),
   ];
 }
 
 /**
- * Formulations d'un accord : la phrase qui le nomme, puis une question. Sans
- * phrase (risque partagé non signalé), la question propre seule.
+ * Formulations d'un accord : la phrase qui le nomme, puis une question (la
+ * relance propre, sa variante pour un membre qui l'a déjà vue, puis les
+ * questions d'accord du jour). Sans phrase (risque partagé non signalé), les
+ * relances propres seules.
  */
 function convergenceCandidates(
   day: number,
@@ -651,20 +698,23 @@ function convergenceCandidates(
   seed: string | undefined,
   slot: string,
 ): PoolTemplate[] {
-  const { statement, probe } = agreementFor(c);
-  if (!statement) return probe ? [probe] : [];
+  const { statement, probe, probeVariant } = agreementFor(c);
+  // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
+  // solidité d'un accord que les deux tiennent pour essentiel, ni par une
+  // relance propre ni par une question générique.
+  const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
+  const allowed = (t: PoolTemplate) => !(strict && t.technique === 'limite');
+  const own = [probe, probeVariant].filter(
+    (t): t is PoolTemplate => !!t && allowed(t),
+  );
+  if (!statement) return own;
   const withStatement = (t: PoolTemplate) => ({
     text: `${statement} ${t.text}`,
     options: t.options,
   });
-  // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
-  // solidité d'un accord que les deux tiennent pour essentiel.
-  const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
-  const generic = CONVERGENT[day].filter(
-    (t) => !(strict && t.technique === 'limite'),
-  );
+  const generic = CONVERGENT[day].filter(allowed);
   return [
-    ...(probe ? [withStatement(probe)] : []),
+    ...own.map(withStatement),
     ...arrange(generic.map(withStatement), seed, `${slot}|conv`),
   ];
 }
@@ -715,7 +765,12 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   // L'un ne veut pas d'enfants : aucune question qui en suppose.
   const childFree = isChildFree(report.divergences, report.convergences);
   const excluded = childFree ? CHILDREN_TOPICS : new Set<string>();
-  const plan = planDivergences(report, reserved, excluded);
+  // Thèmes qui portent un écart non négociable : aucune question du thème qui
+  // suppose de « vivre avec » la différence, même sur un sujet voisin.
+  const strictThemes = new Set(
+    report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
+  );
+  const plan = planDivergences(report, reserved, excluded, strictThemes);
   // Sujets déjà abordés ou prévus (et leurs voisins) : on ne les repose pas un
   // autre jour.
   const taken = new Set<string>(excluded);
@@ -723,16 +778,13 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   if (controlTheme)
     markTaken(taken, { questionId: 'M5_Q08', label: '', theme: 'intimite' });
   const safetyThemes = new Set(safetyThemesOf(report));
-  // Thèmes qui portent un écart non négociable : aucune question du thème qui
-  // suppose de « vivre avec » la différence.
-  const strictThemes = new Set(
-    report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
-  );
 
   for (let day = 1; day <= SONDEUR_DAYS; day++) {
     const angle = DAY_ANGLES[day];
     let convergenceToday = 0;
     const openingsToday = new Set<string>();
+    // Ouvertures des questions déjà retenues ce jour-là (toutes sources).
+    const questionOpenings = new Set<string>();
     for (const theme of THEME_LIST) {
       const slot = `${day}|${theme}`;
       const base = {
@@ -790,7 +842,14 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       const divergence = plan.get(slot);
       if (!question && divergence) {
         const pick = pickFresh(
-          divergenceCandidates(day, divergence, seed, slot),
+          divergenceCandidates(
+            day,
+            divergence,
+            seed,
+            slot,
+            strictThemes.has(theme),
+            questionOpenings,
+          ),
           mem,
         );
         if (pick) {
@@ -851,8 +910,11 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         const touches = (t: PoolTemplate) =>
           (t.about ?? []).some((id) => taken.has(id));
         const ordered = [
-          ...pool.filter((t) => !touches(t)),
-          ...pool.filter(touches),
+          ...preferNewOpenings(
+            pool.filter((t) => !touches(t)),
+            questionOpenings,
+          ),
+          ...preferNewOpenings(pool.filter(touches), questionOpenings),
         ];
         // Réserve épuisée (au-delà de sept parcours) : une formulation déjà vue revient.
         const tpl =
@@ -868,6 +930,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         };
       }
 
+      questionOpenings.add(questionOpening(question.text));
       mem.usedText.add(normalizeKey(question.text));
       mem.usedSig.add(questionSignature(question.text));
       mem.raw.push(question.text);
