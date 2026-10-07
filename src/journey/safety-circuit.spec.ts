@@ -298,6 +298,11 @@ describe('Signal du Sondeur confirmé par la modération', () => {
         ),
         updateMany: jest.fn(() => Promise.resolve({ count: 1 })),
       },
+      user: {
+        findUnique: jest.fn(() =>
+          Promise.resolve({ city: 'Abidjan, Côte d’Ivoire' }),
+        ),
+      },
     };
     const notifications = {
       sendPushNotification: jest.fn(() => Promise.resolve()),
@@ -361,7 +366,9 @@ describe('Signal du Sondeur confirmé par la modération', () => {
       notifications.sendPushNotification.mock.calls as unknown as string[][]
     ).find((c) => c[0] === 'b');
     expect(toAuthor?.[3]).toMatch(/pause/);
-    expect(toAuthor?.[3]).toMatch(/3114/);
+    // Numéros du pays de l'auteur (Côte d'Ivoire), pas ceux de la France.
+    expect(toAuthor?.[3]).toMatch(/143 \(aide psychologique/);
+    expect(toAuthor?.[3]).not.toMatch(/3114/);
   });
 
   it('confidence de violence subie, ou fausse alerte : rien n’est clos', async () => {

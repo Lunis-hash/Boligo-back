@@ -712,6 +712,16 @@ export class AdminService {
     // Détresse confirmée : une pause pour prendre soin de soi, pas une
     // sanction ; le message d'aide est renvoyé.
     const distress = signal.categories.includes('detresse');
+    // Numéros d'aide du pays de l'auteur (« Ville, Pays »).
+    const authorCity = distress
+      ? await this.prisma.user
+          .findUnique({
+            where: { id: signal.authorId },
+            select: { city: true },
+          })
+          .then((u) => u?.city ?? null)
+          .catch(() => null)
+      : null;
     for (const memberId of [journey.userAId, journey.userBId]) {
       const refunded = refundTo.includes(memberId)
         ? await this.credits.refundJourneyOnce(
@@ -723,7 +733,7 @@ export class AdminService {
       const author = memberId === signal.authorId;
       const text =
         distress && author
-          ? `L’équipe BOLIGO a mis ce parcours en pause pour que vous puissiez prendre soin de vous.${refunded ? ' Votre crédit vous a été rendu : vous pourrez reprendre quand vous le souhaiterez.' : ''} ${supportMessages(['detresse']).join(' ')}`
+          ? `L’équipe BOLIGO a mis ce parcours en pause pour que vous puissiez prendre soin de vous.${refunded ? ' Votre crédit vous a été rendu : vous pourrez reprendre quand vous le souhaiterez.' : ''} ${supportMessages(['detresse'], authorCity).join(' ')}`
           : `L’équipe BOLIGO a mis fin à votre parcours.${refunded ? ' Votre crédit vous a été rendu.' : ''} Elle reste joignable depuis votre profil.`;
       await this.notificationService
         .sendPushNotification(

@@ -11,6 +11,7 @@ import { NotificationService } from '../notifications/notification.service';
 import { EmailService } from '../common/email.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { COMPROMISE, similarQuestions } from './clinical-lens';
+import { HelpLines, helpLinesFor } from './help-lines';
 import { SAFETY_QUESTIONS, describeReportForAi } from './sondeur.generator';
 import {
   AlertCategory,
@@ -59,48 +60,81 @@ export const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
 };
 
 /**
- * Messages privés de ressources d'aide, sans rien commenter. Numéros
- * français (gratuits, 24 h/24) ; ailleurs, une association du pays (jamais
- * un renvoi vers la police seule : il n'est pas sûr partout). La liste des
- * ressources par pays reste à faire valider par l'équipe.
+ * Messages privés de ressources d'aide, sans rien commenter. Quand le pays du
+ * membre est connu, ses numéros (help-lines.ts) ; sinon, les numéros français
+ * et, ailleurs, une association du pays. Jamais un renvoi vers la police
+ * seule : il n'est pas sûr partout.
  */
-const DISTRESS_SUPPORT =
-  "Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e) : en France, le 3114 répond 24 h/24, gratuitement. Ailleurs, une ligne d'écoute de votre pays ou les secours peuvent vous aider. L'équipe BOLIGO reste joignable depuis votre profil.";
-const VICTIM_SUPPORT =
-  "Vous avez évoqué des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, une association d'aide aux victimes de votre pays peut vous écouter ; en cas de danger immédiat, appelez les secours. L'équipe BOLIGO reste joignable depuis votre profil.";
-/** Menace, contrôle, violence sans sujet clair : ni victime ni auteur présumés. */
-const FEAR_SUPPORT =
-  "Une de vos réponses touche à la peur, aux menaces ou au contrôle dans un couple. Si vous le vivez ou l'avez vécu : en France, le 3919 répond gratuitement et anonymement, 24 h/24 ; ailleurs, une association d'aide aux victimes de votre pays. Si vous craignez vos propres réactions, parlez-en à un professionnel ou à une association. En cas de danger immédiat, appelez les secours. L'équipe BOLIGO reste joignable depuis votre profil.";
-const AUTHOR_SUPPORT =
-  "Une de vos réponses évoque des gestes violents. Si vous craignez vos propres réactions, parlez-en à un professionnel de santé ou à une association d'aide ; en cas de danger, appelez les secours de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.";
+type SupportKind = 'distress' | 'victim' | 'fear' | 'author';
+
+const DEFAULT_SUPPORT: Record<SupportKind, string> = {
+  distress:
+    "Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e) : en France, le 3114 répond 24 h/24, gratuitement. Ailleurs, une ligne d'écoute de votre pays ou les secours peuvent vous aider. L'équipe BOLIGO reste joignable depuis votre profil.",
+  victim:
+    "Vous avez évoqué des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, une association d'aide aux victimes de votre pays peut vous écouter ; en cas de danger immédiat, appelez les secours. L'équipe BOLIGO reste joignable depuis votre profil.",
+  // Menace, contrôle, violence sans sujet clair : ni victime ni auteur présumés.
+  fear: "Une de vos réponses touche à la peur, aux menaces ou au contrôle dans un couple. Si vous le vivez ou l'avez vécu : en France, le 3919 répond gratuitement et anonymement, 24 h/24 ; ailleurs, une association d'aide aux victimes de votre pays. Si vous craignez vos propres réactions, parlez-en à un professionnel ou à une association. En cas de danger immédiat, appelez les secours. L'équipe BOLIGO reste joignable depuis votre profil.",
+  author:
+    "Une de vos réponses évoque des gestes violents. Si vous craignez vos propres réactions, parlez-en à un professionnel de santé ou à une association d'aide ; en cas de danger, appelez les secours de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
+};
+
+const CLOSING = "L'équipe BOLIGO reste joignable depuis votre profil.";
+
+/** Les mêmes messages, avec les numéros du pays du membre. */
+function localSupport(l: HelpLines): Record<SupportKind, string> {
+  const emergency = `En cas de danger immédiat, appelez les secours : ${l.emergency}.`;
+  const distressNote = l.distressNote ? ` ${l.distressNote}` : '';
+  const violenceNote = l.violenceNote ? ` ${l.violenceNote}` : '';
+  const victimLine = l.violence
+    ? `${l.violence}, ou une association d'aide aux victimes de votre pays`
+    : "une association d'aide aux victimes de votre pays, gratuitement et en toute confidentialité";
+  return {
+    distress: `Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e). ${
+      l.distress
+        ? `Ligne d'écoute (${l.name}) : ${l.distress}.${distressNote}`
+        : "Parlez-en à une personne de confiance, à un médecin ou à une association d'écoute de votre pays."
+    } ${emergency} ${CLOSING}`,
+    victim: `Vous avez évoqué des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler (${l.name}) : ${victimLine}.${
+      l.violence ? violenceNote : ''
+    } ${emergency} ${CLOSING}`,
+    fear: `Une de vos réponses touche à la peur, aux menaces ou au contrôle dans un couple. Si vous le vivez ou l'avez vécu (${l.name}) : ${victimLine}.${
+      l.violence ? violenceNote : ''
+    } Si vous craignez vos propres réactions, parlez-en à un professionnel ou à une association. ${emergency} ${CLOSING}`,
+    author: `Une de vos réponses évoque des gestes violents. Si vous craignez vos propres réactions, parlez-en à un professionnel de santé ou à une association d'aide. ${emergency} ${CLOSING}`,
+  };
+}
 
 /** Ordre de priorité : la détresse d'abord, l'auteur de gestes violents en dernier. */
-const SUPPORT_ORDER: Array<[DangerCategory | AlertCategory, string]> = [
-  ['detresse', DISTRESS_SUPPORT],
-  ['violence_subie', VICTIM_SUPPORT],
-  ['violence', FEAR_SUPPORT],
-  ['menace', FEAR_SUPPORT],
-  ['controle', FEAR_SUPPORT],
-  ['violence_exercee', AUTHOR_SUPPORT],
+const SUPPORT_ORDER: Array<[DangerCategory | AlertCategory, SupportKind]> = [
+  ['detresse', 'distress'],
+  ['violence_subie', 'victim'],
+  ['violence', 'fear'],
+  ['menace', 'fear'],
+  ['controle', 'fear'],
+  ['violence_exercee', 'author'],
 ];
 
 /**
  * Messages d'aide pour ces catégories, du plus urgent au moins urgent : une
- * détresse n'est jamais effacée par une violence évoquée en même temps.
+ * détresse n'est jamais effacée par une violence évoquée en même temps. Le
+ * lieu (« Ville, Pays ») choisit les numéros du pays du membre.
  */
-export function supportMessages(categories: string[]): string[] {
-  let messages = [
+export function supportMessages(
+  categories: string[],
+  city?: string | null,
+): string[] {
+  let kinds = [
     ...new Set(
-      SUPPORT_ORDER.filter(([c]) => categories.includes(c)).map(([, m]) => m),
+      SUPPORT_ORDER.filter(([c]) => categories.includes(c)).map(([, k]) => k),
     ),
   ];
   // Le message aux victimes couvre déjà la peur ; celui sur la peur couvre
   // déjà l'auteur qui craint ses réactions.
-  if (messages.includes(VICTIM_SUPPORT))
-    messages = messages.filter((m) => m !== FEAR_SUPPORT);
-  if (messages.includes(FEAR_SUPPORT))
-    messages = messages.filter((m) => m !== AUTHOR_SUPPORT);
-  return messages;
+  if (kinds.includes('victim')) kinds = kinds.filter((k) => k !== 'fear');
+  if (kinds.includes('fear')) kinds = kinds.filter((k) => k !== 'author');
+  const lines = helpLinesFor(city);
+  const text = lines ? localSupport(lines) : DEFAULT_SUPPORT;
+  return kinds.map((k) => text[k]);
 }
 
 /** Catégories d'un signalement, lisibles par le code (« catégories=[a,b] »). */
@@ -966,6 +1000,19 @@ export class JourneyInsightsService {
     );
   }
 
+  /** Lieu « Ville, Pays » du membre, pour ses numéros d'aide ; null si illisible. */
+  private async cityOf(userId: string): Promise<string | null> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { city: true },
+      });
+      return user?.city ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Message privé de ressources d'aide à l'auteur ; un message déjà envoyé
    * dans ce parcours ne l'est pas de nouveau.
@@ -976,8 +1023,11 @@ export class JourneyInsightsService {
     categories: string[],
     alreadySent: string[],
   ) {
-    const sent = new Set(supportMessages(alreadySent));
-    const support = supportMessages(categories).filter((m) => !sent.has(m));
+    const city = await this.cityOf(authorId);
+    const sent = new Set(supportMessages(alreadySent, city));
+    const support = supportMessages(categories, city).filter(
+      (m) => !sent.has(m),
+    );
     if (support.length === 0) return;
     // Écran verrouillé : rien de sensible dans la notification (un agresseur
     // peut la voir) ; le message complet est dans l'app.
