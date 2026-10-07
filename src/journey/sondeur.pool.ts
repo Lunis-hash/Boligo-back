@@ -635,6 +635,19 @@ export function isContradictedAgreement(
   );
 }
 
+/**
+ * Famille recomposée (enfants d'une autre union) : écartée, écart comme
+ * accord, quand aucun des deux n'a d'enfant.
+ */
+export const RECOMPOSED_TOPICS = new Set(['M0_Q05', 'M3_Q04']);
+
+/** Aucun des deux n'a d'enfant d'après ses réponses (M0_Q05 = A des deux côtés). */
+export function hasNoChildren(convergences: Convergence[]): boolean {
+  return convergences.some(
+    (c) => c.questionId === 'M0_Q05' && agreementKey(c) === 'A',
+  );
+}
+
 /** Questions factuelles (enfants déjà nés) : une même réponse n'est pas un accord. */
 const FACT_QUESTIONS = new Set(['M0_Q05']);
 

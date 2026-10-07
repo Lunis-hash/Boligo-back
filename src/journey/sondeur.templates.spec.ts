@@ -51,6 +51,7 @@ import {
   CHILDREN_TOPICS,
   CONVERGENT,
   PoolTemplate,
+  RECOMPOSED_TOPICS,
   SHARED_RISK,
   TARGETED,
   THEME_FALLBACK_PHRASES,
@@ -693,10 +694,21 @@ describe('Tournures de sujet (TOPIC_PHRASES)', () => {
     const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'v7' });
     expect(validateSondeurGrid(qs)).toBe(true);
     expectClean(qs.map((q) => ({ where: q.themeKey, text: q.text })));
-    const intimite = qs.filter(
-      (q) => q.themeKey === 'intimite' && q.source === 'divergence',
-    );
-    expect(intimite.map((q) => q.day)).toEqual([3]);
+    // Famille : la tournure de repli dans un gabarit ciblé.
+    expect(
+      qs.some(
+        (q) =>
+          q.themeKey === 'famille' &&
+          q.source === 'divergence' &&
+          q.text.includes(THEME_FALLBACK_PHRASES.famille),
+      ),
+    ).toBe(true);
+    // Intimité : jamais de gabarit générique, même pour une règle inconnue ;
+    // sans formulation propre, le créneau prend une question du thème.
+    const intimite = qs.filter((q) => q.themeKey === 'intimite');
+    expect(intimite.filter((q) => q.source === 'divergence')).toEqual([]);
+    for (const q of intimite)
+      expect(THEME_POOL.intimite[q.day].map((t) => t.text)).toContain(q.text);
   });
 
   it('accord sans phrase écrite : aucune question d’accord générique', () => {
@@ -1250,6 +1262,29 @@ const DEEP_TEXTS = new Set(
 const BEFORE_COMMITMENT =
   /avant (?:de vous engager|tout engagement|un engagement|de vivre|de partager|même|de dire oui|de vous dire oui|une vie commune|d['’]unir vos vies)|pour une vie à deux|au quotidien, à deux/iu;
 
+/**
+ * Formules d'angle qui ne doivent pas revenir trois fois dans une journée
+ * (liste indépendante de celle du générateur).
+ */
+const ANGLE_FORMULAS: RegExp[] = [
+  /avant (?:de vous engager|de s['’]engager|tout engagement|un engagement)/iu,
+  /avant (?:de vivre|une vie commune|de partager un foyer)/iu,
+  /avant de (?:vous )?dire oui/iu,
+  /avant d['’]unir vos vies/iu,
+  /pour une vie à deux/iu,
+  /au quotidien, à deux/iu,
+];
+
+/** Une journée où une même formule d'angle revient trois fois ou plus. */
+function repeatsFormula(questions: SondeurQuestion[]): boolean {
+  return [1, 2, 3].some((day) =>
+    ANGLE_FORMULAS.some(
+      (re) =>
+        questions.filter((q) => q.day === day && re.test(q.text)).length >= 3,
+    ),
+  );
+}
+
 /** Textes de la réserve étiquetés « compromis » (thème et formulations propres). */
 const COMPROMISE_TEXTS = new Set([
   ...THEME_LIST.flatMap((theme) =>
@@ -1291,6 +1326,17 @@ function suggestsCompromise(
     COMPROMISE.test(probe)
   );
 }
+
+/** Thème intimité : rien de ce qui pousse à s'accommoder ou parle de dispute. */
+const INTIMACY_PRESSURE =
+  /dispute|premier pas|réconcili|passer la nuit|attendriez-vous de vous-même/iu;
+
+/** Famille recomposée : sujet ou tournure. */
+const isRecomposed = (q: SondeurQuestion) =>
+  RECOMPOSED_TOPICS.has(q.subject ?? '') ||
+  /famille recomposée|enfants déjà là|beau-parent|l'enfant de l'un/iu.test(
+    q.text,
+  );
 
 /** Formulations de compromis possibles pour un écart (propres et ciblées). */
 function compromiseTextsFor(d: Divergence): Set<string> {
@@ -1703,6 +1749,124 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
     expect([...served, ...combos]).toEqual([]);
   });
 
+  it('intimité : aucun gabarit générique, jamais de dispute, de premier pas, de réconciliation ni de « ne pas laisser passer la nuit »', () => {
+    // Écrit à l'avance : questions du thème et formulations des sujets de
+    // désir, de tendresse et d'attirance, grille cachée comprise.
+    const DESIRE = [
+      'M6_Q06',
+      'M6_Q07',
+      'M9_Q07',
+      'M10_Q15',
+      'M10_Q16',
+      'M10_Q17',
+      'M10_Q18',
+    ];
+    const ACCOMMODATE =
+      /proposer un moment|écouter son besoin|me forcer|faire un effort|céder|m'adapter/iu;
+    const written = [
+      ...[1, 2, 3].flatMap((day) => THEME_POOL.intimite[day]),
+      ...DESIRE.flatMap((id) =>
+        [1, 2, 3].flatMap((day) =>
+          topicDeepAll({ questionId: id, label: '', theme: 'intimite' }, day),
+        ),
+      ),
+    ];
+    expect(written.length).toBeGreaterThan(30);
+    expect(
+      written
+        .filter(
+          (t) =>
+            INTIMACY_PRESSURE.test(t.text) ||
+            ACCOMMODATE.test(t.options.join(' | ')),
+        )
+        .map((t) => t.text),
+    ).toEqual([]);
+    // Servi : seulement des formulations propres au sujet, ou une question du
+    // thème intimité.
+    const bad: string[] = [];
+    let intimacy = 0;
+    for (const { report, questions, where } of passes)
+      for (const q of questions) {
+        if (q.themeKey !== 'intimite') continue;
+        intimacy++;
+        if (INTIMACY_PRESSURE.test(q.text)) bad.push(`${where} : ${q.text}`);
+        if (
+          q.source === 'divergence' &&
+          q.subject !== 'controle' &&
+          !DEEP_TEXTS.has(q.text)
+        )
+          bad.push(`${where} générique : ${q.text}`);
+        if (q.source === 'convergence') {
+          const a = agreementFor(agreementOf(report, q));
+          const own = ownProbes(a).map((t) =>
+            joinAgreement(a.statement, t.text),
+          );
+          if (!own.includes(q.text)) bad.push(`${where} accord : ${q.text}`);
+        }
+      }
+    expect(intimacy).toBe(passes.length * 3);
+    expect(bad).toEqual([]);
+    // Écart de désir dont les formulations propres ont déjà été vues : une
+    // question du thème intimité, jamais un gabarit de dispute.
+    // Même réponse à risque des deux côtés (« c'est à l'autre de s'adapter ») :
+    // le cas qui recevait les gabarits de dispute et de premier pas.
+    const desire = buildDivergenceReport({ M10_Q18: 'D' }, { M10_Q18: 'D' });
+    const seen = topicDeepAll(desire.divergences[0], 3).map((t) => t.text);
+    expect(seen.length).toBeGreaterThanOrEqual(3);
+    const again = assembleSondeur({
+      report: desire,
+      firstNames: ['A', 'B'],
+      seed: 'desir',
+      history: seen,
+    });
+    const slot = again.find((q) => q.day === 3 && q.themeKey === 'intimite')!;
+    expect(slot.source).toBe('gabarit');
+    expect(THEME_POOL.intimite[3].map((t) => t.text)).toContain(slot.text);
+  });
+
+  it('famille recomposée : jamais servie quand aucun des deux n’a d’enfant', () => {
+    const noChildren = passes.filter(
+      ({ a, b }) => a.M0_Q05 === 'A' && b.M0_Q05 === 'A',
+    );
+    expect(noChildren.length).toBeGreaterThan(100);
+    expect(
+      noChildren.flatMap(({ questions, where }) =>
+        questions.filter(isRecomposed).map((q) => `${where} : ${q.text}`),
+      ),
+    ).toEqual([]);
+    // Dès que l'un des deux a un enfant, le sujet reste exploré.
+    expect(
+      passes.some(
+        ({ a, b, questions }) =>
+          (a.M0_Q05 !== 'A' || b.M0_Q05 !== 'A') &&
+          questions.some((q) => RECOMPOSED_TOPICS.has(q.subject ?? '')),
+      ),
+    ).toBe(true);
+    const none = buildDivergenceReport(
+      { M0_Q05: 'A', M3_Q04: 'B' },
+      { M0_Q05: 'A', M3_Q04: 'B' },
+    );
+    const withChild = buildDivergenceReport(
+      { M0_Q05: 'B', M3_Q04: 'B' },
+      { M0_Q05: 'A', M3_Q04: 'B' },
+    );
+    for (let i = 0; i < 10; i++) {
+      const seed = `r${i}`;
+      expect(
+        assembleSondeur({ report: none, firstNames: ['A', 'B'], seed }).some(
+          isRecomposed,
+        ),
+      ).toBe(false);
+      expect(
+        assembleSondeur({
+          report: withChild,
+          firstNames: ['A', 'B'],
+          seed,
+        }).some((q) => RECOMPOSED_TOPICS.has(q.subject ?? '')),
+      ).toBe(true);
+    }
+  });
+
   it('aucune question de compromis, étiquetée ou non, dans un thème qui porte un écart non négociable', () => {
     // Les gabarits qui suggèrent un arrangement sont étiquetés.
     for (const text of [
@@ -1732,6 +1896,135 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
     }
     expect(strictServed).toBeGreaterThan(10000);
     expect(served).toEqual([]);
+  });
+
+  it('aucune question double ni plan de mise en sécurité servi', () => {
+    const served = passes.flatMap(({ questions, where }) =>
+      questions
+        .filter((q) => isDoubleQuestion(q.text) || PROTECTION_PLAN.test(q.text))
+        .map((q) => `${where} : ${q.text}`),
+    );
+    expect(served).toEqual([]);
+  });
+
+  it('une même formule d’angle revient trois fois dans une journée dans moins de 1 % des Sondeurs', () => {
+    const repeated = passes.filter(({ questions }) =>
+      repeatsFormula(questions),
+    );
+    const share = (100 * repeated.length) / passes.length;
+    console.log(
+      `Sondeurs avec une formule d'angle répétée trois fois dans une journée : ${repeated.length}/${passes.length} = ${share.toFixed(2)} %`,
+    );
+    expect(share).toBeLessThan(1);
+  });
+});
+
+// ─── Trois parcours d'un même membre, trois partenaires ──────────────────────
+
+describe('Simulation réaliste : un membre garde ses réponses et change de partenaire', () => {
+  const rand = rng(20261009);
+  /** Partenaire : une part de réponses identiques à celles du membre. */
+  const partnerOf = (a: RawAnswers, same: number): RawAnswers => {
+    const b: RawAnswers = {};
+    for (const q of QUESTIONS)
+      b[q.id] = rand() < same ? a[q.id] : randomAnswer(rand, q);
+    return b;
+  };
+  const passes = Array.from({ length: 300 }, (_, i) => {
+    const a: RawAnswers = {};
+    for (const q of QUESTIONS) a[q.id] = randomAnswer(rand, q);
+    const same = [0, 0.6, 0.8][i % 3];
+    // L'historique reprend toutes les questions déjà vues par le membre.
+    const history: string[] = [];
+    return [1, 2, 3].map((pass) => {
+      const b = partnerOf(a, same);
+      const report = buildDivergenceReport(a, b);
+      const questions = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: `m${i}-${pass}`,
+        history: [...history],
+      });
+      history.push(...questions.map((q) => q.text));
+      return { a, b, report, questions, pass, where: `membre ${i} P${pass}` };
+    });
+  }).flat();
+  const ofPass = (pass: number) => passes.filter((p) => p.pass === pass);
+
+  it('au 3e parcours : moins de 3 % d’écarts et moins de 5 % d’accords en question générique, sans dégrader les deux premiers', () => {
+    for (const pass of [1, 2, 3]) {
+      let div = 0;
+      let divGeneric = 0;
+      let conv = 0;
+      let convGeneric = 0;
+      for (const { report, questions } of ofPass(pass))
+        for (const q of questions) {
+          if (
+            q.source === 'divergence' &&
+            q.subject !== 'securite' &&
+            q.subject !== 'controle'
+          ) {
+            div++;
+            if (!DEEP_TEXTS.has(q.text)) divGeneric++;
+          }
+          if (q.source === 'convergence') {
+            const c = report.convergences.find(
+              (x) => x.questionId === q.subject,
+            )!;
+            const a = agreementFor(c);
+            conv++;
+            if (
+              !ownProbes(a)
+                .map((t) => joinAgreement(a.statement, t.text))
+                .includes(q.text)
+            )
+              convGeneric++;
+          }
+        }
+      const divShare = (100 * divGeneric) / div;
+      const convShare = (100 * convGeneric) / conv;
+      console.log(
+        `Parcours ${pass} (réaliste, 300 membres) : écarts génériques ${divGeneric}/${div} = ${divShare.toFixed(1)} %, accords génériques ${convGeneric}/${conv} = ${convShare.toFixed(1)} %`,
+      );
+      expect(div).toBeGreaterThan(2000);
+      expect(conv).toBeGreaterThan(900);
+      expect(divShare).toBeLessThan(pass === 3 ? 3 : 1);
+      expect(convShare).toBeLessThan(pass === 3 ? 5 : 1);
+    }
+  });
+
+  it('aucun plan de mise en sécurité, aucune question double, aucun compromis dans un thème non négociable', () => {
+    const bad: string[] = [];
+    for (const { report, questions, where } of passes) {
+      const strictThemes = new Set(
+        report.divergences
+          .filter((d) => isNonNegotiable(d))
+          .map((d) => d.theme),
+      );
+      for (const q of questions) {
+        if (PROTECTION_PLAN.test(q.text)) bad.push(`${where} plan : ${q.text}`);
+        if (isDoubleQuestion(q.text)) bad.push(`${where} double : ${q.text}`);
+        if (strictThemes.has(q.themeKey) && suggestsCompromise(report, q))
+          bad.push(`${where} compromis : ${q.text}`);
+        if (q.themeKey === 'intimite' && INTIMACY_PRESSURE.test(q.text))
+          bad.push(`${where} intimité : ${q.text}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('famille recomposée jamais servie sans enfant ; formule d’angle répétée trois fois dans moins de 1 % des Sondeurs', () => {
+    expect(
+      passes
+        .filter(({ a, b }) => a.M0_Q05 === 'A' && b.M0_Q05 === 'A')
+        .flatMap(({ questions, where }) =>
+          questions.filter(isRecomposed).map((q) => `${where} : ${q.text}`),
+        ),
+    ).toEqual([]);
+    const repeated = passes.filter(({ questions }) =>
+      repeatsFormula(questions),
+    );
+    expect((100 * repeated.length) / passes.length).toBeLessThan(1);
   });
 });
 
