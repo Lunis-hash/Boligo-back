@@ -14,7 +14,20 @@ import {
   buildDivergenceReport,
 } from '../matching/divergence.engine';
 import { RED_FLAG_HABITS } from '../psychometrics/psychometrics';
-import { hasClinicalJargon, similarQuestions } from './clinical-lens';
+import {
+  BODY_HEALTH,
+  MORALE,
+  MORALE_PREFIX,
+  PAINFUL_STORY,
+  SEXUAL_DETAIL,
+  SHARED_PAST,
+  TUTOIEMENT,
+  ULTIMATUM,
+  VOUVOIEMENT,
+  hasClinicalJargon,
+  passesFormRules,
+  similarQuestions,
+} from './clinical-lens';
 import {
   DAY_ANGLES,
   SAFETY_QUESTIONS,
@@ -69,104 +82,13 @@ const OPEN = new RegExp(
   'iu',
 );
 
-const ULTIMATUM = prefix(
-  'partiriez|quitteriez|resteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez',
-);
-const MORALE = word(
-  "devriez|devrait|devraient|doit|doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
-);
-const MORALE_PREFIX = prefix('égoïs|caprice|capricieu');
-const SHARED_PAST = prefix(
-  "vous vous êtes|depuis que vous|votre dernière|vos dernières|la dernière fois que vous|votre première dispute|votre relation|votre couple|cette relation|vos disputes|vous vous connaissez|vous avez vécu ensemble|votre partenaire|l'un de vous a répondu",
-);
 const BRANDS = word(
   'tinder|meetic|bumble|hinge|happn|badoo|okcupid|whatsapp|zoom|facetime|skype|instagram|facebook|snapchat|tiktok|google|apple|netflix|uber|airbnb|groq|openrouter|claude|chatgpt|openai|gpt',
-);
-const BODY_HEALTH = new RegExp(
-  `(?<!${L})(?:corps|physique|apparence|allure|poids|taille|beauté|beau(?![${'\\p{L}'}-])|belle(?![${'\\p{L}'}-])|sexy|malad|handicap|santé|médic|médecin|enceinte|grossesse|fertil|stéril|nudité|maigr|silhouette|visage|peau|cheveux|épuis|dépress)`,
-  'iu',
-);
-const SEXUAL_DETAIL = prefix(
-  'sexe|sexu|orgasm|fantasm|au lit|préliminaire|virginit|rapports? intime',
-);
-const PAINFUL_STORY = prefix(
-  'racontez|décrivez|traumat|abus|agression|deuil|décès|décédé|mort |violences? subies?|secret de famille|vos blessures|votre pire|le pire moment|ce que vous avez subi|divorce de vos parents',
 );
 /** Jargon au-delà du filtre du code (audit, section 4.2). */
 const EXTRA_JARGON = prefix(
   'attachement|schéma|abandon|inconscien|projection|transfert|loyauté invisible|triangul|enfant intérieur|red flag|love bombing|gaslighting|emprise|refoul|codépend|manipul|dépendance affective|insécur|blessure|thérap|psychi|psycho|clinique|diagnos|trouble|cavalier|gottman|bowlby|sternberg|perel|résilien|ambivalen|pervers',
 );
-/**
- * Contrôle de forme appliqué par le code aux questions de l'IA dans le
- * chantier principal (`isWellFormedQuestion`, `clinical-lens.ts`), recopié
- * ici : les gabarits le respectent aussi.
- */
-const MAIN_JARGON = new RegExp(
-  `(?<!\\p{L})(?:${[
-    'anxieu',
-    'évitan',
-    'evitan',
-    'narciss',
-    'trauma',
-    'patholog',
-    'névros',
-    'nevros',
-    'psychos',
-    'borderline',
-    'bipolaire',
-    'pervers',
-    'toxique',
-    'dépressi',
-    'depressi',
-    'diagnosti',
-    'trouble de la personnalité',
-    'attachement insécure',
-    "style d['’]attachement",
-    'dépendance affective',
-    'codépendan',
-    'manipul',
-    "peur de l['’]abandon",
-    'insécurité affective',
-    'inconscient',
-    'loyauté invisible',
-    'triangul',
-    'enfant intérieur',
-    'red flag',
-    'love bombing',
-    'gaslighting',
-    'emprise',
-    'refoulé',
-    'schéma précoce',
-    "complexe d['’]?(?:œ|oe)dipe",
-  ].join('|')})`,
-  'iu',
-);
-const INTERPRETATION =
-  /\b(au fond|inconsciemment|en réalité|en vérité|vous avez tendance|a tendance à|semble(?:nt)? (?:craindre|cacher|avoir peur)|(?:cache|révèle|trahit|traduit)(?:nt)? (?:une|un|votre|vos|son|sa|ses|leur|leurs)\b)/i;
-const CLOSED_OPENER =
-  /^\s*(?:et\s+)?(?:est-ce\b|[a-zàâäçéèêëîïôöùûüÿœ]+-(?:vous|il|elle|on)\b)/i;
-
-function isWellFormedQuestion(text: string): boolean {
-  const t = text.trim();
-  const marks = (t.match(/\?/g) ?? []).length;
-  return (
-    t.length >= 20 &&
-    t.length <= 200 &&
-    t.endsWith('?') &&
-    marks <= 2 &&
-    !/[«»"“”]/.test(t) &&
-    !CLOSED_OPENER.test(t) &&
-    !MAIN_JARGON.test(t) &&
-    !INTERPRETATION.test(t) &&
-    !/blessure/i.test(t)
-  );
-}
-
-/** « ton » possessif, pas le ton de la voix (« le ton », « quel ton »). */
-const TUTOIEMENT = word(
-  "tu|toi|(?<!(?:le|quel|un|du|au|ce|son|mon|votre|même) )ton|ta|tes|te|t'|t’",
-);
-const VOUVOIEMENT = word('vous|votre|vos');
 /** Sujets réservés au jour 3 (pudeur graduée). */
 const INTIMATE = new RegExp(
   `(?<!${L})(?:désir(?! d'enfants)|désiré|intimité)`,
@@ -212,7 +134,7 @@ function formIssues(text: string): string[] {
   if (SEXUAL_DETAIL.test(text)) issues.push('détail sexuel');
   if (PAINFUL_STORY.test(text)) issues.push('récit douloureux');
   if (hasClinicalJargon(text) || EXTRA_JARGON.test(text)) issues.push('jargon');
-  if (!isWellFormedQuestion(text)) issues.push('contrôle de forme du code');
+  if (!passesFormRules(text)) issues.push('contrôle de forme du code');
   if (TUTOIEMENT.test(text)) issues.push('tutoiement');
   if (!VOUVOIEMENT.test(text)) issues.push('pas de vouvoiement');
   return issues;
@@ -295,7 +217,6 @@ function agreementStatements(): string[] {
     ...Object.values(AGREEMENTS)
       .map((a) => a.statement)
       .filter(Boolean),
-    ...ALL_PHRASES.map((p) => `Vous avez répondu de la même façon sur ${p}.`),
   ];
 }
 
@@ -490,7 +411,7 @@ describe('Tournures de sujet (TOPIC_PHRASES)', () => {
     expect(intimite.map((q) => q.day)).toEqual([3]);
   });
 
-  it('accord inconnu : une phrase neutre qui nomme le sujet, sans citer la réponse', () => {
+  it('accord sans phrase écrite : aucune question d’accord générique', () => {
     const c: Convergence = {
       questionId: 'M7_Q08',
       theme: 'projet',
@@ -498,9 +419,7 @@ describe('Tournures de sujet (TOPIC_PHRASES)', () => {
       answer: 'Le plus possible — on partage presque tout',
       topic: 'Temps passé ensemble',
     };
-    expect(agreementFor(c).statement).toBe(
-      'Vous avez répondu de la même façon sur le temps passé ensemble dans la semaine.',
-    );
+    expect(agreementFor(c)).toEqual({ statement: '' });
   });
 });
 

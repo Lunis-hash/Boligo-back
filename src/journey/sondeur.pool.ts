@@ -694,7 +694,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
   argent: {
     1: [
       q(
-        "À partir de quel montant une dépense de l'autre, faite sans vous en parler, vous mettrait mal à l'aise ?",
+        "Quel genre de dépense de l'autre, faite sans vous en parler, vous mettrait mal à l'aise ?",
         'limite',
         [
           'Un petit montant',
@@ -3847,11 +3847,10 @@ export function agreementFor(c: Convergence): {
   const found =
     AGREEMENTS[`${c.questionId}:${agreementKey(c) ?? ''}`] ??
     AGREEMENTS[c.questionId];
-  return (
-    found ?? {
-      statement: `Vous avez répondu de la même façon sur ${topicPhrase({ ...c, label: c.topic ?? c.label })}.`,
-    }
-  );
+  // Accord sans phrase écrite pour lui : pas de question d'accord générique
+  // (« vous avez répondu de la même façon sur… » dit ce que chacun a répondu
+  // et ouvrait sur des relances vagues) ; le créneau prend un autre gabarit.
+  return found ?? { statement: '' };
 }
 
 /**

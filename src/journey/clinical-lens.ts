@@ -136,9 +136,20 @@ const JARGON_WORDS = [
   'depressi',
   'diagnosti',
   'trouble de la personnalité',
-  'attachement(?!\\s+(?:à|au|aux|pour|envers)(?!\\p{L}))',
+  'attachement (?:anxieu|évitant|insécure|sécure|désorganis|ambivalent)',
+  "théorie de l['’]attachement",
   "style d['’]attachement",
-  'dépendance affective',
+  'dépendance (?:affective|émotionnelle)',
+  'in?sécure(?!\\p{L})',
+  'mécanismes? de défense',
+  'évitement',
+  'evitement',
+  'hypersensib',
+  'ambivalen',
+  'différenciation du soi',
+  'contre-dépendan',
+  'clivage',
+  'pattern',
   'codépendan',
   'manipulat(?:eur|rice)',
   'manipulation affective',
@@ -234,7 +245,7 @@ export const MAX_QUESTION_LENGTH = 200;
  * par non (« Pour vous, la fidélité est-elle négociable ? »).
  */
 const OPEN_MARKER =
-  /(?<!\p{L})(?:qu['’]|(?:que|quoi|comment|pourquoi|quel(?:le)?s?|où|combien|qui|lequel|laquelle|lesquel(?:le)?s|décrivez|racontez|décrire|raconter|dire ce|à quel|en quoi|de quoi|dans quelle)(?!\p{L}))/iu;
+  /(?<!\p{L})(?:comment|pourquoi|combien|quel(?:le)?s?|lequel|laquelle|lesquel(?:le)?s|quoi|décrire|raconter|dire ce)(?!\p{L})|(?:^|[,:;«]\s*|(?<!\p{L})(?:à|de|d['’]|dans|pour|avec|chez|sur|par|en|vers|jusqu['’])\s*)(?:(?:qui|que|où)(?!\p{L})|qu['’])|(?<!\p{L})qu['’]est-ce/iu;
 
 /**
  * Verbe inversé (« accepteriez-vous », « est-elle », « y a-t-il ») : une
@@ -242,7 +253,7 @@ const OPEN_MARKER =
  * Les invitations (« pouvez-vous décrire… », « rappelez-vous… ») n'en sont pas.
  */
 const INVERSION =
-  /(?<!\p{L})(?!(?:pouvez|sauriez|rappelez|souvenez|imaginez|demandez|représentez|figurez)-vous)\p{L}+-(?:t-)?(?:je|tu|il|elle|on|nous|vous|ils|elles|ce)(?!\p{L})/iu;
+  /(?<!\p{L})(?!(?:pouvez|sauriez|rappelez|souvenez|imaginez|demandez|représentez|figurez|rendez)-vous)\p{L}+-(?:t-)?(?:je|tu|il|elle|on|nous|vous|ils|elles|ce)(?!\p{L})/iu;
 
 /** Question ouverte : la dernière phrase a un mot interrogatif avant tout verbe inversé. */
 export function isOpenQuestion(text: string): boolean {
@@ -261,7 +272,7 @@ export function isOpenQuestion(text: string): boolean {
  * vie sexuelle, ou invitation au compromis.
  */
 const INTRUSIVE =
-  /(?<!\p{L})(?:montants?|quel(?:le)? (?:est|sont) (?:votre|vos) (?:salaire|revenus?|épargne|économies)|combien (?:gagn|envoy|épargn|mett|avez-vous|vous gagnez)\p{L}*|euros?|fcfa|employeur|quartier|adresse|titre de séjour|papiers|situation administrative|nationalité|divorce|séparation de vos parents|vos enfants|votre ex|fait l['’]amour|rapports? sexuels?|virginité|rendre vivable|vivable|rapprocher vos positions|terrain d['’]entente|trouver un compromis)(?!\p{L})|€/iu;
+  /(?<!\p{L})(?:montants?|quel(?:le)? (?:est|sont|serait|seraient) (?:votre|vos) (?:salaire|revenus?|épargne|économies|budget)|combien (?:d['’]argent|de partenaires|d['’]amants?|d['’]ex|de dot|seriez-vous prêt|gagn|envoy|épargn|mett|vers|pai|dépens|avez-vous|vous gagnez)\p{L}*|euros?|fcfa|francs? cfa|dollars?|nairas?|dirhams?|employeur|où travaillez|habitez-vous|adresse|titre de séjour|statut migratoire|visa|sans[- ]papiers|vos papiers|situation administrative|(?:votre|vos) (?:ethnie|tribu|caste|origines? ethniques?)|quel(?:le)? (?:ethnie|tribu|caste)|séparation de vos parents|vos (?:futurs |éventuels )?enfants|votre (?:ex|ancien(?:ne)? (?:conjoint\p{L}*|partenaire|compagn\p{L}*|mari|femme|époux|épouse)|dernière relation|précédente? (?:relation|union)|précédent mariage|premier mariage|rupture|veuvage|divorce)|fai(?:t|re|tes) l['’]amour|rapports? sexuels?|relations? sexuelles?|(?:votre|la) première fois|fantasme\p{L}*|virginité|rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|(?:trouver|faire) (?:un |des )?compromis|voie médiane|juste milieu)(?!\p{L})|[€$£]/iu;
 
 /**
  * Compromis ou « vivre avec » : interdit sur un point non négociable (foi
@@ -277,7 +288,7 @@ export function isIntrusiveQuestion(text: string): boolean {
 
 /** Question qui dit qui a répondu quoi : la même question est posée aux deux. */
 const REPORTS_ANSWER =
-  /(?<!\p{L})(?:vous avez (?:répondu|écrit|dit)|l['’]un de vous|l['’]autre a (?:répondu|écrit|dit)|votre réponse (?:à|sur) l['’]entretien)/iu;
+  /(?<!\p{L})(?:vous avez (?:répondu|écrit)|vous avez dit (?:que|à l['’]entretien)|l['’]un de vous (?:a|aurait) (?:répondu|écrit|dit)|l['’]autre a (?:répondu|écrit|dit)|votre réponse (?:à|sur) l['’]entretien)/iu;
 
 /** Guillemets admis seulement pour « même mot, autre sens » : trois mots au plus. */
 function quotesAllowed(text: string): boolean {
@@ -288,6 +299,46 @@ function quotesAllowed(text: string): boolean {
     (m) => m[1].trim().split(/\s+/).filter(Boolean).length <= 3,
   );
 }
+
+// ─── Règles de forme partagées par les gabarits et les questions de l'IA ─────
+
+const L = '\\p{L}';
+const word = (alternatives: string) =>
+  new RegExp(`(?<!${L})(?:${alternatives})(?!${L})`, 'iu');
+const prefix = (alternatives: string) =>
+  new RegExp(`(?<!${L})(?:${alternatives})`, 'iu');
+
+/** Ultimatum : une réponse sincère difficile à montrer (« partiriez-vous ? »). */
+export const ULTIMATUM = prefix(
+  'partiriez|quitteriez|resteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez',
+);
+/** Morale ou « bonne réponse » suggérée. */
+export const MORALE = word(
+  "devriez|devrait|devraient|doit|doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
+);
+export const MORALE_PREFIX = prefix('égoïs|caprice|capricieu');
+/** Passé commun supposé entre deux personnes qui ne se sont jamais parlé. */
+export const SHARED_PAST = prefix(
+  "vous vous êtes|depuis que vous|votre dernière|vos dernières|la dernière fois que vous|votre première dispute|votre relation|votre couple|cette relation|vos disputes|vous vous connaissez|vous avez vécu ensemble|votre partenaire|l'un de vous a répondu",
+);
+/** Corps, apparence, santé : jamais. */
+export const BODY_HEALTH = new RegExp(
+  `(?<!${L})(?:corps|physique|apparence|allure|poids|taille|beauté|beau(?![\\p{L}-])|belle(?![\\p{L}-])|sexy|malad|handicap|santé|médic|médecin|enceinte|grossesse|fertil|stéril|nudité|maigr|silhouette|visage|peau|cheveux|épuis|dépress)`,
+  'iu',
+);
+/** Détail de la vie sexuelle : jamais. */
+export const SEXUAL_DETAIL = prefix(
+  'sexe|sexu|orgasm|fantasm|au lit|préliminaire|virginit|rapports? intime',
+);
+/** Récit d'un événement douloureux : jamais. */
+export const PAINFUL_STORY = prefix(
+  'racontez|décrivez|traumat|abus|agression|deuil|décès|décédé|mort |violences? subies?|secret de famille|vos blessures|votre pire|le pire moment|ce que vous avez subi|divorce de vos parents',
+);
+/** « ton » possessif, pas le ton de la voix (« le ton », « quel ton »). */
+export const TUTOIEMENT = word(
+  "tu|toi|(?<!(?:le|quel|un|du|au|ce|son|mon|votre|même) )ton|ta|tes|te|t'|t’",
+);
+export const VOUVOIEMENT = word('vous|votre|vos');
 
 /** Bonnes questions données en exemple dans la consigne : jamais recopiées. */
 export const LENS_EXAMPLES = [
@@ -301,6 +352,18 @@ export const LENS_EXAMPLES = [
  */
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
+  return (
+    passesFormRules(t) &&
+    !LENS_EXAMPLES.some((e) => similarQuestions(e, t) || e === t)
+  );
+}
+
+/**
+ * Règles de forme communes aux gabarits écrits par l'équipe et aux questions
+ * de l'IA (sans le contrôle des exemples de la consigne, réservé à l'IA).
+ */
+export function passesFormRules(text: string): boolean {
+  const t = text.trim();
   const marks = (t.match(/\?/g) ?? []).length;
   return (
     t.length >= 20 &&
@@ -313,6 +376,14 @@ export function isWellFormedQuestion(text: string): boolean {
     !hasInterpretation(t) &&
     !isIntrusiveQuestion(t) &&
     !REPORTS_ANSWER.test(t) &&
-    !LENS_EXAMPLES.some((e) => similarQuestions(e, t) || e === t)
+    !ULTIMATUM.test(t) &&
+    !MORALE.test(t) &&
+    !MORALE_PREFIX.test(t) &&
+    !SHARED_PAST.test(t) &&
+    !BODY_HEALTH.test(t) &&
+    !SEXUAL_DETAIL.test(t) &&
+    !PAINFUL_STORY.test(t) &&
+    !TUTOIEMENT.test(t) &&
+    VOUVOIEMENT.test(t)
   );
 }

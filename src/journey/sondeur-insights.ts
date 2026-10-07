@@ -553,7 +553,7 @@ function attributesUnwrittenFeeling(
   );
 }
 
-function readingText(
+export function readingText(
   value: unknown,
   max: number,
   names: [string, string],
