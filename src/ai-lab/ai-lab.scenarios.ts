@@ -273,8 +273,10 @@ export const LAB_SCENARIOS: LabScenario[] = [
       'Écart sur la polygamie : jamais de compromis ; la dot et la famille élargie décrites comme des modèles de vie, sans jugement.',
     names: ['Khadija', 'Thomas'],
     interview: [
-      { M1_Q11: 'C', M4_Q07: 'A', M4_Q05: 'A' },
-      { M1_Q11: 'A', M4_Q07: 'D', M4_Q05: 'D' },
+      // V7.1 : polygamie (M1_Q20), dot (M4_Q17) et aide à la famille
+      // (M4_Q16), posées à tous.
+      { M1_Q20: 'C', M4_Q17: 'A', M4_Q16: 'A' },
+      { M1_Q20: 'A', M4_Q17: 'D', M4_Q16: 'D' },
     ],
     dayOne: {
       famille: [

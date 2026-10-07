@@ -38,6 +38,7 @@ import {
   psychometricDivergences,
 } from '../psychometrics/psychometrics';
 import {
+  Faith,
   FaithRequirement,
   faithOf,
   faithRequirement,
@@ -563,19 +564,25 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M4_Q07',
+    // V7.1 — remplace M4_Q07, posée à tous : « indispensable » face à « je
+    // n'y adhère pas » est une incompatibilité déclarée ; face à quelqu'un
+    // qui la respecterait sans la pratiquer, une nuance.
+    questionId: 'M4_Q17',
     theme: 'famille',
-    label: 'Dot ou mahr',
-    topic: 'La dot ou le mahr',
+    label: 'Dot',
+    topic: 'La dot',
     severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BD: 'moderee',
+      AD: 'critique',
+      BD: 'majeure',
+      AC: 'mineure',
       AB: 'mineure',
       BC: 'mineure',
       CD: 'mineure',
     }),
-    convergence: { A: 'La dot ou le mahr compte pour vous deux' },
+    convergence: {
+      A: 'La dot est indispensable pour vous deux',
+      B: 'La dot compte pour vous deux, sous une forme symbolique ou modernisée',
+    },
   },
   {
     questionId: 'M3_Q05',
@@ -673,18 +680,26 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M4_Q05',
+    // V7.1 — remplace M4_Q05, posée à tous (un couple mixte n'était jamais
+    // comparé) : « un devoir qui ne se discute pas » face à « jamais l'argent
+    // du foyer » est une incompatibilité déclarée.
+    questionId: 'M4_Q16',
     theme: 'argent',
-    label: 'Envois à la famille élargie',
-    topic: "Les envois d'argent à la famille",
+    label: 'Aide financière à la famille',
+    topic: "L'aide financière à la famille",
     severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BC: 'moderee',
+      AD: 'critique',
+      AC: 'majeure',
+      BD: 'majeure',
       CD: 'moderee',
-      AB: 'mineure',
-      BD: 'mineure',
+      AB: 'moderee',
+      BC: 'mineure',
     }),
+    convergence: {
+      A: 'Aider votre famille est pour vous deux un devoir régulier',
+      B: 'Vous décideriez tous les deux à deux de l’aide à vos familles',
+      D: 'Pour vous deux, l’argent du foyer reste au foyer',
+    },
   },
   {
     questionId: 'M4_Q09',
@@ -753,42 +768,28 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M8_Q03',
-    theme: 'spiritualite',
-    label: 'Vision du mariage',
-    topic: 'La vision du mariage',
-    severity: pairs({
-      AD: 'majeure',
-      AB: 'moderee',
-      CD: 'moderee',
-      BD: 'moderee',
-      DE: 'moderee',
-      AC: 'mineure',
-      BC: 'mineure',
-      AE: 'mineure',
-      BE: 'mineure',
-      CE: 'mineure',
-    }),
-    convergence: {
-      A: 'Le mariage est pour vous deux un acte religieux et spirituel',
-      C: 'Vous voulez tous les deux un mariage civil et religieux',
-      E: 'Le mariage est pour vous deux avant tout coutumier',
-    },
-  },
-  {
-    questionId: 'M1_Q11',
+    // V7.1 — remplace M1_Q11 (cérémonies : règle croisée `marriageRule`).
+    // Exclue (avec ou sans discussion) face à « envisageable » : une
+    // incompatibilité déclarée ; « pas de position arrêtée » face à
+    // « exclue sans discussion » : majeure.
+    questionId: 'M1_Q20',
     theme: 'spiritualite',
     label: 'Polygamie',
     topic: 'La polygamie',
-    // V7 : « Je préfère en parler en personne » ne neutralise plus la règle
-    // face à « monogamie exclusive, sans discussion ».
-    severity: (a, b) => {
-      if (a === b) return null;
-      if (a === 'D' || b === 'D')
-        return a === 'A' || b === 'A' ? 'moderee' : 'mineure';
-      return pairs({ AC: 'critique', BC: 'majeure', AB: 'mineure' })(a, b);
+    severity: pairs({
+      AC: 'critique',
+      BC: 'critique',
+      AD: 'majeure',
+      BD: 'moderee',
+      CD: 'moderee',
+      AB: 'mineure',
+    }),
+    convergence: {
+      A: 'Monogamie exclusive pour vous deux',
+      B: 'Vous excluez tous les deux la polygamie pour votre couple',
     },
-    convergence: { A: 'Monogamie exclusive pour vous deux' },
+    // Deux positions non arrêtées : ni écart ni accord à afficher.
+    discreet: ['D'],
   },
 
   // ── Intimité & sexualité
@@ -1143,18 +1144,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
-    questionId: 'M8_Q02',
+    // V7.1 — remplace M8_Q02 (délais exhaustifs, sans recoupement).
+    questionId: 'M8_Q17',
     theme: 'projet',
     label: "Délai d'engagement",
     topic: "Le délai d'engagement",
     severity: pairs({
+      AD: 'majeure',
       AC: 'moderee',
-      AD: 'moderee',
+      BD: 'moderee',
       AB: 'mineure',
       BC: 'mineure',
-      BD: 'mineure',
       CD: 'mineure',
     }),
+    convergence: {
+      A: 'Vous envisagez tous les deux un engagement officiel dans l’année',
+      B: 'Vous envisagez tous les deux un engagement officiel dans un à deux ans',
+    },
   },
   {
     // V7 — l'attitude face à la séparation, indicateur d'engagement.
@@ -1395,6 +1401,93 @@ export const LEGACY_RULES: Rule[] = [
       BD: 'mineure',
     }),
     supersededBy: ['M7_Q19'],
+  },
+  // ── Questions V7 retirées en V7.1 (règles V7, lues quand la remplaçante
+  // manque d'un côté ; les réponses de même sens sont traduites par
+  // `answer-bridge.ts`).
+  {
+    questionId: 'M1_Q11',
+    theme: 'spiritualite',
+    label: 'Polygamie',
+    topic: 'La polygamie',
+    severity: (a, b) => {
+      if (a === b) return null;
+      if (a === 'D' || b === 'D')
+        return a === 'A' || b === 'A' ? 'moderee' : 'mineure';
+      return pairs({ AC: 'critique', BC: 'critique', AB: 'mineure' })(a, b);
+    },
+    convergence: { A: 'Monogamie exclusive pour vous deux' },
+    supersededBy: ['M1_Q20'],
+  },
+  {
+    questionId: 'M4_Q05',
+    theme: 'argent',
+    label: 'Envois à la famille élargie',
+    topic: "Les envois d'argent à la famille",
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BC: 'moderee',
+      CD: 'moderee',
+      AB: 'mineure',
+      BD: 'mineure',
+    }),
+    supersededBy: ['M4_Q16'],
+  },
+  {
+    questionId: 'M4_Q07',
+    theme: 'famille',
+    label: 'Dot ou mahr',
+    topic: 'La dot ou le mahr',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: { A: 'La dot ou le mahr compte pour vous deux' },
+    supersededBy: ['M4_Q17'],
+  },
+  {
+    questionId: 'M8_Q02',
+    theme: 'projet',
+    label: "Délai d'engagement",
+    topic: "Le délai d'engagement",
+    severity: pairs({
+      AC: 'moderee',
+      AD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    supersededBy: ['M8_Q17'],
+  },
+  {
+    questionId: 'M8_Q03',
+    theme: 'spiritualite',
+    label: 'Vision du mariage',
+    topic: 'La vision du mariage',
+    severity: pairs({
+      AD: 'majeure',
+      AB: 'moderee',
+      CD: 'moderee',
+      BD: 'moderee',
+      DE: 'moderee',
+      AC: 'mineure',
+      BC: 'mineure',
+      AE: 'mineure',
+      BE: 'mineure',
+      CE: 'mineure',
+    }),
+    convergence: {
+      A: 'Le mariage est pour vous deux un acte religieux et spirituel',
+      C: 'Vous voulez tous les deux un mariage civil et religieux',
+      E: 'Le mariage est pour vous deux avant tout coutumier',
+    },
+    supersededBy: ['M8_Q16'],
   },
 ];
 
@@ -1642,6 +1735,26 @@ const SAME_FAITH: Partial<Record<string, string>> = {
   sans: 'Vous êtes tous les deux sans religion',
 };
 
+/** V7.1 : bouddhiste (F) et hindoue (K), deux religions distinctes en V7. */
+const SAME_FAITH_BY_KEY: Partial<Record<string, string>> = {
+  F: 'Vous partagez la spiritualité bouddhiste',
+  K: 'Vous partagez la foi hindoue',
+};
+
+/**
+ * Deux réponses V7 (M1_Q16) d'une même famille qui désignent pourtant deux
+ * religions : bouddhiste et hindoue (V7.1). La réponse V6 « bouddhiste /
+ * hindouiste » reste compatible avec l'une comme avec l'autre.
+ */
+function distinctFaiths(fa: Faith, fb: Faith): boolean {
+  return (
+    fa.family === 'bouddhiste_hindou' &&
+    fa.questionId === 'M1_Q16' &&
+    fb.questionId === 'M1_Q16' &&
+    fa.key !== fb.key
+  );
+}
+
 /** Religion (V7 : M1_Q16 à M1_Q18 ; V6 : M1_Q05 et M1_Q06), puis pratique. */
 function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
   const fa = faithOf(a);
@@ -1664,12 +1777,21 @@ function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
       b: view(fb.questionId, fb.key),
     });
 
-  if (fa.family !== fb.family) {
+  if (fa.family !== fb.family || distinctFaiths(fa, fb)) {
     religionDivergence(faithGap(ra, rb));
     return;
   }
   if (fa.family === 'autre') {
-    // Deux « autre religion » : peut-être pas la même ; ni écart ni accord affiché.
+    // Deux « autre religion » : peut-être pas la même ; ni accord affiché,
+    // et un écart à explorer si l'un exige la sienne (V7.1).
+    if (strictFaith(ra) || strictFaith(rb)) religionDivergence('moderee');
+    else c.agree(qid, COMPATIBLE_DIFFERENT);
+  } else if (
+    fa.family === 'bouddhiste_hindou' &&
+    fa.questionId !== fb.questionId
+  ) {
+    // V6 « bouddhiste / hindouiste » face à une réponse V7 : compatible, sans
+    // accord affiché (on ne sait pas laquelle des deux).
     c.agree(qid, COMPATIBLE_DIFFERENT);
   } else if (
     fa.family === 'chretien' &&
@@ -1682,7 +1804,9 @@ function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     else c.agree(qid, COMPATIBLE_DIFFERENT);
   } else {
     c.agree(qid, 1);
-    const label = SAME_FAITH[fa.family];
+    const label =
+      (fa.questionId === 'M1_Q16' ? SAME_FAITH_BY_KEY[fa.key] : undefined) ??
+      SAME_FAITH[fa.family];
     if (label)
       c.converge({
         questionId: qid,
@@ -1797,6 +1921,61 @@ function foodRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
       answer: optionText(fa.questionId, fa.key),
       topic: 'Les habitudes alimentaires',
     });
+}
+
+/** Cérémonies qui accomplissent un mariage (M8_Q16), pour les accords. */
+const CEREMONY_WORDS: Record<string, string> = {
+  A: 'le mariage civil',
+  B: 'le mariage religieux',
+  C: 'le mariage coutumier',
+};
+
+/**
+ * V7.1 — cérémonies indispensables (M8_Q16, choix multiple ; V7 : M8_Q03,
+ * traduite par la passerelle). Un mariage religieux exigé d'un seul côté :
+ * à explorer, majeure face à quelqu'un sans religion ; un mariage coutumier
+ * exigé d'un seul côté : à explorer ; seul le civil diffère : une nuance.
+ * Accord sur les cérémonies communes.
+ */
+function marriageRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  if (!a.M8_Q16 || !b.M8_Q16) return;
+  const needs = (x: RawAnswers) =>
+    keysWithout(x.M8_Q16, 'D').filter((k) => k !== 'D');
+  const ka = needs(a);
+  const kb = needs(b);
+  const onlyOne = (k: string) => ka.includes(k) !== kb.includes(k);
+  const withoutFaith = (x: RawAnswers) => {
+    const f = faithOf(x)?.family;
+    return f === 'sans' || f === 'spirituel';
+  };
+  let severity: Severity | null = null;
+  if (onlyOne('B')) {
+    const other = ka.includes('B') ? b : a;
+    severity = withoutFaith(other) ? 'majeure' : 'moderee';
+  } else if (onlyOne('C')) severity = 'moderee';
+  else if (onlyOne('A')) severity = 'mineure';
+  if (severity) {
+    c.diverge({
+      questionId: 'M8_Q16',
+      theme: 'spiritualite',
+      severity,
+      label: 'Cérémonies du mariage',
+      question: questionText('M8_Q16'),
+      a: view('M8_Q16', a.M8_Q16),
+      b: view('M8_Q16', b.M8_Q16),
+    });
+    return;
+  }
+  c.agree('M8_Q16', 1);
+  c.converge({
+    questionId: 'M8_Q16',
+    theme: 'spiritualite',
+    label: ka.length
+      ? `Pour vous deux, un mariage passe par ${joinWords(ka.map((k) => CEREMONY_WORDS[k]))}`
+      : 'Aucune cérémonie n’est indispensable pour vous deux',
+    answer: optionText('M8_Q16', ka.length ? ka.join(',') : 'D'),
+    topic: 'Les cérémonies du mariage',
+  });
 }
 
 /**
@@ -1928,12 +2107,13 @@ function availabilityRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     [a, b, true],
     [b, a, false],
   ] as const) {
-    if (!stillAttached(x) || y.M8_Q02 !== 'A') continue;
+    // V7.1 : délai lu dans M8_Q17 (M8_Q02 traduite par la passerelle).
+    if (!stillAttached(x) || y.M8_Q17 !== 'A') continue;
     const situation =
       x.M3_Q11 === 'A' || x.M3_Q11 === 'B'
         ? view('M3_Q11', x.M3_Q11)
         : view('M0_Q04', 'D');
-    const hurry = view('M8_Q02', 'A');
+    const hurry = view('M8_Q17', 'A');
     c.diverge({
       questionId: 'M3_Q11',
       theme: 'projet',
@@ -1991,7 +2171,12 @@ export const CORE_DEALBREAKERS: ReadonlySet<string> = new Set([
   'M1_Q05',
   'M1_Q17',
   'M1_Q11',
+  'M1_Q20',
+  'M8_Q16',
   'M10_Q17',
+  // Dot et aide financière à la famille
+  'M4_Q16',
+  'M4_Q17',
   // Objectif, rôles et éducation
   'M8_Q01',
   'M4_Q04',
@@ -2097,6 +2282,7 @@ export function buildDivergenceReport(
   cultureRule(a, b, c);
   faithRule(a, b, c);
   foodRule(a, b, c);
+  marriageRule(a, b, c);
   tobaccoRule(a, b, rawA, rawB, c);
   alcoholRule(a, b, c);
   availabilityRule(a, b, c);

@@ -6,6 +6,11 @@
 import { QUESTION_INDEX } from '../interview/questions.data';
 import { QUESTIONS_EN } from '../interview/questions.en';
 import {
+  agreementFor,
+  agreementKey,
+  isDeferredAgreement,
+} from '../journey/sondeur.pool';
+import {
   buildDivergenceReport,
   Divergence,
   RawAnswers,
@@ -48,12 +53,22 @@ describe('B1 — P2 et P9 n’effacent plus les vrais non-négociables', () => {
     ).toEqual(['majeure']);
   });
 
-  it('P9 ne baisse plus un sujet de projet de vie (polygamie) et ne monte plus un simple fait (enfants déjà là)', () => {
+  it('P9 ne baisse plus un sujet de projet de vie (polygamie, rôles)', () => {
+    // Entretien V7 (M1_Q11) : « inacceptable » face à « en parler en
+    // personne » reste à explorer, comme la V7.1 « exclue mais j'accepte
+    // d'en parler » face à « pas de position arrêtée ».
     expect(
       severityOf(
         { M1_Q11: 'A', M8_Q14: 'A' },
         { M1_Q11: 'D', M8_Q14: 'A' },
         'M1_Q11',
+      ),
+    ).toEqual(['moderee']);
+    expect(
+      severityOf(
+        { M1_Q20: 'B', M8_Q14: 'A' },
+        { M1_Q20: 'D', M8_Q14: 'A' },
+        'M1_Q20',
       ),
     ).toEqual(['moderee']);
     expect(
@@ -219,5 +234,143 @@ describe('m9 — personne ne fait le premier pas', () => {
     expect(severityOf({ M2_Q22: 'C' }, { M2_Q22: 'D' }, 'M2_Q22')).toEqual([
       'moderee',
     ]);
+  });
+});
+
+describe('B3 — polygamie : son propre couple, sans réponse refuge', () => {
+  it('exclue (même ouverte à la discussion) face à « envisageable » : incompatibilité déclarée, même avec K', () => {
+    for (const key of ['A', 'B'])
+      expect(
+        severityOf(
+          { ...calm, M1_Q20: key },
+          { ...calm, M1_Q20: 'C' },
+          'M1_Q20',
+        ),
+      ).toEqual(['critique']);
+    expect(severityOf({ M1_Q20: 'A' }, { M1_Q20: 'D' }, 'M1_Q20')).toEqual([
+      'majeure',
+    ]);
+    expect(severityOf({ M1_Q20: 'A' }, { M1_Q20: 'B' }, 'M1_Q20')).toEqual([
+      'mineure',
+    ]);
+  });
+
+  it('un entretien V7 (M1_Q11) est lu dans les termes de la V7.1', () => {
+    expect(
+      severityOf({ M1_Q11: 'B', ...calm }, { M1_Q20: 'C' }, 'M1_Q20'),
+    ).toEqual(['critique']);
+    expect(
+      QUESTION_INDEX.get('M1_Q20')!.options.map((o) => o.text),
+    ).not.toContain('Je préfère en parler en personne');
+  });
+});
+
+describe('B5 — aide à la famille et dot : posées à tous, enfin comparées', () => {
+  it('un Africain « ma famille compte sur moi » et « dot indispensable » face à une Européenne : comparé', () => {
+    const africa = { M1_Q01: 'A', M4_Q16: 'A', M4_Q17: 'A' };
+    const europe = { M1_Q01: 'C', M4_Q16: 'D', M4_Q17: 'D' };
+    const r = report(africa, europe);
+    expect(severityOf(africa, europe, 'M4_Q16')).toEqual(['critique']);
+    expect(severityOf(africa, europe, 'M4_Q17')).toEqual(['critique']);
+    expect(r.hardStop).toBe(true);
+    for (const id of ['M4_Q16', 'M4_Q17'])
+      expect(QUESTION_INDEX.get(id)!.rules?.dependsOn).toBeUndefined();
+  });
+
+  it('« absente de ma culture, mais je la respecterais » face à « indispensable » : une nuance', () => {
+    expect(severityOf({ M4_Q17: 'A' }, { M4_Q17: 'C' }, 'M4_Q17')).toEqual([
+      'mineure',
+    ]);
+  });
+
+  it('passerelle V7 → V7.1 de la dot, et « bride price » en anglais', () => {
+    expect(severityOf({ M4_Q07: 'C' }, { M4_Q17: 'D' }, 'M4_Q17')).toEqual([
+      'majeure',
+    ]);
+    expect(JSON.stringify(QUESTIONS_EN)).not.toMatch(/dowry/i);
+    expect(QUESTIONS_EN.M4_Q17.text).toMatch(/bride price/);
+  });
+});
+
+describe('M8 — délai d’engagement : des options exhaustives', () => {
+  it('« dans l’année » face à « sans échéance » : majeure ; passerelle de M8_Q02', () => {
+    expect(severityOf({ M8_Q17: 'A' }, { M8_Q17: 'D' }, 'M8_Q17')).toEqual([
+      'majeure',
+    ]);
+    expect(severityOf({ M8_Q02: 'A' }, { M8_Q02: 'C' }, 'M8_Q17')).toEqual([
+      'majeure',
+    ]);
+    const texts = QUESTION_INDEX.get('M8_Q17')!.options.map((o) => o.text);
+    expect(texts).toEqual(
+      expect.arrayContaining(["Dans l'année", 'Dans un à deux ans']),
+    );
+  });
+});
+
+describe('M9 — cérémonies du mariage : civil, religieux et coutumier se cumulent', () => {
+  it('« les deux, civil et religieux » face à « coutumier » n’est plus une nuance', () => {
+    // V7 : M8_Q03 C face à E (mineure à l'audit).
+    expect(severityOf({ M8_Q03: 'C' }, { M8_Q03: 'E' }, 'M8_Q16')).toEqual([
+      'moderee',
+    ]);
+    // Mariage religieux exigé face à quelqu'un sans religion : majeure.
+    expect(
+      severityOf(
+        { M8_Q16: 'A,B', M1_Q16: 'D' },
+        { M8_Q16: 'A', M1_Q16: 'I' },
+        'M8_Q16',
+      ),
+    ).toEqual(['majeure']);
+    const same = report({ M8_Q16: 'A,C' }, { M8_Q16: 'A,C' });
+    expect(same.divergences).toHaveLength(0);
+    expect(same.convergences[0].label).toBe(
+      'Pour vous deux, un mariage passe par le mariage civil et le mariage coutumier',
+    );
+  });
+});
+
+describe('m3 — bouddhisme et hindouisme, deux religions', () => {
+  it('ne donne plus « même spiritualité » à un bouddhiste et une hindoue', () => {
+    expect(severityOf({ M1_Q16: 'F' }, { M1_Q16: 'K' }, 'M1_Q16')).toEqual([
+      'mineure',
+    ]);
+    expect(
+      severityOf(
+        { M1_Q16: 'F', M1_Q18: 'A' },
+        { M1_Q16: 'K', M1_Q18: 'D' },
+        'M1_Q16',
+      ),
+    ).toEqual(['critique']);
+    expect(report({ M1_Q16: 'K' }, { M1_Q16: 'K' }).convergences[0].label).toBe(
+      'Vous partagez la foi hindoue',
+    );
+  });
+
+  it('deux « autre religion » dont l’un exige la sienne : à explorer', () => {
+    expect(
+      severityOf({ M1_Q16: 'J', M1_Q18: 'A' }, { M1_Q16: 'J' }, 'M1_Q16'),
+    ).toEqual(['moderee']);
+    expect(find({ M1_Q16: 'J' }, { M1_Q16: 'J' }, 'M1_Q16')).toHaveLength(0);
+  });
+});
+
+describe('Sondeur : accords sur des questions retirées (V6 et V7)', () => {
+  it('retrouve la clé d’un accord sur une question retirée, sans changer les questions actuelles', () => {
+    const deferred = report({ M1_Q11: 'D' }, { M1_Q11: 'D' }).convergences[0];
+    expect(deferred.questionId).toBe('M1_Q11');
+    expect(agreementKey(deferred)).toBe('D');
+    expect(isDeferredAgreement(deferred)).toBe(true);
+    // Accord V6 qui a sa phrase propre : désormais servi.
+    const v6 = report(
+      { M1_Q05: 'A', M1_Q06: 'A' },
+      { M1_Q05: 'A', M1_Q06: 'A' },
+    ).convergences.find((c) => c.questionId === 'M1_Q06')!;
+    expect(agreementKey(v6)).toBe('A');
+    expect(agreementFor(v6).statement).toBe(
+      'Partager la même foi compte pour vous deux.',
+    );
+    // Question actuelle : inchangé.
+    const now = report({ M0_Q06: 'A' }, { M0_Q06: 'A' }).convergences[0];
+    expect(agreementKey(now)).toBe('A');
   });
 });

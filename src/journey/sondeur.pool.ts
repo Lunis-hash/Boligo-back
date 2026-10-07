@@ -28,7 +28,7 @@
  * Les options ne sont jamais affichées (réponse libre de 500 caractères) :
  * elles restent une grille de lecture cachée, courte et neutre.
  */
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTION_INDEX } from '../interview/questions.data';
 import type {
   Convergence,
   Divergence,
@@ -267,6 +267,12 @@ export const TOPIC_PHRASES: Record<string, string> = {
   M6_Q17: 'le besoin de pause dans un désaccord',
   M6_Q16: 'la pause, puis le retour au dialogue',
   M8_Q14: 'les désaccords qui durent',
+  // Grand Entretien V7.1
+  M1_Q20: 'la polygamie',
+  M4_Q16: "l'argent que l'on envoie à sa famille",
+  M4_Q17: 'la tradition de la dot',
+  M8_Q17: 'le délai avant un engagement officiel',
+  M8_Q16: 'les cérémonies du mariage',
 };
 
 /**
@@ -349,6 +355,12 @@ export const TOPIC_FAMILIES: string[][] = [
   ['M4_Q03', 'M4_Q04'],
   ['M5_Q08', 'M8_Q10:B'],
   ['M8_Q01', 'M8_Q10:D'],
+  // V7.1 : une question remplacée et sa remplaçante sont un même sujet.
+  ['M1_Q11', 'M1_Q20'],
+  ['M4_Q05', 'M4_Q16'],
+  ['M4_Q07', 'M4_Q17'],
+  ['M8_Q02', 'M8_Q17'],
+  ['M8_Q03', 'M8_Q16'],
 ];
 
 /** Le sujet et ses voisins (lui seul s'il n'a pas de famille). */
@@ -509,6 +521,12 @@ export const TOPIC_DAYS: Record<string, number[]> = {
   M6_Q17: [2, 3],
   M6_Q16: [3, 2],
   M8_Q14: [3, 2],
+  // Grand Entretien V7.1
+  M1_Q20: [1, 2],
+  M4_Q16: [1, 2, 3],
+  M4_Q17: [2, 1],
+  M8_Q17: [1, 3],
+  M8_Q16: [2, 3],
 };
 
 const DEFAULT_DAYS: Record<Severity, number[]> = {
@@ -4512,6 +4530,12 @@ export const DEEP_ALIASES: Record<string, string> = {
   M1_Q09: 'M1_Q19',
   M7_Q01: 'M7_Q19',
   M6_Q01: 'M6_Q16',
+  // V7.1 → V7 : la question remplaçante garde les formulations du sujet.
+  M1_Q20: 'M1_Q11',
+  M4_Q16: 'M4_Q05',
+  M4_Q17: 'M4_Q07',
+  M8_Q17: 'M8_Q02',
+  M8_Q16: 'M8_Q03',
 };
 
 function deepEntry(
@@ -7130,9 +7154,13 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
   ],
 };
 
-/** Clé de réponse d'un accord (« A ») retrouvée à partir du texte de l'option. */
+/**
+ * Clé de réponse d'un accord (« A ») retrouvée à partir du texte de l'option.
+ * Questions actuelles et questions retirées (V6, V7) : un accord entre deux
+ * entretiens anciens garde sa phrase et ses relances propres.
+ */
 export function agreementKey(c: Convergence): string | undefined {
-  return QUESTIONS.find((x) => x.id === c.questionId)?.options.find(
+  return QUESTION_INDEX.get(c.questionId)?.options.find(
     (o) => o.text === c.answer,
   )?.key;
 }

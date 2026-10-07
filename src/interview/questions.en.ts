@@ -163,7 +163,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M1_Q03: {
     text: 'How important are the marriage traditions of your culture to you?',
     options: [
-      'Central — I will respect all of them (dowry, zaffa, sacred fire, lazo…)',
+      'Central — I will respect all of them (bride price, zaffa, sacred fire, lazo…)',
       'Important — I’ll keep the main ones',
       'Moderate — I’ll choose a few',
       'Not very important — I prefer personal symbolism',
@@ -177,7 +177,8 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Christian: another Church',
       'Muslim',
       'Jewish',
-      'Buddhist or Hindu',
+      'Buddhist',
+      'Hindu',
       'A traditional or ancestral religion',
       'A personal spirituality, without religion',
       'No religion',
@@ -214,13 +215,13 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'No rules: I eat everything',
     ],
   },
-  M1_Q11: {
-    text: 'Your position on polygamy:',
+  M1_Q20: {
+    text: 'For your own relationship, polygamy (one husband with several wives):',
     options: [
-      'Unacceptable — exclusive monogamy, no discussion',
-      'I respect it in others, but not for my relationship',
-      'Conceivable within a religious, consensual and transparent framework',
-      'I’d rather talk about it in person',
+      'Ruled out, not open to discussion',
+      'Ruled out, but I’m willing to talk about it',
+      'Conceivable if everyone consents, within a religious or customary framework',
+      'I don’t have a settled position yet',
     ],
   },
   M1_Q13: {
@@ -468,15 +469,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I haven’t really thought about it yet',
     ],
   },
-  M4_Q05: {
-    text: 'Your approach to sending money to the extended family:',
-    options: [
-      'Normal and regular — my family counts on me',
-      'We discuss it as a couple before any decision',
-      'It’s my money — my business',
-      'It must be limited to protect our home',
-    ],
-  },
   M4_Q06: {
     text: 'Buying property in your life plan:',
     options: [
@@ -486,13 +478,22 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Not a priority',
     ],
   },
-  M4_Q07: {
-    text: 'The dowry or mahr in your culture:',
+  M4_Q16: {
+    text: 'Supporting your family financially (parents, brothers and sisters…) once you are a couple:',
     options: [
-      'An obligation I fully respect',
-      'An important symbolic tradition',
-      'I practise it in a modernised way',
-      'Not part of my culture, or I don’t adhere to it',
+      'A regular duty: my family counts on me, it’s not up for discussion',
+      'Regular help, with the amount decided together',
+      'Occasional help, when there is a real need',
+      'The household’s money should not go to the extended family',
+    ],
+  },
+  M4_Q17: {
+    text: 'The bride price for your marriage:',
+    options: [
+      'Essential: my marriage won’t happen without it',
+      'Important, in a symbolic or modernised form',
+      'Not part of my culture, but I would respect it in my partner’s',
+      'I don’t adhere to it, even if my partner cares about it',
     ],
   },
   M4_Q09: {
@@ -837,23 +838,22 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’m open to seeing what comes',
     ],
   },
-  M8_Q02: {
-    text: 'Within what timeframe do you see an official commitment?',
+  M8_Q17: {
+    text: 'If the relationship goes well, within what timeframe would you like an official commitment (engagement or marriage)?',
     options: [
-      'Within 12 months if all goes well',
-      'Within 2 to 3 years',
-      'No pressure — at our natural pace',
-      'When the conditions are right',
+      'Within a year',
+      'Within one to two years',
+      'Within two to three years',
+      'Later, or with no specific timeframe',
     ],
   },
-  M8_Q03: {
-    text: 'Your vision of marriage:',
+  M8_Q16: {
+    text: 'For you, a marriage is only complete with: (several answers possible)',
     options: [
-      'A fundamental religious and spiritual act',
-      'A civil and symbolic commitment',
-      'Both — civil and religious',
-      'An optional choice — love matters more than paperwork',
-      'Above all customary or traditional',
+      'A civil marriage',
+      'A religious marriage',
+      'A customary marriage (bride price, meeting of the families)',
+      'No ceremony is essential to me',
     ],
   },
   M8_Q15: {

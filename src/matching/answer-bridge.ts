@@ -36,6 +36,25 @@ export const LEGACY_UPGRADES: Array<{
   { to: 'M10_Q16', from: 'M6_Q06', map: { A: 'A', B: 'B', C: 'D' } },
   // S'excuser en premier : seules les deux réponses nettes ont un équivalent.
   { to: 'M2_Q22', from: 'M2_Q08', map: { A: 'A', D: 'D' } },
+  // V7.1 — polygamie : « inacceptable », « pas pour mon couple » et
+  // « envisageable » gardent leur sens ; « en parler en personne » n'est pas
+  // « pas de position arrêtée ».
+  { to: 'M1_Q20', from: 'M1_Q11', map: { A: 'A', B: 'B', C: 'C' } },
+  // V7.1 — dot : « obligation » → indispensable ; « tradition symbolique »
+  // et « modernisée » → importante sous une forme symbolique ou modernisée.
+  // « Pas dans ma culture, ou je n'y adhère pas » mêlait deux réponses.
+  { to: 'M4_Q17', from: 'M4_Q07', map: { A: 'A', B: 'B', C: 'B' } },
+  // V7.1 — délai d'engagement : « dans les 12 mois » → dans l'année ;
+  // « dans 2 à 3 ans » → deux à trois ans ; « sans pression » et « quand les
+  // conditions seront mûres » → sans échéance précise.
+  { to: 'M8_Q17', from: 'M8_Q02', map: { A: 'A', B: 'C', C: 'D', D: 'D' } },
+  // V7.1 — cérémonies (choix multiple) : religieux, civil, les deux,
+  // optionnel, coutumier.
+  {
+    to: 'M8_Q16',
+    from: 'M8_Q03',
+    map: { A: 'B', B: 'A', C: 'A,B', D: 'D', E: 'C' },
+  },
 ];
 
 /** Réponses lues dans les termes de la V7 (copie ; la réponse V7 prime toujours). */
@@ -67,6 +86,12 @@ export type FaithFamily =
   | 'sans'
   | 'autre';
 
+/**
+ * V7.1 : bouddhiste (F) et hindoue (K) sont deux options ; elles restent dans
+ * la même famille (« bouddhiste_hindou ») pour les lectures qui ne
+ * distinguent pas (bio, réponse V6 « bouddhiste / hindouiste »), et le moteur
+ * les compare par leur clé.
+ */
 const V7_FAMILY: Record<string, FaithFamily> = {
   A: 'chretien',
   B: 'chretien',
@@ -74,6 +99,7 @@ const V7_FAMILY: Record<string, FaithFamily> = {
   D: 'musulman',
   E: 'juif',
   F: 'bouddhiste_hindou',
+  K: 'bouddhiste_hindou',
   G: 'traditionnel',
   H: 'spirituel',
   I: 'sans',
@@ -196,14 +222,36 @@ export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
     'M1_Q09',
     'M1_Q13',
     'M8_Q03',
+    'M8_Q16',
   ],
   // V7.1 : la réaction à une infidélité (M6_Q18) n'est pas la fidélité.
   C: ['M6_Q19', 'M6_Q10'],
-  D: ['M4_Q01', 'M4_Q14', 'M4_Q05', 'M4_Q09', 'M4_Q11', 'M4_Q12', 'M4_Q08'],
+  D: [
+    'M4_Q01',
+    'M4_Q14',
+    'M4_Q05',
+    'M4_Q16',
+    'M4_Q09',
+    'M4_Q11',
+    'M4_Q12',
+    'M4_Q08',
+  ],
   E: ['M0_Q03', 'M7_Q07'],
-  F: ['M5_Q01', 'M5_Q02', 'M5_Q03', 'M5_Q07', 'M5_Q10', 'M1_Q15', 'M1_Q10'],
+  // V7.1 : l'aide à la famille relève aussi de « la place de la famille ».
+  F: [
+    'M5_Q01',
+    'M5_Q02',
+    'M5_Q03',
+    'M5_Q07',
+    'M5_Q10',
+    'M1_Q15',
+    'M1_Q10',
+    'M4_Q16',
+    'M4_Q17',
+    'M4_Q07',
+  ],
   G: ['M10_Q17'],
-  H: ['M1_Q11'],
+  H: ['M1_Q20', 'M1_Q11'],
   I: ['M0_Q09', 'M0_Q12', 'M0_Q08'],
   J: ['M4_Q03', 'M4_Q04', 'M4_Q15'],
 };

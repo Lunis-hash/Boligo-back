@@ -352,13 +352,13 @@ describe('Retours du 5 octobre : âge, langues, double origine', () => {
 });
 
 describe('Double origine et questions conditionnelles', () => {
-  it('pose la question de la dot dès qu’une des deux origines est concernée', () => {
+  it('pose la question de la dot à tous, quelle que soit l’origine (V7.1)', () => {
     const { pendingQuestions } = jest.requireActual<
       typeof import('../interview/questions.service')
     >('../interview/questions.service');
     const ids = (M1_Q01: string) =>
       pendingQuestions(4, { M1_Q01 }, 30, 'F').map((q) => q.id);
-    expect(ids('C,A')).toContain('M4_Q07');
-    expect(ids('C,E')).not.toContain('M4_Q07');
+    expect(ids('C,A')).toContain('M4_Q17');
+    expect(ids('C,E')).toContain('M4_Q17');
   });
 });

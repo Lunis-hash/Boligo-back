@@ -408,7 +408,9 @@ export const QUESTIONS: Question[] = [
       { key: 'C', text: 'Chrétienne : une autre Église' },
       { key: 'D', text: 'Musulmane' },
       { key: 'E', text: 'Juive' },
-      { key: 'F', text: 'Bouddhiste ou hindoue' },
+      // V7.1 : bouddhisme et hindouisme séparés (deux religions) ; K ajoutée.
+      { key: 'F', text: 'Bouddhiste' },
+      { key: 'K', text: 'Hindoue' },
       { key: 'G', text: 'Une religion traditionnelle ou des ancêtres' },
       { key: 'H', text: 'Une spiritualité personnelle, sans religion' },
       { key: 'I', text: 'Sans religion' },
@@ -424,7 +426,7 @@ export const QUESTIONS: Question[] = [
     rules: {
       dependsOn: {
         questionId: 'M1_Q16',
-        values: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'J'],
+        values: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K'],
       },
     },
     options: [
@@ -477,22 +479,20 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    // V7 — question inchangée ; seule la règle change : « Je préfère en
-    // parler en personne » face à « Inacceptable » n'est plus neutre.
-    id: 'M1_Q11',
+    // V7.1 — remplace M1_Q11 : une seule idée (son propre couple, et non le
+    // regard porté sur les autres), et plus de réponse refuge sur un
+    // non-négociable (« je préfère en parler en personne »).
+    id: 'M1_Q20',
     moduleNumber: 1,
-    text: 'Votre position sur la polygamie :',
+    text: 'Pour votre propre couple, la polygamie (plusieurs épouses pour un même mari) :',
     options: [
-      { key: 'A', text: 'Inacceptable — monogamie exclusive, sans discussion' },
-      {
-        key: 'B',
-        text: 'Je la respecte chez les autres, mais pas pour mon couple',
-      },
+      { key: 'A', text: 'Exclue, sans discussion possible' },
+      { key: 'B', text: "Exclue, mais j'accepte d'en parler" },
       {
         key: 'C',
-        text: 'Envisageable dans un cadre religieux, consenti et transparent',
+        text: 'Envisageable si chacun y consent, dans un cadre religieux ou coutumier',
       },
-      { key: 'D', text: 'Je préfère en parler en personne' },
+      { key: 'D', text: "Je n'ai pas encore de position arrêtée" },
     ],
   },
   {
@@ -1011,21 +1011,50 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M4_Q05',
+    // V7.1 — remplace M4_Q05 : posée à tous (et non plus selon le continent
+    // d'origine : un couple mixte n'était jamais comparé), des options
+    // ordonnées, de « devoir régulier » à « jamais l'argent du foyer ».
+    id: 'M4_Q16',
     moduleNumber: 4,
-    text: "Votre rapport aux envois d'argent à la famille élargie :",
+    text: 'Aider financièrement votre famille (parents, frères et sœurs…) une fois en couple :',
     options: [
       {
         key: 'A',
-        text: "C'est normal et régulier — ma famille compte sur moi",
+        text: 'Un devoir régulier : ma famille compte sur moi, cela ne se discute pas',
       },
-      { key: 'B', text: 'Ça se discute en couple avant toute décision' },
-      { key: 'C', text: "C'est mon argent — c'est mon affaire" },
-      { key: 'D', text: 'Ça doit être limité pour préserver notre foyer' },
+      {
+        key: 'B',
+        text: 'Une aide régulière, dont le montant se décide à deux',
+      },
+      { key: 'C', text: 'Une aide ponctuelle, en cas de vrai besoin' },
+      {
+        key: 'D',
+        text: "L'argent du foyer ne doit pas servir à la famille élargie",
+      },
     ],
-    rules: {
-      dependsOn: { questionId: 'M1_Q01', values: ['A', 'B', 'D'] }, // Afrique, Maghreb, Asie
-    },
+  },
+  {
+    // V7.1 — remplace M4_Q07 : posée à tous ; « pas dans ma culture » et « je
+    // n'y adhère pas » sont séparés, car ils ne disent pas la même chose face
+    // à un partenaire qui y tient.
+    id: 'M4_Q17',
+    moduleNumber: 4,
+    text: 'La dot pour votre mariage :',
+    options: [
+      {
+        key: 'A',
+        text: 'Indispensable : mon mariage ne se fera pas sans elle',
+      },
+      { key: 'B', text: 'Importante, sous une forme symbolique ou modernisée' },
+      {
+        key: 'C',
+        text: 'Absente de ma culture, mais je la respecterais dans celle de mon/ma partenaire',
+      },
+      {
+        key: 'D',
+        text: "Je n'y adhère pas, même si mon/ma partenaire y tient",
+      },
+    ],
   },
   {
     id: 'M4_Q06',
@@ -1036,19 +1065,6 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: "À deux — c'est un projet commun" },
       { key: 'C', text: "Location flexible pour l'instant" },
       { key: 'D', text: 'Pas une priorité' },
-    ],
-  },
-  {
-    // V6 — rétablie depuis la V5 (Q07) : posée si l'origine est l'Afrique subsaharienne ou le Maghreb / Moyen-Orient.
-    id: 'M4_Q07',
-    moduleNumber: 4,
-    rules: { dependsOn: { questionId: 'M1_Q01', values: ['A', 'B'] } },
-    text: 'La dot ou le mahr dans votre culture :',
-    options: [
-      { key: 'A', text: 'Une obligation que je respecte pleinement' },
-      { key: 'B', text: 'Une tradition symbolique importante' },
-      { key: 'C', text: 'Je la pratique de façon modernisée' },
-      { key: 'D', text: "Pas dans ma culture, ou je n'y adhère pas" },
     ],
   },
   {
@@ -1712,27 +1728,34 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M8_Q02',
+    // V7.1 — remplace M8_Q02 : des délais exhaustifs et sans recoupement
+    // (il manquait douze à vingt-quatre mois ; « sans pression » et « quand
+    // les conditions seront mûres » disaient la même chose).
+    id: 'M8_Q17',
     moduleNumber: 8,
-    text: 'Dans quel délai envisagez-vous un engagement officiel ?',
+    text: 'Si la relation se passe bien, dans quel délai souhaitez-vous un engagement officiel (fiançailles ou mariage) ?',
     options: [
-      { key: 'A', text: 'Dans les 12 mois si tout va bien' },
-      { key: 'B', text: 'Dans 2 à 3 ans' },
-      { key: 'C', text: 'Sans pression — à notre rythme naturel' },
-      { key: 'D', text: 'Quand les conditions seront mûres' },
+      { key: 'A', text: "Dans l'année" },
+      { key: 'B', text: 'Dans un à deux ans' },
+      { key: 'C', text: 'Dans deux à trois ans' },
+      { key: 'D', text: 'Plus tard, ou sans échéance précise' },
     ],
   },
   {
-    // V7 — modifiée : ajout du mariage coutumier (E) ; A à D gardent leur sens.
-    id: 'M8_Q03',
+    // V7.1 — remplace M8_Q03 : mariage civil, religieux et coutumier se
+    // cumulent souvent ; un seul choix ne pouvait pas le dire.
+    id: 'M8_Q16',
     moduleNumber: 8,
-    text: 'Votre vision du mariage :',
+    text: "Pour vous, un mariage n'est accompli qu'avec : (plusieurs réponses possibles)",
+    multiple: true,
     options: [
-      { key: 'A', text: 'Un acte religieux et spirituel fondamental' },
-      { key: 'B', text: 'Un engagement civil et symbolique' },
-      { key: 'C', text: 'Les deux — civil et religieux' },
-      { key: 'D', text: "Un choix optionnel — l'amour prime sur le papier" },
-      { key: 'E', text: 'Avant tout coutumier ou traditionnel' },
+      { key: 'A', text: 'Le mariage civil' },
+      { key: 'B', text: 'Le mariage religieux' },
+      {
+        key: 'C',
+        text: 'Le mariage coutumier (dot, présentation des familles)',
+      },
+      { key: 'D', text: "Aucune cérémonie n'est indispensable pour moi" },
     ],
   },
   {
@@ -2364,10 +2387,10 @@ export const QUESTIONS: Question[] = [
 ];
 
 /**
- * Questions V6 retirées en V7 : elles ne sont plus posées, mais restent lues
- * pour les entretiens déjà enregistrés (règles, échelles, fiches). Texte et
- * options de la V6, inchangés. La table `V7_REPLACEMENTS` donne leurs
- * remplaçantes.
+ * Questions retirées (en V7, puis en V7.1) : elles ne sont plus posées, mais
+ * restent lues pour les entretiens déjà enregistrés (règles, échelles,
+ * fiches). Texte et options de leur dernière version, inchangés. La table
+ * `V7_REPLACEMENTS` donne leurs remplaçantes.
  */
 export const RETIRED_QUESTIONS: Question[] = [
   {
@@ -2918,6 +2941,72 @@ export const RETIRED_QUESTIONS: Question[] = [
       },
     ],
   },
+  // ── Retirées en V7.1 (texte et options de la V7, encore lus) ──
+  {
+    id: 'M1_Q11',
+    moduleNumber: 1,
+    text: 'Votre position sur la polygamie :',
+    options: [
+      { key: 'A', text: 'Inacceptable — monogamie exclusive, sans discussion' },
+      {
+        key: 'B',
+        text: 'Je la respecte chez les autres, mais pas pour mon couple',
+      },
+      {
+        key: 'C',
+        text: 'Envisageable dans un cadre religieux, consenti et transparent',
+      },
+      { key: 'D', text: 'Je préfère en parler en personne' },
+    ],
+  },
+  {
+    id: 'M4_Q05',
+    moduleNumber: 4,
+    text: "Votre rapport aux envois d'argent à la famille élargie :",
+    options: [
+      {
+        key: 'A',
+        text: "C'est normal et régulier — ma famille compte sur moi",
+      },
+      { key: 'B', text: 'Ça se discute en couple avant toute décision' },
+      { key: 'C', text: "C'est mon argent — c'est mon affaire" },
+      { key: 'D', text: 'Ça doit être limité pour préserver notre foyer' },
+    ],
+  },
+  {
+    id: 'M4_Q07',
+    moduleNumber: 4,
+    text: 'La dot ou le mahr dans votre culture :',
+    options: [
+      { key: 'A', text: 'Une obligation que je respecte pleinement' },
+      { key: 'B', text: 'Une tradition symbolique importante' },
+      { key: 'C', text: 'Je la pratique de façon modernisée' },
+      { key: 'D', text: "Pas dans ma culture, ou je n'y adhère pas" },
+    ],
+  },
+  {
+    id: 'M8_Q02',
+    moduleNumber: 8,
+    text: 'Dans quel délai envisagez-vous un engagement officiel ?',
+    options: [
+      { key: 'A', text: 'Dans les 12 mois si tout va bien' },
+      { key: 'B', text: 'Dans 2 à 3 ans' },
+      { key: 'C', text: 'Sans pression — à notre rythme naturel' },
+      { key: 'D', text: 'Quand les conditions seront mûres' },
+    ],
+  },
+  {
+    id: 'M8_Q03',
+    moduleNumber: 8,
+    text: 'Votre vision du mariage :',
+    options: [
+      { key: 'A', text: 'Un acte religieux et spirituel fondamental' },
+      { key: 'B', text: 'Un engagement civil et symbolique' },
+      { key: 'C', text: 'Les deux — civil et religieux' },
+      { key: 'D', text: "Un choix optionnel — l'amour prime sur le papier" },
+      { key: 'E', text: 'Avant tout coutumier ou traditionnel' },
+    ],
+  },
 ];
 
 /** Questions actuelles (V7) puis questions V6 retirées, encore lues pour les entretiens V6. */
@@ -3212,7 +3301,7 @@ export const V7_CHANGES: Record<
   M1_Q17: 'nouvelle',
   M1_Q18: 'nouvelle',
   M1_Q19: 'nouvelle',
-  M1_Q11: 'regle',
+  M1_Q20: 'nouvelle',
   M2_Q07: 'regle',
   M6_Q03: 'regle',
   M6_Q05: 'regle',
@@ -3251,6 +3340,8 @@ export const V7_CHANGES: Record<
   M4_Q14: 'nouvelle',
   M4_Q03: 'modifiee',
   M4_Q15: 'nouvelle',
+  M4_Q16: 'nouvelle',
+  M4_Q17: 'nouvelle',
   M5_Q10: 'nouvelle',
   M5_Q02: 'modifiee',
   M5_Q09: 'nouvelle',
@@ -3283,7 +3374,8 @@ export const V7_CHANGES: Record<
   M7_Q34: 'nouvelle',
   M7_Q35: 'nouvelle',
   M8_Q01: 'modifiee',
-  M8_Q03: 'modifiee',
+  M8_Q16: 'nouvelle',
+  M8_Q17: 'nouvelle',
   M8_Q15: 'nouvelle',
   M8_Q04: 'modifiee',
   M8_Q14: 'nouvelle',
@@ -3350,6 +3442,12 @@ export const V7_CHANGES: Record<
   M10_Q01: 'retiree',
   M10_Q06: 'retiree',
   M10_Q10: 'retiree',
+  // Retirées en V7.1
+  M1_Q11: 'retiree',
+  M4_Q05: 'retiree',
+  M4_Q07: 'retiree',
+  M8_Q02: 'retiree',
+  M8_Q03: 'retiree',
 };
 
 /** Questions V6 retirées → questions V7 qui en reprennent le sujet (vide : sujet abandonné). */
@@ -3417,6 +3515,12 @@ export const V7_REPLACEMENTS: Record<string, string[]> = {
   M10_Q01: [],
   M10_Q06: [],
   M10_Q10: [],
+  // V7.1
+  M1_Q11: ['M1_Q20'],
+  M4_Q05: ['M4_Q16'],
+  M4_Q07: ['M4_Q17'],
+  M8_Q02: ['M8_Q17'],
+  M8_Q03: ['M8_Q16'],
 };
 
 /** Questions nouvelles de la V7, absentes des entretiens V6. */
@@ -3444,6 +3548,17 @@ export const V71_CHANGES: Record<
   M6_Q18: 'regle',
   M5_Q10: 'regle',
   M2_Q22: 'regle',
+  M1_Q16: 'modifiee',
+  M1_Q20: 'nouvelle',
+  M4_Q16: 'nouvelle',
+  M4_Q17: 'nouvelle',
+  M8_Q16: 'nouvelle',
+  M8_Q17: 'nouvelle',
+  M1_Q11: 'retiree',
+  M4_Q05: 'retiree',
+  M4_Q07: 'retiree',
+  M8_Q02: 'retiree',
+  M8_Q03: 'retiree',
 };
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */
@@ -3473,11 +3588,14 @@ export const SENSITIVE_QUESTIONS: Record<
   M1_Q17: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q18: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q19: { category: 'convictions_religieuses', reach: 'direct' },
+  M1_Q20: { category: 'convictions_religieuses', reach: 'indirect' },
+  M8_Q16: { category: 'convictions_religieuses', reach: 'indirect' },
+  M1_Q13: { category: 'convictions_religieuses', reach: 'indirect' },
+  M7_Q19: { category: 'convictions_religieuses', reach: 'indirect' },
+  // Retirées en V7.1, réponses encore enregistrées.
   M8_Q03: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q11: { category: 'convictions_religieuses', reach: 'indirect' },
-  M1_Q13: { category: 'convictions_religieuses', reach: 'indirect' },
   M4_Q07: { category: 'convictions_religieuses', reach: 'indirect' },
-  M7_Q19: { category: 'convictions_religieuses', reach: 'indirect' },
   // V7, vie sexuelle.
   M6_Q08: { category: 'vie_sexuelle', reach: 'direct' },
   M6_Q19: { category: 'vie_sexuelle', reach: 'direct' },

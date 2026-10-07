@@ -25,13 +25,12 @@ describe('pendingQuestions', () => {
     expect(pendingQuestions(0, {}, 60, 'F').map((q) => q.id)).not.toContain(
       'M0_Q06',
     );
-    // M4_Q05 dépend d'une origine Afrique / Maghreb-Moyen-Orient / Asie.
-    expect(
-      pendingQuestions(4, { M1_Q01: 'C' }, 30, 'H').map((q) => q.id),
-    ).not.toContain('M4_Q05');
-    expect(
-      pendingQuestions(4, { M1_Q01: 'A' }, 30, 'H').map((q) => q.id),
-    ).toContain('M4_Q05');
+    // V7.1 : l'aide financière à la famille (M4_Q16) est posée à tous, quelle
+    // que soit l'origine (un couple mixte doit pouvoir être comparé).
+    for (const M1_Q01 of ['A', 'C'])
+      expect(
+        pendingQuestions(4, { M1_Q01 }, 30, 'H').map((q) => q.id),
+      ).toContain('M4_Q16');
   });
 
   it('pose la transmission culturelle si des enfants sont là OU souhaités (V6)', () => {
@@ -46,13 +45,14 @@ describe('pendingQuestions', () => {
     expect(module1({ M0_Q05: 'B' }, 60)).toContain('M1_Q13');
   });
 
-  it('ne pose la dot ou le Mahr qu’aux origines concernées (V6)', () => {
-    expect(
-      pendingQuestions(4, { M1_Q01: 'C' }, 30, 'H').map((q) => q.id),
-    ).not.toContain('M4_Q07');
-    expect(
-      pendingQuestions(4, { M1_Q01: 'B' }, 30, 'H').map((q) => q.id),
-    ).toContain('M4_Q07');
+  it('pose la dot à tous (V7.1 : un Africain et une Européenne doivent pouvoir être comparés)', () => {
+    for (const M1_Q01 of ['B', 'C'])
+      expect(
+        pendingQuestions(4, { M1_Q01 }, 30, 'H').map((q) => q.id),
+      ).toContain('M4_Q17');
+    expect(pendingQuestions(4, {}, 30, 'H').map((q) => q.id)).not.toContain(
+      'M4_Q07',
+    );
   });
 
   it('renvoie une liste vide quand tout est répondu', () => {
