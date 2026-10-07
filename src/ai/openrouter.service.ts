@@ -69,7 +69,7 @@ export function maxPrice(): ModelPrice {
 
 /**
  * Modèles « à raisonnement » : réflexion bornée pour ne pas tronquer le JSON ;
- * le relecteur réfléchit davantage (il juge chaque question sur 19 règles).
+ * le relecteur réfléchit davantage (il juge chaque question sur 20 règles).
  */
 function reasoningFor(
   model: string,
@@ -224,6 +224,10 @@ export class OpenRouterService {
               max_price: { prompt: cap.prompt, completion: cap.completion },
             },
             ...reasoningFor(model, role),
+            // Relecteur : réponse JSON stricte (verdicts, fidélité).
+            ...(role === 'critic'
+              ? { response_format: { type: 'json_object' } }
+              : {}),
           }),
         });
 

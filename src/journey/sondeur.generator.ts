@@ -80,7 +80,8 @@ export const DAY_ANGLES: Record<
   3: {
     label: 'Futur & intimité',
     emoji: '🔮',
-    intent: 'comment vous vivrez ce point à deux',
+    intent:
+      "ce qu'il faudrait savoir avant de s'engager, et comment chacun le vivrait au quotidien",
   },
 };
 
@@ -715,6 +716,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   return result;
 }
 
+/** Sujets où une même réponse peut cacher un contrôle (téléphone, jalousie). */
+const CONTROL_TOPICS = new Set(['M5_Q08', 'M9_Q11', 'M8_Q10']);
+
 /** Résumé compact du rapport de divergences pour un prompt IA (sans données de contact). */
 export function describeReportForAi(
   report: DivergenceReport,
@@ -722,6 +726,9 @@ export function describeReportForAi(
 ): string {
   const [a, b] = firstNames;
   const lines: string[] = [];
+  // Points non négociables et signaux de contrôle : nommés au rédacteur.
+  const marks = (d: Divergence) =>
+    `${isNonNegotiable(d) ? ' — POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d’entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.' : ''}${CONTROL_TOPICS.has(d.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance ; jamais l’accès au téléphone ou à la localisation présenté comme une preuve d’amour.' : ''}`;
   lines.push(
     `Questions comparées : ${report.comparedQuestions}. Incompatibilité déclarée : ${report.hardStop ? 'oui' : 'non'}.`,
   );
@@ -742,7 +749,9 @@ export function describeReportForAi(
           `${head} : l'un préfère en parler en personne. Ne pas relancer ce sujet.`,
         );
       } else {
-        lines.push(`${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »`);
+        lines.push(
+          `${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »${marks(d)}`,
+        );
       }
     }
   } else {
@@ -763,7 +772,9 @@ export function describeReportForAi(
           `${head} : les deux préfèrent en parler en personne. Ne pas relancer ce sujet.`,
         );
       } else {
-        lines.push(`${head} : même réponse des deux, « ${c.answer} »`);
+        lines.push(
+          `${head} : même réponse des deux, « ${c.answer} »${CONTROL_TOPICS.has(c.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance.' : ''}`,
+        );
       }
     }
   }

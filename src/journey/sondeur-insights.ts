@@ -24,6 +24,7 @@ import {
   hasReadingInterpretation,
   isWellFormedQuestion,
 } from './clinical-lens';
+import { firstJsonObject } from '../ai/json-extract';
 import { brandBoligo } from '../portrait/portrait.writer';
 import { ensureAutreOption } from './harmony-question.types';
 import { DAY_ANGLES, SAFETY_QUESTIONS } from './sondeur.generator';
@@ -668,16 +669,7 @@ function anchoredPoints(
 }
 
 function parseJsonObject(raw: string): Record<string, unknown> | null {
-  const match = raw.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try {
-    const parsed: unknown = JSON.parse(match[0]);
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
+  return firstJsonObject(raw);
 }
 
 /** Question posée aux deux : ouverte, avec un point d'interrogation. */

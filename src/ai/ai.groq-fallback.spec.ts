@@ -381,6 +381,22 @@ describe('AiService — modèle Groq retiré', () => {
       ]).toEqual([2]);
     });
 
+    it('un refus l’emporte sur une acceptation du même numéro ; JSON entouré de texte lu', async () => {
+      const g = fakeGroq(
+        models.concat('llama-3.3-70b-versatile'),
+        () =>
+          'Mon avis {bref} : {"verdicts": [{"n": 1, "ok": false, "regle": 12, "raison": "réconciliation"}, {"n": 1, "ok": true}, {"n": 2, "ok": true},], "meilleures": [1, 2]} (fin)',
+      );
+      const review = await journeyService(
+        g.client,
+        budgetFor(true),
+      ).reviewSondeurQuestions('j6c', draft(2), [], 'openai/gpt-oss-120b');
+      expect([...(review?.rejected ?? [])]).toEqual([0]);
+      expect([
+        ...((review as { preferred?: Set<number> })?.preferred ?? []),
+      ]).toEqual([1]);
+    });
+
     it('si le rédacteur est Llama, le relecteur en change', async () => {
       const g = fakeGroq(
         models.concat('llama-3.3-70b-versatile'),

@@ -10,13 +10,14 @@ import {
   THEME_LIST,
   Theme,
 } from '../matching/divergence.engine';
-import { isWellFormedQuestion } from './clinical-lens';
+import { COMPROMISE, isWellFormedQuestion } from './clinical-lens';
 import { HarmonyQuestionPayload } from './harmony-question.types';
 import {
   DAY_ANGLES,
   describeReportForAi,
   safetyThemesOf,
 } from './sondeur.generator';
+import { isNonNegotiable } from './sondeur.pool';
 
 export interface SondeurAiResult {
   /** Questions acceptées par le relecteur, la meilleure de chaque créneau d'abord. */
@@ -68,8 +69,18 @@ export async function draftReviewedSondeur(
     scope,
     couple,
   );
-  const all = drafted?.questions ?? [];
+  // Clé de thème renvoyée « Famille » ou « famille » : la même.
+  const all = (drafted?.questions ?? []).map((q) => ({
+    ...q,
+    themeKey: String(q.themeKey ?? '')
+      .trim()
+      .toLowerCase(),
+  }));
   const formRejected: HarmonyQuestionPayload[] = [];
+  // Thèmes qui portent un point non négociable : aucun compromis.
+  const strict = new Set(
+    report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
+  );
   // Contrôle de forme par le code avant la relecture.
   const inGrid = all.filter((q) => {
     if (
@@ -77,6 +88,10 @@ export async function draftReviewedSondeur(
       safetyThemes.includes(q.themeKey as Theme)
     )
       return false;
+    if (strict.has(q.themeKey as Theme) && COMPROMISE.test(q.text)) {
+      formRejected.push(q);
+      return false;
+    }
     if (isWellFormedQuestion(q.text)) return true;
     formRejected.push(q);
     return false;

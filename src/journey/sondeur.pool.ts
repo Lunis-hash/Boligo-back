@@ -475,6 +475,7 @@ export function topicDays(d: TopicSource & { severity?: Severity }): number[] {
  * dont chacun a besoin pour se sentir respecté.
  */
 export const NON_NEGOTIABLE = new Set([
+  // V6 (entretiens déjà enregistrés)
   'M0_Q06',
   'M1_Q11',
   'M1_Q05',
@@ -486,10 +487,36 @@ export const NON_NEGOTIABLE = new Set([
   'M1_Q02',
   'M8_Q01',
   'M8_Q10:B',
+  // V7 : religion, règles alimentaires, fidélité, intimité avant le mariage,
+  // alcool, lieu de vie, engagement, mariage, accès au téléphone
+  'M1_Q16',
+  'M1_Q17',
+  'M1_Q18',
+  'M1_Q19',
+  'M6_Q18',
+  'M6_Q19',
+  'M10_Q17',
+  'M0_Q12',
+  'M0_Q03',
+  'M8_Q13',
+  'M8_Q03',
+  'M5_Q08',
 ]);
 
-export function isNonNegotiable(d: TopicSource): boolean {
-  return NON_NEGOTIABLE.has(topicKey(d)) || NON_NEGOTIABLE.has(d.questionId);
+/**
+ * Point non négociable : sujet listé, sujet déclaré non négociable par l'un
+ * des deux (M8_Q12), ou écart classé « incompatibilité déclarée ». Jamais de
+ * gabarit de compromis ni de « vivre avec » sur un tel point.
+ */
+export function isNonNegotiable(
+  d: TopicSource & { severity?: Severity; nonNegotiable?: boolean },
+): boolean {
+  return (
+    d.nonNegotiable === true ||
+    d.severity === 'critique' ||
+    NON_NEGOTIABLE.has(topicKey(d)) ||
+    NON_NEGOTIABLE.has(d.questionId)
+  );
 }
 
 /**

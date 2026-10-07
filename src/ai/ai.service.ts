@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { firstJsonArray, firstJsonObject } from './json-extract';
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import Groq from 'groq-sdk';
 import { ModelPrice, OpenRouterService, maxPrice } from './openrouter.service';
@@ -91,17 +92,9 @@ export interface DraftedQuestions {
 
 /** Liste des questions renvoyée par l'IA : objet { questions } ou simple tableau. */
 function extractQuestionList(text: string): unknown {
-  const obj = text.match(/\{[\s\S]*\}/);
-  if (obj) {
-    try {
-      const parsed = JSON.parse(obj[0]) as { questions?: unknown };
-      if (Array.isArray(parsed?.questions)) return parsed.questions;
-    } catch {
-      // Plusieurs objets à la suite : c'est un tableau, lu ci-dessous.
-    }
-  }
-  const arr = text.match(/\[[\s\S]*\]/);
-  return arr ? JSON.parse(arr[0]) : JSON.parse(text);
+  const obj = firstJsonObject(text);
+  if (Array.isArray(obj?.questions)) return obj.questions;
+  return firstJsonArray(text) ?? [];
 }
 
 /** Genre en toutes lettres pour le prompt (« H » / « F » en base). */
@@ -522,10 +515,11 @@ Les trois jours (${days}) sont préparés séparément : reste à la profondeur 
 
 ÉTAPE 1 — ANALYSE (jamais montrée aux membres) : 2 à 4 hypothèses courtes, chacune rattachée à une ligne précise de l'analyse ci-dessous. Ce sont des pistes à explorer par une question, jamais des vérités.
 
-ÉTAPE 2 — QUESTIONS : pour CHACUN des ${themeGrid.length} thèmes, DEUX propositions bâties avec deux techniques différentes. Un relecteur indépendant gardera la meilleure.
+ÉTAPE 2 — QUESTIONS : pour chacun des ${themeGrid.length} thèmes, sauf ceux marqués LIMITE DE SÉCURITÉ, DEUX propositions bâties avec deux techniques différentes. Un relecteur indépendant gardera la meilleure.
 Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).join(' ; ')}.
 - Thème qui porte un écart : explore-le en appliquant « CHOIX DE LA TECHNIQUE SELON LE SIGNAL ».
-- Thème marqué LIMITE DE SÉCURITÉ : uniquement des questions de limite ou de signal d'arrêt.
+- Thème marqué LIMITE DE SÉCURITÉ : n'écris aucune question ; BOLIGO y pose une question de limite écrite à l'avance.
+- Thème marqué POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d'entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s'engager.
 - Ligne « à explorer sans jamais citer » : n'en reprends ni les réponses ni le niveau.
 - Thème sans écart : explore le sens d'une réponse commune (même mot, autre sens ?) ou ce que la position protège, à la profondeur du jour.
 - Chaque question fait découvrir quelque chose que les deux membres ne se seraient pas demandé eux-mêmes ; elle respecte « FORME ET PUDEUR ».
@@ -539,7 +533,7 @@ ${interviewDigest()}
 ANALYSE DU COUPLE :
 ${reportSummary}
 
-Retourne UNIQUEMENT ce JSON (${themeGrid.length * 2} questions, deux par thème) :
+Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqués LIMITE DE SÉCURITÉ) :
 {"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "methode": "...", "cible": "..." }]}
 `;
       const { content, model } = await this.queryAiAgentDetailed(
@@ -658,10 +652,10 @@ Retourne UNIQUEMENT ce JSON :
           lab,
         },
       );
-      const match = content.match(/\{[\s\S]*\}/);
-      const parsed = match
-        ? (JSON.parse(match[0]) as { verdicts?: unknown; meilleures?: unknown })
-        : null;
+      const parsed = firstJsonObject(content) as {
+        verdicts?: unknown;
+        meilleures?: unknown;
+      } | null;
       if (!parsed || !Array.isArray(parsed.verdicts)) return null;
       const index = (value: unknown): number | null => {
         const n = Number(value);
@@ -670,6 +664,8 @@ Retourne UNIQUEMENT ce JSON :
           : null;
       };
       const accepted = new Set<number>();
+      // Un refus l'emporte toujours, même suivi d'une acceptation.
+      const refused = new Set<number>();
       const judged = new Set<number>();
       const refusals: SondeurReview['refusals'] = [];
       for (const v of parsed.verdicts as Array<{
@@ -683,7 +679,7 @@ Retourne UNIQUEMENT ce JSON :
         judged.add(i);
         if (v.ok === true) accepted.add(i);
         else {
-          accepted.delete(i);
+          refused.add(i);
           const rule = Number(v.regle);
           refusals.push({
             n: i,
@@ -702,13 +698,15 @@ Retourne UNIQUEMENT ce JSON :
         return null;
       }
       const rejected = new Set(
-        questions.map((_, i) => i).filter((i) => !accepted.has(i)),
+        questions
+          .map((_, i) => i)
+          .filter((i) => !accepted.has(i) || refused.has(i)),
       );
       const preferred = new Set<number>();
       if (Array.isArray(parsed.meilleures))
         for (const n of parsed.meilleures as unknown[]) {
           const i = index(n);
-          if (i !== null && accepted.has(i)) preferred.add(i);
+          if (i !== null && !rejected.has(i)) preferred.add(i);
         }
       const byRule = refusals.reduce<Record<string, number>>((acc, r) => {
         const key = r.rule === null ? '?' : String(r.rule);
@@ -1094,9 +1092,11 @@ Retourne UNIQUEMENT un JSON:
     try {
       // Décision stable et courte : température 0, réponse JSON de quelques mots.
       const text = await this.queryAiAgent('moderation', prompt, undefined, 400, 0);
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
-      const result = typeof parsed.allowed === 'boolean' ? parsed : { allowed: true };
+      const parsed = firstJsonObject(text);
+      const result =
+        typeof parsed?.allowed === 'boolean'
+          ? (parsed as { allowed: boolean; reason?: string; category?: string })
+          : { allowed: true };
 
       // Mémoire bornée : au-delà de 5 000 messages, les plus anciens sortent.
       if (this.moderationCache.size >= 5000) {
