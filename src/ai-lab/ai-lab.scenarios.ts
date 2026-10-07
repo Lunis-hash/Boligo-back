@@ -62,8 +62,8 @@ export const LAB_SCENARIOS: LabScenario[] = [
       'Non-négociable : jamais de compromis ni de terrain d’entente ; la condition et le refus sont nommés sans être adoucis.',
     names: ['Awa', 'Marc'],
     interview: [
-      { M1_Q05: 'A', M1_Q06: 'A' },
-      { M1_Q05: 'A', M1_Q06: 'D' },
+      { M1_Q16: 'A', M1_Q18: 'B' },
+      { M1_Q16: 'D', M1_Q18: 'D' },
     ],
     dayOne: {
       spiritualite: [
@@ -78,7 +78,7 @@ export const LAB_SCENARIOS: LabScenario[] = [
     checks:
       'Même mot ≠ accord : deux réponses courtes identiques vont dans les points à explorer, jamais dans les accords.',
     names: ['Inès', 'Karim'],
-    interview: [{ M6_Q10: 'B' }, { M6_Q10: 'B' }],
+    interview: [{ M6_Q18: 'C' }, { M6_Q18: 'C' }],
     dayOne: { intimite: ['La confiance.', 'La confiance.'] },
   },
   {

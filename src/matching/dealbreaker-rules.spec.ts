@@ -4,12 +4,12 @@ import {
 } from './divergence.engine';
 
 describe('Lignes rouges déclarées dans le Grand Entretien', () => {
-  it('« Rédhibitoire » face à un partenaire qui consomme est une incompatibilité déclarée', () => {
+  it('V6 : « Rédhibitoire » face à « je consomme moi-même » n’est plus une incompatibilité déclarée (ce peut être un verre lors des fêtes)', () => {
     const report = buildDivergenceReport({ M0_Q08: 'A' }, { M0_Q08: 'C' });
-    expect(report.hardStop).toBe(true);
+    expect(report.hardStop).toBe(false);
     expect(report.divergences[0]).toMatchObject({
       questionId: 'M0_Q08',
-      severity: 'critique',
+      severity: 'majeure',
     });
   });
 

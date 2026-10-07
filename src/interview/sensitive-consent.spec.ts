@@ -81,29 +81,33 @@ function memoryDb(consent: boolean | null) {
 }
 
 describe('Données sensibles (RGPD, article 9)', () => {
-  it('liste : religion, vie intime, violences subies, et leurs précisions écrites', () => {
+  it('liste : religion, vie intime (V7 et V6 retirées), violences subies, et leurs précisions écrites', () => {
     for (const id of [
-      'M1_Q05',
-      'M1_Q06',
-      'M3_Q08',
-      'M6_Q06',
-      'M6_Q07',
+      'M1_Q16',
+      'M1_Q17',
       'M6_Q08',
+      'M6_Q19',
+      'M10_Q17',
+      'M8_Q12',
+      'M1_Q05',
+      'M6_Q07',
+      'M3_Q08',
     ])
       expect(isSensitiveQuestion(id)).toBe(true);
-    expect(isSensitiveQuestion('M1_Q05_AUTRE')).toBe(true);
+    expect(isSensitiveQuestion('M1_Q16_AUTRE')).toBe(true);
     expect(isSensitiveQuestion('M6_Q04')).toBe(false);
-    expect(withoutSensitive({ M1_Q01: 'A', M6_Q07: 'B' })).toEqual({
-      M1_Q01: 'A',
+    expect(withoutSensitive({ M6_Q02: 'A', M6_Q08: 'B' })).toEqual({
+      M6_Q02: 'A',
     });
   });
 
   it('refus : les questions sensibles ne sont plus posées', () => {
     const asked = pendingQuestions(6, {}, 30, 'F').map((q) => q.id);
     const skipped = pendingQuestions(6, {}, 30, 'F', true).map((q) => q.id);
-    expect(asked).toEqual(expect.arrayContaining(['M6_Q06', 'M6_Q07']));
+    const sensitive = asked.filter(isSensitiveQuestion);
+    expect(sensitive).toEqual(expect.arrayContaining(['M6_Q08', 'M6_Q19']));
     expect(skipped.some(isSensitiveQuestion)).toBe(false);
-    expect(skipped.length).toBe(asked.length - 3);
+    expect(skipped.length).toBe(asked.length - sensitive.length);
   });
 
   it('sans accord explicite, une réponse sensible n’est jamais enregistrée', async () => {
@@ -112,10 +116,10 @@ describe('Données sensibles (RGPD, article 9)', () => {
       await service.saveModule('u1', {
         moduleNumber: 6,
         moduleName: 'Module 6',
-        answers: { M6_Q01: 'A', M6_Q07: 'B' },
+        answers: { M6_Q02: 'A', M6_Q08: 'B' },
       });
       const saved = responses.find((r) => r.moduleNumber === 6)!;
-      expect(saved.rawResponses).toEqual({ M6_Q01: 'A' });
+      expect(saved.rawResponses).toEqual({ M6_Q02: 'A' });
     }
   });
 
@@ -124,11 +128,11 @@ describe('Données sensibles (RGPD, article 9)', () => {
     await service.saveModule('u1', {
       moduleNumber: 6,
       moduleName: 'Module 6',
-      answers: { M6_Q01: 'A', M6_Q07: 'B' },
+      answers: { M6_Q02: 'A', M6_Q08: 'B' },
     });
     expect(responses.find((r) => r.moduleNumber === 6)!.rawResponses).toEqual({
-      M6_Q01: 'A',
-      M6_Q07: 'B',
+      M6_Q02: 'A',
+      M6_Q08: 'B',
     });
   });
 

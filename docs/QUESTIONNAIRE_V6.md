@@ -1,3 +1,5 @@
+> Remplacé par la V7 : voir `docs/QUESTIONNAIRE_V7.md` (7 octobre 2026). Ce document décrit la V6.2, dont les réponses restent lues.
+
 # Questionnaire BOLIGO V6 (mise à jour V6.2)
 
 Date : 5 octobre 2026. Ce document compare le questionnaire V5 du Drive au Grand

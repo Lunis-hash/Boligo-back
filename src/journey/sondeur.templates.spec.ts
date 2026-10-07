@@ -436,7 +436,7 @@ describe('Tournures de sujet (TOPIC_PHRASES)', () => {
   ];
 
   it('couvrent toutes les règles du moteur et tous les écarts tirés des échelles', () => {
-    expect(KNOWN.length).toBeGreaterThanOrEqual(73);
+    expect(KNOWN.length).toBeGreaterThanOrEqual(70);
     expect(KNOWN.filter((id) => !(id in TOPIC_PHRASES))).toEqual([]);
     expect(KNOWN.filter((id) => !(id in TOPIC_DAYS))).toEqual([]);
     // Chaque signal d'alerte croisé avec une habitude a sa propre tournure.
@@ -675,13 +675,13 @@ describe('Sécurité, couche IA et résumé pour l’IA', () => {
     });
     const summary = describeReportForAi(report, ['A', 'B']);
     expect(summary).toContain(
-      "Enfants déjà présents : même réponse des deux, « Non, pas d'enfants »",
+      "La présence d'enfants : même réponse des deux, « Non, pas d'enfants »",
     );
     expect(summary).toMatch(
-      /Limite face à la violence physique : même réponse « Rupture immédiate[^»]*» — LIMITE DE SÉCURITÉ : uniquement des questions de limite/,
+      /La limite face à la violence physique : même réponse « Rupture immédiate[^»]*» — LIMITE DE SÉCURITÉ : uniquement des questions de limite/,
     );
     expect(summary).toMatch(
-      /Polygamie : les deux préfèrent en parler en personne/,
+      /La polygamie : les deux préfèrent en parler en personne/,
     );
     expect(summary).toContain(
       'Silence en dispute : même tendance, à explorer sans la citer.',

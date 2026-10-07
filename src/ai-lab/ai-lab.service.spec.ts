@@ -1,6 +1,7 @@
+import { CURRENT_QUESTION_IDS } from '../interview/questions.data';
 import { THEME_LIST } from '../matching/divergence.engine';
 import { AiLabService } from './ai-lab.service';
-import { LAB_SCENARIOS } from './ai-lab.scenarios';
+import { LAB_SCENARIOS, scenarioInterviews } from './ai-lab.scenarios';
 
 const word = (n: number) =>
   `zz${String.fromCharCode(97 + (n % 26))}${String.fromCharCode(97 + (Math.floor(n / 26) % 26))}q`;
@@ -26,7 +27,7 @@ function fakeAi() {
       );
       return Promise.resolve({ questions, model: 'anthropic/claude-opus-5' });
     }),
-    reviewSondeurQuestions: jest.fn((_j: string, qs: unknown[]) =>
+    reviewSondeurQuestions: jest.fn(() =>
       Promise.resolve({
         rejected: new Set<number>(),
         preferred: new Set<number>(),
@@ -89,6 +90,16 @@ describe('Laboratoire IA', () => {
     expect(list.every((s) => s.name && s.checks)).toBe(true);
   });
 
+  it('les réponses imposées visent des questions posées aujourd’hui', () => {
+    for (const s of LAB_SCENARIOS)
+      for (const forced of s.interview ?? [])
+        for (const id of Object.keys(forced))
+          expect(CURRENT_QUESTION_IDS.has(id)).toBe(true);
+    const religion = LAB_SCENARIOS.find((s) => s.id === 'religion-conversion');
+    const [a, b] = scenarioInterviews(religion!);
+    expect([a.M1_Q18, b.M1_Q16]).toEqual(['B', 'D']);
+  });
+
   it('rejoue un couple de bout en bout : 21 questions, lecture publiée, question de suivi', async () => {
     const ai = fakeAi();
     const service = new AiLabService(ai as never);
@@ -125,7 +136,7 @@ describe('Laboratoire IA', () => {
     expect(out.readingStatus).toMatch(/^bloquée/);
     expect(
       ai.journeyCompletion.mock.calls.some(([, , p]) =>
-        (p as string).includes('Écris la lecture'),
+        p.includes('Écris la lecture'),
       ),
     ).toBe(false);
   });

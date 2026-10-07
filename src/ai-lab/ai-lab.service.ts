@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { AiLabBudget, AiService } from '../ai/ai.service';
-import {
-  THEMES,
-  Theme,
-  buildDivergenceReport,
-} from '../matching/divergence.engine';
+import { THEMES, buildDivergenceReport } from '../matching/divergence.engine';
 import {
   isIntrusiveQuestion,
   isOpenQuestion,
@@ -294,10 +290,7 @@ export class AiLabService {
           day: 1,
           theme: THEMES[q.themeKey].label,
           question: q.text,
-          answers: (s.dayOne?.[q.themeKey] ?? DEFAULT_DAY_ONE[q.themeKey]) as [
-            string,
-            string,
-          ],
+          answers: s.dayOne?.[q.themeKey] ?? DEFAULT_DAY_ONE[q.themeKey],
         }));
       if (items.some((it) => it.answers.some(hasDangerSignal))) {
         base.readingStatus =
@@ -389,7 +382,7 @@ export class AiLabService {
       journeyId,
       candidates.map((c) => ({
         day: 2,
-        themeKey: c.themeKey as Theme,
+        themeKey: c.themeKey,
         text: c.text,
         method: c.method,
         target: c.target,

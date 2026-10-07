@@ -3,6 +3,7 @@
  * la fiche Découverte, elle ne doit donc contredire aucune réponse clé du
  * Grand Entretien (désir d'enfants, religion).
  */
+import { faithOf, FaithFamily } from '../matching/answer-bridge';
 import { RawAnswers } from '../matching/divergence.engine';
 
 /** Mots entiers, lettres accentuées comprises (`\b` ignore « é », « è »…). */
@@ -18,11 +19,13 @@ const NO_KIDS = words(
 const FAITH_WORDS = words(
   'ma foi|dieu|allah|prières?|pratiquante?|église|mosquée|synagogue',
 );
-const RELIGION_WORDS: Record<string, RegExp> = {
-  A: words('chrétien(?:ne)?|église|jésus'),
-  B: words('musulman(?:e)?|mosquée|islam|allah'),
-  C: words('juif|juive|synagogue|judaïsme'),
-  D: words('bouddhiste|hindou(?:e|iste)?'),
+const RELIGION_WORDS: Partial<Record<FaithFamily, RegExp>> = {
+  chretien: words(
+    'chrétien(?:ne)?|catholique|protestante?|évangélique|église|jésus',
+  ),
+  musulman: words('musulman(?:e)?|mosquée|islam|allah'),
+  juif: words('juif|juive|synagogue|judaïsme'),
+  bouddhiste_hindou: words('bouddhiste|hindou(?:e|iste)?'),
 };
 
 /** Raison de la contradiction, ou null si la bio est cohérente avec les réponses. */
@@ -34,10 +37,12 @@ export function aiBioContradicts(
   if (wish === 'D' && WANTS_KIDS.test(bio)) return "désir d'enfants inventé";
   if ((wish === 'A' || wish === 'B') && NO_KIDS.test(bio))
     return "refus d'enfants inventé";
-  const religion = answers.M1_Q05;
-  if (religion === 'E' && FAITH_WORDS.test(bio)) return 'foi inventée';
-  for (const [key, re] of Object.entries(RELIGION_WORDS)) {
-    if (religion && key !== religion && re.test(bio)) return 'religion erronée';
+  // Religion déclarée : M1_Q16 (V7) ou M1_Q05 (V6).
+  const religion = faithOf(answers)?.family;
+  if (religion === 'sans' && FAITH_WORDS.test(bio)) return 'foi inventée';
+  for (const [family, re] of Object.entries(RELIGION_WORDS)) {
+    if (religion && family !== religion && re.test(bio))
+      return 'religion erronée';
   }
   return null;
 }

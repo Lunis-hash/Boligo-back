@@ -80,7 +80,7 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     signOut: 'Se déconnecter',
     languageHint: 'Langue de l’entretien',
     consentText:
-      'Les questions suivantes portent sur votre religion, votre vie intime ou des violences vécues. Ce sont des données sensibles : BOLIGO ne les enregistre qu’avec votre accord explicite. Elles servent à calculer votre compatibilité et peuvent apparaître, résumées, sur votre profil. Vous pourrez retirer votre accord à tout moment depuis votre profil : vos réponses seront alors effacées.',
+      'Les questions suivantes portent sur votre religion ou votre vie intime. Ce sont des données sensibles : BOLIGO ne les enregistre qu’avec votre accord explicite. Elles servent à calculer votre compatibilité et peuvent apparaître, résumées, sur votre profil. Vous pourrez retirer votre accord à tout moment depuis votre profil : vos réponses seront alors effacées.',
     consentYes: 'J’accepte de répondre',
     consentNo: 'Je préfère passer ces questions',
   },
@@ -110,7 +110,7 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     signOut: 'Sign out',
     languageHint: 'Interview language',
     consentText:
-      'The next questions are about your religion, your intimate life or violence you have experienced. This is sensitive data: BOLIGO only saves it with your explicit consent. It is used to work out your compatibility and may appear, summarised, on your profile. You can withdraw your consent at any time from your profile: your answers will then be deleted.',
+      'The next questions are about your religion or your intimate life. This is sensitive data: BOLIGO only saves it with your explicit consent. It is used to work out your compatibility and may appear, summarised, on your profile. You can withdraw your consent at any time from your profile: your answers will then be deleted.',
     consentYes: 'I agree to answer',
     consentNo: 'I’d rather skip these questions',
   },
