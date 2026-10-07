@@ -493,16 +493,17 @@ function mean(values: Array<number | null>, min: number): number | null {
   return Math.round(v.reduce((s, x) => s + x, 0) / v.length);
 }
 
-/** Échelles V7 qui mêlent affirmations directes et inversées. */
+/**
+ * Échelles V7 qui mêlent affirmations directes et inversées. V7.1 : les
+ * quatre cavaliers n'y figurent plus : sur une échelle de fréquence, faire
+ * « souvent » un reproche et « souvent » son antidote n'est pas une
+ * contradiction (on fait les deux, selon les jours).
+ */
 const MIXED_SCALES: Item[][] = [
   ATTACHMENT_ANXIETY,
   ATTACHMENT_AVOIDANCE,
   REAPPRAISAL,
   SUPPRESSION,
-  CRITICISM,
-  CONTEMPT,
-  DEFENSIVENESS,
-  STONEWALLING,
   ...Object.values(BIG_FIVE),
   SHYNESS,
 ];
@@ -645,14 +646,14 @@ const optionText = (id: string, key: string) =>
  * Pôle « relance » du cycle de dispute : insister ou relancer quand l'autre
  * demande une pause (M6_Q17), corroboré par les reproches, le ton qui monte
  * ou l'inquiétude pour le lien. Sans scénario (entretien V6) : reproches
- * fréquents seulement.
+ * fréquents seulement. V7.1 : le point neutre (50) ne corrobore rien.
  */
 function pursuit(p: PsychProfile, x: RawAnswers) {
   const scenario = x.M6_Q17 === 'C' || x.M6_Q17 === 'D';
   const crit = p.conflict.criticism ?? 0;
   const strong =
     (scenario &&
-      (crit >= MID ||
+      (crit >= STYLE_HIGH ||
         x.M6_Q16 === 'C' ||
         (p.attachment.anxiety ?? 0) >= STYLE_HIGH)) ||
     (crit >= HIGH && (p.items.criticism ?? 0) >= 2);
@@ -666,14 +667,15 @@ function pursuit(p: PsychProfile, x: RawAnswers) {
 /**
  * Pôle « repli » : partir ou se taire sans rien expliquer quand on n'arrive
  * plus à écouter (M6_Q16 ; V6 : M6_Q01), corroboré par l'échelle de repli,
- * une réparation lente ou l'inconfort avec la proximité.
+ * une réparation lente ou l'inconfort avec la proximité. V7.1 : le point
+ * neutre (50) ne corrobore rien.
  */
 function withdrawal(p: PsychProfile, x: RawAnswers) {
   const scenarioV7 = x.M6_Q16 === 'D';
   const scenarioV6 = x.M6_Q01 === 'C' || x.M6_Q01 === 'D';
   const wall = p.conflict.stonewalling ?? 0;
   const corroborated =
-    wall >= MID ||
+    wall >= STYLE_HIGH ||
     x.M2_Q07 === 'C' ||
     x.M2_Q07 === 'D' ||
     (p.attachment.avoidance ?? 0) >= STYLE_HIGH;
@@ -872,9 +874,14 @@ export function redFlagDivergences(a: RawAnswers, b: RawAnswers): Divergence[] {
         key: flag,
         text: `Ce qui me ferait fuir : ${map.label.toLowerCase()}`,
       };
+      // V7.1 : une affirmation d'accord (M9_Q13) se cite en accord, jamais
+      // en fréquence.
+      const agreement = QUESTION_INDEX.get(map.item)?.scale === 'accord';
       const habit = {
         key: freq!,
-        text: `Il m’arrive ${often.word} que ${map.habit}`,
+        text: agreement
+          ? `${freq === 'E' ? 'Tout à fait' : 'Plutôt'} d’accord : ${map.habit}`
+          : `Il m’arrive ${often.word} que ${map.habit}`,
       };
       out.push({
         questionId: 'M8_Q10',

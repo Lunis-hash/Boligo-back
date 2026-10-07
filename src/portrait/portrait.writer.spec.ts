@@ -34,6 +34,8 @@ function answersWith(shift: number): RawAnswers {
     M2_Q22: 'A',
     M3_Q11: 'D',
     M3_Q12: 'A',
+    M5_Q02: 'A',
+    M5_Q10: 'B',
     M6_Q03: 'A',
     M6_Q04: 'A',
     M6_Q05: 'A',

@@ -33,6 +33,7 @@ import {
   answerText,
 } from '../interview/questions.data';
 import {
+  STYLE_HIGH,
   buildPsychProfile,
   psychometricDivergences,
 } from '../psychometrics/psychometrics';
@@ -42,7 +43,7 @@ import {
   faithRequirement,
   foodRuleOf,
   keysWithout,
-  nonNegotiableThemeOf,
+  nonNegotiableThemesOf,
   nonNegotiablesOf,
   stillAttached,
   upgradeAnswers,
@@ -245,11 +246,15 @@ function overlap(a: string[], b: string[]): number {
   return a.filter((k) => b.includes(k)).length / union.size;
 }
 
-/** Retrait en dispute confirmé par une autre réponse (échelle, scénario, réparation). */
+/**
+ * Retrait en dispute confirmé par une autre réponse (échelle, scénario,
+ * réparation). V7.1 : le point neutre (50, « parfois ») ne confirme rien ;
+ * il faut le pôle haut de l'échelle (60 et plus).
+ */
 function withdrawalConfirmed(x: RawAnswers, exclude: string): boolean {
   const p = buildPsychProfile(x);
   return (
-    (p.conflict.stonewalling ?? 0) >= 50 ||
+    (p.conflict.stonewalling ?? 0) >= STYLE_HIGH ||
     (p.attachment.avoidance ?? 0) >= 60 ||
     x.M6_Q16 === 'D' ||
     (exclude !== 'M6_Q01' && ['C', 'D'].includes(x.M6_Q01)) ||
@@ -374,10 +379,14 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'famille',
     label: "Désir d'enfants",
     topic: "Le désir d'enfants",
+    // V7.1 : « oui, si les conditions sont réunies » face à « non, c'est
+    // définitif » est le non-négociable le plus robuste de la recherche sur
+    // les critères de rupture : une incompatibilité déclarée, comme « oui,
+    // absolument ». « Je ne suis pas certain(e) » face à « non » : majeure.
     severity: pairs({
       AD: 'critique',
-      BD: 'majeure',
-      CD: 'moderee',
+      BD: 'critique',
+      CD: 'majeure',
       AC: 'moderee',
       BC: 'mineure',
       AB: 'mineure',
@@ -439,6 +448,10 @@ export const DIVERGENCE_RULES: Rule[] = [
       BD: 'mineure',
       CD: 'mineure',
     }),
+    // V7.1 : deux « je suis leur avis pour garder la paix » (fusion), deux
+    // oppositions vives ou deux prises de distance (coupure) ne sont pas un
+    // accord : personne ne tient la position du couple (Bowen).
+    sameRisk: { A: 'moderee', C: 'moderee', D: 'moderee' },
     convergence: {
       B: 'Vous décidez tous les deux à deux, et l’expliquez calmement à vos proches',
     },
@@ -459,6 +472,9 @@ export const DIVERGENCE_RULES: Rule[] = [
             AC: 'moderee',
             CE: 'moderee',
           })(a, b),
+    // V7.1 : deux attentes que « ça se règle naturellement », ou deux
+    // « ne le prends pas à cœur » : personne ne protège le partenaire.
+    sameRisk: { C: 'moderee', D: 'moderee' },
     convergence: {
       A: 'Vous défendriez tous les deux votre partenaire face à votre famille',
       E: 'Vous soutiendriez tous les deux votre partenaire, avant d’en parler seul à seul avec votre parent',
@@ -777,16 +793,19 @@ export const DIVERGENCE_RULES: Rule[] = [
 
   // ── Intimité & sexualité
   {
-    // V7 — remplace M6_Q10 : des réponses ordonnées, sans jugement moral ;
-    // aucune ne déclare seule une incompatibilité (voir M8_Q12).
+    // V7 — remplace M6_Q10 : des réponses ordonnées, sans jugement moral.
+    // V7.1 : la question mesure la réaction à une infidélité, pas la
+    // fidélité : pardonner n'est pas être infidèle. Elle ne relève plus du
+    // thème « fidélité » de M8_Q12 et pèse peu ; ce que chacun appelle
+    // « tromper » (M6_Q19) reste la vraie divergence.
     questionId: 'M6_Q18',
     theme: 'intimite',
-    label: 'Fidélité',
-    topic: 'La fidélité',
+    label: 'Réaction à une infidélité',
+    topic: 'La réaction à une infidélité',
     severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BD: 'moderee',
+      AD: 'moderee',
+      AC: 'mineure',
+      BD: 'mineure',
       AB: 'mineure',
       BC: 'mineure',
       CD: 'mineure',
@@ -935,10 +954,12 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'communication',
     label: 'Le premier pas après une dispute',
     topic: 'Le premier pas après une dispute',
+    // V7.1 : « j'attends que l'autre revienne » face à « je ne m'excuse
+    // pas » : personne ne fait le premier pas non plus (comme C/C et D/D).
     severity: (a, b) =>
       ['A', 'B'].includes(a) && ['A', 'B'].includes(b)
         ? null
-        : pairs({ AD: 'moderee' }, 'mineure')(a, b),
+        : pairs({ AD: 'moderee', CD: 'moderee' }, 'mineure')(a, b),
     // Deux attentes que l'autre revienne, ou deux refus de s'excuser : personne
     // ne fait le premier pas.
     sameRisk: { C: 'moderee', D: 'moderee' },
@@ -1800,10 +1821,20 @@ function tobaccoRule(
   ] as const) {
     const level = smoker.M0_Q09;
     const accept = refuser.M0_Q11;
-    if (!accept || (level !== 'B' && level !== 'C')) continue;
+    // V7.1 : la réponse V6 (M0_Q08) mêlait tabac, alcool et substances ;
+    // « rédhibitoire » ou « avec modération » face à un fumeur ne sont que
+    // des sujets à explorer, jamais une incompatibilité déclarée.
+    const legacy =
+      !accept && ['A', 'B'].includes(refuser.M0_Q08)
+        ? refuser.M0_Q08
+        : undefined;
+    if ((!accept && !legacy) || (level !== 'B' && level !== 'C')) continue;
     comparable = true;
-    const severity: Severity | null =
-      accept === 'A'
+    const severity: Severity | null = legacy
+      ? legacy === 'A' && level === 'C'
+        ? 'moderee'
+        : 'mineure'
+      : accept === 'A'
         ? level === 'C'
           ? 'critique'
           : 'majeure'
@@ -1943,27 +1974,87 @@ const up: Record<Severity, Severity> = {
 const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
 
 /**
+ * V7.1 — projet de vie et valeurs : jamais adoucis par P2 ni par P9. Ne pas
+ * cocher un sujet dans M8_Q12 (trois choix au plus, « tout se discute » étant
+ * la réponse attendue) ne prouve pas qu'il se négocie ; et M8_Q14 parle des
+ * désaccords de caractère et d'habitudes, pas du projet de vie. Les refus
+ * explicites (« je ne pourrais pas vivre avec ») y figurent aussi.
+ */
+export const CORE_DEALBREAKERS: ReadonlySet<string> = new Set([
+  // Enfants
+  'M0_Q06',
+  // Lieu de vie
+  'M0_Q03',
+  'M7_Q07',
+  // Religion, pratique, polygamie, intimité avant le mariage
+  'M1_Q16',
+  'M1_Q05',
+  'M1_Q17',
+  'M1_Q11',
+  'M10_Q17',
+  // Objectif, rôles et éducation
+  'M8_Q01',
+  'M4_Q04',
+  'M4_Q15',
+  'M8_Q15',
+  // Refus explicites (tabac, alcool)
+  'M0_Q09',
+  'M0_Q12',
+]);
+
+/**
+ * V7.1 — P9 : M8_Q14 parle de « caractère, habitudes ». Seuls ces sujets
+ * (rythme, style, petites manières de faire) montent ou descendent selon la
+ * façon dont chacun vit les désaccords qui durent.
+ */
+export const PERPETUAL_TOPICS: ReadonlySet<string> = new Set([
+  'M7_Q02',
+  'M7_Q05',
+  'M7_Q08',
+  'M8_Q06',
+  'M9_Q02',
+  'M9_Q03',
+  'M9_Q06',
+  'M9_Q07',
+  'M6_Q03',
+  'M6_Q11',
+  'M2_Q07',
+  'M2_Q22',
+  'M4_Q10',
+  'M4_Q13',
+  'M4_Q14',
+  'M5_Q07',
+  'M10_Q15',
+]);
+
+/**
  * P2 — ce qui est non négociable (M8_Q12). Une divergence sur un sujet
  * déclaré non négociable par l'un des deux monte d'un cran (modérée →
  * majeure, majeure → incompatibilité déclarée) ; quand les deux membres ont
- * répondu et qu'aucun n'a déclaré ce sujet, une majeure redevient un sujet à
- * explorer. Généralise la ligne rouge V6 (M8_Q05 = « enfants ou religion »).
+ * coché des sujets et qu'aucun n'a coché celui-ci, une majeure redevient un
+ * sujet à explorer, sauf sur le projet de vie (CORE_DEALBREAKERS).
+ * Généralise la ligne rouge V6 (M8_Q05 = « enfants ou religion »).
  */
 function applyNonNegotiables(a: RawAnswers, b: RawAnswers, c: Collector) {
   const na = nonNegotiablesOf(a);
   const nb = nonNegotiablesOf(b);
   if (!na && !nb) return;
   for (const d of c.adjustable) {
-    const key = nonNegotiableThemeOf(d.questionId);
-    if (!key) continue;
-    if (na?.keys.has(key) || nb?.keys.has(key)) {
+    const keys = nonNegotiableThemesOf(d.questionId);
+    if (!keys.length) continue;
+    if (keys.some((k) => na?.keys.has(k) || nb?.keys.has(k))) {
       const raised = up[d.severity];
       if (raised !== d.severity) {
         d.severity = raised;
         d.nonNegotiable = true;
       }
       c.declared.add(d);
-    } else if (na?.explicit && nb?.explicit && d.severity === 'majeure') {
+    } else if (
+      na?.explicit &&
+      nb?.explicit &&
+      d.severity === 'majeure' &&
+      !CORE_DEALBREAKERS.has(d.questionId)
+    ) {
       d.severity = 'moderee';
     }
   }
@@ -1974,12 +2065,14 @@ function applyNonNegotiables(a: RawAnswers, b: RawAnswers, c: Collector) {
  * qu'on n'est pas faits l'un pour l'autre fait monter d'un cran la divergence
  * modérée la plus importante (une seule) ; deux membres qui acceptent les
  * désaccords durables gardent les divergences modérées au rang de nuances.
+ * V7.1 : seulement sur les sujets de caractère et d'habitudes.
  */
 function applyPerpetualProblems(a: RawAnswers, b: RawAnswers, c: Collector) {
   const candidates = [...c.adjustable]
     .filter(
       (d) =>
         d.severity === 'moderee' &&
+        PERPETUAL_TOPICS.has(d.questionId) &&
         !SAFETY_QUESTIONS.has(d.questionId) &&
         !c.declared.has(d),
     )
@@ -2008,7 +2101,11 @@ export function buildDivergenceReport(
   alcoholRule(a, b, c);
   availabilityRule(a, b, c);
   for (const rule of LEGACY_RULES) applyRule(rule, a, b, c);
-  for (const p of POSITIVE_CONVERGENCES) {
+  // V7.1 : une « bonne pratique » partagée n'est affichée que si aucun des
+  // deux portraits n'est idéalisé (la sincérité pondère aussi les scénarios).
+  const sincere =
+    !buildPsychProfile(a).idealized && !buildPsychProfile(b).idealized;
+  for (const p of sincere ? POSITIVE_CONVERGENCES : []) {
     if (a[p.questionId] === p.key && b[p.questionId] === p.key)
       c.converge({
         questionId: p.questionId,

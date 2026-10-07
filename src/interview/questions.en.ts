@@ -78,7 +78,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M0_Q06: {
-    text: 'Do you want children in the future?',
+    text: 'Do you want to have children (or more children) in the future?',
     options: [
       'Yes, absolutely',
       'Yes, if the conditions are right',
@@ -197,7 +197,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'If the person you love did not share your religion or beliefs:',
     options: [
       'It wouldn’t be possible: I’m looking for someone who shares them',
-      'I would want them to adopt mine before marriage',
+      'It would be a condition: they would have to adopt mine before marriage',
       'I would wish for it, without making it a condition',
       'We would each keep our own, respecting the other’s',
       'I could adopt theirs myself',
@@ -251,7 +251,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Not being good enough',
       'Being betrayed',
       'Not getting enough attention and affection',
-      'Having to erase myself to be loved',
+      'Having to put myself last to be loved',
       'None of these fears really speaks to me',
     ],
   },
@@ -274,7 +274,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M2_Q22: {
-    text: 'After an argument in which you think you were mostly right, you usually:',
+    text: 'After an argument in which you think you were mostly right, what do you usually do?',
     options: [
       'I acknowledge my share, even if it is small',
       'I take a step towards the other, without going back over the substance',
@@ -563,11 +563,11 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M5_Q02: {
     text: 'Your mother (or father) disrespects your partner. You:',
     options: [
-      'Defend your partner immediately and clearly',
+      'Stand up for your partner in front of your parent',
       'Try to understand before acting',
       'Wait for it to settle on its own',
       'Tell your partner not to take it too much to heart',
-      'Support your partner in the moment, then talk to your parent one-to-one',
+      'Back your partner, then talk to your parent in private',
     ],
   },
   M5_Q03: {
@@ -601,7 +601,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'Access to your partner’s phone and messages:',
     options: [
       'Total transparency — each has access to everything',
-      'Trust without control — each keeps their privacy',
+      'Each keeps their phone to themselves',
       'Access only in case of serious doubt',
       'I’ve never thought about it',
     ],
@@ -785,7 +785,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'When a friend asks me a favour that’s a bit inconvenient, I still do it willingly.',
   },
   M7_Q22: {
-    text: 'I deal with my bills and paperwork on time.',
+    text: 'When I have some paperwork to do, I deal with it without waiting until the last minute.',
   },
   M7_Q23: {
     text: 'Over a small annoyance (a delay, a lost item), I can get irritated very quickly.',
@@ -815,7 +815,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'I often find myself looking for my keys or papers because they aren’t put away.',
   },
   M7_Q32: {
-    text: 'When I’m criticised at work, I take it without losing my calm.',
+    text: 'When I’m criticised (at work, in my studies or in my family), I take it without losing my calm.',
   },
   M7_Q33: {
     text: 'In the evening, I can usually put the day’s worries aside.',

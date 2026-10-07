@@ -51,9 +51,12 @@ describe('Moteur de divergences BOLIGO', () => {
   });
 
   it('déclare une incompatibilité sur le désir d’enfants, plus sur une réponse franche sur la fidélité', () => {
+    // V7.1 : la réaction à une infidélité pèse peu (pardonner n'est pas
+    // être infidèle) : « rupture immédiate » face à « une épreuve
+    // surmontable » reste un sujet à explorer.
     const report = buildDivergenceReport(
       { M0_Q06: 'A', M6_Q18: 'A' },
-      { M0_Q06: 'D', M6_Q18: 'C' },
+      { M0_Q06: 'D', M6_Q18: 'D' },
     );
     expect(report.hardStop).toBe(true);
     expect(report.divergences.map((d) => d.severity)).toEqual([

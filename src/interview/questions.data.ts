@@ -259,9 +259,11 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — modifiée : « (ou d'autres enfants) », pour qu'un parent puisse
+    // répondre sans se contredire ; les clés gardent leur sens.
     id: 'M0_Q06',
     moduleNumber: 0,
-    text: "Souhaitez-vous des enfants à l'avenir ?",
+    text: "Souhaitez-vous avoir des enfants (ou d'autres enfants) à l'avenir ?",
     options: [
       { key: 'A', text: 'Oui, absolument' },
       { key: 'B', text: 'Oui, si les conditions sont réunies' },
@@ -447,8 +449,9 @@ export const QUESTIONS: Question[] = [
         text: "Ce ne serait pas possible : je cherche quelqu'un qui les partage",
       },
       {
+        // V7.1 : la condition est dite (le moteur la lit comme une condition).
         key: 'B',
-        text: "Je souhaiterais qu'elle adopte les miennes avant le mariage",
+        text: "J'en ferais une condition : qu'elle adopte les miennes avant le mariage",
       },
       { key: 'C', text: 'Je le souhaiterais, sans en faire une condition' },
       {
@@ -1157,15 +1160,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    // V7 — modifiée : ajout de la réponse que retiendrait un clinicien (E) ;
-    // A à D gardent leur sens. La question a désormais sa règle.
+    // V7 — modifiée : ajout d'une cinquième réponse (E) ; A à D gardent leur
+    // sens. La question a désormais sa règle. V7.1 : A et E reformulées sur
+    // le même ton que les autres, pour qu'aucune ne sonne comme la « bonne »
+    // réponse (désirabilité sociale) ; les clés gardent leur sens.
     id: 'M5_Q02',
     moduleNumber: 5,
     text: 'Votre mère (ou votre père) manque de respect à votre partenaire. Vous :',
     options: [
       {
         key: 'A',
-        text: 'Défendez votre partenaire immédiatement et clairement',
+        text: 'Prenez la défense de votre partenaire devant votre parent',
       },
       { key: 'B', text: "Cherchez à comprendre avant d'agir" },
       { key: 'C', text: 'Attendez que ça se règle naturellement' },
@@ -1175,7 +1180,7 @@ export const QUESTIONS: Question[] = [
       },
       {
         key: 'E',
-        text: 'Soutenez votre partenaire sur le moment, puis parlez seul(e) à seul(e) avec votre parent',
+        text: 'Soutenez votre partenaire, puis parlez-en à votre parent en privé',
       },
     ],
   },
@@ -1221,12 +1226,14 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — modifiée : B ne dit plus « confiance sans contrôle » (la bonne
+    // réponse évidente) ; les clés gardent leur sens.
     id: 'M5_Q08',
     moduleNumber: 5,
     text: "L'accès au téléphone et aux messages de votre partenaire :",
     options: [
       { key: 'A', text: 'Transparence totale — chacun a accès à tout' },
-      { key: 'B', text: 'Confiance sans contrôle — chacun garde son intimité' },
+      { key: 'B', text: 'Chacun garde son téléphone pour lui' },
       { key: 'C', text: 'Accès possible seulement en cas de doute sérieux' },
       { key: 'D', text: 'Je ne me suis jamais posé la question' },
     ],
@@ -1574,11 +1581,12 @@ export const QUESTIONS: Question[] = [
     options: AGREEMENT_OPTIONS,
   },
   {
-    // Sens de l'organisation.
+    // Sens de l'organisation. V7.1 : sans « factures », qui mesuraient aussi
+    // le revenu.
     id: 'M7_Q22',
     moduleNumber: 7,
     scale: 'accord',
-    text: 'Je règle mes factures et mes papiers administratifs dans les délais.',
+    text: "Quand j'ai une démarche administrative à faire, je m'en occupe sans attendre la dernière minute.",
     options: AGREEMENT_OPTIONS,
   },
   {
@@ -1654,11 +1662,11 @@ export const QUESTIONS: Question[] = [
     options: AGREEMENT_OPTIONS,
   },
   {
-    // Sérénité.
+    // Sérénité. V7.1 : ne suppose plus un emploi.
     id: 'M7_Q32',
     moduleNumber: 7,
     scale: 'accord',
-    text: "Quand je reçois une critique au travail, je l'encaisse sans perdre mon calme.",
+    text: "Quand on me fait une critique (au travail, dans mes études ou en famille), je l'encaisse sans perdre mon calme.",
     options: AGREEMENT_OPTIONS,
   },
   {
@@ -3194,6 +3202,8 @@ export const V7_CHANGES: Record<
 > = {
   M0_Q04: 'modifiee',
   M0_Q05: 'modifiee',
+  M0_Q06: 'modifiee',
+  M5_Q08: 'modifiee',
   M1_Q02: 'modifiee',
   M0_Q11: 'nouvelle',
   M0_Q12: 'nouvelle',
@@ -3415,6 +3425,26 @@ export const V7_ADDED: ReadonlySet<string> = new Set(
     .filter(([, change]) => change === 'nouvelle')
     .map(([id]) => id),
 );
+
+/**
+ * Évolutions de la V7.1 (sous-ensemble de `V7_CHANGES`, même vocabulaire) :
+ * ce qui a changé depuis la V7 publiée, pour les documents. Détail et raisons
+ * dans `docs/QUESTIONNAIRE_V7.md`, section « V7.1 ».
+ */
+export const V71_CHANGES: Record<
+  string,
+  'nouvelle' | 'modifiee' | 'regle' | 'retiree'
+> = {
+  M0_Q06: 'modifiee',
+  M1_Q18: 'modifiee',
+  M5_Q02: 'modifiee',
+  M5_Q08: 'modifiee',
+  M7_Q22: 'modifiee',
+  M7_Q32: 'modifiee',
+  M6_Q18: 'regle',
+  M5_Q10: 'regle',
+  M2_Q22: 'regle',
+};
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */
 export function isV7Interview(answers: Record<string, string>): boolean {

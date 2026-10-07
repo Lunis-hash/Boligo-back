@@ -111,9 +111,28 @@ describe('P2 : ce qui est non négociable distingue une divergence d’une nuanc
   });
 
   it('entre deux membres qui ont déclaré le sujet négociable, une majeure redevient un sujet à explorer', () => {
+    // V7.1 : seulement hors projet de vie, et si chacun a coché au moins un
+    // autre sujet (« tout se discute » seul ne prouve rien).
+    const often = { M5_Q07: 'A' };
+    const rarely = { M5_Q07: 'D' };
     expect(
-      severityOf({ ...far, M8_Q12: 'K' }, { ...abroad, M8_Q12: 'A' }, 'M7_Q07'),
+      severityOf(
+        { ...often, M8_Q12: 'A' },
+        { ...rarely, M8_Q12: 'C' },
+        'M5_Q07',
+      ),
     ).toEqual(['moderee']);
+    expect(
+      severityOf(
+        { ...often, M8_Q12: 'K' },
+        { ...rarely, M8_Q12: 'A' },
+        'M5_Q07',
+      ),
+    ).toEqual(['majeure']);
+    // Le lieu de vie relève du projet de vie : jamais adouci.
+    expect(
+      severityOf({ ...far, M8_Q12: 'A' }, { ...abroad, M8_Q12: 'C' }, 'M7_Q07'),
+    ).toEqual(['majeure']);
     // Un entretien V6 n'a rien déclaré : pas d'adoucissement.
     expect(severityOf({ ...far, M8_Q12: 'K' }, abroad, 'M7_Q07')).toEqual([
       'majeure',
@@ -160,9 +179,11 @@ describe('P9 : les désaccords qui durent', () => {
     const sev = Object.fromEntries(
       r.divergences.map((d) => [d.questionId, d.severity]),
     );
+    // V7.1 : seulement les sujets de caractère et d'habitudes (les visites
+    // à la belle-famille) ; l'organisation de l'argent n'en est pas un.
     expect(sev).toEqual({
       M5_Q07: 'mineure',
-      M4_Q01: 'mineure',
+      M4_Q01: 'moderee',
       M6_Q04: 'moderee',
     });
     expect(r.convergences.map((c) => c.questionId)).toContain('M8_Q14');
@@ -371,7 +392,10 @@ describe('Membres V6 : réponses sans les nouvelles questions', () => {
   it('lit une réponse V6 de même sens dans les termes de la V7, sans écraser la V7', () => {
     expect(upgradeAnswers({ M1_Q10: 'B' }).M5_Q01).toBe('B');
     expect(upgradeAnswers({ M1_Q10: 'B', M5_Q01: 'D' }).M5_Q01).toBe('D');
-    expect(upgradeAnswers({ M0_Q08: 'A' }).M0_Q11).toBe('A');
+    // V7.1 : « rédhibitoire » (tabac, alcool ou substances) n'est pas un
+    // refus du tabac ; seul « sans importance » se lit sans risque.
+    expect(upgradeAnswers({ M0_Q08: 'A' }).M0_Q11).toBeUndefined();
+    expect(upgradeAnswers({ M0_Q08: 'D' }).M0_Q11).toBe('C');
     expect(upgradeAnswers({ M0_Q08: 'C' }).M0_Q11).toBeUndefined();
     expect(upgradeAnswers({ M2_Q08: 'B' }).M2_Q22).toBeUndefined();
   });

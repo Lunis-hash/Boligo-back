@@ -192,14 +192,25 @@ describe('Sincérité : elle module la confiance, jamais la note', () => {
 
   it('repère des réponses contradictoires (d’accord avec une affirmation et son contraire)', () => {
     const yes = Object.fromEntries(
-      Object.keys({ ...attach(3, 3), ...fights(3, 3, 3, 3) }).map((id) => [
-        id,
-        'E',
-      ]),
+      [
+        ...Object.keys(attach(3, 3)),
+        ...SCALES.reappraisal.items.map((i) => i.id),
+      ].map((id) => [id, 'E']),
     );
     const p = buildPsychProfile(yes);
     expect(p.acquiescent).toBe(true);
     expect(p.confidence).toBe(0.5);
+  });
+
+  it('V7.1 : faire souvent un reproche et souvent son antidote n’est pas une contradiction (échelle de fréquence)', () => {
+    // Trois cavaliers et leurs antidotes « très souvent », plus l'attachement
+    // au point neutre : ni acquiescement ni confiance réduite.
+    const both = Object.fromEntries(
+      Object.keys(fights(3, 3, 3, 3)).map((id) => [id, 'E']),
+    );
+    const p = buildPsychProfile({ ...attach(3, 3), ...both });
+    expect(p.acquiescent).toBe(false);
+    expect(p.confidence).toBe(1);
   });
 
   it('lit les questions miroir à choix multiple', () => {

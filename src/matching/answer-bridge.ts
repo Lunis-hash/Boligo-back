@@ -26,9 +26,11 @@ export const LEGACY_UPGRADES: Array<{
 }> = [
   // Doublon V6 retiré : mêmes quatre options, mot pour mot.
   { to: 'M5_Q01', from: 'M1_Q10', map: { A: 'A', B: 'B', C: 'C', D: 'D' } },
-  // « Rédhibitoire » (tabac, alcool ou substances) vaut un refus du tabac ;
-  // « je consomme moi-même » ne dit rien de ce que l'on accepte chez l'autre.
-  { to: 'M0_Q11', from: 'M0_Q08', map: { A: 'A', B: 'B', D: 'C' } },
+  // V7.1 : « rédhibitoire » portait sur le tabac, l'alcool OU d'autres
+  // substances : ce n'est pas un refus du tabac (il reste lu, à explorer,
+  // par la règle de l'alcool). « Acceptable avec modération » ne dit pas non
+  // plus ce que l'on accepte du tabac ; seul « sans importance » est sûr.
+  { to: 'M0_Q11', from: 'M0_Q08', map: { D: 'C' } },
   // Place de l'intimité : « pilier », « important sans être déterminant »,
   // « se construit avec le temps ». La réponse refuge (D) n'a pas d'équivalent.
   { to: 'M10_Q16', from: 'M6_Q06', map: { A: 'A', B: 'B', C: 'D' } },
@@ -195,7 +197,8 @@ export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
     'M1_Q13',
     'M8_Q03',
   ],
-  C: ['M6_Q18', 'M6_Q19', 'M6_Q10'],
+  // V7.1 : la réaction à une infidélité (M6_Q18) n'est pas la fidélité.
+  C: ['M6_Q19', 'M6_Q10'],
   D: ['M4_Q01', 'M4_Q14', 'M4_Q05', 'M4_Q09', 'M4_Q11', 'M4_Q12', 'M4_Q08'],
   E: ['M0_Q03', 'M7_Q07'],
   F: ['M5_Q01', 'M5_Q02', 'M5_Q03', 'M5_Q07', 'M5_Q10', 'M1_Q15', 'M1_Q10'],
@@ -205,29 +208,39 @@ export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
   J: ['M4_Q03', 'M4_Q04', 'M4_Q15'],
 };
 
-/** Thème non négociable dont relève une question (ou null). */
+/** Thèmes non négociables dont relève une question (un sujet peut en toucher deux). */
+export function nonNegotiableThemesOf(questionId: string): string[] {
+  return Object.entries(NON_NEGOTIABLE_QUESTIONS)
+    .filter(([, ids]) => ids.includes(questionId))
+    .map(([key]) => key);
+}
+
+/** Premier thème non négociable dont relève une question (ou null). */
 export function nonNegotiableThemeOf(questionId: string): string | null {
-  for (const [key, ids] of Object.entries(NON_NEGOTIABLE_QUESTIONS))
-    if (ids.includes(questionId)) return key;
-  return null;
+  return nonNegotiableThemesOf(questionId)[0] ?? null;
 }
 
 export interface NonNegotiables {
   keys: Set<string>;
-  /** Déclaration V7 (M8_Q12) : « non coché » veut alors vraiment dire « négociable ». */
+  /**
+   * Déclaration V7 (M8_Q12) d'au moins un sujet : un sujet non coché peut
+   * alors être lu comme négociable (sauf projet de vie, voir le moteur).
+   */
   explicit: boolean;
 }
 
 /**
  * Ce que le membre déclare non négociable. V7 : M8_Q12 (« Aucun » coché avec
- * d'autres thèmes est ignoré). V6 : la rupture sans discussion (M8_Q05 :
+ * d'autres thèmes est ignoré). V7.1 : « Aucun : tout se discute » seul est la
+ * réponse socialement attendue ; elle ne prouve pas que chaque sujet se
+ * négocie (explicit: false). V6 : la rupture sans discussion (M8_Q05 :
  * infidélité → fidélité ; « enfants ou religion » → les deux) et ce qui ne
  * sera jamais accepté (M8_Q08 : infidélité → fidélité). null : rien déclaré.
  */
 export function nonNegotiablesOf(x: RawAnswers): NonNegotiables | null {
   if (x.M8_Q12) {
     const keys = keysWithout(x.M8_Q12, 'K').filter((k) => k !== 'K');
-    return { keys: new Set(keys), explicit: true };
+    return { keys: new Set(keys), explicit: keys.length > 0 };
   }
   const keys = new Set<string>();
   if (x.M8_Q05 === 'A') keys.add('C');
