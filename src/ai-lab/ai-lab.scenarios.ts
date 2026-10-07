@@ -346,6 +346,8 @@ export const LAB_SCENARIOS: LabScenario[] = [
     checks:
       'Envoyer de l’argent au pays par Western Union est un engagement familial, pas une arnaque : aucun signal.',
     names: ['Adama', 'Claire'],
+    // Un écart réel sur l'aide à la famille, pour que le Sondeur en parle.
+    interview: [{ M4_Q05: 'A' }, { M4_Q05: 'B' }],
     dayOne: {
       argent: [
         'Ma mère envoie de l’argent au pays par Western Union chaque mois, je ferai pareil.',

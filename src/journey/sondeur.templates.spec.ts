@@ -67,6 +67,7 @@ import {
   TOPIC_DEEP_THIRD,
   TOPIC_DEEP_VARIANTS,
   TOPIC_FAMILIES,
+  topicKey,
   TOPIC_PHRASES,
   Technique,
   TopicTemplate,
@@ -1218,7 +1219,7 @@ describe('Simulation : 300 couples aux réponses aléatoires', () => {
     expect(cited).toEqual([]);
   });
 
-  it('ne repose aucun sujet d’écart ou d’accord un autre jour, ni un sujet voisin', () => {
+  it('ne repose aucun sujet un autre jour, sauf une incompatibilité revue au jour 3', () => {
     const repeats: string[] = [];
     /** Un sujet, ou sa famille de sujets voisins. */
     const family = (subject: string) => {
@@ -1227,7 +1228,13 @@ describe('Simulation : 300 couples aux réponses aléatoires', () => {
       );
       return f >= 0 ? `famille ${f}` : subject;
     };
-    for (const [i, { questions }] of runs.entries()) {
+    let secondLooks = 0;
+    for (const [i, { report, questions }] of runs.entries()) {
+      const critical = new Set(
+        report.divergences
+          .filter((d) => d.severity === 'critique')
+          .flatMap((d) => [family(topicKey(d)), family(d.questionId)]),
+      );
       const days = new Map<string, SondeurQuestion[]>();
       for (const q of questions)
         if (q.subject) {
@@ -1240,13 +1247,32 @@ describe('Simulation : 300 couples aux réponses aléatoires', () => {
           expect(new Set(qs.map((q) => q.day)).size).toBe(qs.length);
           continue;
         }
+        // Incompatibilité déclarée : une seconde question au jour 3, sur le
+        // quotidien, jamais deux fois le même texte.
+        if (
+          qs.length === 2 &&
+          critical.has(subject) &&
+          qs[1].day === 3 &&
+          qs[0].day < 3 &&
+          qs.every((q) => q.source === 'divergence') &&
+          qs[0].text !== qs[1].text
+        ) {
+          secondLooks++;
+          continue;
+        }
         if (qs.length > 1)
           repeats.push(
             `couple ${i} : ${subject} (${qs.map((q) => q.day).join(', ')})`,
           );
       }
+      // Deux secondes questions au plus par Sondeur.
+      expect(
+        [...new Set(questions.filter((q) => q.day === 3).map((q) => q.subject))]
+          .length,
+      ).toBeGreaterThan(0);
     }
     expect(repeats).toEqual([]);
+    expect(secondLooks).toBeGreaterThan(0);
   });
 
   it('cible les écarts réels et explore les accords', () => {
@@ -1322,8 +1348,8 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
     });
     expect(validateSondeurGrid(qs)).toBe(true);
     expect(limitsOf(qs)).toEqual([[2, 'communication', 'controle']]);
-    // Le signal lui-même reste exploré, un autre jour.
-    expect(qs.some((q) => q.subject === 'M8_Q10:B' && q.day === 1)).toBe(true);
+    // Le signal n'est posé qu'une fois : par la limite de contrôle.
+    expect(qs.some((q) => q.subject === 'M8_Q10:B')).toBe(false);
   });
 
   it('accès total au téléphone voulu par l’un (M5_Q08 A) : limite de contrôle au jour 2', () => {
@@ -1349,9 +1375,10 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
     ).toEqual(['securite', 'controle', 'securite']);
   });
 
-  it('thème de sécurité : aucun écart n’y est prévu, et ses voisins restent posés', () => {
-    // La jalousie (communication) tombe sur un thème de sécurité : elle ne
-    // doit pas bloquer son voisin, l'accès au téléphone (intimité).
+  it('thème de sécurité et signal de contrôle : une seule limite de contrôle, aucun écart de contrôle reposé', () => {
+    // La jalousie (communication) tombe sur un thème de sécurité ; l'accès
+    // au téléphone (intimité) est lui aussi un signal de contrôle : les deux
+    // sont couverts par la limite de contrôle, posée une seule fois.
     const report = buildDivergenceReport(
       { M6_Q04: 'A', M5_Q08: 'A' },
       { M6_Q04: 'C', M5_Q08: 'B' },
@@ -1359,7 +1386,8 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
     report.divergences.push(jealousy());
     expect(safetyThemesOf(report)).toEqual(['communication']);
     const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'w' });
-    expect(qs.some((q) => q.subject === 'M5_Q08')).toBe(true);
+    expect(qs.filter((q) => q.subject === 'controle')).toHaveLength(1);
+    expect(qs.some((q) => q.subject === 'M5_Q08')).toBe(false);
   });
 
   it('écart critique sans jour libre : posé un autre jour, sans compromis', () => {
@@ -1736,7 +1764,11 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
       }
   });
 
-  it('jour 3 sur un sujet non négociable : au moins 90 % sous l’angle « avant de s’engager »', () => {
+  it('jour 3 sur un sujet non négociable : au moins 90 % sous l’angle du jour (avant de s’engager, ou le quotidien)', () => {
+    // Angle du jour 3 : ce qu'il faudrait savoir avant de s'engager, et
+    // comment chacun le vivrait au quotidien.
+    const DAILY_LIFE =
+      /(?:au quotidien|chaque jour|semaine ordinaire|journée ordinaire|imaginez|futur foyer|le jour où|vieux jours)/iu;
     for (const pass of ['first', 'second'] as const) {
       const day3 = runs.flatMap(({ report, [pass]: questions }) =>
         questions.filter((q) => {
@@ -1745,10 +1777,12 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
           return !!d && isNonNegotiable(d);
         }),
       );
-      const inAngle = day3.filter((q) => BEFORE_COMMITMENT.test(q.text));
+      const inAngle = day3.filter(
+        (q) => BEFORE_COMMITMENT.test(q.text) || DAILY_LIFE.test(q.text),
+      );
       const share = (100 * inAngle.length) / day3.length;
       console.log(
-        `Jour 3 sur un sujet non négociable, angle « avant de s'engager » (${pass === 'first' ? '1er' : '2e'} parcours) : ${inAngle.length}/${day3.length} = ${share.toFixed(1)} %`,
+        `Jour 3 sur un sujet non négociable, dans l'angle du jour (${pass === 'first' ? '1er' : '2e'} parcours) : ${inAngle.length}/${day3.length} = ${share.toFixed(1)} %`,
       );
       expect(day3.length).toBeGreaterThan(300);
       expect(share).toBeGreaterThanOrEqual(90);

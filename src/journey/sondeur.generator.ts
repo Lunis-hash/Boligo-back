@@ -476,12 +476,8 @@ export const CONTROL_LIMIT: PoolTemplate = {
 export const CONTROL_LIMITS: PoolTemplate[] = [
   CONTROL_LIMIT,
   {
-    text: 'Dans un couple, où passe pour vous la frontière entre la confiance et la surveillance ?',
-    options: [
-      "Lire les messages de l'autre",
-      'Suivre sa position',
-      'Contrôler ses sorties',
-    ],
+    text: "Dans un couple, quelle liberté de chacun reste intacte pour vous, même quand l'autre s'inquiète ?",
+    options: ['Son téléphone', 'Ses sorties', 'Ses amitiés'],
   },
   {
     text: "Quel principe vous fait dire qu'aimer ne donne aucun droit de regard sur le téléphone ou les sorties de l'autre ?",
@@ -589,6 +585,11 @@ const FORMULAS: Array<[string, RegExp]> = [
   ['dire oui', /(?<!\p{L})avant de (?:vous )?dire oui/iu],
   ['unir', /(?<!\p{L})avant d['’]unir vos vies/iu],
   ['vie à deux', /(?<!\p{L})pour une vie à deux/iu],
+  ['avant', /(?<!\p{L})avant (?:de|d['’]|tout|un|une)(?!\p{L})/iu],
+  [
+    "savoir de l'autre",
+    /(?:voudriez|aimeriez)-vous (?:savoir|comprendre|connaître)/iu,
+  ],
   ['quotidien à deux', /(?<!\p{L})au quotidien, à deux/iu],
   ['échelle', /(?<!\p{L})de 0 à 10/iu],
   [
@@ -669,8 +670,9 @@ const SEVERITY_RANK: Record<Severity, number> = {
 /**
  * Jour où poser un écart : le premier de ses jours possibles (jour préféré
  * d'abord) encore libre dans son thème et qui a une formulation. Un écart
- * critique qui n'en trouve aucun essaie ensuite les autres jours, avec les
- * seules formulations strictes (jamais avant le jour 3 pour l'intimité).
+ * critique ou majeur qui n'en trouve aucun essaie ensuite les autres jours,
+ * avec les seules formulations strictes (jamais avant le jour 3 pour
+ * l'intimité).
  */
 function dayFor(
   d: Divergence,
@@ -689,9 +691,21 @@ function dayFor(
   };
   const preferred = topicDays(d);
   const found = preferred.find(fits);
-  if (found || d.severity !== 'critique' || d.theme === 'intimite')
+  if (
+    found ||
+    !['critique', 'majeure'].includes(d.severity) ||
+    d.theme === 'intimite'
+  )
     return found;
-  return [1, 2, 3].filter((day) => !preferred.includes(day)).find(fits);
+  // Un écart majeur ne change de jour qu'avec une formulation propre.
+  return [1, 2, 3]
+    .filter((day) => !preferred.includes(day))
+    .find(
+      (day) =>
+        fits(day) &&
+        (d.severity === 'critique' ||
+          usableDeep(d, day, strictTheme).length > 0),
+    );
 }
 
 /**
@@ -715,7 +729,9 @@ function planDivergences(
   const safety = new Set(safetyThemesOf(report));
   const candidates = THEME_LIST.filter((theme) => !safety.has(theme))
     .flatMap((theme) => divergencesForTheme(report, theme))
-    .filter((d) => !excluded.has(d.questionId));
+    .filter((d) => !excluded.has(d.questionId))
+    // Signal de contrôle : posé une seule fois, par la limite de contrôle.
+    .filter((d) => !(reserved.size && isControlSignal(d)));
   // Tri stable : à gravité égale, l'ordre des thèmes, puis celui du moteur.
   const ordered = [...candidates].sort(
     (x, y) =>
@@ -730,8 +746,31 @@ function planDivergences(
     plan.set(`${day}|${d.theme}`, d);
     for (const k of related) planned.add(k);
   }
+  // Incompatibilité déclarée (écart critique) posée les jours 1 ou 2 : une
+  // seconde question au jour 3, sur la façon dont chacun la vivrait au
+  // quotidien, si son thème y a un créneau libre et une formulation propre
+  // (jamais de compromis). Deux au plus, pour garder la place des autres
+  // sujets.
+  let second = 0;
+  for (const [slot, d] of [...plan]) {
+    if (second >= MAX_CRITICAL_SECOND_LOOKS) break;
+    const late = `3|${d.theme}`;
+    if (
+      d.severity !== 'critique' ||
+      slot.startsWith('3|') ||
+      plan.has(late) ||
+      reserved.has(late) ||
+      usableDeep(d, 3, strictThemes.has(d.theme)).length === 0
+    )
+      continue;
+    plan.set(late, d);
+    second++;
+  }
   return plan;
 }
+
+/** Écarts critiques revus au jour 3, par Sondeur. */
+const MAX_CRITICAL_SECOND_LOOKS = 2;
 
 /** Un sujet et ses voisins : rien de tout cela ne sera reposé un autre jour. */
 function markTaken(taken: Set<string>, src: TopicSource): void {
@@ -1114,7 +1153,7 @@ export function hasNoReligiousPractice(report: DivergenceReport): boolean {
 
 /** Option cachée qui suppose une foi ou une pratique religieuse. */
 export const RELIGIOUS_OPTION =
-  /(?<!\p{L})(?:foi|pri(?:è|e)r\p{L}*|dieu|religi\p{L}*|bénédiction\p{L}*|béni\p{L}*|rites?(?! familial)|culte|église|mosquée|temple|synagogue|messe|jeûne|ramadan|carême|halal|casher|sacr\p{L}*|recueillement|spiritu\p{L}*|croyan\p{L}*|croyant\p{L}*)(?!\p{L})|(?<!\p{L})(?:ma|mes|une|les|des|la|même|leur|leurs|sa|ses) pratiques?(?!\p{L})/iu;
+  /(?<!\p{L})(?:foi|pri(?:è|e)r\p{L}*|dieu|religi\p{L}*|bénédiction\p{L}*|béni\p{L}*|rites?(?! familial)|culte|église|mosquée|temple|synagogue|messe|jeûne|ramadan|carême|halal|casher|sacr(?!ifi)\p{L}*|recueillement|spiritu\p{L}*|croyan\p{L}*|croyant\p{L}*)(?!\p{L})|(?<!\p{L})(?:ma|mes|une|les|des|la|même|leur|leurs|sa|ses) pratiques?(?!\p{L})/iu;
 
 /**
  * Équivalents neutres des options religieuses les plus courantes : des
@@ -1123,13 +1162,14 @@ export const RELIGIOUS_OPTION =
 const NEUTRAL_OPTIONS: Record<string, string> = {
   'Ma foi': 'Mes convictions',
   'De ma foi': 'De mes convictions',
-  'La foi': 'Les valeurs',
+  'La foi': 'La sagesse',
   'Une foi': 'Des valeurs',
   'Leur foi': 'Leurs valeurs',
   'Ma foi ou mes valeurs': 'Mes valeurs',
   'Une exigence de foi': 'Une exigence de valeurs',
   'Une condition de foi': 'Une condition de valeurs',
   'Une parole de foi': 'Une parole de sagesse',
+  'Une parole de ma foi': 'Une parole de sagesse',
   'La bénédiction': 'Le soutien des familles',
   'La bénédiction des familles': 'Le soutien des familles',
   'Une bénédiction': 'Un encouragement',
@@ -1139,7 +1179,7 @@ const NEUTRAL_OPTIONS: Record<string, string> = {
   'La prière': 'Les traditions familiales',
   'Par la prière': 'Par nos valeurs',
   'La prière à deux': 'Des valeurs partagées',
-  'Un temps de prière': 'Un temps de silence',
+  'Un temps de prière': 'Un temps de calme',
   'Le respect des rites': 'Le respect des traditions',
   'Le respect des rites de chacun': 'Le respect des traditions de chacun',
   'Un rite de ma tradition': 'Une tradition de ma famille',

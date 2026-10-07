@@ -580,7 +580,7 @@ export function isNonNegotiable(
  * Réponses qui remettent le sujet à une conversation en personne : jamais
  * relancées, ni comme écart ni comme accord.
  */
-export const DEFERRED_ANSWERS = new Set(['M1_Q11:D', 'M6_Q06:D']);
+export const DEFERRED_ANSWERS = new Set(['M1_Q11:D', 'M6_Q06:D', 'M10_Q17:D']);
 
 /** Réponses qui ne sont pas une position (« je ne me suis jamais posé la question ») : pas d'accord à explorer. */
 const NON_POSITION_ANSWERS = new Set([
@@ -743,7 +743,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ],
       ),
       q(
-        "Pensez à une fois où vous avez dit non à votre famille et où cela s'est bien passé : qu'est-ce qui a aidé ?",
+        "Pensez à une fois, chez vous ou chez des proches, où un non dit à la famille s'est bien passé : qu'est-ce qui a aidé ?",
         'exception',
         ['Le ton employé', 'Le bon moment', 'Un allié dans la famille'],
       ),
@@ -876,8 +876,8 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         "Quel genre de dépense de l'autre, faite sans vous en parler, vous mettrait mal à l'aise ?",
         'limite',
         [
-          'Un petit montant',
-          'Un montant fixé à deux',
+          "Au-delà d'un petit montant",
+          "Au-delà d'un montant fixé à deux",
           'Aucun : chacun son argent',
         ],
         ['M4_Q01'],
@@ -913,7 +913,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         "Si l'autre envoyait chaque mois de l'argent à sa famille sans vous en parler, qu'est-ce que ce silence réveillerait en vous ?",
         'emotion',
         [
-          'De la confiance',
+          "De l'inquiétude",
           "Le sentiment d'être tenu(e) à l'écart",
           'De la compréhension',
         ],
@@ -1193,6 +1193,16 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         'Quand vous pensez à vos vieux jours, quelle place imaginez-vous pour la foi ou les convictions ?',
         'projection',
         ['Une place centrale', 'Une place intime', 'Une place discrète'],
+      ),
+      q(
+        'Le jour d’une grande fête de famille, qu’aimeriez-vous que vos convictions apportent à votre foyer ?',
+        'scene',
+        ['De la joie', 'Du recueillement', 'Du lien'],
+      ),
+      q(
+        'Dans une période difficile à deux, sur quelles convictions, religieuses ou non, aimeriez-vous pouvoir vous appuyer ?',
+        'projection',
+        ['La confiance', 'La patience', 'L’espérance'],
       ),
     ],
   },
@@ -1492,7 +1502,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
   projet: {
     1: [
       q(
-        "Qu'est-ce qui vous a donné envie de vous inscrire sur BOLIGO à ce moment de votre vie ?",
+        "Qu'est-ce qui, dans votre vie aujourd'hui, vous fait dire que c'est le bon moment pour construire à deux ?",
         'besoin',
         [
           'Je me sens prêt(e)',
@@ -1519,7 +1529,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
       q(
         "Si l'autre voulait reprendre de longues études et gagner moins pendant des années, que se passerait-il en vous ?",
         'besoin',
-        ["D'un plan", 'De confiance', 'De temps à deux'],
+        ["De l'inquiétude", "De l'admiration", "Un besoin d'en parler"],
         ['M7_Q02'],
       ),
       q(
@@ -1715,9 +1725,9 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M0_Q03'],
       ),
       q(
-        'Quel paysage ou quelle ambiance vous ressource le plus quand vous êtes fatigué(e) ?',
-        'besoin',
-        ["L'énergie d'une ville", 'Le calme de la nature', 'La mer'],
+        "Dans votre famille, quel lieu comptait au point qu'on y revenait toujours ?",
+        'origine',
+        ['Une maison de famille', 'Un village', 'Un lieu de rassemblement'],
       ),
       q(
         "Si l'on demandait à vos amis où vous êtes le plus vous-même, quel endroit citeraient-ils ?",
@@ -1914,7 +1924,7 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
         `À propos ${w.de}, qu'est-ce qui, pour vous, restera ferme quoi qu'il arrive ?`,
       'limite',
       [
-        'Une condition de foi',
+        'Une valeur',
         'Une condition de vie',
         'Une condition familiale',
       ],
@@ -2251,7 +2261,7 @@ export const TOPIC_DEEP: Record<
       ["L'envie de céder", "De l'agacement", "L'envie de m'éloigner"],
     ),
     2: q(
-      "Quand vous étiez enfant, que se passait-il quand vous n'obteniez pas ce que vous vouliez ?",
+      "Enfant, que se passait-il quand vous n'obteniez pas ce que vous vouliez ?",
       'origine',
       [
         'On me cédait souvent',
@@ -2334,7 +2344,7 @@ export const TOPIC_DEEP: Record<
   },
   M6_Q15: {
     1: q(
-      "Pendant une dispute, l'un a souvent besoin de parler tout de suite, l'autre de s'éloigner un moment. Quand cela vous arrive, qu'espérez-vous que l'autre comprenne ?",
+      "Au plus fort d'un désaccord, qu'aimeriez-vous que l'autre devine de vous sans que vous ayez à le dire ?",
       'besoin',
       [
         'Que je tiens à lui ou à elle',
@@ -2372,9 +2382,13 @@ export const TOPIC_DEEP: Record<
   },
   M6_Q13: {
     1: q(
-      "Pendant une dispute, quel ton de l'autre vous ferait vous sentir rabaissé(e) ?",
+      'Pendant un désaccord, quelle façon de plaisanter vous paraît encore respectueuse ?',
       'limite',
-      ["L'ironie", 'La moquerie', 'Le mépris'],
+      [
+        "L'autodérision",
+        'Un clin d’œil complice',
+        'Aucune, pas à ce moment-là',
+      ],
     ),
     2: q(
       'Dans votre famille, où passait la frontière entre taquiner et blesser ?',
@@ -2519,6 +2533,12 @@ export const TOPIC_DEEP: Record<
       'origine',
       ['De ma foi', 'De ma famille', 'De ce que j’ai vu'],
     ),
+    // Jour 3 : l'incompatibilité revue au quotidien, sans compromis.
+    3: q(
+      'Dans le foyer que vous imaginez, à quoi verrait-on chaque jour que votre position sur la polygamie est respectée ?',
+      'projection',
+      ['À la confiance', 'À la transparence', 'À la paix du foyer'],
+    ),
   },
   M6_Q18: {
     1: q(
@@ -2655,9 +2675,9 @@ export const TOPIC_DEEP: Record<
       ['Un parent', 'Les aînés', 'Chacun pour soi'],
     ),
     3: q(
-      "Qu'aimeriez-vous comprendre, avant de vous engager, de la place que l'avis des aînés tient dans les décisions de l'autre ?",
-      'limite',
-      ['Un poids décisif', 'Un conseil écouté', 'Un avis parmi d’autres'],
+      "Le jour où votre futur foyer prendrait une grande décision, quelle place aimeriez-vous donner à l'avis des aînés ?",
+      'scene',
+      ['Un avis écouté', 'Un accord demandé', 'Une simple information'],
     ),
   },
   M5_Q03: {
@@ -2672,13 +2692,9 @@ export const TOPIC_DEEP: Record<
       ["Qu'il l'accueille", "Qu'il l'aide de loin", "Qu'il décide à deux"],
     ),
     3: q(
-      "Si un parent âgé ne pouvait plus vivre seul, que voudriez-vous savoir des choix de l'autre avant de vous dire oui ?",
-      'limite',
-      [
-        "L'accueillir chez nous",
-        'Une aide à domicile',
-        'Une décision en famille',
-      ],
+      'Si un parent âgé ne pouvait plus vivre seul, comment aimeriez-vous que votre futur foyer en décide ?',
+      'projection',
+      ['Ensemble, à deux', 'Avec toute la famille', 'Au cas par cas'],
     ),
   },
   M3_Q05: {
@@ -2730,9 +2746,13 @@ export const TOPIC_DEEP: Record<
       ["On l'admirait", 'On comptait sur lui ou elle', "On n'en parlait pas"],
     ),
     3: q(
-      "Avant de partager un budget, que voudriez-vous savoir de ce que l'aide aux siens représente pour l'autre ?",
-      'limite',
-      ['Un devoir', 'Une fierté', 'Un choix'],
+      "Un mois ordinaire, une demande d'aide arrive de votre famille : comment aimeriez-vous que la décision se prenne dans votre foyer ?",
+      'scene',
+      [
+        'À deux, toujours',
+        'Chacun pour sa famille',
+        'Selon une règle fixée ensemble',
+      ],
     ),
   },
   M4_Q01: {
@@ -2771,7 +2791,7 @@ export const TOPIC_DEEP: Record<
       ['Son principe', 'Son sens', 'Rien'],
     ),
     2: q(
-      'Que représente la dot, ou le mahr, pour vous comme pour votre propre famille ?',
+      'Que représente la dot, ou le mahr, dans votre propre famille ?',
       'sens',
       ['Le respect', "L'engagement", 'La tradition'],
     ),
@@ -2926,7 +2946,7 @@ export const TOPIC_DEEP: Record<
       ['Le lien', 'Ma dignité', 'Mon calme'],
     ),
     2: q(
-      'Quand vous étiez adolescent(e), comment réagissiez-vous quand on vous faisait un reproche ?',
+      'Adolescent(e), comment réagissiez-vous quand on vous faisait un reproche ?',
       'origine',
       ['Je répondais', 'Je me taisais', 'Je sortais'],
     ),
@@ -3002,9 +3022,9 @@ export const TOPIC_DEEP: Record<
       ['Une langue', 'Des fêtes', 'Des valeurs'],
     ),
     3: q(
-      "Que voudriez-vous comprendre, avant une vie commune, de ce que l'autre tient à transmettre de sa culture ?",
-      'limite',
-      ['Une langue', 'Des fêtes', 'Une foi'],
+      'Dans une journée ordinaire de votre futur foyer, à quoi verrait-on la culture que vous tenez à transmettre ?',
+      'scene',
+      ['À la langue', 'À la cuisine', 'Aux fêtes'],
     ),
   },
   M1_Q15: {
@@ -3045,9 +3065,9 @@ export const TOPIC_DEEP: Record<
   },
   M4_Q04: {
     1: q(
-      "Pour vous, à qui revient le choix de la place d'une femme entre travail et foyer ?",
+      'Dans votre futur foyer, sur quoi aimeriez-vous fonder la place de chacun entre travail et foyer ?',
       'sens',
-      ['À elle seule', 'Au couple, ensemble', 'À la famille aussi'],
+      ['Les envies de chacun', 'Les besoins du foyer', 'Nos traditions'],
     ),
     2: q(
       'Quel exemple, vu en grandissant, a le plus influencé votre regard sur la place de chacun entre travail et foyer ?',
@@ -3187,9 +3207,9 @@ export const TOPIC_DEEP: Record<
       ['Aux imprévus', 'Aux projets', 'À aider les proches'],
     ),
     3: q(
-      "Que voudriez-vous comprendre, avant de vous engager, du rapport de l'autre entre l'épargne et les envies du moment ?",
-      'limite',
-      ['La prudence', 'Le plaisir', 'Un équilibre'],
+      "Une fin de mois où une envie se présente, comment aimeriez-vous que votre foyer choisisse entre l'épargne et le plaisir ?",
+      'scene',
+      ["Épargner d'abord", 'Se faire un petit plaisir', 'Décider à deux'],
     ),
   },
   M7_Q05: {
@@ -3211,9 +3231,9 @@ export const TOPIC_DEEP: Record<
       ['La sécurité', 'La fierté', 'Le sacrifice'],
     ),
     3: q(
-      "Quel équilibre entre travail et vie à deux aimeriez-vous connaître chez l'autre, avant de vous engager ?",
-      'limite',
-      ['Une priorité au travail', 'Un équilibre', 'Une priorité au foyer'],
+      'Dans une semaine ordinaire, à quoi ressemblerait pour vous un bon équilibre entre travail et vie à deux ?',
+      'projection',
+      ['Des soirées libres', 'Des week-ends à deux', 'Des projets communs'],
     ),
   },
   M6_Q03: {
@@ -3256,6 +3276,11 @@ export const TOPIC_DEEP: Record<
       'origine',
       ['Avec ouverture', 'Avec réserve', 'On n’en parlait pas'],
     ),
+    3: q(
+      'Dans une semaine ordinaire de votre futur foyer, où vos convictions, religieuses ou non, se verraient-elles le plus ?',
+      'scene',
+      ['Les repas', 'Les fêtes', 'Les choix de chaque jour'],
+    ),
   },
   M0_Q12: {
     1: q(
@@ -3267,6 +3292,11 @@ export const TOPIC_DEEP: Record<
       "Dans votre famille ou votre tradition, que disait-on de l'alcool ?",
       'origine',
       ['Un interdit', 'Un plaisir partagé', 'Un danger'],
+    ),
+    3: q(
+      "Imaginez une fête dans votre futur foyer : quelle place l'alcool y aurait-il, pour que vous vous sentiez bien ?",
+      'scene',
+      ['Aucune', 'Un verre pour qui veut', 'Une place libre'],
     ),
   },
   M10_Q17: {
@@ -3299,13 +3329,9 @@ export const TOPIC_DEEP: Record<
       ['De la patience', 'Des efforts des deux', 'Une aide extérieure'],
     ),
     3: q(
-      "Avant de vous engager, que voudriez-vous savoir de la façon dont l'autre traverse les années difficiles ?",
+      "Dans une année difficile à deux, qu'est-ce qui vous aiderait à rester unis au quotidien ?",
       'projection',
-      [
-        'Ce qui l’aide à tenir',
-        'Sa façon de demander de l’aide',
-        'Ce qu’il ou elle attend de moi',
-      ],
+      ['La parole', 'La patience', 'Le soutien des proches'],
     ),
   },
   M5_Q02: {
@@ -3356,14 +3382,14 @@ export const TOPIC_DEEP: Record<
   // Désaccord sur un point clé de l'avenir : en parler tôt, attendre, chercher.
   M8_Q09: {
     1: q(
-      "Face à un point clé de l'avenir sur lequel vous divergez, qu'est-ce que votre manière d'en parler cherche à préserver ?",
+      "Face à un point clé de l'avenir sur lequel deux personnes divergent, qu'est-ce que votre manière d'en parler cherche à préserver ?",
       'besoin',
       ['Ma sincérité', 'La relation naissante', 'Mon temps'],
     ),
     3: q(
-      "Qu'aimeriez-vous savoir, avant de vous engager, de la façon dont l'autre aborde un désaccord sur l'avenir ?",
-      'limite',
-      ['Tôt et franchement', 'Avec le temps', 'En cherchant une solution'],
+      "Le jour où un projet d'avenir vous diviserait, de quoi auriez-vous besoin pour en parler sereinement ?",
+      'scene',
+      ['Du temps', "D'un cadre calme", "D'un tiers de confiance"],
     ),
   },
   M4_Q15: {
@@ -3373,13 +3399,9 @@ export const TOPIC_DEEP: Record<
       ['Un partage égal', 'Des rôles séparés', 'Une seule personne pour tout'],
     ),
     3: q(
-      "Avant de vivre sous le même toit, qu'aimeriez-vous savoir de la façon dont l'autre imagine les tâches de la maison ?",
-      'limite',
-      [
-        'Qui fait quoi',
-        'Ce qu’il ou elle a vu chez les siens',
-        'Ce qui ne se discute pas',
-      ],
+      'Un samedi matin dans votre futur foyer, comment imaginez-vous le partage des tâches de la maison ?',
+      'scene',
+      ['Chacun ses tâches', 'Tout à deux', 'Selon les disponibilités'],
     ),
   },
   M3_Q12: {
@@ -3517,9 +3539,9 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Tout était commun', 'Chacun le sien', 'Selon les besoins'],
     ),
     3: q(
-      "Avant de vivre sous le même toit, que voudriez-vous comprendre de ce que l'argent commun représente pour l'autre ?",
-      'limite',
-      ['La confiance', 'Une contrainte', 'Un projet'],
+      "Le jour où il faudrait puiser dans l'argent commun, qu'est-ce qui vous mettrait à l'aise ?",
+      'scene',
+      ['Une règle claire', 'Une discussion', 'Une confiance totale'],
     ),
   },
   M5_Q01: {
@@ -3558,9 +3580,9 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Du respect', 'Une brouille', 'Une réconciliation'],
     ),
     3: q(
-      "Avant de partager un foyer, que voudriez-vous comprendre de la place que l'autre laisse aux siens dans ses choix ?",
-      'limite',
-      ['Une grande place', 'Une place mesurée', 'Aucune place'],
+      'Dans votre futur foyer, à quoi verrait-on au quotidien la place que vous laissez à vos proches dans vos choix ?',
+      'projection',
+      ['Aux visites', 'Aux décisions', 'Aux fêtes'],
     ),
   },
   M9_Q07: {
@@ -3596,7 +3618,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
     2: q(
       "Qui, dans votre entourage, a le plus compté dans votre façon de voir l'alcool ?",
       'origine',
-      ['Un parent', 'Ma foi', 'Mes amis'],
+      ['Un parent', 'Un aîné', 'Mes amis'],
     ),
   },
   M0_Q09: {
@@ -3683,9 +3705,9 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ],
     ),
     3: q(
-      "Que voudriez-vous comprendre, avant de vous engager, de ce que l'argent qui manque réveille chez l'autre ?",
-      'limite',
-      ['Une inquiétude', 'Une gêne', 'Une énergie'],
+      "Une fin de mois où l'argent manque, comment aimeriez-vous que votre foyer traverse ce moment ?",
+      'scene',
+      ['En parler tout de suite', 'Réduire ensemble', "Demander de l'aide"],
     ),
   },
   M10_Q18: {
@@ -3708,7 +3730,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M4_Q05: {
     1: q(
-      'Pour vous, quelle aide à vos proches resterait prioritaire, même quand le foyer aurait ses propres besoins ?',
+      'Pour vous, quelle aide à vos proches resterait prioritaire, même si le foyer avait ses propres besoins ?',
       'limite',
       ['L’aide à mes parents', 'Les urgences', 'Les études d’un proche'],
     ),
@@ -3761,7 +3783,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
     2: q(
       'Autour de vous, en grandissant, que disait-on des femmes qui travaillaient hors de la maison ?',
       'origine',
-      ['On l’admirait', 'On la jugeait', 'On n’en parlait pas'],
+      ['On les admirait', 'On les jugeait', 'On n’en parlait pas'],
     ),
   },
   M5_Q09: {
@@ -3866,9 +3888,9 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Un parent', 'Toute la famille', 'Chacun comme il pouvait'],
     ),
     3: q(
-      "Avant de dire oui, qu'aimeriez-vous comprendre de la manière dont l'autre prend soin d'un proche qui va mal ?",
-      'limite',
-      ['Sa présence', 'Son aide concrète', 'Sa patience'],
+      "Le jour où un proche de l'autre irait mal, quelle place aimeriez-vous prendre au quotidien ?",
+      'projection',
+      ['Une présence', 'Un soutien discret', 'Une aide concrète'],
     ),
   },
   M4_Q03: {
@@ -4217,9 +4239,9 @@ export const TOPIC_DEEP_THIRD: Record<
   },
   M7_Q07: {
     3: q(
-      "Avant une vie commune, que voudriez-vous savoir de l'endroit où l'autre se voit vieillir ?",
-      'limite',
-      ['Sa ville', 'Son pays', 'Là où vit sa famille'],
+      'Quand vous imaginez vos vieux jours, dans quel décor vous voyez-vous vivre au quotidien ?',
+      'projection',
+      ['Une grande ville', 'Un village', 'Près de ma famille'],
     ),
   },
   M0_Q06: {
@@ -4635,7 +4657,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
         ['Ma liberté', 'La paix du foyer', 'Le respect de chacun'],
       ),
       originProbe(
-        'Qui vous a appris que la foi se vit dans le secret du cœur ?',
+        "D'où vous vient l'idée que la foi se vit dans le secret du cœur ?",
         'origine',
         ['De ma famille', 'De mon histoire', 'D’un choix personnel'],
       ),
@@ -5447,9 +5469,9 @@ export const AGREEMENTS: Record<string, Agreement> = {
   },
   'M7_Q07:A': {
     statement:
-      "Vous vous voyez tous les deux rester dans la ville où vous vivez aujourd'hui.",
+      "Vous vous voyez tous les deux rester là où vous vivez aujourd'hui.",
     probe: q(
-      "Qu'est-ce que cette ville vous donne qu'aucune autre ne vous donnerait ?",
+      "Qu'est-ce que le lieu où vous vivez vous donne qu'aucun autre ne vous donnerait ?",
       'besoin',
       ['Mes proches', 'Mon travail', 'Mon histoire'],
     ),
@@ -5724,7 +5746,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     ],
   },
   'M9_Q04:A': {
-    statement: 'Vous dites tous les deux une frustration dès que possible.',
+    statement: 'Vous exprimez tous les deux une frustration dès que possible.',
     probe: dailyProbe(
       'Concrètement, combien de temps une frustration peut-elle attendre avant d’être dite, pour vous ?',
       'sens',
@@ -5781,7 +5803,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   },
   'M6_Q11:A': {
     statement:
-      'Pour vous deux, une réconciliation passe par en reparler et se demander pardon.',
+      "Pour vous deux, se réconcilier, c'est en reparler et se demander pardon.",
     probe: q("Qu'est-ce qui rend un pardon sincère à vos yeux ?", 'sens', [
       'Les mots',
       'Le regard',
@@ -5857,7 +5879,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       originProbe(
         "D'où vous vient votre manière de vivre le premier pas après une dispute ?",
         'origine',
-        ['Qu’il coûte', 'Qu’il apaise', 'Qu’on l’attendait de moi'],
+        ['De ma famille', 'De mon caractère', 'D’une expérience'],
       ),
     ],
   },
@@ -5987,7 +6009,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     ),
     extraProbes: [
       dailyProbe(
-        'Une fois sous le même toit, comment aimeriez-vous partager les domaines de décision ?',
+        'Une fois sous le même toit, comment aimeriez-vous vous répartir ces domaines ?',
         'projection',
         ['Selon nos goûts', 'Selon nos forces', 'Au fil du temps'],
       ),
@@ -6319,7 +6341,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   },
   'M4_Q05:B': {
     statement:
-      "Pour vous deux, un envoi d'argent à la famille se décide d'abord à deux.",
+      "Pour vous deux, un envoi d'argent à la famille se décide d'abord en couple.",
     probe: protectProbe(
       "À partir de quel moment un envoi mérite-t-il, selon vous, qu'on en parle ensemble ?",
       'sens',
@@ -6538,7 +6560,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
         ['Qu’elle compte', 'Qu’elle se respecte', 'Qu’elle évolue'],
       ),
       dailyProbe(
-        "Au quotidien, quelle place aimeriez-vous prendre auprès de l'enfant de l'autre ?",
+        'Au quotidien, quelle place aimeriez-vous voir prise par un beau-parent auprès d’un enfant ?',
         'projection',
         ['Une présence', 'Un soutien', 'Une écoute'],
       ),
@@ -6609,7 +6631,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M5_Q03:B': {
     statement: 'Pour vous deux, le foyer appartient au couple.',
     probe: protectProbe(
-      "Quand un parent aurait besoin d'aide, quelle forme de soutien resterait possible pour vous ?",
+      "Si un parent avait besoin d'aide, quelle forme de soutien resterait possible pour vous ?",
       'sens',
       ['Une aide de loin', 'Des visites', 'Un soutien financier'],
     ),
