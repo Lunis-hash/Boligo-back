@@ -45,6 +45,8 @@ export interface Question {
   suggested?: string[];
   /** Précision pré-remplie de l'option à préciser (« Allemand »). */
   suggestedOther?: string;
+  /** V7.1 — aide affichée sous la question (« BOLIGO est réservé… »). */
+  assistance?: string;
 }
 
 /** Suffixe de la précision écrite d'une option `freeText` (« M0_Q10_AUTRE »). */
@@ -250,6 +252,9 @@ export const QUESTIONS: Question[] = [
     id: 'M0_Q04',
     moduleNumber: 0,
     text: 'Votre situation actuelle :',
+    // V7.1 (m7) : pas d'option « Marié(e) » ; l'aide le dit.
+    assistance:
+      "BOLIGO est réservé aux personnes libres de s'engager : célibataire, séparé(e) avec un divorce prononcé, veuf ou veuve.",
     options: [
       { key: 'A', text: 'Célibataire' },
       { key: 'B', text: 'Séparé(e) / divorcé(e)' },
@@ -624,55 +629,6 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
-  {
-    // V7 — modifiée : choix multiple (on peut avoir reçu plusieurs reproches).
-    // Question miroir, confrontée à ce que le membre déclare de lui-même.
-    id: 'M2_Q05',
-    moduleNumber: 2,
-    text: "On m'a déjà reproché dans une relation de : (plusieurs réponses possibles)",
-    multiple: true,
-    options: [
-      { key: 'A', text: "Trop m'inquiéter ou manquer de confiance" },
-      {
-        key: 'B',
-        text: 'Fuir ou mettre de la distance quand ça devient intense',
-      },
-      { key: 'C', text: 'Avoir du mal à exprimer ce que je ressentais' },
-      {
-        key: 'D',
-        text: "On ne m'a jamais fait ce type de reproche",
-        exclusive: true,
-      },
-    ],
-  },
-  {
-    // V6 — rétablie depuis la V5 (Q07) : vitesse de réparation après un conflit.
-    id: 'M2_Q07',
-    moduleNumber: 2,
-    text: 'Après une dispute sérieuse, vous revenez à la douceur en :',
-    options: [
-      { key: 'A', text: 'Quelques heures — je ne laisse pas traîner' },
-      { key: 'B', text: "Une journée — j'ai besoin de digérer" },
-      { key: 'C', text: 'Plusieurs jours — les blessures durent' },
-      { key: 'D', text: 'Très longtemps — je peux tenir des semaines' },
-    ],
-  },
-  {
-    // V7 — remplace M2_Q08 (« si je me rends compte que j'ai commis une
-    // erreur » contredisait la question ; « ego » orientait la réponse).
-    id: 'M2_Q22',
-    moduleNumber: 2,
-    text: 'Après une dispute où vous pensez avoir eu plutôt raison, le plus souvent :',
-    options: [
-      { key: 'A', text: 'Je reconnais ma part, même si elle est petite' },
-      {
-        key: 'B',
-        text: "Je fais un pas vers l'autre, sans revenir sur le fond",
-      },
-      { key: 'C', text: "J'attends que l'autre revienne vers moi" },
-      { key: 'D', text: "Je ne m'excuse pas tant que je pense avoir raison" },
-    ],
-  },
   // V7 — Façon d'aimer : deux dimensions, six situations concrètes chacune
   // dont deux inversées (« inversé » : 6 − note). Formulations propres à
   // BOLIGO, sur le modèle bidimensionnel de la recherche sur l'attachement
@@ -773,6 +729,57 @@ export const QUESTIONS: Question[] = [
     scale: 'accord',
     text: "Quand l'autre me demande ce que je ressens, je réponds souvent « ça va » pour couper court.",
     options: AGREEMENT_OPTIONS,
+  },
+  // V7.1 — trois scénarios entre l'attachement et les émotions : plus jamais
+  // vingt et une affirmations d'affilée.
+  {
+    // V7 — modifiée : choix multiple (on peut avoir reçu plusieurs reproches).
+    // Question miroir, confrontée à ce que le membre déclare de lui-même.
+    id: 'M2_Q05',
+    moduleNumber: 2,
+    text: "On m'a déjà reproché dans une relation de : (plusieurs réponses possibles)",
+    multiple: true,
+    options: [
+      { key: 'A', text: "Trop m'inquiéter ou manquer de confiance" },
+      {
+        key: 'B',
+        text: 'Fuir ou mettre de la distance quand ça devient intense',
+      },
+      { key: 'C', text: 'Avoir du mal à exprimer ce que je ressentais' },
+      {
+        key: 'D',
+        text: "On ne m'a jamais fait ce type de reproche",
+        exclusive: true,
+      },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q07) : vitesse de réparation après un conflit.
+    id: 'M2_Q07',
+    moduleNumber: 2,
+    text: 'Après une dispute sérieuse, vous revenez à la douceur en :',
+    options: [
+      { key: 'A', text: 'Quelques heures — je ne laisse pas traîner' },
+      { key: 'B', text: "Une journée — j'ai besoin de digérer" },
+      { key: 'C', text: 'Plusieurs jours — les blessures durent' },
+      { key: 'D', text: 'Très longtemps — je peux tenir des semaines' },
+    ],
+  },
+  {
+    // V7 — remplace M2_Q08 (« si je me rends compte que j'ai commis une
+    // erreur » contredisait la question ; « ego » orientait la réponse).
+    id: 'M2_Q22',
+    moduleNumber: 2,
+    text: 'Après une dispute où vous pensez avoir eu plutôt raison, le plus souvent :',
+    options: [
+      { key: 'A', text: 'Je reconnais ma part, même si elle est petite' },
+      {
+        key: 'B',
+        text: "Je fais un pas vers l'autre, sans revenir sur le fond",
+      },
+      { key: 'C', text: "J'attends que l'autre revienne vers moi" },
+      { key: 'D', text: "Je ne m'excuse pas tant que je pense avoir raison" },
+    ],
   },
   // V7 — Gestion des émotions : prendre du recul (trois situations, une
   // inversée : ruminer) et retenir ses émotions (trois situations, une
@@ -1598,33 +1605,6 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M7_Q07',
-    moduleNumber: 7,
-    text: 'Où vous voyez-vous vivre dans 5 ans ?',
-    options: [
-      { key: 'A', text: "Dans la même ville qu'aujourd'hui" },
-      { key: 'B', text: 'Dans une autre ville ou région de mon pays' },
-      { key: 'C', text: 'Dans un autre pays' },
-      { key: 'D', text: 'Je suis ouvert(e) — ça dépend du projet de vie' },
-    ],
-  },
-  {
-    // V7.1 — nouvelle : le retour au pays d'origine, projet fréquent dans la
-    // diaspora, que M7_Q07 (« un autre pays ») ne disait pas.
-    id: 'M7_Q36',
-    moduleNumber: 7,
-    text: "Vivre un jour dans le pays d'origine de votre famille :",
-    options: [
-      { key: 'A', text: "C'est mon projet, dans les années qui viennent" },
-      { key: 'B', text: "J'y pense, sans date précise" },
-      { key: 'C', text: 'Non, ma vie est là où je vis aujourd’hui' },
-      {
-        key: 'D',
-        text: "Je vis déjà dans le pays d'origine de ma famille",
-      },
-    ],
-  },
-  {
     id: 'M7_Q08',
     moduleNumber: 7,
     text: 'Le temps passé ensemble dans la semaine, idéalement :',
@@ -1707,6 +1687,35 @@ export const QUESTIONS: Question[] = [
     scale: 'accord',
     text: 'Quand je promets de faire quelque chose, je le fais, même si cela me coûte.',
     options: AGREEMENT_OPTIONS,
+  },
+  // V7.1 — le lieu de vie coupe les seize affirmations de personnalité en
+  // deux (jamais plus de douze affirmations d'affilée).
+  {
+    id: 'M7_Q07',
+    moduleNumber: 7,
+    text: 'Où vous voyez-vous vivre dans 5 ans ?',
+    options: [
+      { key: 'A', text: "Dans la même ville qu'aujourd'hui" },
+      { key: 'B', text: 'Dans une autre ville ou région de mon pays' },
+      { key: 'C', text: 'Dans un autre pays' },
+      { key: 'D', text: 'Je suis ouvert(e) — ça dépend du projet de vie' },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : le retour au pays d'origine, projet fréquent dans la
+    // diaspora, que M7_Q07 (« un autre pays ») ne disait pas.
+    id: 'M7_Q36',
+    moduleNumber: 7,
+    text: "Vivre un jour dans le pays d'origine de votre famille :",
+    options: [
+      { key: 'A', text: "C'est mon projet, dans les années qui viennent" },
+      { key: 'B', text: "J'y pense, sans date précise" },
+      { key: 'C', text: 'Non, ma vie est là où je vis aujourd’hui' },
+      {
+        key: 'D',
+        text: "Je vis déjà dans le pays d'origine de ma famille",
+      },
+    ],
   },
   {
     // Sérénité (inversé : inquiétude).
@@ -2152,41 +2161,6 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
-  {
-    // V7 — nouvelle : répondre aux petites demandes d'attention (Gottman :
-    // « se tourner vers l'autre »), le versant positif qui protège un couple.
-    id: 'M9_Q25',
-    moduleNumber: 9,
-    text: 'Votre partenaire vous raconte un détail de sa journée alors que vous êtes occupé(e). Le plus souvent :',
-    options: [
-      { key: 'A', text: "Je m'arrête un instant pour l'écouter et je réagis" },
-      {
-        key: 'B',
-        text: 'Je réponds brièvement et je reviens à ce que je faisais',
-      },
-      {
-        key: 'C',
-        text: "Je lui demande d'attendre que j'aie fini, puis je reviens vers lui ou elle",
-      },
-      { key: 'D', text: 'Je continue sans vraiment l’écouter' },
-    ],
-  },
-  {
-    // V7.1 — avancée avec les autres scénarios (moins de bascules entre les
-    // échelles d'accord et de fréquence).
-    id: 'M9_Q19',
-    moduleNumber: 9,
-    text: "Face à un(e) partenaire qui boude quand il ou elle n'obtient pas ce qu'il ou elle veut :",
-    options: [
-      {
-        key: 'A',
-        text: 'Ça ne me dérange pas — je cède volontiers pour lui faire plaisir',
-      },
-      { key: 'B', text: 'Je laisse passer, puis on en parle calmement' },
-      { key: 'C', text: "Ça m'agace vite — je ne cède pas" },
-      { key: 'D', text: "C'est rédhibitoire pour moi" },
-    ],
-  },
   // V7.1 — les habitudes (échelle de fréquence) d'un seul tenant, puis les
   // affirmations d'accord : une seule bascule d'échelle dans le module.
   {
@@ -2240,6 +2214,42 @@ export const QUESTIONS: Question[] = [
     scale: 'frequence',
     text: "Quand je n'obtiens pas ce que je veux, je le fais sentir (bouderie, froideur).",
     options: FREQUENCY_OPTIONS,
+  },
+  // V7.1 — deux scénarios entre les habitudes et les affirmations d'accord.
+  {
+    // V7 — nouvelle : répondre aux petites demandes d'attention (Gottman :
+    // « se tourner vers l'autre »), le versant positif qui protège un couple.
+    id: 'M9_Q25',
+    moduleNumber: 9,
+    text: 'Votre partenaire vous raconte un détail de sa journée alors que vous êtes occupé(e). Le plus souvent :',
+    options: [
+      { key: 'A', text: "Je m'arrête un instant pour l'écouter et je réagis" },
+      {
+        key: 'B',
+        text: 'Je réponds brièvement et je reviens à ce que je faisais',
+      },
+      {
+        key: 'C',
+        text: "Je lui demande d'attendre que j'aie fini, puis je reviens vers lui ou elle",
+      },
+      { key: 'D', text: 'Je continue sans vraiment l’écouter' },
+    ],
+  },
+  {
+    // V7.1 — déplacée entre les habitudes et les affirmations (moins de
+    // bascules d'échelle, pas plus de douze affirmations d'affilée).
+    id: 'M9_Q19',
+    moduleNumber: 9,
+    text: "Face à un(e) partenaire qui boude quand il ou elle n'obtient pas ce qu'il ou elle veut :",
+    options: [
+      {
+        key: 'A',
+        text: 'Ça ne me dérange pas — je cède volontiers pour lui faire plaisir',
+      },
+      { key: 'B', text: 'Je laisse passer, puis on en parle calmement' },
+      { key: 'C', text: "Ça m'agace vite — je ne cède pas" },
+      { key: 'D', text: "C'est rédhibitoire pour moi" },
+    ],
   },
   // Contrôle de sincérité (désirabilité sociale) : cinq affirmations, dont
   // trois inversées, mêlées aux attitudes. Elles modulent la confiance
@@ -2404,77 +2414,9 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
-  {
-    id: 'M10_Q11',
-    moduleNumber: 10,
-    text: "Repensez aux personnes qui vous ont fait chavirer rapidement. Qu'avaient-elles surtout en commun dans leur allure ?",
-    options: [
-      { key: 'A', text: 'Une allure élégante et soignée' },
-      { key: 'B', text: 'Un style naturel et décontracté' },
-      { key: 'C', text: 'Une allure sportive et énergique' },
-      { key: 'D', text: 'Un style original, artistique, atypique' },
-      { key: 'E', text: 'Une allure ancrée dans sa culture (tenues, codes)' },
-      { key: 'F', text: 'Rien de commun : je suis surpris(e) à chaque fois' },
-    ],
-  },
-  {
-    id: 'M10_Q12',
-    moduleNumber: 10,
-    text: 'Votre propre allure, au quotidien :',
-    options: [
-      { key: 'A', text: 'Élégante et soignée' },
-      { key: 'B', text: 'Naturelle et décontractée' },
-      { key: 'C', text: 'Sportive et énergique' },
-      { key: 'D', text: 'Originale, artistique, atypique' },
-      { key: 'E', text: 'Ancrée dans ma culture (tenues, codes)' },
-      { key: 'F', text: "Je n'y prête pas vraiment attention" },
-    ],
-  },
-  {
-    id: 'M10_Q13',
-    moduleNumber: 10,
-    text: 'Chez quelqu’un, ce qui provoque le déclic en premier :',
-    options: [
-      { key: 'A', text: 'Le regard et le sourire' },
-      { key: 'B', text: 'La voix et la façon de parler' },
-      { key: 'C', text: "L'allure et la prestance" },
-      { key: 'D', text: "L'assurance, le charisme" },
-      { key: 'E', text: 'La gentillesse envers les autres' },
-      { key: 'F', text: "L'humour et la répartie" },
-    ],
-  },
-  {
-    id: 'M10_Q14',
-    moduleNumber: 10,
-    text: 'Ce que les gens remarquent en premier chez vous :',
-    options: [
-      { key: 'A', text: 'Mon regard et mon sourire' },
-      { key: 'B', text: 'Ma voix et ma façon de parler' },
-      { key: 'C', text: 'Mon allure et ma prestance' },
-      { key: 'D', text: 'Mon assurance, mon charisme' },
-      { key: 'E', text: 'Ma gentillesse envers les autres' },
-      { key: 'F', text: 'Mon humour et ma répartie' },
-    ],
-  },
-  {
-    id: 'M10_Q15',
-    moduleNumber: 10,
-    text: "Pour qu'une histoire commence, l'attirance physique doit être :",
-    options: [
-      {
-        key: 'A',
-        text: 'Immédiate — sans coup de cœur au premier regard, ça ne marchera pas',
-      },
-      {
-        key: 'B',
-        text: 'Présente, et elle grandit en apprenant à se connaître',
-      },
-      { key: 'C', text: 'Secondaire — elle naît de la connexion' },
-      { key: 'D', text: 'Ça dépend vraiment des personnes' },
-    ],
-  },
   // V7 — Le désir, presque absent jusqu'ici. Données sensibles (RGPD,
   // article 9) : des questions d'attitude, sobres, jamais de détail intime.
+  // V7.1 : posées avant les questions d'allure, pas à bout de fatigue.
   {
     // V7 — remplace M6_Q06 (trois axes mêlés et une réponse refuge) : une
     // seule idée, l'importance.
@@ -2551,6 +2493,75 @@ export const QUESTIONS: Question[] = [
       },
       { key: 'C', text: 'Je refuse, mais je me sens coupable' },
       { key: 'D', text: 'Je refuse sans difficulté' },
+    ],
+  },
+  {
+    id: 'M10_Q11',
+    moduleNumber: 10,
+    text: "Repensez aux personnes qui vous ont fait chavirer rapidement. Qu'avaient-elles surtout en commun dans leur allure ?",
+    options: [
+      { key: 'A', text: 'Une allure élégante et soignée' },
+      { key: 'B', text: 'Un style naturel et décontracté' },
+      { key: 'C', text: 'Une allure sportive et énergique' },
+      { key: 'D', text: 'Un style original, artistique, atypique' },
+      { key: 'E', text: 'Une allure ancrée dans sa culture (tenues, codes)' },
+      { key: 'F', text: 'Rien de commun : je suis surpris(e) à chaque fois' },
+    ],
+  },
+  {
+    id: 'M10_Q12',
+    moduleNumber: 10,
+    text: 'Votre propre allure, au quotidien :',
+    options: [
+      { key: 'A', text: 'Élégante et soignée' },
+      { key: 'B', text: 'Naturelle et décontractée' },
+      { key: 'C', text: 'Sportive et énergique' },
+      { key: 'D', text: 'Originale, artistique, atypique' },
+      { key: 'E', text: 'Ancrée dans ma culture (tenues, codes)' },
+      { key: 'F', text: "Je n'y prête pas vraiment attention" },
+    ],
+  },
+  {
+    id: 'M10_Q13',
+    moduleNumber: 10,
+    text: 'Chez quelqu’un, ce qui provoque le déclic en premier :',
+    options: [
+      { key: 'A', text: 'Le regard et le sourire' },
+      { key: 'B', text: 'La voix et la façon de parler' },
+      { key: 'C', text: "L'allure et la prestance" },
+      { key: 'D', text: "L'assurance, le charisme" },
+      { key: 'E', text: 'La gentillesse envers les autres' },
+      { key: 'F', text: "L'humour et la répartie" },
+    ],
+  },
+  {
+    id: 'M10_Q14',
+    moduleNumber: 10,
+    text: 'Ce que les gens remarquent en premier chez vous :',
+    options: [
+      { key: 'A', text: 'Mon regard et mon sourire' },
+      { key: 'B', text: 'Ma voix et ma façon de parler' },
+      { key: 'C', text: 'Mon allure et ma prestance' },
+      { key: 'D', text: 'Mon assurance, mon charisme' },
+      { key: 'E', text: 'Ma gentillesse envers les autres' },
+      { key: 'F', text: 'Mon humour et ma répartie' },
+    ],
+  },
+  {
+    id: 'M10_Q15',
+    moduleNumber: 10,
+    text: "Pour qu'une histoire commence, l'attirance physique doit être :",
+    options: [
+      {
+        key: 'A',
+        text: 'Immédiate — sans coup de cœur au premier regard, ça ne marchera pas',
+      },
+      {
+        key: 'B',
+        text: 'Présente, et elle grandit en apprenant à se connaître',
+      },
+      { key: 'C', text: 'Secondaire — elle naît de la connexion' },
+      { key: 'D', text: 'Ça dépend vraiment des personnes' },
     ],
   },
 ];
@@ -3889,6 +3900,8 @@ export const V71_CHANGES: Record<
   M0_Q07: 'modifiee',
   M0_Q10: 'modifiee',
   M4_Q13: 'regle',
+  // Aide : BOLIGO est réservé aux personnes libres de s'engager (m7).
+  M0_Q04: 'modifiee',
 };
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */

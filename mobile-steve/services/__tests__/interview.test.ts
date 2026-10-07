@@ -7,6 +7,7 @@ import {
   joinMultipleAnswer,
   LAST_MODULE,
   Question,
+  questionDisplayText,
   togglePick,
 } from '@/services/interview';
 
@@ -111,6 +112,19 @@ describe('Langues proposées et signaux d’alerte (V6.1)', () => {
     // Au maximum (3), « aucun » reste possible : il remplace les autres.
     expect(togglePick(nonNegotiables, ['A', 'C', 'D'], 'K')).toEqual(['K']);
     expect(togglePick(nonNegotiables, ['K'], 'K')).toEqual([]);
+  });
+
+  it('V7.1 : l’aide d’une question s’affiche sous son énoncé', () => {
+    const situation: Question = {
+      id: 'M0_Q04',
+      text: 'Votre situation actuelle :',
+      assistance: 'BOLIGO est réservé aux personnes libres de s’engager.',
+      options: [{ key: 'A', text: 'Célibataire' }],
+    };
+    expect(questionDisplayText(situation)).toBe(
+      'Votre situation actuelle :\n\nBOLIGO est réservé aux personnes libres de s’engager.',
+    );
+    expect(questionDisplayText({ ...situation, assistance: undefined })).toBe('Votre situation actuelle :');
   });
 
   it('affiche la langue écrite à la place de « une autre langue »', () => {

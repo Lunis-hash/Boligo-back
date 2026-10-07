@@ -63,6 +63,12 @@ export function initialPicked(question: Question): string[] {
   return question.maxChoices ? keys.slice(0, question.maxChoices) : keys;
 }
 
+/** Texte affiché d'une question : l'énoncé, puis son aide s'il y en a une. */
+export function questionDisplayText(question: Question): string {
+  const help = question.assistance?.trim();
+  return help ? `${question.text}\n\n${help}` : question.text;
+}
+
 /**
  * Coche ou décoche une réponse, sans dépasser le nombre maximal. Une option
  * « aucun » (`exclusive`) décoche les autres ; une autre option la décoche.

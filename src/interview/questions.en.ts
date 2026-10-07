@@ -18,6 +18,8 @@ export interface QuestionTranslation {
   text: string;
   /** Textes des options, dans l'ordre des clés ; absent pour une échelle. */
   options?: string[];
+  /** V7.1 — aide affichée sous la question. */
+  assistance?: string;
 }
 
 const AGREEMENT_EN = [
@@ -61,6 +63,8 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
   M0_Q04: {
     text: 'Your current situation:',
+    assistance:
+      'BOLIGO is only for people who are free to commit: single, separated with a finalised divorce, or widowed.',
     options: [
       'Single',
       'Separated / divorced',
@@ -1263,6 +1267,7 @@ export function localizeQuestion(
   return {
     ...q,
     text: t.text,
+    ...(q.assistance ? { assistance: t.assistance ?? q.assistance } : {}),
     options: q.options.map((o, i) => ({
       ...o,
       text: options?.[i] ?? o.text,

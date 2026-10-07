@@ -17,6 +17,7 @@ import {
   isValidFreeText,
   FREE_TEXT_SUFFIX,
   askIfMet,
+  questionDisplayText,
 } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
@@ -243,7 +244,7 @@ export default function DynamicInterviewScreen() {
         const last = prev[prev.length - 1];
         const translated: Message = {
           id: Math.random().toString(36).substring(7),
-          text: current.text,
+          text: questionDisplayText(current),
           type: 'ai',
           options: current.options,
           questionId: current.id,
@@ -322,7 +323,7 @@ export default function DynamicInterviewScreen() {
     // Langues : celles du pays de résidence sont cochées d'office.
     setPicked(initialPicked(q));
     setOtherText(q.suggestedOther ?? '');
-    addAIMessage(q.text, q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
+    addAIMessage(questionDisplayText(q), q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
   };
 
   const addAIMessage = (

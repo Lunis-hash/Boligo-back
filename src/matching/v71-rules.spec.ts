@@ -13,7 +13,7 @@ import {
   V71_CHANGES,
   V7_CHANGES,
 } from '../interview/questions.data';
-import { QUESTIONS_EN } from '../interview/questions.en';
+import { QUESTIONS_EN, localizeQuestion } from '../interview/questions.en';
 import {
   SCALES,
   buildRelationalProfile,
@@ -907,5 +907,49 @@ describe('Point 6 — relecture culturelle', () => {
         expect(V7_CHANGES[id]).toBe(change);
       expect(current.has(id)).toBe(change !== 'retiree');
     }
+  });
+});
+
+describe('m5 — charge : jamais plus de douze affirmations d’affilée', () => {
+  const ofModule = (m: number) => QUESTIONS.filter((q) => q.moduleNumber === m);
+
+  it('dans chaque module, au plus douze affirmations d’échelle à la suite et une bascule accord / fréquence', () => {
+    for (let m = 0; m <= 10; m++) {
+      let run = 0;
+      let longest = 0;
+      let switches = 0;
+      let last: string | undefined;
+      for (const q of ofModule(m)) {
+        if (!q.scale) {
+          run = 0;
+          continue;
+        }
+        longest = Math.max(longest, ++run);
+        if (last && last !== q.scale) switches++;
+        last = q.scale;
+      }
+      expect(longest).toBeLessThanOrEqual(12);
+      expect(switches).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('le désir est demandé avant l’allure, pas à bout de fatigue', () => {
+    const ids = ofModule(10).map((q) => q.id);
+    for (const intimate of ['M10_Q16', 'M10_Q17', 'M10_Q18', 'M10_Q19'])
+      for (const allure of ['M10_Q11', 'M10_Q12', 'M10_Q13', 'M10_Q14'])
+        expect(ids.indexOf(intimate)).toBeLessThan(ids.indexOf(allure));
+  });
+});
+
+describe('m7 — pas d’option « Marié(e) » : l’aide de M0_Q04 le dit', () => {
+  it('en français et en anglais', () => {
+    const q = QUESTION_INDEX.get('M0_Q04')!;
+    expect(q.options.map((o) => o.text).join(' ')).not.toMatch(/mari/i);
+    expect(q.assistance).toMatch(/libres de s'engager/);
+    expect(localizeQuestion(q, 'en').assistance).toMatch(/free to commit/);
+    // Une question sans aide n'en reçoit pas en anglais.
+    expect(
+      localizeQuestion(QUESTION_INDEX.get('M0_Q05')!, 'en').assistance,
+    ).toBeUndefined();
   });
 });
