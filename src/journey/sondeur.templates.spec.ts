@@ -667,8 +667,25 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
         if (SITUATION.test(o)) bad.push(`${where} : ${o}`);
         if (/enfant/iu.test(o) && !children && o !== 'Avoir des enfants ou non')
           bad.push(`${where} : ${o}`);
+        // Option tronquée : un verbe sans complément (« Qu'il ou elle cherche »).
+        if (
+          /^qu['’](?:il|elle)[^,]*\s(?:cherche|veut|fasse|dise|attend)$/iu.test(
+            o,
+          )
+        )
+          bad.push(`${where} : option tronquée « ${o} »`);
       }
     expect(bad).toEqual([]);
+  });
+
+  it('dot ou mahr : chacun parle de sa propre famille, jamais de celle de l’autre', () => {
+    const dot = [1, 2, 3].flatMap((day) =>
+      topicDeepAll({ questionId: 'M4_Q07', label: '', theme: 'famille' }, day),
+    );
+    expect(dot.length).toBeGreaterThanOrEqual(3);
+    for (const t of dot)
+      expect(t.text).not.toMatch(/vos deux familles|famille de l['’]autre/iu);
+    expect(dot.map((t) => t.text).join(' ')).toMatch(/votre propre famille/);
   });
 
   it('aucune question double (deux « ? », ou deux interrogations coordonnées par « et » / « ou »)', () => {

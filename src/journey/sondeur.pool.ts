@@ -2165,7 +2165,11 @@ export const TOPIC_DEEP: Record<
     1: q(
       "Quand l'argent vient à manquer, qu'attendez-vous avant tout de la personne qui partage votre vie ?",
       'besoin',
-      ['Qu’il ou elle cherche', 'De la transparence', 'Du courage'],
+      [
+        'Qu’il ou elle cherche une solution',
+        'De la transparence',
+        'Du courage',
+      ],
     ),
     2: q(
       "Dans votre famille, que disait-on de ceux qui traversent un manque d'argent ?",
@@ -2175,7 +2179,11 @@ export const TOPIC_DEEP: Record<
     3: q(
       "Avant d'unir vos vies, qu'aimeriez-vous que l'autre sache de ce que vous attendriez de lui ou d'elle si l'argent manquait longtemps ?",
       'besoin',
-      ['Qu’il ou elle cherche', 'De la transparence', 'Un plan à deux'],
+      [
+        'Qu’il ou elle cherche activement un revenu',
+        'De la transparence',
+        'Un plan à deux',
+      ],
     ),
   },
   M4_Q12: {
@@ -2763,7 +2771,7 @@ export const TOPIC_DEEP: Record<
       ['Son principe', 'Son sens', 'Rien'],
     ),
     2: q(
-      'Que viendrait dire la dot, ou le mahr, à vos deux familles ?',
+      'Que représente la dot, ou le mahr, pour vous comme pour votre propre famille ?',
       'sens',
       ['Le respect', "L'engagement", 'La tradition'],
     ),
@@ -3668,7 +3676,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
     1: q(
       "Si l'un de vous traversait une longue période sans revenus, qu'est-ce qui resterait non négociable pour vous ?",
       'limite',
-      ['La transparence', 'Qu’il ou elle cherche', 'Le partage des charges'],
+      [
+        'La transparence',
+        'La recherche active d’un revenu',
+        'Le partage des charges',
+      ],
     ),
     3: q(
       "Que voudriez-vous comprendre, avant de vous engager, de ce que l'argent qui manque réveille chez l'autre ?",
