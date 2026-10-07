@@ -16,7 +16,8 @@
  * les autres jours du thème piochent dans les autres réserves.
  *
  * Un thème qui porte un écart de sécurité (violence, mots blessants) ne reçoit
- * que des questions de limite et de protection, écrites à l'avance.
+ * que des questions de limite, écrites à l'avance (jamais un plan de mise en
+ * sécurité, que l'autre lirait).
  *
  * Une couche IA (Groq / OpenRouter) peut proposer des formulations plus fines ;
  * ses questions, toujours relues en amont, passent avant les gabarits si elles
@@ -372,8 +373,13 @@ export function isQuotableDivergence(d: Divergence): boolean {
 /**
  * Questions de limite (sécurité), sans citer les réponses. Face à la violence
  * ou aux mots blessants, jamais de réconciliation ni de signal pour « reprendre
- * plus tard » : seulement où chacun place sa limite de sécurité, d'où il la
- * tient, et ce qu'il ferait pour se protéger si elle était franchie.
+ * plus tard » : seulement où chacun place sa limite de sécurité (jour 1), la
+ * valeur ou le principe qui la rend non négociable (jour 2, jamais le récit de
+ * ce qui a été vécu ou vu), et ce qui montrerait au quotidien qu'elle est
+ * respectée (jour 3). Jamais ce que l'on ferait pour se protéger, où l'on
+ * irait ni qui l'on appellerait : l'autre lit la réponse, et un plan de mise
+ * en sécurité reste confidentiel. Trois formulations par jour : un membre qui
+ * enchaîne les parcours ne retrouve pas toujours la même.
  */
 export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
   1: [
@@ -389,15 +395,23 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       text: 'Quelle limite, en dispute, ne pourrait jamais être franchie avec vous, même une seule fois ?',
       options: ['Les insultes', 'Toute violence', 'Les menaces'],
     },
+    {
+      text: 'Pour vous, quelle façon de se parler en dispute resterait toujours hors de question ?',
+      options: ['Crier', 'Rabaisser', 'Menacer'],
+    },
   ],
   2: [
     {
-      text: "Quel signe, chez quelqu'un, vous dirait très tôt qu'il faut vous éloigner pour rester en sécurité ?",
-      options: ['Un geste brusque', 'Des menaces', 'Des mots qui rabaissent'],
+      text: 'Quelle valeur rend, pour vous, votre limite de sécurité non négociable ?',
+      options: ['Le respect', 'La dignité', 'La confiance'],
     },
     {
-      text: "Qu'avez-vous appris, en grandissant, sur ce qu'on ne fait jamais à quelqu'un qu'on aime ?",
-      options: ['Lever la main', 'Humilier', 'Menacer'],
+      text: "Quel principe, reçu de votre éducation ou de vos convictions, vous fait dire qu'on ne fait jamais peur à quelqu'un qu'on aime ?",
+      options: ['Le respect', 'La douceur', 'La parole donnée'],
+    },
+    {
+      text: 'Pour vous, quelle valeur fait que la colère ne donne jamais le droit de faire peur ?',
+      options: ["L'égalité", 'La dignité', 'La confiance'],
     },
   ],
   3: [
@@ -406,12 +420,16 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       options: ['Aucun geste violent', 'Aucune insulte', 'Aucune menace'],
     },
     {
-      text: "Si quelqu'un franchissait un jour votre limite de sécurité, que feriez-vous pour vous protéger ?",
+      text: "Au quotidien, quel geste ou quelle parole de l'autre vous montrerait que votre limite de sécurité est respectée ?",
       options: [
-        'Partir aussitôt',
-        'Demander de l’aide à un proche',
-        'Appeler une association ou les secours',
+        'Un ton qui reste calme',
+        'Une pause respectée',
+        'Aucune menace, même en colère',
       ],
+    },
+    {
+      text: 'Pour vous, à quoi ressemblerait un désaccord vécu en sécurité, dans une vie à deux ?',
+      options: ['Un ton posé', 'Le droit de dire non', 'Sans peur ni menace'],
     },
   ],
 };
@@ -796,8 +814,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       let question: SondeurQuestion | null = null;
 
       // 1. Écart de sécurité sur ce thème : une question de limite, jamais un
-      // compromis ni une réconciliation, jamais une question de l'IA. Trois
-      // angles distincts : limite, signe d'alerte, protection. Déjà vues lors
+      // compromis ni une réconciliation, jamais une question de l'IA, jamais
+      // un plan de mise en sécurité. Trois angles distincts : la limite, la
+      // valeur qui la fonde, son respect au quotidien. Déjà vues lors
       // d'un parcours précédent : elles reviennent plutôt que de laisser la
       // place à une autre question. Signal de contrôle : au jour 2 de son
       // thème, la limite de contrôle.

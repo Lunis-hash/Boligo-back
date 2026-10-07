@@ -2023,7 +2023,7 @@ export const SHARED_RISK: Record<number, TopicTemplate[]> = {
     ),
     tt(
       (w) =>
-        `À propos ${w.de}, quelle règle simple aimeriez-vous poser dès le début pour vous protéger tous les deux ?`,
+        `À propos ${w.de}, quelle règle simple aimeriez-vous poser dès le début pour garder le dialogue ouvert ?`,
       'limite',
       [
         'Ne pas laisser passer la nuit',

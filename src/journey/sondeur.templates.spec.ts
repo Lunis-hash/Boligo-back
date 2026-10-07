@@ -156,6 +156,21 @@ function formIssues(text: string): string[] {
   return issues;
 }
 
+/**
+ * Plan de mise en sécurité : ce que l'on ferait pour se protéger, où l'on
+ * irait, comment fuir. L'autre lit la réponse : jamais demandé.
+ */
+const PROTECTION_PLAN =
+  /(?<![\p{L}-])(?:vous|se|me) protéger|(?<!\p{L})(?:fuir|partir où|où iriez|refuge|mettre à l['’]abri)/iu;
+/** Version large, pour les questions de limite (texte et grille cachée). */
+const PROTECTION_PLAN_WIDE =
+  /protég|fuir|partir où|où iriez|refuge|mettre à l['’]abri/iu;
+const PROTECTION_OPTIONS =
+  /partir|fuir|refuge|abri|association|secours|appeler/iu;
+/** Récit d'une scène vécue ou vue (violence, cris) : jamais devant un inconnu. */
+const LIVED_SCENE =
+  /avez-vous vu|avez-vous vécu|souvenir|en grandissant[^?]*(?:violence|coups|cris)|raconte/iu;
+
 function optionIssues(options: string[]): string[] {
   const issues: string[] = [];
   if (options.length !== 4) issues.push(`${options.length} options`);
@@ -238,6 +253,21 @@ const joinAgreement = (statement: string, text: string) =>
 const ownProbes = (a: Agreement): PoolTemplate[] =>
   [a.probe, a.probeVariant].filter((t): t is PoolTemplate => !!t);
 
+/** Questions de limite (sécurité et contrôle), avec leur grille cachée. */
+const limitTemplates = (): Array<{
+  where: string;
+  text: string;
+  options: string[];
+}> => [
+  ...[1, 2, 3].flatMap((day) =>
+    SAFETY_TEMPLATES[day].map((t, i) => ({
+      where: `SAFETY_TEMPLATES[${day}][${i}]`,
+      ...t,
+    })),
+  ),
+  ...CONTROL_LIMITS.map((t, i) => ({ where: `CONTROL_LIMITS[${i}]`, ...t })),
+];
+
 function agreementStatements(): string[] {
   return [
     ...Object.values(AGREEMENTS)
@@ -295,14 +325,24 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
         seed: `s${i}`,
       }))
         if (q.subject === 'securite') texts.add(q.text);
-    expect(texts.size).toBe(6);
+    // Trois formulations par jour : toutes finissent par être servies.
+    for (const day of [1, 2, 3]) expect(SAFETY_TEMPLATES[day]).toHaveLength(3);
+    expect(texts.size).toBe(9);
     expectClean([...texts].map((text) => ({ where: 'SAFETY', text })));
     for (const day of [1, 2, 3])
       for (const t of SAFETY_TEMPLATES[day])
         expect(optionIssues([...t.options, 'Autre...'])).toEqual([]);
+    // Trois angles distincts, sans quasi-doublon entre eux.
+    const limits = limitTemplates();
+    const close: string[] = [];
+    for (let i = 0; i < limits.length; i++)
+      for (let j = i + 1; j < limits.length; j++)
+        if (similarQuestions(limits[i].text, limits[j].text))
+          close.push(`${limits[i].where} ≈ ${limits[j].where}`);
+    expect(close).toEqual([]);
   });
 
-  it('sécurité : jamais de réconciliation, seulement la limite et la protection', () => {
+  it('sécurité : jamais de réconciliation, seulement la limite, sa valeur et son respect', () => {
     const all = [1, 2, 3].flatMap((day) => SAFETY_TEMPLATES[day]);
     for (const t of all)
       expect(t.text).not.toMatch(
@@ -310,7 +350,66 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
       );
     const day3 = SAFETY_TEMPLATES[3].map((t) => t.text).join(' | ');
     expect(day3).toMatch(/limite/);
-    expect(day3).toMatch(/vous protéger/);
+    expect(day3).toMatch(/respectée/);
+  });
+
+  it('sécurité : aucun gabarit ne demande ce que l’on ferait pour se protéger, où l’on irait, ni un plan de fuite', () => {
+    // Questions de limite : version large, sur le texte et la grille cachée.
+    const limits = limitTemplates();
+    expect(
+      limits
+        .filter(
+          (t) =>
+            PROTECTION_PLAN_WIDE.test(t.text) ||
+            PROTECTION_OPTIONS.test(t.options.join(' | ')),
+        )
+        .map((t) => `${t.where} : ${t.text} (${t.options.join(' / ')})`),
+    ).toEqual([]);
+    // Toutes les autres formulations écrites à l'avance.
+    const written = [
+      ...staticTemplates(),
+      ...renderTopic(TARGETED, 'TARGETED'),
+      ...renderTopic(SHARED_RISK, 'SHARED_RISK'),
+      ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
+        ownProbes(a).map((t) => ({
+          where: `AGREEMENTS.${key}`,
+          text: joinAgreement(a.statement, t.text),
+        })),
+      ),
+      ...[1, 2, 3].flatMap((day) =>
+        CONVERGENT[day].map((t, i) => ({
+          where: `CONVERGENT[${day}][${i}]`,
+          text: t.text,
+        })),
+      ),
+    ];
+    expect(
+      written
+        .filter((t) => PROTECTION_PLAN.test(t.text))
+        .map((t) => `${t.where} : ${t.text}`),
+    ).toEqual([]);
+    // Servies face à la violence : jamais un plan de mise en sécurité.
+    const violent = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'C' });
+    for (let i = 0; i < 40; i++)
+      for (const q of assembleSondeur({
+        report: violent,
+        firstNames: ['A', 'B'],
+        seed: `p${i}`,
+      }))
+        expect(q.text).not.toMatch(PROTECTION_PLAN);
+  });
+
+  it('sécurité : aucun gabarit de limite ne fait raconter une scène vécue ; le jour 2 demande une valeur', () => {
+    const limits = limitTemplates();
+    expect(
+      limits
+        .filter((t) => LIVED_SCENE.test(t.text))
+        .map((t) => `${t.where} : ${t.text}`),
+    ).toEqual([]);
+    // Jour 2 (« d'où viennent vos positions ») : la valeur ou le principe qui
+    // rend la limite non négociable, jamais ce qui a été vécu ou vu.
+    for (const t of SAFETY_TEMPLATES[2])
+      expect(t.text).toMatch(/valeur|principe/);
   });
 
   it('les questions les plus intimes ne sont posées qu’au jour 3', () => {
