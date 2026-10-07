@@ -26,6 +26,8 @@ import {
   Divergence,
   RawAnswers,
 } from './divergence.engine';
+import { homeContext } from './discover-filters';
+import { resolveScore } from './match-view';
 
 const report = (a: RawAnswers, b: RawAnswers) => buildDivergenceReport(a, b);
 const find = (a: RawAnswers, b: RawAnswers, id: string): Divergence[] =>
@@ -625,5 +627,112 @@ describe('M3 — violence physique : tolérance et justification séparées', ()
     expect(
       severityOf({ M6_Q24: 'E', ...calm }, { M6_Q04: 'B', ...calm }, 'M6_Q24'),
     ).toEqual(['critique']);
+  });
+});
+
+describe('B4 — lieu de vie : « je reste » se lit avec la ville et le pays', () => {
+  const paris = { city: 'Paris, France' };
+  const lyon = { city: 'Lyon, France' };
+  const dakar = { city: 'Dakar, Sénégal' };
+  type Home = { city: string };
+  const at = (a: RawAnswers, b: RawAnswers, ha: Home, hb: Home) =>
+    buildDivergenceReport(a, b, homeContext(ha, hb));
+  const home = (r: ReturnType<typeof at>) =>
+    r.divergences.filter((d) => d.questionId === 'M0_Q03');
+  const stays = { M0_Q03: 'D', M7_Q07: 'A' };
+
+  it('deux « je reste où je suis » dans deux pays : incompatibilité déclarée, plus aucun accord', () => {
+    const r = at(stays, stays, paris, dakar);
+    expect(home(r)).toHaveLength(1);
+    expect(home(r)[0]).toMatchObject({
+      severity: 'critique',
+      theme: 'lieu',
+      label: 'Chacun attaché à son pays',
+    });
+    expect(r.hardStop).toBe(true);
+    // Ni accord affiché ni accord du Sondeur sur « rester où l'on est ».
+    expect(
+      r.convergences.filter((c) => ['M0_Q03', 'M7_Q07'].includes(c.questionId)),
+    ).toEqual([]);
+  });
+
+  it('même ville, ou lieu inconnu : l’accord reste un accord', () => {
+    const labels = [
+      'Vous tenez tous les deux à rester où vous êtes',
+      'Vous vous voyez tous les deux rester dans votre ville',
+    ];
+    for (const r of [
+      at(stays, stays, paris, { city: 'Paris, France' }),
+      buildDivergenceReport(stays, stays),
+      buildDivergenceReport(stays, stays, homeContext(null, dakar)),
+    ]) {
+      expect(home(r)).toEqual([]);
+      expect(r.convergences.map((c) => c.label)).toEqual(
+        expect.arrayContaining(labels),
+      );
+    }
+  });
+
+  it('dans deux pays : un seul attachement est majeur ; deux « ça dépend de la distance », modérés', () => {
+    expect(home(at({ M0_Q03: 'D' }, { M0_Q03: 'A' }, paris, dakar))).toEqual([
+      expect.objectContaining({
+        severity: 'majeure',
+        label: 'Vivre dans le même pays',
+      }),
+    ]);
+    // « Même ville dans cinq ans » sans s'être dit prêt(e) à déménager.
+    expect(
+      home(at({ M0_Q03: 'C', M7_Q07: 'A' }, { M0_Q03: 'B' }, paris, dakar)),
+    ).toEqual([expect.objectContaining({ severity: 'majeure' })]);
+    expect(
+      home(at({ M0_Q03: 'C' }, { M0_Q03: 'C' }, paris, dakar)).map(
+        (d) => d.severity,
+      ),
+    ).toEqual(['moderee']);
+    // Deux membres prêts à déménager : un vrai accord, où qu'ils vivent.
+    const mobile = at({ M0_Q03: 'A' }, { M0_Q03: 'A' }, paris, dakar);
+    expect(home(mobile)).toEqual([]);
+    expect(mobile.convergences.map((c) => c.questionId)).toContain('M0_Q03');
+  });
+
+  it('deux villes d’un même pays : majeure pour deux refus nets, modérée pour deux attachements', () => {
+    expect(home(at(stays, stays, paris, lyon))).toEqual([
+      expect.objectContaining({
+        severity: 'majeure',
+        label: 'Chacun attaché à sa ville',
+      }),
+    ]);
+    const attached = { M0_Q03: 'C', M7_Q07: 'A' };
+    expect(
+      home(at(attached, attached, paris, lyon)).map((d) => d.severity),
+    ).toEqual(['moderee']);
+    expect(
+      at(attached, attached, paris, lyon).convergences.map((c) => c.questionId),
+    ).not.toContain('M7_Q07');
+  });
+
+  it('la fiche de compatibilité passe le lieu de chacun au moteur', () => {
+    const r = resolveScore(
+      { answers: stays, mentalMap: null, ...paris },
+      { answers: stays, mentalMap: null, ...dakar },
+    );
+    expect(r.report.hardStop).toBe(true);
+    expect(
+      resolveScore(
+        { answers: stays, mentalMap: null, ...paris },
+        { answers: stays, mentalMap: null, ...paris },
+      ).report.hardStop,
+    ).toBe(false);
+  });
+
+  it('lit « Ville, Pays » sans accents ni casse ; un seul élément ne donne pas de pays', () => {
+    expect(
+      homeContext(dakar, { city: null, profile: { displayedCity: 'Paris' } }),
+    ).toEqual({
+      cityA: 'dakar',
+      cityB: 'paris',
+      countryA: 'senegal',
+      countryB: null,
+    });
   });
 });

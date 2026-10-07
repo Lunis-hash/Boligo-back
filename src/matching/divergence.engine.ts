@@ -175,6 +175,19 @@ export interface DivergenceReport {
   comparisons?: Comparison[];
 }
 
+/**
+ * V7.1 — où vit chacun (« Ville, Pays » de l'inscription, normalisé : voir
+ * `homeContext` dans discover-filters.ts). Les réponses « je reste où je
+ * suis » n'ont de sens qu'avec le lieu : sans lui, elles sont lues comme
+ * avant.
+ */
+export interface ReportContext {
+  cityA?: string | null;
+  cityB?: string | null;
+  countryA?: string | null;
+  countryB?: string | null;
+}
+
 /** Gravité d'une paire de réponses ; `null` = compatible / convergent. */
 type SeverityFn = (a: string, b: string) => Severity | null;
 
@@ -215,6 +228,13 @@ interface Rule {
    * compare par une règle croisée.
    */
   fact?: boolean;
+  /**
+   * V7.1 — réponses relatives au lieu où chacun vit (« je reste où je
+   * suis ») : deux réponses identiques ne sont ni un accord ni un point
+   * d'affinité quand les deux membres ne vivent pas au même endroit
+   * (`homeRule` les lit).
+   */
+  relative?: string[];
   /** Similarité de deux réponses compatibles (choix multiples), 0–1. */
   similarity?: (a: string, b: string) => number;
   /** Convergence calculée (choix multiples : réponses communes). */
@@ -369,6 +389,7 @@ export const DIVERGENCE_RULES: Rule[] = [
       A: 'Vous êtes tous les deux prêts à déménager pour le couple',
       D: 'Vous tenez tous les deux à rester où vous êtes',
     },
+    relative: ['C', 'D'],
   },
   {
     questionId: 'M7_Q07',
@@ -383,6 +404,7 @@ export const DIVERGENCE_RULES: Rule[] = [
       A: 'Vous vous voyez tous les deux rester dans votre ville',
       C: "Vous envisagez tous les deux une vie à l'étranger",
     },
+    relative: ['A'],
   },
   {
     // V7.1 — le retour au pays d'origine de sa famille, projet fréquent
@@ -405,6 +427,7 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
     // Deux « je vis déjà au pays » : peut-être pas le même pays.
     discreet: ['D'],
+    relative: ['C'],
   },
   {
     questionId: 'M4_Q13',
@@ -1644,6 +1667,8 @@ class Collector {
   declared = new Set<Divergence>();
   /** Questions déjà lues par une règle croisée : leur règle simple est sautée. */
   handled = new Set<string>();
+  /** V7.1 — les deux membres ne vivent pas au même endroit (`homeRule`). */
+  apart = false;
   compared = 0;
 
   diverge(d: Divergence, adjustable = !d.shared): void {
@@ -1684,6 +1709,7 @@ function applyRule(rule: Rule, a: RawAnswers, b: RawAnswers, c: Collector) {
   const kb = b[rule.questionId];
   if (!ka || !kb) return;
   if (c.handled.has(rule.questionId)) return;
+  if (c.apart && ka === kb && rule.relative?.includes(ka)) return;
   if (rule.supersededBy?.some((id) => a[id] && b[id])) return;
   if (rule.fact) {
     const label = ka === kb ? rule.convergence?.[ka] : undefined;
@@ -1761,6 +1787,86 @@ function applyRule(rule: Rule, a: RawAnswers, b: RawAnswers, c: Collector) {
 }
 
 // ─── Règles croisées : plusieurs questions, ou une question V7 et sa version V6 ─
+
+/** Distance entre les deux lieux de vie : autre pays, autre ville, ou rien de connu. */
+function distanceOf(ctx?: ReportContext): 'pays' | 'ville' | null {
+  if (!ctx) return null;
+  const { countryA, countryB, cityA, cityB } = ctx;
+  if (countryA && countryB && countryA !== countryB) return 'pays';
+  if (cityA && cityB && !cityA.includes(cityB) && !cityB.includes(cityA))
+    return 'ville';
+  return null;
+}
+
+/** « Non, je reste où je suis » (M0_Q03 D) : un refus net de déménager. */
+const staysFirmly = (x: RawAnswers) => x.M0_Q03 === 'D';
+
+/**
+ * Attaché(e) à son lieu sans l'avoir dit nettement : se voit dans la même
+ * ville dans cinq ans (M7_Q07 A) ou dit « ma vie est là où je vis » (M7_Q36
+ * C), sans s'être dit prêt(e) à déménager (M0_Q03 A ou B).
+ */
+const staysHome = (x: RawAnswers) =>
+  staysFirmly(x) ||
+  (x.M0_Q03 !== 'A' &&
+    x.M0_Q03 !== 'B' &&
+    (x.M7_Q07 === 'A' || x.M7_Q36 === 'C'));
+
+/**
+ * V7.1 (B4) — lieu de vie : « je reste où je suis » et « la même ville
+ * qu'aujourd'hui » sont relatifs. Deux membres qui vivent dans deux pays et
+ * tiennent chacun à rester ne sont pas d'accord : ils ne pourront pas vivre
+ * ensemble. Deux refus nets : critique ; un seul attachement, ou deux sans
+ * refus net : majeure ; deux « cela dépend de la distance » : modérée (la
+ * distance est un pays). Deux villes d'un même pays : majeure pour deux refus
+ * nets, modérée pour deux attachements. Dans tous les cas, les réponses
+ * relatives identiques ne comptent plus comme des accords (`relative`).
+ */
+function homeRule(
+  a: RawAnswers,
+  b: RawAnswers,
+  ctx: ReportContext | undefined,
+  c: Collector,
+): void {
+  const distance = distanceOf(ctx);
+  if (!distance) return;
+  c.apart = true;
+  const answered = (x: RawAnswers) => !!(x.M0_Q03 || x.M7_Q07 || x.M7_Q36);
+  if (!answered(a) || !answered(b)) return;
+  const firm = [staysFirmly(a), staysFirmly(b)].filter(Boolean).length;
+  const attached = [staysHome(a), staysHome(b)].filter(Boolean).length;
+  let severity: Severity | null = null;
+  if (distance === 'pays') {
+    if (firm === 2) severity = 'critique';
+    else if (attached > 0) severity = 'majeure';
+    // Deux « cela dépend de la distance », et la distance est un pays.
+    else if (a.M0_Q03 === 'C' && b.M0_Q03 === 'C') severity = 'moderee';
+  } else if (attached === 2) {
+    severity = firm === 2 ? 'majeure' : 'moderee';
+  }
+  if (!severity) return;
+  c.handled.add('M0_Q03');
+  const shown = (x: RawAnswers) =>
+    x.M0_Q03
+      ? view('M0_Q03', x.M0_Q03)
+      : x.M7_Q07
+        ? view('M7_Q07', x.M7_Q07)
+        : view('M7_Q36', x.M7_Q36);
+  c.diverge({
+    questionId: 'M0_Q03',
+    theme: 'lieu',
+    severity,
+    label:
+      distance === 'ville'
+        ? 'Chacun attaché à sa ville'
+        : attached === 2
+          ? 'Chacun attaché à son pays'
+          : 'Vivre dans le même pays',
+    question: questionText('M0_Q03'),
+    a: shown(a),
+    b: shown(b),
+  });
+}
 
 /** Culture : « la même culture » (M1_Q02) face à des origines sans rien de commun (M1_Q01). */
 function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
@@ -2640,12 +2746,14 @@ function applyPerpetualProblems(a: RawAnswers, b: RawAnswers, c: Collector) {
 export function buildDivergenceReport(
   rawA: RawAnswers,
   rawB: RawAnswers,
+  ctx?: ReportContext,
 ): DivergenceReport {
   // Réponses V6 lues dans les termes de la V7 quand le sens est le même.
   const a = upgradeAnswers(rawA);
   const b = upgradeAnswers(rawB);
   const c = new Collector();
 
+  homeRule(a, b, ctx, c);
   transmissionRule(a, b, c);
   for (const rule of DIVERGENCE_RULES) applyRule(rule, a, b, c);
   childrenAcceptRule(a, b, c);
