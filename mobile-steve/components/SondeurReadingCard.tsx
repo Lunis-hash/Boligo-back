@@ -35,11 +35,12 @@ export function SondeurReadingCard({
 
       {reading.together.length > 0 && (
         <View style={styles.block}>
-          <Text style={styles.label}>{review ? 'Vos points forts' : 'Ce qui vous rapproche'}</Text>
+          <Text style={styles.label}>{review ? 'Vos accords' : 'Ce qui vous rapproche'}</Text>
           {reading.together.map((t, i) => (
-            <Text key={`t${i}`} style={styles.item}>
-              • {t}
-            </Text>
+            <View key={`t${i}`}>
+              <Text style={styles.item}>• {t}</Text>
+              <Quotes quotes={reading.togetherQuotes?.[i]} />
+            </View>
           ))}
         </View>
       )}
@@ -48,10 +49,13 @@ export function SondeurReadingCard({
         <View style={styles.block}>
           <Text style={styles.label}>{review ? 'À aborder en priorité' : 'À explorer ensemble'}</Text>
           {reading.toDiscuss.map((p, i) => (
-            <Text key={`d${i}`} style={styles.item}>
-              <Text style={styles.theme}>{p.theme} : </Text>
-              {p.text}
-            </Text>
+            <View key={`d${i}`}>
+              <Text style={styles.item}>
+                <Text style={styles.theme}>{p.theme} : </Text>
+                {p.text}
+              </Text>
+              <Quotes quotes={p.quotes} />
+            </View>
           ))}
         </View>
       )}
@@ -73,6 +77,16 @@ export function SondeurReadingCard({
   );
 }
 
+/** Extraits cités, mot pour mot, de chacune des deux réponses. */
+function Quotes({ quotes }: { quotes?: [string, string] | null }) {
+  if (!quotes) return null;
+  return (
+    <Text style={styles.quotes} testID="sondeur-quotes">
+      « {quotes[0]} » · « {quotes[1]} »
+    </Text>
+  );
+}
+
 const styles = StyleSheet.create({
   card: { borderRadius: 16, borderWidth: 1, padding: 14, gap: 10 },
   day: { backgroundColor: Brand.lilas, borderColor: Brand.bordLilas, margin: 12 },
@@ -89,5 +103,6 @@ const styles = StyleSheet.create({
   theme: { fontFamily: Typography.fontFamily.semiBold, color: Brand.encre },
   opener: { flexDirection: 'row', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 12, padding: 10 },
   openerText: { flex: 1, fontFamily: Typography.fontFamily.medium, fontSize: 14, lineHeight: 20, color: Brand.encre },
+  quotes: { fontFamily: Typography.fontFamily.regular, fontSize: 12, lineHeight: 17, color: Brand.encrePale, fontStyle: 'italic', marginLeft: 10 },
   advice: { fontFamily: Typography.fontFamily.regular, fontSize: 13, lineHeight: 19, color: Brand.encreDouce, fontStyle: 'italic' },
 });

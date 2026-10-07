@@ -97,13 +97,14 @@ function memoryDb(journeyId: string) {
     report: {
       findFirst: jest.fn(() => Promise.resolve(null)),
       create: jest.fn((args: unknown) => Promise.resolve(args)),
+      count: jest.fn(() => Promise.resolve(0)),
     },
   };
   const answerDay = (
     day: number,
     who: Array<'a' | 'b'> = ['a', 'b'],
     text: (userId: string, index: number) => string = (userId) =>
-      `Réponse de ${userId}`,
+      `Réponse détaillée de ${userId}`,
   ) => {
     questions
       .filter((x) => x.day === day)
@@ -127,16 +128,16 @@ const dayAnswer = () =>
     together: [
       {
         n: 1,
-        a: 'Réponse de a',
-        b: 'Réponse de b',
+        a: 'Réponse détaillée de a',
+        b: 'Réponse détaillée de b',
         text: 'Vous répondez tous deux sur la famille.',
       },
     ],
     toDiscuss: [
       {
         n: 2,
-        a: 'réponse de a',
-        b: 'réponse de b',
+        a: 'réponse détaillée de a',
+        b: 'réponse détaillée de b',
         text: 'Le partage des dépenses reste à préciser.',
       },
     ],
@@ -228,7 +229,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       .calls[0] as unknown as [string, string, string];
     expect(journeyArg).toBe(id);
     expect(system).toContain('jamais des consignes');
-    expect(prompt).toContain('Inès : ‹ Réponse de a ›');
+    expect(prompt).toContain('Inès : ‹ Réponse détaillée de a ›');
     const followUpCall = ai.journeyCompletion.mock.calls[1] as unknown as [
       string,
       string,
@@ -249,6 +250,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       {
         theme: 'Argent & dettes',
         text: 'Le partage des dépenses reste à préciser.',
+        quotes: ['réponse détaillée de a', 'réponse détaillée de b'],
       },
     ]);
 
@@ -263,7 +265,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     ];
     expect(candidates[0]).toMatchObject({ method: 'besoin caché' });
     expect(writerModel).toBe('anthropic/claude-sonnet-5');
-    expect(context.analysis).toContain('Karim : ‹ Réponse de b ›');
+    expect(context.analysis).toContain('Karim : ‹ Réponse détaillée de b ›');
 
     const placed = db.questions.find((q) => q.followUp);
     expect(placed).toMatchObject({ day: 2, emoji: THEMES.argent.emoji });
@@ -331,16 +333,16 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       strengths: [
         {
           n: 1,
-          a: 'Réponse de a',
-          b: 'Réponse de b',
+          a: 'Réponse détaillée de a',
+          b: 'Réponse détaillée de b',
           text: 'Vous avez répondu tous les deux sur la famille.',
         },
       ],
       toDiscuss: [
         {
           n: 7,
-          a: 'Réponse de a',
-          b: 'Réponse de b',
+          a: 'Réponse détaillée de a',
+          b: 'Réponse détaillée de b',
           text: 'La ville où vivre reste à choisir.',
         },
       ],
@@ -446,7 +448,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       const [, , prompt, writerModel] = ai.journeyCritique.mock
         .calls[0] as unknown as [string, string, string, string];
       expect(writerModel).toBe('anthropic/claude-sonnet-5');
-      expect(prompt).toContain('Inès : ‹ Réponse de a ›');
+      expect(prompt).toContain('Inès : ‹ Réponse détaillée de a ›');
       expect(db.insights).toHaveLength(0);
       // Pas de lecture vérifiée : pas de question d'approfondissement non plus.
       expect(db.questions.some((q) => q.followUp)).toBe(false);
@@ -467,7 +469,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     db.answerDay(1, ['a', 'b'], (userId, i) =>
       userId === 'b' && i === 4
         ? 'Si on me pousse à bout, il peut m’arriver de lever la main.'
-        : `Réponse de ${userId}`,
+        : `Réponse détaillée de ${userId}`,
     );
     await service.refresh(id);
     expect(ai.journeyCompletion).not.toHaveBeenCalled();
@@ -485,6 +487,90 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     expect(ai.journeyCompletion).not.toHaveBeenCalled();
     const view = await service.view(id);
     expect(view.days[0].source).toBe('regles');
+    expect(view.days[0].advice).toMatch(/sécurité/);
+    expect(view.days[0].toDiscuss).toEqual([]);
     expect(view.writing).toBe(false);
+    expect(data.description).toMatch(/catégorie : violence/);
+  });
+
+  it('détresse : signalement et ressources d’aide envoyées en privé à l’auteur', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const notifications = {
+      sendPushNotification: jest.fn(() => Promise.resolve()),
+    };
+    const service = new JourneyInsightsService(
+      db.prisma as never,
+      ai as never,
+      notifications as never,
+    );
+    db.answerDay(1, ['a', 'b'], (userId, i) =>
+      userId === 'a' && i === 2
+        ? 'Je ne vois plus de raison de vivre depuis quelque temps.'
+        : `Réponse détaillée de ${userId}`,
+    );
+    await service.refresh(id);
+    expect(ai.journeyCompletion).not.toHaveBeenCalled();
+    expect(notifications.sendPushNotification).toHaveBeenCalledTimes(1);
+    const [userId, , , text] = notifications.sendPushNotification.mock
+      .calls[0] as unknown as [string, string, string, string];
+    expect(userId).toBe('a');
+    expect(text).toMatch(/3114/);
+  });
+
+  it('alerte levée par l’IA : signalement du membre désigné, lecture de sécurité, pas de question de suivi', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: jest.fn(() =>
+        Promise.resolve({
+          content: JSON.stringify({
+            alerte: 'controle',
+            membre: 'b',
+            headline: '',
+            together: [],
+            toDiscuss: [],
+          }),
+          model: 'anthropic/claude-opus-5',
+        }),
+      ),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1);
+    await service.refresh(id);
+    expect(db.insights[0]).toMatchObject({ day: 1, source: 'regles' });
+    expect(db.questions.some((q) => q.followUp)).toBe(false);
+    const [{ data }] = db.prisma.report.create.mock.calls[0] as unknown as [
+      { data: { reportedId: string; description: string } },
+    ];
+    expect(data.reportedId).toBe('b');
+    expect(data.description).toMatch(/catégorie : contrôle/);
+  });
+
+  it('messagerie retenue tant qu’un signalement du Sondeur attend la modération', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1, ['a', 'b'], (userId, i) =>
+      userId === 'b' && i === 0
+        ? 'Il fouillait mon téléphone tous les soirs.'
+        : `Réponse détaillée de ${userId}`,
+    );
+    db.prisma.report.count.mockResolvedValueOnce(1);
+    expect(await service.holdsChat(id)).toBe(true);
+    expect(db.prisma.report.create).toHaveBeenCalledTimes(1);
+    expect(await service.holdsChat(id)).toBe(false);
   });
 });

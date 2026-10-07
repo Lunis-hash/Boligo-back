@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { AiService } from '../ai/ai.service';
 import {
@@ -6,21 +6,26 @@ import {
   collectRawAnswers,
   THEMES,
 } from '../matching/divergence.engine';
+import { NotificationService } from '../notifications/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { similarQuestions } from './clinical-lens';
-import { SAFETY_QUESTIONS } from './sondeur.generator';
+import { SAFETY_QUESTIONS, describeReportForAi } from './sondeur.generator';
 import {
+  AlertCategory,
   AnsweredItem,
+  DangerCategory,
   FollowUpProposal,
   REVIEW_DAY,
+  ReadingAlert,
   SondeurReading,
   answeredItems,
   dayComplete,
   dayReadingPrompt,
-  hasDangerSignal,
+  dangerCategories,
   fidelityPrompt,
   followUpPrompt,
   itemsBlock,
+  parseAlert,
   parseDayReading,
   parseFidelity,
   parseFollowUps,
@@ -28,7 +33,40 @@ import {
   reviewPrompt,
   ruleDayReading,
   ruleReview,
+  safetyReading,
 } from './sondeur-insights';
+
+/** Début de la description d'un signalement automatique du Sondeur. */
+export function sondeurReportPrefix(journeyId: string): string {
+  return `Signal automatique BOLIGO · Sondeur · parcours ${journeyId}`;
+}
+
+/** Libellés des catégories, pour la modération. */
+const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
+  violence: 'violence (subie ou exercée)',
+  violence_subie: 'violence subie',
+  violence_exercee: 'violence exercée',
+  menace: 'menace',
+  controle: 'contrôle (téléphone, argent, proches)',
+  detresse: 'détresse ou idées de mort',
+  argent: "demande d'argent",
+  mineur: 'âge de moins de 18 ans',
+};
+
+/**
+ * Message privé à l'auteur d'une réponse qui évoque une détresse ou des
+ * violences : des ressources d'aide, sans rien commenter. Numéros français
+ * (gratuits, 24 h/24) ; ailleurs, les urgences du pays.
+ */
+const SUPPORT_MESSAGE: Partial<Record<DangerCategory | AlertCategory, string>> =
+  {
+    detresse:
+      "Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e) : en France, le 3114 répond 24 h/24, gratuitement. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
+    violence_subie:
+      "Vous avez évoqué des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
+    violence:
+      "Une de vos réponses évoque des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
+  };
 
 /** Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart. */
 const MAX_ATTEMPTS = 3;
@@ -56,7 +94,37 @@ export class JourneyInsightsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ai: AiService,
+    @Optional() private readonly notifications?: NotificationService,
   ) {}
+
+  /**
+   * Messagerie retenue : une réponse du Sondeur évoque un danger et la
+   * modération n'a pas encore tranché. Les signalements manquants sont créés
+   * au passage. Une confidence de violence subie (classée par l'IA) ne
+   * retient pas la messagerie : le membre n'est pas mis en cause.
+   */
+  async holdsChat(journeyId: string): Promise<boolean> {
+    const journey = await this.load(journeyId);
+    if (!journey) return false;
+    const { userAId, userBId, harmonyQuestions: qs } = journey;
+    for (const day of [1, 2, 3]) {
+      if (!dayComplete(qs, day, userAId, userBId)) continue;
+      const items = answeredItems(
+        qs.filter((q) => q.day === day),
+        userAId,
+        userBId,
+      );
+      await this.handleDanger(journeyId, day, items, [userAId, userBId]);
+    }
+    const pending = await this.prisma.report.count({
+      where: {
+        status: 'en_attente',
+        description: { startsWith: sondeurReportPrefix(journeyId) },
+        NOT: { description: { contains: 'catégorie : violence subie' } },
+      },
+    });
+    return pending > 0;
+  }
 
   /**
    * Écrit les lectures qui manquent. Appelé sans attendre après chaque
@@ -96,7 +164,17 @@ export class JourneyInsightsService {
       if (!dayComplete(qs, day, userAId, userBId)) continue;
       const reading = stored.get(day);
       if (!reading) pending.push(day);
-      days.push(reading ?? ruleDayReading(day));
+      // Version des règles : jamais de « nuance à aborder » après un signal
+      // de sécurité.
+      const danger = (d?: number) =>
+        answeredItems(
+          qs.filter((q) => d === undefined || q.day === d),
+          userAId,
+          userBId,
+        ).some((it) => it.answers.some((a) => dangerCategories(a).length > 0));
+      days.push(
+        reading ?? (danger(day) ? safetyReading(day) : ruleDayReading(day)),
+      );
     }
 
     let review: SondeurReading | null = null;
@@ -104,7 +182,12 @@ export class JourneyInsightsService {
       review = stored.get(REVIEW_DAY) ?? null;
       if (!review) {
         pending.push(REVIEW_DAY);
-        review = ruleReview(await this.interviewReport(userAId, userBId));
+        const flagged = answeredItems(qs, userAId, userBId).some((it) =>
+          it.answers.some((a) => dangerCategories(a).length > 0),
+        );
+        review = flagged
+          ? safetyReading(REVIEW_DAY)
+          : ruleReview(await this.interviewReport(userAId, userBId));
       }
     }
 
@@ -148,10 +231,11 @@ export class JourneyInsightsService {
         userAId,
         userBId,
       );
-      // Signal de danger (violence, menace, détresse, demande d'argent) : l'IA
-      // ne commente pas cette journée, la modération est prévenue.
+      // Signal de danger (violence, menace, contrôle, détresse, demande
+      // d'argent, minorité) : l'IA ne commente pas cette journée, la
+      // modération est prévenue.
       if (await this.handleDanger(journeyId, day, items, [userAId, userBId])) {
-        await this.save(journeyId, ruleDayReading(day));
+        await this.save(journeyId, safetyReading(day));
         continue;
       }
       const { system, prompt } = dayReadingPrompt(day, items, names);
@@ -161,21 +245,33 @@ export class JourneyInsightsService {
         prompt,
         1800,
       );
+      // Seconde ligne de défense : le modèle lève une alerte.
+      const alert = parseAlert(written?.content ?? null);
+      if (alert) {
+        await this.reportAlert(journeyId, day, alert, items, [
+          userAId,
+          userBId,
+        ]);
+        await this.save(journeyId, safetyReading(day));
+        continue;
+      }
       const reading = written
         ? parseDayReading(written.content, day, items, names)
         : null;
       // Garde-fou anti-invention : chaque point cite les réponses (vérifié par
       // le code), puis le relecteur confirme que rien n'est inventé.
-      if (
-        !reading ||
-        !(await this.isFaithful(
-          journeyId,
-          items,
-          names,
-          reading,
-          written?.model,
-        ))
-      ) {
+      const verdict = reading
+        ? await this.fidelity(journeyId, items, names, reading, written?.model)
+        : null;
+      if (verdict?.alert) {
+        await this.reportAlert(journeyId, day, verdict.alert, items, [
+          userAId,
+          userBId,
+        ]);
+        await this.save(journeyId, safetyReading(day));
+        continue;
+      }
+      if (!reading || !verdict?.faithful) {
         this.markFailure(journeyId, day);
         continue;
       }
@@ -201,10 +297,7 @@ export class JourneyInsightsService {
     if (
       await this.handleDanger(journeyId, REVIEW_DAY, all, [userAId, userBId])
     ) {
-      await this.save(
-        journeyId,
-        ruleReview(await this.interviewReport(userAId, userBId)),
-      );
+      await this.save(journeyId, safetyReading(REVIEW_DAY));
       return;
     }
     const { system, prompt } = reviewPrompt(all, names);
@@ -214,11 +307,28 @@ export class JourneyInsightsService {
       prompt,
       2500,
     );
+    const alert = parseAlert(written?.content ?? null);
+    if (alert) {
+      await this.reportAlert(journeyId, REVIEW_DAY, alert, all, [
+        userAId,
+        userBId,
+      ]);
+      await this.save(journeyId, safetyReading(REVIEW_DAY));
+      return;
+    }
     const review = written ? parseReview(written.content, all, names) : null;
-    if (
-      !review ||
-      !(await this.isFaithful(journeyId, all, names, review, written?.model))
-    ) {
+    const verdict = review
+      ? await this.fidelity(journeyId, all, names, review, written?.model)
+      : null;
+    if (verdict?.alert) {
+      await this.reportAlert(journeyId, REVIEW_DAY, verdict.alert, all, [
+        userAId,
+        userBId,
+      ]);
+      await this.save(journeyId, safetyReading(REVIEW_DAY));
+      return;
+    }
+    if (!review || !verdict?.faithful) {
       this.markFailure(journeyId, REVIEW_DAY);
       return;
     }
@@ -226,9 +336,10 @@ export class JourneyInsightsService {
   }
 
   /**
-   * Réponse qui évoque une violence, une menace, une détresse ou une demande
-   * d'argent : un signalement est adressé à la modération (une fois par
-   * journée et par membre). Renvoie true si la journée doit rester sans IA.
+   * Réponse qui évoque un danger (violence, menace, contrôle, détresse,
+   * demande d'argent, minorité) : un signalement est adressé à la modération
+   * (une fois par journée et par membre), avec ses catégories. Renvoie true
+   * si la journée doit rester sans IA.
    */
   private async handleDanger(
     journeyId: string,
@@ -238,51 +349,122 @@ export class JourneyInsightsService {
   ): Promise<boolean> {
     let found = false;
     for (const [k, authorId] of members.entries()) {
-      const flagged = items.filter((it) => hasDangerSignal(it.answers[k]));
+      const flagged = items
+        .map((it) => ({ it, categories: dangerCategories(it.answers[k]) }))
+        .filter((f) => f.categories.length > 0);
       if (flagged.length === 0) continue;
       found = true;
-      const tag = `Signal automatique BOLIGO · Sondeur · parcours ${journeyId} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`}`;
-      const already = await this.prisma.report.findFirst({
-        where: { reportedId: authorId, description: { startsWith: tag } },
-        select: { id: true },
-      });
-      if (already) continue;
-      const excerpt = flagged
-        .map((it) => `« ${it.question} » → ${it.answers[k].slice(0, 500)}`)
-        .join('\n');
-      await this.prisma.report.create({
-        data: {
-          reporterId: authorId,
-          reportedId: authorId,
-          reason: 'autre',
-          description: `${tag}\nUne réponse évoque peut-être une violence, une menace, une détresse ou une demande d'argent. À vérifier par la modération.\n${excerpt}`,
-        },
-      });
-      this.logger.warn(
-        `Parcours ${journeyId} : signal de danger dans une réponse, modération prévenue.`,
+      const categories = [...new Set(flagged.flatMap((f) => f.categories))];
+      await this.fileReport(
+        journeyId,
+        day,
+        authorId,
+        categories,
+        'Une réponse évoque peut-être un danger. À vérifier par la modération.',
+        flagged.map(
+          ({ it }) => `« ${it.question} » → ${it.answers[k].slice(0, 500)}`,
+        ),
       );
     }
     return found;
   }
 
-  /** Le relecteur indépendant confirme-t-il que la lecture n'invente rien ? */
-  private async isFaithful(
+  /** Alerte levée par le modèle : signalement, comme un signal du code. */
+  private async reportAlert(
+    journeyId: string,
+    day: number,
+    alert: ReadingAlert,
+    items: AnsweredItem[],
+    members: [string, string],
+  ) {
+    const targets = alert.member === null ? [0, 1] : [alert.member];
+    for (const k of targets) {
+      await this.fileReport(
+        journeyId,
+        day,
+        members[k],
+        [alert.category],
+        alert.category === 'violence_subie'
+          ? "Confidence possible d'une violence subie : le membre n'est pas mis en cause. Alerte levée par l'IA, à vérifier."
+          : "Alerte levée par l'IA à la lecture des réponses. À vérifier par la modération.",
+        items.map(
+          (it) => `« ${it.question} » → ${it.answers[k].slice(0, 500)}`,
+        ),
+      );
+    }
+  }
+
+  /**
+   * Signalement (une fois par journée et par membre) et, pour une détresse
+   * ou des violences, un message privé de ressources d'aide à l'auteur.
+   */
+  private async fileReport(
+    journeyId: string,
+    day: number,
+    authorId: string,
+    categories: Array<DangerCategory | AlertCategory>,
+    summary: string,
+    excerpts: string[],
+  ) {
+    const tag = `${sondeurReportPrefix(journeyId)} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`}`;
+    const already = await this.prisma.report.findFirst({
+      where: { reportedId: authorId, description: { startsWith: tag } },
+      select: { id: true },
+    });
+    if (already) return;
+    const labels = categories.map((c) => CATEGORY_LABEL[c]).join(', ');
+    await this.prisma.report.create({
+      data: {
+        reporterId: authorId,
+        reportedId: authorId,
+        reason: 'autre',
+        description: `${tag} · catégorie : ${labels}\n${summary}\n${excerpts.join('\n')}`,
+      },
+    });
+    this.logger.warn(
+      `Parcours ${journeyId} : signal de sécurité (${labels}), modération prévenue.`,
+    );
+    const support = categories
+      .map((c) => SUPPORT_MESSAGE[c])
+      .find((m): m is string => !!m);
+    if (support) {
+      await this.notifications
+        ?.sendPushNotification(
+          authorId,
+          'systeme',
+          'BOLIGO est là pour vous',
+          support,
+        )
+        .catch(() => undefined);
+    }
+  }
+
+  /**
+   * Le relecteur indépendant confirme-t-il que la lecture n'invente rien ?
+   * Il peut aussi lever une alerte de sécurité.
+   */
+  private async fidelity(
     journeyId: string,
     items: Parameters<typeof fidelityPrompt>[0],
     names: [string, string],
     reading: SondeurReading,
     writerModel?: string,
-  ): Promise<boolean> {
+  ): Promise<{ faithful: boolean; alert: ReadingAlert | null }> {
     const { system, prompt } = fidelityPrompt(items, names, reading);
-    const verdict = parseFidelity(
-      await this.ai.journeyCritique(journeyId, system, prompt, writerModel),
+    const raw = await this.ai.journeyCritique(
+      journeyId,
+      system,
+      prompt,
+      writerModel,
     );
+    const verdict = parseFidelity(raw);
+    const alert = parseAlert(raw);
     if (verdict !== true) {
       this.logger.warn(
         `Parcours ${journeyId} : lecture ${reading.day === REVIEW_DAY ? 'du bilan' : `du jour ${reading.day}`} ${verdict === false ? 'refusée (fidélité)' : 'non vérifiée'}, version des règles.`,
       );
     }
-    return verdict === true;
+    return { faithful: verdict === true && !alert, alert };
   }
 
   /**
@@ -304,12 +486,16 @@ export class JourneyInsightsService {
     if (asked.some((q) => q.day === day + 1 && q.responses.length > 0))
       return null;
     const askedTexts = asked.map((q) => q.questionText);
+    // Les écarts et les non-négociables des entretiens guident la question.
+    const report = await this.interviewReport(...members);
+    const analysis = report ? describeReportForAi(report, names) : undefined;
     const { system, prompt } = followUpPrompt(
       day,
       items,
       names,
       reading.toDiscuss,
       askedTexts,
+      analysis,
     );
     const written = await this.ai.journeyCompletion(
       journeyId,
@@ -320,7 +506,6 @@ export class JourneyInsightsService {
     );
     if (!written) return null;
     // Un thème qui porte un écart de sécurité garde sa question de limite.
-    const report = await this.interviewReport(...members);
     const safety = new Set(
       (report?.divergences ?? [])
         .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
@@ -342,7 +527,7 @@ export class JourneyInsightsService {
       askedTexts,
       written.model,
       {
-        analysis: itemsBlock(items, names),
+        analysis: `${analysis ? `${analysis}\n\n` : ''}RÉPONSES DU JOUR :\n${itemsBlock(items, names)}`,
         days: `jour ${day + 1}, question d'approfondissement`,
       },
     );

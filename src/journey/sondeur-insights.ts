@@ -16,6 +16,7 @@ import {
 import { moderateMessageLocally } from '../moderation/chat-moderation';
 import {
   CLINICAL_LENS,
+  COMPROMISE,
   MAX_QUESTION_LENGTH,
   READING_LENS,
   hasClinicalJargon,
@@ -25,7 +26,7 @@ import {
 } from './clinical-lens';
 import { brandBoligo } from '../portrait/portrait.writer';
 import { ensureAutreOption } from './harmony-question.types';
-import { DAY_ANGLES } from './sondeur.generator';
+import { DAY_ANGLES, SAFETY_QUESTIONS } from './sondeur.generator';
 
 /** Le bilan Harmonie est rangé au « jour 0 ». */
 export const REVIEW_DAY = 0;
@@ -34,6 +35,8 @@ export interface SondeurPoint {
   /** Libellé du thème (« Argent & dettes »). */
   theme: string;
   text: string;
+  /** Extraits cités, mot pour mot, de chaque réponse (montrés sous le point). */
+  quotes?: [string, string];
 }
 
 export interface SondeurReading {
@@ -42,6 +45,8 @@ export interface SondeurReading {
   source: 'ia' | 'regles';
   headline: string;
   together: string[];
+  /** Extraits cités pour chaque accord (même ordre que `together`). */
+  togetherQuotes?: Array<[string, string]>;
   toDiscuss: SondeurPoint[];
   openers: string[];
   advice?: string;
@@ -124,13 +129,13 @@ export function answeredItems(
 const DAY_OPENERS: Record<number, string> = {
   1: 'Parmi vos lignes rouges du jour, laquelle compte le plus pour vous, et pourquoi ?',
   2: "D'où vient la valeur qui vous a demandé le plus de réflexion aujourd'hui ?",
-  3: 'Quelle image de votre vie à deux vos réponses du jour dessinent-elles ?',
+  3: "Quelle réponse de l'autre, aujourd'hui, aimeriez-vous mieux comprendre ?",
 };
 
 const REVIEW_OPENERS = [
   "Quelle réponse de l'autre vous a le plus surpris pendant ces trois jours ?",
   'Sur quel sujet aimeriez-vous en savoir plus avant de vous rencontrer ?',
-  "Qu'est-ce qui, dans vos réponses, vous donne envie de continuer ?",
+  "Quelle question aimeriez-vous poser à l'autre avant de décider de la suite ?",
 ];
 
 export function ruleDayReading(day: number): SondeurReading {
@@ -154,7 +159,14 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
   const seen = new Set<Theme>();
   const toDiscuss: SondeurPoint[] = [];
   for (const d of report?.divergences ?? []) {
-    if (d.severity === 'mineure' || d.shared || seen.has(d.theme)) continue;
+    // La violence et les mots blessants ne sont jamais un « sujet à aborder ».
+    if (
+      d.severity === 'mineure' ||
+      d.shared ||
+      seen.has(d.theme) ||
+      SAFETY_QUESTIONS.has(d.questionId)
+    )
+      continue;
     seen.add(d.theme);
     toDiscuss.push({
       theme: THEMES[d.theme].label,
@@ -170,8 +182,37 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
     together: [],
     toDiscuss,
     openers: [...REVIEW_OPENERS],
-    advice:
+    advice: [
       'Prenez le temps de relire vos réponses comparées avant d’écrire votre premier message.',
+      ...(report?.divergences.some((d) => SAFETY_QUESTIONS.has(d.questionId))
+        ? [
+            'Sur la violence et les mots blessants, vos limites écrites à l’entretien ne sont pas les mêmes : BOLIGO ne présente jamais ce point comme un sujet à négocier.',
+          ]
+        : []),
+    ].join(' '),
+  };
+}
+
+/**
+ * Lecture après un signal de sécurité (violence, menace, contrôle, détresse,
+ * demande d'argent, minorité) : rien n'est commenté, la liberté de chacun
+ * est rappelée et l'équipe vérifie avant l'ouverture de la messagerie.
+ */
+export function safetyReading(day: number): SondeurReading {
+  return {
+    day,
+    source: 'regles',
+    headline:
+      day === REVIEW_DAY
+        ? 'Sondeur terminé par vous deux.'
+        : `Journée ${day} terminée par vous deux.`,
+    together: [],
+    toDiscuss: [],
+    openers: [
+      'Quelle limite aimeriez-vous que l’autre connaisse dès maintenant ?',
+    ],
+    advice:
+      "Certaines réponses touchent à la sécurité de chacun : BOLIGO ne les commente pas, et l'équipe BOLIGO les vérifie avant l'ouverture de la messagerie. Vous restez libres de mettre fin au parcours à tout moment, sans vous justifier, et l'équipe BOLIGO reste joignable depuis votre profil.",
   };
 }
 
@@ -308,10 +349,13 @@ export function isReservedAnswer(answer: string): boolean {
 
 function commonRules(names: [string, string]): string {
   return `- Appuie-toi uniquement sur ce qu'ils ont écrit : n'invente rien et ne recopie pas une réponse entière.
-- Chaque accord et chaque point à explorer porte "n" (le numéro de la question) et deux extraits recopiés mot pour mot, de 1 à 8 mots : "a" dans la réponse de ${names[0]}, "b" dans celle de ${names[1]}. Un point dont un extrait ne figure pas dans la réponse sera supprimé.
+- Chaque accord et chaque point à explorer porte "n" (le numéro de la question) et deux extraits recopiés mot pour mot, de 2 à 8 mots (un seul mot seulement si la réponse en compte trois au plus) : "a" dans la réponse de ${names[0]}, "b" dans celle de ${names[1]}. Un point dont un extrait ne figure pas dans la réponse sera supprimé.
+- Les extraits restent dans la langue où ils sont écrits, sans traduction ; ta lecture est toujours en français.
 - Une réponse vide ou évasive n'est ni un accord ni un désaccord. Une réponse de moins de quatre mots ne sert jamais à un accord ; deux réponses courtes qui emploient le même mot vont dans les points à explorer (« même mot, sens à préciser »).
 - Une réponse ${RESERVED_MARK} ne sert jamais d'extrait.
 - Aucun jugement, aucun diagnostic, aucune étiquette psychologique, aucune prédiction sur l'avenir du couple, aucun score.
+- Aucun conseil de poursuivre ou d'arrêter la relation, aucune promesse (« vous trouverez »), aucune mise en garde sur l'avenir : la décision leur appartient.
+- Sur un point non négociable (foi exigée, conversion, enfants, polygamie, pays de vie, condition posée par écrit), jamais de compromis, de terrain d'entente ni de « vivre avec » : décris la condition et l'écart tels quels.
 - Pas de conseil médical, juridique ou financier ; jamais de lien, d'adresse ni de numéro.
 - Phrases complètes et courtes, adressées à eux deux (« vous »).`;
 }
@@ -325,6 +369,17 @@ function safeName(name: string): string {
     .slice(0, 40);
 }
 
+/**
+ * Prénoms des deux membres dans un prompt : nettoyés (une ligne, 40 signes,
+ * sans citation ni consigne glissée), et distingués s'ils sont identiques.
+ */
+export function promptNames(names: [string, string]): [string, string] {
+  const [a, b] = names.map((n) => safeName(n) || 'Membre') as [string, string];
+  return a.toLowerCase() === b.toLowerCase()
+    ? [`${a} (1)`, `${b} (2)`]
+    : [a, b];
+}
+
 export function itemsBlock(
   items: AnsweredItem[],
   names: [string, string],
@@ -335,7 +390,7 @@ export function itemsBlock(
     isReservedAnswer(t)
       ? RESERVED_MARK
       : `‹ ${t.replace(/[‹›]/g, "'").replace(/\s+/g, ' ').trim()} ›`;
-  const [a, b] = names.map((n) => safeName(n));
+  const [a, b] = promptNames(names);
   return items
     .map(
       (it, i) =>
@@ -349,8 +404,9 @@ const POINT_JSON = `{"n": 3, "a": "extrait de 2 à 8 mots", "b": "extrait de 2 �
 export function dayReadingPrompt(
   day: number,
   items: AnsweredItem[],
-  names: [string, string],
+  members: [string, string],
 ): { system: string; prompt: string } {
+  const names = promptNames(members);
   const angle = DAY_ANGLES[day];
   const prompt = `${names[0]} et ${names[1]} viennent de terminer la journée ${day} du Sondeur (${angle.label} : ${angle.intent}). Voici leurs réponses, écrites librement :
 
@@ -363,16 +419,18 @@ ${commonRules(names)}
 - "together" : jusqu'à 3 accords réels, où les deux réponses décrivent la même chose concrète (liste vide s'il n'y en a pas).
 - "toDiscuss" : jusqu'à 3 écarts, nuances ou « même mot, sens à préciser », décrits sans les expliquer.
 - "opener" : une question ouverte, posée à eux deux, qu'ils ne se seraient pas posée eux-mêmes.
+- "alerte" : "aucune", sauf si une réponse évoque une violence subie ("violence_subie") ou exercée ("violence_exercee"), une menace ("menace"), un contrôle — téléphone surveillé, argent confisqué, proches interdits ("controle"), une détresse ou des idées de mort ("detresse"), une demande d'argent ("argent") ou un âge de moins de 18 ans ("mineur") ; indique alors "membre" : "a" (${names[0]}) ou "b" (${names[1]}), et n'écris rien d'autre (headline vide, listes vides).
 
 Retourne UNIQUEMENT ce JSON :
-{"headline": "...", "together": [${POINT_JSON}], "toDiscuss": [${POINT_JSON}], "opener": "...?"}`;
+{"alerte": "aucune", "membre": null, "headline": "...", "together": [${POINT_JSON}], "toDiscuss": [${POINT_JSON}], "opener": "...?"}`;
   return { system: SYSTEM, prompt };
 }
 
 export function reviewPrompt(
   items: AnsweredItem[],
-  names: [string, string],
+  members: [string, string],
 ): { system: string; prompt: string } {
+  const names = promptNames(members);
   const prompt = `${names[0]} et ${names[1]} ont terminé les trois journées du Sondeur (lignes rouges, valeurs profondes, futur et intimité). Le chat s'ouvre maintenant entre eux. Voici leurs réponses, écrites librement :
 
 ${itemsBlock(items, names)}
@@ -381,13 +439,14 @@ ${itemsBlock(items, names)}
 RÈGLES :
 ${commonRules(names)}
 - "headline" : une phrase qui décrit ce qu'ils ont exploré pendant ces trois jours, sans évaluer leur compatibilité.
-- "strengths" : jusqu'à 3 accords réels, où les deux réponses décrivent la même chose concrète.
+- "accords" : jusqu'à 3 accords réels, où les deux réponses (de quatre mots au moins) décrivent la même chose concrète.
 - "toDiscuss" : jusqu'à 3 sujets à aborder en priorité dans le chat : écarts, nuances ou « même mot, sens à préciser ».
 - "openers" : 3 premières questions possibles, courtes, ouvertes et personnelles, qui s'appuient sur leurs réponses et ouvrent ce qu'ils n'ont pas encore exploré.
-- "advice" : 2 ou 3 phrases de conseil pratique pour leur premier échange (rythme, écoute, sujets réservés à la rencontre).
+- "advice" : 2 ou 3 phrases de conseil pratique pour leur premier échange (rythme, écoute, sujets réservés à la rencontre), sans conseil de poursuivre ou d'arrêter.
+- "alerte" : "aucune", sauf si une réponse évoque une violence subie ("violence_subie") ou exercée ("violence_exercee"), une menace ("menace"), un contrôle — téléphone surveillé, argent confisqué, proches interdits ("controle"), une détresse ou des idées de mort ("detresse"), une demande d'argent ("argent") ou un âge de moins de 18 ans ("mineur") ; indique alors "membre" : "a" (${names[0]}) ou "b" (${names[1]}), et n'écris rien d'autre (headline vide, listes vides).
 
 Retourne UNIQUEMENT ce JSON :
-{"headline": "...", "strengths": [${POINT_JSON}], "toDiscuss": [${POINT_JSON}], "openers": ["...?", "...?", "...?"], "advice": "..."}`;
+{"alerte": "aucune", "membre": null, "headline": "...", "accords": [${POINT_JSON}], "toDiscuss": [${POINT_JSON}], "openers": ["...?", "...?", "...?"], "advice": "..."}`;
   return { system: SYSTEM, prompt };
 }
 
@@ -399,10 +458,13 @@ Retourne UNIQUEMENT ce JSON :
 export function followUpPrompt(
   day: number,
   items: AnsweredItem[],
-  names: [string, string],
+  members: [string, string],
   toDiscuss: SondeurPoint[],
   asked: string[],
+  /** Analyse des deux entretiens (describeReportForAi) : source de faits admise. */
+  analysis?: string,
 ): { system: string; prompt: string } {
+  const names = promptNames(members);
   const next = DAY_ANGLES[day + 1];
   const points = toDiscuss.length
     ? toDiscuss.map((p) => `- ${p.theme} : ${p.text}`).join('\n')
@@ -413,11 +475,12 @@ ${itemsBlock(items, names)}
 
 Écarts relevés dans ces réponses :
 ${points}
-
+${analysis ? `\nANALYSE DE L'ENTRETIEN (source de faits admise) :\n${analysis}\n` : ''}
 Propose DEUX questions d'approfondissement pour la journée ${day + 1} (${next.label} : ${next.intent}), bâties avec deux techniques différentes, sur l'écart le plus important de cette journée.
 - Elles seront posées aux deux : ne dis jamais qui a répondu quoi et ne cite pas leurs réponses.
 - Applique « CHOIX DE LA TECHNIQUE SELON LE SIGNAL » et « FORME ET PUDEUR ».
 - Ne touche jamais à un sujet qu'un membre a gardé pour la rencontre (${RESERVED_MARK}).
+- Si l'écart porte sur un point non négociable (foi exigée, conversion, enfants, polygamie, pays de vie, ou condition posée par écrit), demande d'où vient la position ou ce que chacun aurait besoin de savoir avant de s'engager, jamais comment vivre avec l'écart.
 - Ne reprends aucune de ces questions déjà posées, même avec d'autres mots :
 ${asked.map((t) => `  - ${t}`).join('\n')}
 Clés de thème : ${THEME_KEYS}.
@@ -448,10 +511,14 @@ export function cleanText(value: unknown, max: number): string | null {
 
 /** Évaluation ou prédiction de la relation : jamais dans une lecture. */
 const EVALUATION =
-  /prometteu|compatib|parfait|idéal|l['’]un pour l['’]autre|âmes? s(?:œ|oe)urs?|alchimie|vous partagez l['’]essentiel|belle (?:complicité|harmonie|connexion|histoire)|en phase|vous irez loin|votre (?:couple|relation) (?:sera|va)/i;
+  /prometteu|compatib|parfait|idéal|l['’]un pour l['’]autre|faits? pour (?:vous entendre|être ensemble|aller ensemble)|âmes? s(?:œ|oe)urs?|alchimie|vous partagez l['’]essentiel|(?:belle|vraie|grande|réelle|bonne) (?:complicité|harmonie|connexion|histoire|entente|base)|en phase|même longueur d['’]onde|vous (?:vous )?complétez|complémentaires|vous irez loin|(?:votre|ce|cette) (?:couple|relation|histoire) (?:sera|va|a de l['’]avenir|a un (?:bel )?avenir|tiendra)|(?:bon|mauvais|beau) signe|signal (?:positif|négatif|encourageant|inquiétant)|risque(?:nt)? de (?:poser|devenir|créer|mener|nuire|bloquer)|source de (?:conflits?|tensions?|difficultés?)|poser problème|rédhibitoire|insurmontable|aller plus loin|(?:continuer|poursuivre|arrêter|renoncer à|mettre fin à) (?:la|votre|cette) (?:relation|histoire|aventure)|ne laissez pas (?:cette|ces|vos) (?:différences?|écarts?)|tout se travaille|bonne volonté|vous (?:trouverez|saurez|arriverez|réussirez|parviendrez)/i;
 
-/** Émotion, peur ou besoin attribués à un prénom : refusés. */
-function attributesFeeling(text: string, names: [string, string]): boolean {
+/** Émotions, peurs et besoins : jamais attribués s'ils n'ont pas été écrits. */
+const FEELING =
+  /(?<!\p{L})(?:peurs?|crain\p{L}*|angoiss\p{L}*|inqui[eè]t\p{L}*|bless[ée]\p{L}*|souffr\p{L}*|colère|trist\p{L}*|honte|culpabil\p{L}*|méfian\p{L}*|rassur\p{L}*|insécur\p{L}*|anxi\p{L}*|besoins? d['’]être|se protég\p{L}*|redout\p{L}*|vulnérab\p{L}*)(?!\p{L})/giu;
+
+/** Attitude prêtée à un prénom (« Inès semble… », « chez Karim… ») : refusée. */
+function attributesAttitude(text: string, names: [string, string]): boolean {
   return names.some((name) => {
     const n = name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return (
@@ -464,18 +531,51 @@ function attributesFeeling(text: string, names: [string, string]): boolean {
   });
 }
 
+/**
+ * Émotion, peur ou besoin attribués à un membre dans une phrase qui le nomme,
+ * alors que ce membre ne les a pas écrits (`own` : ce que chacun a écrit).
+ */
+function attributesUnwrittenFeeling(
+  text: string,
+  names: [string, string],
+  own: [string, string],
+): boolean {
+  return text.split(/(?<=[.!?;])\s+/).some((sentence) =>
+    names.some((name, k) => {
+      const n = name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (!n || !new RegExp(`(?<!\\p{L})${n}(?!\\p{L})`, 'iu').test(sentence))
+        return false;
+      const mine = own[k].toLowerCase();
+      return [...sentence.matchAll(FEELING)].some(
+        (m) => !mine.includes(m[0].toLowerCase().slice(0, 5)),
+      );
+    }),
+  );
+}
+
 function readingText(
   value: unknown,
   max: number,
   names: [string, string],
+  own: [string, string],
 ): string | null {
   const text = cleanText(value, max);
   return text &&
     !EVALUATION.test(text) &&
+    !COMPROMISE.test(text) &&
     !hasReadingInterpretation(text) &&
-    !attributesFeeling(text, names)
+    !attributesAttitude(text, names) &&
+    !attributesUnwrittenFeeling(text, names, own)
     ? text
     : null;
+}
+
+/** Tout ce que chaque membre a écrit (pour vérifier une émotion attribuée). */
+function ownAnswers(items: AnsweredItem[]): [string, string] {
+  return [0, 1].map((k) => items.map((it) => it.answers[k]).join(' ')) as [
+    string,
+    string,
+  ];
 }
 
 /** Forme comparable d'un texte : casse, apostrophes, ponctuation et espaces. */
@@ -489,17 +589,35 @@ function comparable(text: string): string {
     .trim();
 }
 
+/** Mots outils : un extrait qui n'est fait que d'eux ne porte aucun sens. */
+const FUNCTION_WORDS = new Set(
+  (
+    'les des une aux dans pour par sur avec sans sous chez vers entre mais donc car ' +
+    'que qui quoi dont est suis es sont sommes êtes était été être avoir ont avons avez ' +
+    'ais ait sera serait mon mes ton tes son ses notre nos votre vos leur leurs ' +
+    'elle elles ils nous vous moi toi lui eux cela ceci ça cet cette ces ' +
+    'pas plus moins très bien tout tous toute toutes aussi comme alors encore déjà ' +
+    'the and for you are but not with have this that'
+  ).split(' '),
+);
+
 /** L'extrait figure-t-il mot pour mot dans la réponse (réservée : jamais) ? */
 function quoted(excerpt: unknown, answer: string): boolean {
   if (typeof excerpt !== 'string' || isReservedAnswer(answer)) return false;
   const e = comparable(excerpt);
   const a = comparable(answer);
-  const words = e.split(' ').filter(Boolean).length;
-  if (words === 0 || words > 12) return false;
+  const list = e.split(' ').filter(Boolean);
+  const words = list.length;
+  if (words === 0 || words > 8) return false;
   // Un seul mot ne suffit que dans une réponse courte (trois mots au plus),
-  // pour relever un même mot employé des deux côtés.
+  // pour relever un même mot employé des deux côtés. Un extrait plus long
+  // doit porter du sens (un mot plein), pas « je suis de la ».
+  const shortAnswer = a.split(' ').length <= 3;
+  const meaningful = list.some(
+    (w) => w.length >= 3 && !FUNCTION_WORDS.has(w.replace(/['’]/g, '')),
+  );
   return (
-    ` ${a} `.includes(` ${e} `) && (words >= 2 || a.split(' ').length <= 3)
+    ` ${a} `.includes(` ${e} `) && (shortAnswer || (words >= 2 && meaningful))
   );
 }
 
@@ -526,9 +644,24 @@ function anchoredPoints(
       continue;
     const words = (t: string) =>
       comparable(t).split(' ').filter(Boolean).length;
-    if (agreement && item.answers.some((a) => words(a) < 4)) continue;
-    const text = readingText(o.text, 240, names);
-    if (text) points.push({ theme: item.theme, text });
+    const short = item.answers.map((a) => words(a) < 4);
+    if (agreement && short.some(Boolean)) continue;
+    const quotes: [string, string] = [String(o.a).trim(), String(o.b).trim()];
+    const text = readingText(o.text, 240, names, item.answers);
+    if (!text) continue;
+    // Réponse brève : ni un accord ni un désaccord, quoi que dise le modèle.
+    if (short.some(Boolean)) {
+      const same = comparable(item.answers[0]) === comparable(item.answers[1]);
+      points.push({
+        theme: item.theme,
+        text: same
+          ? `Vous avez répondu tous les deux « ${item.answers[0].trim().replace(/[.!]+$/, '')} » : le même mot, dont le sens reste à préciser.`
+          : `Une réponse brève${short.every(Boolean) ? ' des deux côtés' : ' d’un côté'} : ce point reste à préciser, sans conclure à un accord ni à un écart.`,
+        quotes,
+      });
+    } else {
+      points.push({ theme: item.theme, text, quotes });
+    }
     if (points.length === 3) break;
   }
   return points;
@@ -552,8 +685,9 @@ function openQuestion(
   value: unknown,
   max: number,
   names: [string, string],
+  own: [string, string],
 ): string | null {
-  const text = readingText(value, max, names);
+  const text = readingText(value, max, names, own);
   // Même contrôle que pour une question du Sondeur : ouverte, sans intrusion.
   return text && text.length <= max && isWellFormedQuestion(text) ? text : null;
 }
@@ -584,21 +718,21 @@ export function parseDayReading(
   names: [string, string],
 ): SondeurReading | null {
   const o = parseJsonObject(raw);
-  if (!o) return null;
-  const together = anchoredPoints(o.together, items, names, true).map(
-    (p) => p.text,
-  );
+  if (!o || parseAlert(raw)) return null;
+  const own = ownAnswers(items);
+  const agreements = anchoredPoints(o.together, items, names, true);
   const toDiscuss = anchoredPoints(o.toDiscuss, items, names);
-  if (together.length + toDiscuss.length === 0) return null;
+  if (agreements.length + toDiscuss.length === 0) return null;
   const fallback = ruleDayReading(day);
   const reserved = reservedAdvice(items);
   return {
     day,
     source: 'ia',
-    headline: readingText(o.headline, 240, names) ?? fallback.headline,
-    together,
+    headline: readingText(o.headline, 240, names, own) ?? fallback.headline,
+    together: agreements.map((p) => p.text),
+    togetherQuotes: agreements.map((p) => p.quotes as [string, string]),
     toDiscuss,
-    openers: [openQuestion(o.opener, 240, names) ?? fallback.openers[0]],
+    openers: [openQuestion(o.opener, 240, names, own) ?? fallback.openers[0]],
     ...(reserved ? { advice: reserved } : {}),
   };
 }
@@ -610,24 +744,33 @@ export function parseReview(
   names: [string, string],
 ): SondeurReading | null {
   const o = parseJsonObject(raw);
-  if (!o) return null;
-  const together = anchoredPoints(o.strengths, items, names).map((p) => p.text);
+  if (!o || parseAlert(raw)) return null;
+  const own = ownAnswers(items);
+  // Un accord du bilan obéit aux mêmes règles que celui d'une journée.
+  const agreements = anchoredPoints(
+    o.accords ?? o.strengths,
+    items,
+    names,
+    true,
+  );
   const toDiscuss = anchoredPoints(o.toDiscuss, items, names);
-  if (together.length + toDiscuss.length === 0) return null;
+  if (agreements.length + toDiscuss.length === 0) return null;
   const openers = Array.isArray(o.openers)
     ? o.openers
-        .map((v) => openQuestion(v, 280, names))
+        .map((v) => openQuestion(v, 280, names, own))
         .filter((v): v is string => !!v)
         .slice(0, 3)
     : [];
-  const advice = [readingText(o.advice, 700, names), reservedAdvice(items)]
+  const advice = [readingText(o.advice, 700, names, own), reservedAdvice(items)]
     .filter(Boolean)
     .join(' ');
   return {
     day: REVIEW_DAY,
     source: 'ia',
-    headline: readingText(o.headline, 280, names) ?? ruleReview(null).headline,
-    together,
+    headline:
+      readingText(o.headline, 280, names, own) ?? ruleReview(null).headline,
+    together: agreements.map((p) => p.text),
+    togetherQuotes: agreements.map((p) => p.quotes as [string, string]),
     toDiscuss,
     openers: openers.length ? openers : [...REVIEW_OPENERS],
     ...(advice ? { advice } : {}),
@@ -674,13 +817,20 @@ const FIDELITY_SYSTEM = `Tu es un second clinicien du couple, indépendant et ex
 /** Prompt de vérification : chaque phrase de la lecture doit s'appuyer sur les réponses. */
 export function fidelityPrompt(
   items: AnsweredItem[],
-  names: [string, string],
+  members: [string, string],
   reading: SondeurReading,
 ): { system: string; prompt: string } {
+  const names = promptNames(members);
+  const extracts = (q?: [string, string]) =>
+    q ? ` [extraits : « ${q[0]} » / « ${q[1]} »]` : '';
   const lines = [
     `Phrase de synthèse : ${reading.headline}`,
-    ...reading.together.map((t) => `Accord : ${t}`),
-    ...reading.toDiscuss.map((p) => `À explorer (${p.theme}) : ${p.text}`),
+    ...reading.together.map(
+      (t, i) => `Accord : ${t}${extracts(reading.togetherQuotes?.[i])}`,
+    ),
+    ...reading.toDiscuss.map(
+      (p) => `À explorer (${p.theme}) : ${p.text}${extracts(p.quotes)}`,
+    ),
     ...reading.openers.map((o) => `Question ou premier message : ${o}`),
     ...(reading.advice ? [`Conseil : ${reading.advice}`] : []),
   ];
@@ -699,12 +849,45 @@ Refuse la lecture si une seule ligne :
 6. évalue leur compatibilité, prédit l'avenir du couple ou donne un score ;
 7. juge, moralise ou prend parti pour l'un des membres ;
 8. interprète une réponse ${RESERVED_MARK}, ou présente la violence, les insultes, les menaces ou le contrôle comme négociables ;
-9. propose une question fermée, intrusive (montant, employeur, papiers, enfants, ex), gênante à montrer, ou qui invite à un compromis sur un point non négociable ;
-10. propose un compromis ou un terrain d'entente sur un point non négociable (foi exigée, conversion, enfants, polygamie, pays de vie).
+9. propose une question fermée, intrusive (montant, employeur, papiers, enfants, ex) ou gênante à montrer ;
+10. propose un compromis ou un terrain d'entente sur un point non négociable (foi exigée, conversion, enfants, polygamie, pays de vie, condition posée par écrit), dans une question ou dans un constat ;
+11. conseille de poursuivre ou d'arrêter la relation, ou fait une promesse sur l'avenir.
 Une piste formulée comme une question posée aux deux (« qu'est-ce qui… ? ») est acceptable si elle part des réponses.
+Si une réponse évoque une violence (subie ou exercée), une menace, un contrôle, une détresse ou des idées de mort, une demande d'argent ou un âge de moins de 18 ans, refuse la lecture et ajoute "alerte" : "violence_subie", "violence_exercee", "menace", "controle", "detresse", "argent" ou "mineur", et "membre" : "a" (${names[0]}) ou "b" (${names[1]}).
 
-Retourne UNIQUEMENT ce JSON : {"fidele": true} ou {"fidele": false, "raisons": ["..."]}`;
+Retourne UNIQUEMENT ce JSON : {"fidele": true} ou {"fidele": false, "raisons": ["..."], "alerte": "aucune", "membre": null}`;
   return { system: FIDELITY_SYSTEM, prompt };
+}
+
+/** Catégories d'alerte qu'un modèle peut lever dans une lecture ou une relecture. */
+export const ALERT_CATEGORIES = [
+  'violence_subie',
+  'violence_exercee',
+  'menace',
+  'controle',
+  'detresse',
+  'argent',
+  'mineur',
+] as const;
+export type AlertCategory = (typeof ALERT_CATEGORIES)[number];
+
+export interface ReadingAlert {
+  category: AlertCategory;
+  /** 0 : premier membre, 1 : second, null : non précisé. */
+  member: 0 | 1 | null;
+}
+
+/**
+ * Alerte levée par le modèle (seconde ligne de défense après les signaux de
+ * danger du code), ou null. Une alerte inconnue n'en est pas une.
+ */
+export function parseAlert(raw: string | null): ReadingAlert | null {
+  if (!raw) return null;
+  const o = parseJsonObject(raw);
+  const category = typeof o?.alerte === 'string' ? o.alerte.trim() : '';
+  if (!(ALERT_CATEGORIES as readonly string[]).includes(category)) return null;
+  const member = o?.membre === 'a' ? 0 : o?.membre === 'b' ? 1 : null;
+  return { category: category as AlertCategory, member };
 }
 
 /** Verdict du relecteur : true (fidèle), false (refusée), null (illisible). */

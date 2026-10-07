@@ -263,6 +263,14 @@ export function isOpenQuestion(text: string): boolean {
 const INTRUSIVE =
   /(?<!\p{L})(?:montants?|quel(?:le)? (?:est|sont) (?:votre|vos) (?:salaire|revenus?|épargne|économies)|combien (?:gagn|envoy|épargn|mett|avez-vous|vous gagnez)\p{L}*|euros?|fcfa|employeur|quartier|adresse|titre de séjour|papiers|situation administrative|nationalité|divorce|séparation de vos parents|vos enfants|votre ex|fait l['’]amour|rapports? sexuels?|virginité|rendre vivable|vivable|rapprocher vos positions|terrain d['’]entente|trouver un compromis)(?!\p{L})|€/iu;
 
+/**
+ * Compromis ou « vivre avec » : interdit sur un point non négociable (foi
+ * exigée, conversion, enfants, polygamie, pays de vie, condition déclarée),
+ * dans une question comme dans une lecture.
+ */
+export const COMPROMISE =
+  /(?<!\p{L})(?:rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|compromis|concessions?|concilier|voie médiane|juste milieu|pas[^?.]{0,30} vers l['’]autre|chacun (?:fait|ferait|pourrait faire) (?:un|des) (?:pas|efforts?)|trouve\p{L}* un chemin|conversion progressive)(?!\p{L})/iu;
+
 export function isIntrusiveQuestion(text: string): boolean {
   return INTRUSIVE.test(text);
 }

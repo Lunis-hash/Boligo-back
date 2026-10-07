@@ -736,6 +736,10 @@ export class JourneyService {
     const isFinished = userAHasAll && userBHasAll;
 
     if (isFinished) {
+      // Une réponse évoque un danger et la modération n'a pas tranché : la
+      // messagerie attend (elle s'ouvrira à la prochaine visite, après la
+      // décision de l'équipe).
+      if (await this.insights?.holdsChat(journey.id)) return;
       // Le chat libre dure 3 jours à partir de maintenant, pas du début du parcours.
       const moved = await this.prisma.journey.updateMany({
         where: { id: journey.id, currentStep: 'phase_harmonie' },
@@ -769,7 +773,11 @@ export class JourneyService {
         const allQuestions = journey.harmonyQuestions;
         const answeredAll = (memberId: string) =>
           allQuestions.length > 0 && allQuestions.every((q) => q.responses.some((r) => r.userId === memberId));
-        if (answeredAll(journey.userAId) && answeredAll(journey.userBId)) {
+        if (
+          answeredAll(journey.userAId) &&
+          answeredAll(journey.userBId) &&
+          !(await this.insights?.holdsChat(journey.id))
+        ) {
           await this.prisma.journey.updateMany({
             where: { id: journey.id, currentStep: 'phase_harmonie' },
             data: { currentStep: 'chat_libre', stepStartDate: new Date() },

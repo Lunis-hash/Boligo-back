@@ -52,7 +52,7 @@ function fakeAi() {
       const m = prompt.match(
         /1\. \[[^\]]*\] .*\n {3}[^:]+ : ‹ (.*) ›\n {3}[^:]+ : ‹ (.*) ›/,
       );
-      const first = (t: string) => t.split(/\s+/).slice(0, 3).join(' ');
+      const first = (t: string) => t.split(/\s+/).slice(0, 5).join(' ');
       return Promise.resolve({
         content: JSON.stringify({
           headline: 'Vous avez parlé de vos familles et de vos limites.',
