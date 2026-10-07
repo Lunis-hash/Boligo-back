@@ -133,6 +133,18 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Doesn’t matter to me',
     ],
   },
+  M0_Q15: {
+    text: 'Yourself, gambling (sports betting, casino, lottery):',
+    options: ['Never', 'Rarely, for fun', 'Every week', 'Almost every day'],
+  },
+  M0_Q16: {
+    text: 'Gambling (sports betting, casino, lottery) in a partner:',
+    options: [
+      'I couldn’t accept it, even rarely',
+      'Acceptable if it stays rare and low-stakes',
+      'Doesn’t matter to me',
+    ],
+  },
   M0_Q10: {
     text: 'Which languages are you comfortable living a relationship in, day to day? (several answers possible)',
     options: [
@@ -167,15 +179,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'A close or compatible culture',
       'Rather a culture different from mine',
       'I have no preference',
-    ],
-  },
-  M1_Q03: {
-    text: 'How important are the marriage traditions of your culture to you?',
-    options: [
-      'Central — I will respect all of them (bride price, zaffa, sacred fire, lazo…)',
-      'Important — I’ll keep the main ones',
-      'Moderate — I’ll choose a few',
-      'Not very important — I prefer personal symbolism',
     ],
   },
   M1_Q16: {
@@ -292,15 +295,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I don’t apologise as long as I think I was right',
     ],
   },
-  M2_Q10: {
-    text: 'If you were going through a difficult time, asking a professional for help (psychologist, couples counsellor) would be:',
-    options: [
-      'Natural — I have done it or would do it without hesitation',
-      'Possible, after first trying on my own',
-      'I’ve never needed it, but I’m open to it',
-      'Difficult — I prefer to get through it on my own',
-    ],
-  },
   M2_Q23: {
     text: 'When the person I love takes a long time to reply to a message, I reread our conversation looking for a sign.',
   },
@@ -403,15 +397,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I couldn’t accept it',
     ],
   },
-  M3_Q07: {
-    text: 'Do you have unresolved conflicts with your ex-partner? (several answers possible)',
-    options: [
-      'No — everything is resolved',
-      'Tensions over child custody',
-      'Financial tensions still active',
-      'We never had real closure',
-    ],
-  },
   M3_Q10: {
     text: 'Have you found yourself in the same difficult situations from one relationship to the next?',
     options: [
@@ -485,15 +470,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Shared, with the woman keeping the main responsibility',
       'Shared fairly, according to each person’s availability',
       'I haven’t really thought about it yet',
-    ],
-  },
-  M4_Q06: {
-    text: 'Buying property in your life plan:',
-    options: [
-      'Alone — it’s my independence',
-      'Together — it’s a shared project',
-      'Flexible renting for now',
-      'Not a priority',
     ],
   },
   M4_Q16: {
@@ -779,6 +755,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’m open — it depends on the life plan',
     ],
   },
+  M7_Q36: {
+    text: 'Living one day in your family’s country of origin:',
+    options: [
+      'It’s my plan, in the coming years',
+      'I’m thinking about it, with no set date',
+      'No, my life is where I live now',
+      'I already live in my family’s country of origin',
+    ],
+  },
   M7_Q08: {
     text: 'Ideally, the time spent together during the week:',
     options: [
@@ -872,6 +857,33 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'A firm framework, explained with kindness',
       'Dialogue: rules are discussed with them',
       'Freedom: children mostly learn by themselves',
+    ],
+  },
+  M8_Q19: {
+    text: 'Living together before marriage:',
+    options: [
+      'Ruled out for me',
+      'Only after an engagement',
+      'Possible once the relationship is solid',
+      'Desirable, to really get to know each other',
+    ],
+  },
+  M8_Q20: {
+    text: 'A smack or spanking to discipline a child:',
+    options: [
+      'It’s part of a good upbringing',
+      'Acceptable in exceptional cases',
+      'I’d rather avoid it',
+      'Never: it’s a form of violence',
+    ],
+  },
+  M8_Q18: {
+    text: 'In which religion would you raise your children?',
+    options: [
+      'In my religion — it’s essential',
+      'In one of ours, chosen together',
+      'In both our traditions; they’ll choose later',
+      'Without a religious upbringing',
     ],
   },
   M8_Q04: {

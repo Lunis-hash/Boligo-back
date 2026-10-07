@@ -373,6 +373,28 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
+    // V7.1 — le retour au pays d'origine de sa famille, projet fréquent
+    // dans la diaspora : un projet proche face à « ma vie est ici » est
+    // majeur.
+    questionId: 'M7_Q36',
+    theme: 'lieu',
+    label: 'Retour au pays d’origine',
+    topic: 'Le retour au pays d’origine',
+    severity: pairs({
+      AC: 'majeure',
+      BC: 'moderee',
+      AB: 'mineure',
+      AD: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      C: 'Vous voyez tous les deux votre vie là où vous vivez aujourd’hui',
+    },
+    // Deux « je vis déjà au pays » : peut-être pas le même pays.
+    discreet: ['D'],
+  },
+  {
     questionId: 'M4_Q13',
     theme: 'lieu',
     label: 'Partage des affaires personnelles',
@@ -558,6 +580,27 @@ export const DIVERGENCE_RULES: Rule[] = [
       B: 'Vous voulez tous les deux un cadre ferme, expliqué avec bienveillance',
       C: 'Le dialogue est au cœur de l’éducation pour vous deux',
     },
+  },
+  {
+    // V7.1 — une tape ou une fessée pour éduquer : « une bonne éducation »
+    // face à « jamais, c'est une violence » est majeure. Aucune convergence
+    // affichée sur une tolérance partagée.
+    questionId: 'M8_Q20',
+    theme: 'famille',
+    label: 'Punitions corporelles',
+    topic: 'Les punitions corporelles',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      D: 'Vous refusez tous les deux toute tape pour éduquer un enfant',
+    },
+    discreet: ['A', 'B'],
   },
   {
     questionId: 'M1_Q15',
@@ -759,20 +802,6 @@ export const DIVERGENCE_RULES: Rule[] = [
 
   // ── Religion & spiritualité (la religion, la pratique et l'alimentation
   // sont des règles croisées, lues en V7 comme en V6)
-  {
-    questionId: 'M1_Q03',
-    theme: 'spiritualite',
-    label: 'Traditions de mariage',
-    topic: 'Les traditions de mariage',
-    severity: pairs({
-      AD: 'moderee',
-      BD: 'mineure',
-      AC: 'mineure',
-      AB: 'mineure',
-      BC: 'mineure',
-      CD: 'mineure',
-    }),
-  },
   {
     // V7.1 — remplace M1_Q11 (cérémonies : règle croisée `marriageRule`).
     // Exclue (avec ou sans discussion) face à « envisageable » : une
@@ -1259,18 +1288,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M4_Q06',
+    // V7.1 — vivre ensemble avant le mariage.
+    questionId: 'M8_Q19',
     theme: 'projet',
-    label: 'Projet immobilier',
-    topic: 'Le projet immobilier',
+    label: 'Vie commune avant le mariage',
+    topic: 'La vie commune avant le mariage',
     severity: pairs({
-      AB: 'moderee',
+      AD: 'majeure',
+      AC: 'moderee',
       BD: 'moderee',
-      AC: 'mineure',
-      AD: 'mineure',
+      AB: 'mineure',
       BC: 'mineure',
       CD: 'mineure',
     }),
+    convergence: {
+      A: 'Vous attendez tous les deux le mariage pour vivre ensemble',
+      B: 'Vous attendez tous les deux les fiançailles pour vivre ensemble',
+    },
   },
   {
     questionId: 'M8_Q11',
@@ -1411,6 +1445,38 @@ export const LEGACY_RULES: Rule[] = [
   // ── Questions V7 retirées en V7.1 (règles V7, lues quand la remplaçante
   // manque d'un côté ; les réponses de même sens sont traduites par
   // `answer-bridge.ts`).
+  {
+    // Remplacée par les cérémonies (M8_Q16) et la dot (M4_Q17).
+    questionId: 'M1_Q03',
+    theme: 'spiritualite',
+    label: 'Traditions de mariage',
+    topic: 'Les traditions de mariage',
+    severity: pairs({
+      AD: 'moderee',
+      BD: 'mineure',
+      AC: 'mineure',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    supersededBy: ['M8_Q16'],
+  },
+  {
+    // Sujet abandonné (faible pouvoir de discrimination) : lu entre deux
+    // entretiens antérieurs.
+    questionId: 'M4_Q06',
+    theme: 'projet',
+    label: 'Projet immobilier',
+    topic: 'Le projet immobilier',
+    severity: pairs({
+      AB: 'moderee',
+      BD: 'moderee',
+      AC: 'mineure',
+      AD: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+  },
   {
     questionId: 'M1_Q11',
     theme: 'spiritualite',
@@ -2272,6 +2338,113 @@ function exTiesRule(a: RawAnswers, b: RawAnswers, c: Collector) {
   else if (comparable) c.agree('M3_Q13', 1);
 }
 
+/** Religion des enfants (M8_Q18), pour les accords. */
+const CHILD_FAITH_SAME: Record<string, string> = {
+  A: 'Vous élèveriez tous les deux vos enfants dans votre religion commune',
+  B: 'Vous choisiriez à deux la religion de vos enfants',
+  C: 'Vos enfants grandiraient dans vos deux traditions',
+  D: 'Vous élèveriez tous les deux vos enfants sans éducation religieuse',
+};
+
+/**
+ * V7.1 — religion des enfants (M8_Q18), lue avec la religion de chacun.
+ * « Dans ma religion, c'est indispensable » face à « sans éducation
+ * religieuse », ou des deux côtés avec deux religions différentes : une
+ * incompatibilité déclarée ; face à un choix à deux ou aux deux traditions,
+ * majeure quand les religions diffèrent.
+ */
+function childFaithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  const ka = a.M8_Q18;
+  const kb = b.M8_Q18;
+  if (!ka || !kb) return;
+  const fa = faithOf(a);
+  const fb = faithOf(b);
+  const differ =
+    fa && fb ? fa.family !== fb.family || distinctFaiths(fa, fb) : null;
+  let severity: Severity | null;
+  if (ka === kb) {
+    severity = ka === 'A' && differ === true ? 'critique' : null;
+  } else {
+    const pair = [ka, kb].sort().join('');
+    if (pair === 'AD') severity = 'critique';
+    else if (pair === 'AB' || pair === 'AC')
+      severity =
+        differ === true ? 'majeure' : differ === false ? 'mineure' : 'moderee';
+    else if (pair === 'BD') severity = 'moderee';
+    else severity = 'mineure';
+  }
+  if (severity) {
+    c.diverge({
+      questionId: 'M8_Q18',
+      theme: 'spiritualite',
+      severity,
+      label: 'Religion des enfants',
+      question: questionText('M8_Q18'),
+      a: view('M8_Q18', ka),
+      b: view('M8_Q18', kb),
+    });
+    return;
+  }
+  c.agree('M8_Q18', ka === kb ? 1 : COMPATIBLE_DIFFERENT);
+  // « Dans ma religion » des deux côtés : un accord seulement si c'est la même.
+  if (ka === kb && (ka !== 'A' || differ === false))
+    c.converge({
+      questionId: 'M8_Q18',
+      theme: 'spiritualite',
+      label: CHILD_FAITH_SAME[ka],
+      answer: optionText('M8_Q18', ka),
+      topic: 'La religion des enfants',
+    });
+}
+
+/**
+ * V7.1 — jeux d'argent : ce que l'un accepte (M0_Q16) face à ce que l'autre
+ * fait (M0_Q15), sur le modèle de l'alcool. « Même rarement, non » face à
+ * des paris occasionnels : majeure ; face à des paris chaque semaine ou
+ * presque chaque jour : incompatibilité déclarée.
+ */
+function gamblingRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  let worst: Divergence | null = null;
+  let comparable = false;
+  for (const [refuser, player, refuserIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    const level = player.M0_Q15;
+    const accept = refuser.M0_Q16;
+    if (!accept || !level || level === 'A') continue;
+    comparable = true;
+    const severity: Severity | null =
+      accept === 'A'
+        ? level === 'B'
+          ? 'majeure'
+          : 'critique'
+        : accept === 'B'
+          ? level === 'D'
+            ? 'majeure'
+            : level === 'C'
+              ? 'moderee'
+              : null
+          : null;
+    if (!severity) continue;
+    if (worst && SEVERITY_RANK[worst.severity] >= SEVERITY_RANK[severity])
+      continue;
+    const refusal = view('M0_Q16', accept);
+    const habit = view('M0_Q15', level);
+    worst = {
+      questionId: 'M0_Q15',
+      theme: 'argent',
+      severity,
+      label: 'Jeux d’argent',
+      question: questionText('M0_Q15'),
+      a: refuserIsA ? refusal : habit,
+      b: refuserIsA ? habit : refusal,
+    };
+  }
+  if (worst) c.diverge(worst);
+  else if (comparable) c.agree('M0_Q15', COMPATIBLE_DIFFERENT);
+}
+
 /** Fusionne les réponses de tous les modules d'un entretien (rawResponses par module). */
 export function collectRawAnswers(
   responses: Array<{ rawResponses: unknown }> | undefined | null,
@@ -2312,6 +2485,7 @@ export const CORE_DEALBREAKERS: ReadonlySet<string> = new Set([
   // Lieu de vie
   'M0_Q03',
   'M7_Q07',
+  'M7_Q36',
   // Religion, pratique, polygamie, intimité avant le mariage
   'M1_Q16',
   'M1_Q05',
@@ -2323,14 +2497,18 @@ export const CORE_DEALBREAKERS: ReadonlySet<string> = new Set([
   // Dot et aide financière à la famille
   'M4_Q16',
   'M4_Q17',
-  // Objectif, rôles et éducation
+  // Objectif, vie commune, rôles et éducation
   'M8_Q01',
+  'M8_Q19',
   'M4_Q04',
   'M4_Q15',
   'M8_Q15',
-  // Refus explicites (tabac, alcool)
+  'M8_Q18',
+  'M8_Q20',
+  // Refus explicites (tabac, alcool, jeux d'argent)
   'M0_Q09',
   'M0_Q12',
+  'M0_Q15',
 ]);
 
 /**
@@ -2432,8 +2610,10 @@ export function buildDivergenceReport(
   faithRule(a, b, c);
   foodRule(a, b, c);
   marriageRule(a, b, c);
+  childFaithRule(a, b, c);
   tobaccoRule(a, b, rawA, rawB, c);
   alcoholRule(a, b, c);
+  gamblingRule(a, b, c);
   availabilityRule(a, b, c);
   for (const rule of LEGACY_RULES) applyRule(rule, a, b, c);
   // V7.1 : une « bonne pratique » partagée n'est affichée que si aucun des

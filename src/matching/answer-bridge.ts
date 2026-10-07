@@ -216,7 +216,7 @@ export function foodRuleOf(
  * K (« Aucun : pour moi, tout se discute ») n'a pas de question.
  */
 export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
-  A: ['M0_Q06', 'M0_Q14'],
+  A: ['M0_Q06', 'M0_Q14', 'M8_Q18'],
   B: [
     'M1_Q16',
     'M1_Q05',
@@ -227,6 +227,7 @@ export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
     'M1_Q13',
     'M8_Q03',
     'M8_Q16',
+    'M8_Q18',
   ],
   // V7.1 : la réaction à une infidélité (M6_Q18) n'est pas la fidélité.
   C: ['M6_Q19', 'M6_Q10'],
@@ -239,8 +240,9 @@ export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
     'M4_Q11',
     'M4_Q12',
     'M4_Q08',
+    'M0_Q15',
   ],
-  E: ['M0_Q03', 'M7_Q07'],
+  E: ['M0_Q03', 'M7_Q07', 'M7_Q36'],
   // V7.1 : l'aide à la famille relève aussi de « la place de la famille ».
   F: [
     'M5_Q01',

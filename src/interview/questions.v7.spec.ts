@@ -20,7 +20,7 @@ describe('Grand Entretien V7 : intégrité', () => {
   it('compte 168 questions au plus (139 en V6, 160 en V7)', () => {
     expect(QUESTIONNAIRE_V6_ORDER).toHaveLength(139);
     expect(QUESTIONS.length).toBeLessThanOrEqual(168);
-    expect(QUESTIONS).toHaveLength(162);
+    expect(QUESTIONS).toHaveLength(164);
     expect(new Set(QUESTIONS.map((q) => q.id)).size).toBe(QUESTIONS.length);
   });
 
@@ -135,7 +135,7 @@ describe('Grand Entretien V7 : intégrité', () => {
       pendingQuestions(3, { M3_Q11 }, 30, 'H').map((q) => q.id);
     expect(ids('E')).not.toContain('M3_Q05');
     expect(ids('C')).toEqual(
-      expect.arrayContaining(['M3_Q03', 'M3_Q05', 'M3_Q07', 'M3_Q10']),
+      expect.arrayContaining(['M3_Q03', 'M3_Q05', 'M3_Q10']),
     );
   });
 });

@@ -27,6 +27,8 @@ function answersWith(shift: number): RawAnswers {
     // V7.1 : accueille les enfants et les liens de l'autre ; ni fusion ni
     // coupure face aux proches.
     M0_Q14: 'A',
+    M0_Q15: 'A',
+    M0_Q16: 'C',
     M3_Q13: 'A',
     M5_Q02: 'A',
     M5_Q10: 'B',

@@ -458,3 +458,68 @@ describe('M11 — dire non à l’intimité : une observation pour le membre seu
     expect(buildRelationalProfile({ M10_Q19: 'A' }, 'F')).toBeNull();
   });
 });
+
+describe('Section 3 — les questions décisives qui manquaient', () => {
+  it('religion des enfants : « dans ma religion, indispensable » face à « sans éducation religieuse », ou deux religions différentes : incompatibilité', () => {
+    const muslim = { M1_Q16: 'D', M8_Q18: 'A' };
+    const catholic = { M1_Q16: 'A', M8_Q18: 'A' };
+    expect(severityOf(muslim, catholic, 'M8_Q18')).toEqual(['critique']);
+    expect(severityOf(muslim, { M1_Q16: 'D', M8_Q18: 'D' }, 'M8_Q18')).toEqual([
+      'critique',
+    ]);
+    expect(severityOf(muslim, { M1_Q16: 'A', M8_Q18: 'B' }, 'M8_Q18')).toEqual([
+      'majeure',
+    ]);
+    const same = report(muslim, { M1_Q16: 'D', M8_Q18: 'A' });
+    expect(same.divergences.filter((d) => d.questionId === 'M8_Q18')).toEqual(
+      [],
+    );
+    expect(same.convergences.map((c) => c.questionId)).toContain('M8_Q18');
+  });
+
+  it('vivre ensemble avant le mariage : « exclu » face à « souhaitable » est majeur', () => {
+    expect(severityOf({ M8_Q19: 'A' }, { M8_Q19: 'D' }, 'M8_Q19')).toEqual([
+      'majeure',
+    ]);
+  });
+
+  it('une tape pour éduquer : « bonne éducation » face à « jamais » est majeur, et une tolérance partagée n’est jamais affichée comme un accord', () => {
+    expect(severityOf({ M8_Q20: 'A' }, { M8_Q20: 'D' }, 'M8_Q20')).toEqual([
+      'majeure',
+    ]);
+    expect(report({ M8_Q20: 'A' }, { M8_Q20: 'A' }).convergences).toEqual([]);
+    expect(report({ M8_Q20: 'D' }, { M8_Q20: 'D' }).convergences[0].label).toBe(
+      'Vous refusez tous les deux toute tape pour éduquer un enfant',
+    );
+  });
+
+  it('retour au pays : un projet proche face à « ma vie est ici » est majeur', () => {
+    expect(severityOf({ M7_Q36: 'A' }, { M7_Q36: 'C' }, 'M7_Q36')).toEqual([
+      'majeure',
+    ]);
+  });
+
+  it('jeux d’argent : ce que l’un refuse face à ce que l’autre fait', () => {
+    expect(severityOf({ M0_Q16: 'A' }, { M0_Q15: 'B' }, 'M0_Q15')).toEqual([
+      'majeure',
+    ]);
+    expect(severityOf({ M0_Q16: 'A' }, { M0_Q15: 'C' }, 'M0_Q15')).toEqual([
+      'critique',
+    ]);
+    expect(severityOf({ M0_Q16: 'B' }, { M0_Q15: 'D' }, 'M0_Q15')).toEqual([
+      'majeure',
+    ]);
+    expect(find({ M0_Q16: 'C' }, { M0_Q15: 'D' }, 'M0_Q15')).toHaveLength(0);
+  });
+
+  it('retraits justifiés : plus posés, toujours lus pour les entretiens enregistrés', () => {
+    for (const id of ['M2_Q10', 'M3_Q07', 'M1_Q03', 'M4_Q06'])
+      expect(QUESTION_INDEX.get(id)).toBeDefined();
+    expect(severityOf({ M4_Q06: 'A' }, { M4_Q06: 'B' }, 'M4_Q06')).toEqual([
+      'moderee',
+    ]);
+    expect(severityOf({ M1_Q03: 'A' }, { M1_Q03: 'D' }, 'M1_Q03')).toEqual([
+      'moderee',
+    ]);
+  });
+});

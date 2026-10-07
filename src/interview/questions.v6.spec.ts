@@ -52,8 +52,10 @@ describe('Questionnaire V6, lu par la V7', () => {
   });
 
   it('ne parle plus d’antécédents de suivi psychologique (RGPD art. 9)', () => {
-    const helpSeeking = byId.get('M2_Q10')!;
-    expect(helpSeeking.text).not.toMatch(/avez-vous suivi/i);
+    // V7.1 : M2_Q10 n'est plus posée (sans usage, et « je l'ai déjà fait »
+    // révélait un suivi) ; ses réponses restent lues.
+    expect(byId.has('M2_Q10')).toBe(false);
+    expect(QUESTION_INDEX.get('M2_Q10')!.text).not.toMatch(/avez-vous suivi/i);
     expect(byId.get('M3_Q10')!.options[0].text).not.toMatch(/thérapie/i);
   });
 });

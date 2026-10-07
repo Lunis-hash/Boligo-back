@@ -348,6 +348,32 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — nouvelle : les jeux d'argent du membre lui-même (les paris
+    // sportifs en tête), sur le modèle du tabac et de l'alcool. Croisée avec
+    // M0_Q16 chez l'autre.
+    id: 'M0_Q15',
+    moduleNumber: 0,
+    text: "Vous-même, les jeux d'argent (paris sportifs, casino, loterie) :",
+    options: [
+      { key: 'A', text: 'Jamais' },
+      { key: 'B', text: 'Rarement, pour le plaisir' },
+      { key: 'C', text: 'Chaque semaine' },
+      { key: 'D', text: 'Presque tous les jours' },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : ce que le membre accepte chez l'autre. Croisée avec
+    // M0_Q15.
+    id: 'M0_Q16',
+    moduleNumber: 0,
+    text: "Les jeux d'argent (paris sportifs, casino, loterie) chez votre partenaire :",
+    options: [
+      { key: 'A', text: "Je ne pourrais pas l'accepter, même rarement" },
+      { key: 'B', text: "Acceptables s'ils restent rares et sans enjeu" },
+      { key: 'C', text: 'Sans importance pour moi' },
+    ],
+  },
+  {
     // V6 — croisement par langue : deux membres ne sont présentés l'un à
     // l'autre que s'ils partagent au moins une langue (« Autre » exceptée).
     id: 'M0_Q10',
@@ -394,23 +420,6 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: 'Une culture proche ou compatible' },
       { key: 'C', text: 'Plutôt une culture différente de la mienne' },
       { key: 'D', text: "Je n'ai pas de préférence" },
-    ],
-  },
-  {
-    id: 'M1_Q03',
-    moduleNumber: 1,
-    text: 'Quelle place accordez-vous aux traditions de mariage dans votre culture ?',
-    options: [
-      {
-        key: 'A',
-        text: 'Centrale — je les respecterai toutes (dot, zaffa, feu sacré, lazo…)',
-      },
-      { key: 'B', text: "Importante — j'en garderai les principales" },
-      { key: 'C', text: "Modérée — j'en choisirai quelques-unes" },
-      {
-        key: 'D',
-        text: 'Peu importante — je privilégie le symbolisme personnel',
-      },
     ],
   },
   {
@@ -608,26 +617,6 @@ export const QUESTIONS: Question[] = [
       },
       { key: 'C', text: "J'attends que l'autre revienne vers moi" },
       { key: 'D', text: "Je ne m'excuse pas tant que je pense avoir raison" },
-    ],
-  },
-  {
-    // V6 — reformulée : on mesure l'ouverture à l'aide (une attitude), plus un
-    // antécédent de suivi psychologique (donnée de santé, RGPD article 9).
-    // Les clés gardent leur sens : A = suivi régulier, D = préfère gérer seul(e).
-    id: 'M2_Q10',
-    moduleNumber: 2,
-    text: "Si vous traversiez une période difficile, demander l'aide d'un professionnel (psychologue, conseiller conjugal) serait pour vous :",
-    options: [
-      {
-        key: 'A',
-        text: "Naturel — je l'ai déjà fait ou je le ferais sans hésiter",
-      },
-      { key: 'B', text: "Possible, après avoir d'abord essayé seul(e)" },
-      {
-        key: 'C',
-        text: "Je n'en ai jamais eu besoin, mais j'y suis ouvert(e)",
-      },
-      { key: 'D', text: "Difficile — je préfère m'en sortir seul(e)" },
     ],
   },
   // V7 — Façon d'aimer : deux dimensions, six situations concrètes chacune
@@ -874,23 +863,6 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    // V7 — modifiée : choix multiple (garde des enfants et argent peuvent
-    // coexister) et posée seulement après une relation sérieuse.
-    id: 'M3_Q07',
-    moduleNumber: 3,
-    text: 'Avez-vous des conflits non résolus avec votre ex-partenaire ? (plusieurs réponses possibles)',
-    multiple: true,
-    rules: {
-      dependsOn: { questionId: 'M3_Q11', values: ['A', 'B', 'C', 'D'] },
-    },
-    options: [
-      { key: 'A', text: 'Non — tout est clarifié' },
-      { key: 'B', text: 'Des tensions sur la garde des enfants' },
-      { key: 'C', text: 'Des tensions financières encore actives' },
-      { key: 'D', text: "Nous n'avons jamais eu de vraie clôture" },
-    ],
-  },
-  {
     // V7 — modifiée : « schémas » (jargon) devient « les mêmes situations » ;
     // posée seulement après une relation sérieuse. Les clés gardent leur sens.
     id: 'M3_Q10',
@@ -1088,17 +1060,6 @@ export const QUESTIONS: Question[] = [
         key: 'D',
         text: "Je n'y adhère pas, même si mon/ma partenaire y tient",
       },
-    ],
-  },
-  {
-    id: 'M4_Q06',
-    moduleNumber: 4,
-    text: "L'achat immobilier dans votre projet de vie :",
-    options: [
-      { key: 'A', text: "Seul(e) — c'est mon indépendance" },
-      { key: 'B', text: "À deux — c'est un projet commun" },
-      { key: 'C', text: "Location flexible pour l'instant" },
-      { key: 'D', text: 'Pas une priorité' },
     ],
   },
   {
@@ -1578,6 +1539,22 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — nouvelle : le retour au pays d'origine, projet fréquent dans la
+    // diaspora, que M7_Q07 (« un autre pays ») ne disait pas.
+    id: 'M7_Q36',
+    moduleNumber: 7,
+    text: "Vivre un jour dans le pays d'origine de votre famille :",
+    options: [
+      { key: 'A', text: "C'est mon projet, dans les années qui viennent" },
+      { key: 'B', text: "J'y pense, sans date précise" },
+      { key: 'C', text: 'Non, ma vie est là où je vis aujourd’hui' },
+      {
+        key: 'D',
+        text: "Je vis déjà dans le pays d'origine de ma famille",
+      },
+    ],
+  },
+  {
     id: 'M7_Q08',
     moduleNumber: 7,
     text: 'Le temps passé ensemble dans la semaine, idéalement :',
@@ -1775,6 +1752,19 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — nouvelle : vivre ensemble avant le mariage, sujet de friction
+    // fréquent entre deux traditions.
+    id: 'M8_Q19',
+    moduleNumber: 8,
+    text: 'Vivre ensemble avant le mariage :',
+    options: [
+      { key: 'A', text: 'Exclu pour moi' },
+      { key: 'B', text: 'Seulement après les fiançailles' },
+      { key: 'C', text: 'Possible quand la relation est solide' },
+      { key: 'D', text: 'Souhaitable, pour bien se connaître' },
+    ],
+  },
+  {
     // V7 — nouvelle : l'éducation des enfants (autorité, cadre, dialogue,
     // liberté), source fréquente de conflit entre parents. Posée si des
     // enfants sont là ou souhaités.
@@ -1792,6 +1782,44 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: 'Un cadre ferme, expliqué avec bienveillance' },
       { key: 'C', text: 'Le dialogue : on discute les règles avec eux' },
       { key: 'D', text: "La liberté : l'enfant apprend surtout par lui-même" },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : les punitions corporelles, grand point de friction
+    // des couples entre deux cultures (et interdites en France depuis 2019).
+    id: 'M8_Q20',
+    moduleNumber: 8,
+    text: 'Une tape ou une fessée pour éduquer un enfant :',
+    rules: {
+      dependsOn: [
+        { questionId: 'M0_Q05', values: ['B', 'C', 'D'] },
+        { questionId: 'M0_Q06', values: ['A', 'B', 'C'] },
+      ],
+    },
+    options: [
+      { key: 'A', text: "Cela fait partie d'une bonne éducation" },
+      { key: 'B', text: 'Acceptable de façon exceptionnelle' },
+      { key: 'C', text: "Je préfère l'éviter" },
+      { key: 'D', text: "Jamais : c'est une violence" },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : la religion des enfants, l'une des décisions les plus
+    // difficiles d'un couple de deux religions.
+    id: 'M8_Q18',
+    moduleNumber: 8,
+    text: 'Dans quelle religion élèveriez-vous vos enfants ?',
+    rules: {
+      dependsOn: [
+        { questionId: 'M0_Q05', values: ['B', 'C', 'D'] },
+        { questionId: 'M0_Q06', values: ['A', 'B', 'C'] },
+      ],
+    },
+    options: [
+      { key: 'A', text: "Dans ma religion, c'est indispensable" },
+      { key: 'B', text: "Dans celle de l'un de nous, choisie à deux" },
+      { key: 'C', text: 'Dans nos deux traditions ; ils choisiront plus tard' },
+      { key: 'D', text: 'Sans éducation religieuse' },
     ],
   },
   {
@@ -2979,6 +3007,63 @@ export const RETIRED_QUESTIONS: Question[] = [
   },
   // ── Retirées en V7.1 (texte et options de la V7, encore lus) ──
   {
+    id: 'M1_Q03',
+    moduleNumber: 1,
+    text: 'Quelle place accordez-vous aux traditions de mariage dans votre culture ?',
+    options: [
+      {
+        key: 'A',
+        text: 'Centrale — je les respecterai toutes (dot, zaffa, feu sacré, lazo…)',
+      },
+      { key: 'B', text: "Importante — j'en garderai les principales" },
+      { key: 'C', text: "Modérée — j'en choisirai quelques-unes" },
+      {
+        key: 'D',
+        text: 'Peu importante — je privilégie le symbolisme personnel',
+      },
+    ],
+  },
+  {
+    id: 'M2_Q10',
+    moduleNumber: 2,
+    text: "Si vous traversiez une période difficile, demander l'aide d'un professionnel (psychologue, conseiller conjugal) serait pour vous :",
+    options: [
+      {
+        key: 'A',
+        text: "Naturel — je l'ai déjà fait ou je le ferais sans hésiter",
+      },
+      { key: 'B', text: "Possible, après avoir d'abord essayé seul(e)" },
+      {
+        key: 'C',
+        text: "Je n'en ai jamais eu besoin, mais j'y suis ouvert(e)",
+      },
+      { key: 'D', text: "Difficile — je préfère m'en sortir seul(e)" },
+    ],
+  },
+  {
+    id: 'M3_Q07',
+    moduleNumber: 3,
+    text: 'Avez-vous des conflits non résolus avec votre ex-partenaire ? (plusieurs réponses possibles)',
+    multiple: true,
+    options: [
+      { key: 'A', text: 'Non — tout est clarifié' },
+      { key: 'B', text: 'Des tensions sur la garde des enfants' },
+      { key: 'C', text: 'Des tensions financières encore actives' },
+      { key: 'D', text: "Nous n'avons jamais eu de vraie clôture" },
+    ],
+  },
+  {
+    id: 'M4_Q06',
+    moduleNumber: 4,
+    text: "L'achat immobilier dans votre projet de vie :",
+    options: [
+      { key: 'A', text: "Seul(e) — c'est mon indépendance" },
+      { key: 'B', text: "À deux — c'est un projet commun" },
+      { key: 'C', text: "Location flexible pour l'instant" },
+      { key: 'D', text: 'Pas une priorité' },
+    ],
+  },
+  {
     id: 'M6_Q08',
     moduleNumber: 6,
     text: "Quand vous n'avez pas envie d'intimité physique et que votre partenaire le propose :",
@@ -3346,8 +3431,14 @@ export const V7_CHANGES: Record<
   M0_Q05: 'modifiee',
   M0_Q06: 'modifiee',
   M0_Q14: 'nouvelle',
+  M0_Q15: 'nouvelle',
+  M0_Q16: 'nouvelle',
   M1_Q13: 'regle',
   M3_Q13: 'nouvelle',
+  M7_Q36: 'nouvelle',
+  M8_Q18: 'nouvelle',
+  M8_Q19: 'nouvelle',
+  M8_Q20: 'nouvelle',
   M10_Q19: 'nouvelle',
   M5_Q08: 'modifiee',
   M1_Q02: 'modifiee',
@@ -3390,7 +3481,6 @@ export const V7_CHANGES: Record<
   M3_Q11: 'nouvelle',
   M3_Q03: 'modifiee',
   M3_Q05: 'modifiee',
-  M3_Q07: 'modifiee',
   M3_Q10: 'modifiee',
   M3_Q12: 'nouvelle',
   M3_Q04: 'modifiee',
@@ -3500,6 +3590,10 @@ export const V7_CHANGES: Record<
   M10_Q06: 'retiree',
   M10_Q10: 'retiree',
   // Retirées en V7.1
+  M1_Q03: 'retiree',
+  M2_Q10: 'retiree',
+  M3_Q07: 'retiree',
+  M4_Q06: 'retiree',
   M6_Q08: 'retiree',
   M1_Q11: 'retiree',
   M4_Q05: 'retiree',
@@ -3574,6 +3668,10 @@ export const V7_REPLACEMENTS: Record<string, string[]> = {
   M10_Q06: [],
   M10_Q10: [],
   // V7.1
+  M1_Q03: ['M8_Q16', 'M4_Q17'],
+  M2_Q10: [],
+  M3_Q07: [],
+  M4_Q06: [],
   M6_Q08: ['M10_Q19'],
   M1_Q11: ['M1_Q20'],
   M4_Q05: ['M4_Q16'],
@@ -3625,6 +3723,16 @@ export const V71_CHANGES: Record<
   M3_Q13: 'nouvelle',
   M10_Q19: 'nouvelle',
   M6_Q08: 'retiree',
+  M0_Q15: 'nouvelle',
+  M0_Q16: 'nouvelle',
+  M7_Q36: 'nouvelle',
+  M8_Q18: 'nouvelle',
+  M8_Q19: 'nouvelle',
+  M8_Q20: 'nouvelle',
+  M1_Q03: 'retiree',
+  M2_Q10: 'retiree',
+  M3_Q07: 'retiree',
+  M4_Q06: 'retiree',
 };
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */
@@ -3656,6 +3764,7 @@ export const SENSITIVE_QUESTIONS: Record<
   M1_Q19: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q20: { category: 'convictions_religieuses', reach: 'indirect' },
   M8_Q16: { category: 'convictions_religieuses', reach: 'indirect' },
+  M8_Q18: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q13: { category: 'convictions_religieuses', reach: 'indirect' },
   M7_Q19: { category: 'convictions_religieuses', reach: 'indirect' },
   // Retirées en V7.1, réponses encore enregistrées.
