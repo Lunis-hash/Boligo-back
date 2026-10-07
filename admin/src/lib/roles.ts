@@ -24,10 +24,11 @@ export type Section =
   | "moderation"
   | "partners"
   | "promo"
-  | "team";
+  | "team"
+  | "ai-lab";
 
 const ACCESS: Record<StaffRole, Section[]> = {
-  ADMIN: ["overview", "finance", "users", "matches", "journeys", "reports", "moderation", "partners", "promo", "team"],
+  ADMIN: ["overview", "finance", "users", "matches", "journeys", "reports", "moderation", "partners", "promo", "team", "ai-lab"],
   MODERATOR: ["overview", "users", "matches", "journeys", "reports", "moderation"],
   MARKETING: ["overview", "partners", "promo"],
 };

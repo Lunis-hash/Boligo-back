@@ -14,6 +14,7 @@ import {
   Handshake,
   Ticket,
   ShieldCheck,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearSession, getAdminUser } from "@/lib/auth";
@@ -32,6 +33,7 @@ const nav: { href: string; label: string; icon: typeof Users; section: Section }
   { href: "/dashboard/partners", label: "Partenaires", icon: Handshake, section: "partners" },
   { href: "/dashboard/promo", label: "Codes promo", icon: Ticket, section: "promo" },
   { href: "/dashboard/team", label: "Équipe", icon: ShieldCheck, section: "team" },
+  { href: "/dashboard/ai-lab", label: "Laboratoire IA", icon: FlaskConical, section: "ai-lab" },
 ];
 
 export function AdminSidebar() {

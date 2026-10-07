@@ -14,8 +14,8 @@ import { isWellFormedQuestion } from './clinical-lens';
 import { HarmonyQuestionPayload } from './harmony-question.types';
 import {
   DAY_ANGLES,
-  SAFETY_QUESTIONS,
   describeReportForAi,
+  safetyThemesOf,
 } from './sondeur.generator';
 
 export interface SondeurAiResult {
@@ -55,13 +55,7 @@ export async function draftReviewedSondeur(
   const analysis = describeReportForAi(report, firstNames);
   // Thème qui porte un écart de sécurité : toujours une question de limite
   // écrite et vérifiée à l'avance, jamais une question de l'IA.
-  const safetyThemes = [
-    ...new Set(
-      report.divergences
-        .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
-        .map((d) => d.theme),
-    ),
-  ];
+  const safetyThemes = safetyThemesOf(report);
   const drafted = await ai.generateTargetedHarmonyQuestions(
     analysis,
     THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),

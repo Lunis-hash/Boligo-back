@@ -261,7 +261,7 @@ export function isOpenQuestion(text: string): boolean {
  * vie sexuelle, ou invitation au compromis.
  */
 const INTRUSIVE =
-  /(?<!\p{L})(?:salaires?|revenus?|combien (?:gagn|envoy|épargn|mett|avez-vous (?:mis|épargn))\p{L}*|épargne|économies|euros?|fcfa|employeur|quartier|adresse|titre de séjour|papiers|situation administrative|nationalité|divorce|séparation de vos parents|vos enfants|votre ex|fait l['’]amour|rapports? sexuels?|virginité|rendre vivable|vivable|rapprocher vos positions|terrain d['’]entente|trouver un compromis)(?!\p{L})|€/iu;
+  /(?<!\p{L})(?:montants?|quel(?:le)? (?:est|sont) (?:votre|vos) (?:salaire|revenus?|épargne|économies)|combien (?:gagn|envoy|épargn|mett|avez-vous|vous gagnez)\p{L}*|euros?|fcfa|employeur|quartier|adresse|titre de séjour|papiers|situation administrative|nationalité|divorce|séparation de vos parents|vos enfants|votre ex|fait l['’]amour|rapports? sexuels?|virginité|rendre vivable|vivable|rapprocher vos positions|terrain d['’]entente|trouver un compromis)(?!\p{L})|€/iu;
 
 export function isIntrusiveQuestion(text: string): boolean {
   return INTRUSIVE.test(text);

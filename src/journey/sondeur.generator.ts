@@ -300,6 +300,26 @@ const RISKY_SAFETY_AGREEMENTS = new Set([
   'M6_Q05:D',
 ]);
 
+/**
+ * Thèmes réservés aux questions de limite : écart de sécurité, partagé ou non,
+ * ou même réponse qui n'est pas la limite absolue (« ça dépend » des deux
+ * côtés). Aucune question de l'IA n'y est servie.
+ */
+export function safetyThemesOf(report: DivergenceReport): Theme[] {
+  return [
+    ...new Set([
+      ...report.divergences
+        .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
+        .map((d) => d.theme),
+      ...report.convergences
+        .filter((c) =>
+          RISKY_SAFETY_AGREEMENTS.has(`${c.questionId}:${agreementKey(c)}`),
+        )
+        .map((c) => c.theme),
+    ]),
+  ];
+}
+
 /** Écart tiré d'une échelle (clé = score) : un score ne se cite pas comme une réponse. */
 function isScaleDivergence(d: Divergence): boolean {
   return /^\d+$/.test(d.a.key) || /^\d+$/.test(d.b.key);
@@ -575,19 +595,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   // autre jour.
   const taken = new Set<string>();
   for (const d of plan.values()) markTaken(taken, d);
-  // Écart de sécurité, partagé ou non, ou même réponse qui n'est pas la limite
-  // absolue (« ça dépend » des deux côtés) : le thème ne reçoit que des
-  // questions de limite.
-  const safetyThemes = new Set([
-    ...report.divergences
-      .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
-      .map((d) => d.theme),
-    ...report.convergences
-      .filter((c) =>
-        RISKY_SAFETY_AGREEMENTS.has(`${c.questionId}:${agreementKey(c)}`),
-      )
-      .map((c) => c.theme),
-  ]);
+  const safetyThemes = new Set(safetyThemesOf(report));
 
   for (let day = 1; day <= SONDEUR_DAYS; day++) {
     const angle = DAY_ANGLES[day];

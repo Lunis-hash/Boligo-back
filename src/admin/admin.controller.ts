@@ -21,6 +21,8 @@ import { SetTeamRoleDto } from './dto/set-team-role.dto';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { AiBudgetService } from '../ai/ai-budget.service';
+import { AiLabService } from '../ai-lab/ai-lab.service';
+import { StartLabRunDto } from '../ai-lab/ai-lab.dto';
 import { AuthRateLimitGuard } from '../auth/auth-rate-limit.guard';
 
 @Controller('admin')
@@ -28,6 +30,7 @@ export class AdminController {
   constructor(
     private adminService: AdminService,
     private aiBudget: AiBudgetService,
+    private aiLab: AiLabService,
   ) {}
 
   /** Dépense IA du mois et plafond (AI_MONTHLY_BUDGET_EUR) : administrateurs. */
@@ -35,6 +38,34 @@ export class AdminController {
   @UseGuards(AdminGuard)
   aiSpend() {
     return this.aiBudget.summary();
+  }
+
+  /** Laboratoire IA : couples types évaluables (administrateurs). */
+  @Get('ai/lab/scenarios')
+  @UseGuards(AdminGuard)
+  labScenarios() {
+    return this.aiLab.scenarios();
+  }
+
+  /** Dernières évaluations du laboratoire IA. */
+  @Get('ai/lab')
+  @UseGuards(AdminGuard)
+  labRuns() {
+    return this.aiLab.list();
+  }
+
+  /** Une évaluation, avec le détail de chaque couple. */
+  @Get('ai/lab/:id')
+  @UseGuards(AdminGuard)
+  labRun(@Param('id') id: string) {
+    return this.aiLab.get(id);
+  }
+
+  /** Lance une évaluation avec les vrais modèles (coût réel, compté dans le mois). */
+  @Post('ai/lab')
+  @UseGuards(AdminGuard)
+  startLabRun(@Body() dto: StartLabRunDto) {
+    return this.aiLab.start(dto.couples);
   }
 
   @Post('auth/login')
