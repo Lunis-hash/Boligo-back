@@ -19,7 +19,8 @@ import { InterviewService } from './interview.service';
 import { QuestionsService } from './questions.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { SensitiveConsentDto } from './dto/sensitive-consent.dto';
-import { parseLanguage } from './questions.en';
+import { InterviewLanguage, parseLanguage } from './questions.en';
+import { presentOptions } from './questions.data';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Interview')
@@ -40,11 +41,27 @@ export class InterviewController {
     @Param('moduleNumber') moduleNumber: string,
     @Query('lang') lang?: string,
   ) {
-    return this.questionsService.getQuestionsForUser(
+    return this.servedQuestions(
       req.user.id,
       parseInt(moduleNumber, 10),
       parseLanguage(lang),
     );
+  }
+
+  /**
+   * V7.1 : options « aucun » signalées ; sans accord explicite, les options
+   * sensibles d'une question ordinaire ne sont pas proposées.
+   */
+  private async servedQuestions(
+    userId: string,
+    moduleNumber: number,
+    lang: InterviewLanguage,
+  ) {
+    const [questions, { consent }] = await Promise.all([
+      this.questionsService.getQuestionsForUser(userId, moduleNumber, lang),
+      this.interviewService.getSensitiveConsent(userId),
+    ]);
+    return questions.map((q) => presentOptions(q, consent === true));
   }
 
   @Get('status')

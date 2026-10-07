@@ -1228,6 +1228,10 @@ export function describeReportForAi(
         lines.push(
           `${head} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions sur la limite de chacun (jamais un plan de protection ni un récit vécu), jamais de compromis, de réconciliation ni « comment le rendre vivable ».`,
         );
+      } else if (d.undisclosed) {
+        lines.push(
+          `${head} : SUJET NON RENSEIGNÉ par l'un des deux — aucune réponse à citer ni à supposer ; l'aborder avec tact, sans demander pourquoi il ne l'a pas été.${marks(d)}`,
+        );
       } else if (!isQuotableDivergence(d)) {
         lines.push(
           `${head} : tendance tirée de l'entretien, à explorer sans jamais citer les réponses ni un niveau.${marks(d)}`,

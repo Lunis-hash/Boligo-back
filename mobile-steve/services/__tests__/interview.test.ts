@@ -93,6 +93,26 @@ describe('Langues proposées et signaux d’alerte (V6.1)', () => {
     expect(togglePick(flags, picked, 'B')).toEqual(['A', 'C']);
   });
 
+  it('V7.1 : l’option « aucun » décoche les autres, et une autre option la décoche', () => {
+    const nonNegotiables: Question = {
+      id: 'M8_Q12',
+      text: 'Non négociables',
+      multiple: true,
+      maxChoices: 3,
+      options: [
+        ...['A', 'C', 'D'].map((key) => ({ key, text: key })),
+        { key: 'K', text: 'Aucun : pour moi, tout se discute', exclusive: true },
+      ],
+    };
+    let picked = togglePick(nonNegotiables, ['A', 'C', 'D'], 'K');
+    expect(picked).toEqual(['K']);
+    picked = togglePick(nonNegotiables, picked, 'C');
+    expect(picked).toEqual(['C']);
+    // Au maximum (3), « aucun » reste possible : il remplace les autres.
+    expect(togglePick(nonNegotiables, ['A', 'C', 'D'], 'K')).toEqual(['K']);
+    expect(togglePick(nonNegotiables, ['K'], 'K')).toEqual([]);
+  });
+
   it('affiche la langue écrite à la place de « une autre langue »', () => {
     expect(joinMultipleAnswer(languages, ['I', 'A'], ' Bambara ')).toEqual({
       key: 'A,I',

@@ -3,6 +3,11 @@ export interface QuestionOption {
   text: string;
   /** Option à préciser en toutes lettres (réponse enregistrée sous `<id>_AUTRE`). */
   freeText?: boolean;
+  /**
+   * V7.1 — option « aucun » d'un choix multiple : elle ne se coche jamais
+   * avec une autre (l'app décoche les autres ; le serveur refuse le mélange).
+   */
+  exclusive?: boolean;
 }
 
 export interface QuestionDependency {
@@ -92,6 +97,18 @@ export function isValidAnswer(q: Question, value: unknown): boolean {
   if (q.maxChoices && keys.length > q.maxChoices) return false;
   if (new Set(keys).size !== keys.length) return false;
   return keys.every((k) => q.options.some((o) => o.key === k));
+}
+
+/**
+ * V7.1 — une option « aucun » (`exclusive`) cochée avec une autre : « Aucune
+ * de ces peurs » et « être abandonné(e) » se contredisent.
+ */
+export function mixesExclusive(q: Question, value: string): boolean {
+  const keys = answerKeys(value);
+  return (
+    keys.length > 1 &&
+    q.options.some((o) => o.exclusive && keys.includes(o.key))
+  );
 }
 
 /** Réponse rangée dans l'ordre des options (« B,A » → « A,B ») ; à appeler sur une réponse valide. */
@@ -571,7 +588,11 @@ export const QUESTIONS: Question[] = [
       { key: 'D', text: 'Être trahi(e)' },
       { key: 'E', text: "Manquer d'attention et de tendresse" },
       { key: 'F', text: 'Devoir m’effacer pour être aimé(e)' },
-      { key: 'G', text: 'Aucune de ces peurs ne me parle vraiment' },
+      {
+        key: 'G',
+        text: 'Aucune de ces peurs ne me parle vraiment',
+        exclusive: true,
+      },
     ],
   },
   {
@@ -588,7 +609,11 @@ export const QUESTIONS: Question[] = [
         text: 'Fuir ou mettre de la distance quand ça devient intense',
       },
       { key: 'C', text: 'Avoir du mal à exprimer ce que je ressentais' },
-      { key: 'D', text: "On ne m'a jamais fait ce type de reproche" },
+      {
+        key: 'D',
+        text: "On ne m'a jamais fait ce type de reproche",
+        exclusive: true,
+      },
     ],
   },
   {
@@ -1301,7 +1326,11 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Parler trop fort ou trop vite' },
       { key: 'B', text: 'Fuir ou couper la communication' },
       { key: 'C', text: 'Être sarcastique ou blessant(e) avec les mots' },
-      { key: 'D', text: "On ne m'a jamais fait ce type de reproche" },
+      {
+        key: 'D',
+        text: "On ne m'a jamais fait ce type de reproche",
+        exclusive: true,
+      },
     ],
   },
   {
@@ -1483,6 +1512,7 @@ export const QUESTIONS: Question[] = [
       {
         key: 'G',
         text: 'Aucun de ceux-là : seule une relation physique compte',
+        exclusive: true,
       },
     ],
   },
@@ -1759,7 +1789,11 @@ export const QUESTIONS: Question[] = [
         key: 'C',
         text: 'Le mariage coutumier (dot, présentation des familles)',
       },
-      { key: 'D', text: "Aucune cérémonie n'est indispensable pour moi" },
+      {
+        key: 'D',
+        text: "Aucune cérémonie n'est indispensable pour moi",
+        exclusive: true,
+      },
     ],
   },
   {
@@ -2000,7 +2034,7 @@ export const QUESTIONS: Question[] = [
       { key: 'H', text: 'La polygamie' },
       { key: 'I', text: "Le tabac ou l'alcool" },
       { key: 'J', text: "Les rôles de l'homme et de la femme dans le foyer" },
-      { key: 'K', text: 'Aucun : pour moi, tout se discute' },
+      { key: 'K', text: 'Aucun : pour moi, tout se discute', exclusive: true },
     ],
   },
 
@@ -3801,24 +3835,44 @@ export function isV7Interview(answers: Record<string, string>): boolean {
  *  - « indirect » : une option peut révéler une conviction religieuse ou une
  *    position sur la vie intime (par prudence).
  * Les questions V6 retirées y figurent : leurs réponses restent enregistrées.
+ * V7.1 : origine ethnique et santé ajoutées ; une question peut relever de
+ * plusieurs catégories (`categories`, la première étant `category`).
  */
-export const SENSITIVE_QUESTIONS: Record<
-  string,
-  {
-    category: 'convictions_religieuses' | 'vie_sexuelle' | 'violences_subies';
-    reach: 'direct' | 'indirect';
-  }
-> = {
+export type SensitiveCategory =
+  | 'convictions_religieuses'
+  | 'vie_sexuelle'
+  | 'violences_subies'
+  | 'origine_ethnique'
+  | 'sante';
+
+export interface SensitiveEntry {
+  /** Catégorie principale. */
+  category: SensitiveCategory;
+  /** Toutes les catégories concernées, quand il y en a plusieurs. */
+  categories?: SensitiveCategory[];
+  reach: 'direct' | 'indirect';
+}
+
+export const SENSITIVE_QUESTIONS: Record<string, SensitiveEntry> = {
+  // V7.1, origine ethnique : le continent d'origine, et la culture souhaitée
+  // chez l'autre, lue avec lui.
+  M1_Q01: { category: 'origine_ethnique', reach: 'direct' },
+  M1_Q02: { category: 'origine_ethnique', reach: 'indirect' },
   // V7, convictions religieuses.
   M1_Q16: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q17: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q18: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q19: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q20: { category: 'convictions_religieuses', reach: 'indirect' },
-  M8_Q16: { category: 'convictions_religieuses', reach: 'indirect' },
   M8_Q18: { category: 'convictions_religieuses', reach: 'direct' },
-  M1_Q13: { category: 'convictions_religieuses', reach: 'indirect' },
-  M7_Q19: { category: 'convictions_religieuses', reach: 'indirect' },
+  M1_Q13: {
+    category: 'convictions_religieuses',
+    categories: ['convictions_religieuses', 'origine_ethnique'],
+    reach: 'indirect',
+  },
+  // Retirée en V7.1 (réponses encore enregistrées) : « je l'ai déjà fait »
+  // révélait un suivi psychologique, donc une donnée de santé.
+  M2_Q10: { category: 'sante', reach: 'indirect' },
   // Retirées en V7.1, réponses encore enregistrées.
   M8_Q03: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q11: { category: 'convictions_religieuses', reach: 'indirect' },
@@ -3832,8 +3886,6 @@ export const SENSITIVE_QUESTIONS: Record<
   M10_Q18: { category: 'vie_sexuelle', reach: 'direct' },
   // Réaction à une infidélité : la vie intime du couple, par prudence.
   M6_Q18: { category: 'vie_sexuelle', reach: 'indirect' },
-  // Non-négociables : « la religion et sa pratique », « l'intimité avant le mariage ».
-  M8_Q12: { category: 'vie_sexuelle', reach: 'indirect' },
   // V6 retirées, réponses encore enregistrées.
   M1_Q05: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q06: { category: 'convictions_religieuses', reach: 'direct' },
@@ -3844,3 +3896,92 @@ export const SENSITIVE_QUESTIONS: Record<
   M6_Q10: { category: 'vie_sexuelle', reach: 'indirect' },
   M3_Q08: { category: 'violences_subies', reach: 'direct' },
 };
+
+/** Catégories d'une question sensible (toutes, la principale en premier). */
+export function sensitiveCategories(
+  entry: SensitiveEntry | undefined,
+): SensitiveCategory[] {
+  if (!entry) return [];
+  return entry.categories ?? [entry.category];
+}
+
+/**
+ * V7.1 — options sensibles d'une question qui ne l'est pas en entier : une
+ * seule option révèle une conviction ou la vie intime. Sans accord explicite,
+ * ces options ne sont pas proposées et ne sont jamais enregistrées ; la
+ * question reste posée avec les autres.
+ */
+export const SENSITIVE_OPTIONS: Record<
+  string,
+  SensitiveEntry & { options: string[] }
+> = {
+  // Valeurs : « le respect des traditions et de ma foi ».
+  M7_Q19: {
+    category: 'convictions_religieuses',
+    reach: 'indirect',
+    options: ['B'],
+  },
+  // Cérémonies : « le mariage religieux ».
+  M8_Q16: {
+    category: 'convictions_religieuses',
+    reach: 'indirect',
+    options: ['B'],
+  },
+  // Non-négociables : « la religion et sa pratique », « l'intimité avant le
+  // mariage », « la polygamie ».
+  M8_Q12: {
+    category: 'convictions_religieuses',
+    categories: ['convictions_religieuses', 'vie_sexuelle'],
+    reach: 'indirect',
+    options: ['B', 'G', 'H'],
+  },
+};
+
+/** Réponse sans ses options sensibles (« B,C » → « C ») ; vide si rien ne reste. */
+export function withoutSensitiveOptions(id: string, value: string): string {
+  const hidden = SENSITIVE_OPTIONS[id]?.options;
+  if (!hidden) return value;
+  return answerKeys(value)
+    .filter((k) => !hidden.includes(k))
+    .join(',');
+}
+
+/**
+ * Réponses enregistrées sans leurs options sensibles : une réponse qui n'en
+ * contenait que des options sensibles disparaît.
+ */
+export function withoutSensitiveOptionAnswers<T>(
+  raw: Record<string, T>,
+): Record<string, T> {
+  const kept: Record<string, T> = {};
+  for (const [id, value] of Object.entries(raw)) {
+    if (!SENSITIVE_OPTIONS[id] || typeof value !== 'string') {
+      kept[id] = value;
+      continue;
+    }
+    const rest = withoutSensitiveOptions(id, value);
+    if (rest) kept[id] = rest as T;
+  }
+  return kept;
+}
+
+/**
+ * Question servie au membre : options « aucun » signalées (`exclusive`) et,
+ * sans accord explicite, options sensibles retirées.
+ */
+export function presentOptions<
+  Q extends { id: string; options: QuestionOption[] },
+>(q: Q, consent: boolean): Q {
+  const base = QUESTION_INDEX.get(q.id);
+  const hidden = consent ? [] : (SENSITIVE_OPTIONS[q.id]?.options ?? []);
+  return {
+    ...q,
+    options: q.options
+      .filter((o) => !hidden.includes(o.key))
+      .map((o) =>
+        base?.options.find((b) => b.key === o.key)?.exclusive
+          ? { ...o, exclusive: true }
+          : o,
+      ),
+  };
+}

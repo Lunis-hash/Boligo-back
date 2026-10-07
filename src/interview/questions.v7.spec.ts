@@ -3,12 +3,14 @@ import {
   QUESTIONS,
   QUESTION_INDEX,
   RETIRED_QUESTIONS,
+  SENSITIVE_OPTIONS,
   SENSITIVE_QUESTIONS,
   V7_ADDED,
   V7_CHANGES,
   V7_REPLACEMENTS,
   decodeUserResponses,
   isV7Interview,
+  sensitiveCategories,
 } from './questions.data';
 import { QUESTIONS_EN } from './questions.en';
 import { pendingQuestions } from './questions.service';
@@ -157,14 +159,42 @@ describe('Données sensibles (RGPD, article 9)', () => {
     ]);
     for (const q of [...QUESTIONS, ...RETIRED_QUESTIONS]) {
       if (notRevealing.has(q.id)) continue;
-      const text = [q.text, ...q.options.map((o) => o.text)].join(' ');
-      if (pattern.test(text)) expect(SENSITIVE_QUESTIONS[q.id]).toBeDefined();
+      if (SENSITIVE_QUESTIONS[q.id]) continue;
+      // V7.1 : sinon, seules des options le sont, et chacune est listée.
+      expect(pattern.test(q.text)).toBe(false);
+      for (const o of q.options)
+        if (pattern.test(o.text))
+          expect(SENSITIVE_OPTIONS[q.id]?.options).toContain(o.key);
     }
   });
 
   it('ne référence que des questions connues', () => {
     for (const id of Object.keys(SENSITIVE_QUESTIONS))
       expect(QUESTION_INDEX.has(id)).toBe(true);
+    for (const [id, s] of Object.entries(SENSITIVE_OPTIONS)) {
+      expect(SENSITIVE_QUESTIONS[id]).toBeUndefined();
+      const q = QUESTIONS.find((x) => x.id === id)!;
+      for (const key of s.options)
+        expect(q.options.map((o) => o.key)).toContain(key);
+      // Il reste toujours de quoi répondre sans accord.
+      expect(q.options.length).toBeGreaterThan(s.options.length + 1);
+    }
+  });
+
+  it('V7.1 : origine ethnique et santé ; plusieurs catégories pour une même question', () => {
+    expect(SENSITIVE_QUESTIONS.M1_Q01).toMatchObject({
+      category: 'origine_ethnique',
+      reach: 'direct',
+    });
+    expect(SENSITIVE_QUESTIONS.M1_Q02.category).toBe('origine_ethnique');
+    expect(SENSITIVE_QUESTIONS.M2_Q10.category).toBe('sante');
+    expect(sensitiveCategories(SENSITIVE_OPTIONS.M8_Q12)).toEqual([
+      'convictions_religieuses',
+      'vie_sexuelle',
+    ]);
+    expect(sensitiveCategories(SENSITIVE_QUESTIONS.M1_Q16)).toEqual([
+      'convictions_religieuses',
+    ]);
   });
 
   it('ne pose plus la question des violences subies (V6 : M3_Q08, réponses encore enregistrées)', () => {

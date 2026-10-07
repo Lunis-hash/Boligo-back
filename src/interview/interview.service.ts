@@ -21,7 +21,9 @@ import {
   answerKeys,
   cleanFreeText,
   isValidAnswer,
+  mixesExclusive,
   normalizeAnswer,
+  withoutSensitiveOptionAnswers,
 } from './questions.data';
 
 const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
@@ -143,6 +145,12 @@ export class InterviewService {
           `Réponse invalide pour la question ${questionId.slice(0, 20)}.`,
         );
       }
+      // V7.1 : « aucun » ne se coche pas avec une autre réponse.
+      if (mixesExclusive(q, value as string)) {
+        throw new BadRequestException(
+          `Réponse contradictoire pour la question ${questionId.slice(0, 20)} : « aucun » ne se combine pas avec une autre réponse.`,
+        );
+      }
       answers[questionId] = normalizeAnswer(q, value as string);
     }
     // Précision écrite (« une autre langue : bambara ») : gardée seulement si
@@ -183,6 +191,12 @@ export class InterviewService {
     if (consent?.sensitiveConsent !== true) {
       for (const id of Object.keys(answers))
         if (isSensitiveQuestion(id)) delete answers[id];
+      // V7.1 : options sensibles d'une question ordinaire (M8_Q12 B…).
+      const kept = withoutSensitiveOptionAnswers(answers);
+      for (const id of Object.keys(answers)) {
+        if (id in kept) answers[id] = kept[id];
+        else delete answers[id];
+      }
     }
 
     let interview = await this.prisma.interviewIA.findFirst({
@@ -280,8 +294,12 @@ export class InterviewService {
       });
       for (const r of responses) {
         const raw = (r.rawResponses ?? {}) as Record<string, unknown>;
-        const kept = withoutSensitive(raw);
-        const count = Object.keys(raw).length - Object.keys(kept).length;
+        // V7.1 : les options sensibles d'une question ordinaire aussi (une
+        // réponse dont une option est retirée compte comme effacée).
+        const kept = withoutSensitiveOptionAnswers(withoutSensitive(raw));
+        const count = Object.keys(raw).filter(
+          (id) => !(id in kept) || kept[id] !== raw[id],
+        ).length;
         if (count === 0) continue;
         removed += count;
         await this.prisma.moduleResponse.update({

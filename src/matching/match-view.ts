@@ -194,6 +194,7 @@ export function buildMatchView(viewer: ViewerInput, candidate: CandidateInput) {
       vigilance: sheet.vigilance,
       themes: sheet.themes,
       hardStop: sheet.hardStop,
+      undisclosed: sheet.undisclosed,
     },
     discussionTopics,
     hardStop: report.hardStop,

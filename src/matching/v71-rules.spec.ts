@@ -736,3 +736,87 @@ describe('B4 — lieu de vie : « je reste » se lit avec la ville et le pays', 
     });
   });
 });
+
+describe('B7 — un membre sans accord ne fait plus disparaître les incompatibilités', () => {
+  // Exigeante : même religion, monogamie, attente du mariage, tout non négociable.
+  const demanding: RawAnswers = {
+    M0_Q12: 'A',
+    M1_Q15: 'B',
+    M1_Q16: 'D',
+    M1_Q17: 'A',
+    M1_Q18: 'A',
+    M1_Q20: 'A',
+    M8_Q12: 'B,G,H',
+    M10_Q11: 'C',
+    M10_Q17: 'A',
+  };
+  // Sans accord pour les données sensibles : ni religion, ni polygamie, ni intimité.
+  const silent: RawAnswers = {
+    M0_Q12: 'A',
+    M1_Q15: 'C',
+    M8_Q12: 'A',
+    M10_Q11: 'B',
+  };
+  const hidden = (r: ReturnType<typeof report>) =>
+    r.divergences.filter((d) => d.undisclosed);
+
+  it('chaque sujet central non renseigné devient une divergence, sans réponse citée', () => {
+    const r = report(demanding, silent);
+    expect(
+      hidden(r)
+        .map((d) => [d.questionId, d.severity, d.nonNegotiable])
+        .sort(),
+    ).toEqual([
+      ['M10_Q17', 'majeure', true],
+      ['M1_Q16', 'majeure', true],
+      ['M1_Q20', 'majeure', true],
+    ]);
+    // Une inconnue n'est pas une incompatibilité déclarée.
+    expect(r.hardStop).toBe(false);
+    for (const d of hidden(r)) {
+      expect(d.label).toMatch(/^Sujet non renseigné par l’un de vous : /);
+      expect([d.a.text, d.b.text].sort()).toEqual([
+        'Non renseigné',
+        'Renseigné',
+      ]);
+    }
+    // Les deux sens donnent le même signal.
+    expect(hidden(report(silent, demanding))).toHaveLength(3);
+  });
+
+  it('la fiche le dit toujours, et le Sondeur en reçoit le sujet sans réponse', () => {
+    const r = report(demanding, silent);
+    const sheet = buildCompatibilitySheet(r, 'Awa');
+    expect([...sheet.undisclosed].sort()).toEqual([
+      'la polygamie',
+      'la religion',
+      'l’intimité avant le mariage',
+    ]);
+    expect(sheet.vigilance).toMatch(/non renseigné par l’un de vous/i);
+    expect(sheet.vigilance).not.toMatch(/Musulman|Exclue|attends le mariage/);
+    const summary = describeReportForAi(r, ['A', 'B']);
+    expect(summary).toMatch(/SUJET NON RENSEIGNÉ par l'un des deux/);
+    expect(summary).not.toMatch(/« Renseigné »|« Non renseigné »/);
+  });
+
+  it('modérée sans non-négociable ni position nette', () => {
+    const r = report(
+      { M0_Q12: 'A', M1_Q15: 'B', M1_Q16: 'I', M1_Q20: 'B' },
+      silent,
+    );
+    expect(hidden(r).map((d) => d.severity)).toEqual(['moderee', 'moderee']);
+  });
+
+  it('rien sans entretien du module, ni pour une question que l’entretien V6 ne posait pas, ni pour « j’en parlerai en personne »', () => {
+    expect(hidden(report(demanding, { M0_Q12: 'A' }))).toEqual([]);
+    // Entretien V6 complet (M1_Q05 : religion) : seule l'intimité manque, et
+    // la V6 ne la demandait pas.
+    const v6: RawAnswers = { M1_Q05: 'A', M1_Q11: 'A', M10_Q01: 'A' };
+    expect(hidden(report(demanding, v6))).toEqual([]);
+    expect(
+      hidden(report({ ...demanding, M10_Q17: 'D' }, silent)).map(
+        (d) => d.questionId,
+      ),
+    ).not.toContain('M10_Q17');
+  });
+});

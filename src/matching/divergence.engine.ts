@@ -31,6 +31,7 @@ import {
   QUESTION_INDEX,
   answerKeys,
   answerText,
+  isV7Interview,
 } from '../interview/questions.data';
 import {
   STYLE_HIGH,
@@ -2726,6 +2727,102 @@ function applyNonNegotiables(a: RawAnswers, b: RawAnswers, c: Collector) {
  * désaccords durables gardent les divergences modérées au rang de nuances.
  * V7.1 : seulement sur les sujets de caractère et d'habitudes.
  */
+/**
+ * V7.1 (B7) — sujets centraux qu'un seul des deux a renseignés : l'autre n'a
+ * pas donné son accord pour les données sensibles (ou son entretien ne les
+ * posait pas). Sans ce signal, une incompatibilité déclarée disparaissait en
+ * silence. Jamais une réponse citée, ni celle de l'un ni l'absence de
+ * l'autre : seulement le sujet, à aborder avec tact. Majeure quand celui qui
+ * a répondu en a fait un non-négociable (M8_Q12) ou une position nette ;
+ * modérée sinon.
+ */
+export const UNDISCLOSED_SUBJECTS: Array<{
+  questionId: string;
+  theme: Theme;
+  subject: string;
+  /** Réponse connue (V7 ou V6 lue dans les termes de la V7). */
+  known: (x: RawAnswers) => boolean;
+  /** Clé de M8_Q12 qui en fait un non-négociable. */
+  nonNegotiable: string;
+  /** Position nette, qui l'autre doit connaître avant de s'engager. */
+  firm: (x: RawAnswers) => boolean;
+  /** Réponse « j'en parlerai en personne » : le sujet n'est pas relancé. */
+  deferred?: (x: RawAnswers) => boolean;
+  /** La question était posée dans l'entretien de celui qui n'a pas répondu. */
+  asked?: (x: RawAnswers) => boolean;
+}> = [
+  {
+    questionId: 'M1_Q16',
+    theme: 'spiritualite',
+    subject: 'la religion',
+    known: (x) => !!faithOf(x),
+    nonNegotiable: 'B',
+    firm: (x) => ['exclusive', 'conversion'].includes(faithRequirement(x)!),
+  },
+  {
+    questionId: 'M1_Q20',
+    theme: 'spiritualite',
+    subject: 'la polygamie',
+    // V7 (M1_Q11) : « j'en parlerai en personne » n'a pas d'équivalent.
+    known: (x) => !!(x.M1_Q20 || x.M1_Q11),
+    nonNegotiable: 'H',
+    firm: (x) => x.M1_Q20 === 'A' || x.M1_Q20 === 'C',
+    deferred: (x) => !x.M1_Q20 && x.M1_Q11 === 'D',
+  },
+  {
+    questionId: 'M10_Q17',
+    theme: 'intimite',
+    subject: 'l’intimité avant le mariage',
+    known: (x) => !!x.M10_Q17,
+    nonNegotiable: 'G',
+    firm: (x) => x.M10_Q17 === 'A',
+    deferred: (x) => x.M10_Q17 === 'D',
+    // Question propre à la V7 : un entretien V6 ne la posait pas.
+    asked: isV7Interview,
+  },
+];
+
+const NOT_SHOWN: AnswerView = {
+  key: 'non_renseigne',
+  text: 'Non renseigné',
+};
+const SHOWN: AnswerView = { key: 'renseigne', text: 'Renseigné' };
+
+function undisclosedDivergences(
+  a: RawAnswers,
+  b: RawAnswers,
+  rawA: RawAnswers,
+  rawB: RawAnswers,
+): Divergence[] {
+  const out: Divergence[] = [];
+  for (const s of UNDISCLOSED_SUBJECTS) {
+    const ka = s.known(a);
+    const kb = s.known(b);
+    if (ka === kb) continue;
+    const told = ka ? a : b;
+    if (s.deferred?.(told)) continue;
+    // Entretien d'origine (avant lecture V6 → V7) de celui qui n'a pas
+    // répondu : il a bien passé ce module, et la question y était posée.
+    const silent = ka ? rawB : rawA;
+    const prefix = `${s.questionId.split('_')[0]}_`;
+    if (!Object.keys(silent).some((id) => id.startsWith(prefix))) continue;
+    if (s.asked && !s.asked(silent)) continue;
+    const declared = !!nonNegotiablesOf(told)?.keys.has(s.nonNegotiable);
+    out.push({
+      questionId: s.questionId,
+      theme: s.theme,
+      severity: declared || s.firm(told) ? 'majeure' : 'moderee',
+      label: `Sujet non renseigné par l’un de vous : ${s.subject}`,
+      question: questionText(s.questionId),
+      a: ka ? SHOWN : NOT_SHOWN,
+      b: kb ? SHOWN : NOT_SHOWN,
+      undisclosed: true,
+      ...(declared ? { nonNegotiable: true } : {}),
+    });
+  }
+  return out;
+}
+
 function applyPerpetualProblems(a: RawAnswers, b: RawAnswers, c: Collector) {
   const candidates = [...c.adjustable]
     .filter(
@@ -2791,6 +2888,8 @@ export function buildDivergenceReport(
   const divergences = [
     ...c.divergences,
     ...psychometricDivergences(a, b, c.divergences),
+    // V7.1 : sujets centraux renseignés d'un seul côté.
+    ...undisclosedDivergences(a, b, rawA, rawB),
   ];
 
   divergences.sort(
@@ -2849,6 +2948,19 @@ export interface CompatibilitySheet {
   /** Lecture par thème pour l'affichage (statut par thème). */
   themes: ThemeSummary[];
   hardStop: boolean;
+  /**
+   * V7.1 — sujets centraux renseignés d'un seul côté (« la religion ») :
+   * toujours nommés dans la vigilance, jamais attribués.
+   */
+  undisclosed: string[];
+}
+
+/** Sujet d'une divergence « non renseigné » (« la religion »). */
+function undisclosedSubject(d: Divergence): string {
+  return (
+    UNDISCLOSED_SUBJECTS.find((s) => s.questionId === d.questionId)?.subject ??
+    d.label.toLowerCase()
+  );
 }
 
 /** Fiche de compatibilité lisible, du point de vue du membre A regardant le membre B. */
@@ -2891,11 +3003,24 @@ export function buildCompatibilitySheet(
           : `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ».${declared} À aborder franchement pendant le Sondeur.`;
   }
 
+  // V7.1 : un sujet central non renseigné par l'un des deux n'est jamais
+  // tu, même quand une autre divergence occupe la vigilance.
+  const hidden = report.divergences.filter((d) => d.undisclosed);
+  const others = hidden.filter((d) => d !== top).map(undisclosedSubject);
+  if (others.length)
+    vigilance = [
+      vigilance,
+      `Non renseigné par l’un de vous : ${others.join(', ')}. À aborder avec tact pendant le Sondeur.`,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
   return {
     rassemble,
     vigilance,
     themes: report.themes,
     hardStop: report.hardStop,
+    undisclosed: hidden.map(undisclosedSubject),
   };
 }
 
