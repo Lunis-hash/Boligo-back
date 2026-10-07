@@ -96,7 +96,7 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
      (Meta) relit.
 
    Il voit la méthode et la cible de chaque proposition, et refuse au moindre
-   défaut, selon 19 règles :
+   défaut, selon 20 règles :
    - question orientée ;
    - jargon ou diagnostic ;
    - corps ou santé ;
@@ -116,7 +116,11 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
      enfants ou un ex ;
    - compromis sur un point non négociable ;
    - mention de l'âge, du genre ou de la ville ;
-   - exemple de la consigne recopié.
+   - exemple de la consigne recopié ;
+   - modèle culturel, religieux ou familial présenté comme allant de soi ou
+     dépassé (famille élargie, dot, polygamie…), ou ethnie demandée.
+
+   Un refus l'emporte toujours, même suivi d'une acceptation du même numéro.
 
    Il rend un verdict pour **chaque** proposition, jour par jour, et chaque
    jour est relu par une autre famille que celle de son rédacteur : une
@@ -126,11 +130,19 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
    propositions.
 4. **Sécurité d'abord.** Un écart sur la violence ou les insultes reçoit
    toujours la question de limite écrite et vérifiée à l'avance, jamais une
-   question de l'IA.
+   question de l'IA : le rédacteur n'écrit même pas de question pour ce thème.
+   Les points non négociables (déclarés, critiques ou listés) sont nommés au
+   rédacteur, et une proposition de compromis sur un tel thème est écartée par
+   le code avant la relecture.
 5. **Priorité à l'IA seulement si elle couvre au moins les deux tiers des
    créneaux** (14 sur 21), et jamais sans relecture. Sinon, les questions
    modèles de BOLIGO gardent la priorité sur les écarts réels.
 6. **Contrôles du code qui s'appliquent toujours** :
+   - une seule grille de forme pour les questions modèles et celles de l'IA :
+     question ouverte, vouvoiement, ni ultimatum, ni morale, ni passé commun
+     supposé, ni corps ou santé, ni détail sexuel, ni récit douloureux, ni
+     demande intrusive (argent envoyé, partenaires passés, ancien conjoint,
+     enfants, visa, ethnie, ville, lieu de travail…), ni jargon ;
    - question trop proche d'une question déjà posée à l'un des deux membres
      (12 derniers parcours) ou du même Sondeur : écartée ;
    - grille fixe : 21 questions, 7 thèmes chaque jour.
@@ -138,9 +150,16 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
    - Chaque accord et chaque point à explorer cite le numéro de la question et
      deux extraits recopiés mot pour mot. Le code vérifie que ces extraits
      figurent vraiment dans les réponses, sinon le point est supprimé.
+   - Un extrait doit porter un mot plein (« je suis de la » ne suffit pas) et
+     compter 8 mots au plus. Les extraits sont conservés et montrés sous
+     chaque point, dans la langue où ils ont été écrits.
+   - Une réponse brève (moins de quatre mots) n'est ni un accord ni un écart :
+     « ce point reste à préciser ».
    - Le code supprime aussi toute phrase qui interprète (« au fond… »), évalue
-     la relation (« compatibles », « prometteuse ») ou prête une émotion à un
-     prénom (« Karim semble craindre… »).
+     ou prédit (« compatibles », « même longueur d'onde », « source de
+     conflits »), propose un compromis sur un non-négociable, conseille de
+     poursuivre ou d'arrêter, ou prête à un membre une émotion qu'il n'a pas
+     écrite.
    - La consigne de lecture est distincte de celle des questions : décrire,
      comparer, citer ; une hypothèse ne s'écrit que sous forme de question.
    - Deux réponses qui emploient le même mot (« respect ») ne comptent pas comme
@@ -156,10 +175,25 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
    décrits. Le code contrôle sa forme, puis le relecteur choisit la meilleure
    des deux propositions. Elle ne touche jamais un thème de sécurité ni une
    journée déjà commencée.
-10. **Signal de danger.** Si une réponse libre évoque une violence subie ou
-    exercée, une menace, une détresse ou une demande d'argent, l'IA ne lit pas
-    cette journée : la version des règles s'affiche, aucune question
-    d'approfondissement n'est posée, et la modération reçoit un signalement.
+10. **Sécurité à deux étages.**
+    - Le code repère les signaux de danger dans chaque réponse, par catégorie :
+      violence subie ou exercée, menace, contrôle (téléphone fouillé,
+      passeport confisqué, proches interdits), détresse ou idées de mort,
+      demande d'argent (Western Union, mobile money…), âge de moins de 18 ans.
+      En français, registre africain, SMS et anglais. Une limite écrite (« s'il
+      levait la main sur moi, je partirais ») n'est pas un signal.
+    - Si le code ne voit rien, l'IA peut lever une alerte dans la lecture
+      comme dans la relecture.
+    - Dans les deux cas : aucune lecture ni question d'approfondissement par
+      l'IA ; une lecture de sécurité s'affiche (rien n'est commenté, la
+      liberté de chacun est rappelée) ; la modération reçoit un signalement
+      avec la catégorie ; la messagerie attend la décision de l'équipe.
+    - Détresse ou violences : l'auteur reçoit en privé des ressources d'aide
+      (3114 et 3919 en France ; ailleurs, les urgences du pays). La liste des
+      numéros par pays est à faire valider par l'équipe.
+    - Une réponse qui évoque un danger n'est jamais refusée par la
+      modération : une victime peut citer les mots subis (masqués chez
+      l'autre), et l'auteur d'une menace ne peut pas la reformuler sans trace.
 11. **Plancher de qualité.** En secours sur Groq, un parcours payé n'utilise
     jamais un petit modèle : sans grand modèle disponible, les questions
     modèles de BOLIGO s'affichent.
@@ -247,8 +281,10 @@ membres ouvrent l'application ; sinon, l'app recharge toute seule pendant
 quatre minutes.
 
 **Le laboratoire IA** (tableau de bord, administrateurs) rejoue le Sondeur avec
-les vrais modèles sur 10 couples types fictifs : questions servies, propositions
-écartées et pourquoi, lecture du jour, coût réel. Comptez environ 1 € par couple
+les vrais modèles sur 18 couples types fictifs : questions servies, propositions
+écartées et pourquoi, lecture du jour, coût réel. Chaque couple porte une
+référence indépendante des filtres (danger attendu ou non) : le laboratoire
+compte les dangers manqués et les faux signaux. Comptez environ 1 € par couple
 (plafonné à 1,50 €), compté dans la dépense IA du mois.
 
 ## Les limites de dépense
