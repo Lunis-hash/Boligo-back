@@ -823,8 +823,10 @@ quand elles diffèrent de cette section, la V7.1 prime.
   isolement M9_Q27, argent M9_Q28) sont lues avec les habitudes (M9_Q11,
   M9_Q24) et les normes (téléphone, jalousie) par `controlRisk`. Deux signes
   ou plus donnent une divergence neutre, « Respect des limites et de la
-  liberté de l'autre » (thème communication, majeure ou critique), qui ne
-  cite aucune réponse ; un profil acquiesçant ne compte pas ; aucun
+  liberté de l'autre » (thème communication, majeure ; critique seulement
+  avec au moins une habitude déclarée, car des attitudes seules peuvent
+  refléter une norme culturelle), qui ne cite aucune réponse ; un profil
+  acquiesçant ne compte pas ; aucun
   signalement automatique à la modération. Le Sondeur la traite comme une
   limite de sécurité (jamais un compromis). Références : Stark, *Coercive
   Control* (2007) ; Johnson, typologie des violences conjugales.

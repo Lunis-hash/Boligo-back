@@ -580,6 +580,12 @@ describe('B6 — le contrôle coercitif devient visible, sans accuser', () => {
     expect(find({ M9_Q26: 'D' }, {}, 'M9_Q24')).toHaveLength(0);
     // Des normes de couple seules ne suffisent jamais.
     expect(find({ M5_Q08: 'A', M5_Q09: 'D' }, {}, 'M9_Q24')).toHaveLength(0);
+    // Des attitudes seules, même nombreuses, sans habitude déclarée : à
+    // vérifier, jamais une incompatibilité déclarée.
+    const attitudes = { M9_Q26: 'D', M9_Q27: 'D', M9_Q28: 'E', M5_Q08: 'A' };
+    expect(controlRisk(attitudes)).toBe('a_verifier');
+    expect(severityOf(attitudes, {}, 'M9_Q24')).toEqual(['majeure']);
+    expect(controlRisk({ ...attitudes, M9_Q11: 'D' })).toBe('eleve');
   });
 
   it('des réponses acquiescentes ne font pas un profil de contrôle', () => {
@@ -592,7 +598,8 @@ describe('B6 — le contrôle coercitif devient visible, sans accuser', () => {
     );
     const attitudes = { M9_Q26: 'E', M9_Q27: 'E', M9_Q28: 'E' };
     expect(controlRisk({ ...yes, ...attitudes })).toBe('aucun');
-    expect(controlRisk(attitudes)).toBe('eleve');
+    // Sans acquiescement : trois attitudes, sans habitude, restent à vérifier.
+    expect(controlRisk(attitudes)).toBe('a_verifier');
   });
 
   it('le Sondeur ne pose que des questions de limite, et le résumé de l’IA ne cite rien', () => {

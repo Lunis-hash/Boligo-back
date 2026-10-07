@@ -844,9 +844,11 @@ export type ControlRisk = 'aucun' | 'a_verifier' | 'eleve';
  *    (M6_Q04) ; elles ne comptent pas si les réponses sont acquiescentes ;
  *  - normes de couple (seules, jamais suffisantes) : accès au téléphone de
  *    l'autre (M5_Q08 A ou C), amitiés de l'autre sexe refusées (M5_Q09 D).
- * Élevé : trois signes de contrôle, ou deux avec une norme ; à vérifier :
- * deux signes. Ce n'est pas un diagnostic, et rien n'est signalé à la
- * modération : le Sondeur pose alors des questions de limite.
+ * Élevé : trois signes de contrôle, ou deux avec une norme, dont au moins
+ * une habitude déclarée (le contrôle coercitif est un comportement : des
+ * attitudes seules, parfois des normes culturelles, ne suffisent pas) ; à
+ * vérifier : deux signes. Ce n'est pas un diagnostic, et rien n'est signalé
+ * à la modération : le Sondeur pose alors des questions de limite.
  */
 export function controlRisk(
   x: RawAnswers,
@@ -861,7 +863,7 @@ export function controlRisk(
         .length;
   const norm = x.M5_Q08 === 'A' || x.M5_Q08 === 'C' || x.M5_Q09 === 'D' ? 1 : 0;
   const signs = habits + attitudes;
-  if (signs >= 3 || (signs >= 2 && norm)) return 'eleve';
+  if (habits > 0 && (signs >= 3 || (signs >= 2 && norm))) return 'eleve';
   if (signs >= 2) return 'a_verifier';
   return 'aucun';
 }

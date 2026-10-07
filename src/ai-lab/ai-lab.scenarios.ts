@@ -460,6 +460,14 @@ export function scenarioInterviews(s: LabScenario): [RawAnswers, RawAnswers] {
     ...r,
     M6_Q04: 'A',
     M6_Q05: 'A',
+    // V7.1 : justification de la violence et contrôle coercitif (habitudes
+    // et attitudes), absents par défaut pour la même raison.
+    M6_Q24: 'A',
+    M9_Q11: 'A',
+    M9_Q24: 'A',
+    M9_Q26: 'A',
+    M9_Q27: 'A',
+    M9_Q28: 'A',
   });
   const a = safe(draw(`${s.id}:a`));
   const b = s.sameInterview ? { ...a } : safe(draw(`${s.id}:b`));
