@@ -724,7 +724,15 @@ export function describeReportForAi(
   report: DivergenceReport,
   firstNames: [string, string],
 ): string {
-  const [a, b] = firstNames;
+  // Prénoms sur une ligne, sans citation : rien ne peut s'y glisser.
+  const [a, b] = firstNames.map(
+    (n) =>
+      (n.split(/[\n\r]/)[0] ?? '')
+        .replace(/[‹›«»"]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 40) || 'Membre',
+  );
   const lines: string[] = [];
   // Points non négociables et signaux de contrôle : nommés au rédacteur.
   const marks = (d: Divergence) =>

@@ -28,7 +28,7 @@ export function firstJsonArray(raw: string): unknown[] | null {
     const end = matchingBrace(raw, start);
     if (end === -1) continue;
     const parsed = parseLenient(raw.slice(start, end + 1));
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed)) return parsed as unknown[];
   }
   return null;
 }

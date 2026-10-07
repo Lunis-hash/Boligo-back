@@ -7,24 +7,22 @@ import {
 import { randomUUID } from 'crypto';
 import { AiLabBudget, AiService } from '../ai/ai.service';
 import { THEMES, buildDivergenceReport } from '../matching/divergence.engine';
-import {
-  isIntrusiveQuestion,
-  isOpenQuestion,
-  hasClinicalJargon,
-} from '../journey/clinical-lens';
+import { passesFormRules } from '../journey/clinical-lens';
 import { draftReviewedSondeur } from '../journey/sondeur-ai';
 import {
   AiSondeurQuestion,
   assembleSondeur,
+  describeReportForAi,
 } from '../journey/sondeur.generator';
 import {
   AnsweredItem,
   SondeurReading,
   dayReadingPrompt,
   fidelityPrompt,
+  dangerCategories,
   followUpPrompt,
-  hasDangerSignal,
   itemsBlock,
+  parseAlert,
   parseDayReading,
   parseFidelity,
   parseFollowUps,
@@ -66,6 +64,16 @@ export interface LabCoupleResult {
   servedDefects: string[];
   reading: SondeurReading | null;
   readingStatus: string;
+  /**
+   * Danger : la référence du scénario, ce que le code a repéré (catégories),
+   * l'alerte levée par l'IA, et le verdict (ok, manqué, faux signal).
+   */
+  danger: {
+    expected: boolean;
+    code: string[];
+    ai: string | null;
+    verdict: 'ok' | 'manqué' | 'faux signal';
+  };
   followUp: string | null;
   costEur: number;
   durationMs: number;
@@ -87,6 +95,10 @@ export interface LabRun {
     readingsPublished: number;
     readingsRefused: number;
     dangerBlocked: number;
+    /** Signaux attendus mais non repérés (doit rester 0). */
+    dangerMissed: number;
+    /** Signaux levés sans danger réel (doit rester 0). */
+    dangerFalse: number;
   };
 }
 
@@ -119,7 +131,7 @@ export class AiLabService {
     return run;
   }
 
-  /** Lance une évaluation sur les `count` premiers couples types (1 à 10). */
+  /** Lance une évaluation sur les `count` premiers couples types (1 à 18). */
   start(count: number): LabRun {
     if (!process.env.OPENROUTER_API_KEY && !process.env.GROQ_API_KEY) {
       throw new BadRequestException(
@@ -181,6 +193,11 @@ export class AiLabService {
         dangerBlocked: run.results.filter((r) =>
           r.readingStatus.startsWith('bloquée'),
         ).length,
+        dangerMissed: run.results.filter((r) => r.danger.verdict === 'manqué')
+          .length,
+        dangerFalse: run.results.filter(
+          (r) => r.danger.verdict === 'faux signal',
+        ).length,
       };
       run.status = 'termine';
     } catch (error) {
@@ -220,6 +237,12 @@ export class AiLabService {
       servedDefects: [],
       reading: null,
       readingStatus: 'non écrite',
+      danger: {
+        expected: s.expectDanger ?? false,
+        code: [],
+        ai: null,
+        verdict: 'ok',
+      },
       followUp: null,
       costEur: 0,
       durationMs: 0,
@@ -272,14 +295,9 @@ export class AiLabService {
         text: q.text,
         source: q.source,
       }));
+      // Même grille que la production (gabarits et questions de l'IA).
       base.servedDefects = questions
-        .filter(
-          (q) =>
-            !isOpenQuestion(q.text) ||
-            isIntrusiveQuestion(q.text) ||
-            hasClinicalJargon(q.text) ||
-            q.text.length > 200,
-        )
+        .filter((q) => !passesFormRules(q.text))
         .map((q) => q.text);
 
       // 2. Lecture du jour 1 sur des réponses types, puis vérification.
@@ -292,9 +310,13 @@ export class AiLabService {
           question: q.text,
           answers: s.dayOne?.[q.themeKey] ?? DEFAULT_DAY_ONE[q.themeKey],
         }));
-      if (items.some((it) => it.answers.some(hasDangerSignal))) {
-        base.readingStatus =
-          'bloquée : signal de danger (lecture des règles, modération prévenue)';
+      base.danger.code = [
+        ...new Set(
+          items.flatMap((it) => it.answers.flatMap((a) => dangerCategories(a))),
+        ),
+      ];
+      if (base.danger.code.length) {
+        base.readingStatus = `bloquée : signal de danger (${base.danger.code.join(', ')}) — lecture de sécurité, modération prévenue`;
       } else {
         const { system, prompt } = dayReadingPrompt(1, items, s.names);
         const written = await this.ai.journeyCompletion(
@@ -305,31 +327,40 @@ export class AiLabService {
           0.3,
           lab,
         );
-        const reading = written
-          ? parseDayReading(written.content, 1, items, s.names)
-          : null;
+        const alert = parseAlert(written?.content ?? null);
+        const reading =
+          written && !alert
+            ? parseDayReading(written.content, 1, items, s.names)
+            : null;
         if (!written) base.readingStatus = 'IA indisponible';
-        else if (!reading)
+        else if (alert) {
+          base.danger.ai = alert.category;
+          base.readingStatus = `bloquée : alerte de l'IA (${alert.category}) — lecture de sécurité, modération prévenue`;
+        } else if (!reading)
           base.readingStatus = 'illisible ou sans point vérifiable';
         else {
           const check = fidelityPrompt(items, s.names, reading);
-          const verdict = parseFidelity(
-            await this.ai.journeyCritique(
-              journeyId,
-              check.system,
-              check.prompt,
-              written.model,
-              lab,
-            ),
+          const raw = await this.ai.journeyCritique(
+            journeyId,
+            check.system,
+            check.prompt,
+            written.model,
+            lab,
           );
+          const verdict = parseFidelity(raw);
+          const fidelityAlert = parseAlert(raw);
           base.reading = reading;
-          base.readingStatus =
-            verdict === true
-              ? 'publiée'
-              : verdict === false
-                ? 'refusée (fidélité)'
-                : 'refusée (vérification impossible)';
-          if (verdict === true) {
+          if (fidelityAlert) {
+            base.danger.ai = fidelityAlert.category;
+            base.readingStatus = `bloquée : alerte du relecteur (${fidelityAlert.category})`;
+          } else
+            base.readingStatus =
+              verdict === true
+                ? 'publiée'
+                : verdict === false
+                  ? 'refusée (fidélité)'
+                  : 'refusée (vérification impossible)';
+          if (verdict === true && !fidelityAlert) {
             base.followUp = await this.followUp(
               journeyId,
               items,
@@ -337,10 +368,19 @@ export class AiLabService {
               reading,
               questions.map((q) => q.text),
               lab,
+              describeReportForAi(report, s.names),
             );
           }
         }
       }
+      // Verdict de sécurité contre la référence du scénario, indépendante des filtres.
+      const detected = base.danger.code.length > 0 || base.danger.ai !== null;
+      base.danger.verdict =
+        detected === base.danger.expected
+          ? 'ok'
+          : base.danger.expected
+            ? 'manqué'
+            : 'faux signal';
     } catch (error) {
       base.error = (error as Error).message;
     }
@@ -359,6 +399,7 @@ export class AiLabService {
     reading: SondeurReading,
     asked: string[],
     lab: AiLabBudget,
+    analysis?: string,
   ): Promise<string | null> {
     const { system, prompt } = followUpPrompt(
       1,
@@ -366,6 +407,7 @@ export class AiLabService {
       s.names,
       reading.toDiscuss,
       asked,
+      analysis,
     );
     const written = await this.ai.journeyCompletion(
       journeyId,
@@ -390,7 +432,7 @@ export class AiLabService {
       asked,
       written.model,
       {
-        analysis: itemsBlock(items, s.names),
+        analysis: `${analysis ? `${analysis}\n\n` : ''}RÉPONSES DU JOUR :\n${itemsBlock(items, s.names)}`,
         days: "jour 2, question d'approfondissement",
       },
       lab,

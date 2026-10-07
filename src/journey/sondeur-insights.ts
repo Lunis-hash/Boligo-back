@@ -363,8 +363,10 @@ function commonRules(names: [string, string]): string {
 
 /** Prénom tel qu'écrit dans un prompt : court, sur une ligne, sans signe de citation. */
 function safeName(name: string): string {
-  return name
-    .replace(/[\n\r‹›«»"]/g, ' ')
+  // Un prénom tient sur une ligne : ce qui suit un retour à la ligne (une
+  // consigne glissée) est ignoré.
+  return (name.split(/[\n\r]/)[0] ?? '')
+    .replace(/[‹›«»"]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 40);

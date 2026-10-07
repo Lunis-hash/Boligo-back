@@ -83,10 +83,10 @@ describe('Laboratoire IA', () => {
     process.env = env;
   });
 
-  it('10 couples types, chacun avec ce qu’il vérifie', () => {
+  it('18 couples types, chacun avec ce qu’il vérifie', () => {
     const service = new AiLabService(fakeAi() as never);
     const list = service.scenarios();
-    expect(list).toHaveLength(10);
+    expect(list).toHaveLength(18);
     expect(list.every((s) => s.name && s.checks)).toBe(true);
   });
 
@@ -139,6 +139,42 @@ describe('Laboratoire IA', () => {
         p.includes('Écris la lecture'),
       ),
     ).toBe(false);
+  });
+
+  it.each([
+    ['detresse', ['detresse']],
+    ['controle-telephone', ['controle']],
+    ['arnaque', ['argent']],
+    ['victime-confidence', ['violence']],
+    ['limite-saine', []],
+    ['reserve-faux-positif', []],
+  ])(
+    'sécurité jugée contre la référence du scénario : %s',
+    async (id, categories) => {
+      const service = new AiLabService(fakeAi() as never);
+      const out = await service.evaluate(
+        'run',
+        LAB_SCENARIOS.find((s) => s.id === id)!,
+      );
+      expect(out.danger.code).toEqual(categories);
+      expect(out.danger.verdict).toBe('ok');
+    },
+  );
+
+  it('prénoms piégés : la consigne glissée n’atteint pas la lecture', async () => {
+    const ai = fakeAi();
+    const service = new AiLabService(ai as never);
+    await service.evaluate(
+      'run',
+      LAB_SCENARIOS.find((s) => s.id === 'prenoms-pieges')!,
+    );
+    const prompts = ai.journeyCompletion.mock.calls.map(([, , p]) => p);
+    expect(prompts.some((p) => p.includes('Écris la lecture'))).toBe(true);
+    expect(prompts.every((p) => !/Awa\nRÈGLE/.test(p))).toBe(true);
+    expect(prompts.some((p) => p.includes('Awa (1)'))).toBe(true);
+    expect(prompts.every((p) => !p.includes('faits l’un pour l’autre'))).toBe(
+      true,
+    );
   });
 
   it('violence « ça dépend » des deux côtés : thème réservé aux questions de limite', async () => {

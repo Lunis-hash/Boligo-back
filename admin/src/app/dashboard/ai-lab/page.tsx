@@ -32,6 +32,7 @@ type CoupleResult = {
     advice?: string;
   } | null;
   readingStatus: string;
+  danger?: { expected: boolean; code: string[]; ai: string | null; verdict: "ok" | "manqué" | "faux signal" };
   followUp: string | null;
   costEur: number;
   durationMs: number;
@@ -53,6 +54,8 @@ type Run = {
     readingsPublished: number;
     readingsRefused: number;
     dangerBlocked: number;
+    dangerMissed?: number;
+    dangerFalse?: number;
   };
 };
 
@@ -142,7 +145,7 @@ export default function AiLabPage() {
             onChange={(e) => setCouples(Number(e.target.value))}
             disabled={running || starting}
           >
-            {[1, 3, 5, 10].map((n) => (
+            {[...new Set([1, 3, 5, 10, scenarios.length || 18])].map((n) => (
               <option key={n} value={n}>
                 {n} couple{n > 1 ? "s" : ""} (≈ {euro(n * 1)})
               </option>
@@ -190,13 +193,15 @@ export default function AiLabPage() {
                   : "en échec"}
             </h2>
             {current.summary && (
-              <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
+              <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                 <Metric label="Coût total" value={euro(current.summary.costEur)} />
                 <Metric label="Coût moyen par couple" value={euro(current.summary.averageCostEur)} />
                 <Metric label="Questions de l’IA servies" value={String(current.summary.aiQuestionsServed)} />
                 <Metric label="Questions servies hors règles" value={String(current.summary.servedDefects)} alert={current.summary.servedDefects > 0} />
                 <Metric label="Lectures publiées" value={`${current.summary.readingsPublished} / ${current.results.length}`} />
                 <Metric label="Lectures bloquées (danger)" value={String(current.summary.dangerBlocked)} />
+                <Metric label="Dangers manqués" value={String(current.summary.dangerMissed ?? 0)} alert={(current.summary.dangerMissed ?? 0) > 0} />
+                <Metric label="Faux signaux" value={String(current.summary.dangerFalse ?? 0)} alert={(current.summary.dangerFalse ?? 0) > 0} />
               </div>
             )}
           </div>
@@ -210,6 +215,13 @@ export default function AiLabPage() {
                 </span>
               </summary>
               <p className="mt-2 text-sm text-muted-foreground">Ce qui est vérifié : {r.checks}</p>
+              {r.danger && (
+                <p className={`mt-1 text-sm ${r.danger.verdict === "ok" ? "text-muted-foreground" : "text-red-600"}`}>
+                  Sécurité : {r.danger.verdict === "ok" ? "conforme à la référence" : r.danger.verdict}
+                  {r.danger.code.length > 0 ? ` · repéré par le code : ${r.danger.code.join(", ")}` : ""}
+                  {r.danger.ai ? ` · alerte de l’IA : ${r.danger.ai}` : ""}
+                </p>
+              )}
               {r.error && <p className="mt-2 text-sm text-red-600">Erreur : {r.error}</p>}
 
               {r.divergences.length > 0 && (
