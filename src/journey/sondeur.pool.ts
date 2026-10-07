@@ -1712,7 +1712,8 @@ function tt(
 
 /**
  * Écart réel entre les deux entretiens. Jour 1 : ce que la position protège ;
- * jour 2 : d'où elle vient ; jour 3 : comment elle se vivra à deux.
+ * jour 2 : d'où elle vient ; jour 3 : ce qu'il faudrait en savoir avant de
+ * s'engager.
  */
 export const TARGETED: Record<number, TopicTemplate[]> = {
   1: [
@@ -1846,37 +1847,39 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
     ),
   ],
   3: [
+    // Jour 3 : ce qu'il faudrait savoir avant de s'engager. Aucun de ces
+    // gabarits ne suppose de « vivre avec » l'écart.
     tt(
       (w) =>
-        `Un samedi ordinaire, dans trois ans, la question ${w.de} se pose : comment aimeriez-vous que la conversation se passe ?`,
-      'scene',
+        `Avant tout engagement, qu'auriez-vous besoin d'avoir compris de la position de l'autre sur ${w.phrase} ?`,
+      'limite',
       [
-        'Tout de suite, calmement',
-        'Après un temps de réflexion',
-        'Avec une règle déjà posée',
+        'Ce qui ne bougera pas',
+        "D'où elle lui vient",
+        'Ce qu’elle demande à chacun',
       ],
-      true,
     ),
     tt(
       (w) =>
-        `Imaginez que, dans quelques années, la question ${w.de} soit devenue simple entre vous : quel en serait le premier petit signe ?`,
-      'miracle',
-      ['Le ton des échanges', 'Des décisions simples', "Plus d'humour"],
-      true,
+        `Avant de vous engager, que voudriez-vous avoir clarifié à deux sur ${w.phrase} ?`,
+      'limite',
+      ['Nos attentes', 'Ce qui ne se discute pas', 'Une règle simple'],
     ),
     tt(
       (w) =>
-        `Si la question ${w.de} restait un désaccord durable, qu'est-ce qui vous aiderait à vivre avec, sans vous en vouloir ?`,
-      'perpetuel',
-      ['Des règles claires', "De l'humour", 'Du respect de chacun'],
-      true,
+        `Avant de vous engager, quel exemple concret aimeriez-vous entendre de l'autre sur ${w.phrase} ?`,
+      'sens',
+      [
+        'Une scène de son quotidien',
+        'Un choix déjà fait',
+        'Une habitude de sa famille',
+      ],
     ),
     tt(
       (w) =>
-        `Le jour où la question ${w.de} vous opposerait vraiment, quel geste de l'autre vous aiderait à revenir vers lui ou elle ?`,
-      'reparation',
-      ['Une excuse', 'Une écoute', 'Un geste tendre'],
-      true,
+        `Avant un engagement, que diriez-vous de vous-même sur ${w.phrase}, pour que l'autre sache à quoi s'attendre ?`,
+      'besoin',
+      ['Ce qui compte pour moi', 'Ce que je ne changerai pas', 'Mes doutes'],
     ),
     tt(
       (w) =>
@@ -2032,11 +2035,9 @@ export const TOPIC_DEEP: Record<
   },
   M4_Q11: {
     1: q(
-      "Si l'autre ne gagnait plus rien pendant longtemps, qu'est-ce qui, chez lui ou chez elle, vous aiderait à tenir ?",
+      "Quand l'argent vient à manquer, qu'attendez-vous avant tout de la personne qui partage votre vie ?",
       'besoin',
-      ['Le voir chercher', "Qu'il ou elle m'en parle", 'Un plan clair'],
-      undefined,
-      true,
+      ['Qu’il ou elle cherche', 'De la transparence', 'Du courage'],
     ),
     2: q(
       "Dans votre famille, que disait-on de ceux qui traversent un manque d'argent ?",
@@ -2044,9 +2045,9 @@ export const TOPIC_DEEP: Record<
       ['On les aidait', 'On les jugeait', "On n'en parlait pas"],
     ),
     3: q(
-      "Imaginez une année sans salaire pour l'un de vous : quel filet de sécurité voudriez-vous avoir construit avant ?",
-      'scene',
-      ['Une épargne', 'Une règle claire', 'Le soutien des familles'],
+      "Avant de vous engager, qu'aimeriez-vous que l'autre sache de ce que vous attendriez de lui ou d'elle si l'argent manquait longtemps ?",
+      'besoin',
+      ['Qu’il ou elle cherche', 'De la transparence', 'Un plan à deux'],
     ),
   },
   M4_Q12: {
@@ -2395,9 +2396,9 @@ export const TOPIC_DEEP: Record<
       ['Mes parents', 'Un proche', 'Personne encore'],
     ),
     3: q(
-      "Dans dix ans, qu'est-ce qui, au quotidien, vous fera sentir que l'autre vous reste fidèle ?",
-      'projection',
-      ['La transparence', 'Les attentions', 'La parole tenue'],
+      "Avant de vous engager, qu'aimeriez-vous que l'autre comprenne de ce que la fidélité veut dire pour vous, très concrètement ?",
+      'sens',
+      ['Ne rien cacher', 'Pas de séduction ailleurs', 'Tenir parole'],
     ),
   },
   M1_Q06: {
@@ -2412,7 +2413,7 @@ export const TOPIC_DEEP: Record<
       ['Du courage', 'De la paix', 'Du recul'],
     ),
     3: q(
-      "Dans une semaine ordinaire de vie commune, qu'est-ce que votre pratique, ou votre absence de pratique, changerait à l'emploi du temps ?",
+      "Avant de partager un foyer, qu'aimeriez-vous savoir de ce que la foi, ou son absence, change concrètement aux journées de l'autre ?",
       'sens',
       ['Des prières', 'Des repas', 'Des fêtes'],
     ),
@@ -2433,13 +2434,9 @@ export const TOPIC_DEEP: Record<
       ['Une fierté', 'Une attente', 'Une liberté'],
     ),
     3: q(
-      "Imaginez une grande fête de famille où vos deux traditions se croisent : qu'est-ce qui compterait le plus pour vous ce jour-là ?",
-      'scene',
-      [
-        'Le respect des rites',
-        'La paix entre les familles',
-        'La joie partagée',
-      ],
+      "Avant tout engagement, que voudriez-vous savoir de ce que les convictions de l'autre, religieuses ou non, attendent d'un futur conjoint ?",
+      'limite',
+      ['Une même pratique', 'Le respect des rites', 'Rien de particulier'],
     ),
   },
   M0_Q08: {
@@ -2526,13 +2523,9 @@ export const TOPIC_DEEP: Record<
       ['Un parent', 'Les aînés', 'Chacun pour soi'],
     ),
     3: q(
-      "Imaginez qu'un parent ou un aîné vous donne un avis que vous ne partagez pas sur votre foyer : que faites-vous de cet avis ?",
-      'scene',
-      [
-        "Je l'écoute, puis je décide",
-        "J'en parle d'abord à deux",
-        'Je le mets de côté',
-      ],
+      "Avant de vous engager, qu'aimeriez-vous comprendre de la place que l'avis des aînés tient dans les décisions de l'autre ?",
+      'limite',
+      ['Un poids décisif', 'Un conseil écouté', 'Un avis parmi d’autres'],
     ),
   },
   M5_Q03: {
@@ -2547,8 +2540,8 @@ export const TOPIC_DEEP: Record<
       ["Qu'il l'accueille", "Qu'il l'aide de loin", "Qu'il décide à deux"],
     ),
     3: q(
-      'Si un parent âgé ne pouvait plus vivre seul, quelle solution vous semblerait juste pour lui comme pour votre foyer ?',
-      'projection',
+      "Avant de vous engager, qu'aimeriez-vous savoir de ce que l'autre envisagerait si un parent âgé ne pouvait plus vivre seul ?",
+      'limite',
       [
         "L'accueillir chez nous",
         'Une aide à domicile',
@@ -2605,9 +2598,9 @@ export const TOPIC_DEEP: Record<
       ["On l'admirait", 'On comptait sur lui ou elle', "On n'en parlait pas"],
     ),
     3: q(
-      "Imaginez un mois où un proche de l'un de vous demande une aide imprévue : comment aimeriez-vous que la décision se prenne ?",
-      'scene',
-      ['Ensemble', 'Par celui ou celle concerné(e)', 'Selon une règle fixée'],
+      "Avant de partager un budget, que voudriez-vous savoir de ce que l'aide aux siens représente pour l'autre ?",
+      'limite',
+      ['Un devoir', 'Une fierté', 'Un choix'],
     ),
   },
   M4_Q01: {
@@ -2622,9 +2615,9 @@ export const TOPIC_DEEP: Record<
       ['Un parent', 'Les deux parents', 'Chacun pour soi'],
     ),
     3: q(
-      "Imaginez votre premier mois sous le même toit : comment voyez-vous l'argent de chacun circuler ?",
-      'scene',
-      ['Un pot commun', 'Selon les revenus', 'Chacun ses dépenses'],
+      "Avant de vivre ensemble, qu'aimeriez-vous avoir dit à l'autre de votre façon de voir l'argent du foyer ?",
+      'besoin',
+      ['Ce qui est commun', 'Ce qui reste à moi', 'Ce qui se décide à deux'],
     ),
   },
   M1_Q10: {
@@ -2761,18 +2754,14 @@ export const TOPIC_DEEP: Record<
   },
   'M9_Q03:partage': {
     1: q(
-      'Quand vous gardez en tête ce que vous donnez, de quoi cherchez-vous à vous protéger ?',
+      "Dans une relation, qu'est-ce qui vous ferait sentir que vous donnez plus que vous ne recevez ?",
       'besoin',
-      [
-        "D'être exploité(e)",
-        'De donner plus que je ne reçois',
-        "D'être déçu(e)",
-      ],
+      ['La fatigue', 'Le manque de merci', 'Des efforts à sens unique'],
     ),
     2: q(
-      "Où avez-vous appris qu'il valait mieux garder un œil sur l'équilibre entre donner et recevoir ?",
+      "Qu'avez-vous appris, en grandissant, sur la façon de rendre ce que l'on reçoit ?",
       'origine',
-      ['En famille', 'Dans une relation passée', 'Au travail'],
+      ['En famille', 'Par expérience', 'Au travail'],
     ),
     3: q(
       "Dans une vie à deux, qu'est-ce qui vous permettrait de donner sans avoir besoin de compter ?",
@@ -2907,9 +2896,9 @@ export const TOPIC_DEEP: Record<
       ['De l’amour', 'Du devoir', 'Une habitude'],
     ),
     3: q(
-      'Dans quelques années, quel rythme de visites en famille vous laisserait à la fois proche des vôtres et libre ?',
-      'projection',
-      ['Chaque semaine', 'Chaque mois', 'Aux grandes occasions'],
+      "Avant de partager un foyer, qu'aimeriez-vous que l'autre sache du lien que vous gardez avec les vôtres, semaine après semaine ?",
+      'besoin',
+      ['Les visites', 'Les appels', 'Les fêtes'],
     ),
   },
   M4_Q03: {
@@ -2955,15 +2944,13 @@ export const TOPIC_DEEP: Record<
       ['Du respect', 'Une gêne', 'Une richesse'],
     ),
     3: q(
-      'Dans une cuisine commune, quelle règle simple vous permettrait de respecter les convictions de chacun ?',
-      'limite',
+      "Avant de vous engager, qu'aimeriez-vous que l'autre comprenne de vos règles alimentaires, ou de votre liberté de tout manger ?",
+      'besoin',
       [
-        'Des ustensiles séparés',
-        'Des repas adaptés',
-        'En parler à chaque fête',
+        'Ce qu’elles signifient',
+        'D’où elles viennent',
+        'Ce qu’elles demandent à l’autre',
       ],
-      undefined,
-      true,
     ),
   },
   M1_Q03: {
@@ -2985,7 +2972,7 @@ export const TOPIC_DEEP: Record<
       ['Leur place dans la famille', 'Leur foi', 'Peu de choses'],
     ),
     3: q(
-      "Pour vous, qu'est-ce qu'un mariage engage, que l'amour seul n'engage pas ?",
+      "Avant de vous engager, qu'aimeriez-vous comprendre de ce que le mariage engage pour l'autre, au-delà de l'amour ?",
       'sens',
       ['Une promesse', 'Deux familles', 'Une foi'],
     ),
@@ -3070,13 +3057,9 @@ export const TOPIC_DEEP: Record<
       ['Aux imprévus', 'Aux projets', 'À aider les proches'],
     ),
     3: q(
-      "Imaginez un premier projet que vous financeriez ensemble : qu'est-ce qui le rendrait juste pour chacun ?",
-      'scene',
-      [
-        'Une part égale',
-        'Une part selon les moyens',
-        'Un projet choisi à deux',
-      ],
+      "Avant de vous engager, que voudriez-vous comprendre du rapport de l'autre entre l'épargne et les envies du moment ?",
+      'limite',
+      ['La prudence', 'Le plaisir', 'Un équilibre'],
     ),
   },
   M7_Q05: {
@@ -3116,7 +3099,7 @@ export const TOPIC_DEEP: Record<
       ['On ne comptait pas', 'On le disait', 'On le sentait'],
     ),
     3: q(
-      "Dans une vie à deux, à quel signe sentiriez-vous que l'équilibre entre donner et recevoir est respecté ?",
+      "Dans une vie à deux, à quel signe sentiriez-vous que chacun reçoit autant qu'il donne ?",
       'projection',
       ['Des mercis', 'Des attentions', 'Des efforts partagés'],
     ),
@@ -3164,9 +3147,9 @@ export const TOPIC_DEEP: Record<
       ],
     ),
     3: q(
-      "Que voudriez-vous savoir de la disponibilité de l'autre pour une nouvelle histoire, avant tout engagement ?",
+      "Avant tout engagement, à quoi sentiriez-vous que l'autre est vraiment disponible pour une histoire à deux ?",
       'limite',
-      ['Si son passé est apaisé', 'Ce qu’il ou elle cherche', 'Son rythme'],
+      ['Son rythme', 'Ce qu’il ou elle cherche', 'Sa présence'],
     ),
   },
   M8_Q13: {
@@ -3213,13 +3196,9 @@ export const TOPIC_DEEP: Record<
       ['On respectait son choix', 'On insistait', 'On prenait ses distances'],
     ),
     3: q(
-      'Le jour où vos proches insisteraient sur un choix qui vous revient à deux, comment aimeriez-vous leur répondre ensemble ?',
-      'projection',
-      [
-        'Calmement, d’une seule voix',
-        'Chacun auprès des siens',
-        'Après en avoir parlé à deux',
-      ],
+      "Avant de vous engager, qu'aimeriez-vous savoir de la manière dont l'autre répond aux siens quand ils insistent ?",
+      'limite',
+      ['Avec calme', 'En cédant parfois', 'En tenant bon'],
     ),
   },
   M8_Q15: {
@@ -3227,6 +3206,24 @@ export const TOPIC_DEEP: Record<
       'Quand vous étiez enfant, comment vous faisait-on comprendre une règle ?',
       'origine',
       ['Par l’autorité', 'Par l’explication', 'Par l’exemple'],
+    ),
+    3: q(
+      "Avant tout engagement, qu'aimeriez-vous comprendre de l'idée que l'autre se fait de l'autorité auprès d'un enfant ?",
+      'limite',
+      ['Avec fermeté', 'Avec des explications', 'Par l’exemple'],
+    ),
+  },
+  // Désaccord sur un point clé de l'avenir : en parler tôt, attendre, chercher.
+  M8_Q09: {
+    1: q(
+      "Face à un point clé de l'avenir sur lequel vous divergez, qu'est-ce que votre manière d'en parler cherche à préserver ?",
+      'besoin',
+      ['Ma sincérité', 'La relation naissante', 'Mon temps'],
+    ),
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous savoir de la façon dont l'autre aborde un désaccord sur l'avenir ?",
+      'limite',
+      ['Tôt et franchement', 'Avec le temps', 'En cherchant une solution'],
     ),
   },
   M4_Q15: {
@@ -3236,9 +3233,13 @@ export const TOPIC_DEEP: Record<
       ['Un partage égal', 'Des rôles séparés', 'Une seule personne pour tout'],
     ),
     3: q(
-      'Imaginez un soir de semaine ordinaire dans votre futur foyer : comment aimeriez-vous que les tâches se partagent ?',
-      'scene',
-      ['Selon les disponibilités', 'Selon les rôles', 'Tout ensemble'],
+      "Avant de vivre sous le même toit, qu'aimeriez-vous savoir de la façon dont l'autre imagine les tâches de la maison ?",
+      'limite',
+      [
+        'Qui fait quoi',
+        'Ce qu’il ou elle a vu chez les siens',
+        'Ce qui ne se discute pas',
+      ],
     ),
   },
   M3_Q12: {
@@ -3308,6 +3309,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'origine',
       ['Tout était commun', 'Chacun le sien', 'Selon les besoins'],
     ),
+    3: q(
+      "Avant de vivre sous le même toit, que voudriez-vous comprendre de ce que l'argent commun représente pour l'autre ?",
+      'limite',
+      ['La confiance', 'Une contrainte', 'Un projet'],
+    ),
   },
   M5_Q01: {
     2: q(
@@ -3324,6 +3330,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
     ),
   },
   M5_Q10: {
+    1: q(
+      "Face à l'insistance des vôtres, quelle décision de votre vie à deux tiendriez-vous à garder pour vous deux ?",
+      'limite',
+      ['Le lieu de vie', 'Le mariage', 'Nos finances'],
+    ),
     2: q(
       "Qu'avez-vous vu, en grandissant, chez ceux qui tenaient tête à leur famille ?",
       'origine',
@@ -3331,6 +3342,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
     ),
   },
   M9_Q07: {
+    2: q(
+      "Dans la maison où vous avez grandi, comment rassurait-on quelqu'un sans un mot ?",
+      'origine',
+      ['Une main sur l’épaule', 'Un câlin', 'Un repas préparé'],
+    ),
     3: q(
       'Dans une semaine chargée, quel petit rituel de tendresse aimeriez-vous ne jamais sacrifier ?',
       'projection',
@@ -3338,6 +3354,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
     ),
   },
   M4_Q12: {
+    1: q(
+      "Qu'est-ce que vous refuseriez de sacrifier, dans votre niveau de vie, même par amour ?",
+      'limite',
+      ['Mon confort', 'Ma sécurité', 'Rien'],
+    ),
     2: q(
       "Dans votre entourage, que disait-on de ceux qui épousent quelqu'un de plus aisé ou de moins aisé ?",
       'origine',
@@ -3431,9 +3452,9 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['La transparence', 'Qu’il ou elle cherche', 'Le partage des charges'],
     ),
     3: q(
-      "Le jour où l'argent viendrait à manquer chez vous, quelle première décision aimeriez-vous prendre à deux ?",
-      'projection',
-      ['Réduire les dépenses', 'Demander de l’aide', 'Revoir nos projets'],
+      "Avant tout engagement, que voudriez-vous comprendre de ce que l'argent qui manque réveille chez l'autre ?",
+      'limite',
+      ['Une inquiétude', 'Une gêne', 'Une énergie'],
     ),
   },
   M10_Q18: {
@@ -3445,7 +3466,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M10_Q17: {
     3: q(
-      "Comment aimeriez-vous que l'autre vous dise ses attentes sur l'intimité avant le mariage, pour vous sentir respecté(e) ?",
+      "Avant tout engagement, comment aimeriez-vous que l'autre vous fasse part de ses attentes sur l'intimité avant le mariage ?",
       'besoin',
       ['Tôt et simplement', 'Avec délicatesse', 'Quand la confiance est là'],
     ),
@@ -3455,6 +3476,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'Pour vous, quelle aide à vos proches resterait prioritaire, même quand le foyer aurait ses propres besoins ?',
       'limite',
       ['L’aide à mes parents', 'Les urgences', 'Les études d’un proche'],
+    ),
+    3: q(
+      "Avant tout engagement, que voudriez-vous savoir des attentes de la famille de l'autre envers lui ou elle ?",
+      'limite',
+      ['Un soutien régulier', 'Une aide ponctuelle', 'Aucune attente'],
     ),
   },
   M4_Q10: {
@@ -3482,9 +3508,251 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M7_Q07: {
     3: q(
-      'Quand vous imaginez vos vieux jours, de qui aimeriez-vous être entouré(e) ?',
-      'projection',
-      ['Près de ma famille', 'Près de nos proches', 'Peu importe, à deux'],
+      "Avant tout engagement, qu'aimeriez-vous comprendre de ce qui pourrait un jour pousser l'autre à changer de lieu de vie ?",
+      'limite',
+      ['Un travail', 'Sa famille', 'Ses racines'],
+    ),
+  },
+  // Troisième lot (octobre 2026) : les couples (sujet, jour) les plus servis
+  // en gabarit générique au 2e parcours, mesurés sur 600 couples et deux
+  // graines. Aucun ne suppose de « vivre avec » l'écart ; au jour 3, ce qu'il
+  // faudrait savoir avant de s'engager.
+  M4_Q04: {
+    1: q(
+      "Entre travail et foyer, quelle liberté tiendriez-vous à garder, quoi qu'il arrive dans votre vie à deux ?",
+      'limite',
+      ['Travailler', 'Choisir mon rythme', 'Décider à deux'],
+    ),
+    2: q(
+      "Dans votre famille, que disait-on d'une femme qui faisait passer son travail avant le foyer ?",
+      'origine',
+      ['On l’admirait', 'On la jugeait', 'On n’en parlait pas'],
+    ),
+  },
+  M5_Q09: {
+    1: q(
+      "Pour vous sentir en confiance, que vous faudrait-il connaître des amitiés proches de l'autre ?",
+      'besoin',
+      ['Les personnes', 'Les habitudes', 'Les confidences'],
+    ),
+    2: q(
+      'Dans la famille où vous avez grandi, comment voyait-on un homme et une femme simplement amis ?',
+      'origine',
+      ['Avec naturel', 'Avec méfiance', 'On n’en voyait pas'],
+    ),
+  },
+  M1_Q11: {
+    1: q(
+      "Dans votre idée d'une union, qu'est-ce que l'exclusivité, ou son absence, vient protéger ?",
+      'besoin',
+      ['La confiance', 'La foi', 'L’équilibre familial'],
+    ),
+  },
+  M1_Q02: {
+    2: q(
+      'Dans votre entourage, comment parlait-on des couples venus de deux cultures différentes ?',
+      'origine',
+      ['Avec fierté', 'Avec réserve', 'Avec curiosité'],
+    ),
+  },
+  M7_Q08: {
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous savoir du temps à soi dont l'autre a besoin chaque semaine ?",
+      'limite',
+      ['Une soirée', 'Un moment chaque jour', 'Un week-end de temps en temps'],
+    ),
+  },
+  M4_Q07: {
+    1: q(
+      "Qu'est-ce que la dot ou le mahr vient honorer, ou abîmer, à vos yeux ?",
+      'besoin',
+      ['Le respect des familles', 'La liberté de choisir', 'La parole donnée'],
+    ),
+    2: q(
+      "Dans votre famille, qu'a-t-on transmis sur le sens de la dot ou du mahr ?",
+      'origine',
+      ['Un honneur', 'Un engagement', 'Une simple coutume'],
+    ),
+  },
+  M5_Q02: {
+    1: q(
+      "Si un proche parlait mal de la personne que vous aimez, qu'est-ce que vous tiendriez à défendre ?",
+      'limite',
+      ['Sa dignité', 'Notre couple', 'La vérité'],
+    ),
+    2: q(
+      "Qu'avez-vous appris, en grandissant, sur la place des parents une fois que l'on vit en couple ?",
+      'origine',
+      [
+        'Ils passent en premier',
+        'Le couple passe en premier',
+        'Chacun a sa place',
+      ],
+    ),
+  },
+  M5_Q03: {
+    1: q(
+      'Dans un foyer où vit aussi un parent, quel moment de la journée tiendriez-vous à garder pour le couple ?',
+      'limite',
+      ['Le repas du soir', 'Le réveil', 'Le week-end'],
+    ),
+    3: q(
+      "Avant de vivre sous le même toit, que voudriez-vous savoir de la place qu'un parent pourrait un jour y prendre ?",
+      'limite',
+      ['Une visite', 'Un séjour', 'Une vie commune'],
+    ),
+  },
+  M3_Q05: {
+    1: q(
+      "Dans une vie à deux, qu'est-ce qui vous aiderait à être serein(e) face aux amitiés anciennes de l'autre ?",
+      'besoin',
+      ['La transparence', 'Les connaître', 'Du temps'],
+    ),
+  },
+  M8_Q11: {
+    2: q(
+      'Dans votre famille, qui veillait sur ceux qui traversaient une longue épreuve ?',
+      'origine',
+      ['Un parent', 'Toute la famille', 'Chacun comme il pouvait'],
+    ),
+    3: q(
+      "Avant tout engagement, qu'aimeriez-vous comprendre de la manière dont l'autre prend soin d'un proche qui va mal ?",
+      'limite',
+      ['Sa présence', 'Son aide concrète', 'Sa patience'],
+    ),
+  },
+  M4_Q03: {
+    1: q(
+      "Si le foyer reposait sur les revenus d'une seule personne, qu'est-ce que vous tiendriez à préserver ?",
+      'besoin',
+      ['Ma dignité', 'Notre équilibre', 'Ma liberté'],
+    ),
+    2: q(
+      "Qu'avez-vous entendu, en grandissant, sur ce qu'un homme apporte à son foyer ?",
+      'origine',
+      ['Les revenus', 'La protection', 'La présence'],
+    ),
+  },
+  M4_Q15: {
+    3: q(
+      'Avant de vous engager, quelle tâche de la maison tiendriez-vous à voir partagée, et pourquoi celle-là ?',
+      'besoin',
+      ['Les repas', 'Le linge', 'Le ménage'],
+    ),
+  },
+  M8_Q02: {
+    3: q(
+      "D'ici un engagement officiel, qu'est-ce qui vous dirait que le moment est venu ?",
+      'sens',
+      [
+        'Une confiance installée',
+        'Des familles présentées',
+        'Des projets clairs',
+      ],
+    ),
+  },
+  M8_Q15: {
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous savoir de ce que l'autre attendrait de vous comme parent, si un enfant venait ?",
+      'limite',
+      ['De la fermeté', 'De la douceur', 'De la présence'],
+    ),
+  },
+  // Foi et pratique (M1_Q17 par l'alias de M1_Q06).
+  M1_Q06: {
+    2: q(
+      'Dans votre famille, comment se vivait la pratique religieuse au quotidien, ou son absence ?',
+      'origine',
+      ['Avec rigueur', 'Avec liberté', 'Discrètement'],
+    ),
+    3: q(
+      "Avant tout engagement, que voudriez-vous comprendre de ce que la foi de l'autre, ou son absence, lui demande au quotidien ?",
+      'limite',
+      ['Des prières', 'Des repas', 'Des fêtes'],
+    ),
+  },
+  M3_Q11: {
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous que l'autre comprenne de votre rythme pour vous sentir prêt(e) ?",
+      'besoin',
+      ['Quelques semaines', 'Quelques mois', 'Le temps de la confiance'],
+    ),
+  },
+  M10_Q15: {
+    3: q(
+      "Qu'est-ce qui, chez quelqu'un, fait naître votre attirance, et à quel moment d'une rencontre ?",
+      'sens',
+      ['Dès le premier regard', 'Au fil des échanges', 'Ça dépend'],
+    ),
+  },
+  M1_Q15: {
+    1: q(
+      'Si votre famille émettait des réserves sur la personne que vous aimez, sur quoi ne transigeriez-vous pas ?',
+      'limite',
+      ['Mon choix', 'Le respect des miens', 'Le temps de les rassurer'],
+    ),
+  },
+  M4_Q06: {
+    3: q(
+      "Avant de vous engager, que voudriez-vous savoir du projet de l'autre autour d'un logement ?",
+      'limite',
+      ['Acheter seul(e)', 'Acheter à deux', 'Louer pour l’instant'],
+    ),
+  },
+  M1_Q13: {
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous que l'autre sache de ce que vous tenez à transmettre de votre culture, si des enfants venaient un jour ?",
+      'besoin',
+      ['Une langue', 'Des fêtes', 'Une foi'],
+    ),
+  },
+  M4_Q14: {
+    2: q(
+      "Qu'avez-vous vu, en grandissant, chez ceux qui dépensaient sans compter ?",
+      'origine',
+      ['De la joie', 'Des soucis', 'De la générosité'],
+    ),
+  },
+  M1_Q03: {
+    3: q(
+      "Avant de vous engager, que voudriez-vous savoir des traditions de mariage auxquelles tient la famille de l'autre ?",
+      'limite',
+      ['La dot', 'La cérémonie', 'La fête'],
+    ),
+  },
+  M7_Q02: {
+    2: q(
+      'Dans votre famille, que disait-on de ceux qui travaillaient sans compter leurs heures ?',
+      'origine',
+      ['On les admirait', 'On les plaignait', 'On les imitait'],
+    ),
+  },
+  M10_Q16: {
+    3: q(
+      "Dans une vie à deux, qu'est-ce qui vous aiderait à dire oui, ou non, à un moment d'intimité en toute confiance ?",
+      'besoin',
+      ['Être écouté(e)', 'Ne pas être pressé(e)', 'Pouvoir en reparler'],
+    ),
+  },
+  M4_Q09: {
+    1: q(
+      "Sur les dettes ou les crédits, qu'est-ce qui, pour vous, ne pourrait pas rester un secret dans un couple ?",
+      'limite',
+      ['Leur existence', 'Leur poids sur le foyer', 'Leur origine'],
+    ),
+  },
+  M5_Q08: {
+    1: q(
+      "Qu'est-ce que vous tenez à garder pour vous sur votre téléphone, même avec une personne aimée ?",
+      'limite',
+      ['Mes messages', 'Mes amitiés', 'Rien'],
+    ),
+  },
+  'M2_Q07:partage': {
+    3: q(
+      "Quand une fâcherie s'éternise, quel petit pas aimeriez-vous pouvoir faire, vous, sans attendre l'autre ?",
+      'reparation',
+      ['Un message', 'Un geste', 'Une proposition de reparler'],
     ),
   },
 };

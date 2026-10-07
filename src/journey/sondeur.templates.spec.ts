@@ -957,6 +957,10 @@ const DEEP_TEXTS = new Set(
   ),
 );
 
+/** Jour 3 : ce qu'il faudrait savoir avant de s'engager. */
+const BEFORE_COMMITMENT =
+  /avant (?:de vous engager|tout engagement|un engagement|de vivre|de partager|même un premier projet)/iu;
+
 /** Formulations de compromis possibles pour un écart (propres et ciblées). */
 function compromiseTextsFor(d: Divergence): Set<string> {
   const words = topicWords(topicPhrase(d));
@@ -1124,5 +1128,80 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
     );
     expect(div.length).toBeGreaterThan(3000);
     expect(share).toBeLessThan(15);
+  });
+
+  it('moins de 15 % de questions d’écart génériques au 2e parcours', () => {
+    // Toutes les questions du 1er parcours déjà vues : chaque sujet servi en
+    // formulation propre au même jour doit en avoir une seconde.
+    const div = runs.flatMap(({ second }) =>
+      second.filter(
+        (q) =>
+          q.source === 'divergence' &&
+          q.subject !== 'securite' &&
+          q.subject !== 'controle',
+      ),
+    );
+    const generic = div.filter((q) => !DEEP_TEXTS.has(q.text));
+    const share = (100 * generic.length) / div.length;
+    console.log(
+      `Questions d'écart génériques au 2e parcours (600 couples) : ${generic.length}/${div.length} = ${share.toFixed(1)} %`,
+    );
+    expect(div.length).toBeGreaterThan(3000);
+    expect(share).toBeLessThan(15);
+  });
+
+  it('jour 3 : gabarits ciblés sans « la question de… », sous l’angle « avant de s’engager »', () => {
+    const strict = TARGETED[3].filter((t) => !t.compromise);
+    expect(strict.length).toBeGreaterThanOrEqual(8);
+    for (const phrase of ALL_PHRASES)
+      for (const t of TARGETED[3]) {
+        const text = t.text(topicWords(phrase));
+        expect(text).not.toMatch(
+          /la question d|devenue simple|vous opposerait/,
+        );
+        if (!t.compromise) expect(text).toMatch(BEFORE_COMMITMENT);
+      }
+  });
+
+  it('jour 3 sur un sujet non négociable : au moins 90 % sous l’angle « avant de s’engager »', () => {
+    for (const pass of ['first', 'second'] as const) {
+      const day3 = runs.flatMap(({ report, [pass]: questions }) =>
+        questions.filter((q) => {
+          if (q.day !== 3 || q.source !== 'divergence') return false;
+          const d = report.divergences.find((x) => topicKey(x) === q.subject);
+          return !!d && isNonNegotiable(d);
+        }),
+      );
+      const inAngle = day3.filter((q) => BEFORE_COMMITMENT.test(q.text));
+      const share = (100 * inAngle.length) / day3.length;
+      console.log(
+        `Jour 3 sur un sujet non négociable, angle « avant de s'engager » (${pass === 'first' ? '1er' : '2e'} parcours) : ${inAngle.length}/${day3.length} = ${share.toFixed(1)} %`,
+      );
+      expect(day3.length).toBeGreaterThan(300);
+      expect(share).toBeGreaterThanOrEqual(90);
+    }
+  });
+
+  it('aucun compromis servi dans un thème non négociable, même sur un sujet voisin', () => {
+    const served: string[] = [];
+    let neighbours = 0;
+    for (const { report, questions, where } of passes) {
+      const strictThemes = new Set(
+        report.divergences
+          .filter((d) => isNonNegotiable(d))
+          .map((d) => d.theme),
+      );
+      for (const q of questions) {
+        if (q.source !== 'divergence' || !strictThemes.has(q.themeKey))
+          continue;
+        const d = report.divergences.find((x) => topicKey(x) === q.subject);
+        if (!d || isNonNegotiable(d)) continue;
+        neighbours++;
+        if (compromiseTextsFor(d).has(q.text))
+          served.push(`${where} ${d.questionId} : ${q.text}`);
+      }
+    }
+    expect(neighbours).toBeGreaterThan(500);
+    expect(served).toEqual([]);
   });
 });
