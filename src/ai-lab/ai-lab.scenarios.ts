@@ -379,7 +379,7 @@ export const LAB_SCENARIOS: LabScenario[] = [
     dayOne: {
       communication: [
         'Quand ça chauffe, je préfère qu’on fasse une pause et qu’on en reparle.',
-        'Si tu me quittes, je te retrouverai où que tu sois.',
+        'Si tu me quittes, sache que je saurai toujours où tu es.',
       ],
     },
     expectDanger: true,

@@ -13,7 +13,7 @@ import {
   moderateAnswerLocally,
   moderateMessageLocally,
   maskProfanityForDisplay,
-  containsContactDetails,
+  containsSondeurContact,
 } from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
 import { PrismaService } from '../prisma/prisma.service';
@@ -89,6 +89,9 @@ export function describeCoupleContext(
     .filter(Boolean)
     .join('\n');
 }
+
+/** Texte neutre à la place des réponses d'une journée en attente de l'équipe. */
+export const HELD_ANSWER_TEXT = 'Réponse disponible plus tard.';
 
 @Injectable()
 export class JourneyService {
@@ -391,6 +394,18 @@ export class JourneyService {
       safety
         ? safety.hidden(authorId, day, question, text)
         : holdsSafety(dangerCategories(text));
+    // Une réponse cachée ne doit pas désigner la question qui pose problème
+    // (une détresse est une donnée de santé) : toutes les réponses de ce
+    // membre pour cette journée attendent, avec le même texte neutre.
+    const heldDays = new Set(
+      questions.flatMap((q) =>
+        q.responses
+          .filter((r) =>
+            hidden(r.userId, q.day, q.questionText, r.responseText),
+          )
+          .map((r) => `${r.userId}:${q.day}`),
+      ),
+    );
     return this.pickCanonicalHarmonyQuestions(questions).map((q) => {
       const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
       const storedOptions = Array.isArray(q.options) ? (q.options as string[]) : null;
@@ -408,13 +423,8 @@ export class JourneyService {
             ? r
             : {
                 ...r,
-                responseText: hidden(
-                  r.userId,
-                  q.day,
-                  q.questionText,
-                  r.responseText,
-                )
-                  ? 'Réponse en cours de vérification par l’équipe BOLIGO.'
+                responseText: heldDays.has(`${r.userId}:${q.day}`)
+                  ? HELD_ANSWER_TEXT
                   : maskProfanityForDisplay(r.responseText),
               },
         ),
@@ -613,75 +623,98 @@ export class JourneyService {
         'Réponse trop longue (500 caractères max).',
       );
     }
-    // Coordonnées : jamais dans le Sondeur, même dans une réponse qui évoque
-    // un danger (elles s'échangent à l'étape prévue du parcours).
-    if (containsContactDetails(trimmed)) {
+    // Une réponse qui évoque un danger (violence subie ou exercée, menace,
+    // contrôle, détresse, demande d'argent, minorité) est toujours
+    // enregistrée : une victime peut citer ce qu'elle a subi, et la
+    // modération est prévenue dès l'envoi.
+    const codeDanger = dangerCategories(trimmed);
+    // Coordonnées (numéro, e-mail, lien, invitation sur un réseau) : jamais
+    // dans le Sondeur, elles s'échangent à l'étape prévue. Le simple nom
+    // d'une messagerie dans un récit n'en est pas une. Un refus laisse une
+    // trace, avec les dangers que le code y voit.
+    if (containsSondeurContact(trimmed)) {
+      await this.insights?.reportRefusal(
+        journey.id,
+        question.day,
+        userId,
+        question.questionText,
+        trimmed,
+        'coordonnées',
+        codeDanger,
+      );
       throw new BadRequestException(
         'Pas de coordonnées dans le Sondeur : elles s’échangent à l’étape prévue.',
       );
     }
-    // Une réponse qui évoque un danger (violence subie ou exercée, menace,
-    // contrôle, détresse, demande d'argent, minorité) est toujours
-    // enregistrée : une victime peut citer ce qu'elle a subi, et la
-    // modération est prévenue dès l'envoi. Refusée, elle disparaîtrait sans
-    // laisser de trace.
-    const codeDanger = dangerCategories(trimmed);
     let aiDanger: DangerCategory[] = [];
     let late: Promise<SondeurModeration> | null = null;
     // Parcours payé dont la réponse n'a pas pu être relue (IA lente ou en
     // panne) : fermé par défaut, la réponse reste cachée jusqu'au classement.
     let unclassified = false;
+    // Note de la relecture de l'IA pour l'équipe (refus d'une confidence).
+    let aiNote: string | undefined;
     if (!codeDanger.length) {
       const local = moderateAnswerLocally(trimmed);
       if (!local.allowed) {
+        // Jamais refusée sans trace : une menace grossière reformulée plus
+        // doucement resterait sinon invisible pour l'équipe.
+        await this.insights?.reportRefusal(
+          journey.id,
+          question.day,
+          userId,
+          question.questionText,
+          trimmed,
+          `modération locale : ${local.reason}`,
+        );
         throw new BadRequestException(local.reason);
       }
     }
-    // Parcours payé : chaque réponse est relue par l'IA à l'envoi, qui
-    // repère aussi un danger que le code ne voit pas (seconde ligne de
-    // défense, sans attendre la fin de la journée de l'autre membre). Une
-    // confidence de violence subie est relue aussi : la même réponse peut
-    // contenir une menace.
+    // Chaque réponse est relue par l'IA à l'envoi, qui repère aussi un
+    // danger que le code ne voit pas (seconde ligne de défense, sans attendre
+    // la fin de la journée de l'autre membre) : sur un parcours payé par le
+    // relecteur haut de gamme et son budget, sinon par le modèle économique
+    // (quelques centimes pour tout un parcours). Une confidence de violence
+    // subie est relue aussi : la même réponse peut contenir une menace, ou
+    // venir de l'auteur.
     if (!holdsSafety(codeDanger)) {
       const paid = await this.aiService.journeyAiEligible(journey.id);
-      if (paid || (!codeDanger.length && shouldRunAiModeration(trimmed))) {
-        const pending = this.aiService.moderateSondeurAnswer(
-          trimmed,
+      const pending = this.aiService.moderateSondeurAnswer(trimmed, journey.id);
+      const aiMod = await Promise.race([
+        pending,
+        new Promise<null>((resolve) => {
+          const timer: NodeJS.Timeout = setTimeout(
+            () => resolve(null),
+            JourneyService.MODERATION_WAIT_MS,
+          );
+          timer.unref();
+        }),
+      ]);
+      if (aiMod === null) {
+        // Relecture lente : la réponse est enregistrée, le classement suit.
+        late = pending;
+        unclassified = paid;
+      } else if (aiMod.unavailable) {
+        unclassified = paid;
+        aiDanger = aiMod.danger ?? [];
+      } else if (aiMod.danger?.length) {
+        aiDanger = aiMod.danger;
+      } else if (!aiMod.allowed && codeDanger.length) {
+        // Confidence que l'IA aurait refusée (mots crus, harcèlement) :
+        // enregistrée, mais l'équipe voit le motif.
+        aiNote = `Une réponse évoque peut-être un danger (signalée dès son envoi). La relecture de l'IA l'aurait refusée (${aiMod.category ?? 'motif non précisé'} : ${aiMod.reason ?? 'sans détail'}). À vérifier par la modération.`;
+      } else if (!aiMod.allowed && !codeDanger.length) {
+        // Jamais montrée à l'autre : signalée sans retenir la messagerie.
+        await this.insights?.reportRefusal(
           journey.id,
+          question.day,
+          userId,
+          question.questionText,
+          trimmed,
+          `${aiMod.category ?? 'motif non précisé'} : ${aiMod.reason ?? 'sans détail'}`,
         );
-        const aiMod = await Promise.race([
-          pending,
-          new Promise<null>((resolve) => {
-            const timer = setTimeout(
-              () => resolve(null),
-              JourneyService.MODERATION_WAIT_MS,
-            );
-            timer.unref();
-          }),
-        ]);
-        if (aiMod === null) {
-          // Relecture lente : la réponse est enregistrée, le classement suit.
-          late = pending;
-          unclassified = paid;
-        } else if (aiMod.unavailable) {
-          unclassified = paid;
-          aiDanger = aiMod.danger ?? [];
-        } else if (aiMod.danger?.length) {
-          aiDanger = aiMod.danger;
-        } else if (!aiMod.allowed && !codeDanger.length) {
-          // Jamais montrée à l'autre : signalée sans retenir la messagerie.
-          await this.insights?.reportRefusal(
-            journey.id,
-            question.day,
-            userId,
-            question.questionText,
-            trimmed,
-            `${aiMod.category ?? 'motif non précisé'} : ${aiMod.reason ?? 'sans détail'}`,
-          );
-          throw new BadRequestException(
-            aiMod.reason || 'Réponse incompatible avec les règles BOLIGO.',
-          );
-        }
+        throw new BadRequestException(
+          aiMod.reason || 'Réponse incompatible avec les règles BOLIGO.',
+        );
       }
     }
 
@@ -696,7 +729,7 @@ export class JourneyService {
         question.questionText,
         trimmed,
         unclassified ? [...danger, 'autre'] : danger,
-        unclassified ? UNCLASSIFIED_SUMMARY : undefined,
+        unclassified ? UNCLASSIFIED_SUMMARY : aiNote,
       );
     }
     const response = await this.prisma.harmonyResponse.create({
@@ -707,21 +740,40 @@ export class JourneyService {
       },
     });
     if (late) {
+      const pendingReport = unclassified;
       void late
-        .then((m) =>
-          this.insights?.resolveClassification(
+        .then((m) => {
+          const found = m.unavailable
+            ? null
+            : !m.allowed && !m.danger?.length
+              ? (['autre'] as const)
+              : (m.danger ?? []);
+          // Parcours non payé : aucun signalement n'attend ce classement ; un
+          // danger trouvé après coup est signalé (la réponse est alors cachée).
+          if (!pendingReport) {
+            const late = (found ?? []).filter(
+              (c): c is DangerCategory => c !== 'autre',
+            );
+            return late.length
+              ? this.insights?.reportAnswer(
+                  journey.id,
+                  question.day,
+                  userId,
+                  question.questionText,
+                  trimmed,
+                  [...new Set([...codeDanger, ...late])],
+                )
+              : undefined;
+          }
+          return this.insights?.resolveClassification(
             journey.id,
             question.day,
             userId,
             question.questionText,
             trimmed,
-            m.unavailable
-              ? null
-              : !m.allowed && !m.danger?.length
-                ? ['autre']
-                : (m.danger ?? []),
-          ),
-        )
+            found ? [...found] : null,
+          );
+        })
         .catch((err: Error) =>
           this.logger.error(
             `Parcours ${journey.id} : classement tardif impossible (${err.message}).`,

@@ -33,7 +33,7 @@ function fakeAi() {
       Promise.resolve({
         allowed: true,
         danger:
-          /retrouverai où que tu sois|garderai les papiers|ne plus être là|payer mon loyer/.test(
+          /saurai toujours où tu es|garderai les papiers|ne plus être là|payer mon loyer/.test(
             text,
           )
             ? ['menace']

@@ -22,7 +22,7 @@ export const CLINICAL_LENS = `CADRE DU SONDEUR (prioritaire sur tout le reste) :
 
 TA POSTURE : tu raisonnes comme un clinicien du couple expérimenté, formé à plusieurs écoles, et tu choisis pour chaque question l'outil le plus juste :
 - Attachement (Bowlby, Ainsworth, Hazan et Shaver) : besoin de sécurité, peur d'être abandonné ou envahi, réaction quand l'autre s'éloigne ou se rapproche.
-- Méthode Gottman : problèmes perpétuels et problèmes solubles, manière d'entrer dans un désaccord et d'en sortir, demandes d'attention et réponses à ces demandes, rêve caché derrière une position.
+- Méthode Gottman : problèmes perpétuels et problèmes solubles, manière d'entrer dans un désaccord et d'en sortir, demandes d'attention et réponses à ces demandes, rêve caché derrière une position ; mépris et mur de silence se repèrent sans jamais être nommés : explore plutôt comment chacun se calme et répare après un désaccord.
 - Thérapie centrée sur les émotions (Sue Johnson) : l'émotion visible et celle qu'elle protège, le cycle « l'un insiste, l'autre se retire ».
 - Approche psychodynamique et psychanalytique : ce que l'on rejoue de son histoire, loyautés envers ses parents, idéalisation, attentes jamais formulées, ce que l'on espère que l'autre répare.
 - Approche systémique (Bowen, thérapies familiales) : place de la famille d'origine, rôles appris, manière dont chacun articule sa place dans sa famille et dans le couple, selon le modèle qu'il choisit.
@@ -49,6 +49,7 @@ CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
 - L'un veut parler tout de suite, l'autre s'éloigne : demande à chacun ce qu'il espère que l'autre comprenne à ce moment-là.
 - Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; ces thèmes sont couverts par les questions de limite écrites par BOLIGO : n'écris jamais de question qui met en scène la violence, les insultes, les menaces ou le contrôle. Sur un sujet voisin, demande une valeur ou une règle de respect partagée, jamais un seuil personnel (« à partir de quand… »), un récit de ce que chacun a vécu ou vu, ni ce qu'il ferait pour se protéger ou où il irait (un plan de mise en sécurité reste confidentiel, et l'autre lira la réponse). Contrôle : téléphone ou localisation surveillés, argent confisqué ou accès refusé à ses propres ressources, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
 - Rôles, autorité, argent, famille élargie : demande comment chacun vivrait la place qu'il occuperait (décider, suivre, dépendre, être aidé), jamais quel modèle est le bon ; ne présuppose ni l'égalité ni la hiérarchie.
+- La neutralité culturelle s'arrête au contrôle : demander la permission pour sortir, travailler, voir ses proches ou disposer de son argent n'est jamais un rôle ni un modèle à choisir ; ce sujet relève des questions de limite de BOLIGO, tu n'écris pas de question dessus.
 
 CE QUE TU CHERCHES : pas la faille, mais la question que les deux membres ne se seraient jamais posée eux-mêmes : l'attente implicite, le besoin derrière la position, l'héritage familial, le scénario jamais imaginé, deux réponses identiques qui cachent des sens différents.
 
@@ -115,7 +116,8 @@ export const CRITIC_RULES = `Refuse une question si :
 17. elle invite à un compromis ou à un terrain d'entente sur un point non négociable ;
 18. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
 19. elle reprend, même reformulé, un exemple de la consigne ;
-20. elle présente un modèle culturel, religieux ou familial (égalité ou hiérarchie, famille élargie, dot, polygamie, cohabitation) comme allant de soi, dépassé ou problématique, ou demande l'ethnie, la tribu ou la caste.`;
+20. elle présente un modèle culturel, religieux ou familial (égalité ou hiérarchie, famille élargie, dot, polygamie, cohabitation) comme allant de soi, dépassé ou problématique, ou demande l'ethnie, la tribu ou la caste (sauf le contrôle, règle 21) ;
+21. elle met en scène une violence, une insulte, une menace ou un contrôle, subis ou exercés (« que ressentiriez-vous si… », « si l'on vous… »), présente une permission à demander (sortir, travailler, voir ses proches, dépenser) comme un rôle, demande un seuil personnel (« à partir de quand », « jusqu'où », « combien de… avant que… ») ou ce que l'on ferait pour se protéger, où l'on irait, qui l'on appellerait.`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur
@@ -237,7 +239,7 @@ export function hasInterpretation(text: string): boolean {
  * membres) : « cette réponse montre un besoin… », « on sent chez… ».
  */
 const READING_INTERPRETATION =
-  /(?<!\p{L})(?:montre(?:nt)? (?:un|une|que)(?!\p{L})|montre(?:nt)? (?:votre|vos|son|sa|leur) (?:besoin|peur|manque|blessure|difficult\p{L}*|rejet|fragilit\p{L}*)|témoigne(?:nt)? d|reflète(?:nt)?|dénote\p{L}*|(?:indique|signale|trahit)(?:nt)? (?:un|une) (?:besoin|peur|manque|désir)|dit beaucoup|disent beaucoup|on sent|probablement|par peur d|se cache|derrière (?:ces|ses|vos|cette|leurs?) (?:mots|réponses?)|blessure)/iu;
+  /(?<!\p{L})(?:montre(?:nt)? (?:un|une|que)(?!\p{L})|montre(?:nt)? (?:votre|vos|son|sa|leur) (?:besoin|peur|manque|blessure|difficult\p{L}*|rejet|fragilit\p{L}*)|témoigne(?:nt)? d|reflète(?:nt)?|dénote\p{L}*|(?:indique|signale|trahit)(?:nt)? (?:un|une) (?:besoin|peur|manque|désir)|dit beaucoup|disent beaucoup|on sent|probablement|visiblement|manifestement|signe qu\p{L}*|par peur d|se cache|derrière (?:ces|ses|vos|cette|leurs?) (?:mots|réponses?)|blessure)/iu;
 
 /**
  * Interprétation dans une lecture. `written` : ce que les membres ont écrit ;
@@ -295,11 +297,22 @@ const INVERSION =
 /** Question ouverte : la dernière phrase a un mot interrogatif avant tout verbe inversé. */
 export function isOpenQuestion(text: string): boolean {
   const sentences = text.trim().split(/(?<=[.?!])\s+/);
-  const last = sentences[sentences.length - 1] ?? '';
-  const inversion = INVERSION.exec(last);
+  const sentence = sentences[sentences.length - 1] ?? '';
+  // « Comment dire : la fidélité est-elle négociable ? » : la question qui
+  // suit les deux-points doit être ouverte à elle seule.
+  const parts = sentence.split(/\s*:\s+/);
+  const tail = parts[parts.length - 1];
+  const last = parts.length > 1 && INVERSION.test(tail) ? tail : sentence;
+  // « Votre famille, qui est très présente, accepterait-elle… » : un « qui »
+  // relatif n'ouvre pas la question.
+  const plain = last.replace(
+    /,\s*qui\s(?:est|sont|était|étaient|a|ont|avait|avaient)\s[^,?]+,/giu,
+    ',',
+  );
+  const inversion = INVERSION.exec(plain);
   const head = inversion
-    ? last.slice(0, inversion.index + inversion[0].length)
-    : last;
+    ? plain.slice(0, inversion.index + inversion[0].length)
+    : plain;
   return OPEN_MARKER.test(head);
 }
 
@@ -351,7 +364,7 @@ export const ULTIMATUM = prefix(
 );
 /** Morale ou « bonne réponse » suggérée. */
 export const MORALE = word(
-  "devriez|devrait|devraient|doit|doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
+  "devriez|devrait|devraient|(?<!qu['’](?:un|une|on)(?: \\p{L}+)? )doit|(?<!qu['’](?:un|une|on|ils|elles)(?: \\p{L}+)? )doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
 );
 export const MORALE_PREFIX = prefix('égoïs|caprice|capricieu');
 /** Passé commun supposé entre deux personnes qui ne se sont jamais parlé. */
@@ -375,17 +388,51 @@ export const PAINFUL_STORY = prefix(
 export const TUTOIEMENT = word(
   "tu|toi|(?<!(?:le|quel|un|du|au|ce|son|mon|votre|même) )ton|ta|tes|te|t'|t’",
 );
-export const VOUVOIEMENT = word('vous|votre|vos');
+export const VOUVOIEMENT = word(
+  'vous|votre|vos|pensez|imaginez|rappelez|souvenez|décrivez|choisissez|citez|dites|prenez|regardez',
+);
+/** Impératif tutoyé en tête de question (« Imagine un dimanche… »). */
+export const TUTOIEMENT_IMPERATIVE =
+  /^\s*(?:imagine|pense|dis|décris|raconte|explique|choisis|écris|réfléchis|regarde|essaie|cite|rappelle-toi|souviens-toi)(?!\p{L})/iu;
+/**
+ * Deux questions en une : une seconde question n'est admise que pour relancer
+ * une échelle (« Qu'est-ce qui vous fait choisir ce chiffre ? »).
+ */
+export function isDoubleQuestion(text: string): boolean {
+  const questions = text
+    .split(/(?<=\?)\s*/)
+    .map((q) => q.trim())
+    .filter(Boolean);
+  if (questions.length > 2) return true;
+  if (
+    questions.length === 2 &&
+    !/^(?:qu['’]est-ce qui vous fait choisir|pourquoi ce chiffre|pourquoi pas un point)/iu.test(
+      questions[1],
+    )
+  )
+    return true;
+  // « Comment gérez-vous… et comment la montrez-vous ? » : deux questions au
+  // membre ; « qui avait le dernier mot, et comment le saviez-vous ? » : une
+  // relance de la même question.
+  return questions.some(
+    (q) =>
+      ((q.match(/\p{L}-vous(?!\p{L})/giu) ?? []).length >= 2 &&
+        /(?<!\p{L})et (?:comment|pourquoi|quel\p{L}*|combien|quand|où|que|qu['’])/iu.test(
+          q,
+        )) ||
+      /,\s*et (?:votre|vos|ce que|ce qui)(?!\p{L})/iu.test(q),
+  );
+}
 
 /** Demandes identifiantes ou chiffrées que la liste INTRUSIVE ne couvre pas. */
 export const INTRUSIVE_MORE =
-  /(?<!\p{L})(?:quelle somme|combien (?:touchez|percevez|gagnez|empochez)|que gagnez|(?:votre|son) salaire|ancienne relation|parents (?:se sont |étaient )?séparés|vos ex(?!\p{L})|premier baiser|fréquence (?:de vos|des) (?:moments|rapports|relations) intimes|(?:où|dans quelle ville)[^?]{0,30}vivent vos parents|pays d['’]origine|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
+  /(?<!\p{L})(?:quelle somme|mariage précédent|union précédente|fréquence[^?]{0,40}intim\p{L}*|intim\p{L}*[^?]{0,40}fréquence|quel traitement|traitement (?:suivez|prenez|médical)|combien (?:touchez|percevez|gagnez|empochez)|que gagnez|(?:votre|son) salaire|ancienne relation|parents (?:se sont |étaient )?séparés|vos ex(?!\p{L})|premier baiser|fréquence (?:de vos|des) (?:moments|rapports|relations) intimes|(?:où|dans quelle ville)[^?]{0,30}vivent vos parents|pays d['’]origine|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
 /** Violence présentée comme excusable, pardonnable ou réparable. */
 export const VIOLENCE_NORMALIZE =
   /(?<!\p{L})(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants|geste brusque|geste déplacé|bouscul)\p{L}*[^?]{0,60}(?:excus|justifi|réconcili|pardonn|répar|vivable|tourner la page|passer l['’]éponge)|(?<!\p{L})(?:excus|justifi|réconcili|pardonn|répar)\p{L}*[^?]{0,60}(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants|geste brusque|geste déplacé|bouscul)/iu;
 /** Trait de caractère ou difficulté présupposés (« votre jalousie », « avez-vous du mal à »). */
 export const PRESUPPOSED =
-  /(?<!\p{L})(?:votre (?:jalousie|possessivité|méfiance|colère|immaturité|égoïsme|besoin de contrôle)|(?:avez|auriez)-vous du mal à)(?!\p{L})/iu;
+  /(?<!\p{L})(?:votre (?:jalousie|possessivité|méfiance|colère|immaturité|égoïsme|besoin de contrôle)|(?:avez|auriez)-vous du mal à|vous empêche encore|encore d['’]accepter|toujours pas)(?!\p{L})/iu;
 
 /** Bonnes questions données en exemple dans la consigne : jamais recopiées. */
 export const LENS_EXAMPLES = [
@@ -410,11 +457,30 @@ const STAGED_HARM =
 const NN_ARRANGEMENT =
   /(?:mettre|trouver) d['’]accord sur (?:la religion|la foi|les enfants|la polygamie|le pays|la conversion)|devenir acceptable|à mi-(?:temps|chemin)|(?:religion|foi|polygamie|conversion|enfants)[^?]{0,40}(?:céder|lâcher|assouplir|renoncer)/iu;
 
+/**
+ * Sujets de sécurité : couverts par les questions de limite écrites par
+ * BOLIGO. Une question de l'IA qui les nomme, même sans les mettre en scène,
+ * est écartée.
+ */
+const SAFETY_TOPIC =
+  /(?<!\p{L})(?:gifl\p{L}*|claques?|frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
+/** Seuil personnel de tolérance (« à partir de combien de cris… »). */
+const THRESHOLD =
+  /(?:à partir de (?:quand|combien|quel moment)|jusqu['’]où)[^?]{0,60}(?:accept|tolér|support|invivable|trop|limite|parler de|aller)/iu;
+/** Sujet non négociable dans une question : aucun arrangement proposé. */
+const NN_QUESTION_TOPIC =
+  /(?<!\p{L})(?:foi|relig\p{L}*|pri(?:e|ère|ent|ez)\p{L}*|conver\p{L}*|polygam\p{L}*|pays|enfants?|fidélité|pratique)(?!\p{L})/iu;
+const ARRANGE =
+  /(?<!\p{L})(?:concili\p{L}*|intermédiaire|acceptable|lâcher|raisonnables?|céder|renoncer|sacrifier|assouplir|compromis|mi-chemin|terrain d['’]entente|formule)(?!\p{L})/iu;
+
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
   return (
     passesFormRules(t) &&
     !STAGED_HARM.test(t) &&
+    !SAFETY_TOPIC.test(t) &&
+    !THRESHOLD.test(t) &&
+    !(NN_QUESTION_TOPIC.test(t) && ARRANGE.test(t)) &&
     !NN_ARRANGEMENT.test(t) &&
     !LENS_EXAMPLES.some((e) => similarQuestions(e, t) || e === t)
   );
@@ -446,6 +512,8 @@ export function passesFormRules(text: string): boolean {
     !SEXUAL_DETAIL.test(t) &&
     !PAINFUL_STORY.test(t) &&
     !TUTOIEMENT.test(t) &&
+    !TUTOIEMENT_IMPERATIVE.test(t) &&
+    !isDoubleQuestion(t) &&
     VOUVOIEMENT.test(t) &&
     !INTRUSIVE_MORE.test(t) &&
     !VIOLENCE_NORMALIZE.test(t) &&

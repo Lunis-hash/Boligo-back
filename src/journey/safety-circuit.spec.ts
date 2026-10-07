@@ -177,7 +177,7 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
       danger: [],
       unavailable: true,
     });
-    const text = 'Si tu me quittes, je te retrouverai où que tu sois.';
+    const text = 'Si tu me quittes, sache que je saurai toujours où tu es.';
     await service.respondToQuestion('q1', 'b', text);
     const call = insights.reportAnswer.mock.calls[0] as unknown as [
       string,

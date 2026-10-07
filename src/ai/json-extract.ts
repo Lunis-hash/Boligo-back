@@ -18,6 +18,21 @@ export function firstJsonObject(raw: string): Record<string, unknown> | null {
   return null;
 }
 
+/** Tous les objets JSON de premier niveau d'une réponse (brouillon puis version finale). */
+export function allJsonObjects(raw: string): Array<Record<string, unknown>> {
+  const found: Array<Record<string, unknown>> = [];
+  let start = raw.indexOf('{');
+  while (start !== -1) {
+    const end = matchingBrace(raw, start);
+    const parsed = end === -1 ? null : parseLenient(raw.slice(start, end + 1));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      found.push(parsed as Record<string, unknown>);
+      start = raw.indexOf('{', end + 1);
+    } else start = raw.indexOf('{', start + 1);
+  }
+  return found;
+}
+
 /** Premier tableau JSON d'une réponse de modèle (mêmes tolérances). */
 export function firstJsonArray(raw: string): unknown[] | null {
   for (

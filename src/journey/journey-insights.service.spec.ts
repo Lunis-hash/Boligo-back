@@ -796,7 +796,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       ),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
-    const subtle = 'Si tu me quittes, je te retrouverai où que tu sois.';
+    const subtle = 'Si tu me quittes, sache que je saurai toujours où tu es.';
     await service.reportAnswer(
       id,
       1,

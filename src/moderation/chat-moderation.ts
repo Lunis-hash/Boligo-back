@@ -91,6 +91,22 @@ export function containsContactDetails(text: string): boolean {
   return CONTACT_DETAILS.test(text);
 }
 
+/** Vraies coordonnées : numéro, e-mail, lien direct, pseudonyme. */
+const COORDINATES =
+  /(?:\+|\b00)\d{2,3}[\s.-]?\d[\d\s.-]{6,}\d|\b0\d(?:[\s.-]?\d{2}){4}\b|\bwa\.me\b|\bt\.me\b|\S+@\S+\.\w{2,}|(?<![\w.])@[a-z0-9_.]{3,}/i;
+/** Invitation à se retrouver sur un réseau (« ajoute-moi sur Snap », « mon insta : … »). */
+const PLATFORM_INVITE =
+  /(?:ajoute|add|[ée]cri[st]|contacte|retrouve|rejoins|suis[- ]moi|follow|dm|mp|inbox|appelle|cherche)\S*[^.!?]{0,20}\b(?:whats?app|snap(?:chat)?|insta(?:gram)?|telegram|facebook|fb|messenger|tiktok)\b|\b(?:mon|ma|my) (?:snap(?:chat)?|insta(?:gram)?|whats?app|telegram|tiktok|facebook|fb)\b\s*(?:c['’]est|is|:|=)/i;
+
+/**
+ * Coordonnées dans une réponse au Sondeur : un numéro, un e-mail, un lien ou
+ * une invitation à se retrouver ailleurs. Le simple nom d'une messagerie
+ * (« il lisait mes messages WhatsApp ») n'en est pas une.
+ */
+export function containsSondeurContact(text: string): boolean {
+  return COORDINATES.test(text) || PLATFORM_INVITE.test(text);
+}
+
 /**
  * Modération locale d'une réponse au Sondeur : comme un message, sauf qu'un
  * mot grossier cité dans un récit (discours rapporté) n'est pas refusé. Il

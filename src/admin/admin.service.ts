@@ -21,6 +21,7 @@ import { CreditService } from '../credit/credit.service';
 import {
   CATEGORY_LABEL,
   holdsCategories,
+  refusalHolds,
   parseSondeurReport,
   supportMessages,
 } from '../journey/journey-insights.service';
@@ -654,9 +655,14 @@ export class AdminService {
     description: string | null;
   }) {
     const signal = parseSondeurReport(report);
-    // Une trace de réponse refusée (jamais montrée) ne clôt rien : elle est
-    // seulement classée.
-    if (!signal || signal.refused || !holdsCategories(signal.categories))
+    // Une trace de réponse refusée (jamais montrée) ne clôt le parcours que si
+    // elle évoque un danger pour l'autre (menace, contrôle…) ; une insulte ou
+    // un contact sont seulement classés.
+    if (
+      !signal ||
+      !holdsCategories(signal.categories) ||
+      (signal.refused && !refusalHolds(signal.categories))
+    )
       return;
     const journey = await this.prisma.journey.findUnique({
       where: { id: signal.journeyId },

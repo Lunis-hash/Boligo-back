@@ -126,6 +126,15 @@ export function holdsCategories(categories: string[]): boolean {
   );
 }
 
+/**
+ * Une réponse refusée (jamais montrée) retient la messagerie seulement si
+ * elle évoque un danger pour l'autre : une insulte ou un contact ne suffisent
+ * pas, une menace oui.
+ */
+export function refusalHolds(categories: string[]): boolean {
+  return categories.some((c) => c !== 'autre' && c !== 'violence_subie');
+}
+
 /** Signalement du Sondeur, relu depuis sa description. */
 export interface SondeurReport {
   journeyId: string;
@@ -137,6 +146,8 @@ export interface SondeurReport {
   answer: string | null;
   /** Réponse refusée par la modération : jamais enregistrée ni montrée. */
   refused: boolean;
+  /** Classement de l'IA encore attendu (relecture lente ou en panne). */
+  unclassified: boolean;
   categories: string[];
 }
 
@@ -161,6 +172,7 @@ export function parseSondeurReport(r: {
     day: m[2] ? Number(m[2]) : REVIEW_DAY,
     answer: m[4] ?? null,
     refused: m[3] === 'refus',
+    unclassified: (r.description ?? '').includes(UNCLASSIFIED_SUMMARY),
     categories: categoriesOf(r.description),
   };
 }
@@ -173,9 +185,12 @@ export function parseSondeurReport(r: {
 export class SondeurSafety {
   /** Signalements qui comptent : une réponse refusée n'a jamais été montrée. */
   readonly reports: SondeurReport[];
+  /** Réponses refusées : elles ne cachent rien, mais une menace retient la messagerie. */
+  private readonly refusals: SondeurReport[];
 
   constructor(all: SondeurReport[]) {
     this.reports = all.filter((r) => !r.refused);
+    this.refusals = all.filter((r) => r.refused);
   }
 
   private forAnswer(authorId: string, question: string, answer: string) {
@@ -262,8 +277,13 @@ export class SondeurSafety {
    * parcours est alors clos par la modération).
    */
   get holds(): boolean {
-    return this.reports.some(
-      (r) => r.status !== 'rejete' && holdsCategories(r.categories),
+    return (
+      this.reports.some(
+        (r) => r.status !== 'rejete' && holdsCategories(r.categories),
+      ) ||
+      this.refusals.some(
+        (r) => r.status !== 'rejete' && refusalHolds(r.categories),
+      )
     );
   }
 }
@@ -374,9 +394,11 @@ export class JourneyInsightsService {
   }
 
   /**
-   * Réponse refusée par la modération IA (insulte, proposition sexuelle,
-   * contact) : jamais enregistrée ni montrée, donc signalée pour trace sans
-   * retenir la messagerie.
+   * Réponse refusée par la modération (insulte, proposition sexuelle,
+   * coordonnées) : jamais enregistrée ni montrée, mais signalée pour trace,
+   * avec les dangers que le code y a vus. Sans danger, elle ne retient pas la
+   * messagerie ; avec une menace ou un contrôle, si, jusqu'à la décision de
+   * l'équipe, et l'auteur reçoit les ressources d'aide.
    */
   async reportRefusal(
     journeyId: string,
@@ -385,16 +407,17 @@ export class JourneyInsightsService {
     question: string,
     answer: string,
     reason: string,
+    danger: DangerCategory[] = [],
   ): Promise<void> {
     await this.fileReport(
       journeyId,
       day,
       authorId,
-      ['autre'],
-      `Réponse refusée par la modération IA (${reason}). Elle n'a pas été enregistrée ; le membre a pu la reformuler. À vérifier.`,
+      danger.length ? danger : ['autre'],
+      `Réponse refusée par la modération (${reason}). Elle n'a pas été enregistrée ; le membre a pu la reformuler. À vérifier.`,
       [`« ${question} » → ${answer.slice(0, 500)}`],
       `refus ${answerFingerprint(question, answer)}`,
-      false,
+      danger.length > 0,
     );
   }
 
@@ -482,9 +505,10 @@ export class JourneyInsightsService {
     }>,
     safety: SondeurSafety,
   ): Promise<void> {
+    // Seules les réponses encore « en attente de classement » sont relues :
+    // un refus classé « autre » attend l'équipe, pas l'IA.
     const pending = safety.reports.filter(
-      (r) =>
-        r.status === 'en_attente' && r.answer && r.categories.includes('autre'),
+      (r) => r.status === 'en_attente' && r.answer && r.unclassified,
     );
     if (pending.length === 0) return;
     const last = JourneyInsightsService.retries.get(journeyId) ?? 0;

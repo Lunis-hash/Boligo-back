@@ -1133,15 +1133,15 @@ ${quoteForPrompt(content)}
 
 1. BLOQUE seulement : une insulte adressée à l'autre membre, une proposition sexuelle explicite, un lien ou un moyen de contact.
 2. Ne bloque JAMAIS (renvoie "allowed": true) : le récit d'une violence subie, même avec les mots exacts de l'agresseur ; une limite face à la violence ; une réponse qui évoque une violence exercée, une menace, un contrôle, une détresse ou une demande d'argent, car elle doit être enregistrée pour que l'équipe de modération la voie.
-3. Classe dans "danger" ce que la réponse rapporte d'une situation réelle, passée ou présente, de celui qui écrit, dans n'importe quelle langue ou registre (français, anglais, créole, nouchi, camfranglais, SMS) :
-- "violence_subie" : celui qui écrit a subi, ou subit, de la part d'un partenaire, d'un ex ou d'un proche : coups, strangulation, violences sexuelles, humiliations répétées, menaces (de mort, de blessure, d'enlever les enfants) ou contrôle (téléphone fouillé, argent ou papiers confisqués, interdiction de travailler, de sortir ou de voir ses proches). C'est une confidence de victime, jamais classée "menace" ni "controle" ;
+3. Classe dans "danger" ce que la réponse rapporte d'une situation réelle, passée ou présente, ou d'une intention déclarée de celui qui écrit, dans n'importe quelle langue ou registre (français, anglais, créole, nouchi, camfranglais, SMS) :
+- "violence_subie" : celui qui écrit a subi, ou subit, de la part d'un partenaire, d'un ex ou d'un proche : coups, strangulation, violences sexuelles, humiliations répétées, menaces (de mort, de blessure, d'enlever les enfants) ou contrôle (téléphone fouillé, argent ou papiers confisqués, interdiction de travailler, de sortir ou de voir ses proches). C'est une confidence de victime, jamais classée "menace" ni "controle", même quand elle cite entre guillemets les mots de l'agresseur (« si tu pars, je te tue ») ;
 - "violence_exercee" : celui qui écrit a frappé, ou pourrait frapper, un partenaire, ou l'a forcé (ou le forcerait) à des rapports sexuels ;
 - "menace" : celui qui écrit menace, ou laisse entendre qu'il menacerait, l'autre membre ou un partenaire (mort, blessure, vengeance, enlever les enfants, diffuser des images intimes, se faire du mal pour retenir l'autre) ;
 - "controle" : celui qui écrit contrôle, ou compte contrôler, un partenaire (téléphone, localisation, argent, papiers, sorties, proches, permission exigée) ;
 - "detresse" : idées de mort, envie de disparaître, désespoir ;
 - "argent" : une demande d'argent, de crédit ou de transfert adressée à l'autre membre ;
 - "mineur" : un âge de moins de 18 ans, même dit indirectement (classe de collège ou de lycée, année de naissance).
-N'y mets PAS : une limite posée (« s'il levait la main sur moi, je partirais »), une opinion générale (« frapper sa femme est une honte »), un idiome (« ce qui m'a frappé »), un souvenir d'enfance de punition corporelle, un engagement associatif contre les violences, un modèle de couple choisi par les deux (« mon mari gère notre budget, ça me convient »).
+N'y mets PAS : une limite posée (« s'il levait la main sur moi, je partirais »), une opinion générale (« frapper sa femme est une honte »), un idiome (« ce qui m'a frappé »), un souvenir d'enfance de punition corporelle, un engagement associatif ou un métier au service des victimes, un modèle de couple choisi par les deux (« mon mari gère notre budget, ça me convient »), sauf si celui qui écrit l'impose à l'autre (« ma femme ne sortira pas sans ma permission » : "controle").
 
 Retourne UNIQUEMENT un JSON:
 {"allowed": true, "danger": []} ou {"allowed": false, "reason": "motif court en français", "category": "sexual"|"harassment"|"spam", "danger": []}
