@@ -12,12 +12,8 @@ import { moderateMessageLocally, maskProfanityForDisplay } from '../moderation/c
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
-import { QUESTIONS_BANK, BankQuestion } from './questions.bank';
-import {
-  assignDaysSevenPerDay,
-  bankToPayload,
-  HarmonyQuestionPayload,
-} from './harmony-question.types';
+import { QUESTIONS_BANK } from './questions.bank';
+import { HarmonyQuestionPayload } from './harmony-question.types';
 import { buildDivergenceReport, collectRawAnswers, THEMES, THEME_LIST, Theme } from '../matching/divergence.engine';
 import {
   AiSondeurQuestion,
@@ -70,9 +66,16 @@ export function describeCoupleContext(
           age--;
         if (age >= 18 && age < 120) parts.push(`${age} ans`);
       }
-      const city = m.city?.trim().slice(0, 60);
+      const city = m.city
+        ?.replace(/[\n\r«»‹›"]/g, ' ')
+        .trim()
+        .slice(0, 60);
       if (city) parts.push(`vit à ${city}`);
-      return parts.length ? `- ${m.firstName} : ${parts.join(', ')}` : '';
+      const name = m.firstName
+        .replace(/[\n\r«»‹›"]/g, ' ')
+        .trim()
+        .slice(0, 40);
+      return parts.length ? `- ${name} : ${parts.join(', ')}` : '';
     })
     .filter(Boolean)
     .join('\n');
@@ -421,74 +424,6 @@ export class JourneyService {
     return Array.from(texts);
   }
 
-  private filterFreshPayloads(
-    payloads: HarmonyQuestionPayload[],
-    usedTexts: string[],
-  ): HarmonyQuestionPayload[] {
-    const usedKeys = new Set(usedTexts.map((t) => this.normalizeQuestionKey(t)));
-    const seen = new Set<string>();
-    return payloads.filter((p) => {
-      const key = this.normalizeQuestionKey(p.text);
-      if (usedKeys.has(key) || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  private async buildAiPayloads(
-    mapA: any,
-    mapB: any,
-    avoidTexts: string[],
-  ): Promise<HarmonyQuestionPayload[] | null> {
-    let payloads = await this.aiService.generatePersonalizedHarmonyQuestions(
-      mapA,
-      mapB,
-      avoidTexts,
-    );
-
-    if (payloads?.length) {
-      payloads = assignDaysSevenPerDay(payloads);
-      payloads = this.filterFreshPayloads(payloads, avoidTexts);
-    }
-
-    if (payloads && payloads.length >= 21) {
-      return payloads.slice(0, 21);
-    }
-
-    const usedKeys = new Set(avoidTexts.map((t) => this.normalizeQuestionKey(t)));
-    const excludeIds = QUESTIONS_BANK.filter((q) =>
-      usedKeys.has(this.normalizeQuestionKey(q.text)),
-    ).map((q) => q.id);
-
-    const selectedIds = await this.aiService.selectHarmonyQuestions(
-      mapA,
-      mapB,
-      QUESTIONS_BANK,
-      excludeIds,
-    );
-    const fromBank: BankQuestion[] = selectedIds
-      ? selectedIds
-          .map((id) => QUESTIONS_BANK.find((q) => q.id === id))
-          .filter((q): q is BankQuestion => !!q)
-      : [];
-
-    const padded = this.padBankQuestions(fromBank, excludeIds);
-    payloads = assignDaysSevenPerDay(
-      padded.map((q, i) => bankToPayload(q, Math.floor(i / 7) + 1)),
-    );
-    payloads = this.filterFreshPayloads(payloads, avoidTexts);
-
-    return payloads.length >= 21 ? payloads.slice(0, 21) : null;
-  }
-
-  private buildBankPayloads(excludeIds: string[] = []): HarmonyQuestionPayload[] {
-    const pool = QUESTIONS_BANK.filter((q) => !excludeIds.includes(q.id));
-    const picked = this.padBankQuestions(pool.slice(0, 42), excludeIds);
-    return assignDaysSevenPerDay(
-      picked.map((q, i) => bankToPayload(q, Math.floor(i / 7) + 1)),
-    );
-  }
-
   private async generateHarmonyQuestions(journeyId: string) {
     const existing = await this.prisma.harmonyQuestion.count({ where: { journeyId } });
     if (existing > 0) return;
@@ -518,7 +453,16 @@ export class JourneyService {
       collectRawAnswers(interviewA?.responses),
       collectRawAnswers(interviewB?.responses),
     );
-    const firstNames: [string, string] = [journey.userA.firstName, journey.userB.firstName];
+    // Prénoms écrits par les membres : courts, sur une ligne, sans guillemets
+    // (ils entrent dans les consignes de l'IA).
+    const firstNames = [journey.userA.firstName, journey.userB.firstName].map(
+      (n) =>
+        n
+          .replace(/[\n\r«»‹›"]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 40),
+    ) as [string, string];
     const history = await this.getMembersPreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
 
     // 2. Couche IA des parcours payés : deux propositions par créneau, écrites
@@ -551,20 +495,29 @@ export class JourneyService {
           !safetyThemes.has(q.themeKey as Theme) &&
           isWellFormedQuestion(q.text),
       );
-      // 2 bis. Relecture par un second modèle : les questions refusées sont
-      //    écartées ; dans chaque créneau, la meilleure passe en premier.
-      const review = inGrid.length
-        ? await this.aiService.reviewSondeurQuestions(
+      // 2 bis. Relecture jour par jour, par un modèle d'une autre famille que
+      //    le rédacteur de ce jour : seules les questions explicitement
+      //    acceptées sont gardées ; dans chaque créneau, la meilleure d'abord.
+      const couple = describeCoupleContext([journey.userA, journey.userB]);
+      const days = [1, 2, 3]
+        .map(
+          (d) => `jour ${d} = ${DAY_ANGLES[d].label} (${DAY_ANGLES[d].intent})`,
+        )
+        .join(' ; ');
+      const reviewed = await Promise.all(
+        [1, 2, 3].map(async (day) => {
+          const ofDay = inGrid.filter((q) => q.day === day);
+          if (ofDay.length === 0) return [];
+          const review = await this.aiService.reviewSondeurQuestions(
             journeyId,
-            inGrid,
+            ofDay,
             history,
-            drafted?.model,
-            analysis,
-          )
-        : null;
-      // Jamais de question de l'IA servie sans relecture.
-      aiQuestions = review
-        ? inGrid
+            ofDay[0].writer ?? drafted?.model,
+            { analysis, couple, days },
+          );
+          // Jamais de question de l'IA servie sans relecture complète.
+          if (!review) return [];
+          return ofDay
             .map((q, i) => ({ q, i }))
             .filter(({ i }) => !review.rejected.has(i))
             .sort(
@@ -572,14 +525,16 @@ export class JourneyService {
                 Number(review.preferred.has(y.i)) -
                 Number(review.preferred.has(x.i)),
             )
-            .map(({ q }) => q)
-        : [];
+            .map(({ q }) => ({ ...q, reviewer: review.model }));
+        }),
+      );
+      aiQuestions = reviewed.flat();
       // L'IA passe devant les gabarits si elle couvre au moins les deux tiers
       // des créneaux qui lui sont ouverts.
       const covered = new Set(aiQuestions.map((q) => `${q.day}|${q.themeKey}`))
         .size;
       const open = 3 * (THEME_LIST.length - safetyThemes.size);
-      preferAi = !!review && open > 0 && covered >= Math.ceil((2 * open) / 3);
+      preferAi = open > 0 && covered >= Math.ceil((2 * open) / 3);
     }
 
     // 3. Assemblage : toujours 21 (3 × 7). Questions de l'IA relues en premier ;
@@ -598,25 +553,25 @@ export class JourneyService {
     await this.persistHarmonyQuestions(journeyId, questions);
   }
 
-  private padBankQuestions(selected: BankQuestion[], excludeIds: string[] = []): BankQuestion[] {
-    const result = [...selected];
-    const pool = QUESTIONS_BANK.filter((q) => !excludeIds.includes(q.id));
-    for (const d of pool) {
-      if (result.length >= 21) break;
-      if (!result.find((s) => s.id === d.id)) result.push(d);
-    }
-    return result.slice(0, 21);
-  }
-
   private async persistHarmonyQuestions(
     journeyId: string,
-    payloads: HarmonyQuestionPayload[],
+    payloads: Array<HarmonyQuestionPayload & { source?: string }>,
   ) {
     const seen = new Set<string>();
     for (const q of payloads) {
       const key = this.normalizeQuestionKey(q.text);
       if (seen.has(key)) continue;
       seen.add(key);
+      // Traçabilité (jamais montrée aux membres) : origine, méthode, modèles.
+      const meta = Object.fromEntries(
+        Object.entries({
+          source: q.source,
+          method: q.method,
+          target: q.target,
+          writer: q.writer,
+          reviewer: q.reviewer,
+        }).filter(([, v]) => typeof v === 'string' && v.length > 0),
+      );
       await this.prisma.harmonyQuestion.create({
         data: {
           journeyId,
@@ -625,23 +580,11 @@ export class JourneyService {
           emoji: q.emoji,
           questionText: q.text,
           options: q.options,
+          ...(Object.keys(meta).length ? { meta } : {}),
         },
       });
     }
     console.log(`✅ [Journey] ${payloads.length} questions Sondeur enregistrées pour ${journeyId}`);
-  }
-
-  private getDefaultQuestions(): BankQuestion[] {
-    return [...QUESTIONS_BANK].slice(0, 21);
-  }
-
-  private async generateFallbackQuestions(journeyId: string) {
-    const payloads = assignDaysSevenPerDay(
-      this.getDefaultQuestions().map((q, i) =>
-        bankToPayload(q, Math.floor(i / 7) + 1),
-      ),
-    );
-    await this.persistHarmonyQuestions(journeyId, payloads);
   }
 
   /** Jour calendaire courant d'un parcours (1..3), même règle que getStatus(). */

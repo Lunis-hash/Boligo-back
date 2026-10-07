@@ -17,6 +17,7 @@ import {
   answeredItems,
   dayComplete,
   dayReadingPrompt,
+  hasDangerSignal,
   fidelityPrompt,
   followUpPrompt,
   itemsBlock,
@@ -147,6 +148,12 @@ export class JourneyInsightsService {
         userAId,
         userBId,
       );
+      // Signal de danger (violence, menace, détresse, demande d'argent) : l'IA
+      // ne commente pas cette journée, la modération est prévenue.
+      if (await this.handleDanger(journeyId, day, items, [userAId, userBId])) {
+        await this.save(journeyId, ruleDayReading(day));
+        continue;
+      }
       const { system, prompt } = dayReadingPrompt(day, items, names);
       const written = await this.ai.journeyCompletion(
         journeyId,
@@ -191,6 +198,15 @@ export class JourneyInsightsService {
     )
       return;
     const all = answeredItems(qs, userAId, userBId);
+    if (
+      await this.handleDanger(journeyId, REVIEW_DAY, all, [userAId, userBId])
+    ) {
+      await this.save(
+        journeyId,
+        ruleReview(await this.interviewReport(userAId, userBId)),
+      );
+      return;
+    }
     const { system, prompt } = reviewPrompt(all, names);
     const written = await this.ai.journeyCompletion(
       journeyId,
@@ -207,6 +223,46 @@ export class JourneyInsightsService {
       return;
     }
     await this.save(journeyId, review);
+  }
+
+  /**
+   * Réponse qui évoque une violence, une menace, une détresse ou une demande
+   * d'argent : un signalement est adressé à la modération (une fois par
+   * journée et par membre). Renvoie true si la journée doit rester sans IA.
+   */
+  private async handleDanger(
+    journeyId: string,
+    day: number,
+    items: AnsweredItem[],
+    members: [string, string],
+  ): Promise<boolean> {
+    let found = false;
+    for (const [k, authorId] of members.entries()) {
+      const flagged = items.filter((it) => hasDangerSignal(it.answers[k]));
+      if (flagged.length === 0) continue;
+      found = true;
+      const tag = `Signal automatique BOLIGO · Sondeur · parcours ${journeyId} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`}`;
+      const already = await this.prisma.report.findFirst({
+        where: { reportedId: authorId, description: { startsWith: tag } },
+        select: { id: true },
+      });
+      if (already) continue;
+      const excerpt = flagged
+        .map((it) => `« ${it.question} » → ${it.answers[k].slice(0, 500)}`)
+        .join('\n');
+      await this.prisma.report.create({
+        data: {
+          reporterId: authorId,
+          reportedId: authorId,
+          reason: 'autre',
+          description: `${tag}\nUne réponse évoque peut-être une violence, une menace, une détresse ou une demande d'argent. À vérifier par la modération.\n${excerpt}`,
+        },
+      });
+      this.logger.warn(
+        `Parcours ${journeyId} : signal de danger dans une réponse, modération prévenue.`,
+      );
+    }
+    return found;
   }
 
   /** Le relecteur indépendant confirme-t-il que la lecture n'invente rien ? */
@@ -285,7 +341,10 @@ export class JourneyInsightsService {
       })),
       askedTexts,
       written.model,
-      itemsBlock(items, names),
+      {
+        analysis: itemsBlock(items, names),
+        days: `jour ${day + 1}, question d'approfondissement`,
+      },
     );
     if (!review) return null;
     const accepted = candidates
@@ -296,7 +355,11 @@ export class JourneyInsightsService {
           Number(review.preferred.has(y.i)) - Number(review.preferred.has(x.i)),
       );
     for (const { c } of accepted) {
-      const placed = await this.placeFollowUp(journeyId, day + 1, c);
+      const placed = await this.placeFollowUp(journeyId, day + 1, {
+        ...c,
+        writer: written.model,
+        reviewer: review.model,
+      });
       if (placed) return placed;
     }
     return null;
@@ -311,7 +374,7 @@ export class JourneyInsightsService {
   private async placeFollowUp(
     journeyId: string,
     day: number,
-    proposal: FollowUpProposal,
+    proposal: FollowUpProposal & { writer?: string; reviewer?: string },
   ): Promise<string | null> {
     const all = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
@@ -340,6 +403,16 @@ export class JourneyInsightsService {
         questionText: proposal.text,
         options: proposal.options,
         followUp: true,
+        // Traçabilité (jamais montrée aux membres).
+        meta: Object.fromEntries(
+          Object.entries({
+            source: 'suivi',
+            method: proposal.method,
+            target: proposal.target,
+            writer: proposal.writer,
+            reviewer: proposal.reviewer,
+          }).filter(([, v]) => typeof v === 'string' && v.length > 0),
+        ),
       },
     });
     return updated.count === 1 ? target.id : null;

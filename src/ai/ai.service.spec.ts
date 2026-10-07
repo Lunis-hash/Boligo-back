@@ -110,30 +110,6 @@ describe('AiService (5 Intelligences Harmonie)', () => {
       expect(result.maturityScore).toBeGreaterThan(0);
     });
 
-    it('doit générer 6 questions Hard-Mode personnalisées pour un couple', async () => {
-      const mockQuestions = [
-        { day: 1, theme: 'Lignes rouges', emoji: '🚩', text: 'Si désaccord majeur...', options: ['A', 'B', 'C', 'Autre...'] },
-        { day: 1, theme: 'Lignes rouges', emoji: '🚩', text: 'Face au doute...', options: ['A', 'B', 'C', 'Autre...'] },
-        { day: 2, theme: 'Valeurs profondes', emoji: '💎', text: 'Gestion de l\'argent...', options: ['A', 'B', 'C', 'Autre...'] },
-        { day: 2, theme: 'Valeurs profondes', emoji: '💎', text: 'Rapport famille...', options: ['A', 'B', 'C', 'Autre...'] },
-        { day: 3, theme: 'Futur & intimité', emoji: '🌱', text: 'Rythme de vie...', options: ['A', 'B', 'C', 'Autre...'] },
-        { day: 3, theme: 'Futur & intimité', emoji: '🌱', text: 'Intimité émotionnelle...', options: ['A', 'B', 'C', 'Autre...'] },
-      ];
-
-      (openRouterService.executeAgentPrompt as jest.Mock).mockResolvedValue({
-        content: JSON.stringify(mockQuestions),
-        modelUsed: 'openrouter/free',
-      });
-
-      const questions = await service.generatePersonalizedHarmonyQuestions(
-        { synthesis: 'Profil A' },
-        { synthesis: 'Profil B' },
-      );
-
-      expect(questions).not.toBeNull();
-      expect(questions?.length).toBe(6);
-      expect(questions?.[0].theme).toBe('Lignes rouges');
-    });
   });
 
   // =========================================================================

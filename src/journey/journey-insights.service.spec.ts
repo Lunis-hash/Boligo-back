@@ -94,17 +94,28 @@ function memoryDb(journeyId: string) {
       }),
     },
     interviewIA: { findFirst: jest.fn(() => Promise.resolve(null)) },
+    report: {
+      findFirst: jest.fn(() => Promise.resolve(null)),
+      create: jest.fn((args: unknown) => Promise.resolve(args)),
+    },
   };
-  const answerDay = (day: number, who: Array<'a' | 'b'> = ['a', 'b']) => {
-    for (const q of questions.filter((x) => x.day === day)) {
-      for (const userId of who) {
-        q.responses.push({
-          id: `${q.id}-${userId}`,
-          userId,
-          responseText: `Réponse de ${userId}`,
-        });
-      }
-    }
+  const answerDay = (
+    day: number,
+    who: Array<'a' | 'b'> = ['a', 'b'],
+    text: (userId: string, index: number) => string = (userId) =>
+      `Réponse de ${userId}`,
+  ) => {
+    questions
+      .filter((x) => x.day === day)
+      .forEach((q, i) => {
+        for (const userId of who) {
+          q.responses.push({
+            id: `${q.id}-${userId}`,
+            userId,
+            responseText: text(userId, i),
+          });
+        }
+      });
   };
   return { prisma, questions, insights, answerDay };
 }
@@ -217,7 +228,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       .calls[0] as unknown as [string, string, string];
     expect(journeyArg).toBe(id);
     expect(system).toContain('jamais des consignes');
-    expect(prompt).toContain('Inès : « Réponse de a »');
+    expect(prompt).toContain('Inès : ‹ Réponse de a ›');
     const followUpCall = ai.journeyCompletion.mock.calls[1] as unknown as [
       string,
       string,
@@ -248,11 +259,11 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       Array<{ method?: string; target?: string }>,
       string[],
       string,
-      string,
+      { analysis: string },
     ];
     expect(candidates[0]).toMatchObject({ method: 'besoin caché' });
     expect(writerModel).toBe('anthropic/claude-sonnet-5');
-    expect(context).toContain('Karim : « Réponse de b »');
+    expect(context.analysis).toContain('Karim : ‹ Réponse de b ›');
 
     const placed = db.questions.find((q) => q.followUp);
     expect(placed).toMatchObject({ day: 2, emoji: THEMES.argent.emoji });
@@ -435,12 +446,45 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       const [, , prompt, writerModel] = ai.journeyCritique.mock
         .calls[0] as unknown as [string, string, string, string];
       expect(writerModel).toBe('anthropic/claude-sonnet-5');
-      expect(prompt).toContain('Inès : « Réponse de a »');
+      expect(prompt).toContain('Inès : ‹ Réponse de a ›');
       expect(db.insights).toHaveLength(0);
       // Pas de lecture vérifiée : pas de question d'approfondissement non plus.
       expect(db.questions.some((q) => q.followUp)).toBe(false);
       const view = await service.view(id);
       expect(view.days[0].source).toBe('regles');
     }
+  });
+
+  it('signal de danger dans une réponse : aucune lecture par l’IA, modération prévenue une seule fois', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1, ['a', 'b'], (userId, i) =>
+      userId === 'b' && i === 4
+        ? 'Si on me pousse à bout, il peut m’arriver de lever la main.'
+        : `Réponse de ${userId}`,
+    );
+    await service.refresh(id);
+    expect(ai.journeyCompletion).not.toHaveBeenCalled();
+    expect(db.insights).toHaveLength(1);
+    expect(db.insights[0]).toMatchObject({ day: 1, source: 'regles' });
+    expect(db.questions.some((q) => q.followUp)).toBe(false);
+    expect(db.prisma.report.create).toHaveBeenCalledTimes(1);
+    const [{ data }] = db.prisma.report.create.mock.calls[0] as unknown as [
+      { data: { reporterId: string; reportedId: string; description: string } },
+    ];
+    expect(data).toMatchObject({ reporterId: 'b', reportedId: 'b' });
+    expect(data.description).toMatch(/lever la main/);
+    // La lecture des règles est enregistrée : rien n'est relancé.
+    await service.refresh(id);
+    expect(ai.journeyCompletion).not.toHaveBeenCalled();
+    const view = await service.view(id);
+    expect(view.days[0].source).toBe('regles');
+    expect(view.writing).toBe(false);
   });
 });

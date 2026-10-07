@@ -611,7 +611,7 @@ export default function MatchesScreen() {
             ) : null}
             <Text style={styles.questionText}>{currentQ?.question}</Text>
             <Text style={styles.questionHint}>
-              Répondez sincèrement : {firstMatch.name} répond de son côté, sans voir votre réponse.
+              Répondez sincèrement : votre réponse sera montrée à {firstMatch.name} après la sienne, et la lecture commune pourra en citer quelques mots.
             </Text>
           </View>
 

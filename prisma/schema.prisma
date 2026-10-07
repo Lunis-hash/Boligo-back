@@ -248,6 +248,9 @@ model HarmonyQuestion {
   sentAt       DateTime          @default(now())
   /// Question d'approfondissement écrite par l'IA après la lecture de la journée précédente.
   followUp     Boolean           @default(false)
+  /// Origine de la question (gabarit, divergence, IA, suivi), méthode, cible,
+  /// rédacteur et relecteur : jamais montrés aux membres, pour suivre la qualité.
+  meta         Json?
   responses    HarmonyResponse[]
 
   @@index([journeyId])

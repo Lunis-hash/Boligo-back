@@ -332,7 +332,7 @@ describe('AiService — modèle Groq retiré', () => {
       const g = fakeGroq(
         models.concat('llama-3.3-70b-versatile'),
         () =>
-          'Verdict : {"rejets": [{"n": 2, "raison": "orientée"}, {"n": 9, "raison": "hors liste"}]}',
+          'Verdict : {"verdicts": [{"n": 1, "ok": true}, {"n": 2, "ok": false, "regle": 1, "raison": "orientée"}, {"n": 3, "ok": true}, {"n": 9, "ok": false}]}',
       );
       const budget = budgetFor(true);
       const review = await journeyService(
@@ -368,7 +368,7 @@ describe('AiService — modèle Groq retiré', () => {
       const g = fakeGroq(
         models.concat('llama-3.3-70b-versatile'),
         () =>
-          '{"rejets": [{"n": 1, "regle": 8, "raison": "fermée"}], "meilleures": [1, 3, 7]}',
+          '{"verdicts": [{"n": 1, "ok": false, "regle": 8, "raison": "fermée"}, {"n": 2, "ok": true}, {"n": 3, "ok": true}], "meilleures": [1, 3, 7]}',
       );
       const review = await journeyService(
         g.client,
@@ -384,7 +384,7 @@ describe('AiService — modèle Groq retiré', () => {
     it('si le rédacteur est Llama, le relecteur en change', async () => {
       const g = fakeGroq(
         models.concat('llama-3.3-70b-versatile'),
-        () => '{"rejets": []}',
+        () => '{"verdicts": [{"n": 1, "ok": true}]}',
       );
       await journeyService(g.client, budgetFor(true)).reviewSondeurQuestions(
         'j7',
@@ -411,6 +411,24 @@ describe('AiService — modèle Groq retiré', () => {
           budgetFor(true),
         ).reviewSondeurQuestions('j9', draft(2)),
       ).toBeNull();
+    });
+
+    it('relecteur qui ne juge pas toutes les questions : rien n’est servi par défaut', async () => {
+      for (const answer of [
+        '{"rejets": []}',
+        '{"verdicts": [{"n": 1, "ok": true}]}',
+      ]) {
+        const g = fakeGroq(
+          models.concat('llama-3.3-70b-versatile'),
+          () => answer,
+        );
+        expect(
+          await journeyService(
+            g.client,
+            budgetFor(true),
+          ).reviewSondeurQuestions('j10', draft(3), [], 'openai/gpt-oss-120b'),
+        ).toBeNull();
+      }
     });
   });
 });

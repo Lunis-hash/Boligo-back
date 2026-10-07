@@ -20,6 +20,7 @@ import {
   READING_LENS,
   hasClinicalJargon,
   hasInterpretation,
+  hasReadingInterpretation,
   isWellFormedQuestion,
 } from './clinical-lens';
 import { brandBoligo } from '../portrait/portrait.writer';
@@ -191,7 +192,19 @@ const THEME_KEYS = THEME_LIST.map((t) => `${t} (${THEMES[t].label})`).join(
 
 /** Réponse par laquelle un membre garde un sujet pour la rencontre. */
 const RESERVED =
-  /vive voix|réservé à la rencontre|en parler (?:en personne|lors de (?:la|notre) rencontre)/i;
+  /vive voix|réservé à la rencontre|en parler (?:en personne|lors de (?:la|notre) rencontre|quand (?:on|nous) (?:se verra|nous verrons|se rencontrera))|on en parlera (?:plus tard|en vrai|quand)|préf[èe]re ne pas répondre|pas ici/i;
+
+/**
+ * Signal de danger dans une réponse libre : violence subie ou exercée,
+ * menace, détresse, minorité, demande d'argent. L'IA ne lit pas une telle
+ * journée et la modération est prévenue.
+ */
+const DANGER =
+  /(?<!\p{L})(?:lever la main|levé la main|(?:il|elle|on) (?:me )?(?:frappe|frappait|bat|battait|menace|menaçait)|m['’]a (?:frappée?|giflée?|battue?|menacée?|étranglée?|violée?|forcée?)|me (?:frappait|battait|menaçait|forçait)|(?:je|j['’]ai) (?:déjà )?(?:frappé|giflé|cogné)|je (?:peux|pourrais) (?:frapper|gifler|cogner)|étrangl|je (?:te |vous |le |la )?tuerai|menaces? de mort|suicid|plus envie de vivre|en finir avec (?:la vie|tout)|me faire du mal|j['’]ai 1[0-7] ans|western union|mandat cash|envoie[sz]?[- ]moi de l['’]argent|prête[sz]?[- ]moi de l['’]argent)/iu;
+
+export function hasDangerSignal(text: string): boolean {
+  return DANGER.test(text);
+}
 const RESERVED_MARK = '[réservé à la rencontre]';
 
 export function isReservedAnswer(answer: string): boolean {
@@ -200,25 +213,38 @@ export function isReservedAnswer(answer: string): boolean {
 
 function commonRules(names: [string, string]): string {
   return `- Appuie-toi uniquement sur ce qu'ils ont écrit : n'invente rien et ne recopie pas une réponse entière.
-- Chaque accord et chaque point à explorer porte "n" (le numéro de la question) et deux extraits recopiés mot pour mot, de 2 à 8 mots : "a" dans la réponse de ${names[0]}, "b" dans celle de ${names[1]}. Un point dont un extrait ne figure pas dans la réponse sera supprimé.
-- Une réponse vide, évasive, très courte ou ${RESERVED_MARK} n'est ni un accord ni un désaccord : elle ne sert jamais d'extrait.
+- Chaque accord et chaque point à explorer porte "n" (le numéro de la question) et deux extraits recopiés mot pour mot, de 1 à 8 mots : "a" dans la réponse de ${names[0]}, "b" dans celle de ${names[1]}. Un point dont un extrait ne figure pas dans la réponse sera supprimé.
+- Une réponse vide ou évasive n'est ni un accord ni un désaccord. Une réponse de moins de quatre mots ne sert jamais à un accord ; deux réponses courtes qui emploient le même mot vont dans les points à explorer (« même mot, sens à préciser »).
+- Une réponse ${RESERVED_MARK} ne sert jamais d'extrait.
 - Aucun jugement, aucun diagnostic, aucune étiquette psychologique, aucune prédiction sur l'avenir du couple, aucun score.
 - Pas de conseil médical, juridique ou financier ; jamais de lien, d'adresse ni de numéro.
 - Phrases complètes et courtes, adressées à eux deux (« vous »).`;
+}
+
+/** Prénom tel qu'écrit dans un prompt : court, sur une ligne, sans signe de citation. */
+function safeName(name: string): string {
+  return name
+    .replace(/[\n\r‹›«»"]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 40);
 }
 
 export function itemsBlock(
   items: AnsweredItem[],
   names: [string, string],
 ): string {
+  // Réponses entre ‹ › (jamais présents dans une réponse) : une réponse ne
+  // peut pas fermer la citation pour glisser une consigne.
   const quote = (t: string) =>
     isReservedAnswer(t)
       ? RESERVED_MARK
-      : `« ${t.replace(/\s+/g, ' ').trim()} »`;
+      : `‹ ${t.replace(/[‹›]/g, "'").replace(/\s+/g, ' ').trim()} ›`;
+  const [a, b] = names.map((n) => safeName(n));
   return items
     .map(
       (it, i) =>
-        `${i + 1}. [${it.theme}] ${it.question}\n   ${names[0]} : ${quote(it.answers[0])}\n   ${names[1]} : ${quote(it.answers[1])}`,
+        `${i + 1}. [${it.theme}] ${it.question}\n   ${a} : ${quote(it.answers[0])}\n   ${b} : ${quote(it.answers[1])}`,
     )
     .join('\n');
 }
@@ -336,8 +362,8 @@ function attributesFeeling(text: string, names: [string, string]): boolean {
     return (
       !!n &&
       new RegExp(
-        `${n}\\s+(?:semble|para[iî]t|craint|redoute|a (?:peur|besoin|du mal)|ressent|se sent|cherche à|cache|veut (?:se protéger|fuir|éviter))`,
-        'i',
+        `(?:${n}(?:\\s*,\\s*(?:lui|elle)(?:-même)?\\s*,)?\\s+(?:semble|para[iî]t|craint|redoute|a (?:peur|besoin|du mal|tendance)|ressent|se sent|cherche à|cache|aurait|veut (?:se protéger|fuir|éviter))|chez ${n})`,
+        'iu',
       ).test(text)
     );
   });
@@ -349,7 +375,10 @@ function readingText(
   names: [string, string],
 ): string | null {
   const text = cleanText(value, max);
-  return text && !EVALUATION.test(text) && !attributesFeeling(text, names)
+  return text &&
+    !EVALUATION.test(text) &&
+    !hasReadingInterpretation(text) &&
+    !attributesFeeling(text, names)
     ? text
     : null;
 }
@@ -372,8 +401,11 @@ function quoted(excerpt: unknown, answer: string): boolean {
   const a = comparable(answer);
   const words = e.split(' ').filter(Boolean).length;
   if (words === 0 || words > 12) return false;
-  // Une réponse d'un ou deux mots peut être citée entière.
-  return ` ${a} `.includes(` ${e} `) && (words >= 2 || a === e);
+  // Un seul mot ne suffit que dans une réponse courte (trois mots au plus),
+  // pour relever un même mot employé des deux côtés.
+  return (
+    ` ${a} `.includes(` ${e} `) && (words >= 2 || a.split(' ').length <= 3)
+  );
 }
 
 /**
@@ -384,6 +416,8 @@ function anchoredPoints(
   value: unknown,
   items: AnsweredItem[],
   names: [string, string],
+  /** Accord : chaque réponse doit compter au moins 4 mots. */
+  agreement = false,
 ): SondeurPoint[] {
   if (!Array.isArray(value)) return [];
   const points: SondeurPoint[] = [];
@@ -395,6 +429,9 @@ function anchoredPoints(
     if (!item) continue;
     if (!quoted(o.a, item.answers[0]) || !quoted(o.b, item.answers[1]))
       continue;
+    const words = (t: string) =>
+      comparable(t).split(' ').filter(Boolean).length;
+    if (agreement && item.answers.some((a) => words(a) < 4)) continue;
     const text = readingText(o.text, 240, names);
     if (text) points.push({ theme: item.theme, text });
     if (points.length === 3) break;
@@ -422,7 +459,8 @@ function openQuestion(
   names: [string, string],
 ): string | null {
   const text = readingText(value, max, names);
-  return text && text.endsWith('?') ? text : null;
+  // Même contrôle que pour une question du Sondeur : ouverte, sans intrusion.
+  return text && text.length <= max && isWellFormedQuestion(text) ? text : null;
 }
 
 /** Thèmes qu'un membre a gardés pour la rencontre. */
@@ -452,7 +490,9 @@ export function parseDayReading(
 ): SondeurReading | null {
   const o = parseJsonObject(raw);
   if (!o) return null;
-  const together = anchoredPoints(o.together, items, names).map((p) => p.text);
+  const together = anchoredPoints(o.together, items, names, true).map(
+    (p) => p.text,
+  );
   const toDiscuss = anchoredPoints(o.toDiscuss, items, names);
   if (together.length + toDiscuss.length === 0) return null;
   const fallback = ruleDayReading(day);
@@ -563,7 +603,9 @@ Refuse la lecture si une seule ligne :
 5. présente comme un accord deux réponses qui emploient le même mot sans décrire la même chose concrète ;
 6. évalue leur compatibilité, prédit l'avenir du couple ou donne un score ;
 7. juge, moralise ou prend parti pour l'un des membres ;
-8. interprète une réponse ${RESERVED_MARK}, ou présente la violence, les insultes, les menaces ou le contrôle comme négociables.
+8. interprète une réponse ${RESERVED_MARK}, ou présente la violence, les insultes, les menaces ou le contrôle comme négociables ;
+9. propose une question fermée, intrusive (montant, employeur, papiers, enfants, ex), gênante à montrer, ou qui invite à un compromis sur un point non négociable ;
+10. propose un compromis ou un terrain d'entente sur un point non négociable (foi exigée, conversion, enfants, polygamie, pays de vie).
 Une piste formulée comme une question posée aux deux (« qu'est-ce qui… ? ») est acceptable si elle part des réponses.
 
 Retourne UNIQUEMENT ce JSON : {"fidele": true} ou {"fidele": false, "raisons": ["..."]}`;

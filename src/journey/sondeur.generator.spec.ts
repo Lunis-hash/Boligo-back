@@ -126,7 +126,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       aiFor(
         1,
         'argent',
-        'Êtes-vous plutôt anxieux quand votre compte en banque baisse en fin de mois ?',
+        'Êtes-vous plutôt évitant quand votre compte en banque baisse en fin de mois ?',
       ),
       aiFor(
         1,
@@ -157,7 +157,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(famille?.source).toBe('ia');
     expect(famille?.text).toMatch(/Qui, dans votre famille/);
     // Jargon clinique : écartée. Redite d'une question déjà posée : écartée.
-    expect(reviewed.some((q) => /anxieux/.test(q.text))).toBe(false);
+    expect(reviewed.some((q) => /évitant/.test(q.text))).toBe(false);
     expect(reviewed.some((q) => /grosse dépense commune/.test(q.text))).toBe(
       false,
     );

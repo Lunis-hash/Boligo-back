@@ -40,7 +40,8 @@ function drafts(): Draft[] {
 function setup(
   options: {
     interview?: Record<string, string>;
-    review?: { rejected: number[]; preferred: number[] } | null;
+    /** Questions refusées par le relecteur ; null : relecture impossible. */
+    reject?: ((q: Draft) => boolean) | null;
     extra?: Draft[];
   } = {},
 ) {
@@ -101,21 +102,32 @@ function setup(
   const all = [...drafts(), ...(options.extra ?? [])];
   const ai = {
     generateTargetedHarmonyQuestions: jest.fn(() =>
-      Promise.resolve({ questions: all, model: 'anthropic/claude-opus-5' }),
+      Promise.resolve({
+        questions: all.map((q) => ({
+          ...q,
+          writer: 'anthropic/claude-opus-5',
+        })),
+        model: 'anthropic/claude-opus-5',
+      }),
     ),
     reviewSondeurQuestions: jest.fn((_j: string, questions: Draft[]) =>
       Promise.resolve(
-        options.review === null
+        options.reject === null
           ? null
           : {
-              rejected: new Set(options.review?.rejected ?? []),
-              // Par défaut, le relecteur préfère la proposition « B ».
-              preferred: new Set(
-                options.review?.preferred ??
-                  questions
-                    .map((q, i) => (q.text.includes('proposition B') ? i : -1))
-                    .filter((i) => i >= 0),
+              rejected: new Set(
+                questions
+                  .map((q, i) => (options.reject?.(q) ? i : -1))
+                  .filter((i) => i >= 0),
               ),
+              // Le relecteur préfère la proposition « B ».
+              preferred: new Set(
+                questions
+                  .map((q, i) => (q.text.includes('proposition B') ? i : -1))
+                  .filter((i) => i >= 0),
+              ),
+              refusals: [],
+              model: 'openai/gpt-5.5',
             },
       ),
     ),
@@ -172,15 +184,24 @@ describe('Sondeur — couche IA des parcours payés', () => {
     };
     const { run, ai } = setup({ extra: [closed] });
     await run();
-    const sent = (
-      ai.reviewSondeurQuestions.mock.calls[0] as unknown as [string, Draft[]]
-    )[1];
+    const calls = ai.reviewSondeurQuestions.mock.calls as unknown as Array<
+      [string, Draft[], string[], string]
+    >;
+    // Une relecture par jour, par un modèle d'une autre famille que le rédacteur.
+    expect(calls).toHaveLength(3);
+    expect(calls.map(([, qs]) => new Set(qs.map((q) => q.day)).size)).toEqual([
+      1, 1, 1,
+    ]);
+    expect(
+      calls.every(([, , , writer]) => writer === 'anthropic/claude-opus-5'),
+    ).toBe(true);
+    const sent = calls.flatMap(([, qs]) => qs);
     expect(sent).toHaveLength(42);
     expect(sent.some((q) => q.text.startsWith('Accepteriez'))).toBe(false);
   });
 
   it('relecture impossible : aucune question de l’IA servie', async () => {
-    const { run, created } = setup({ review: null });
+    const { run, created } = setup({ reject: null });
     await run();
     expect(created).toHaveLength(21);
     expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
@@ -189,9 +210,12 @@ describe('Sondeur — couche IA des parcours payés', () => {
   });
 
   it('créneaux dont les deux propositions sont refusées : complétés par les gabarits', async () => {
-    // Le relecteur refuse les deux propositions de 8 créneaux sur 21.
-    const rejected = Array.from({ length: 16 }, (_, i) => i);
-    const { run, created } = setup({ review: { rejected, preferred: [] } });
+    // Le relecteur refuse les deux propositions de 8 créneaux sur 21 : tout
+    // le jour 1 et le premier thème du jour 2.
+    const { run, created } = setup({
+      reject: (q) =>
+        q.day === 1 || (q.day === 2 && q.themeKey === THEME_LIST[0]),
+    });
     await run();
     expect(created).toHaveLength(21);
     expect(

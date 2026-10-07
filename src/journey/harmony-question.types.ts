@@ -13,6 +13,9 @@ export interface HarmonyQuestionPayload {
   method?: string;
   /** Ce que la question cherche à révéler (jamais montré aux membres). */
   target?: string;
+  /** Modèle d'IA qui l'a rédigée, puis celui qui l'a relue (traçabilité). */
+  writer?: string;
+  reviewer?: string;
 }
 
 const DEFAULT_OPTIONS = [
