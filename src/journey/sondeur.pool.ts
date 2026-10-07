@@ -273,6 +273,8 @@ export const TOPIC_PHRASES: Record<string, string> = {
   M4_Q17: 'la tradition de la dot',
   M8_Q17: 'le délai avant un engagement officiel',
   M8_Q16: 'les cérémonies du mariage',
+  M0_Q14: "l'accueil des enfants de l'autre",
+  M3_Q13: "les liens que l'on garde avec son passé",
 };
 
 /**
@@ -351,7 +353,7 @@ export const TOPIC_FAMILIES: string[][] = [
   ['M6_Q16', 'M6_Q17'],
   ['M1_Q13', 'M8_Q15'],
   ['M5_Q01', 'M1_Q10'],
-  ['M0_Q05', 'M3_Q04'],
+  ['M0_Q05', 'M3_Q04', 'M0_Q14'],
   ['M4_Q03', 'M4_Q04'],
   ['M5_Q08', 'M8_Q10:B'],
   ['M8_Q01', 'M8_Q10:D'],
@@ -361,6 +363,7 @@ export const TOPIC_FAMILIES: string[][] = [
   ['M4_Q07', 'M4_Q17'],
   ['M8_Q02', 'M8_Q17'],
   ['M8_Q03', 'M8_Q16'],
+  ['M3_Q05', 'M3_Q13'],
 ];
 
 /** Le sujet et ses voisins (lui seul s'il n'a pas de famille). */
@@ -527,6 +530,8 @@ export const TOPIC_DAYS: Record<string, number[]> = {
   M4_Q17: [2, 1],
   M8_Q17: [1, 3],
   M8_Q16: [2, 3],
+  M0_Q14: [3, 2],
+  M3_Q13: [1, 2],
 };
 
 const DEFAULT_DAYS: Record<Severity, number[]> = {
@@ -670,8 +675,10 @@ export const AGREEMENT_CONTRADICTIONS: Record<
   // face à « un choix optionnel » (M8_Q03 D) ; « un engagement dans l'année »
   // face à « ouvert à voir ce qui se présente » (M8_Q01 D).
   'M8_Q11:A': { M8_Q13: ['D'] },
-  'M8_Q01:A': { M8_Q03: ['D'] },
+  'M8_Q01:A': { M8_Q03: ['D'], M8_Q16: ['D'] },
   'M8_Q02:A': { M8_Q01: ['D'] },
+  // V7.1 : mêmes démentis pour les questions remplaçantes.
+  'M8_Q17:A': { M8_Q01: ['D'] },
 };
 
 /** L'accord est démenti par un écart ou un autre accord sur le sujet voisin. */
@@ -2990,6 +2997,21 @@ export const TOPIC_DEEP: Record<
       ['Des moments à soi', 'La confiance', 'Des rituels'],
     ),
   },
+  // V7.1 — accueillir les enfants de l'autre (M0_Q14) : un point non
+  // négociable possible ; au jour 3, ce qu'il faudrait savoir avant de
+  // s'engager.
+  M0_Q14: {
+    2: q(
+      "Autour de vous, qu'est-ce qui a aidé un adulte à trouver sa place auprès des enfants de l'autre ?",
+      'exception',
+      ['Du temps', 'Des rôles clairs', 'De la patience'],
+    ),
+    3: q(
+      "Avant une vie commune, que voudriez-vous savoir de la place que l'autre souhaite donner à des enfants déjà là ?",
+      'limite',
+      ['Leur rythme', 'Le rôle de chacun', 'Le temps qu’il faudra'],
+    ),
+  },
   M0_Q05: {
     3: q(
       "Quand une vie à deux commence avec des enfants déjà là, qu'est-ce qui vous semble le plus important à protéger les premiers mois ?",
@@ -4113,6 +4135,19 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Le lieu de vie', 'La foi', 'Avoir des enfants ou non'],
     ),
   },
+  // V7.1 — accueillir les enfants de l'autre (M0_Q14).
+  M0_Q14: {
+    2: q(
+      "Qu'avez-vous appris, en grandissant ou auprès de vos proches, sur les familles où des enfants arrivent d'une autre union ?",
+      'origine',
+      ['Qu’il faut du temps', 'Que les rôles comptent', 'Que l’amour aide'],
+    ),
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous comprendre du rôle que l'autre imagine pour un beau-parent ?",
+      'limite',
+      ['Une présence', 'Une autorité partagée', 'Un rôle à construire'],
+    ),
+  },
   // Sujets du jour 3 qui n'avaient qu'une formulation propre.
   M0_Q05: {
     3: q(
@@ -4536,6 +4571,9 @@ export const DEEP_ALIASES: Record<string, string> = {
   M4_Q17: 'M4_Q07',
   M8_Q17: 'M8_Q02',
   M8_Q16: 'M8_Q03',
+  // V7.1, sujets nouveaux : les formulations d'un sujet voisin.
+  M0_Q14: 'M0_Q05',
+  M3_Q13: 'M3_Q05',
 };
 
 function deepEntry(
@@ -7214,9 +7252,30 @@ export function isDeferredAgreement(c: Convergence): boolean {
   return DEFERRED_ANSWERS.has(`${c.questionId}:${agreementKey(c) ?? ''}`);
 }
 
+/**
+ * V7.1 : accord sur une question remplaçante dont la réponse garde le sens
+ * de celle de la question remplacée (passerelle V7 → V7.1) : même phrase et
+ * mêmes relances que l'accord écrit pour la question remplacée.
+ */
+export const AGREEMENT_ALIASES: Record<string, string> = {
+  'M1_Q20:A': 'M1_Q11:A',
+  'M4_Q16:A': 'M4_Q05:A',
+  'M4_Q16:B': 'M4_Q05:B',
+  'M4_Q16:C': 'M4_Q05:D',
+  'M4_Q17:A': 'M4_Q07:A',
+  'M4_Q17:B': 'M4_Q07:A',
+  'M8_Q17:A': 'M8_Q02:A',
+  'M8_Q17:D': 'M8_Q02:D',
+  'M8_Q16:A': 'M8_Q03:B',
+  'M8_Q16:B': 'M8_Q03:A',
+  'M8_Q16:D': 'M8_Q03:D',
+};
+
 export function agreementFor(c: Convergence): Agreement {
+  const key = `${c.questionId}:${agreementKey(c) ?? ''}`;
   const found =
-    AGREEMENTS[`${c.questionId}:${agreementKey(c) ?? ''}`] ??
+    AGREEMENTS[key] ??
+    AGREEMENTS[AGREEMENT_ALIASES[key]] ??
     AGREEMENTS[c.questionId];
   // Accord sans phrase écrite pour lui : pas de question d'accord générique
   // (« vous avez répondu de la même façon sur… » dit ce que chacun a répondu

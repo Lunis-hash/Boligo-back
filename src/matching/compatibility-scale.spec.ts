@@ -24,6 +24,12 @@ function answersWith(shift: number): RawAnswers {
     M2_Q22: 'A',
     M3_Q11: 'D',
     M3_Q12: 'A',
+    // V7.1 : accueille les enfants et les liens de l'autre ; ni fusion ni
+    // coupure face aux proches.
+    M0_Q14: 'A',
+    M3_Q13: 'A',
+    M5_Q02: 'A',
+    M5_Q10: 'B',
     M6_Q03: 'A',
     M6_Q04: 'A',
     M6_Q05: 'A',
@@ -51,7 +57,7 @@ const BASE: RawAnswers = {
   M0_Q06: 'A',
   M0_Q11: 'A', // tabac : « je ne pourrais pas vivre avec »
   M1_Q18: 'A', // même religion indispensable
-  M1_Q11: 'A',
+  M1_Q20: 'A', // polygamie exclue, sans discussion
   M6_Q18: 'A',
   M8_Q12: 'A', // non négociable : les enfants
 };
@@ -95,7 +101,7 @@ describe('Échelle de compatibilité', () => {
 
   it('classe plus bas un profil qui cumule les incompatibilités déclarées', () => {
     const one = { ...BASE, M0_Q06: 'D' };
-    const three = { ...BASE, M0_Q06: 'D', M1_Q11: 'C', M6_Q04: 'C' };
+    const three = { ...BASE, M0_Q06: 'D', M1_Q20: 'C', M6_Q04: 'C' };
     expect(pct(BASE, three)).toBeLessThan(pct(BASE, one));
   });
 

@@ -29,7 +29,7 @@ const find = (a: RawAnswers, b: RawAnswers, id: string) =>
   report(a, b).divergences.filter((d) => d.questionId === id);
 
 describe('Questionnaire V6.1 : intégrité', () => {
-  it('ajoute 24 questions, toutes traduites quand elles sont encore posées (V7 : 160 questions)', () => {
+  it('ajoute 24 questions, toutes traduites quand elles sont encore posées (V7.1 : 168 questions au plus)', () => {
     expect(V61_ADDED.size).toBe(24);
     for (const id of V61_ADDED) {
       expect(QUESTION_INDEX.get(id)).toBeDefined();
@@ -40,7 +40,7 @@ describe('Questionnaire V6.1 : intégrité', () => {
       expect(en).toBeDefined();
       if (!q.scale) expect(en.options).toHaveLength(q.options.length);
     }
-    expect(QUESTIONS).toHaveLength(160);
+    expect(QUESTIONS.length).toBeLessThanOrEqual(168);
   });
 
   it('limite les signaux d’alerte à trois réponses', () => {

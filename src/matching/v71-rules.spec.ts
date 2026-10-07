@@ -5,6 +5,7 @@
  */
 import { QUESTION_INDEX } from '../interview/questions.data';
 import { QUESTIONS_EN } from '../interview/questions.en';
+import { buildRelationalProfile } from '../psychometrics/psychometrics';
 import {
   agreementFor,
   agreementKey,
@@ -372,5 +373,88 @@ describe('Sondeur : accords sur des questions retirées (V6 et V7)', () => {
     // Question actuelle : inchangé.
     const now = report({ M0_Q06: 'A' }, { M0_Q06: 'A' }).convergences[0];
     expect(agreementKey(now)).toBe('A');
+  });
+
+  it('un accord sur une question remplaçante reprend la phrase de la question remplacée, quand le sens est le même', () => {
+    const c = report({ M1_Q20: 'A' }, { M1_Q20: 'A' }).convergences[0];
+    expect(agreementFor(c).statement).toBe(
+      'Pour vous deux, une union se vit à deux, sans exception.',
+    );
+    // Sans équivalent sûr : pas de phrase d'accord.
+    const none = report({ M1_Q20: 'B' }, { M1_Q20: 'B' }).convergences[0];
+    expect(agreementFor(none).statement).toBe('');
+  });
+});
+
+describe('M5 — « tout se transmet » des deux côtés, avec deux religions ou deux cultures', () => {
+  it('Afrique musulmane face à Europe catholique : deux transmissions concurrentes, jamais un accord', () => {
+    const a = { M1_Q13: 'A', M1_Q01: 'A', M1_Q16: 'D' };
+    const b = { M1_Q13: 'A', M1_Q01: 'C', M1_Q16: 'A' };
+    const r = report(a, b);
+    expect(find(a, b, 'M1_Q13')[0]).toMatchObject({
+      severity: 'majeure',
+      shared: true,
+      label: 'Deux transmissions à concilier',
+    });
+    expect(r.convergences.some((c) => c.questionId === 'M1_Q13')).toBe(false);
+    // Même foi, origines différentes : à explorer.
+    expect(
+      severityOf({ ...a, M1_Q16: 'A' }, { ...b, M1_Q16: 'A' }, 'M1_Q13'),
+    ).toEqual(['moderee']);
+    // Même origine et même foi : l'accord reste.
+    expect(
+      report({ ...a, M1_Q01: 'C', M1_Q16: 'A' }, b).convergences.some(
+        (c) => c.questionId === 'M1_Q13',
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('M6 — la place de son ex est un fait ; ce que l’on accepte se compare', () => {
+  it('« aucune place à mon ex » face à « ex dans mon entourage » n’est plus une divergence', () => {
+    expect(find({ M3_Q05: 'A' }, { M3_Q05: 'D' }, 'M3_Q05')).toHaveLength(0);
+    expect(report({ M3_Q05: 'A' }, { M3_Q05: 'D' }).comparedQuestions).toBe(0);
+  });
+
+  it('« je ne pourrais pas l’accepter » face à un ex resté proche : majeure ; « pour les enfants » face à une amitié : à explorer', () => {
+    expect(
+      severityOf({ M3_Q13: 'D' }, { M3_Q05: 'C', M3_Q13: 'A' }, 'M3_Q13'),
+    ).toEqual(['majeure']);
+    expect(
+      severityOf({ M3_Q13: 'B' }, { M3_Q05: 'C', M3_Q13: 'A' }, 'M3_Q13'),
+    ).toEqual(['moderee']);
+    expect(
+      find({ M3_Q13: 'D' }, { M3_Q05: 'A', M3_Q13: 'A' }, 'M3_Q13'),
+    ).toHaveLength(0);
+  });
+});
+
+describe('M7 — accueillir les enfants de l’autre', () => {
+  it('« je ne pourrais pas l’accepter » face à un parent : incompatibilité déclarée ; « je préférerais l’éviter » : majeure', () => {
+    const parent = { M0_Q05: 'B', M0_Q14: 'A' };
+    expect(severityOf({ M0_Q14: 'D' }, parent, 'M0_Q14')).toEqual(['critique']);
+    expect(severityOf({ M0_Q14: 'C' }, parent, 'M0_Q14')).toEqual(['majeure']);
+    expect(severityOf({ M0_Q14: 'B' }, parent, 'M0_Q14')).toEqual(['moderee']);
+    // Enfants autonomes : un cran en dessous.
+    expect(severityOf({ M0_Q14: 'D' }, { M0_Q05: 'D' }, 'M0_Q14')).toEqual([
+      'moderee',
+    ]);
+    // Le fait seul (avoir ou non des enfants) n'est plus comparé.
+    expect(find({ M0_Q05: 'A' }, { M0_Q05: 'C' }, 'M0_Q05')).toHaveLength(0);
+    expect(report({ M0_Q05: 'A' }, { M0_Q05: 'A' }).convergences[0].label).toBe(
+      'Vous n’avez ni l’un ni l’autre d’enfant à charge',
+    );
+  });
+});
+
+describe('M11 — dire non à l’intimité : une observation pour le membre seul', () => {
+  it('M10_Q19 remplace M6_Q08, n’est jamais comparée, et donne une observation bienveillante', () => {
+    expect(QUESTION_INDEX.get('M10_Q19')!.moduleNumber).toBe(10);
+    expect(report({ M10_Q19: 'A' }, { M10_Q19: 'B' }).comparedQuestions).toBe(
+      0,
+    );
+    const profile = buildRelationalProfile({ M10_Q19: 'B' }, 'F');
+    expect(profile?.observations.join(' ')).toMatch(/dire non simplement/);
+    expect(buildRelationalProfile({ M10_Q19: 'A' }, 'F')).toBeNull();
   });
 });

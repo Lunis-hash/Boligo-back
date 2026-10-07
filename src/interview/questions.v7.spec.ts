@@ -17,10 +17,10 @@ const v6 = new Set(QUESTIONNAIRE_V6_ORDER);
 const current = new Set(QUESTIONS.map((q) => q.id));
 
 describe('Grand Entretien V7 : intégrité', () => {
-  it('compte 160 questions au plus (139 en V6)', () => {
+  it('compte 168 questions au plus (139 en V6, 160 en V7)', () => {
     expect(QUESTIONNAIRE_V6_ORDER).toHaveLength(139);
-    expect(QUESTIONS.length).toBeLessThanOrEqual(160);
-    expect(QUESTIONS).toHaveLength(160);
+    expect(QUESTIONS.length).toBeLessThanOrEqual(168);
+    expect(QUESTIONS).toHaveLength(162);
     expect(new Set(QUESTIONS.map((q) => q.id)).size).toBe(QUESTIONS.length);
   });
 

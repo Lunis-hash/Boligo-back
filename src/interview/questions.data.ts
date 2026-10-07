@@ -273,6 +273,23 @@ export const QUESTIONS: Question[] = [
     rules: { maxAge: 55 }, // 🎯 Désactivée si 55+ ans
   },
   {
+    // V7.1 — nouvelle : accueillir les enfants de l'autre. Avoir des enfants
+    // est un fait (M0_Q05) ; c'est l'acceptation de ceux de l'autre qui se
+    // compare.
+    id: 'M0_Q14',
+    moduleNumber: 0,
+    text: 'Un(e) partenaire qui a déjà des enfants :',
+    options: [
+      { key: 'A', text: 'Cela me convient tout à fait' },
+      {
+        key: 'B',
+        text: "Cela me convient, s'ils ne vivent pas avec nous à plein temps",
+      },
+      { key: 'C', text: "Je préférerais l'éviter" },
+      { key: 'D', text: "Je ne pourrais pas l'accepter" },
+    ],
+  },
+  {
     id: 'M0_Q07',
     moduleNumber: 0,
     text: "Votre niveau d'études :",
@@ -837,6 +854,23 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: 'Communication uniquement pour les enfants' },
       { key: 'C', text: 'On est restés amis' },
       { key: 'D', text: 'Il/elle fait partie de mon entourage proche' },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : ce que l'on accepte chez l'autre. M3_Q05 dit un fait
+    // sur soi (la place de son ex), pas ce que l'on accepte ; elle n'est plus
+    // comparée qu'à cette question.
+    id: 'M3_Q13',
+    moduleNumber: 3,
+    text: 'Que votre partenaire garde des liens avec son ex :',
+    options: [
+      { key: 'A', text: 'Cela ne me pose pas de problème' },
+      { key: 'B', text: 'Seulement pour les enfants' },
+      {
+        key: 'C',
+        text: 'Seulement en toute transparence, sans le ou la voir seul(e)',
+      },
+      { key: 'D', text: "Je ne pourrais pas l'accepter" },
     ],
   },
   {
@@ -1478,24 +1512,6 @@ export const QUESTIONS: Question[] = [
         key: 'G',
         text: 'Aucun de ceux-là : seule une relation physique compte',
       },
-    ],
-  },
-  {
-    // V6 — rétablie depuis la V5 (Q08) : savoir poser une limite intime.
-    id: 'M6_Q08',
-    moduleNumber: 6,
-    text: "Quand vous n'avez pas envie d'intimité physique et que votre partenaire le propose :",
-    options: [
-      {
-        key: 'A',
-        text: "Je l'exprime doucement et on trouve une alternative tendre",
-      },
-      {
-        key: 'B',
-        text: "J'accepte pour lui faire plaisir — ça m'arrive souvent",
-      },
-      { key: 'C', text: 'Je dis non clairement, sans culpabilité' },
-      { key: 'D', text: "J'ai du mal à refuser — je ne veux pas décevoir" },
     ],
   },
 
@@ -2384,6 +2400,26 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
+  {
+    // V7.1 — remplace M6_Q08 (options B et D qui se recoupaient, question
+    // isolée loin du bloc intime) : savoir dire non. Jamais comparée entre
+    // deux membres ; une observation au membre seul (B, C).
+    id: 'M10_Q19',
+    moduleNumber: 10,
+    text: "Quand votre partenaire propose un moment d'intimité et que vous n'en avez pas envie :",
+    options: [
+      {
+        key: 'A',
+        text: 'Je le dis simplement, et nous trouvons un autre moment de tendresse',
+      },
+      {
+        key: 'B',
+        text: 'J’accepte quand même, pour ne pas le ou la décevoir',
+      },
+      { key: 'C', text: 'Je refuse, mais je me sens coupable' },
+      { key: 'D', text: 'Je refuse sans difficulté' },
+    ],
+  },
 ];
 
 /**
@@ -2943,6 +2979,23 @@ export const RETIRED_QUESTIONS: Question[] = [
   },
   // ── Retirées en V7.1 (texte et options de la V7, encore lus) ──
   {
+    id: 'M6_Q08',
+    moduleNumber: 6,
+    text: "Quand vous n'avez pas envie d'intimité physique et que votre partenaire le propose :",
+    options: [
+      {
+        key: 'A',
+        text: "Je l'exprime doucement et on trouve une alternative tendre",
+      },
+      {
+        key: 'B',
+        text: "J'accepte pour lui faire plaisir — ça m'arrive souvent",
+      },
+      { key: 'C', text: 'Je dis non clairement, sans culpabilité' },
+      { key: 'D', text: "J'ai du mal à refuser — je ne veux pas décevoir" },
+    ],
+  },
+  {
     id: 'M1_Q11',
     moduleNumber: 1,
     text: 'Votre position sur la polygamie :',
@@ -3292,6 +3345,10 @@ export const V7_CHANGES: Record<
   M0_Q04: 'modifiee',
   M0_Q05: 'modifiee',
   M0_Q06: 'modifiee',
+  M0_Q14: 'nouvelle',
+  M1_Q13: 'regle',
+  M3_Q13: 'nouvelle',
+  M10_Q19: 'nouvelle',
   M5_Q08: 'modifiee',
   M1_Q02: 'modifiee',
   M0_Q11: 'nouvelle',
@@ -3443,6 +3500,7 @@ export const V7_CHANGES: Record<
   M10_Q06: 'retiree',
   M10_Q10: 'retiree',
   // Retirées en V7.1
+  M6_Q08: 'retiree',
   M1_Q11: 'retiree',
   M4_Q05: 'retiree',
   M4_Q07: 'retiree',
@@ -3516,6 +3574,7 @@ export const V7_REPLACEMENTS: Record<string, string[]> = {
   M10_Q06: [],
   M10_Q10: [],
   // V7.1
+  M6_Q08: ['M10_Q19'],
   M1_Q11: ['M1_Q20'],
   M4_Q05: ['M4_Q16'],
   M4_Q07: ['M4_Q17'],
@@ -3559,6 +3618,13 @@ export const V71_CHANGES: Record<
   M4_Q07: 'retiree',
   M8_Q02: 'retiree',
   M8_Q03: 'retiree',
+  M0_Q05: 'regle',
+  M0_Q14: 'nouvelle',
+  M1_Q13: 'regle',
+  M3_Q05: 'regle',
+  M3_Q13: 'nouvelle',
+  M10_Q19: 'nouvelle',
+  M6_Q08: 'retiree',
 };
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */
@@ -3599,6 +3665,7 @@ export const SENSITIVE_QUESTIONS: Record<
   // V7, vie sexuelle.
   M6_Q08: { category: 'vie_sexuelle', reach: 'direct' },
   M6_Q19: { category: 'vie_sexuelle', reach: 'direct' },
+  M10_Q19: { category: 'vie_sexuelle', reach: 'direct' },
   M10_Q16: { category: 'vie_sexuelle', reach: 'direct' },
   M10_Q17: { category: 'vie_sexuelle', reach: 'direct' },
   M10_Q18: { category: 'vie_sexuelle', reach: 'direct' },

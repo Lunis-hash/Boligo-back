@@ -36,6 +36,10 @@ export const LEGACY_UPGRADES: Array<{
   { to: 'M10_Q16', from: 'M6_Q06', map: { A: 'A', B: 'B', C: 'D' } },
   // S'excuser en premier : seules les deux réponses nettes ont un équivalent.
   { to: 'M2_Q22', from: 'M2_Q08', map: { A: 'A', D: 'D' } },
+  // V7.1 — dire non à l'intimité : « alternative tendre », « j'accepte
+  // pour faire plaisir » et « non sans culpabilité » gardent leur sens ;
+  // « j'ai du mal à refuser » n'a pas d'équivalent sûr.
+  { to: 'M10_Q19', from: 'M6_Q08', map: { A: 'A', B: 'B', C: 'D' } },
   // V7.1 — polygamie : « inacceptable », « pas pour mon couple » et
   // « envisageable » gardent leur sens ; « en parler en personne » n'est pas
   // « pas de position arrêtée ».
@@ -212,7 +216,7 @@ export function foodRuleOf(
  * K (« Aucun : pour moi, tout se discute ») n'a pas de question.
  */
 export const NON_NEGOTIABLE_QUESTIONS: Record<string, string[]> = {
-  A: ['M0_Q06'],
+  A: ['M0_Q06', 'M0_Q14'],
   B: [
     'M1_Q16',
     'M1_Q05',

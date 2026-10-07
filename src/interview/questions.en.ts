@@ -86,6 +86,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'No, that’s final',
     ],
   },
+  M0_Q14: {
+    text: 'A partner who already has children:',
+    options: [
+      'That suits me completely',
+      'That suits me, as long as they don’t live with us full-time',
+      'I’d rather avoid it',
+      'I couldn’t accept it',
+    ],
+  },
   M0_Q07: {
     text: 'Your level of education:',
     options: [
@@ -383,6 +392,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Communication only for the children',
       'We stayed friends',
       'They are part of my close circle',
+    ],
+  },
+  M3_Q13: {
+    text: 'Your partner keeping ties with their ex:',
+    options: [
+      'It’s not a problem for me',
+      'Only for the children',
+      'Only with full transparency, without seeing them alone',
+      'I couldn’t accept it',
     ],
   },
   M3_Q07: {
@@ -716,15 +734,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Kissing someone else',
       'Watching adult content',
       'None of these: only a physical relationship counts',
-    ],
-  },
-  M6_Q08: {
-    text: 'When you don’t feel like physical intimacy and your partner suggests it:',
-    options: [
-      'I say so gently and we find a tender alternative',
-      'I go along with it to please them — this often happens',
-      'I say no clearly, without guilt',
-      'I find it hard to refuse — I don’t want to disappoint',
     ],
   },
 
@@ -1171,6 +1180,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’d force myself to avoid tension',
       'I’d wait for it to pass, without talking about it',
       'I’d think it was up to them to adapt',
+    ],
+  },
+  M10_Q19: {
+    text: 'When your partner suggests intimacy and you don’t feel like it:',
+    options: [
+      'I say so simply, and we find another tender moment',
+      'I go along with it anyway, so as not to disappoint them',
+      'I refuse, but I feel guilty',
+      'I refuse without difficulty',
     ],
   },
 };

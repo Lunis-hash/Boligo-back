@@ -196,6 +196,13 @@ interface Rule {
   risksOnly?: boolean;
   /** Aveu sur soi : jamais de divergence affichée, seulement l'affinité. */
   silent?: boolean;
+  /**
+   * V7.1 — un fait sur soi (avoir des enfants, la place de son ex) : jamais
+   * comparé comme une préférence, ni écart ni point d'affinité ; seul un
+   * accord qui a sa phrase est affiché. Ce que l'autre accepte de ce fait se
+   * compare par une règle croisée.
+   */
+  fact?: boolean;
   /** Similarité de deux réponses compatibles (choix multiples), 0–1. */
   similarity?: (a: string, b: string) => number;
   /** Convergence calculée (choix multiples : réponses communes). */
@@ -402,7 +409,10 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'famille',
     label: 'Enfants déjà présents',
     topic: "La présence d'enfants",
-    severity: pairs({ AC: 'moderee', AB: 'mineure', AD: 'mineure' }, 'mineure'),
+    // V7.1 : un fait, plus une préférence ; l'acceptation des enfants de
+    // l'autre (M0_Q14) se compare à lui (`childrenAcceptRule`).
+    fact: true,
+    severity: () => null,
     convergence: {
       A: 'Vous n’avez ni l’un ni l’autre d’enfant à charge',
       B: 'Vous êtes tous les deux parents d’un enfant à charge',
@@ -589,14 +599,10 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'famille',
     label: "Place de l'ex",
     topic: "La place de l'ex",
-    severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BD: 'moderee',
-      AB: 'mineure',
-      BC: 'mineure',
-      CD: 'mineure',
-    }),
+    // V7.1 : « aucune place à mon ex » ne dit pas ce que l'on accepte chez
+    // l'autre ; comparée à M3_Q13 (`exTiesRule`).
+    fact: true,
+    severity: () => null,
   },
   {
     // V7 — partage des tâches de la maison.
@@ -1557,6 +1563,8 @@ class Collector {
   adjustable = new Set<Divergence>();
   /** Relevées par une déclaration de non-négociable : P9 n'y touche plus. */
   declared = new Set<Divergence>();
+  /** Questions déjà lues par une règle croisée : leur règle simple est sautée. */
+  handled = new Set<string>();
   compared = 0;
 
   diverge(d: Divergence, adjustable = !d.shared): void {
@@ -1596,7 +1604,20 @@ function applyRule(rule: Rule, a: RawAnswers, b: RawAnswers, c: Collector) {
   const ka = a[rule.questionId];
   const kb = b[rule.questionId];
   if (!ka || !kb) return;
+  if (c.handled.has(rule.questionId)) return;
   if (rule.supersededBy?.some((id) => a[id] && b[id])) return;
+  if (rule.fact) {
+    const label = ka === kb ? rule.convergence?.[ka] : undefined;
+    if (label)
+      c.converge({
+        questionId: rule.questionId,
+        theme: rule.theme,
+        label,
+        answer: optionText(rule.questionId, ka),
+        topic: rule.topic,
+      });
+    return;
+  }
   if (
     rule.skipIfFlagged?.some((id) =>
       c.divergences.some((d) => d.questionId === id),
@@ -2127,6 +2148,130 @@ function availabilityRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
   }
 }
 
+/**
+ * Origines culturelles communes (M1_Q01) ; null si l'un des deux ne l'a pas
+ * dit (rien n'est supposé).
+ */
+function sameOrigin(a: RawAnswers, b: RawAnswers): boolean | null {
+  if (!a.M1_Q01 || !b.M1_Q01) return null;
+  return answerKeys(a.M1_Q01).some((k) => answerKeys(b.M1_Q01).includes(k));
+}
+
+/**
+ * V7.1 — « tout se transmet » des deux côtés (M1_Q13 A), avec deux religions
+ * ou deux cultures différentes : deux transmissions concurrentes, jamais un
+ * accord. Majeure quand les religions diffèrent, à explorer quand seules les
+ * origines diffèrent.
+ */
+function transmissionRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  if (a.M1_Q13 !== 'A' || b.M1_Q13 !== 'A') return;
+  const fa = faithOf(a);
+  const fb = faithOf(b);
+  const otherFaith =
+    !!fa && !!fb && (fa.family !== fb.family || distinctFaiths(fa, fb));
+  const otherOrigin = sameOrigin(a, b) === false;
+  if (!otherFaith && !otherOrigin) return;
+  c.handled.add('M1_Q13');
+  const answer = view('M1_Q13', 'A');
+  c.diverge({
+    questionId: 'M1_Q13',
+    theme: 'famille',
+    severity: otherFaith ? 'majeure' : 'moderee',
+    label: 'Deux transmissions à concilier',
+    question: questionText('M1_Q13'),
+    a: answer,
+    b: answer,
+    shared: true,
+  });
+}
+
+/**
+ * V7.1 — accueillir les enfants de l'autre (M0_Q14) face aux enfants qu'il
+ * ou elle a déjà (M0_Q05). Enfants à charge : « je ne pourrais pas
+ * l'accepter » est une incompatibilité déclarée, « je préférerais l'éviter »
+ * une divergence majeure, « s'ils ne vivent pas avec nous » un sujet à
+ * explorer ; enfants autonomes : un cran en dessous.
+ */
+function childrenAcceptRule(a: RawAnswers, b: RawAnswers, c: Collector) {
+  let worst: Divergence | null = null;
+  let comparable = false;
+  for (const [x, y, xIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    const accept = x.M0_Q14;
+    const kids = y.M0_Q05;
+    if (!accept || !['B', 'C', 'D'].includes(kids)) continue;
+    comparable = true;
+    const table: Record<string, Severity> =
+      kids === 'D'
+        ? { D: 'moderee', C: 'mineure' }
+        : { D: 'critique', C: 'majeure', B: 'moderee' };
+    const severity = table[accept];
+    if (!severity) continue;
+    if (worst && SEVERITY_RANK[worst.severity] >= SEVERITY_RANK[severity])
+      continue;
+    const accepts = view('M0_Q14', accept);
+    const has = view('M0_Q05', kids);
+    worst = {
+      questionId: 'M0_Q14',
+      theme: 'famille',
+      severity,
+      label: 'Accueillir les enfants de l’autre',
+      question: questionText('M0_Q14'),
+      a: xIsA ? accepts : has,
+      b: xIsA ? has : accepts,
+    };
+  }
+  if (worst) c.diverge(worst);
+  else if (comparable) c.agree('M0_Q14', 1);
+}
+
+/**
+ * V7.1 — ce que l'un accepte des liens de l'autre avec son ex (M3_Q13) face
+ * à la place que l'autre lui garde (M3_Q05). « Je ne pourrais pas
+ * l'accepter » face à un ex encore présent : majeure ; « seulement pour les
+ * enfants » face à une amitié ou un ex proche : à explorer ; « seulement en
+ * toute transparence » face à un ex dans l'entourage proche : une nuance.
+ */
+function exTiesRule(a: RawAnswers, b: RawAnswers, c: Collector) {
+  let worst: Divergence | null = null;
+  let comparable = false;
+  for (const [x, y, xIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    const accept = x.M3_Q13;
+    const place = y.M3_Q05;
+    if (!accept || !place) continue;
+    comparable = true;
+    const severity: Severity | null =
+      accept === 'D' && ['B', 'C', 'D'].includes(place)
+        ? 'majeure'
+        : accept === 'B' && ['C', 'D'].includes(place)
+          ? 'moderee'
+          : accept === 'C' && place === 'D'
+            ? 'mineure'
+            : null;
+    if (!severity) continue;
+    if (worst && SEVERITY_RANK[worst.severity] >= SEVERITY_RANK[severity])
+      continue;
+    const accepts = view('M3_Q13', accept);
+    const ex = view('M3_Q05', place);
+    worst = {
+      questionId: 'M3_Q13',
+      theme: 'famille',
+      severity,
+      label: 'Les liens avec un ex',
+      question: questionText('M3_Q13'),
+      a: xIsA ? accepts : ex,
+      b: xIsA ? ex : accepts,
+    };
+  }
+  if (worst) c.diverge(worst);
+  else if (comparable) c.agree('M3_Q13', 1);
+}
+
 /** Fusionne les réponses de tous les modules d'un entretien (rawResponses par module). */
 export function collectRawAnswers(
   responses: Array<{ rawResponses: unknown }> | undefined | null,
@@ -2161,8 +2306,9 @@ const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
  * explicites (« je ne pourrais pas vivre avec ») y figurent aussi.
  */
 export const CORE_DEALBREAKERS: ReadonlySet<string> = new Set([
-  // Enfants
+  // Enfants (désir, enfants de l'autre)
   'M0_Q06',
+  'M0_Q14',
   // Lieu de vie
   'M0_Q03',
   'M7_Q07',
@@ -2278,7 +2424,10 @@ export function buildDivergenceReport(
   const b = upgradeAnswers(rawB);
   const c = new Collector();
 
+  transmissionRule(a, b, c);
   for (const rule of DIVERGENCE_RULES) applyRule(rule, a, b, c);
+  childrenAcceptRule(a, b, c);
+  exTiesRule(a, b, c);
   cultureRule(a, b, c);
   faithRule(a, b, c);
   foodRule(a, b, c);

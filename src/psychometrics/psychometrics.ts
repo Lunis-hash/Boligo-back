@@ -1297,6 +1297,16 @@ export function buildRelationalProfile(
       'Quand l’envie n’est pas la même des deux côtés, en parler tôt, sans vous forcer ni attendre, protège la complicité du couple.',
     );
   }
+  // V7.1 — dire non à l'intimité (M10_Q19 ; V6 : M6_Q08, « j'accepte pour
+  // lui faire plaisir » ou « j'ai du mal à refuser ») : pour le membre seul.
+  if (
+    ['B', 'C'].includes(answers.M10_Q19) ||
+    (!answers.M10_Q19 && ['B', 'D'].includes(answers.M6_Q08))
+  ) {
+    observations.push(
+      'Votre envie compte autant que celle de l’autre : dire non simplement, sans vous forcer ni vous en vouloir, fait partie d’une intimité sereine.',
+    );
+  }
   if (
     (answers.M3_Q11 === 'A' || answers.M3_Q11 === 'B') &&
     answers.M3_Q03 === 'A'

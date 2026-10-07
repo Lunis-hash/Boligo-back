@@ -105,7 +105,8 @@ describe('Données sensibles (RGPD, article 9)', () => {
     const asked = pendingQuestions(6, {}, 30, 'F').map((q) => q.id);
     const skipped = pendingQuestions(6, {}, 30, 'F', true).map((q) => q.id);
     const sensitive = asked.filter(isSensitiveQuestion);
-    expect(sensitive).toEqual(expect.arrayContaining(['M6_Q08', 'M6_Q19']));
+    // V7.1 : M6_Q08 n'est plus posée (remplacée par M10_Q19, module 10).
+    expect(sensitive).toEqual(expect.arrayContaining(['M6_Q19']));
     expect(skipped.some(isSensitiveQuestion)).toBe(false);
     expect(skipped.length).toBe(asked.length - sensitive.length);
   });
@@ -116,7 +117,7 @@ describe('Données sensibles (RGPD, article 9)', () => {
       await service.saveModule('u1', {
         moduleNumber: 6,
         moduleName: 'Module 6',
-        answers: { M6_Q02: 'A', M6_Q08: 'B' },
+        answers: { M6_Q02: 'A', M6_Q19: 'B' },
       });
       const saved = responses.find((r) => r.moduleNumber === 6)!;
       expect(saved.rawResponses).toEqual({ M6_Q02: 'A' });
@@ -128,11 +129,11 @@ describe('Données sensibles (RGPD, article 9)', () => {
     await service.saveModule('u1', {
       moduleNumber: 6,
       moduleName: 'Module 6',
-      answers: { M6_Q02: 'A', M6_Q08: 'B' },
+      answers: { M6_Q02: 'A', M6_Q19: 'B' },
     });
     expect(responses.find((r) => r.moduleNumber === 6)!.rawResponses).toEqual({
       M6_Q02: 'A',
-      M6_Q08: 'B',
+      M6_Q19: 'B',
     });
   });
 
