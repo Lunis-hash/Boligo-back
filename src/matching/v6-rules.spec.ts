@@ -9,8 +9,11 @@ import {
 } from './discover-filters';
 
 describe('Règles V6 (questions rétablies de la V5)', () => {
-  it('deux silences de plusieurs jours forment une impasse (risque partagé)', () => {
-    const r = buildDivergenceReport({ M6_Q01: 'D' }, { M6_Q01: 'D' });
+  it('deux silences de plusieurs jours forment une impasse (risque partagé), majeure si une autre réponse la confirme', () => {
+    const r = buildDivergenceReport(
+      { M6_Q01: 'D', M2_Q07: 'C' },
+      { M6_Q01: 'D' },
+    );
     expect(r.divergences[0]).toMatchObject({
       questionId: 'M6_Q01',
       severity: 'majeure',
@@ -18,16 +21,29 @@ describe('Règles V6 (questions rétablies de la V5)', () => {
     });
     const sheet = buildCompatibilitySheet(r, 'Nadia');
     expect(sheet.vigilance).toMatch(/répondu tous les deux/);
+    // Une seule réponse par membre : à explorer, pas majeure.
+    expect(
+      buildDivergenceReport({ M6_Q01: 'D' }, { M6_Q01: 'D' }).divergences[0]
+        .severity,
+    ).toBe('moderee');
   });
 
-  it('deux réparations très lentes : divergence majeure', () => {
-    const r = buildDivergenceReport({ M2_Q07: 'D' }, { M2_Q07: 'D' });
+  it('deux réparations très lentes : majeure si le retrait est confirmé', () => {
+    const r = buildDivergenceReport(
+      { M2_Q07: 'D', M6_Q01: 'C' },
+      { M2_Q07: 'D' },
+    );
     expect(r.divergences[0].severity).toBe('majeure');
+    expect(
+      buildDivergenceReport({ M2_Q07: 'D' }, { M2_Q07: 'D' }).divergences[0]
+        .severity,
+    ).toBe('moderee');
   });
 
-  it('violence physique : « rupture immédiate » face à « ça dépend »', () => {
+  it('violence physique : « rupture immédiate » face à « ça dépend » est une incompatibilité déclarée', () => {
     const r = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'C' });
-    expect(r.divergences[0].severity).toBe('majeure');
+    expect(r.divergences[0].severity).toBe('critique');
+    expect(r.hardStop).toBe(true);
     expect(
       buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'A' }).convergences[0]
         .label,

@@ -18,7 +18,9 @@ import {
 import { InterviewService } from './interview.service';
 import { QuestionsService } from './questions.service';
 import { SaveModuleDto } from './dto/save-module.dto';
-import { parseLanguage } from './questions.en';
+import { SensitiveConsentDto } from './dto/sensitive-consent.dto';
+import { InterviewLanguage, parseLanguage } from './questions.en';
+import { presentOptions } from './questions.data';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Interview')
@@ -39,11 +41,27 @@ export class InterviewController {
     @Param('moduleNumber') moduleNumber: string,
     @Query('lang') lang?: string,
   ) {
-    return this.questionsService.getQuestionsForUser(
+    return this.servedQuestions(
       req.user.id,
       parseInt(moduleNumber, 10),
       parseLanguage(lang),
     );
+  }
+
+  /**
+   * V7.1 : options « aucun » signalées ; sans accord explicite, les options
+   * sensibles d'une question ordinaire ne sont pas proposées.
+   */
+  private async servedQuestions(
+    userId: string,
+    moduleNumber: number,
+    lang: InterviewLanguage,
+  ) {
+    const [questions, { consent }] = await Promise.all([
+      this.questionsService.getQuestionsForUser(userId, moduleNumber, lang),
+      this.interviewService.getSensitiveConsent(userId),
+    ]);
+    return questions.map((q) => presentOptions(q, consent === true));
   }
 
   @Get('status')
@@ -83,5 +101,23 @@ export class InterviewController {
   @Post('save-module')
   async saveModule(@Req() req: any, @Body() dto: SaveModuleDto) {
     return this.interviewService.saveModule(req.user.id, dto);
+  }
+
+  @Get('sensitive-consent')
+  @ApiOperation({
+    summary:
+      'Accord pour les questions sensibles (religion, vie intime, violences subies)',
+  })
+  async getSensitiveConsent(@Req() req: any) {
+    return this.interviewService.getSensitiveConsent(req.user.id);
+  }
+
+  @Post('sensitive-consent')
+  @ApiOperation({
+    summary:
+      'Donner ou retirer cet accord ; un retrait efface les réponses sensibles',
+  })
+  async setSensitiveConsent(@Req() req: any, @Body() dto: SensitiveConsentDto) {
+    return this.interviewService.setSensitiveConsent(req.user.id, dto.accepted);
   }
 }

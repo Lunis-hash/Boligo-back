@@ -42,6 +42,7 @@ function setup(promos: Promo[]) {
         Promise.resolve([
           {
             promoCodeId: 'p-used',
+            type: 'achat',
             _count: { _all: 2 },
             _sum: { euroAmount: 27 },
           },
@@ -49,7 +50,13 @@ function setup(promos: Promo[]) {
       ),
     },
   };
-  const service = new AdminService(prisma as never, {} as never, {} as never, {} as never);
+  const service = new AdminService(
+    prisma as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+  );
   return { service, prisma, promos };
 }
 

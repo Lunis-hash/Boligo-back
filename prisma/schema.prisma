@@ -61,6 +61,10 @@ model User {
   resetCodeExpires   DateTime?
   termsAcceptedAt    DateTime? // Date d'acceptation expresse des CGU à l'inscription
   termsVersion       String? // Version des textes légaux acceptée (ex. « 2026-10-02 »)
+  // Accord explicite pour les questions sensibles (religion, vie intime,
+  // violences subies) : null = pas encore demandé, false = refusé.
+  sensitiveConsent   Boolean?
+  sensitiveConsentAt DateTime?
 
   profile           Profile?
   interviews        InterviewIA[]
@@ -75,6 +79,10 @@ model User {
   receivedReports   Report[]            @relation("Reported")
   notifications     Notification[]
   responses         HarmonyResponse[]
+  billingProfile    BillingProfile?
+  payments          Payment[]
+  invoices          Invoice[]
+  withdrawals       WithdrawalRequest[]
 }
 
 enum ProfileStatus {
@@ -244,6 +252,9 @@ model HarmonyQuestion {
   sentAt       DateTime          @default(now())
   /// Question d'approfondissement écrite par l'IA après la lecture de la journée précédente.
   followUp     Boolean           @default(false)
+  /// Origine de la question (gabarit, divergence, IA, suivi), méthode, cible,
+  /// rédacteur et relecteur : jamais montrés aux membres, pour suivre la qualité.
+  meta         Json?
   responses    HarmonyResponse[]
 
   @@index([journeyId])
@@ -351,6 +362,8 @@ enum TransactionType {
   achat
   consommation
   remboursement_justice
+  /// Crédit retiré après le remboursement en argent d'un achat non utilisé.
+  remboursement_paiement
 }
 
 model CreditTransaction {
@@ -399,6 +412,7 @@ model PromoCode {
   createdAt     DateTime            @default(now())
   usages        PromoUsage[]
   transactions  CreditTransaction[]
+  payments      Payment[]
   partner       PartnerApplication?
 }
 
@@ -411,6 +425,155 @@ model PromoUsage {
 
   @@unique([promoCodeId, userId]) // Un user = un seul usage par code
   @@index([userId])
+}
+
+// ---------------------------------------------------------
+// 6c. FACTURATION : paiements, factures, avoirs, rétractation
+// (tables utilisées seulement avec BILLING_ENABLED=true)
+// ---------------------------------------------------------
+
+/// Adresse de facturation relevée sur la feuille de paiement Stripe.
+model BillingProfile {
+  userId           String   @id
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId String?  @unique
+  name             String?
+  line1            String?
+  line2            String?
+  postalCode       String?
+  city             String?
+  state            String?
+  country          String?  @db.VarChar(2)
+  updatedAt        DateTime @updatedAt
+}
+
+enum PaymentStatus {
+  en_attente
+  reussi
+  rembourse
+  rembourse_partiel
+  conteste
+}
+
+enum InvoiceKind {
+  facture
+  avoir
+}
+
+enum InvoiceStatus {
+  a_emettre
+  emise
+  erreur
+}
+
+enum WithdrawalStatus {
+  recue
+  remboursee
+  refusee
+}
+
+/// Un paiement par carte (montants en centimes, jamais en nombre décimal).
+model Payment {
+  id                    String              @id @default(uuid())
+  /// Vide après suppression du compte : gardé 10 ans (obligation comptable).
+  userId                String?
+  user                  User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  stripePaymentIntentId String              @unique
+  status                PaymentStatus       @default(en_attente)
+  planId                String
+  credits               Int
+  currency              String              @db.VarChar(3)
+  listAmountCents       Int
+  discountCents         Int                 @default(0)
+  totalAmountCents      Int
+  taxAmountCents        Int?
+  taxCountry            String?             @db.VarChar(2)
+  /// Pays déclaré (adresse de facturation, sinon lieu du profil).
+  customerCountry       String?             @db.VarChar(2)
+  /// Pays de la carte : seconde preuve de localisation pour la TVA.
+  cardCountry           String?             @db.VarChar(2)
+  promoCodeId           String?
+  promoCode             PromoCode?          @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
+  termsVersion          String?
+  earlyStartConsentAt   DateTime?
+  earlyStartConsentText String?
+  refundedCents         Int                 @default(0)
+  createdAt             DateTime            @default(now())
+  succeededAt           DateTime?
+  updatedAt             DateTime            @updatedAt
+  invoices              Invoice[]
+  withdrawals           WithdrawalRequest[]
+
+  @@index([userId])
+  @@index([promoCodeId])
+}
+
+/// Facture ou avoir émis chez Stripe ; l'acheteur est copié pour 10 ans.
+model Invoice {
+  id                String        @id @default(uuid())
+  kind              InvoiceKind   @default(facture)
+  status            InvoiceStatus @default(a_emettre)
+  /// « facture:pi_… » ou « avoir:re_… » : une seule pièce par événement.
+  idempotencyKey    String        @unique
+  number            String?       @unique
+  /// in_… (facture) ou cn_… (avoir).
+  stripeObjectId    String?       @unique
+  paymentId         String
+  payment           Payment       @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  originalInvoiceId String?
+  originalInvoice   Invoice?      @relation("InvoiceCreditNotes", fields: [originalInvoiceId], references: [id], onDelete: Restrict)
+  creditNotes       Invoice[]     @relation("InvoiceCreditNotes")
+  userId            String?
+  user              User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  issuedAt          DateTime?
+  currency          String        @db.VarChar(3)
+  totalExclTaxCents Int
+  taxCents          Int
+  totalInclTaxCents Int
+  taxRatePercent    Decimal?      @db.Decimal(6, 3)
+  taxCountry        String?       @db.VarChar(2)
+  /// FR, DOM, DOM_EXONERE, UE_SOUS_SEUIL, HORS_UE, FRANCHISE, STRIPE_TAX
+  taxRegime         String?
+  buyerName         String
+  buyerAddress      String?
+  buyerCountry      String?       @db.VarChar(2)
+  attempts          Int           @default(0)
+  lastError         String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([paymentId])
+  @@index([userId])
+  @@index([status])
+}
+
+/// Demande faite par la fonction « Se rétracter du contrat ici ».
+model WithdrawalRequest {
+  id             String           @id @default(uuid())
+  paymentId      String
+  payment        Payment          @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  userId         String?
+  user           User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  requestedAt    DateTime         @default(now())
+  channel        String
+  status         WithdrawalStatus @default(recue)
+  ackSentAt      DateTime?
+  decidedAt      DateTime?
+  decidedBy      String?
+  refundCents    Int?
+  stripeRefundId String?          @unique
+  note           String?
+
+  @@index([paymentId])
+  @@index([userId])
+}
+
+/// Événements Stripe déjà traités (un webhook rejoué est ignoré).
+model StripeEvent {
+  id          String    @id
+  type        String
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
 }
 
 // ---------------------------------------------------------

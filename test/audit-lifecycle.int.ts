@@ -33,6 +33,7 @@ const notif: any = {
     return prisma.notification.create({ data: { userId, type, title, content } });
   },
   notifyVideoUnlock: async () => undefined,
+  notifyChatOpen: async () => undefined,
 };
 const gateway: any = { broadcastIncomingCall: () => undefined, broadcastNewMessage: () => undefined };
 const matching = new MatchingService(prisma, notif);

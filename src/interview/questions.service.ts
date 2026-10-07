@@ -1,8 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { QUESTIONS, Question, dependencyMet } from './questions.data';
+import {
+  QUESTIONS,
+  Question,
+  QuestionDependency,
+  dependencyMet,
+} from './questions.data';
 import { InterviewLanguage, localizeQuestion } from './questions.en';
 import { languageChoices } from './country-languages';
+import { isSensitiveQuestion } from './sensitive-questions';
+
+/** Question applicable à ce membre, hors dépendances (âge, genre, accord). */
+function applicable(
+  q: Question,
+  moduleNumber: number,
+  answers: Record<string, string>,
+  age: number,
+  gender: string | null | undefined,
+  skipSensitive: boolean,
+): boolean {
+  if (q.moduleNumber !== moduleNumber) return false;
+  if (skipSensitive && isSensitiveQuestion(q.id)) return false;
+  // Déjà répondue (ex. pré-remplie lors de l'onboarding) : jamais reposée.
+  if (answers[q.id]) return false;
+  // Périmètre géographique : déjà défini à l'inscription (onboarding étape 3).
+  if (q.id === 'M0_Q02') return false;
+  if (q.rules?.maxAge && age >= q.rules.maxAge) return false;
+  if (q.rules?.minAge && age < q.rules.minAge) return false;
+  if (q.rules?.gender && gender !== q.rules.gender) return false;
+  return true;
+}
 
 /**
  * Questions d'un module encore à poser à ce membre : non répondues et
@@ -13,29 +40,60 @@ export function pendingQuestions(
   answers: Record<string, string>,
   age: number,
   gender: string | null | undefined,
+  /** Le membre a refusé les questions sensibles : elles ne sont plus posées. */
+  skipSensitive = false,
 ): Question[] {
-  return QUESTIONS.filter((q) => {
-    // 1. Vérifier le module
-    if (q.moduleNumber !== moduleNumber) return false;
+  return QUESTIONS.filter(
+    (q) =>
+      applicable(q, moduleNumber, answers, age, gender, skipSensitive) &&
+      // Dépendances (dependsOn) : l'une au moins doit être remplie.
+      dependencyMet(q.rules, answers),
+  );
+}
 
-    // 1b. Si la question a déjà été répondue (ex: pré-remplie lors de l'onboarding), ne pas la reposer
-    if (answers[q.id]) return false;
+/** Question présentée par l'app, avec sa condition éventuelle. */
+export type ModuleQuestion = Question & {
+  /**
+   * Question de suite : posée seulement si l'une de ces réponses, données
+   * plus tôt dans le même module, l'ouvre (ex. M3_Q11 → la dernière rupture).
+   */
+  askIf?: QuestionDependency[];
+};
 
-    // 1c. Périmètre géographique : déjà défini à l'inscription (onboarding étape 3)
-    if (q.id === 'M0_Q02') return false;
-
-    // 2. Vérifier les règles (Age, Genre, etc.)
-    if (q.rules) {
-      if (q.rules.maxAge && age >= q.rules.maxAge) return false;
-      if (q.rules.minAge && age < q.rules.minAge) return false;
-      if (q.rules.gender && gender !== q.rules.gender) return false;
-
-      // 3. Vérifier les dépendances (dependsOn) : l'une au moins doit être remplie.
-      if (!dependencyMet(q.rules, answers)) return false;
+/**
+ * Questions d'un module à présenter, dans l'ordre. En plus des questions en
+ * attente, une question qui dépend d'une question du MÊME module, posée
+ * avant elle et pas encore répondue, est jointe avec sa condition (`askIf`) :
+ * l'app la pose seulement si la réponse donnée l'ouvre. Sans cela, la suite
+ * ne serait jamais posée et le module ne serait jamais terminé.
+ */
+export function moduleQuestions(
+  moduleNumber: number,
+  answers: Record<string, string>,
+  age: number,
+  gender: string | null | undefined,
+  skipSensitive = false,
+): ModuleQuestion[] {
+  const out: ModuleQuestion[] = [];
+  const askable = new Set<string>();
+  for (const q of QUESTIONS) {
+    if (!applicable(q, moduleNumber, answers, age, gender, skipSensitive))
+      continue;
+    if (dependencyMet(q.rules, answers)) {
+      out.push(q);
+      askable.add(q.id);
+      continue;
     }
-
-    return true;
-  });
+    const deps = q.rules?.dependsOn;
+    const askIf = (Array.isArray(deps) ? deps : deps ? [deps] : []).filter(
+      (d) => askable.has(d.questionId),
+    );
+    if (askIf.length) {
+      out.push({ ...q, askIf });
+      askable.add(q.id);
+    }
+  }
+  return out;
 }
 
 export function ageFromBirthDate(birthDate: Date | null | undefined): number {
@@ -57,7 +115,7 @@ export class QuestionsService {
     userId: string,
     moduleNumber: number,
     lang: InterviewLanguage = 'fr',
-  ): Promise<Question[]> {
+  ): Promise<Array<ModuleQuestion & { sensitive?: boolean }>> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -79,14 +137,20 @@ export class QuestionsService {
     }
 
     // Filtrage dynamique, puis langue d'affichage (les clés de réponse ne changent pas).
-    return pendingQuestions(
+    // Une question sensible est signalée : l'app demande l'accord avant de la poser.
+    // Les questions de suite du même module arrivent avec leur condition (askIf).
+    return moduleQuestions(
       moduleNumber,
       allRawResponses,
       ageFromBirthDate(user.birthDate),
       user.gender,
+      user.sensitiveConsent === false,
     )
-      .map((q) => localizeQuestion(q, lang))
-      .map((q) => withSuggestion(q, user.city, lang));
+      .map((q) => ({
+        ...withSuggestion(localizeQuestion(q, lang), user.city, lang),
+        ...(q.askIf ? { askIf: q.askIf } : {}),
+      }))
+      .map((q) => (isSensitiveQuestion(q.id) ? { ...q, sensitive: true } : q));
   }
 }
 

@@ -87,6 +87,9 @@ export class VideoCallService {
   async joinCall(journeyId: string, userId: string) {
     const journey = await this.getJourneyForUser(journeyId, userId);
 
+    if (journey.result !== 'en_cours') {
+      throw new BadRequestException('Ce parcours est terminé.');
+    }
     if (!canAccessVideoStep(journey.currentStep)) {
       throw new BadRequestException(
         journey.currentStep === 'chat_libre'

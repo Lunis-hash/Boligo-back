@@ -1,6 +1,6 @@
 # Conditions Générales d'Utilisation et de Vente — BOLIGO
 
-Version du 2026-10-06.
+Version du 2026-10-07.
 
 Les présentes Conditions Générales d'Utilisation et de Vente (« CGU ») régissent l'accès et l'utilisation de l'application BOLIGO (mobile et web), service de rencontre fondé sur la compatibilité profonde. En créant un compte, vous déclarez les avoir lues et les accepter sans réserve.
 
@@ -40,13 +40,15 @@ L'accès à un Parcours Harmonie nécessite un crédit. La formule unique « Par
 
 Le paiement s'effectue par carte bancaire via Stripe. BOLIGO ne conserve aucune donnée de carte. Un code promotionnel peut réduire le prix ou offrir un crédit ; il est personnel et limité dans le temps ou en nombre d'utilisations.
 
-Le crédit est débité lorsque vous engagez un parcours (envoi d'une invitation ou acceptation d'une invitation reçue). Il n'est pas remboursable en argent, sauf disposition légale impérative.
+Le crédit est débité lorsque vous engagez un parcours (envoi d'une invitation ou acceptation d'une invitation reçue). Il n'est pas remboursable en argent, sauf dans le cadre du droit de rétractation ci-dessous ou d'une autre disposition légale impérative.
 
 Pacte anti-ghosting et règle de justice : en engageant un parcours, chaque membre s'engage à le suivre jusqu'au bout ou à y mettre fin poliment depuis l'application. Le membre qui met fin au parcours peut joindre un message de courtoisie ; l'autre membre en est informé et son crédit lui est restitué. Quand un membre attend la réponse de l'autre, l'échéance s'affiche dans l'application et des rappels peuvent être envoyés : 96 heures après le début du Sondeur, 48 heures après le dernier message du chat libre, et pour la vidéo au moins 48 heures après l'ouverture de l'étape et 24 heures après l'appel de l'autre. Sans réponse à l'échéance, le parcours est clôturé et le crédit de la personne qui attendait lui est restitué automatiquement sous forme de crédit. À l'étape de l'échange de coordonnées, le parcours ayant eu lieu, une absence de réponse sous 72 heures peut clore le parcours sans restitution. Un parcours resté sans aucune activité des deux membres pendant 7 jours peut être clôturé sans restitution.
 
-Droit de rétractation : conformément à l'article L221-28 du Code de la consommation, vous reconnaissez que le service numérique commence dès l'achat du crédit à votre demande expresse et renoncez à votre droit de rétractation de 14 jours une fois le crédit utilisé. Tant que le crédit n'a pas été utilisé, vous pouvez demander son remboursement dans ce délai en écrivant à l'adresse de contact.
+Droit de rétractation : vous disposez de 14 jours à compter du paiement pour vous rétracter, sans avoir à donner de motif, depuis votre profil (rubrique « Mes achats et factures », bouton « Se rétracter du contrat ici ») ou en écrivant à l'adresse de contact ; un accusé de réception vous est envoyé par e-mail. Si votre crédit n'a pas été utilisé, vous êtes remboursé intégralement. En payant, vous demandez expressément que votre parcours puisse commencer avant la fin de ce délai : si vous vous rétractez après son début, vous restez redevable d'un montant proportionnel au service déjà fourni (article L221-25 du Code de la consommation) ; une fois le parcours entièrement exécuté, vous ne pouvez plus vous rétracter (article L221-28). Le remboursement est fait sur le moyen de paiement utilisé, au plus tard 14 jours après votre demande.
 
-Une facture ou un reçu est disponible sur demande. Les prix peuvent être modifiés pour l'avenir ; le prix applicable est celui affiché au moment de l'achat.
+Une facture est émise pour chaque paiement : elle est disponible dans votre profil (rubrique « Mes achats et factures ») et votre reçu vous est envoyé par e-mail. Le prix affiché comprend la TVA applicable à votre pays. Les prix peuvent être modifiés pour l'avenir ; le prix applicable est celui affiché au moment de l'achat.
+
+BOLIGO fournit un service numérique conforme au contrat et répond de ses défauts de conformité dans les conditions prévues par les articles L224-25-12 et suivants du Code de la consommation.
 
 ## 6. Règles de conduite et modération
 
@@ -92,7 +94,7 @@ BOLIGO peut modifier les CGU. La version en vigueur est datée et consultable da
 
 ## 13. Droit applicable et litiges
 
-Les CGU sont soumises au droit français. En cas de litige, vous pouvez recourir gratuitement au médiateur de la consommation suivant : [À COMPLÉTER : médiateur de la consommation (nom et site)], ou à la plateforme européenne de règlement en ligne des litiges. À défaut d'accord amiable, les tribunaux français sont compétents.
+Les CGU sont soumises au droit français. Si vous résidez dans un autre pays, vous gardez la protection des règles impératives de votre pays de résidence. En cas de litige, écrivez d'abord à l'adresse de contact ; vous pouvez ensuite recourir gratuitement au médiateur de la consommation suivant : [À COMPLÉTER : médiateur de la consommation (nom et site)]. À défaut d'accord amiable, le litige est porté devant la juridiction compétente selon la loi.
 
 ## 14. Contact
 

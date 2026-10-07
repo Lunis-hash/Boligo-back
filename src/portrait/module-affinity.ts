@@ -1,13 +1,15 @@
 /**
  * Affinités par module du Grand Entretien et score global de compatibilité.
  *
- * Chaque module (0 à 10) reçoit un pourcentage calculé question par question
- * sur les réponses des deux membres :
- *  - question couverte par le moteur de divergences : gravité → similarité
- *    (critique 0, majeure 0,25, modérée 0,5, mineure 0,72 ; réponses
- *    différentes mais compatibles 0,85 ; identiques 1) ;
- *  - autre question comparable : identique 1, différente 0,65 ;
- *  - module 10 : ce que l'un recherche est comparé à ce que l'autre apporte.
+ * Chaque module (0 à 10) reçoit un pourcentage calculé sur les points de
+ * comparaison du moteur de divergences (une question, ou une règle croisée) :
+ *  - gravité → similarité (critique 0, majeure 0,25, modérée 0,5, mineure
+ *    0,72 ; réponses différentes mais compatibles 0,85 ; identiques 1) ;
+ *  - une question sans règle n'est jamais comparée (V7) : deux réponses
+ *    différentes sans fondement clinique ne font plus baisser l'affinité ;
+ *  - module 10 : ce que l'un recherche est comparé à ce que l'autre apporte ;
+ *  - échelles (attachement, émotions, dispute, personnalité) : seules les
+ *    combinaisons à risque entre les deux membres comptent.
  * Un module qui contient une divergence majeure ne peut pas dépasser 64 %,
  * une incompatibilité déclarée (critique) 35 %. Le score global est la moyenne
  * pondérée des modules, plafonnée selon le nombre de divergences majeures
@@ -15,29 +17,18 @@
  * Une incompatibilité déclarée ramène le score sous 55 % (« Incompatibilité
  * déclarée ») tout en gardant l'ordre entre deux profils incompatibles.
  */
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTION_INDEX } from '../interview/questions.data';
 import {
-  DIVERGENCE_RULES,
   Divergence,
   DivergenceReport,
   RawAnswers,
+  SEVERITY_SIMILARITY,
   Severity,
 } from '../matching/divergence.engine';
-import {
-  SCALE_ITEM_IDS,
-  psychometricSimilarities,
-} from '../psychometrics/psychometrics';
+import { psychometricSimilarities } from '../psychometrics/psychometrics';
 import { MODULES, ModuleInfo } from './portrait.phrases';
 import { cleanText } from './portrait.text';
 
-const SEVERITY_SIMILARITY: Record<Severity, number> = {
-  critique: 0,
-  majeure: 0.25,
-  moderee: 0.5,
-  mineure: 0.72,
-};
-const COMPATIBLE_DIFFERENT = 0.85;
-const NEUTRAL_DIFFERENT = 0.65;
 /** Plafond d'un module selon sa divergence la plus grave. */
 const MODULE_CAP: Partial<Record<Severity, number>> = {
   critique: 35,
@@ -59,57 +50,34 @@ const MAJOR_CAPS = [0.98, 0.79, 0.69, 0.59, 0.54];
 export const MIN_COMPARED_FOR_SCORE = 8;
 
 /**
- * Jamais comparés une à une : faits personnels, filtres déjà appliqués
- * (langues comprises), questions miroir et affirmations d'échelle (lues
- * ensemble par la psychométrie, plus fiable qu'une comparaison item par item).
+ * Divergences croisées tirées des échelles (signaux d'alerte, caractère
+ * exigeant, timidité) : elles ne sont pas des points de comparaison du moteur,
+ * leur gravité compte donc directement dans le module.
  */
-const NOT_COMPARED = new Set([
-  'M0_Q01',
-  'M0_Q02',
-  'M0_Q07',
-  'M0_Q10',
-  'M1_Q01',
-  'M1_Q04',
-  'M2_Q04',
-  'M2_Q05',
-  'M2_Q10',
-  'M3_Q02',
-  'M3_Q03',
-  'M3_Q07',
-  'M3_Q08',
-  'M6_Q02',
-  'M6_Q08',
-  'M10_Q01',
-  'M10_Q02',
-  'M10_Q03',
-  'M10_Q09',
-  // V6.1 : lus seulement croisés (signaux d'alerte, patience, attirance).
+const CROSS_COUNTED = new Set([
   'M8_Q10',
   'M9_Q19',
-  'M10_Q11',
-  'M10_Q12',
-  'M10_Q13',
-  'M10_Q14',
-  ...SCALE_ITEM_IDS,
+  'M9_Q16',
+  'M2_Q19',
+  // V7.1 : respect des limites et de la liberté de l'autre (contrôle).
+  'M9_Q24',
 ]);
 
 /**
- * Divergences croisées V6.1 (signaux d'alerte, caractère exigeant, timidité) :
- * leur question n'est pas comparée telle quelle, leur gravité compte donc
- * directement dans le module.
+ * Ce que l'un recherche (M10_Q03) face à ce que l'autre apporte (M10_Q09).
+ * V7 : C « chaleureux, attentionné, rassurant », D « calme, stable, fiable ».
  */
-const CROSS_COUNTED = new Set(['M8_Q10', 'M9_Q19', 'M9_Q16', 'M2_Q19']);
-
-/** Ce que l'un recherche (M10_Q03) face à ce que l'autre apporte (M10_Q09). */
 const SEEK_MATCHES_BRING: Record<string, string[]> = {
   A: ['A'],
   B: ['B'],
-  C: ['C'],
-  D: ['C', 'B'],
+  C: ['B', 'C'],
+  D: ['C'],
 };
 
-const RULED = new Set(DIVERGENCE_RULES.map((r) => r.questionId));
-const MODULE_OF = new Map(QUESTIONS.map((q) => [q.id, q.moduleNumber]));
+/** Module de chaque question, V7 et V6 (une divergence V6 reste rangée dans son module). */
+const MODULE_OF = new Map(
+  [...QUESTION_INDEX.values()].map((q) => [q.id, q.moduleNumber]),
+);
 
 export interface ModuleAffinity {
   id: string;
@@ -178,47 +146,29 @@ function rawVerdict(
   return point ? `Vigilance : ${point}` : `Vigilance sur ${info.focus}`;
 }
 
-/** Similarités question par question, regroupées par module. */
+/** Un point de comparaison et son poids (une échelle pèse plus qu'une question). */
+interface Point {
+  value: number;
+  weight: number;
+}
+
+/** Similarités point par point, regroupées par module. */
 function similaritiesByModule(
   a: RawAnswers,
   b: RawAnswers,
   report: DivergenceReport,
-): Map<number, number[]> {
-  const worstByQuestion = new Map<string, number>();
-  for (const d of report.divergences) {
-    const sim = SEVERITY_SIMILARITY[d.severity];
-    const prev = worstByQuestion.get(d.questionId);
-    worstByQuestion.set(
-      d.questionId,
-      prev === undefined ? sim : Math.min(prev, sim),
-    );
-  }
-
-  const byModule = new Map<number, number[]>();
-  const push = (module: number, value: number) => {
+): Map<number, Point[]> {
+  const byModule = new Map<number, Point[]>();
+  const push = (module: number | undefined, value: number, weight = 1) => {
+    if (module === undefined || weight <= 0) return;
     const list = byModule.get(module) ?? [];
-    list.push(value);
+    list.push({ value, weight });
     byModule.set(module, list);
   };
 
-  for (const q of QUESTIONS) {
-    if (NOT_COMPARED.has(q.id)) continue;
-    const ka = a[q.id];
-    const kb = b[q.id];
-    if (!ka || !kb) continue;
-    const flagged = worstByQuestion.get(q.id);
-    if (flagged !== undefined) push(q.moduleNumber, flagged);
-    else if (ka === kb) push(q.moduleNumber, 1);
-    else
-      push(
-        q.moduleNumber,
-        RULED.has(q.id) ? COMPATIBLE_DIFFERENT : NEUTRAL_DIFFERENT,
-      );
-  }
-
-  // Culture : la règle croisée porte sur M1_Q02 même si M1_Q02 n'est pas répondue des deux côtés.
-  const culture = worstByQuestion.get('M1_Q02');
-  if (culture !== undefined && !(a.M1_Q02 && b.M1_Q02)) push(1, culture);
+  // Questions et règles croisées comparées par le moteur.
+  for (const c of report.comparisons ?? [])
+    push(MODULE_OF.get(c.questionId), c.value);
 
   // Alchimie : ce que chacun recherche face à ce que l'autre apporte.
   for (const [seek, bring] of [
@@ -251,15 +201,14 @@ function similaritiesByModule(
   }
 
   for (const d of report.divergences) {
-    const module = MODULE_OF.get(d.questionId);
-    if (CROSS_COUNTED.has(d.questionId) && module !== undefined)
-      push(module, SEVERITY_SIMILARITY[d.severity]);
+    if (CROSS_COUNTED.has(d.questionId))
+      push(MODULE_OF.get(d.questionId), SEVERITY_SIMILARITY[d.severity]);
   }
 
-  // Échelles V6 : sécurité d'attachement, régulation, dispute, personnalité.
-  for (const { module, value, weight } of psychometricSimilarities(a, b)) {
-    for (let i = 0; i < weight; i++) push(module, value);
-  }
+  // Échelles : combinaisons à risque entre les deux membres, pondérées par la
+  // confiance accordée aux réponses (sincérité, acquiescement).
+  for (const { module, value, weight } of psychometricSimilarities(a, b))
+    push(module, value, weight);
 
   return byModule;
 }
@@ -290,8 +239,9 @@ export function buildModuleAffinities(
       continue;
     }
     const worst = worstDivergenceFor(report, info.number);
+    const total = sims.reduce((s, x) => s + x.weight, 0);
     const mean = Math.round(
-      (sims.reduce((s, x) => s + x, 0) / sims.length) * 100,
+      (sims.reduce((s, x) => s + x.value * x.weight, 0) / total) * 100,
     );
     const cap = worst ? MODULE_CAP[worst.severity] : undefined;
     const value = cap !== undefined ? Math.min(mean, cap) : mean;

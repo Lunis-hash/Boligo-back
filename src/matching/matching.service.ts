@@ -152,7 +152,12 @@ export class MatchingService {
 
     // Réponses du Grand Entretien des candidats : toute la fiche (score, modules,
     // textes) en est déduite — jamais d'une valeur inventée.
-    const viewer = { answers: viewerAnswers, mentalMap: viewerMentalMap };
+    const viewer = {
+      answers: viewerAnswers,
+      mentalMap: viewerMentalMap,
+      city: currentUser.city,
+      profile: currentUser.profile,
+    };
 
     const scored = candidatesToScore
       .map((m) => {
@@ -193,38 +198,23 @@ export class MatchingService {
     return map;
   }
 
-  // Auto-réparer les journeys en phase_harmonie où un utilisateur a tout répondu
+  // Auto-réparer les journeys en phase_harmonie où les deux membres ont tout répondu
   // Et aussi faire avancer chat_libre → video après 3 jours
   private async autoAdvanceStaleJourneys(userId: string) {
     const journeys = await this.prisma.journey.findMany({
       where: {
         OR: [{ userAId: userId }, { userBId: userId }],
         currentStep: { in: ['phase_harmonie', 'chat_libre'] },
+        result: 'en_cours',
       },
-      include: {
-        harmonyQuestions: { include: { responses: true } },
-      },
+      select: { id: true, currentStep: true, stepStartDate: true },
     });
 
     for (const journey of journeys) {
-      // phase_harmonie → chat_libre : si un utilisateur a répondu à toutes les questions
+      // phase_harmonie → chat_libre : uniquement par JourneyService, qui
+      // vérifie les signalements du Sondeur. Sans lui, rien ne s'ouvre.
       if (journey.currentStep === 'phase_harmonie') {
-        const allQuestions = journey.harmonyQuestions;
-        if (allQuestions.length === 0) continue;
-
-        const userAHasAll = allQuestions.every(q =>
-          q.responses.some(r => r.userId === journey.userAId),
-        );
-        const userBHasAll = allQuestions.every(q =>
-          q.responses.some(r => r.userId === journey.userBId),
-        );
-
-        if (userAHasAll && userBHasAll) {
-          await this.prisma.journey.update({
-            where: { id: journey.id },
-            data: { currentStep: 'chat_libre', stepStartDate: new Date() },
-          });
-        }
+        await this.journeyService?.openChatIfReady(journey.id);
       }
 
       // chat_libre → video : si 3 jours de chat sont passés
@@ -233,8 +223,12 @@ export class MatchingService {
         const daysSinceChat = (Date.now() - chatStart) / (1000 * 60 * 60 * 24);
 
         if (daysSinceChat >= 3) {
-          await this.prisma.journey.update({
-            where: { id: journey.id },
+          await this.prisma.journey.updateMany({
+            where: {
+              id: journey.id,
+              currentStep: 'chat_libre',
+              result: 'en_cours',
+            },
             data: { currentStep: 'video', stepStartDate: new Date() },
           });
         }
@@ -243,14 +237,32 @@ export class MatchingService {
   }
 
   private async resolveCompatibilityScore(userId: string, targetUserId: string) {
-    const [viewerMap, candidateMap, answers] = await Promise.all([
+    const [viewerMap, candidateMap, answers, users] = await Promise.all([
       this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
       this.prisma.mentalMap.findFirst({ where: { userId: targetUserId }, orderBy: { generatedAt: 'desc' } }),
       this.answersByUser([userId, targetUserId]),
+      // V7.1 : lieu de vie de chacun, pour lire « je reste où je suis ».
+      this.prisma.user.findMany({
+        where: { id: { in: [userId, targetUserId] } },
+        select: {
+          id: true,
+          city: true,
+          profile: { select: { displayedCity: true } },
+        },
+      }),
     ]);
+    const home = (id: string) => users.find((u) => u.id === id);
     const resolved = resolveScore(
-      { answers: answers.get(userId) ?? {}, mentalMap: viewerMap },
-      { answers: answers.get(targetUserId) ?? {}, mentalMap: candidateMap },
+      {
+        ...home(userId),
+        answers: answers.get(userId) ?? {},
+        mentalMap: viewerMap,
+      },
+      {
+        ...home(targetUserId),
+        answers: answers.get(targetUserId) ?? {},
+        mentalMap: candidateMap,
+      },
     );
     const top = resolved.report.divergences[0];
     const summary = top
@@ -354,7 +366,10 @@ export class MatchingService {
       const testUnlock = isVideoUnlockEnv === 'true' || isVideoUnlockEnv === '1';
       const videoEnabled = step === 'video' || (testUnlock && step === 'chat_libre');
 
-      const { _score, id, firstName, ...view } = buildMatchView(viewer, {
+      // V7.1 : lieu de vie du membre, pour lire « je reste où je suis ».
+      const self = p.sourceUserId === userId ? p.sourceUser : p.targetUser;
+      const me = { ...viewer, city: self.city, profile: self.profile };
+      const { _score, id, firstName, ...view } = buildMatchView(me, {
         id: partner.id,
         firstName: partner.firstName,
         gender: partner.gender,
@@ -690,11 +705,20 @@ export class MatchingService {
       },
     });
 
-    const [viewerMap, answers] = await Promise.all([
+    const [viewerMap, answers, self] = await Promise.all([
       this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
       this.answersByUser([userId, ...proposals.map((p) => p.sourceUser.id)]),
+      // V7.1 : lieu de vie du membre, pour lire « je reste où je suis ».
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { city: true, profile: { select: { displayedCity: true } } },
+      }),
     ]);
-    const viewer = { answers: answers.get(userId) ?? {}, mentalMap: viewerMap };
+    const viewer = {
+      ...self,
+      answers: answers.get(userId) ?? {},
+      mentalMap: viewerMap,
+    };
 
     return proposals.map((p) => {
       const { _score, id, firstName, ...view } = buildMatchView(viewer, {

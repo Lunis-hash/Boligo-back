@@ -3,11 +3,13 @@ import {
   THEME_LIST,
 } from '../matching/divergence.engine';
 import {
+  SAFETY_TEMPLATES,
   assembleSondeur,
   describeReportForAi,
   questionSignature,
   validateSondeurGrid,
 } from './sondeur.generator';
+import { AGREEMENTS, agreementProbes } from './sondeur.pool';
 
 describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
   const report = buildDivergenceReport(
@@ -43,15 +45,22 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     });
   });
 
-  it('cible les divergences réelles avant tout gabarit', () => {
+  it('cible les divergences réelles avant tout gabarit, sans jamais citer les réponses', () => {
     const qs = assembleSondeur({ report, firstNames: ['Steve', 'Nadia'] });
     const famille = qs.find((q) => q.day === 1 && q.themeKey === 'famille');
     expect(famille?.source).toBe('divergence');
     expect(famille?.text).toMatch(/enfants/i);
-    expect(famille?.text).toContain('Oui, absolument');
-    const intimite = qs.find((q) => q.day === 2 && q.themeKey === 'intimite');
-    expect(intimite?.source).toBe('divergence');
-    expect(intimite?.text).toMatch(/fidélité/i);
+    // Le sujet est nommé, jamais ce que chacun a répondu.
+    const answers = report.divergences.flatMap((d) => [d.a.text, d.b.text]);
+    for (const q of qs) {
+      expect(q.text).not.toMatch(/[«»]/);
+      for (const answer of answers) expect(q.text).not.toContain(answer);
+    }
+    const intimite = qs.filter(
+      (q) => q.themeKey === 'intimite' && q.source === 'divergence',
+    );
+    expect(intimite).toHaveLength(1);
+    expect(intimite[0].text).toMatch(/fidélité/i);
     // aucun écart détecté sur la spiritualité → gabarit du thème
     expect(qs.find((q) => q.themeKey === 'spiritualite')?.source).toBe(
       'gabarit',
@@ -104,7 +113,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(validateSondeurGrid(qs)).toBe(true);
   });
 
-  it('questions de l’IA relues : elles passent avant les gabarits, sauf jargon ou redite', () => {
+  it('questions de l’IA (toujours relues) : elles passent avant les gabarits, sauf jargon ou redite', () => {
     const aiFor = (
       day: number,
       themeKey: (typeof THEME_LIST)[number],
@@ -126,7 +135,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       aiFor(
         1,
         'argent',
-        'Êtes-vous plutôt anxieux quand votre compte en banque baisse en fin de mois ?',
+        'Êtes-vous plutôt évitant quand votre compte en banque baisse en fin de mois ?',
       ),
       aiFor(
         1,
@@ -144,11 +153,12 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       history,
     };
 
-    // Sans relecture, la divergence réelle garde la priorité.
+    // Une question de l'IA transmise a toujours été relue en amont : elle
+    // passe avant le gabarit ciblé, que preferAi soit posé ou non.
     const plain = assembleSondeur(base);
     expect(
       plain.find((q) => q.day === 1 && q.themeKey === 'famille')?.source,
-    ).toBe('divergence');
+    ).toBe('ia');
 
     const reviewed = assembleSondeur({ ...base, preferAi: true });
     const famille = reviewed.find(
@@ -157,7 +167,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(famille?.source).toBe('ia');
     expect(famille?.text).toMatch(/Qui, dans votre famille/);
     // Jargon clinique : écartée. Redite d'une question déjà posée : écartée.
-    expect(reviewed.some((q) => /anxieux/.test(q.text))).toBe(false);
+    expect(reviewed.some((q) => /évitant/.test(q.text))).toBe(false);
     expect(reviewed.some((q) => /grosse dépense commune/.test(q.text))).toBe(
       false,
     );
@@ -180,8 +190,23 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(texts).not.toMatch(/vivable/i);
     const comm = qs.filter((q) => q.themeKey === 'communication');
     expect(comm.every((q) => !/«/.test(q.text))).toBe(true);
-    expect(comm.map((q) => q.text).join(' ')).toMatch(
-      /plus en sécurité|jamais être franchie|sans se faire de mal|dispute était terminée|signal pour arrêter|baisser les armes/,
+    expect(comm.map((q) => q.subject)).toEqual([
+      'securite',
+      'securite',
+      'securite',
+    ]);
+    // Une question de limite écrite à l'avance : une norme partagée ou une
+    // valeur, jamais le seuil personnel de chacun.
+    for (const q of comm)
+      expect(SAFETY_TEMPLATES[q.day].map((t) => t.text)).toContain(q.text);
+    expect(comm.map((q) => q.text).join(' ')).not.toMatch(
+      /à quel moment|une seule fois|plus en sécurité/i,
+    );
+    // Jamais un plan de mise en sécurité : l'autre lit la réponse.
+    expect(texts).not.toMatch(/vous protéger|où iriez|refuge|fuir/i);
+    // Jamais de réconciliation ni de « reprendre plus tard » après la violence.
+    expect(texts).not.toMatch(
+      /baisser les armes|reprendre plus tard|réconcili|revenir vers/i,
     );
     const ai = describeReportForAi(violent, ['A', 'B']);
     expect(ai).toMatch(/LIMITE DE SÉCURITÉ/);
@@ -283,6 +308,59 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       expect(again.map((q) => q.text)).toEqual(a.map((q) => q.text));
       const common = a.filter((q, i) => q.text === b[i].text).length;
       expect(common).toBeLessThan(21);
+    });
+
+    it('accord déjà exploré : une autre relance propre, dans l’angle du jour, pas une question générique', () => {
+      const agreed = buildDivergenceReport({ M4_Q01: 'A' }, { M4_Q01: 'A' });
+      const agreement = AGREEMENTS['M4_Q01:A'];
+      const own = agreementProbes(agreement);
+      const first = assembleSondeur({ report: agreed, firstNames: ['A', 'B'] });
+      const second = assembleSondeur({
+        report: agreed,
+        firstNames: ['A', 'B'],
+        history: first.map((q) => q.text),
+      });
+      const served = [first, second].map(
+        (qs) => qs.find((q) => q.source === 'convergence')!,
+      );
+      for (const q of served) {
+        const probe = own.find(
+          (t) => q.text === `${agreement.statement} ${t.text}`,
+        );
+        expect(probe?.angle).toBe(q.day);
+      }
+      expect(served[1].text).not.toBe(served[0].text);
+    });
+
+    it('relance d’accord sous l’angle du jour : ce qui est protégé au jour 1, l’origine au jour 2, le quotidien au jour 3', () => {
+      // Même accord, repoussé d'un jour à l'autre par des questions de l'IA
+      // qui prennent le créneau « argent » des jours précédents.
+      const agreed = buildDivergenceReport({ M4_Q01: 'A' }, { M4_Q01: 'A' });
+      const agreement = AGREEMENTS['M4_Q01:A'];
+      const aiTexts = [
+        "Quel souvenir d'argent partagé aimeriez-vous raconter à l'autre ?",
+        'Quelle dépense vous rend fier ou fière, dans une année ordinaire ?',
+      ];
+      for (const day of [1, 2, 3]) {
+        const qs = assembleSondeur({
+          report: agreed,
+          firstNames: ['A', 'B'],
+          aiQuestions: aiTexts.slice(0, day - 1).map((text, i) => ({
+            day: i + 1,
+            theme: 'x',
+            emoji: '💬',
+            text,
+            options: ['A', 'B', 'C'],
+            themeKey: 'argent' as const,
+          })),
+        });
+        const q = qs.find((x) => x.source === 'convergence')!;
+        expect(q.day).toBe(day);
+        const probe = agreementProbes(agreement).find(
+          (t) => q.text === `${agreement.statement} ${t.text}`,
+        );
+        expect(probe?.angle).toBe(day);
+      }
     });
 
     it('approfondit les points d’accord réels, deux fois par jour au plus', () => {

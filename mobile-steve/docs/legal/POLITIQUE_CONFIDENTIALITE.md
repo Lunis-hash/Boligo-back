@@ -1,6 +1,6 @@
 # Politique de confidentialité — BOLIGO
 
-Version du 2026-10-06.
+Version du 2026-10-07.
 
 Cette politique explique quelles données BOLIGO collecte, pourquoi, combien de temps, avec qui elles sont partagées et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.
 
@@ -14,7 +14,7 @@ Identité et contact : prénom, nom, adresse e-mail, numéro de téléphone, dat
 
 Entretien et profil : vos réponses aux onze modules du Grand Entretien, la carte mentale générée (synthèse, biographie, valeurs, besoins, lignes rouges, scores), vos réponses au Sondeur.
 
-Certaines réponses peuvent révéler des convictions religieuses ou philosophiques, votre origine culturelle, votre vie sexuelle ou votre état de santé psychologique. Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli à l'inscription, et uniquement pour établir votre compatibilité.
+Certaines réponses peuvent révéler votre origine ethnique ou culturelle, des convictions religieuses ou philosophiques, votre vie sexuelle ou, pour des réponses données à une version antérieure de l'entretien, votre état de santé psychologique (catégories de l'article 9 du RGPD). Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli dans l'entretien juste avant les questions sur votre origine, votre religion, votre vie intime et les violences vécues, et uniquement pour établir votre compatibilité. Ces questions sont facultatives : si vous les refusez, elles ne vous sont plus posées, les réponses qui touchent à la foi ou à l'intimité ne vous sont pas proposées dans les autres questions, et aucune réponse de ce type n'est enregistrée. Certaines réponses peuvent apparaître, résumées, sur votre profil.
 
 Échanges : messages du chat, réponses comparées, consentements à l'échange de contacts, métadonnées des appels vidéo (date, durée). Le contenu audio et vidéo des appels n'est ni enregistré ni conservé.
 
@@ -28,9 +28,11 @@ Programme partenaires (marques, ambassadeurs commerciaux, créateurs de contenu)
 
 Fournir le service de mise en relation (création du compte, entretien, compatibilité, parcours, messagerie, vidéo) : exécution du contrat.
 
-Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment en supprimant votre compte.
+Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment depuis votre profil (vos réponses sensibles sont alors effacées et votre portrait recalculé) ou en supprimant votre compte.
 
 Assurer la sécurité, prévenir les fraudes et modérer les contenus : intérêt légitime de BOLIGO et de ses membres.
+
+Détecter dans les réponses au Sondeur une détresse, une menace, une violence ou l'indice qu'un membre a moins de 18 ans, afin de protéger les membres (réponse mise en attente, ressources d'aide de votre pays, examen par l'équipe de modération, alerte immédiate de l'équipe pour les cas urgents) : intérêt légitime de BOLIGO et de ses membres ; lorsqu'une réponse contient une donnée sensible, votre consentement explicite aux questions sensibles ; en cas de danger immédiat, la sauvegarde des intérêts vitaux des personnes (articles 6.1.d et 9.2.c du RGPD).
 
 Gérer les paiements et la comptabilité : exécution du contrat et obligation légale.
 
@@ -40,13 +42,17 @@ Envoyer les e-mails de service (vérification, réinitialisation, notifications 
 
 ## 4. Traitements automatisés et intelligence artificielle
 
-BOLIGO peut utiliser des modèles d'intelligence artificielle pour proposer des questions du Sondeur et assister la modération des messages. Pour un parcours payé, un modèle d'IA lit aussi les réponses des deux membres au Sondeur afin de rédiger une lecture de chaque journée, une question d'approfondissement pour la journée suivante et un bilan à la fin des trois jours. Une lecture n'est rédigée que lorsque les deux membres ont répondu à toute la journée ; elle n'est visible que par eux deux et elle est effacée avec le parcours. Votre portrait (synthèse, biographie, valeurs, besoins) et vos scores de compatibilité sont calculés par des règles automatiques, sans modèle d'IA, sauf si BOLIGO active la rédaction assistée du portrait. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.
+BOLIGO peut utiliser des modèles d'intelligence artificielle pour assister la modération des messages. Pour un parcours payé, un modèle d'IA propose aussi les questions du Sondeur, à partir des écarts entre les deux entretiens et du prénom, de l'âge, du genre et de la ville de chaque membre (jamais d'adresse, de coordonnées ni de photo) ; un second modèle d'IA, d'un autre fournisseur, relit chaque question avant qu'elle soit posée. Ce modèle lit aussi les réponses des deux membres au Sondeur afin de rédiger une lecture de chaque journée, une question d'approfondissement pour la journée suivante et un bilan à la fin des trois jours. Une lecture n'est rédigée que lorsque les deux membres ont répondu à toute la journée ; elle n'est visible que par eux deux et elle est effacée avec le parcours. Votre portrait (synthèse, biographie, valeurs, besoins) et vos scores de compatibilité sont calculés par des règles automatiques, sans modèle d'IA, sauf si BOLIGO active la rédaction assistée du portrait. Ces traitements ne produisent aucune décision ayant des effets juridiques à votre égard : ils orientent la présentation des profils et vous restez libre d'engager ou non un parcours.
+
+Chaque réponse au Sondeur est relue à son envoi, par des règles automatiques puis par un modèle d'IA, pour écarter une insulte, un contenu sexuel explicite ou des coordonnées, et pour repérer un danger. Une réponse qui évoque un danger peut être mise en attente jusqu'à l'examen par une personne de l'équipe de modération : l'IA ne clôt jamais un parcours seule.
+
+Certaines questions du Sondeur partent d'un point où vos réponses à l'entretien se rejoignent : votre interlocuteur comprend alors que vous avez répondu de la même façon sur ce point. Une réponse que vous êtes seul(e) à avoir donnée n'est jamais révélée, et un sujet sensible n'est jamais repris sans l'accord des deux membres.
 
 Les réponses transmises aux prestataires d'IA sont limitées au nécessaire et associées à votre prénom et à votre âge, jamais à votre adresse e-mail ni à votre téléphone. Vous pouvez demander une explication des éléments ayant conduit à un score et une intervention humaine en écrivant à l'adresse de contact.
 
 ## 5. Destinataires et sous-traitants
 
-Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement), Daily.co (appels vidéo), Groq et OpenRouter (modèles d'IA ; par OpenRouter, les modèles d'Anthropic et d'OpenAI, uniquement chez des fournisseurs qui n'utilisent pas les données transmises pour entraîner leurs modèles), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
+Vos données sont accessibles aux seules personnes habilitées de BOLIGO et aux sous-traitants suivants, liés par contrat : Supabase (base de données, Union européenne), Render (hébergement de l'API, États-Unis), Stripe (paiement, factures et calcul de la TVA), Daily.co (appels vidéo), Groq et OpenRouter (modèles d'IA ; par OpenRouter, les modèles d'Anthropic et d'OpenAI, uniquement chez des fournisseurs qui n'utilisent pas les données transmises pour entraîner leurs modèles), Expo (notifications), la Fondation OpenStreetMap (service Nominatim : sur le site web, si vous utilisez « Détecter ma position », votre position arrondie à environ un kilomètre lui est transmise pour trouver votre ville ; elle n'est pas conservée par BOLIGO), et le prestataire d'envoi d'e-mails configuré par BOLIGO.
 
 Les transferts hors Union européenne (Render, Daily.co, prestataires d'IA et de notifications) sont encadrés par les clauses contractuelles types de la Commission européenne ou par le cadre de protection des données UE-États-Unis.
 

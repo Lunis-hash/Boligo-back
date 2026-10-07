@@ -37,3 +37,29 @@ describe('lectures du Sondeur (app)', () => {
     expect(readingCaption({ ...day1, source: 'regles', together: [], toDiscuss: [], openers: [] } as never)).toBe('Pistes pour en parler');
   });
 });
+
+describe('extraits cités sous chaque point', () => {
+  it('garde les paires valides et ignore le reste', () => {
+    const insights = parseSondeurInsights({
+      days: [
+        {
+          day: 1,
+          source: 'ia',
+          headline: 'Journée 1.',
+          together: ['Vous parlez tous deux de vos enfants.'],
+          togetherQuotes: [['deux enfants', 'des enfants oui']],
+          toDiscuss: [
+            { theme: 'Argent & dettes', text: 'Le partage.', quotes: ['moitié-moitié', 'celui qui invite'] },
+            { theme: 'Lieu', text: 'Le lieu.', quotes: ['seul'] },
+          ],
+          openers: [],
+        },
+      ],
+      review: null,
+      writing: false,
+    });
+    expect(insights.days[0].togetherQuotes).toEqual([['deux enfants', 'des enfants oui']]);
+    expect(insights.days[0].toDiscuss[0].quotes).toEqual(['moitié-moitié', 'celui qui invite']);
+    expect(insights.days[0].toDiscuss[1].quotes).toBeUndefined();
+  });
+});

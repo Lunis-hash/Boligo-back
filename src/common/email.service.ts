@@ -347,9 +347,50 @@ export class EmailService implements OnModuleInit {
     planName: string,
     stripePaymentRef: string,
     invoiceUrl?: string,
+    billing: {
+      invoiceNumber?: string;
+      exclTaxCents?: number;
+      taxCents?: number;
+      ratePercent?: number;
+      taxMention?: string;
+      earlyStartConsentAt?: string;
+    } = {},
   ) {
     const subject = `Paiement confirmé — Bienvenue dans le Parcours Harmonie, ${firstName} !`;
     const formattedAmount = amountEur.toFixed(2).replace('.', ',');
+    const cents = (c: number) => (c / 100).toFixed(2).replace('.', ',');
+    const rate = (billing.ratePercent ?? 0).toString().replace('.', ',');
+    const taxRow =
+      typeof billing.taxCents === 'number' && billing.taxCents > 0
+        ? `<tr><td style="padding: 6px 20px; font-size: 12.5px; color: #8A7B98;">dont TVA (${rate} %)</td><td style="padding: 6px 20px; font-size: 12.5px; color: #8A7B98; text-align: right;">${cents(billing.taxCents)} €</td></tr>`
+        : billing.taxMention
+          ? `<tr><td colspan="2" style="padding: 6px 20px; font-size: 12px; color: #8A7B98;">${billing.taxMention}</td></tr>`
+          : '';
+    const invoiceRow = billing.invoiceNumber
+      ? `<tr><td style="padding: 10px 20px; font-size: 13.5px; color: #5E4F6E;">Facture</td><td style="padding: 10px 20px; font-size: 13.5px; font-weight: 600; color: #2A1B3D; text-align: right;">${billing.invoiceNumber}</td></tr>`
+      : '';
+    const consentAt = billing.earlyStartConsentAt
+      ? new Date(billing.earlyStartConsentAt)
+      : null;
+    const consentNote =
+      consentAt && !Number.isNaN(consentAt.getTime())
+        ? `Le ${consentAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })}, vous avez demandé que votre parcours puisse commencer avant la fin du délai de rétractation de 14 jours : si vous vous rétractez après son début, un montant proportionnel au service déjà fourni reste dû.`
+        : '';
+    const seller = [
+      process.env.BILLING_SELLER_NAME?.trim() || 'BOLIGO',
+      process.env.BILLING_SELLER_LEGAL_FORM?.trim(),
+    ]
+      .filter(Boolean)
+      .join(', ');
+    const sellerDetails = [
+      process.env.BILLING_SELLER_ADDRESS?.trim(),
+      process.env.BILLING_SELLER_SIREN?.trim() &&
+        `SIREN ${process.env.BILLING_SELLER_SIREN.trim()}`,
+      process.env.BILLING_SELLER_VAT_NUMBER?.trim() &&
+        `TVA ${process.env.BILLING_SELLER_VAT_NUMBER.trim()}`,
+    ]
+      .filter(Boolean)
+      .join(' · ');
     const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
     const invoiceBtn = invoiceUrl
       ? `<a href="${invoiceUrl}" style="display: inline-block; margin-top: 16px; padding: 12px 28px; background: linear-gradient(135deg, #C62A6E, #A32159); color: #FFFFFF; text-decoration: none; border-radius: 12px; font-size: 14px; font-weight: 700;">Télécharger ma facture</a>`
@@ -417,15 +458,20 @@ export class EmailService implements OnModuleInit {
                           <td style="padding: 10px 20px; font-size: 13.5px; color: #5E4F6E;">Référence Stripe</td>
                           <td style="padding: 10px 20px; font-size: 11px; font-weight: 600; color: #8A7B98; text-align: right; font-family: monospace;">${stripePaymentRef}</td>
                         </tr>
+                        ${invoiceRow}
                         <tr style="border-top: 1.5px solid rgba(20,16,14,0.08);">
-                          <td style="padding: 14px 20px; font-size: 15px; font-weight: 800; color: #2A1B3D;">Total payé</td>
+                          <td style="padding: 14px 20px; font-size: 15px; font-weight: 800; color: #2A1B3D;">Total payé TTC</td>
                           <td style="padding: 14px 20px; font-size: 20px; font-weight: 900; color: #1A8A4A; text-align: right;">${formattedAmount} €</td>
                         </tr>
+                        ${taxRow}
                       </table>
                     </div>
                     <div style="text-align: center; margin-top: 8px;">
                       ${invoiceBtn}
                     </div>
+                    <p style="margin: 18px 0 0; font-size: 12px; line-height: 1.6; color: #8A7B98;">
+                      ${consentNote} Vous pouvez vous rétracter pendant 14 jours à compter du paiement depuis votre profil, rubrique « Mes achats » (« Se rétracter du contrat ici »).
+                    </p>
                   </td>
                 </tr>
 
@@ -477,9 +523,9 @@ export class EmailService implements OnModuleInit {
                 <!-- Footer -->
                 <tr>
                   <td style="padding: 20px 30px; background-color: #FFF8FA; border-top: 1px solid rgba(20, 16, 14, 0.05); text-align: center;">
-                    <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; color: #5E4F6E;">BOLIGO — Société HARMONIE</p>
-                    <p style="margin: 0; font-size: 10px; color: #8A7B98;">45 rue Cécile Duparc, 95870 Bezons, France · TVA FR XX XXX XXX XXX</p>
-                    <p style="margin: 6px 0 0; font-size: 10px; color: #D9CFE0;">Cet email constitue votre reçu de paiement. Conservez-le pour vos archives.</p>
+                    <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; color: #5E4F6E;">${seller}</p>
+                    ${sellerDetails ? `<p style="margin: 0; font-size: 10px; color: #8A7B98;">${sellerDetails}</p>` : ''}
+                    <p style="margin: 6px 0 0; font-size: 10px; color: #8A7B98;">Cet e-mail est votre reçu de paiement ; la facture est disponible dans l’application. Conservez-le.</p>
                   </td>
                 </tr>
               </table>

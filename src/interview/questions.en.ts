@@ -1,5 +1,5 @@
 /**
- * Grand Entretien BOLIGO — version anglaise (questionnaire V6).
+ * Grand Entretien BOLIGO — version anglaise (questionnaire V7).
  *
  * Mêmes identifiants et mêmes clés d'options que `questions.data.ts` : seule la
  * langue d'affichage change. Une réponse « B » a donc le même sens quelle que
@@ -18,6 +18,8 @@ export interface QuestionTranslation {
   text: string;
   /** Textes des options, dans l'ordre des clés ; absent pour une échelle. */
   options?: string[];
+  /** V7.1 — aide affichée sous la question. */
+  assistance?: string;
 }
 
 const AGREEMENT_EN = [
@@ -29,8 +31,6 @@ const AGREEMENT_EN = [
 ];
 
 const FREQUENCY_EN = ['Never', 'Rarely', 'Sometimes', 'Often', 'Very often'];
-
-const SEE_MYSELF = 'I see myself as someone who';
 
 export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   // ── Module 0 — Non-negotiable filters
@@ -63,24 +63,26 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
   M0_Q04: {
     text: 'Your current situation:',
+    assistance:
+      'BOLIGO is only for people who are free to commit: single, separated with a finalised divorce, or widowed.',
     options: [
       'Single',
       'Separated / divorced',
       'Widowed',
-      'In a relationship transition',
+      'In transition: separation or divorce not yet finalised',
     ],
   },
   M0_Q05: {
-    text: 'Do you have dependent children?',
+    text: 'Do you have children?',
     options: [
       'No children',
-      'Yes, one child',
-      'Yes, two or more',
-      'Yes, but they are independent (18+)',
+      'Yes, one dependent child',
+      'Yes, two or more dependent children',
+      'Yes, and they are all independent (18+)',
     ],
   },
   M0_Q06: {
-    text: 'Do you want children in the future?',
+    text: 'Do you want to have children (or more children) in the future?',
     options: [
       'Yes, absolutely',
       'Yes, if the conditions are right',
@@ -88,25 +90,62 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'No, that’s final',
     ],
   },
+  M0_Q14: {
+    text: 'A partner who already has children:',
+    options: [
+      'That suits me completely',
+      'That suits me, as long as they don’t live with us full-time',
+      'I’d rather avoid it',
+      'I couldn’t accept it',
+    ],
+  },
   M0_Q07: {
     text: 'Your level of education:',
     options: [
-      'No diploma / vocational qualification',
-      'High-school diploma (baccalaureate, A-levels)',
-      'Two to four years of higher education',
-      'Five years or more (master’s level and above)',
+      'No diploma, or short vocational training',
+      'Completed secondary school (high-school diploma or equivalent)',
+      'Two to four years of higher education (bachelor’s, associate degree…)',
+      'Five years or more of higher education (master’s, doctorate…)',
     ],
   },
   M0_Q09: {
     text: 'Do you smoke?',
     options: ['No, never', 'Occasionally', 'Yes, regularly'],
   },
-  M0_Q08: {
-    text: 'Tobacco, alcohol or other substances in a partner:',
+  M0_Q11: {
+    text: 'Tobacco in a partner:',
     options: [
-      'A deal-breaker — I couldn’t live with it',
-      'Acceptable in moderation, without excess',
-      'I use them myself occasionally',
+      'I couldn’t live with it',
+      'Acceptable if it stays occasional',
+      'Doesn’t matter to me',
+    ],
+  },
+  M0_Q12: {
+    text: 'Do you drink alcohol yourself?',
+    options: [
+      'Never',
+      'Only on occasions (celebrations, meals)',
+      'Every week',
+      'Almost every day',
+    ],
+  },
+  M0_Q13: {
+    text: 'Alcohol in a partner:',
+    options: [
+      'I couldn’t live with it, even occasionally',
+      'Acceptable if it stays occasional',
+      'Doesn’t matter to me',
+    ],
+  },
+  M0_Q15: {
+    text: 'Yourself, gambling (sports betting, casino, lottery):',
+    options: ['Never', 'Rarely, for fun', 'Every week', 'Almost every day'],
+  },
+  M0_Q16: {
+    text: 'Gambling (sports betting, casino, lottery) in a partner:',
+    options: [
+      'I couldn’t accept it, even rarely',
+      'Acceptable if it stays rare and low-stakes',
       'Doesn’t matter to me',
     ],
   },
@@ -121,19 +160,26 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Wolof',
       'Portuguese — Português',
       'Spanish — Español',
+      'Creole — Kreyòl',
       'Another language (please specify)',
     ],
   },
 
   // ── Module 1 — Identity & culture
-  M1_Q01: {
-    text: 'Your continent of origin or cultural reference (two at most if you have mixed heritage):',
+  M1_Q21: {
+    text: 'Your region of origin or cultural reference (two at most if you have mixed heritage):',
     options: [
-      'Sub-Saharan Africa',
-      'Maghreb / Middle East',
+      'West Africa',
+      'Central Africa',
+      'East Africa and the Indian Ocean (Madagascar, Comoros…)',
+      'Southern Africa',
+      'North Africa (Maghreb)',
+      'Middle East',
+      'Caribbean (French Antilles, Haiti…)',
+      'North America',
+      'Latin America',
       'Europe',
       'Asia',
-      'Americas / Caribbean',
       'Oceania',
     ],
   },
@@ -142,84 +188,63 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'The same as mine',
       'A close or compatible culture',
-      'A different but open culture',
+      'Rather a culture different from mine',
       'I have no preference',
     ],
   },
-  M1_Q03: {
-    text: 'How important are the marriage traditions of your culture to you?',
+  M1_Q16: {
+    text: 'Your religion or belief:',
     options: [
-      'Central — I will respect all of them (dowry, zaffa, sacred fire, lazo…)',
-      'Important — I’ll keep the main ones',
-      'Moderate — I’ll choose a few',
-      'Not very important — I prefer personal symbolism',
+      'Christian: Catholic',
+      'Christian: Protestant or Evangelical',
+      'Christian: another Church',
+      'Muslim',
+      'Jewish',
+      'Buddhist',
+      'Hindu',
+      'A traditional or ancestral religion',
+      'A personal spirituality, without religion',
+      'No religion',
+      'Another religion',
     ],
   },
-  M1_Q04: {
-    text: 'Which of these marriage traditions represents you best?',
+  M1_Q17: {
+    text: 'Your religious practice (prayer, services, fasting…):',
     options: [
-      'Dowry / Blessings / Dances / Henna (Africa)',
-      'Ring / White dress / Banquet (Europe)',
-      'Sacred fire / Tea ceremony / Ribbons (Asia)',
-      'Bouquet / Lazo / Dance party (Americas)',
-      'Zaffa / Henna / Religious contract (Middle East)',
-      'Natural rituals / Songs / Tattoos (Oceania)',
+      'Every day',
+      'Every week',
+      'Mostly for religious holidays and major occasions',
+      'Rarely or never',
     ],
   },
-  M1_Q05: {
-    text: 'Your religion or spirituality:',
+  M1_Q18: {
+    text: 'If the person you love did not share your religion or beliefs:',
     options: [
-      'Practising Christian',
-      'Practising Muslim',
-      'Practising Jew',
-      'Buddhist / Hindu',
-      'Agnostic / Atheist',
-      'Spiritual, with no defined religion',
+      'It wouldn’t be possible: I’m looking for someone who shares them',
+      'It would be a condition: they would have to adopt mine before marriage',
+      'I would wish for it, without making it a condition',
+      'We would each keep our own, respecting the other’s',
+      'I could adopt theirs myself',
     ],
   },
-  M1_Q06: {
-    text: 'Will your religion have an impact on your partner?',
+  M1_Q19: {
+    text: 'Your eating habits (religious rules or convictions):',
     options: [
-      'Yes — the same faith is required',
-      'Yes — my partner will have to respect my practices',
-      'Yes — but I’m open to other beliefs',
-      'No — religion is a personal matter',
+      'I eat halal, strictly',
+      'I eat kosher, strictly',
+      'I’m vegetarian or vegan',
+      'Another strict rule (religious or personal)',
+      'A few rules, which I adapt to the context',
+      'No rules: I eat everything',
     ],
   },
-  M1_Q08: {
-    text: 'The language spoken at home:',
+  M1_Q20: {
+    text: 'For your own relationship, polygamy (one husband with several wives):',
     options: [
-      'My mother tongue only',
-      'French or the language of the country I live in',
-      'Bilingual — two languages',
-      'Doesn’t matter as long as we understand each other',
-    ],
-  },
-  M1_Q09: {
-    text: 'Your relationship with dietary restrictions:',
-    options: [
-      'Strict — halal, kosher, vegetarian or another conviction',
-      'Present but flexible depending on the context',
-      'None — I eat everything',
-      'A topic I’ve never really thought about',
-    ],
-  },
-  M1_Q10: {
-    text: 'The role of elders and patriarchs in your decisions as a couple:',
-    options: [
-      'Fundamental — I don’t decide without their opinion',
-      'Important, but the final decision is ours',
-      'I consult them out of respect, not obligation',
-      'Our decisions concern only our couple',
-    ],
-  },
-  M1_Q11: {
-    text: 'Your position on polygamy:',
-    options: [
-      'Unacceptable — exclusive monogamy, no discussion',
-      'I respect it in others, but not for my relationship',
-      'Conceivable within a religious, consensual and transparent framework',
-      'I’d rather talk about it in person',
+      'Ruled out, not open to discussion',
+      'Ruled out, but I’m willing to talk about it',
+      'Conceivable if everyone consents, within a religious or customary framework',
+      'I don’t have a settled position yet',
     ],
   },
   M1_Q13: {
@@ -242,58 +267,25 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
 
   // ── Module 2 — Attachment & emotional regulation
-  M2_Q01: {
-    text: 'When your partner doesn’t reply to your messages for several hours:',
-    options: [
-      'I assume they’re busy and wait calmly',
-      'I start to worry slightly',
-      'I send another message to check',
-      'I feel inner anxiety or anger',
-    ],
-  },
-  M2_Q02: {
-    text: 'When your partner asks for more closeness than you want:',
-    options: [
-      'I try to adapt, even if it costs me',
-      'I calmly explain my need for space',
-      'I feel overwhelmed and pull away',
-      'I ignore the request and change the subject',
-    ],
-  },
-  M2_Q03: {
-    text: 'In a relationship, what you need most:',
-    options: [
-      'To feel safe and loved unconditionally',
-      'To keep my autonomy and personal space',
-      'A balance between intimacy and freedom',
-      'I haven’t clearly identified my need yet',
-    ],
-  },
   M2_Q04: {
-    text: 'Your deepest fear in a relationship:',
+    text: 'Your greatest fears in a relationship (2 at most):',
     options: [
       'Being abandoned',
-      'Losing my independence',
+      'Losing my independence, feeling smothered',
       'Not being good enough',
-      'Being betrayed or manipulated',
+      'Being betrayed',
+      'Not getting enough attention and affection',
+      'Having to put myself last to be loved',
+      'None of these fears really speaks to me',
     ],
   },
   M2_Q05: {
-    text: 'In a relationship, I have been criticised for:',
+    text: 'In a relationship, I have been criticised for: (several answers possible)',
     options: [
       'Worrying too much or lacking trust',
       'Pulling away or keeping my distance when things get intense',
       'Finding it hard to express what I felt',
       'I’ve never received this kind of criticism',
-    ],
-  },
-  M2_Q06: {
-    text: 'When I’m angry in a relationship, I tend to:',
-    options: [
-      'Express my anger clearly and directly',
-      'Step back before talking about it',
-      'Keep it to myself until it explodes',
-      'Cut contact temporarily (punitive silence)',
     ],
   },
   M2_Q07: {
@@ -305,66 +297,88 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'A very long time — I can hold out for weeks',
     ],
   },
-  M2_Q08: {
-    text: 'Can you apologise first, even when you think you’re right?',
+  M2_Q22: {
+    text: 'After an argument in which you think you were mostly right, what do you usually do?',
     options: [
-      'Yes — harmony comes before my ego',
-      'Yes, if I realise I made a mistake',
-      'With difficulty — my ego resists',
-      'No — I don’t need to apologise if I was right',
+      'I acknowledge my share, even if it is small',
+      'I take a step towards the other, without going back over the substance',
+      'I wait for the other person to come back to me',
+      'I don’t apologise as long as I think I was right',
     ],
   },
-  M2_Q10: {
-    text: 'If you were going through a difficult time, asking a professional for help (psychologist, couples counsellor) would be:',
-    options: [
-      'Natural — I have done it or would do it without hesitation',
-      'Possible, after first trying on my own',
-      'I’ve never needed it, but I’m open to it',
-      'Difficult — I prefer to get through it on my own',
-    ],
+  M2_Q23: {
+    text: 'When the person I love takes a long time to reply to a message, I reread our conversation looking for a sign.',
   },
-  M2_Q11: {
-    text: 'I often worry that I care more about the other person than they care about me.',
+  M2_Q24: {
+    text: 'When a relationship becomes very serious, I feel like taking a little distance.',
   },
-  M2_Q12: {
-    text: 'When my partner pulls away a little, I need reassurance very quickly.',
+  M2_Q25: {
+    text: 'If I haven’t received a single loving word all day, I wonder whether something is wrong between us.',
   },
-  M2_Q13: { text: 'The idea of being left rarely worries me.' },
-  M2_Q14: {
-    text: 'I feel uncomfortable when my partner wants to be very close to me.',
+  M2_Q26: {
+    text: 'When I get bad news, the person I love is the first one I want to talk to about it.',
   },
-  M2_Q15: { text: 'I prefer not to show my partner how I feel deep down.' },
-  M2_Q16: { text: 'I find it easy to rely on my partner when I need to.' },
-  M2_Q17: {
-    text: 'When I’m upset, I can look at the situation from another angle to calm down.',
+  M2_Q27: {
+    text: 'When we spend a few days without seeing each other, I stay calm.',
   },
-  M2_Q18: { text: 'I keep my emotions to myself, even when they are strong.' },
+  M2_Q28: {
+    text: 'When I have a big worry, I prefer to sort it out on my own before talking to the person I love.',
+  },
+  M2_Q29: {
+    text: 'After a small argument, I find it hard to think about anything else until we have made up.',
+  },
+  M2_Q30: {
+    text: 'When my partner says very tender things to me, I feel a little embarrassed and change the subject.',
+  },
+  M2_Q31: {
+    text: 'When the person I love spends an evening with friends without me, I’m rather happy for them.',
+  },
+  M2_Q32: {
+    text: 'When I’m exhausted, I gladly let my partner take care of me.',
+  },
+  M2_Q33: {
+    text: 'When my partner doesn’t answer, I sometimes call or write several times in a row.',
+  },
+  M2_Q34: {
+    text: 'When my partner asks me how I feel, I often say “I’m fine” to cut it short.',
+  },
+  M2_Q35: {
+    text: 'When someone speaks to me curtly, I tell myself they may be having a bad day, and that calms me down.',
+  },
+  M2_Q36: {
+    text: 'When I’m sad, I make sure nobody notices.',
+  },
+  M2_Q37: {
+    text: 'After a setback (a cancelled train, a missed appointment), I quickly find a bright side or a lesson to learn.',
+  },
+  M2_Q38: {
+    text: 'Even when I’m very angry, I keep a calm face so that nothing shows.',
+  },
+  M2_Q39: {
+    text: 'When a remark hurts me, I go over it again and again for hours.',
+  },
+  M2_Q40: {
+    text: 'When good news makes me happy, it shows straight away.',
+  },
   M2_Q19: {
-    text: 'When I first meet someone, I feel shy and find it hard to show who I really am.',
+    text: 'When I first meet someone, I feel intimidated.',
   },
   M2_Q20: {
     text: 'It takes me time before I talk about myself and how I feel.',
   },
-  M2_Q21: { text: 'People confide in me easily.' },
+  M2_Q41: {
+    text: 'With someone I’ve just met, I quickly feel at ease.',
+  },
 
   // ── Module 3 — Past & context
-  M3_Q01: {
-    text: 'The main lesson from your past relationships:',
+  M3_Q11: {
+    text: 'Your last serious relationship:',
     options: [
-      'Communicate my needs better from the start',
-      'The importance of shared values',
-      'Setting my limits without guilt',
-      'Choosing with my head as much as my heart',
-    ],
-  },
-  M3_Q02: {
-    text: 'The main cause of your last break-up:',
-    options: [
-      'Incompatible values or life plans',
-      'A deep lack of communication',
-      'Infidelity or betrayal',
-      'Family or cultural pressure',
-      'Violence or lack of respect',
+      'Hasn’t completely ended yet (separation in progress)',
+      'Ended less than 6 months ago',
+      'Ended 6 months to 2 years ago',
+      'Ended more than 2 years ago',
+      'I haven’t had a serious relationship yet',
     ],
   },
   M3_Q03: {
@@ -376,15 +390,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I decided — I feel free',
     ],
   },
-  M3_Q04: {
-    text: 'Your view of blended families:',
-    options: [
-      'My child is your child — full integration',
-      'We love each other, but parental roles stay defined',
-      'My partner is present without direct parental authority',
-      'It will build with time and trust',
-    ],
-  },
   M3_Q05: {
     text: 'What place does your ex have in your life today?',
     options: [
@@ -394,31 +399,41 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'They are part of my close circle',
     ],
   },
-  M3_Q07: {
-    text: 'Do you have unresolved conflicts with your ex-partner?',
+  M3_Q13: {
+    text: 'Your partner keeping ties with their ex:',
     options: [
-      'No — everything is resolved',
-      'Tensions over child custody',
-      'Financial tensions still active',
-      'We never had real closure',
-    ],
-  },
-  M3_Q08: {
-    text: 'Have you experienced violence in a past relationship?',
-    options: [
-      'Yes — I was a victim and have worked on it',
-      'Yes — I witnessed it in my family',
-      'No, never',
-      'I prefer not to answer',
+      'It’s not a problem for me',
+      'Only for the children',
+      'Only with full transparency, without seeing them alone',
+      'I couldn’t accept it',
     ],
   },
   M3_Q10: {
-    text: 'Have you ever repeated the same patterns across several relationships?',
+    text: 'Have you found yourself in the same difficult situations from one relationship to the next?',
     options: [
       'Yes, and I’ve worked on it (alone or with support)',
       'Yes, I see it but struggle to change',
       'I’m not really sure',
-      'No — every relationship is different for me',
+      'No — each relationship has been different for me',
+    ],
+  },
+  M3_Q12: {
+    text: 'In the home where you grew up, disagreements between adults were most often settled:',
+    options: [
+      'By talking, sometimes heatedly, then making up',
+      'With shouting or arguments that kept coming back',
+      'With silence: problems were not talked about',
+      'One person decided, the others followed',
+      'I didn’t grow up with two adults in a couple',
+    ],
+  },
+  M3_Q04: {
+    text: 'In a blended family, the step-parent’s place with the other’s children:',
+    options: [
+      'A full parent, with no difference between the children',
+      'An affectionate place, each parent keeping their role with their own children',
+      'A caring presence, without direct parental authority',
+      'A place built over time and through trust',
     ],
   },
 
@@ -432,10 +447,19 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Money stays an individual matter',
     ],
   },
+  M4_Q14: {
+    text: 'You receive an unexpected sum of money (a bonus, a gift). Most often:',
+    options: [
+      'I put almost all of it aside',
+      'I put part of it aside and treat myself with the rest',
+      'I mostly spend it on what I feel like at the time',
+      'It really depends on the moment',
+    ],
+  },
   M4_Q03: {
     text: 'Your view of the man’s economic role:',
     options: [
-      'He is the main provider — it’s his responsibility',
+      'He earns most of the household income — it’s his responsibility',
       'He contributes, without it being an absolute obligation',
       'Equality is the norm — we share everything',
       'His role depends on each person’s situation',
@@ -450,40 +474,31 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'She does what she wants — no imposed role',
     ],
   },
-  M4_Q05: {
-    text: 'Your approach to sending money to the extended family:',
+  M4_Q15: {
+    text: 'Household chores (meals, cleaning, laundry) in your relationship:',
     options: [
-      'Normal and regular — my family counts on me',
-      'We discuss it as a couple before any decision',
-      'It’s my money — my business',
-      'It must be limited to protect our home',
+      'Mainly the woman’s role',
+      'Shared, with the woman keeping the main responsibility',
+      'Shared fairly, according to each person’s availability',
+      'I haven’t really thought about it yet',
     ],
   },
-  M4_Q06: {
-    text: 'Buying property in your life plan:',
+  M4_Q16: {
+    text: 'Supporting your family financially (parents, brothers and sisters…) once you are a couple:',
     options: [
-      'Alone — it’s my independence',
-      'Together — it’s a shared project',
-      'Flexible renting for now',
-      'Not a priority',
+      'A regular duty: my family counts on me, it’s not up for discussion',
+      'Regular help, with the amount decided together',
+      'Occasional help, when there is a real need',
+      'The household’s money should not go to the extended family',
     ],
   },
-  M4_Q07: {
-    text: 'The dowry or mahr in your culture:',
+  M4_Q17: {
+    text: 'The bride price for your marriage:',
     options: [
-      'An obligation I fully respect',
-      'An important symbolic tradition',
-      'I practise it in a modernised way',
-      'Not part of my culture, or I don’t adhere to it',
-    ],
-  },
-  M4_Q08: {
-    text: 'Your approach to saving as a couple:',
-    options: [
-      'We save together for shared projects',
-      'Each of us saves separately',
-      'Shared savings and personal savings',
-      'I’m not comfortable saving together',
+      'Essential: my marriage won’t happen without it',
+      'Important, in a symbolic or modernised form',
+      'Not part of my culture, but I would respect it in my partner’s',
+      'I don’t adhere to it, even if my partner cares about it',
     ],
   },
   M4_Q09: {
@@ -542,13 +557,23 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Our decisions concern only our couple',
     ],
   },
+  M5_Q10: {
+    text: 'Your relatives insist on a couple decision you don’t agree with (where to hold the wedding, a child’s name). Most often:',
+    options: [
+      'I follow their opinion to keep the peace',
+      'We decide together, and I calmly explain our choice to them',
+      'I oppose them strongly',
+      'I distance myself from them for a while',
+    ],
+  },
   M5_Q02: {
     text: 'Your mother (or father) disrespects your partner. You:',
     options: [
-      'Defend your partner immediately and clearly',
+      'Stand up for your partner in front of your parent',
       'Try to understand before acting',
       'Wait for it to settle on its own',
       'Tell your partner not to take it too much to heart',
+      'Back your partner, then talk to your parent in private',
     ],
   },
   M5_Q03: {
@@ -560,24 +585,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I accept if my partner agrees',
     ],
   },
-  M5_Q04: {
-    text: 'Do you have close friends of the opposite sex?',
-    options: [
-      'Yes — it’s non-negotiable for me',
-      'Yes — but I’m transparent about it',
-      'I avoid it out of respect for my partner',
-      'No, I prefer not to',
-    ],
-  },
-  M5_Q05: {
-    text: 'Social media and your life as a couple:',
-    options: [
-      'I share our life — I love showing our happiness',
-      'I protect our privacy — few or no posts',
-      'Each manages their own account freely',
-      'Social media has no place in our relationship',
-    ],
-  },
   M5_Q07: {
     text: 'The ideal frequency of visits to your in-laws:',
     options: [
@@ -587,28 +594,47 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Never or very rarely',
     ],
   },
+  M5_Q09: {
+    text: 'Your partner having close friends of the opposite sex:',
+    options: [
+      'It’s no problem for me',
+      'Fine, if I know them and everything stays transparent',
+      'It would make me uncomfortable',
+      'I couldn’t accept it',
+    ],
+  },
   M5_Q08: {
     text: 'Access to your partner’s phone and messages:',
     options: [
       'Total transparency — each has access to everything',
-      'Trust without control — each keeps their privacy',
+      'Each keeps their phone to themselves',
       'Access only in case of serious doubt',
       'I’ve never thought about it',
     ],
   },
 
   // ── Module 6 — Daily life, real communication & limits
-  M6_Q01: {
-    text: 'During an argument, your actual behaviour is more likely to be:',
+  M6_Q16: {
+    text: 'During a tense discussion, when you feel you can no longer listen (heart racing, wanting to leave), most often:',
     options: [
-      'Talking even if it’s hard — I confront directly',
-      'Stepping back and coming back calm',
-      'Cutting the conversation short and leaving',
-      'Shutting down in silence — sometimes for days',
+      'I say so and suggest a break, setting a time to pick it up again',
+      'I carry on, even though I’m not really listening any more',
+      'I raise my voice',
+      'I leave or go quiet, without explaining anything',
+      'It doesn’t happen to me, or very rarely',
+    ],
+  },
+  M6_Q17: {
+    text: 'After a disagreement, your partner tells you: “I need a moment, let’s talk about it later.” Most often:',
+    options: [
+      'I leave them alone, and we talk about it later',
+      'I accept, but I stay tense until it’s settled',
+      'I insist that we talk about it right away',
+      'I keep at it: I follow them, call or send several messages',
     ],
   },
   M6_Q02: {
-    text: 'In arguments, I have been criticised for:',
+    text: 'In arguments, I have been criticised for: (several answers possible)',
     options: [
       'Talking too loudly or too fast',
       'Running away or cutting off communication',
@@ -624,6 +650,39 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Often, yes — it’s stronger than me',
       'Yes — and I fully own it',
     ],
+  },
+  M6_Q11: {
+    text: 'After an argument, the ideal reconciliation for you:',
+    options: [
+      'We talk it over calmly and apologise to each other',
+      'A tender gesture is worth more than a long discussion',
+      'Each of us steps back, then we turn the page',
+      'I need the other person to make the first move',
+    ],
+  },
+  M6_Q12: {
+    text: 'During an argument, I criticise who my partner is rather than a specific behaviour (“you always…”, “you never…”).',
+  },
+  M6_Q20: {
+    text: 'When something bothers me, I say it by talking about how I feel rather than by accusing (“I felt lonely last night”).',
+  },
+  M6_Q13: {
+    text: 'During an argument, I become sarcastic, mock or roll my eyes.',
+  },
+  M6_Q21: {
+    text: 'Even when I’m upset, I can tell my partner what I appreciate about them.',
+  },
+  M6_Q14: {
+    text: 'When I’m criticised, I justify myself or shift the blame instead of listening.',
+  },
+  M6_Q22: {
+    text: 'When I’m criticised, I first look for what is fair in it before defending myself.',
+  },
+  M6_Q15: {
+    text: 'During an argument, I shut down completely and stop responding.',
+  },
+  M6_Q23: {
+    text: 'During an argument, I show my partner that I’m listening (I look at them, answer, rephrase).',
   },
   M6_Q04: {
     text: 'Physical violence in a relationship:',
@@ -643,72 +702,44 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I try to ignore it if it’s not recurring',
     ],
   },
-  M6_Q06: {
-    text: 'Your relationship to sexuality as a couple:',
+  M6_Q24: {
+    text: 'In a couple, there are situations where a slap can be understood.',
+  },
+  M6_Q18: {
+    text: 'If your partner cheated on you, it would be:',
     options: [
-      'It’s a fundamental pillar of the relationship',
-      'It’s important but not decisive',
-      'It’s something that builds over time',
-      'It’s an intimate topic I’ll address in due course',
+      'An immediate break-up, with no way back',
+      'A very serious wound; I don’t know whether I could forgive',
+      'A very serious wound, which can heal with time and proof',
+      'An ordeal a couple can overcome if they talk about it openly',
     ],
   },
-  M6_Q07: {
-    text: 'The frequency of physical intimacy you would ideally want in a relationship:',
+  M6_Q19: {
+    text: 'In your view, which of these behaviours by your partner would already be unfaithful? (several answers possible)',
     options: [
-      'Very regularly — several times a week',
-      'Regularly — a few times a month',
-      'Occasionally — depending on mood and closeness',
-      'Frequency matters little — quality is what counts',
+      'Exchanging flirtatious messages with someone else',
+      'Keeping an active profile on a dating app',
+      'Confiding in someone else what they don’t tell me',
+      'Seeing an ex without telling me',
+      'Kissing someone else',
+      'Watching adult content',
+      'None of these: only a physical relationship counts',
     ],
-  },
-  M6_Q08: {
-    text: 'When you don’t feel like physical intimacy and your partner suggests it:',
-    options: [
-      'I say so gently and we find a tender alternative',
-      'I go along with it to please them — this often happens',
-      'I say no clearly, without guilt',
-      'I find it hard to refuse — I don’t want to disappoint',
-    ],
-  },
-  M6_Q10: {
-    text: 'Fidelity in your idea of a couple:',
-    options: [
-      'Absolute and non-negotiable',
-      'Important, but I believe in reconciliation',
-      'I’m human — temptations exist',
-      'I define fidelity differently depending on the context',
-    ],
-  },
-  M6_Q11: {
-    text: 'After an argument, the ideal reconciliation for you:',
-    options: [
-      'We talk it over calmly and apologise to each other',
-      'A tender gesture is worth more than a long discussion',
-      'Each of us steps back, then we turn the page',
-      'I need the other person to make the first move',
-    ],
-  },
-  M6_Q12: {
-    text: 'During an argument, I criticise who my partner is rather than a specific behaviour (“you always…”, “you never…”).',
-  },
-  M6_Q13: {
-    text: 'During an argument, I become sarcastic, mock or roll my eyes.',
-  },
-  M6_Q14: {
-    text: 'When I’m criticised, I justify myself or shift the blame instead of listening.',
-  },
-  M6_Q15: {
-    text: 'During an argument, I shut down completely and stop responding.',
   },
 
   // ── Module 7 — Life trajectory & personality
-  M7_Q01: {
-    text: 'In five years, if everything goes as you wish, your life looks like:',
+  M7_Q19: {
+    text: 'Which of these matter most in your life? (3 at most)',
     options: [
-      'Stable and settled — home, children, security',
-      'Constantly progressing — career, projects, growth',
-      'Adventurous and free — travel, discoveries',
-      'Peaceful and deep — fewer things, but meaningful',
+      'The security and stability of my family',
+      'Respecting traditions and my faith',
+      'Succeeding and being recognised for what I do',
+      'Being free to make my own choices',
+      'Helping others and being fair',
+      'Discovering, travelling, experiencing new things',
+      'Enjoying life and its pleasures',
+      'Living in harmony with those around me, avoiding conflict',
+      'Having influence and material comfort',
     ],
   },
   M7_Q02: {
@@ -716,17 +747,8 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'High — I aim high and make sacrifices for it',
       'Moderate — I like to succeed without it taking everything',
-      'Low — work-life balance comes before career',
+      'Measured — work-life balance comes before career',
       'Accomplished — I’m in a phase of passing things on',
-    ],
-  },
-  M7_Q03: {
-    text: 'You are rather:',
-    options: [
-      'Introverted — people tire me, I recharge alone',
-      'Ambivert — I need both, depending on the moment',
-      'Extroverted — people give me energy',
-      'It depends entirely on the context',
     ],
   },
   M7_Q05: {
@@ -747,6 +769,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’m open — it depends on the life plan',
     ],
   },
+  M7_Q36: {
+    text: 'Living one day in your family’s country of origin:',
+    options: [
+      'It’s my plan, in the coming years',
+      'I’m thinking about it, with no set date',
+      'No, my life is where I live now',
+      'I already live in my family’s country of origin',
+    ],
+  },
   M7_Q08: {
     text: 'Ideally, the time spent together during the week:',
     options: [
@@ -756,21 +787,53 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'It depends on the period and our projects',
     ],
   },
-  M7_Q09: { text: `${SEE_MYSELF} is outgoing and sociable.` },
-  M7_Q10: { text: `${SEE_MYSELF} is rather reserved.` },
-  M7_Q11: { text: `${SEE_MYSELF} is generally trusting and kind.` },
-  M7_Q12: { text: `${SEE_MYSELF} tends to find fault with others.` },
-  M7_Q13: { text: `${SEE_MYSELF} does things carefully and follows through.` },
-  M7_Q14: { text: `${SEE_MYSELF} tends to put things off.` },
-  M7_Q15: { text: `${SEE_MYSELF} gets stressed or worried easily.` },
-  M7_Q16: {
-    text: `${SEE_MYSELF} stays calm and relaxed when things get difficult.`,
+  M7_Q20: {
+    text: 'At a party where I know few people, I easily go up to others to chat.',
   },
-  M7_Q17: {
-    text: `${SEE_MYSELF} has an active imagination and enjoys new ideas.`,
+  M7_Q21: {
+    text: 'When a friend asks me a favour that’s a bit inconvenient, I still do it willingly.',
   },
-  M7_Q18: {
-    text: `${SEE_MYSELF} has little interest in art, culture or abstract ideas.`,
+  M7_Q22: {
+    text: 'When I have some paperwork to do, I deal with it without waiting until the last minute.',
+  },
+  M7_Q23: {
+    text: 'Over a small annoyance (a delay, a lost item), I can get irritated very quickly.',
+  },
+  M7_Q24: {
+    text: 'I like discovering places, cuisines or ideas I don’t know yet.',
+  },
+  M7_Q25: {
+    text: 'After a day spent with lots of people, what I mostly need is calm and solitude.',
+  },
+  M7_Q26: {
+    text: 'In a disagreement between friends, I look for common ground rather than imposing my view.',
+  },
+  M7_Q27: {
+    text: 'When I promise to do something, I do it, even if it costs me.',
+  },
+  M7_Q28: {
+    text: 'I worry for a long time about things that may never happen.',
+  },
+  M7_Q29: {
+    text: 'I prefer activities I already know to ones I’ve never tried.',
+  },
+  M7_Q30: {
+    text: 'In a negotiation (a purchase, a rent), I defend my interests above all, even if the other person loses out.',
+  },
+  M7_Q31: {
+    text: 'I often find myself looking for my keys or papers because they aren’t put away.',
+  },
+  M7_Q32: {
+    text: 'When I’m criticised (at work, in my studies or in my family), I take it without losing my calm.',
+  },
+  M7_Q33: {
+    text: 'In the evening, I can usually put the day’s worries aside.',
+  },
+  M7_Q34: {
+    text: 'In a group of friends, I’m often the one who suggests an outing or an activity.',
+  },
+  M7_Q35: {
+    text: 'A book, a film or a conversation can keep me thinking for several days.',
   },
 
   // ── Module 8 — Couple project
@@ -779,45 +842,72 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'Marriage — I’m looking for an official commitment',
       'A serious relationship with a shared life plan',
-      'Getting to know myself before any commitment',
+      'Taking time to really get to know the other person before any commitment',
       'I’m open to seeing what comes',
     ],
   },
-  M8_Q02: {
-    text: 'Within what timeframe do you see an official commitment?',
+  M8_Q17: {
+    text: 'If the relationship goes well, within what timeframe would you like an official commitment (engagement or marriage)?',
     options: [
-      'Within 12 months if all goes well',
-      'Within 2 to 3 years',
-      'No pressure — at our natural pace',
-      'When the conditions are right',
+      'Within a year',
+      'Within one to two years',
+      'Within two to three years',
+      'Later, or with no specific timeframe',
     ],
   },
-  M8_Q03: {
-    text: 'Your vision of marriage:',
+  M8_Q16: {
+    text: 'For you, a marriage is only complete with: (several answers possible)',
     options: [
-      'A fundamental religious and spiritual act',
-      'A civil and symbolic commitment',
-      'Both — civil and religious',
-      'An optional choice — love matters more than paperwork',
+      'A civil marriage',
+      'A religious marriage',
+      'A customary marriage (bride price, meeting of the families)',
+      'No ceremony is essential to me',
+    ],
+  },
+  M8_Q15: {
+    text: 'In raising children, what matters most to you:',
+    options: [
+      'Authority: children obey their parents',
+      'A firm framework, explained with kindness',
+      'Dialogue: rules are discussed with them',
+      'Freedom: children mostly learn by themselves',
+    ],
+  },
+  M8_Q19: {
+    text: 'Living together before marriage:',
+    options: [
+      'Ruled out for me',
+      'Only after an engagement',
+      'Possible once the relationship is solid',
+      'Desirable, to really get to know each other',
+    ],
+  },
+  M8_Q20: {
+    text: 'A smack or spanking to discipline a child:',
+    options: [
+      'It’s part of a good upbringing',
+      'Acceptable in exceptional cases',
+      'I’d rather avoid it',
+      'Never: it’s a form of violence',
+    ],
+  },
+  M8_Q18: {
+    text: 'In which religion would you raise your children?',
+    options: [
+      'In my religion — it’s essential',
+      'In one of ours, chosen together',
+      'In both our traditions; they’ll choose later',
+      'Without a religious upbringing',
     ],
   },
   M8_Q04: {
-    text: 'Your main love language:',
+    text: 'What makes you feel most loved (2 at most):',
     options: [
-      'Words of affirmation (I love you, compliments)',
-      'Acts of service (helping, doing things for them)',
-      'Gifts (giving and receiving)',
-      'Quality time (being fully present)',
-      'Physical touch (hugs, tender gestures)',
-    ],
-  },
-  M8_Q05: {
-    text: 'What would end a relationship for you, with no discussion possible:',
-    options: [
-      'Infidelity or a serious lie',
-      'Violence or repeated disrespect',
-      'Deep disagreement on children or religion',
-      'Incompatible fundamental values',
+      'Loving words and compliments',
+      'Practical gestures that make my life easier',
+      'Thoughtful attentions and gifts',
+      'Time spent together, fully present',
+      'Physical tenderness: hugs, gentle gestures',
     ],
   },
   M8_Q06: {
@@ -829,15 +919,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I prefer actions to long speeches',
     ],
   },
-  M8_Q08: {
-    text: 'What you could never accept in a couple:',
-    options: [
-      'Repeated lying',
-      'Infidelity in any form',
-      'Disrespect towards my family',
-      'The absence of a shared project',
-    ],
-  },
   M8_Q09: {
     text: 'If your life plans diverge on a key point (city, children, religion), you:',
     options: [
@@ -845,6 +926,33 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Let the relationship grow before bringing it up',
       'Look for a compromise, whatever the cost',
       'Trust love to find a solution',
+    ],
+  },
+  M8_Q14: {
+    text: 'In every couple, some disagreements are never really resolved (personality, habits). For you:',
+    options: [
+      'It’s normal: you learn to live with them, and even laugh about them',
+      'A solution has to be found in the end, otherwise it weighs on me',
+      'If a disagreement can’t be resolved, it means we’re not made for each other',
+      'I’ve never really thought about it',
+    ],
+  },
+  M8_Q13: {
+    text: 'If, after several years, your life as a couple made you unhappy:',
+    options: [
+      'I would stay: for me, commitment is for life',
+      'I would do everything to save the relationship; separating would only be a last resort',
+      'I would leave if, despite our efforts, nothing improved',
+      'I would leave without waiting too long: you don’t stay together out of duty',
+    ],
+  },
+  M8_Q11: {
+    text: 'If your partner became seriously ill or lived with a disability, taking care of them would be:',
+    options: [
+      'Obvious — for better or for worse',
+      'Natural, with outside help to last over time',
+      'Frightening, but I would try',
+      'I don’t know if I could do it',
     ],
   },
   M8_Q10: {
@@ -862,13 +970,20 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Eyes glued to their phone during time together',
     ],
   },
-  M8_Q11: {
-    text: 'If your partner became seriously ill or lived with a disability, taking care of them would be:',
+  M8_Q12: {
+    text: 'Which of these topics are non-negotiable for you, to the point that a disagreement would make you give up the relationship? (3 at most)',
     options: [
-      'Obvious — for better or for worse',
-      'Natural, with outside help to last over time',
-      'Frightening, but I would try',
-      'I don’t know if I could do it',
+      'Having children, or not',
+      'Religion and its practice',
+      'Fidelity',
+      'How money is managed',
+      'Where we live',
+      'The place of family in the couple',
+      'Physical intimacy before marriage',
+      'Polygamy',
+      'Tobacco or alcohol',
+      'The roles of men and women in the home',
+      'None: for me, everything can be discussed',
     ],
   },
 
@@ -892,21 +1007,12 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M9_Q03: {
-    text: 'Do you keep a mental tally of what you give versus what you receive?',
+    text: 'Do you keep count of what you give and what you receive in a relationship?',
     options: [
       'No — I give freely without counting',
       'Sometimes, especially when I feel short-changed',
       'Yes — I naturally watch the balance',
       'Yes — it’s a way of protecting myself',
-    ],
-  },
-  M9_Q04: {
-    text: 'When you feel frustrated in a relationship:',
-    options: [
-      'I express it clearly as soon as possible',
-      'I wait for the right moment to talk about it',
-      'I keep it to myself, hoping it will pass',
-      'I let it build up until it explodes',
     ],
   },
   M9_Q06: {
@@ -927,13 +1033,27 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’m not very comfortable with non-sexual physical contact',
     ],
   },
+  M9_Q25: {
+    text: 'Your partner tells you a detail of their day while you’re busy. Most often:',
+    options: [
+      'I stop for a moment to listen and respond',
+      'I answer briefly and go back to what I was doing',
+      'I ask them to wait until I’ve finished, then I come back to them',
+      'I carry on without really listening',
+    ],
+  },
   M9_Q08: { text: 'I have never been jealous, not even a tiny bit.' },
-  M9_Q09: { text: 'I have never told even the smallest lie.' },
+  M9_Q20: {
+    text: 'I have sulked over a trifle before.',
+  },
   M9_Q10: {
     text: 'At the start of a relationship, I quickly tell the other person they are the love of my life.',
   },
   M9_Q11: {
     text: 'When I have doubts, I look at the other person’s phone or ask where they are.',
+  },
+  M9_Q21: {
+    text: 'I have never been in a bad mood with someone I love.',
   },
   M9_Q12: {
     text: 'When a relationship no longer suits me, I would rather disappear than explain myself.',
@@ -941,10 +1061,28 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M9_Q13: {
     text: 'I prefer not to define the relationship too early, to keep my options open.',
   },
+  M9_Q22: {
+    text: 'I have said “I’m on my way” before when I hadn’t actually left yet.',
+  },
   M9_Q14: {
     text: 'When I talk about my exes, it’s mostly to say what they did wrong.',
   },
   M9_Q15: { text: 'During time together, I check my phone.' },
+  M9_Q24: {
+    text: 'When my partner refuses something that concerns them (a gesture, an outing, a purchase), I insist until they give in.',
+  },
+  M9_Q26: {
+    text: 'In a couple, each person should be able to know where the other is at all times.',
+  },
+  M9_Q27: {
+    text: 'My partner should ask for my approval before going out with their friends.',
+  },
+  M9_Q28: {
+    text: 'The one who earns more should decide how the other spends money.',
+  },
+  M9_Q23: {
+    text: 'When I’m tired, I am sometimes less patient with those close to me.',
+  },
   M9_Q16: {
     text: 'When I don’t get what I want, I let it show (sulking, coldness).',
   },
@@ -963,15 +1101,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
 
   // ── Module 10 — Alchemy, vibe & desire
-  M10_Q01: {
-    text: 'When you walk into a room, people tend to:',
-    options: [
-      'Notice you easily — you have a natural presence',
-      'Notice you gradually as the conversation goes on',
-      'Remember mostly what you said',
-      'Find it hard to define you clearly afterwards',
-    ],
-  },
   M10_Q02: {
     text: 'My close friends would describe me as:',
     options: [
@@ -986,26 +1115,8 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     options: [
       'Someone light, funny, who makes me laugh',
       'Someone intense, deep and intellectually stimulating',
-      'Someone warm, stable and reassuring',
-      'Someone calm and composed who balances my energy',
-    ],
-  },
-  M10_Q04: {
-    text: 'Do you easily make the people around you laugh?',
-    options: [
-      'Yes — humour is one of my natural strengths',
-      'Often — I have a sense of humour without making a show of it',
-      'Sometimes — especially with people I know well',
-      'Rarely — I’m more serious by nature',
-    ],
-  },
-  M10_Q06: {
-    text: 'For you, attraction in a relationship comes mainly from:',
-    options: [
-      'Intellectual connection and stimulating conversations',
-      'Closeness and shared laughter',
-      'Physical presence and bodily energy',
-      'The feeling of being deeply understood and accepted',
+      'Someone warm, caring and reassuring',
+      'Someone calm, steady and reliable, who balances my energy',
     ],
   },
   M10_Q09: {
@@ -1017,9 +1128,14 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'My creativity and my taste for beauty and the unusual',
     ],
   },
-  M10_Q10: {
-    text: 'If you had to sum up in one word the experience you want to offer your partner:',
-    options: ['Security', 'Adventure', 'Depth', 'Joy'],
+  M10_Q04: {
+    text: 'Do you easily make the people around you laugh?',
+    options: [
+      'Yes — humour is one of my natural strengths',
+      'Often — I have a sense of humour without making a show of it',
+      'Sometimes — especially with people I know well',
+      'Rarely — I’m more serious by nature',
+    ],
   },
   M10_Q11: {
     text: 'Think back to the people who swept you off your feet quickly. What did their look mostly have in common?',
@@ -1074,6 +1190,42 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'It really depends on the person',
     ],
   },
+  M10_Q16: {
+    text: 'The place of physical intimacy in your life as a couple:',
+    options: [
+      'Essential: it’s a pillar of the relationship',
+      'Important, without being central',
+      'Secondary: other things matter more to me',
+      'I don’t know yet: it will depend on the relationship',
+    ],
+  },
+  M10_Q17: {
+    text: 'Physical intimacy before marriage:',
+    options: [
+      'Ruled out for me: I’m waiting for marriage',
+      'I’d rather wait for a serious commitment (engagement, official plans)',
+      'Possible once the relationship is solid, without waiting for an official commitment',
+      'I’d rather talk about it directly with the person',
+    ],
+  },
+  M10_Q18: {
+    text: 'If, for several months, you wanted intimacy less than your partner did:',
+    options: [
+      'I’d talk about it to find together what suits us',
+      'I’d force myself to avoid tension',
+      'I’d wait for it to pass, without talking about it',
+      'I’d think it was up to them to adapt',
+    ],
+  },
+  M10_Q19: {
+    text: 'When your partner suggests intimacy and you don’t feel like it:',
+    options: [
+      'I say so simply, and we find another tender moment',
+      'I go along with it anyway, so as not to disappoint them',
+      'I refuse, but I feel guilty',
+      'I refuse without difficulty',
+    ],
+  },
 };
 
 const TRANSLATIONS: Record<
@@ -1115,6 +1267,7 @@ export function localizeQuestion(
   return {
     ...q,
     text: t.text,
+    ...(q.assistance ? { assistance: t.assistance ?? q.assistance } : {}),
     options: q.options.map((o, i) => ({
       ...o,
       text: options?.[i] ?? o.text,

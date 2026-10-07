@@ -11,6 +11,7 @@ import {
   buildDivergenceReport,
   RawAnswers,
 } from './divergence.engine';
+import { homeContext } from './discover-filters';
 import {
   capForDivergences,
   computeAnswerCompatibility,
@@ -24,7 +25,13 @@ import {
 } from '../portrait/portrait.text';
 import { MODULES } from '../portrait/portrait.phrases';
 
-export interface ViewerInput {
+/** V7.1 — lieu de vie (« Ville, Pays »), pour lire « je reste où je suis ». */
+interface HomeInput {
+  city?: string | null;
+  profile?: { displayedCity?: string | null } | null;
+}
+
+export interface ViewerInput extends HomeInput {
   answers: RawAnswers;
   mentalMap: MentalMapLike | null;
 }
@@ -70,9 +77,16 @@ export function compatibilityLabel(percent: number, hardStop = false): string {
 /** Score global : réponses du Grand Entretien d'abord, carte mentale en repli. */
 export function resolveScore(
   viewer: ViewerInput,
-  candidate: { answers: RawAnswers; mentalMap: MentalMapLike | null },
+  candidate: HomeInput & {
+    answers: RawAnswers;
+    mentalMap: MentalMapLike | null;
+  },
 ) {
-  const report = buildDivergenceReport(viewer.answers, candidate.answers);
+  const report = buildDivergenceReport(
+    viewer.answers,
+    candidate.answers,
+    homeContext(viewer, candidate),
+  );
   const answers = computeAnswerCompatibility(
     viewer.answers,
     candidate.answers,
@@ -180,6 +194,7 @@ export function buildMatchView(viewer: ViewerInput, candidate: CandidateInput) {
       vigilance: sheet.vigilance,
       themes: sheet.themes,
       hardStop: sheet.hardStop,
+      undisclosed: sheet.undisclosed,
     },
     discussionTopics,
     hardStop: report.hardStop,

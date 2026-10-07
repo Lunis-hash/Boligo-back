@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { AiService } from '../ai/ai.service';
@@ -13,13 +14,16 @@ import {
 } from '../portrait/self-portrait';
 import { collectRawAnswers } from '../matching/divergence.engine';
 import { ageFromBirthDate, pendingQuestions } from './questions.service';
+import { isSensitiveQuestion, withoutSensitive } from './sensitive-questions';
 import {
   FREE_TEXT_SUFFIX,
   QUESTIONS,
   answerKeys,
   cleanFreeText,
   isValidAnswer,
+  mixesExclusive,
   normalizeAnswer,
+  withoutSensitiveOptionAnswers,
 } from './questions.data';
 
 const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
@@ -87,15 +91,19 @@ export class InterviewService {
   ): Promise<number[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { birthDate: true, gender: true },
+      select: { birthDate: true, gender: true, sensitiveConsent: true },
     });
     const answers = collectRawAnswers(responses);
     const age = ageFromBirthDate(user?.birthDate ?? null);
     const saved = new Set(responses.map((r) => r.moduleNumber));
+    // Questions sensibles facultatives : sans accord explicite, elles ne
+    // retiennent jamais le module (leurs réponses ne sont pas enregistrées).
+    const skipSensitive = user?.sensitiveConsent !== true;
     return [...Array(11).keys()].filter(
       (m) =>
         saved.has(m) &&
-        pendingQuestions(m, answers, age, user?.gender).length === 0,
+        pendingQuestions(m, answers, age, user?.gender, skipSensitive)
+          .length === 0,
     );
   }
 
@@ -137,6 +145,12 @@ export class InterviewService {
           `Réponse invalide pour la question ${questionId.slice(0, 20)}.`,
         );
       }
+      // V7.1 : « aucun » ne se coche pas avec une autre réponse.
+      if (mixesExclusive(q, value as string)) {
+        throw new BadRequestException(
+          `Réponse contradictoire pour la question ${questionId.slice(0, 20)} : « aucun » ne se combine pas avec une autre réponse.`,
+        );
+      }
       answers[questionId] = normalizeAnswer(q, value as string);
     }
     // Précision écrite (« une autre langue : bambara ») : gardée seulement si
@@ -166,6 +180,23 @@ export class InterviewService {
       const key = `${questionId}${FREE_TEXT_SUFFIX}`;
       if (freeKey && !answerKeys(value).includes(freeKey) && !(key in answers))
         answers[key] = '';
+    }
+
+    // Données sensibles (religion, vie intime, violences subies) : jamais
+    // enregistrées sans l'accord explicite du membre.
+    const consent = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { sensitiveConsent: true },
+    });
+    if (consent?.sensitiveConsent !== true) {
+      for (const id of Object.keys(answers))
+        if (isSensitiveQuestion(id)) delete answers[id];
+      // V7.1 : options sensibles d'une question ordinaire (M8_Q12 B…).
+      const kept = withoutSensitiveOptionAnswers(answers);
+      for (const id of Object.keys(answers)) {
+        if (id in kept) answers[id] = kept[id];
+        else delete answers[id];
+      }
     }
 
     let interview = await this.prisma.interviewIA.findFirst({
@@ -230,6 +261,62 @@ export class InterviewService {
     }
 
     return { success: true, allModulesCompleted };
+  }
+
+  /** Accord du membre pour les questions sensibles : null s'il n'a pas encore été demandé. */
+  async getSensitiveConsent(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { sensitiveConsent: true, sensitiveConsentAt: true },
+    });
+    return {
+      consent: user?.sensitiveConsent ?? null,
+      decidedAt: user?.sensitiveConsentAt ?? null,
+    };
+  }
+
+  /**
+   * Donne ou retire l'accord pour les questions sensibles. Un retrait efface
+   * aussitôt les réponses sensibles déjà données, et le portrait est recalculé
+   * sans elles.
+   */
+  async setSensitiveConsent(userId: string, accepted: boolean) {
+    const decidedAt = new Date();
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { sensitiveConsent: accepted, sensitiveConsentAt: decidedAt },
+    });
+    let removed = 0;
+    if (!accepted) {
+      const responses = await this.prisma.moduleResponse.findMany({
+        where: { interview: { userId } },
+        select: { id: true, rawResponses: true },
+      });
+      for (const r of responses) {
+        const raw = (r.rawResponses ?? {}) as Record<string, unknown>;
+        // V7.1 : les options sensibles d'une question ordinaire aussi (une
+        // réponse dont une option est retirée compte comme effacée).
+        const kept = withoutSensitiveOptionAnswers(withoutSensitive(raw));
+        const count = Object.keys(raw).filter(
+          (id) => !(id in kept) || kept[id] !== raw[id],
+        ).length;
+        if (count === 0) continue;
+        removed += count;
+        await this.prisma.moduleResponse.update({
+          where: { id: r.id },
+          data: { rawResponses: kept as Prisma.InputJsonObject },
+        });
+      }
+      if (removed > 0) {
+        const done = await this.prisma.interviewIA.findFirst({
+          where: { userId, status: 'termine' },
+          orderBy: { startDate: 'desc' },
+          select: { id: true },
+        });
+        if (done) await this.generateMentalMap(done.id, userId);
+      }
+    }
+    return { consent: accepted, decidedAt, removedAnswers: removed };
   }
 
   private async completeInterview(interviewId: string, userId: string) {

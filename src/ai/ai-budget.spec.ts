@@ -102,8 +102,8 @@ describe('Budget IA', () => {
     expect(res).toHaveProperty('allowed');
   });
 
-  it('donne 1 € à chaque parcours payé par défaut ; 0 coupe ce suivi', () => {
-    expect(journeyBudgetMicroEur(undefined)).toBe(1_000_000);
+  it('donne 3 € à chaque parcours payé par défaut ; 0 coupe ce suivi', () => {
+    expect(journeyBudgetMicroEur(undefined)).toBe(3_000_000);
     expect(journeyBudgetMicroEur('0,5')).toBe(500_000);
     expect(journeyBudgetMicroEur('0')).toBe(0);
   });
@@ -165,14 +165,16 @@ describe('Budget IA', () => {
     // gpt-oss-120b : 2 000 jetons lus, 1 000 écrits = 300 + 750 millionièmes.
     await budget.recordJourney('paye', 'openai/gpt-oss-120b', 2000, 1000);
     expect(journeys.get('paye')!.aiCostMicroEur).toBe(1050);
-    expect(await budget.allowJourney('paye', 999_000)).toBe(false);
+    // Budget de 3 € : 1 050 déjà dépensés + 2 999 000 estimés le dépasseraient.
+    expect(await budget.allowJourney('paye', 2_999_000)).toBe(false);
+    expect(await budget.allowJourney('paye', 999_000)).toBe(true);
     expect(await budget.allowJourney('inconnu', 1)).toBe(false);
     const summary = await budget.summary();
     expect(summary).toMatchObject({
       spentEur: 0,
       journeyCalls: 1,
       journeySpentEur: 0.00105,
-      journeyBudgetEur: 1,
+      journeyBudgetEur: 3,
     });
     process.env.AI_JOURNEY_BUDGET_EUR = '0';
     expect(await budget.journeyEligible('paye')).toBe(false);
@@ -184,8 +186,10 @@ describe('Budget IA', () => {
     // Claude Sonnet à 2 $ / 10 $ : 1 000 jetons lus + 500 écrits = 7 000 millionièmes.
     expect(costFromPrice({ prompt: 2, completion: 10 }, 1000, 500)).toBe(7000);
     expect(usdToMicroEur(0.0071)).toBe(7100);
-    expect(journeyMonthlyCapMicroEur(undefined)).toBe(100_000_000);
-    expect(journeyMonthlyCapMicroEur('0')).toBe(0);
+    // Pas de plafond mensuel par défaut : chaque parcours a son propre budget.
+    expect(journeyMonthlyCapMicroEur(undefined)).toBeNull();
+    expect(journeyMonthlyCapMicroEur('0')).toBeNull();
+    expect(journeyMonthlyCapMicroEur('100')).toBe(100_000_000);
 
     const prisma = {
       journey: {
@@ -198,11 +202,15 @@ describe('Budget IA', () => {
       },
     };
     const old = process.env.AI_JOURNEY_MONTHLY_CAP_EUR;
-    delete process.env.AI_JOURNEY_MONTHLY_CAP_EUR;
     const budget = new AiBudgetService(prisma as never);
-    // 99,99 € déjà dépensés ce mois : un appel de 0,02 € dépasserait les 100 €.
+    // Sans plafond mensuel (par défaut), seul le budget du parcours compte.
+    delete process.env.AI_JOURNEY_MONTHLY_CAP_EUR;
+    expect(await budget.allowJourney('j', 20_000)).toBe(true);
+    // Plafond choisi à 100 € : 99,99 € déjà dépensés, un appel de 0,02 € le dépasserait.
+    process.env.AI_JOURNEY_MONTHLY_CAP_EUR = '100';
     expect(await budget.allowJourney('j', 20_000)).toBe(false);
     expect(await budget.allowJourney('j', 5_000)).toBe(true);
-    if (old !== undefined) process.env.AI_JOURNEY_MONTHLY_CAP_EUR = old;
+    if (old === undefined) delete process.env.AI_JOURNEY_MONTHLY_CAP_EUR;
+    else process.env.AI_JOURNEY_MONTHLY_CAP_EUR = old;
   });
 });

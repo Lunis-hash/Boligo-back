@@ -17,6 +17,14 @@ import { AccountDeletionService } from '../account/account-deletion.service';
 import { checkDiscount, normalizePromoCode } from './promo-rules';
 import { revenueByCode } from '../partners/partner-sales';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
+import { CreditService } from '../credit/credit.service';
+import {
+  CATEGORY_LABEL,
+  holdsCategories,
+  refusalHolds,
+  parseSondeurReport,
+  supportMessages,
+} from '../journey/journey-insights.service';
 
 const userListSelect = {
   id: true,
@@ -63,6 +71,7 @@ export class AdminService {
     private jwtService: JwtService,
     private notificationService: NotificationService,
     private accountDeletion: AccountDeletionService,
+    private credits: CreditService,
   ) {}
 
   /**
@@ -593,11 +602,151 @@ export class AdminService {
     };
   }
 
-  async updateReport(id: string, status: ReportStatus) {
-    return this.prisma.report.update({
+  /**
+   * Décision de la modération. Pour un signal du Sondeur confirmé, l'équipe
+   * peut préciser la catégorie (une réponse « en attente de classement »
+   * n'en a pas encore) : elle décide de la clôture, du crédit rendu et du
+   * message d'aide.
+   */
+  async updateReport(id: string, status: ReportStatus, category?: string) {
+    let description: string | undefined;
+    // Menace ou contrôle : la victime peut avoir été lue comme l'auteur.
+    // L'équipe choisit la catégorie avant de confirmer (le parcours sera clos).
+    if (status === 'traite' && !category) {
+      const current = await this.prisma.report.findUnique({
+        where: { id },
+        select: { description: true },
+      });
+      const signal = current?.description
+        ? parseSondeurReport({
+            reportedId: '',
+            status,
+            description: current.description,
+          })
+        : null;
+      if (
+        signal &&
+        !signal.refused &&
+        signal.categories.some((c) => c === 'menace' || c === 'controle')
+      )
+        throw new BadRequestException(
+          'Choisissez la catégorie avant de confirmer : menace ou contrôle exercés, ou violence subie par la personne qui écrit.',
+        );
+    }
+    if (status === 'traite' && category) {
+      if (!(category in CATEGORY_LABEL))
+        throw new BadRequestException('Catégorie inconnue.');
+      const current = await this.prisma.report.findUnique({
+        where: { id },
+        select: { description: true },
+      });
+      const label = CATEGORY_LABEL[category as keyof typeof CATEGORY_LABEL];
+      if (
+        current?.description &&
+        parseSondeurReport({
+          reportedId: '',
+          status,
+          description: current.description,
+        })
+      )
+        description =
+          current.description.replace(
+            / · catégorie : [^\n]*?catégories=\[[^\]]*\]/,
+            ` · catégorie : ${label} · catégories=[${category}]`,
+          ) + `\nCatégorie confirmée par la modération : ${label}.`;
+    }
+    const report = await this.prisma.report.update({
       where: { id },
-      data: { status },
+      data: { status, ...(description ? { description } : {}) },
     });
+    if (status === 'traite')
+      await this.closeJourneyAfterConfirmedSignal(report);
+    return report;
+  }
+
+  /**
+   * Signal du Sondeur confirmé par la modération (menace, contrôle, violence
+   * exercée, détresse, minorité, demande d'argent…) : le parcours est clos, la
+   * réponse reste cachée, et le crédit est rendu au membre mis en danger (aux
+   * deux pour une détresse ou une minorité, où personne n'est en faute). Une
+   * confidence de violence subie seule ne clôt rien. Les deux membres sont
+   * prévenus sans que le motif soit donné.
+   */
+  private async closeJourneyAfterConfirmedSignal(report: {
+    reportedId: string;
+    status: string;
+    description: string | null;
+  }) {
+    const signal = parseSondeurReport(report);
+    // Une trace de réponse refusée (jamais montrée) ne clôt le parcours que si
+    // elle évoque un danger pour l'autre (menace, contrôle…) ; une insulte ou
+    // un contact sont seulement classés.
+    if (
+      !signal ||
+      !holdsCategories(signal.categories) ||
+      (signal.refused && !refusalHolds(signal.categories))
+    )
+      return;
+    const journey = await this.prisma.journey.findUnique({
+      where: { id: signal.journeyId },
+      select: { userAId: true, userBId: true },
+    });
+    if (!journey) return;
+    const closed = await this.prisma.journey.updateMany({
+      where: { id: signal.journeyId, result: 'en_cours' },
+      data: {
+        currentStep: 'termine',
+        result: 'abandonne',
+        endDate: new Date(),
+        closingReason:
+          'Sécurité : signalement du Sondeur confirmé par la modération',
+      },
+    });
+    if (closed.count === 0) return;
+    const partnerId =
+      journey.userAId === signal.authorId ? journey.userBId : journey.userAId;
+    const noFault = signal.categories.every((c) =>
+      ['detresse', 'mineur', 'violence_subie'].includes(c),
+    );
+    const refundTo = noFault ? [partnerId, signal.authorId] : [partnerId];
+    // Détresse confirmée : une pause pour prendre soin de soi, pas une
+    // sanction ; le message d'aide est renvoyé.
+    const distress = signal.categories.includes('detresse');
+    // Numéros d'aide du pays de l'auteur (« Ville, Pays »).
+    const authorCity = distress
+      ? await this.prisma.user
+          .findUnique({
+            where: { id: signal.authorId },
+            select: { city: true },
+          })
+          .then((u) => u?.city ?? null)
+          .catch(() => null)
+      : null;
+    for (const memberId of [journey.userAId, journey.userBId]) {
+      const refunded = refundTo.includes(memberId)
+        ? await this.credits.refundJourneyOnce(
+            memberId,
+            signal.journeyId,
+            'Parcours clos par l’équipe BOLIGO : crédit rendu',
+          )
+        : 0;
+      const author = memberId === signal.authorId;
+      const text =
+        distress && author
+          ? `L’équipe BOLIGO a mis ce parcours en pause pour que vous puissiez prendre soin de vous.${refunded ? ' Votre crédit vous a été rendu : vous pourrez reprendre quand vous le souhaiterez.' : ''} ${supportMessages(['detresse'], authorCity).join(' ')}`
+          : `L’équipe BOLIGO a mis fin à votre parcours.${refunded ? ' Votre crédit vous a été rendu.' : ''} Elle reste joignable depuis votre profil.`;
+      await this.notificationService
+        .sendPushNotification(
+          memberId,
+          'systeme',
+          distress && author ? 'BOLIGO' : 'Parcours terminé',
+          text,
+          distress && author
+            ? 'Un message de l’équipe BOLIGO vous attend dans l’application.'
+            : undefined,
+        )
+        .catch(() => undefined);
+    }
   }
 
   async listBlockedMessages(params: { page?: number; limit?: number }) {

@@ -1,4 +1,4 @@
-import { QUESTIONS, V6_ADDED } from '../interview/questions.data';
+import { QUESTIONS } from '../interview/questions.data';
 import {
   buildDivergenceReport,
   RawAnswers,
@@ -14,17 +14,45 @@ import {
 } from './portrait.writer';
 import { agree, cleanText, truncateAtWord } from './portrait.text';
 
-/** Réponses déterministes couvrant toutes les questions (option n° `shift`). */
+/**
+ * Réponses V7 déterministes couvrant toutes les questions (option n° `shift`,
+ * échelles au point neutre), sans même réponse à risque ni relation en cours.
+ */
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  // Questions d'origine (avant « fumez-vous ? » et la V6) : réponses inchangées ; non-fumeur.
-  QUESTIONS.filter((q) => q.id !== 'M0_Q09' && !V6_ADDED.has(q.id)).forEach(
-    (q, i) => {
-      out[q.id] = q.options[(i + shift) % q.options.length].key;
-    },
-  );
-  out.M0_Q09 = 'A';
-  return out;
+  QUESTIONS.forEach((q, i) => {
+    out[q.id] = q.scale ? 'C' : q.options[(i + shift) % q.options.length].key;
+  });
+  return {
+    ...out,
+    M0_Q04: 'A',
+    M0_Q09: 'A',
+    M0_Q12: 'A',
+    M1_Q16: 'D',
+    M1_Q19: 'A',
+    M2_Q07: 'A',
+    M2_Q22: 'A',
+    M3_Q11: 'D',
+    M3_Q12: 'A',
+    M0_Q14: 'A',
+    M0_Q15: 'A',
+    M0_Q16: 'C',
+    M3_Q13: 'A',
+    M5_Q02: 'A',
+    M5_Q10: 'B',
+    M6_Q03: 'A',
+    M6_Q04: 'A',
+    M6_Q05: 'A',
+    M6_Q11: 'A',
+    M6_Q16: 'A',
+    M6_Q17: 'A',
+    M8_Q10: 'A',
+    M8_Q14: 'A',
+    M9_Q01: 'A',
+    M9_Q03: 'A',
+    M9_Q25: 'A',
+    M10_Q18: 'A',
+  };
 }
 
 const OLI: RawAnswers = {
@@ -35,7 +63,9 @@ const OLI: RawAnswers = {
   M8_Q02: 'A',
   M8_Q09: 'A',
   M10_Q09: 'C',
-  M10_Q10: 'A',
+  M10_Q04: 'A',
+  M8_Q04: 'A',
+  M10_Q03: 'D',
 };
 
 const BROKEN = /\bundefined\b|\bnull\b|,\s*,|\s,|,\s*\.|\(\s*\)|\s{2,}/;
@@ -109,12 +139,12 @@ describe('Moteur de rédaction des fiches', () => {
       firstName: 'Awa',
       gender: 'F',
       age: 31,
-      answers: { ...OLI, M8_Q01: 'D', M0_Q04: 'C', M1_Q05: 'A' },
+      answers: { ...OLI, M8_Q01: 'D', M0_Q04: 'C', M1_Q16: 'A', M1_Q17: 'A' },
     });
     expect(p.pronoun).toBe('elle');
     expect(p.threeWords).toContain('Ouverte');
     expect(p.details.situation).toBe('Veuve');
-    expect(p.details.religion).toBe('Chrétienne pratiquante');
+    expect(p.details.religion).toBe('Catholique pratiquante');
     expect(p.analysis).toContain(
       'Elle reste **ouverte à ce que la rencontre fera naître**',
     );
@@ -169,16 +199,17 @@ describe('Moteur de rédaction des fiches', () => {
 
 describe('Affinités par module et score global', () => {
   it('donne 100 % sur tous les modules à deux réponses identiques', () => {
-    // Ce que chacun recherche correspond à ce que l'autre apporte. Aucune
-    // réponse identique à risque (V6 : deux refus de s'excuser, deux fuites en
-    // dispute, deux comptabilités affectives sont des risques partagés).
+    // Ce que chacun recherche correspond à ce que l'autre apporte, et à ce
+    // que ses amis disent de lui ; même allure et même déclic.
     const a = {
       ...answersWith(1),
+      M10_Q02: 'C',
       M10_Q03: 'C',
       M10_Q09: 'C',
-      M2_Q08: 'A',
-      M6_Q01: 'B',
-      M9_Q03: 'A',
+      M10_Q11: 'A',
+      M10_Q12: 'A',
+      M10_Q13: 'A',
+      M10_Q14: 'A',
     };
     const res = computeAnswerCompatibility(a, a, buildDivergenceReport(a, a));
     expect(res.score).toBe(0.98);

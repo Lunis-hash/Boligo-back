@@ -1,17 +1,40 @@
-import { QUESTIONS, V6_ADDED } from '../interview/questions.data';
+import { QUESTIONS } from '../interview/questions.data';
 import { RawAnswers } from '../matching/divergence.engine';
 import { buildHeadline, buildPortrait, isUsableBio } from './portrait.writer';
 
+/**
+ * Réponses V7 déterministes couvrant toutes les questions (option n° `shift`,
+ * échelles au point neutre), sans même réponse à risque ni relation en cours.
+ */
 function answersWith(shift: number): RawAnswers {
   const out: RawAnswers = {};
-  // Questions d'origine (avant « fumez-vous ? » et la V6) : réponses inchangées ; non-fumeur.
-  QUESTIONS.filter((q) => q.id !== 'M0_Q09' && !V6_ADDED.has(q.id)).forEach(
-    (q, i) => {
-      out[q.id] = q.options[(i + shift) % q.options.length].key;
-    },
-  );
-  out.M0_Q09 = 'A';
-  return out;
+  QUESTIONS.forEach((q, i) => {
+    out[q.id] = q.scale ? 'C' : q.options[(i + shift) % q.options.length].key;
+  });
+  return {
+    ...out,
+    M0_Q04: 'A',
+    M0_Q09: 'A',
+    M0_Q12: 'A',
+    M1_Q16: 'D',
+    M1_Q19: 'A',
+    M2_Q07: 'A',
+    M2_Q22: 'A',
+    M3_Q11: 'D',
+    M3_Q12: 'A',
+    M6_Q03: 'A',
+    M6_Q04: 'A',
+    M6_Q05: 'A',
+    M6_Q11: 'A',
+    M6_Q16: 'A',
+    M6_Q17: 'A',
+    M8_Q10: 'A',
+    M8_Q14: 'A',
+    M9_Q01: 'A',
+    M9_Q03: 'A',
+    M9_Q25: 'A',
+    M10_Q18: 'A',
+  };
 }
 
 /** Même projet, même apport, même offre : seuls le tempérament, l'humour et le langage de l'amour changent. */

@@ -15,12 +15,21 @@ export type OpenRouterRole = 'default' | 'quality' | 'critic';
  * - default : usages courants (modération si Groq est absent).
  */
 export const OPENROUTER_PREFERENCES: Record<OpenRouterRole, string[]> = {
+  // Rédacteur : le meilleur Claude disponible (Opus), puis Sonnet.
   quality: [
+    'anthropic/claude-opus-5.5',
+    'anthropic/claude-opus-5',
     'anthropic/claude-sonnet-5.5',
     'anthropic/claude-sonnet-5',
     'anthropic/claude-sonnet-4.6',
   ],
-  critic: ['openai/gpt-5.1', 'openai/gpt-5', 'google/gemini-2.5-pro'],
+  // Relecteur : le meilleur GPT disponible, d'une autre famille que Claude.
+  critic: [
+    'openai/gpt-5.5',
+    'openai/gpt-5.1',
+    'openai/gpt-5',
+    'google/gemini-2.5-pro',
+  ],
   default: ['openai/gpt-oss-120b', 'meta-llama/llama-3.3-70b-instruct'],
 };
 
@@ -31,11 +40,12 @@ export const OPENROUTER_MODEL_ENV: Record<OpenRouterRole, string> = {
 };
 
 /**
- * Prix plafond, en dollars par million de jetons : OpenRouter refuse tout
- * fournisseur plus cher (paramètre max_price), et BOLIGO écarte les modèles
- * au-dessus. Réglable par OPENROUTER_MAX_PRICE_PROMPT / _COMPLETION.
+ * Prix plafond, en dollars par million de jetons : il laisse passer les
+ * meilleurs modèles (Claude Opus, GPT-5.5) mais écarte les variantes « pro »
+ * ou « fast » facturées 6 à 30 fois plus cher pour la même qualité.
+ * Réglable par OPENROUTER_MAX_PRICE_PROMPT / _COMPLETION.
  */
-export const DEFAULT_MAX_PRICE = { prompt: 5, completion: 25 };
+export const DEFAULT_MAX_PRICE = { prompt: 15, completion: 75 };
 
 /** Réglages par défaut de chaque usage (l'appelant peut les préciser). */
 export const AGENT_DEFAULTS: Record<

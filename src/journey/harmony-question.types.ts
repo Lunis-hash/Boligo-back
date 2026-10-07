@@ -9,6 +9,13 @@ export interface HarmonyQuestionPayload {
   options: string[];
   /** Thème fondamental BOLIGO (famille, argent, …) quand il est connu. */
   themeKey?: string;
+  /** Technique clinique employée (jamais montrée aux membres). */
+  method?: string;
+  /** Ce que la question cherche à révéler (jamais montré aux membres). */
+  target?: string;
+  /** Modèle d'IA qui l'a rédigée, puis celui qui l'a relue (traçabilité). */
+  writer?: string;
+  reviewer?: string;
 }
 
 const DEFAULT_OPTIONS = [
@@ -39,7 +46,11 @@ export function bankToPayload(q: BankQuestion, day: number): HarmonyQuestionPayl
   };
 }
 
-export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | null {
+export function normalizeAiQuestions(
+  raw: unknown,
+  /** Nombre maximal de questions gardées (2 candidates par créneau possibles). */
+  max = 21,
+): HarmonyQuestionPayload[] | null {
   if (!Array.isArray(raw) || raw.length === 0) return null;
 
   const result: HarmonyQuestionPayload[] = [];
@@ -59,6 +70,9 @@ export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | n
     if (![1, 2, 3].includes(day) || !theme || text.length < 12) continue;
 
     const themeKey = String(o.themeKey ?? o.theme_key ?? '').trim();
+    const field = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const method = field(o.methode ?? o.method).slice(0, 160);
+    const target = field(o.cible ?? o.target).slice(0, 200);
     result.push({
       day,
       theme,
@@ -66,6 +80,8 @@ export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | n
       text,
       options: ensureAutreOption(options),
       ...(themeKey ? { themeKey } : {}),
+      ...(method ? { method } : {}),
+      ...(target ? { target } : {}),
     });
   }
 
@@ -73,7 +89,7 @@ export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | n
 
   const seen = new Set<string>();
   const unique: HarmonyQuestionPayload[] = [];
-  for (const q of result.sort((a, b) => a.day - b.day || a.text.localeCompare(b.text))) {
+  for (const q of result.sort((a, b) => a.day - b.day)) {
     const key = q.text.toLowerCase().replace(/\s+/g, ' ').trim();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -81,7 +97,7 @@ export function normalizeAiQuestions(raw: unknown): HarmonyQuestionPayload[] | n
   }
 
   if (unique.length < 4) return null;
-  return unique.slice(0, 21);
+  return unique.slice(0, max);
 }
 
 /** Répartit 21 questions : 7 par jour (indices 0-6 → jour 1, etc.). */

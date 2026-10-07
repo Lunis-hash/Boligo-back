@@ -16,6 +16,8 @@ import {
   togglePick,
   isValidFreeText,
   FREE_TEXT_SUFFIX,
+  askIfMet,
+  questionDisplayText,
 } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
@@ -79,6 +81,10 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     keepGoing: 'Continuer l’entretien',
     signOut: 'Se déconnecter',
     languageHint: 'Langue de l’entretien',
+    consentText:
+      'Les questions suivantes portent sur votre origine, votre religion ou votre vie intime. Ce sont des données sensibles : BOLIGO ne les enregistre qu’avec votre accord explicite. Elles servent à calculer votre compatibilité et peuvent apparaître, résumées, sur votre profil. Sans accord, ces questions sont passées, et les réponses qui touchent à la foi ou à l’intimité ne vous sont pas proposées ailleurs dans l’entretien. Vous pourrez retirer votre accord à tout moment depuis votre profil : vos réponses seront alors effacées.',
+    consentYes: 'J’accepte de répondre',
+    consentNo: 'Je préfère passer ces questions',
   },
   en: {
     module: 'MODULE',
@@ -105,6 +111,10 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     keepGoing: 'Continue the interview',
     signOut: 'Sign out',
     languageHint: 'Interview language',
+    consentText:
+      'The next questions are about your origins, your religion or your intimate life. This is sensitive data: BOLIGO only saves it with your explicit consent. It is used to work out your compatibility and may appear, summarised, on your profile. Without consent, these questions are skipped, and answers touching on faith or intimacy are not offered elsewhere in the interview. You can withdraw your consent at any time from your profile: your answers will then be deleted.',
+    consentYes: 'I agree to answer',
+    consentNo: 'I’d rather skip these questions',
   },
 };
 
@@ -118,6 +128,8 @@ interface Message {
   maxChoices?: number;
   /** Réponses pré-cochées selon le pays (langues). */
   suggested?: boolean;
+  /** Demande d'accord avant les questions sensibles. */
+  consent?: boolean;
 }
 
 export default function DynamicInterviewScreen() {
@@ -141,6 +153,10 @@ export default function DynamicInterviewScreen() {
   const [isSaving, setIsSaving] = useState(false);
   // Choix multiple en cours (langues, signaux d'alerte) : clés cochées avant « Valider ».
   const [picked, setPicked] = useState<string[]>([]);
+  // Accord pour les questions sensibles : undefined tant qu'il n'est pas lu.
+  const consentRef = useRef<boolean | null | undefined>(undefined);
+  /** Relectures du module après enregistrement (questions de suite débloquées). */
+  const followUpRounds = useRef(0);
   // Précision écrite de l'option « une autre langue ».
   const [otherText, setOtherText] = useState('');
 
@@ -175,9 +191,15 @@ export default function DynamicInterviewScreen() {
       setCurrentQuestionIndex(0);
       setAnswers({});
       setPicked([]);
+      followUpRounds.current = 0;
 
       if (data.length > 0) {
-        addQuestionMessage(data[0]);
+        if (consentRef.current === undefined && data.some((q) => q.sensitive)) {
+          consentRef.current = await InterviewService.getSensitiveConsent()
+            .then((r) => r.consent)
+            .catch(() => null);
+        }
+        presentQuestion(0, {}, data);
       } else {
         // Aucune question applicable (déjà répondues, filtres d'âge/genre…) :
         // on enregistre le module tel quel et on passe au suivant.
@@ -213,6 +235,8 @@ export default function DynamicInterviewScreen() {
       setQuestions(data);
       const current = data[currentQuestionIndex];
       if (!current) return;
+      // Demande d'accord en attente : la question n'est pas encore affichée.
+      if (current.sensitive && consentRef.current !== true) return;
       setPicked(initialPicked(current));
       setOtherText(current.suggestedOther ?? '');
       // La question en attente est réécrite dans la nouvelle langue (pas de doublon).
@@ -220,7 +244,7 @@ export default function DynamicInterviewScreen() {
         const last = prev[prev.length - 1];
         const translated: Message = {
           id: Math.random().toString(36).substring(7),
-          text: current.text,
+          text: questionDisplayText(current),
           type: 'ai',
           options: current.options,
           questionId: current.id,
@@ -237,11 +261,69 @@ export default function DynamicInterviewScreen() {
     }
   };
 
+  /**
+   * Affiche la question `index`. Questions sensibles : elles sont sautées si le
+   * membre les a refusées, et précédées d'une demande d'accord sinon.
+   */
+  const presentQuestion = (
+    index: number,
+    answersSoFar: Record<string, string>,
+    list: Question[] = questions,
+  ) => {
+    let i = index;
+    // Sautées : questions sensibles refusées, et questions de suite que la
+    // réponse donnée plus tôt n'ouvre pas.
+    const skip = (q: Question) =>
+      (consentRef.current === false && !!q.sensitive) || !askIfMet(q, answersSoFar);
+    while (i < list.length && skip(list[i])) i++;
+    if (i >= list.length) {
+      handleModuleComplete(answersSoFar);
+      return;
+    }
+    setCurrentQuestionIndex(i);
+    if (list[i].sensitive && consentRef.current !== true) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Math.random().toString(36).substring(7),
+          text: t.consentText,
+          type: 'ai',
+          consent: true,
+          options: [
+            { key: 'yes', text: t.consentYes },
+            { key: 'no', text: t.consentNo },
+          ],
+        },
+      ]);
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
+      return;
+    }
+    addQuestionMessage(list[i]);
+  };
+
+  const handleConsent = async (accepted: boolean, label: string) => {
+    if (isAnswering) return;
+    setIsAnswering(true);
+    try {
+      await InterviewService.setSensitiveConsent(accepted);
+    } catch (error) {
+      Alert.alert(t.errorTitle, getReadableError(error, t.saveFail));
+      setIsAnswering(false);
+      return;
+    }
+    consentRef.current = accepted;
+    addUserMessage(label);
+    setTimeout(() => {
+      presentQuestion(currentQuestionIndex, answers);
+      setIsAnswering(false);
+    }, 500);
+  };
+
   const addQuestionMessage = (q: Question) => {
     // Langues : celles du pays de résidence sont cochées d'office.
     setPicked(initialPicked(q));
     setOtherText(q.suggestedOther ?? '');
-    addAIMessage(q.text, q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
+    addAIMessage(questionDisplayText(q), q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
   };
 
   const addAIMessage = (
@@ -298,9 +380,8 @@ export default function DynamicInterviewScreen() {
       useNativeDriver: false,
     }).start();
     if (nextIndex < questions.length) {
-      setCurrentQuestionIndex(nextIndex);
       setTimeout(() => {
-        addQuestionMessage(questions[nextIndex]);
+        presentQuestion(nextIndex, newAnswers);
         setIsAnswering(false);
       }, 700);
     } else {
@@ -333,6 +414,23 @@ export default function DynamicInterviewScreen() {
     setIsSaving(true);
     try {
       await InterviewService.saveModule(modNum, finalAnswers);
+
+      // Filet de sécurité : une question de suite débloquée par ces réponses
+      // (et pas encore posée) est posée tout de suite, sans quitter le module.
+      if (followUpRounds.current < 2) {
+        followUpRounds.current += 1;
+        const more = (await InterviewService.getQuestions(modNum, lang ?? 'fr').catch(
+          () => [] as Question[],
+        )).filter((q) => !(q.id in finalAnswers));
+        if (more.length) {
+          setAnswers(finalAnswers);
+          setQuestions(more);
+          setCurrentQuestionIndex(0);
+          setIsAnswering(false);
+          presentQuestion(0, finalAnswers, more);
+          return;
+        }
+      }
 
       if (modNum < LAST_MODULE) {
         setTimeout(() => {
@@ -519,7 +617,11 @@ export default function DynamicInterviewScreen() {
                       testID={`option-${option.key}`}
                       style={[styles.optionButton, checked && styles.optionButtonChecked]}
                       onPress={() =>
-                        message.multiple ? togglePicked(option.key) : handleAnswer(option.key, option.text)
+                        message.consent
+                          ? handleConsent(option.key === 'yes', option.text)
+                          : message.multiple
+                            ? togglePicked(option.key)
+                            : handleAnswer(option.key, option.text)
                       }
                       accessibilityRole={message.multiple ? 'checkbox' : 'button'}
                       accessibilityState={message.multiple ? { checked: !!checked } : undefined}

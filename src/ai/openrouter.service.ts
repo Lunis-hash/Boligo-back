@@ -67,10 +67,21 @@ export function maxPrice(): ModelPrice {
   };
 }
 
-/** Modèles « à raisonnement » : leur réflexion est limitée pour ne pas tronquer le JSON. */
-function reasoningFor(model: string): Record<string, unknown> {
+/**
+ * Modèles « à raisonnement » : réflexion bornée pour ne pas tronquer le JSON ;
+ * le relecteur réfléchit davantage (il juge chaque question sur 20 règles).
+ */
+function reasoningFor(
+  model: string,
+  role: OpenRouterRole = 'default',
+): Record<string, unknown> {
   return /^openai\/(gpt-5|o\d|gpt-oss)/.test(model)
-    ? { reasoning: { effort: 'low', exclude: true } }
+    ? {
+        reasoning: {
+          effort: role === 'critic' ? 'medium' : 'low',
+          exclude: true,
+        },
+      }
     : {};
 }
 
@@ -181,15 +192,19 @@ export class OpenRouterService {
     }
     const cap = maxPrice();
     let lastError: Error | null = null;
+    // Délai global partagé par les modèles de secours : un modèle lent ne
+    // peut pas faire attendre plusieurs fois le délai complet.
+    const perCall = options.timeoutMs ?? OPENROUTER_TIMEOUT_MS;
+    const deadline = Date.now() + perCall * 1.25;
 
     for (const model of models) {
+      const left = deadline - Date.now();
+      if (left < 5_000) break;
       try {
         const response = await fetch(`${api()}/chat/completions`, {
           method: 'POST',
           // Un modèle qui ne répond pas ne doit pas bloquer la requête du membre.
-          signal: AbortSignal.timeout(
-            options.timeoutMs ?? OPENROUTER_TIMEOUT_MS,
-          ),
+          signal: AbortSignal.timeout(Math.min(perCall, left)),
           headers: {
             Authorization: `Bearer ${this.apiKey}`,
             'HTTP-Referer':
@@ -208,7 +223,11 @@ export class OpenRouterService {
               ...(process.env.OPENROUTER_ZDR === 'true' ? { zdr: true } : {}),
               max_price: { prompt: cap.prompt, completion: cap.completion },
             },
-            ...reasoningFor(model),
+            ...reasoningFor(model, role),
+            // Relecteur : réponse JSON stricte (verdicts, fidélité).
+            ...(role === 'critic'
+              ? { response_format: { type: 'json_object' } }
+              : {}),
           }),
         });
 
@@ -236,7 +255,7 @@ export class OpenRouterService {
     }
 
     throw new Error(
-      `[OpenRouter] Tous les modèles du rôle ${role} ont échoué. Dernière erreur : ${lastError?.message}`,
+      `[OpenRouter] Tous les modèles du rôle ${role} ont échoué. Dernière erreur : ${lastError?.message ?? 'délai global dépassé'}`,
     );
   }
 

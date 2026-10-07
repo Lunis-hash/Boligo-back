@@ -14,6 +14,8 @@ import {
   Handshake,
   Ticket,
   ShieldCheck,
+  FlaskConical,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearSession, getAdminUser } from "@/lib/auth";
@@ -24,6 +26,7 @@ import { canSee, ROLE_LABELS, type Section } from "@/lib/roles";
 const nav: { href: string; label: string; icon: typeof Users; section: Section }[] = [
   { href: "/dashboard", label: "Vue d'ensemble", icon: LayoutDashboard, section: "overview" },
   { href: "/dashboard/finance", label: "Finances", icon: Wallet, section: "finance" },
+  { href: "/dashboard/billing", label: "Facturation", icon: Receipt, section: "billing" },
   { href: "/dashboard/users", label: "Utilisateurs", icon: Users, section: "users" },
   { href: "/dashboard/matches", label: "Matchs & likes", icon: GitMerge, section: "matches" },
   { href: "/dashboard/journeys", label: "Parcours", icon: Route, section: "journeys" },
@@ -32,6 +35,7 @@ const nav: { href: string; label: string; icon: typeof Users; section: Section }
   { href: "/dashboard/partners", label: "Partenaires", icon: Handshake, section: "partners" },
   { href: "/dashboard/promo", label: "Codes promo", icon: Ticket, section: "promo" },
   { href: "/dashboard/team", label: "Équipe", icon: ShieldCheck, section: "team" },
+  { href: "/dashboard/ai-lab", label: "Laboratoire IA", icon: FlaskConical, section: "ai-lab" },
 ];
 
 export function AdminSidebar() {

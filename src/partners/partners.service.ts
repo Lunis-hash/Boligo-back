@@ -496,9 +496,15 @@ export class PartnersService {
       throw invalid;
     }
     const promo = partner.promoCode;
+    // Achats et remboursements : le chiffre d'affaires est net.
     const sales = await this.prisma.creditTransaction.findMany({
-      where: { promoCodeId: promo.id, type: TransactionType.achat },
-      select: { date: true, euroAmount: true },
+      where: {
+        promoCodeId: promo.id,
+        type: {
+          in: [TransactionType.achat, TransactionType.remboursement_paiement],
+        },
+      },
+      select: { date: true, euroAmount: true, type: true },
     });
     const revenue =
       Math.round(sales.reduce((sum, s) => sum + (s.euroAmount ?? 0), 0) * 100) /
@@ -520,7 +526,7 @@ export class PartnersService {
         uses: promo.usedCount,
       },
       totals: {
-        purchases: sales.length,
+        purchases: sales.filter((s) => s.type === TransactionType.achat).length,
         revenue,
         commission: commissionDue(revenue, partner.commissionRate),
       },

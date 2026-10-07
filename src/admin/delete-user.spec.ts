@@ -22,6 +22,7 @@ function setup(users: U[]) {
     {} as never,
     {} as never,
     deletion as never,
+    {} as never,
   );
   return { service, deletion };
 }

@@ -14,12 +14,18 @@
  * modifier les données des membres.
  */
 import {
+  QUESTIONNAIRE_V6_ORDER,
   QUESTIONS,
+  QUESTION_INDEX,
   Question,
+  V7_REPLACEMENTS,
   answerKeys,
+  answerText,
   dependencyMet,
+  isV7Interview,
 } from '../interview/questions.data';
 import { RawAnswers } from '../matching/divergence.engine';
+import { buildPsychProfile } from '../psychometrics/psychometrics';
 import {
   APPROACH_BY_DIVERGENCE,
   APPROACH_BY_GOAL,
@@ -41,13 +47,17 @@ import {
   DETAIL_LIFESTYLE,
   DETAIL_SMOKING,
   DETAIL_RELIGION,
+  DETAIL_RELIGION_V7,
   DETAIL_SITUATION,
   EXPECT_ENERGY,
   EXPECT_LOVE,
   EXPECT_NEVER,
   EXPECT_TIMING,
+  EXPECT_TIMING_V71,
   FAITH,
   FAITH_IMPACT,
+  FAITH_PARTNER,
+  FAITH_V7,
   FAMILY,
   GOAL,
   MODULES,
@@ -58,10 +68,18 @@ import {
   NEED,
   NO_FAITH,
   NO_FAITH_IMPACT,
+  NO_FAITH_PARTNER,
+  NO_FAITH_V7,
+  NON_NEGOTIABLE_WORDS,
   OFFERS,
+  PAUSE,
+  PRACTICE,
   Phrases,
   QUESTION_SHORT_LABEL,
+  RECONCILE,
   TIMING,
+  TIMING_V71,
+  TOGETHER,
   TRADITIONS,
   TRAITS,
   UNDECIDED,
@@ -131,8 +149,6 @@ export interface Portrait {
   answeredCount: number;
 }
 
-const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
-
 function pick(
   phrases: Phrases,
   answers: RawAnswers,
@@ -144,11 +160,33 @@ function pick(
   return template ? agree(template, gender) : null;
 }
 
+/** Texte d'une réponse, y compris à choix multiple ; null si la question est inconnue. */
 function optionText(questionId: string, key: string): string | null {
-  return (
-    QUESTION_BY_ID.get(questionId)?.options.find((o) => o.key === key)?.text ??
-    null
-  );
+  const q = QUESTION_INDEX.get(questionId);
+  return q ? answerText(q, key) : null;
+}
+
+/** Première réponse d'une question à choix multiple (« A,D » → « A »). */
+function firstKey(a: RawAnswers, questionId: string): RawAnswers {
+  const key = answerKeys(a[questionId])[0];
+  return key ? { [questionId]: key } : {};
+}
+
+/**
+ * Tempérament (M7_Q03, V6) ; en V7, déduit de l'énergie sociale (trois
+ * affirmations) : un mot de la fiche, jamais le score lui-même.
+ */
+function temperamentKey(a: RawAnswers): string | undefined {
+  if (a.M7_Q03) return a.M7_Q03;
+  const e = buildPsychProfile(a).bigFive.extraversion;
+  if (e === null) return undefined;
+  return e >= 65 ? 'C' : e <= 35 ? 'A' : 'B';
+}
+
+/** Réponses lues pour la rédaction : le tempérament V7 rejoint la clé V6. */
+function displayAnswers(a: RawAnswers): RawAnswers {
+  const t = temperamentKey(a);
+  return t && !a.M7_Q03 ? { ...a, M7_Q03: t } : a;
 }
 
 /** Prénom saisi tout en minuscules (« yannick ») → « Yannick » ; sinon inchangé. */
@@ -206,9 +244,10 @@ function analysisSentences(input: PortraitInput): string[] {
   // 2. Projet de couple et délai.
   const goal = pick(GOAL, a, 'M8_Q01', g);
   if (goal) {
+    // V7.1 : M8_Q17 ; un entretien antérieur garde sa réponse M8_Q02.
     const timing =
       a.M8_Q01 === 'A' || a.M8_Q01 === 'B'
-        ? pick(TIMING, a, 'M8_Q02', g)
+        ? (pick(TIMING_V71, a, 'M8_Q17', g) ?? pick(TIMING, a, 'M8_Q02', g))
         : null;
     out.push(timing ? `${goal}, ${timing}` : goal);
   }
@@ -227,16 +266,31 @@ function analysisSentences(input: PortraitInput): string[] {
   else if (now) out.push(agree(`{Il} est ${now}`, g));
 
   // 4. Attachement et gestion des désaccords.
-  const need = pick(NEED, a, 'M2_Q03', g);
-  const conflict = pick(CONFLICT, a, 'M6_Q01', g);
+  // V6 : besoin fondamental et comportement en dispute ; V7 : temps à deux,
+  // pause quand la tension monte, réconciliation (jamais un aveu publié).
+  const need = pick(NEED, a, 'M2_Q03', g) ?? pick(TOGETHER, a, 'M7_Q08', g);
+  const conflict =
+    pick(CONFLICT, a, 'M6_Q01', g) ??
+    pick(PAUSE, a, 'M6_Q16', g) ??
+    pick(RECONCILE, a, 'M6_Q11', g);
   if (need && conflict)
     out.push(agree(`En couple, {il} ${need} et ${conflict}`, g));
   else if (need || conflict)
     out.push(agree(`En couple, {il} ${need ?? conflict}`, g));
 
-  // 5. Foi et traditions.
+  // 5. Foi et traditions (V7 : religion, pratique, attente envers l'autre).
   const faith = pick(FAITH, a, 'M1_Q05', g);
-  if (faith) {
+  const faithV7 = pick(FAITH_V7, a, 'M1_Q16', g);
+  const noFaithV7 = pick(NO_FAITH_V7, a, 'M1_Q16', g);
+  if (faithV7) {
+    const practice = pick(PRACTICE, a, 'M1_Q17', g);
+    const partner = pick(FAITH_PARTNER, a, 'M1_Q18', g);
+    const base = `${faithV7} ${practice ?? 'fait partie de sa vie'}`;
+    out.push(partner ? `${base} ; ${partner}` : base);
+  } else if (noFaithV7) {
+    const partner = pick(NO_FAITH_PARTNER, a, 'M1_Q18', g);
+    out.push(partner ? `${noFaithV7} ${partner}` : noFaithV7);
+  } else if (faith) {
     const impact = pick(FAITH_IMPACT, a, 'M1_Q06', g);
     out.push(impact ? `${faith} ${impact}` : `${faith} fait partie de sa vie`);
   } else {
@@ -308,13 +362,14 @@ export function brandBoligo(text: string): string {
 }
 
 function generatedBio(input: PortraitInput): string {
-  const { answers: a, gender: g } = input;
+  const { gender: g } = input;
+  const a = displayAnswers(input.answers);
   // Tempérament + humour, langage de l'amour et énergie recherchée : les réponses
   // qui distinguent le plus deux membres au même projet de couple.
   const temperament = pick(BIO_TEMPERAMENT, a, 'M7_Q03', g);
   const humour = pick(BIO_HUMOUR, a, 'M10_Q04', g);
   const personality = temperament ? `${temperament}${humour ?? ''}` : null;
-  const love = pick(BIO_LOVE, a, 'M8_Q04', g);
+  const love = pick(BIO_LOVE, firstKey(a, 'M8_Q04'), 'M8_Q04', g);
   const seek = pick(BIO_SEEK, a, 'M10_Q03', g);
   const parts = [
     pick(BIO_GOAL, a, 'M8_Q01', g),
@@ -330,7 +385,8 @@ function generatedBio(input: PortraitInput): string {
   return parts.map(sentence).join(' ');
 }
 
-function threeWords(a: RawAnswers, g: Gender): string[] {
+function threeWords(answers: RawAnswers, g: Gender): string[] {
+  const a = displayAnswers(answers);
   const words: string[] = [];
   for (const [questionId, phrases] of TRAITS) {
     const w = pick(phrases, a, questionId, g);
@@ -345,7 +401,7 @@ export const MAX_VALUE_CHIPS = 8;
 export function valueChips(a: RawAnswers): ValueChip[] {
   return VALUE_CHIPS.filter((chip) =>
     Object.entries(chip.when).some(([qid, keys]) =>
-      keys.includes(a[qid] ?? ''),
+      answerKeys(a[qid]).some((k) => keys.includes(k)),
     ),
   )
     .slice(0, MAX_VALUE_CHIPS)
@@ -355,16 +411,28 @@ export function valueChips(a: RawAnswers): ValueChip[] {
 function expectations(a: RawAnswers, g: Gender): Expectation[] {
   const out: Expectation[] = [];
   if (a.M8_Q01 === 'A' || a.M8_Q01 === 'B') {
-    const t = pick(EXPECT_TIMING, a, 'M8_Q02', g);
+    const t =
+      pick(EXPECT_TIMING_V71, a, 'M8_Q17', g) ??
+      pick(EXPECT_TIMING, a, 'M8_Q02', g);
     if (t) out.push({ icon: '⏱️', text: t });
   }
   const energy = pick(EXPECT_ENERGY, a, 'M10_Q03', g);
   if (energy) out.push({ icon: '✨', text: energy });
-  const love = pick(EXPECT_LOVE, a, 'M8_Q04', g);
+  const love = pick(EXPECT_LOVE, firstKey(a, 'M8_Q04'), 'M8_Q04', g);
   if (love) out.push({ icon: '💞', text: love });
-  const never = pick(EXPECT_NEVER, a, 'M8_Q08', g);
+  const never =
+    pick(EXPECT_NEVER, a, 'M8_Q08', g) ?? nonNegotiableExpectation(a, g);
   if (never) out.push({ icon: '🛡️', text: never });
   return out.map((e) => ({ ...e, text: cleanText(e.text) }));
+}
+
+/** V7 : ce que le membre déclare non négociable (M8_Q12), sans l'intimité. */
+function nonNegotiableExpectation(a: RawAnswers, g: Gender): string | null {
+  const words = answerKeys(a.M8_Q12)
+    .map((k) => NON_NEGOTIABLE_WORDS[k])
+    .filter(Boolean);
+  if (!words.length) return null;
+  return agree(`Non négociable pour {lui|elle} : **${joinFr(words)}**.`, g);
 }
 
 /** Noms des langues de M0_Q10 sur la fiche (en français, l'app étant en français). */
@@ -378,6 +446,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   G: 'portugais',
   H: 'espagnol',
   I: 'une autre langue',
+  J: 'créole',
 };
 
 /** « Français et anglais » ; null si la question n'a pas été posée. */
@@ -398,7 +467,7 @@ function details(input: PortraitInput): Record<string, string> {
     ['situation', pick(DETAIL_SITUATION, a, 'M0_Q04', g)],
     ['children', pick(DETAIL_CHILDREN, a, 'M0_Q05', g)],
     ['childrenWish', pick(DETAIL_CHILDREN_WISH, a, 'M0_Q06', g)],
-    ['religion', pick(DETAIL_RELIGION, a, 'M1_Q05', g)],
+    ['religion', religionV7(a, g) ?? pick(DETAIL_RELIGION, a, 'M1_Q05', g)],
     ['education', pick(DETAIL_EDUCATION, a, 'M0_Q07', g)],
     ['lifestyle', pick(DETAIL_LIFESTYLE, a, 'M7_Q01', g)],
     ['smoking', pick(DETAIL_SMOKING, a, 'M0_Q09', g)],
@@ -410,17 +479,63 @@ function details(input: PortraitInput): Record<string, string> {
   );
 }
 
+/** « Musulmane pratiquante » (V7 : M1_Q16, et M1_Q17 chaque jour ou chaque semaine). */
+function religionV7(a: RawAnswers, g: Gender): string | null {
+  const base = pick(DETAIL_RELIGION_V7, a, 'M1_Q16', g);
+  if (!base) return null;
+  const practising =
+    ['A', 'B', 'C', 'D', 'E', 'F', 'K'].includes(a.M1_Q16) &&
+    ['A', 'B'].includes(a.M1_Q17);
+  return practising ? `${base} ${agree('pratiquant{e}', g)}` : base;
+}
+
+/** Lignes rouges du membre (bilan personnel) : V6 M8_Q05 et M8_Q08, V7 M8_Q12. */
 function redFlags(a: RawAnswers): string[] {
   const flags: string[] = [];
   for (const qid of ['M8_Q05', 'M8_Q08']) {
     const text = a[qid] ? optionText(qid, a[qid]) : null;
     if (text && !flags.includes(text)) flags.push(text);
   }
+  const q = QUESTION_INDEX.get('M8_Q12');
+  for (const k of answerKeys(a.M8_Q12)) {
+    const text = q?.options.find((o) => o.key === k && k !== 'K')?.text;
+    if (text && !flags.includes(text)) flags.push(text);
+  }
   return flags;
 }
 
-/** Une question s'applique-t-elle à ce membre (âge, genre, dépendances) ? */
-function applies(q: Question, input: PortraitInput): boolean {
+/** Questions V6, dans l'ordre où elles étaient posées. */
+const V6_QUESTIONS = QUESTIONNAIRE_V6_ORDER.map(
+  (id) => QUESTION_INDEX.get(id)!,
+).filter(Boolean);
+
+/**
+ * Questions de l'entretien de ce membre : V7, ou V6 pour un entretien V6. Un
+ * entretien V6 repris après la V7 garde ses réponses V6, et les questions V7
+ * qui les remplacent ne sont pas comptées comme manquantes.
+ */
+function interviewQuestions(a: RawAnswers): Question[] {
+  if (!isV7Interview(a)) return V6_QUESTIONS;
+  const answeredRetired = Object.keys(V7_REPLACEMENTS).filter((id) => a[id]);
+  const covered = new Set(
+    answeredRetired.flatMap((id) => V7_REPLACEMENTS[id]).filter((id) => !a[id]),
+  );
+  return [
+    ...QUESTIONS.filter((q) => !covered.has(q.id)),
+    ...answeredRetired.map((id) => QUESTION_INDEX.get(id)!).filter(Boolean),
+  ];
+}
+
+/**
+ * Une question s'applique-t-elle à ce membre (âge, genre, dépendances) ? Une
+ * dépendance envers une question que son entretien ne posait pas (un
+ * entretien V6 face à une règle d'affichage V7) est considérée comme remplie.
+ */
+function applies(
+  q: Question,
+  input: PortraitInput,
+  asked: ReadonlySet<string>,
+): boolean {
   const r = q.rules;
   if (!r) return true;
   const age = typeof input.age === 'number' ? input.age : null;
@@ -428,15 +543,21 @@ function applies(q: Question, input: PortraitInput): boolean {
   if (r.maxAge !== undefined && age !== null && age >= r.maxAge) return false;
   if (r.minAge !== undefined && age !== null && age < r.minAge) return false;
   if (r.gender && input.gender && r.gender !== input.gender) return false;
-  return dependencyMet(r, input.answers);
+  if (!r.dependsOn) return true;
+  const deps = (
+    Array.isArray(r.dependsOn) ? r.dependsOn : [r.dependsOn]
+  ).filter((d) => asked.has(d.questionId));
+  return deps.length === 0 || dependencyMet({ dependsOn: deps }, input.answers);
 }
 
 function moduleSelfViews(input: PortraitInput): ModuleSelfView[] {
   const { answers: a, gender: g } = input;
   const out: ModuleSelfView[] = [];
+  const asked = interviewQuestions(a);
+  const askedIds = new Set(asked.map((q) => q.id));
   for (const info of MODULES) {
-    const questions = QUESTIONS.filter(
-      (q) => q.moduleNumber === info.number && applies(q, input),
+    const questions = asked.filter(
+      (q) => q.moduleNumber === info.number && applies(q, input, askedIds),
     );
     const answered = questions.filter((q) => a[q.id]);
     if (answered.length === 0) continue;
@@ -445,15 +566,13 @@ function moduleSelfViews(input: PortraitInput): ModuleSelfView[] {
     );
     const clarity = Math.round((decided.length / questions.length) * 100);
 
-    const [anchor, basePhrases] = MODULE_SELF_SENTENCE[info.number];
-    const phrases =
-      info.number === 0 && isParent(a) ? MODULE0_SELF_PARENT : basePhrases;
     const description =
-      pick(phrases, a, anchor, g) ??
+      selfSentence(info.number, a, g) ??
       `Vos réponses sur ${info.focus} sont prises en compte dans vos rencontres.`;
 
     const keyAnswers = (MODULE_KEY_QUESTIONS[info.number] ?? [])
       .filter((qid) => a[qid])
+      .slice(0, 3)
       .map((qid) => ({
         label: QUESTION_SHORT_LABEL[qid] ?? qid,
         answer: optionText(qid, a[qid]) ?? '',
@@ -474,12 +593,36 @@ function moduleSelfViews(input: PortraitInput): ModuleSelfView[] {
   return out;
 }
 
+/** Phrase « vous » d'un module : la première question d'ancrage répondue. */
+function selfSentence(module: number, a: RawAnswers, g: Gender): string | null {
+  for (const [anchor, basePhrases] of MODULE_SELF_SENTENCE[module] ?? []) {
+    if (!a[anchor]) continue;
+    if (anchor === 'M7_Q19') {
+      // Valeurs de vie (trois au plus) : « Ce qui compte le plus pour vous : … ».
+      const words = answerKeys(a.M7_Q19)
+        .map((k) => basePhrases[k])
+        .filter(Boolean)
+        .map((w) => agree(w, g));
+      if (words.length)
+        return `Ce qui compte le plus pour vous : ${joinFr(words)}.`;
+      continue;
+    }
+    const phrases =
+      module === 0 && isParent(a) ? MODULE0_SELF_PARENT : basePhrases;
+    const text = pick(phrases, a, anchor, g);
+    if (text) return text;
+  }
+  return null;
+}
+
 export function buildPortrait(input: PortraitInput): Portrait {
   const g = input.gender;
   const answeredCount = Object.keys(input.answers).length;
   const modules = moduleSelfViews(input);
 
-  const applicable = QUESTIONS.filter((q) => applies(q, input));
+  const asked = interviewQuestions(input.answers);
+  const askedIds = new Set(asked.map((q) => q.id));
+  const applicable = asked.filter((q) => applies(q, input, askedIds));
   const decided = applicable.filter(
     (q) =>
       input.answers[q.id] &&

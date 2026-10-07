@@ -82,6 +82,7 @@ function setup() {
         Promise.resolve([
           {
             promoCodeId: 'code-1',
+            type: 'achat',
             _count: { _all: 3 },
             _sum: { euroAmount: 40.5 },
           },
@@ -89,9 +90,13 @@ function setup() {
       ),
       findMany: jest.fn(() =>
         Promise.resolve([
-          { date: new Date(), euroAmount: 13.5 },
-          { date: new Date(), euroAmount: 13.5 },
-          { date: new Date('2020-01-01T00:00:00Z'), euroAmount: 13.5 },
+          { date: new Date(), euroAmount: 13.5, type: 'achat' },
+          { date: new Date(), euroAmount: 13.5, type: 'achat' },
+          {
+            date: new Date('2020-01-01T00:00:00Z'),
+            euroAmount: 13.5,
+            type: 'achat',
+          },
         ]),
       ),
     },

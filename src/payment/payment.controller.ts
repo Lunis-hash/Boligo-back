@@ -9,13 +9,19 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  Param,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentService } from './payment.service';
+import { WithdrawalService } from './withdrawal.service';
+import { CreatePaymentDto, WithdrawalRequestDto } from './dto/billing.dto';
 
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    private readonly withdrawals: WithdrawalService,
+  ) {}
 
   // ─── Présentation du plan unique (sans auth) ───────────────────────────────
   @Get('plans')
@@ -42,12 +48,13 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async createPaymentIntent(
     @Request() req,
-    @Body() body: { optionId?: string; packId?: string; promoCode?: string },
+    @Body() body: CreatePaymentDto,
   ) {
     return this.paymentService.createPaymentSheet(
       req.user.id,
       body.optionId || body.packId || 'parcours_harmonie',
       body.promoCode,
+      body,
     );
   }
 
@@ -56,12 +63,13 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   async createIntent(
     @Request() req,
-    @Body() body: { optionId?: string; packId?: string; promoCode?: string },
+    @Body() body: CreatePaymentDto,
   ) {
     return this.paymentService.createPaymentSheet(
       req.user.id,
       body.optionId || body.packId || 'parcours_harmonie',
       body.promoCode,
+      body,
     );
   }
 
@@ -85,6 +93,33 @@ export class PaymentController {
   ) {
     const rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
     return this.paymentService.handleWebhook(rawBody, signature);
+  }
+
+  // ─── Mes achats, factures et rétractation ─────────────────────────────────
+  @Get('purchases')
+  @UseGuards(AuthGuard('jwt'))
+  purchases(@Request() req: { user: { id: string } }) {
+    return this.withdrawals.purchases(req.user.id);
+  }
+
+  /** Lien du PDF de la facture (relu chez Stripe à chaque demande). */
+  @Get('invoices/:paymentRef')
+  @UseGuards(AuthGuard('jwt'))
+  async invoice(
+    @Request() req: { user: { id: string } },
+    @Param('paymentRef') paymentRef: string,
+  ) {
+    return { url: await this.withdrawals.invoicePdf(req.user.id, paymentRef) };
+  }
+
+  /** « Se rétracter du contrat ici » : accusé de réception par e-mail. */
+  @Post('withdrawals')
+  @UseGuards(AuthGuard('jwt'))
+  withdraw(
+    @Request() req: { user: { id: string } },
+    @Body() body: WithdrawalRequestDto,
+  ) {
+    return this.withdrawals.request(req.user.id, body.paymentRef);
   }
 
   // ─── Appliquer un code promo (accès gratuit ou réduction) ─────────────────

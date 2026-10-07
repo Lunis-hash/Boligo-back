@@ -205,6 +205,7 @@ export default function FinancePage() {
             <option value="achat">Achats / abonnements</option>
             <option value="consommation">Consommations</option>
             <option value="remboursement_justice">Remboursements</option>
+            <option value="remboursement_paiement">Remboursements en argent</option>
           </select>
         </div>
 

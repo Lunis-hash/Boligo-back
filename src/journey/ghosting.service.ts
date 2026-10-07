@@ -19,6 +19,7 @@ import {
   dueAction,
   ghostingViewFor,
 } from './ghosting.rules';
+import { sondeurReportPrefix } from './journey-insights.service';
 
 /**
  * Moniteur anti-ghosting.
@@ -222,6 +223,17 @@ export class GhostingService implements OnModuleInit, OnModuleDestroy {
     return ghostingViewFor(this.assess(journey), userId);
   }
 
+  /** Un signalement du Sondeur attend l'équipe, ou a été confirmé. */
+  private async underSafetyReview(journeyId: string): Promise<boolean> {
+    const count = await this.prisma.report.count({
+      where: {
+        status: { in: ['en_attente', 'traite'] },
+        description: { startsWith: `${sondeurReportPrefix(journeyId)} · ` },
+      },
+    });
+    return count > 0;
+  }
+
   private liveJourneys(where: Prisma.JourneyWhereInput = {}) {
     return this.prisma.journey.findMany({
       where: { ...where, result: 'en_cours', currentStep: { in: LIVE_STEPS } },
@@ -238,6 +250,7 @@ export class GhostingService implements OnModuleInit, OnModuleDestroy {
       OR: [{ userAId: userId }, { userBId: userId }],
     });
     for (const journey of journeys) {
+      if (await this.underSafetyReview(journey.id)) continue;
       const assessment = this.assess(journey, now);
       if (
         assessment.kind === 'ghosting' &&
@@ -270,6 +283,9 @@ export class GhostingService implements OnModuleInit, OnModuleDestroy {
         const assessment = this.assess(journey, now);
         const action = dueAction(assessment, now);
         if (action === 'none') continue;
+        // Parcours retenu par un signal du Sondeur : c'est l'équipe qui
+        // tranche, jamais l'anti-ghosting (ni rappel ni clôture).
+        if (await this.underSafetyReview(journey.id)) continue;
         try {
           const acted =
             mode === 'on' ? await this.act(journey, assessment, action) : true;

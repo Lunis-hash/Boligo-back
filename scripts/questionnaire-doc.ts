@@ -1,11 +1,11 @@
 /**
- * Génère le document du questionnaire BOLIGO (V6.2), en français et en anglais,
+ * Génère le document du questionnaire BOLIGO (V7), en français et en anglais,
  * à partir des données du Grand Entretien : le document et l'application ne
  * peuvent donc pas diverger.
  *
  *   npx ts-node -P tsconfig.json --transpile-only scripts/questionnaire-doc.ts
  *
- * Sortie : docs/questionnaire/BOLIGO_Questionnaire_V6_2_FR.html et _EN.html
+ * Sortie : docs/questionnaire/BOLIGO_Questionnaire_V7_FR.html et _EN.html
  * (importables tels quels dans Google Docs ou Word).
  */
 import * as fs from 'fs';
@@ -14,8 +14,7 @@ import {
   QUESTIONS,
   Question,
   QuestionDependency,
-  V6_CHANGES,
-  V61_ADDED,
+  V7_CHANGES,
 } from '../src/interview/questions.data';
 import {
   InterviewLanguage,
@@ -87,16 +86,14 @@ const SEVERITY: Record<Lang, Record<Severity, string>> = {
 
 const CHANGE: Record<Lang, Record<string, string>> = {
   fr: {
-    nouvelle: '★ Nouvelle (V6)',
-    nouvelle61: '★ Nouvelle (V6.1)',
-    retablie: '↺ Rétablie depuis la V5',
-    reformulee: '✎ Reformulée (V6)',
+    nouvelle: '★ Nouvelle (V7)',
+    modifiee: '✎ Reformulée (V7)',
+    regle: '⚙ Lecture modifiée (V7)',
   },
   en: {
-    nouvelle: '★ New (V6)',
-    nouvelle61: '★ New (V6.1)',
-    retablie: '↺ Restored from V5',
-    reformulee: '✎ Reworded (V6)',
+    nouvelle: '★ New (V7)',
+    modifiee: '✎ Reworded (V7)',
+    regle: '⚙ Reading changed (V7)',
   },
 };
 
@@ -385,7 +382,7 @@ const INTRO: Record<Lang, string> = {
 function render(lang: Lang): string {
   const fr = lang === 'fr';
   const html: string[] = [
-    '<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Questionnaire V6.2</title></head><body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4">',
+    '<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Questionnaire V7</title></head><body style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4">',
     INTRO[lang],
   ];
   for (let m = 0; m <= 10; m++) {
@@ -396,8 +393,8 @@ function render(lang: Lang): string {
     for (const raw of questions) {
       const q = localizeQuestion(raw, lang);
       const tags: string[] = [];
-      const change = V61_ADDED.has(q.id) ? 'nouvelle61' : V6_CHANGES[q.id];
-      if (change) tags.push(CHANGE[lang][change]);
+      const change = V7_CHANGES[q.id];
+      if (change && CHANGE[lang][change]) tags.push(CHANGE[lang][change]);
       if (q.multiple)
         tags.push(
           q.maxChoices
@@ -468,7 +465,7 @@ fs.mkdirSync(outDir, { recursive: true });
 for (const lang of ['fr', 'en'] as const) {
   const file = path.join(
     outDir,
-    `BOLIGO_Questionnaire_V6_2_${lang === 'fr' ? 'FR' : 'EN'}.html`,
+    `BOLIGO_Questionnaire_V7_${lang === 'fr' ? 'FR' : 'EN'}.html`,
   );
   fs.writeFileSync(file, render(lang));
   console.log(file);

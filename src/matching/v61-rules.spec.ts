@@ -1,5 +1,6 @@
 import {
   QUESTIONS,
+  QUESTION_INDEX,
   V61_ADDED,
   cleanFreeText,
   isValidAnswer,
@@ -28,16 +29,18 @@ const find = (a: RawAnswers, b: RawAnswers, id: string) =>
   report(a, b).divergences.filter((d) => d.questionId === id);
 
 describe('Questionnaire V6.1 : intégrité', () => {
-  it('ajoute 24 questions, toutes traduites avec le bon nombre d’options', () => {
+  it('ajoute 24 questions, toutes traduites quand elles sont encore posées (V7.1 : 168 questions au plus)', () => {
     expect(V61_ADDED.size).toBe(24);
     for (const id of V61_ADDED) {
-      const q = QUESTION_BY_ID_FOR_TESTS.get(id)!;
-      expect(q).toBeDefined();
+      expect(QUESTION_INDEX.get(id)).toBeDefined();
+      const q = QUESTION_BY_ID_FOR_TESTS.get(id);
+      // M2_Q21 (« les gens se confient à moi ») est retirée en V7.
+      if (!q) continue;
       const en = QUESTIONS_EN[id];
       expect(en).toBeDefined();
       if (!q.scale) expect(en.options).toHaveLength(q.options.length);
     }
-    expect(QUESTIONS).toHaveLength(139);
+    expect(QUESTIONS.length).toBeLessThanOrEqual(168);
   });
 
   it('limite les signaux d’alerte à trois réponses', () => {
@@ -57,7 +60,7 @@ describe('Questionnaire V6.1 : intégrité', () => {
   it('ne demande ni corps, ni taille, ni couleur de peau', () => {
     const text = [...V61_ADDED]
       .map((id) => {
-        const q = QUESTION_BY_ID_FOR_TESTS.get(id)!;
+        const q = QUESTION_INDEX.get(id)!;
         return [q.text, ...q.options.map((o) => o.text)].join(' ');
       })
       .join(' ')
@@ -150,8 +153,19 @@ describe('Argent, partage et maladie (V6.1)', () => {
 
 describe('Signaux d’alerte croisés avec les habitudes (V6.1)', () => {
   it('jalousie qui contrôle face à quelqu’un qui fouille souvent le téléphone', () => {
-    const d = find({ M8_Q10: 'B,C' }, { M9_Q11: 'D', M9_Q12: 'E' }, 'M8_Q10');
+    // « Très souvent » confirmé par une autre réponse (partir sans rien
+    // expliquer quand la tension monte) : majeure ; sinon, à explorer.
+    const d = find(
+      { M8_Q10: 'B,C' },
+      { M9_Q11: 'D', M9_Q12: 'E', M6_Q16: 'D' },
+      'M8_Q10',
+    );
     expect(d.map((x) => x.severity).sort()).toEqual(['majeure', 'moderee']);
+    expect(
+      find({ M8_Q10: 'B,C' }, { M9_Q11: 'D', M9_Q12: 'E' }, 'M8_Q10').map(
+        (x) => x.severity,
+      ),
+    ).toEqual(['moderee', 'moderee']);
     expect(d[0].a.text).toMatch(/^Ce qui me ferait fuir/);
     expect(d.find((x) => x.severity === 'majeure')!.b.text).toMatch(
       /très souvent/,
@@ -166,7 +180,8 @@ describe('Signaux d’alerte croisés avec les habitudes (V6.1)', () => {
 
   it('compte la gravité dans le module 8', () => {
     const a = { M8_Q10: 'B', M8_Q01: 'A' };
-    const b = { M9_Q11: 'E', M8_Q01: 'A' };
+    // Fouiller le téléphone « très souvent », confirmé par « transparence totale ».
+    const b = { M9_Q11: 'E', M8_Q01: 'A', M5_Q08: 'A' };
     const m8 = buildModuleAffinities(a, b, report(a, b)).find(
       (m) => m.module === 8,
     )!;
@@ -253,11 +268,10 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
     expect(validateSondeurGrid(qs)).toBe(true);
     const money = qs.filter((q) => q.themeKey === 'argent');
     expect(money[0].text).toMatch(/serveur pose l'addition/);
-    expect(money.map((q) => q.source)).toEqual([
-      'divergence',
-      'divergence',
-      'divergence',
-    ]);
+    expect(money[0].source).toBe('divergence');
+    // Un même écart n'est posé qu'un jour : les autres jours explorent autre chose.
+    expect(money.slice(1).map((q) => q.source)).not.toContain('divergence');
+    for (const q of money.slice(1)) expect(q.text).not.toMatch(/addition/);
   });
 
   it('traite un sujet de fond même en divergence mineure (timidité)', () => {
@@ -267,10 +281,11 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
       firstNames: ['A', 'B'],
     });
     const day1 = qs.find((q) => q.day === 1 && q.themeKey === 'communication')!;
-    expect(day1.text).toMatch(/besoin de temps pour vous livrer/);
+    expect(day1.source).toBe('divergence');
+    expect(day1.text).toMatch(/quelqu'un de nouveau/);
   });
 
-  it('les réserves de thème contiennent les questions de fond', () => {
+  it('les réserves de thème posent les techniques cliniques, jamais une redite de l’entretien ni la santé', () => {
     const texts = new Set<string>();
     for (let i = 0; i < 40; i++) {
       for (const q of assembleSondeur({
@@ -281,9 +296,11 @@ describe('Sondeur : profondeur sur les sujets V6.1', () => {
         texts.add(q.text);
     }
     const all = [...texts].join(' | ');
-    expect(all).toMatch(/Qui paie \?/);
-    expect(all).toMatch(/voiture/);
-    expect(all).toMatch(/handicap/);
+    expect(all).toMatch(/De 0 à 10/);
+    expect(all).toMatch(/un proche/);
+    expect(all).toMatch(/Imaginez qu/);
+    expect(all).toMatch(/addition/);
+    expect(all).not.toMatch(/Qui paie \?|voiture|handicap|malad/);
   });
 });
 
@@ -322,9 +339,10 @@ describe('Retours du 5 octobre : âge, langues, double origine', () => {
   });
 
   it('accepte deux origines (métissage) et en tient compte partout', () => {
-    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q01')!;
-    expect(isValidAnswer(origin, 'A,C')).toBe(true);
-    expect(isValidAnswer(origin, 'A,C,E')).toBe(false);
+    // V7.1 : la région (M1_Q21) remplace le continent (M1_Q01, encore lu).
+    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q21')!;
+    expect(isValidAnswer(origin, 'A,J')).toBe(true);
+    expect(isValidAnswer(origin, 'A,J,G')).toBe(false);
     // « La même culture » exigée : une origine commune suffit.
     expect(
       find({ M1_Q01: 'A,C', M1_Q02: 'A' }, { M1_Q01: 'C' }, 'M1_Q02'),
@@ -335,13 +353,13 @@ describe('Retours du 5 octobre : âge, langues, double origine', () => {
 });
 
 describe('Double origine et questions conditionnelles', () => {
-  it('pose la question de la dot dès qu’une des deux origines est concernée', () => {
+  it('pose la question de la dot à tous, quelle que soit l’origine (V7.1)', () => {
     const { pendingQuestions } = jest.requireActual<
       typeof import('../interview/questions.service')
     >('../interview/questions.service');
     const ids = (M1_Q01: string) =>
       pendingQuestions(4, { M1_Q01 }, 30, 'F').map((q) => q.id);
-    expect(ids('C,A')).toContain('M4_Q07');
-    expect(ids('C,E')).not.toContain('M4_Q07');
+    expect(ids('C,A')).toContain('M4_Q17');
+    expect(ids('C,E')).toContain('M4_Q17');
   });
 });

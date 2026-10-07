@@ -156,6 +156,9 @@ function pickActiveMatch(allMatches: any[]) {
   return matches.find((m) => m.phase !== 'attente') ?? matches[0];
 }
 
+/** Réponse qui garde un sujet pour la rencontre : jamais interprétée par l'IA. */
+const VIVE_VOIX = "J'aimerais en parler de vive voix.";
+
 export default function MatchesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -360,14 +363,15 @@ export default function MatchesScreen() {
       cacheService.set(`journey_${jId}`, { status, questions });
       applyJourneyData(status, questions);
       void loadInsights(jId);
-      // Questions encore en préparation : nouvel essai toutes les 8 s (2 minutes au plus).
+      // Questions encore en préparation (rédigées puis relues par l'IA) :
+      // nouvel essai toutes les 8 s, 4 minutes au plus.
       const retry = questionsRetry.current;
       if (
         Array.isArray(questions) &&
         questions.length === 0 &&
         status?.currentStep === 'phase_harmonie' &&
         !retry.timer &&
-        retry.count < 15
+        retry.count < 30
       ) {
         retry.count += 1;
         retry.timer = setTimeout(() => {
@@ -607,7 +611,7 @@ export default function MatchesScreen() {
             ) : null}
             <Text style={styles.questionText}>{currentQ?.question}</Text>
             <Text style={styles.questionHint}>
-              Répondez sincèrement : {firstMatch.name} répond de son côté, sans voir votre réponse.
+              Répondez sincèrement : votre réponse sera montrée à {firstMatch.name} après la sienne, et la lecture commune pourra en citer quelques mots.
             </Text>
           </View>
 
@@ -622,6 +626,18 @@ export default function MatchesScreen() {
               multiline
               maxLength={500}
             />
+            {/* Pudeur : chacun peut garder un sujet pour la rencontre. */}
+            <TouchableOpacity
+              onPress={() => setCustomText(VIVE_VOIX)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              testID="sondeur-vive-voix"
+              style={{ marginTop: Spacing.sm }}
+            >
+              <Text style={styles.questionHint}>
+                Sujet trop personnel pour l'écrire ? Vous pouvez répondre : « {VIVE_VOIX} » (touchez pour l'utiliser).
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleAnswer}
               activeOpacity={0.8}
@@ -788,6 +804,11 @@ export default function MatchesScreen() {
               {/* ── Timeline 3 jours ────────────────────────────────── */}
               <View style={styles.timelineCard}>
                 <Text style={styles.sectionTitle}>Parcours Harmonie — 3 jours</Text>
+                <Text style={styles.privacyNote}>
+                  Certaines questions partent d'un point où vos réponses à l'entretien se rejoignent : l'autre
+                  comprend alors que vous avez répondu pareil sur ce point. Jamais ce que vous seul(e) avez
+                  répondu, et jamais un sujet sensible sans votre accord.
+                </Text>
                 <View style={styles.timeline}>
                   {dayThemes.map((d, i) => (
                     <DayStep
@@ -1117,6 +1138,14 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.bold,
     fontSize: 16,
     color: Colors.text.primary100,
+    marginBottom: Spacing.lg,
+  },
+  privacyNote: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: Colors.text.primary70,
+    marginTop: -Spacing.sm,
     marginBottom: Spacing.lg,
   },
   timeline: { gap: 0 },

@@ -45,6 +45,23 @@ describe('Garde-fou de la bio rédigée par l’IA', () => {
     ).toBeNull();
   });
 
+  it('lit la religion du Grand Entretien V7 (M1_Q16)', () => {
+    expect(
+      aiBioContradicts('Le vendredi, je vais à la mosquée.', { M1_Q16: 'B' }),
+    ).toBe('religion erronée');
+    expect(
+      aiBioContradicts('Ma foi guide chacun de mes pas.', { M1_Q16: 'I' }),
+    ).toBe('foi inventée');
+    expect(
+      aiBioContradicts('Catholique, je vais à l’église le dimanche.', {
+        M1_Q16: 'A',
+      }),
+    ).toBeNull();
+    expect(
+      aiBioContradicts('Je prie à la mosquée.', { M1_Q16: 'D', M1_Q05: 'A' }),
+    ).toBeNull();
+  });
+
   it('publie la bio déterministe quand la bio IA contredit les réponses', async () => {
     process.env.OPENROUTER_API_KEY = 'mock-key';
     const openRouter = {

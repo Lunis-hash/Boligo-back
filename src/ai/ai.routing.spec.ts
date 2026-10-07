@@ -39,7 +39,13 @@ describe('AiService — OpenRouter (payant) et Groq', () => {
     const service = new AiService(openRouter as never, budget as never);
     (service as unknown as { groq: unknown }).groq = {
       models: {
-        list: () => Promise.resolve({ data: [{ id: 'llama-3.1-8b-instant' }] }),
+        list: () =>
+          Promise.resolve({
+            data: [
+              { id: 'llama-3.1-8b-instant' },
+              { id: 'openai/gpt-oss-120b' },
+            ],
+          }),
       },
       chat: { completions: { create: groqCreate } },
     };
@@ -65,7 +71,9 @@ describe('AiService — OpenRouter (payant) et Groq', () => {
       expect.objectContaining({
         role: 'quality',
         maxTokens: 1500,
-        temperature: 0.4,
+        temperature: 0.3,
+        // Délai proportionnel à la longueur demandée (30 ms par jeton).
+        timeoutMs: 45_000,
       }),
     );
     // Estimation : jetons lus × 2 $ + 1 500 jetons écrits × 10 $ (par million).
@@ -98,6 +106,28 @@ describe('AiService — OpenRouter (payant) et Groq', () => {
     );
     expect(out?.content).toBe('{"allowed": true}');
     expect(groqCreate).toHaveBeenCalledTimes(1);
+    // Plancher de qualité : le secours est un grand modèle, jamais le 8B.
+    expect(
+      (groqCreate.mock.calls as unknown as Array<[{ model: string }]>)[0][0]
+        .model,
+    ).toBe('openai/gpt-oss-120b');
+  });
+
+  it('parcours payé sans modèle Groq de qualité : aucune lecture par l’IA (version des règles)', async () => {
+    const { service, openRouter, groqCreate } = setup(true);
+    openRouter.executeAgentPrompt.mockImplementation(() =>
+      Promise.reject(new Error('HTTP 503')),
+    );
+    (
+      service as unknown as {
+        groq: { models: { list: () => Promise<unknown> } };
+      }
+    ).groq.models.list = () =>
+      Promise.resolve({ data: [{ id: 'llama-3.1-8b-instant' }] });
+    expect(
+      await service.journeyCompletion('j3', 'système', 'lecture', 1500),
+    ).toBeNull();
+    expect(groqCreate).not.toHaveBeenCalled();
   });
 
   it('usages courants (modération) : Groq d’abord, OpenRouter jamais appelé s’il répond', async () => {

@@ -6,6 +6,8 @@ export interface QuestionOption {
   text: string;
   /** Option à préciser en toutes lettres (« Une autre langue (précisez) »). */
   freeText?: boolean;
+  /** Option « aucun » : elle ne se coche jamais avec une autre. */
+  exclusive?: boolean;
 }
 
 export interface Question {
@@ -23,6 +25,27 @@ export interface Question {
   suggested?: string[];
   /** Précision pré-remplie de l'option à préciser (« Allemand »). */
   suggestedOther?: string;
+  /** Donnée sensible (origine, religion, vie intime, violences subies) : accord demandé avant. */
+  sensitive?: boolean;
+  /**
+   * Question de suite : posée seulement si l'une de ces réponses, données plus
+   * tôt dans le même module, l'ouvre (ex. « dernière relation » → la rupture).
+   */
+  askIf?: { questionId: string; values: string[] }[];
+}
+
+/** La condition d'une question de suite est-elle remplie par ces réponses ? */
+export function askIfMet(q: Question, answers: Record<string, string>): boolean {
+  if (!q.askIf?.length) return true;
+  return q.askIf.some((d) =>
+    (answers[d.questionId] ?? '').split(',').some((k) => d.values.includes(k.trim())),
+  );
+}
+
+/** Accord pour les questions sensibles : null s'il n'a pas encore été demandé. */
+export interface SensitiveConsent {
+  consent: boolean | null;
+  decidedAt: string | null;
 }
 
 /** Suffixe de la précision écrite enregistrée avec la réponse (« M0_Q10_AUTRE »). */
@@ -40,11 +63,23 @@ export function initialPicked(question: Question): string[] {
   return question.maxChoices ? keys.slice(0, question.maxChoices) : keys;
 }
 
-/** Coche ou décoche une réponse, sans dépasser le nombre maximal. */
+/** Texte affiché d'une question : l'énoncé, puis son aide s'il y en a une. */
+export function questionDisplayText(question: Question): string {
+  const help = question.assistance?.trim();
+  return help ? `${question.text}\n\n${help}` : question.text;
+}
+
+/**
+ * Coche ou décoche une réponse, sans dépasser le nombre maximal. Une option
+ * « aucun » (`exclusive`) décoche les autres ; une autre option la décoche.
+ */
 export function togglePick(question: Question, picked: string[], key: string): string[] {
   if (picked.includes(key)) return picked.filter((k) => k !== key);
-  if (question.maxChoices && picked.length >= question.maxChoices) return picked;
-  return [...picked, key];
+  const exclusive = new Set(question.options.filter((o) => o.exclusive).map((o) => o.key));
+  if (exclusive.has(key)) return [key];
+  const kept = picked.filter((k) => !exclusive.has(k));
+  if (question.maxChoices && kept.length >= question.maxChoices) return picked;
+  return [...kept, key];
 }
 
 /** Précision écrite acceptée par le serveur : 2 à 60 lettres, espaces, tirets, apostrophes, virgules. */
@@ -151,6 +186,20 @@ export const InterviewService = {
       }
       throw error;
     }
+  },
+
+  getSensitiveConsent: async (): Promise<SensitiveConsent> => {
+    const response = await client.get<SensitiveConsent>('/interview/sensitive-consent');
+    return response.data;
+  },
+
+  /** Donne ou retire l'accord ; un retrait efface les réponses sensibles déjà données. */
+  setSensitiveConsent: async (accepted: boolean) => {
+    const response = await client.post<SensitiveConsent & { removedAnswers: number }>(
+      '/interview/sensitive-consent',
+      { accepted },
+    );
+    return response.data;
   },
 
   saveModule: async (moduleNumber: number, answers: Record<string, string>, retries = 2): Promise<any> => {

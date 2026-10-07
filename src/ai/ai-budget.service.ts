@@ -113,10 +113,13 @@ export class AiBudgetService {
       });
       return paid > 0;
     } catch (err) {
+      // Paiement illisible : on fait comme si le parcours était payé, pour que
+      // la relecture de sécurité reste fermée par défaut (une IA injoignable
+      // cache alors la réponse au lieu de la laisser passer).
       this.logger.warn(
-        `Parcours ${journeyId} : paiement illisible, suivi IA payé suspendu : ${(err as Error).message}`,
+        `Parcours ${journeyId} : paiement illisible, parcours traité comme payé par prudence : ${(err as Error).message}`,
       );
-      return false;
+      return true;
     }
   }
 
@@ -127,7 +130,7 @@ export class AiBudgetService {
   async allowJourney(journeyId: string, estimateMicro: number) {
     const budget = journeyBudgetMicroEur();
     const monthlyCap = journeyMonthlyCapMicroEur();
-    if (budget <= 0 || monthlyCap <= 0) return false;
+    if (budget <= 0) return false;
     try {
       const [journey, month] = await Promise.all([
         this.prisma.journey.findUnique({
@@ -146,7 +149,8 @@ export class AiBudgetService {
           `Parcours ${journeyId} : budget IA du parcours atteint, suite sans IA.`,
         );
       const monthSpent = Number(month?.journeyCostMicroEur ?? 0);
-      const monthOk = monthSpent + estimateMicro <= monthlyCap;
+      const monthOk =
+        monthlyCap === null || monthSpent + estimateMicro <= monthlyCap;
       if (!monthOk)
         this.warnOnce(
           `${monthKey()}:parcours-plein`,
@@ -215,7 +219,7 @@ export class AiBudgetService {
       journeyCalls,
       journeySpentEur,
       journeyBudgetEur: journeyBudgetMicroEur() / 1_000_000,
-      journeyMonthlyCapEur: journeyMonthlyCapMicroEur() / 1_000_000,
+      journeyMonthlyCapEur: (journeyMonthlyCapMicroEur() ?? 0) / 1_000_000,
     };
   }
 
