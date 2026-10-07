@@ -29,6 +29,7 @@ import {
   similarQuestions,
 } from './clinical-lens';
 import {
+  CONTROL_LIMIT,
   DAY_ANGLES,
   SAFETY_QUESTIONS,
   SAFETY_TEMPLATES,
@@ -36,10 +37,12 @@ import {
   assembleSondeur,
   describeReportForAi,
   questionSignature,
+  safetyThemesOf,
   validateSondeurGrid,
 } from './sondeur.generator';
 import {
   AGREEMENTS,
+  CHILDREN_TOPICS,
   CONVERGENT,
   PoolTemplate,
   SHARED_RISK,
@@ -54,6 +57,8 @@ import {
   Technique,
   TopicTemplate,
   agreementFor,
+  isNonNegotiable,
+  topicDeepAll,
   topicKey,
   topicPhrase,
   topicWords,
@@ -791,5 +796,309 @@ describe('Simulation : 300 couples aux réponses aléatoires', () => {
             /vivre avec|devenue simple|vous opposerait|samedi ordinaire, dans trois ans, où/,
           );
     }
+  });
+});
+
+// ─── Contrôle, sécurité, fidélité ────────────────────────────────────────────
+
+describe('Contrôle, sécurité mineure et accords de fidélité', () => {
+  /** Signal d'alerte « jalousie et contrôle » de l'un face à l'habitude de l'autre. */
+  const jealousy = (): Divergence => ({
+    questionId: 'M8_Q10',
+    theme: 'communication',
+    severity: 'majeure',
+    label: 'Signal d’alerte : jalousie et contrôle',
+    question: 'Un signal d’alerte de l’un correspond à une habitude de l’autre',
+    a: { key: 'B', text: 'Ce qui me ferait fuir : jalousie et contrôle' },
+    b: {
+      key: 'E',
+      text: 'Il m’arrive très souvent que je regarde le téléphone de l’autre',
+    },
+  });
+  const limitsOf = (qs: SondeurQuestion[]) =>
+    qs
+      .filter((q) => q.text === CONTROL_LIMIT.text)
+      .map((q) => [q.day, q.themeKey, q.subject]);
+
+  it('jalousie qui surveille (M8_Q10:B majeure) : limite de contrôle au jour 2, avant l’IA', () => {
+    const report = buildDivergenceReport({}, {});
+    report.divergences.push(jealousy());
+    expect(topicKey(report.divergences[0])).toBe('M8_Q10:B');
+    const qs = assembleSondeur({
+      report,
+      firstNames: ['A', 'B'],
+      seed: 'controle',
+      aiQuestions: [
+        {
+          day: 2,
+          theme: 'x',
+          emoji: '💬',
+          text: "Qu'est-ce qui vous rassure quand quelqu'un tarde à vous répondre ?",
+          options: ['A', 'B', 'C'],
+          themeKey: 'communication',
+        },
+      ],
+    });
+    expect(validateSondeurGrid(qs)).toBe(true);
+    expect(limitsOf(qs)).toEqual([[2, 'communication', 'controle']]);
+    // Le signal lui-même reste exploré, un autre jour.
+    expect(qs.some((q) => q.subject === 'M8_Q10:B' && q.day === 1)).toBe(true);
+  });
+
+  it('accès total au téléphone voulu par l’un (M5_Q08 A) : limite de contrôle au jour 2', () => {
+    const report = buildDivergenceReport({ M5_Q08: 'A' }, { M5_Q08: 'B' });
+    const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'tel' });
+    expect(limitsOf(qs)).toEqual([[2, 'intimite', 'controle']]);
+  });
+
+  it('deux signaux de contrôle : une seule limite de contrôle', () => {
+    const report = buildDivergenceReport({ M5_Q08: 'A' }, { M5_Q08: 'B' });
+    report.divergences.push(jealousy());
+    const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'x' });
+    expect(limitsOf(qs)).toEqual([[2, 'communication', 'controle']]);
+    expect(new Set(qs.map((q) => q.text)).size).toBe(21);
+  });
+
+  it('contrôle et violence sur le même thème : la limite de contrôle prend le jour 2', () => {
+    const report = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'C' });
+    report.divergences.push(jealousy());
+    const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'v' });
+    expect(
+      qs.filter((q) => q.themeKey === 'communication').map((q) => q.subject),
+    ).toEqual(['securite', 'controle', 'securite']);
+  });
+
+  it('thème de sécurité : aucun écart n’y est prévu, et ses voisins restent posés', () => {
+    // La jalousie (communication) tombe sur un thème de sécurité : elle ne
+    // doit pas bloquer son voisin, l'accès au téléphone (intimité).
+    const report = buildDivergenceReport(
+      { M6_Q04: 'A', M5_Q08: 'A' },
+      { M6_Q04: 'C', M5_Q08: 'B' },
+    );
+    report.divergences.push(jealousy());
+    expect(safetyThemesOf(report)).toEqual(['communication']);
+    const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'w' });
+    expect(qs.some((q) => q.subject === 'M5_Q08')).toBe(true);
+  });
+
+  it('écart de sécurité mineur (deux refus de la violence) : le thème reste libre', () => {
+    const report = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'B' });
+    expect(
+      report.divergences.find((d) => d.questionId === 'M6_Q04')?.severity,
+    ).toBe('mineure');
+    expect(safetyThemesOf(report)).toEqual([]);
+    const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'm' });
+    expect(qs.some((q) => q.subject === 'securite')).toBe(false);
+  });
+
+  it('accord de fidélité (V7) : précisé, jamais mis à l’épreuve', () => {
+    for (const key of ['A', 'C']) {
+      const report = buildDivergenceReport({ M6_Q18: key }, { M6_Q18: key });
+      const { statement, probe } = AGREEMENTS[`M6_Q18:${key}`];
+      const tested = [1, 2].flatMap((day) =>
+        CONVERGENT[day]
+          .filter((t) => t.technique === 'limite')
+          .map((t) => `${statement} ${t.text}`),
+      );
+      const first = assembleSondeur({ report, firstNames: ['A', 'B'] });
+      expect(first.map((q) => q.text)).toContain(`${statement} ${probe!.text}`);
+      // Question propre déjà vue : la question générique n'éprouve pas l'accord.
+      for (let i = 0; i < 10; i++) {
+        const qs = assembleSondeur({
+          report,
+          firstNames: ['A', 'B'],
+          seed: `f${i}`,
+          history: first.map((q) => q.text),
+        });
+        const conv = qs.filter((q) => q.text.startsWith(statement));
+        expect(conv).toHaveLength(1);
+        expect(tested).not.toContain(conv[0].text);
+      }
+    }
+  });
+});
+
+// ─── Premier et second parcours : 600 couples ────────────────────────────────
+
+/** Formulations propres (principales et variantes) : le reste est générique. */
+const DEEP_TEXTS = new Set(
+  [TOPIC_DEEP, TOPIC_DEEP_VARIANTS].flatMap((table) =>
+    Object.values(table).flatMap((days) =>
+      Object.values(days).map((t) => t!.text),
+    ),
+  ),
+);
+
+/** Formulations de compromis possibles pour un écart (propres et ciblées). */
+function compromiseTextsFor(d: Divergence): Set<string> {
+  const words = topicWords(topicPhrase(d));
+  return new Set(
+    [1, 2, 3].flatMap((day) => [
+      ...topicDeepAll(d, day)
+        .filter((t) => t.compromise)
+        .map((t) => t.text),
+      ...[...TARGETED[day], ...SHARED_RISK[day]]
+        .filter((t) => t.compromise)
+        .map((t) => t.text(words)),
+    ]),
+  );
+}
+
+/** Questions de thème et phrases d'accord qui supposent des enfants à venir. */
+const CHILDREN_TEXTS = [
+  ...THEME_LIST.flatMap((theme) =>
+    [1, 2, 3].flatMap((day) =>
+      THEME_POOL[theme][day].filter((t) => t.needsChildren).map((t) => t.text),
+    ),
+  ),
+  ...Object.values(AGREEMENTS)
+    .filter((a) => a.needsChildren)
+    .map((a) => a.statement),
+];
+
+describe('Simulation : 600 couples, premier et second parcours', () => {
+  const rand = rng(20261007);
+  const runs = Array.from({ length: 600 }, (_, i) => {
+    const [a, b] = couple(rand, [0, 0.6, 0.8][i % 3]);
+    const report = buildDivergenceReport(a, b);
+    const first = assembleSondeur({
+      report,
+      firstNames: ['A', 'B'],
+      seed: `p${i}`,
+    });
+    // Même rapport, toutes les formulations du premier parcours déjà vues :
+    // le cas le plus exigeant pour la réserve.
+    const second = assembleSondeur({
+      report,
+      firstNames: ['A', 'B'],
+      seed: `q${i}`,
+      history: first.map((q) => q.text),
+    });
+    return { a, b, report, first, second };
+  });
+  const passes = runs.flatMap((r, i) => [
+    { ...r, where: `couple ${i}, 1er parcours`, questions: r.first },
+    { ...r, where: `couple ${i}, 2e parcours`, questions: r.second },
+  ]);
+
+  it('0 gabarit de compromis servi sur un écart non négociable, au 1er et au 2e parcours', () => {
+    const served: string[] = [];
+    let strictServed = 0;
+    for (const { report, questions, where } of passes) {
+      const strictThemes = new Set(
+        report.divergences
+          .filter((d) => isNonNegotiable(d))
+          .map((d) => d.theme),
+      );
+      for (const q of questions) {
+        const d =
+          q.source === 'divergence'
+            ? report.divergences.find((x) => topicKey(x) === q.subject)
+            : undefined;
+        if (d && isNonNegotiable(d)) {
+          strictServed++;
+          if (compromiseTextsFor(d).has(q.text))
+            served.push(`${where} ${d.questionId} : ${q.text}`);
+        }
+        if (
+          q.source === 'gabarit' &&
+          strictThemes.has(q.themeKey) &&
+          THEME_POOL[q.themeKey][q.day].some(
+            (t) => t.compromise && t.text === q.text,
+          )
+        )
+          served.push(`${where} [${q.themeKey}] ${q.text}`);
+      }
+    }
+    expect(strictServed).toBeGreaterThan(1000);
+    expect(served).toEqual([]);
+  });
+
+  it('0 question qui suppose des enfants quand l’un a répondu M0_Q06 = D', () => {
+    const presupposes = (q: SondeurQuestion) =>
+      CHILDREN_TOPICS.has(q.subject ?? '') ||
+      CHILDREN_TEXTS.some((t) => q.text.includes(t));
+    const childFree = passes.filter(
+      ({ a, b }) => a.M0_Q06 === 'D' || b.M0_Q06 === 'D',
+    );
+    expect(childFree.length).toBeGreaterThan(100);
+    expect(
+      childFree.flatMap(({ questions, where }) =>
+        questions.filter(presupposes).map((q) => `${where} : ${q.text}`),
+      ),
+    ).toEqual([]);
+    // Les autres couples peuvent toujours les recevoir.
+    expect(
+      passes.some(
+        ({ a, b, questions }) =>
+          a.M0_Q06 !== 'D' && b.M0_Q06 !== 'D' && questions.some(presupposes),
+      ),
+    ).toBe(true);
+  });
+
+  it('0 tournure répétée dans un même Sondeur, historique compris', () => {
+    const repeated: string[] = [];
+    for (const { questions, where } of passes) {
+      expect(validateSondeurGrid(questions)).toBe(true);
+      expect(new Set(questions.map((q) => q.text)).size).toBe(21);
+      const sigs = questions.map((q) => questionSignature(q.text));
+      if (new Set(sigs).size !== sigs.length) repeated.push(where);
+    }
+    expect(repeated).toEqual([]);
+  });
+
+  it('signal de contrôle (M8_Q10:B ou M5_Q08 A) : limite de contrôle servie au jour 2', () => {
+    const control = passes.filter(({ report }) =>
+      report.divergences.some(
+        (d) =>
+          topicKey(d) === 'M8_Q10:B' ||
+          (d.questionId === 'M5_Q08' && (d.a.key === 'A' || d.b.key === 'A')),
+      ),
+    );
+    expect(control.length).toBeGreaterThan(50);
+    for (const { questions } of control)
+      expect(
+        questions
+          .filter((q) => q.text === CONTROL_LIMIT.text)
+          .map((q) => q.day),
+      ).toEqual([2]);
+    // Sans signal de contrôle, jamais.
+    expect(
+      passes
+        .filter((p) => !control.includes(p))
+        .some(({ questions }) =>
+          questions.some((q) => q.text === CONTROL_LIMIT.text),
+        ),
+    ).toBe(false);
+  });
+
+  it('toutes les questions servies passent la grille de forme', () => {
+    const all = passes.flatMap(({ questions, where }) =>
+      questions.map((q) => ({ where, text: q.text })),
+    );
+    expect(all).toHaveLength(25200);
+    expect(
+      all
+        .filter((q) => !passesFormRules(q.text))
+        .map((q) => `${q.where} : ${q.text}`),
+    ).toEqual([]);
+  });
+
+  it('moins de 15 % de questions d’écart génériques au 1er parcours', () => {
+    const div = runs.flatMap(({ first }) =>
+      first.filter(
+        (q) =>
+          q.source === 'divergence' &&
+          q.subject !== 'securite' &&
+          q.subject !== 'controle',
+      ),
+    );
+    const generic = div.filter((q) => !DEEP_TEXTS.has(q.text));
+    const share = (100 * generic.length) / div.length;
+    console.log(
+      `Questions d'écart génériques au 1er parcours (600 couples) : ${generic.length}/${div.length} = ${share.toFixed(1)} %`,
+    );
+    expect(div.length).toBeGreaterThan(3000);
+    expect(share).toBeLessThan(15);
   });
 });
