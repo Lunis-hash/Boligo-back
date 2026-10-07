@@ -307,14 +307,28 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — options sorties du système français (CAP-BEP, Bac +2) : les
+    // clés gardent leur sens.
     id: 'M0_Q07',
     moduleNumber: 0,
     text: "Votre niveau d'études :",
     options: [
-      { key: 'A', text: 'Sans diplôme / CAP-BEP' },
-      { key: 'B', text: 'Baccalauréat' },
-      { key: 'C', text: 'Bac +2 à Bac +4' },
-      { key: 'D', text: 'Bac +5 et plus' },
+      {
+        key: 'A',
+        text: 'Sans diplôme, ou formation professionnelle courte',
+      },
+      {
+        key: 'B',
+        text: 'Fin des études secondaires (baccalauréat ou équivalent)',
+      },
+      {
+        key: 'C',
+        text: 'Études supérieures de 2 à 4 ans (licence, BTS, bachelor…)',
+      },
+      {
+        key: 'D',
+        text: 'Études supérieures de 5 ans et plus (master, doctorat…)',
+      },
     ],
   },
   {
@@ -406,24 +420,39 @@ export const QUESTIONS: Question[] = [
       { key: 'F', text: 'Wolof' },
       { key: 'G', text: 'Portugais — Português' },
       { key: 'H', text: 'Espagnol — Español' },
+      // V7.1 : Haïti, Antilles, Guyane (suggéré selon le pays de résidence).
+      { key: 'J', text: 'Créole — Kreyòl' },
       { key: 'I', text: 'Une autre langue (précisez)', freeText: true },
     ],
   },
 
   // --- MODULE 1 : IDENTITÉ & CULTURE ---
   {
-    id: 'M1_Q01',
+    // V7.1 — nouvelle : remplace M1_Q01 (continents), trop grossière : une
+    // Martiniquaise et une Américaine, un Congolais et un Somalien y avaient
+    // « la même origine ». Une réponse M1_Q01 reste lue par son continent
+    // (`originsOf`, answer-bridge.ts).
+    id: 'M1_Q21',
     moduleNumber: 1,
-    text: "Votre continent d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
+    text: "Votre région d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
     multiple: true,
     maxChoices: 2,
     options: [
-      { key: 'A', text: 'Afrique subsaharienne' },
-      { key: 'B', text: 'Maghreb / Moyen-Orient' },
-      { key: 'C', text: 'Europe' },
-      { key: 'D', text: 'Asie' },
-      { key: 'E', text: 'Amériques / Caraïbes' },
-      { key: 'F', text: 'Océanie' },
+      { key: 'A', text: "Afrique de l'Ouest" },
+      { key: 'B', text: 'Afrique centrale' },
+      {
+        key: 'C',
+        text: "Afrique de l'Est et océan Indien (Madagascar, Comores…)",
+      },
+      { key: 'D', text: 'Afrique australe' },
+      { key: 'E', text: 'Maghreb' },
+      { key: 'F', text: 'Moyen-Orient' },
+      { key: 'G', text: 'Caraïbes (Antilles, Haïti…)' },
+      { key: 'H', text: 'Amérique du Nord' },
+      { key: 'I', text: 'Amérique latine' },
+      { key: 'J', text: 'Europe' },
+      { key: 'K', text: 'Asie' },
+      { key: 'L', text: 'Océanie' },
     ],
   },
   {
@@ -2534,6 +2563,23 @@ export const QUESTIONS: Question[] = [
  */
 export const RETIRED_QUESTIONS: Question[] = [
   {
+    // Retirée en V7.1 (remplacée par M1_Q21, par région) : réponses lues par
+    // continent.
+    id: 'M1_Q01',
+    moduleNumber: 1,
+    text: "Votre continent d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
+    multiple: true,
+    maxChoices: 2,
+    options: [
+      { key: 'A', text: 'Afrique subsaharienne' },
+      { key: 'B', text: 'Maghreb / Moyen-Orient' },
+      { key: 'C', text: 'Europe' },
+      { key: 'D', text: 'Asie' },
+      { key: 'E', text: 'Amériques / Caraïbes' },
+      { key: 'F', text: 'Océanie' },
+    ],
+  },
+  {
     id: 'M0_Q08',
     moduleNumber: 0,
     text: "Le tabac, l'alcool ou d'autres substances chez votre partenaire :",
@@ -3680,6 +3726,10 @@ export const V7_CHANGES: Record<
   M4_Q07: 'retiree',
   M8_Q02: 'retiree',
   M8_Q03: 'retiree',
+  M1_Q01: 'retiree',
+  M1_Q21: 'nouvelle',
+  M0_Q07: 'modifiee',
+  M0_Q10: 'modifiee',
 };
 
 /** Questions V6 retirées → questions V7 qui en reprennent le sujet (vide : sujet abandonné). */
@@ -3758,6 +3808,7 @@ export const V7_REPLACEMENTS: Record<string, string[]> = {
   M4_Q07: ['M4_Q17'],
   M8_Q02: ['M8_Q17'],
   M8_Q03: ['M8_Q16'],
+  M1_Q01: ['M1_Q21'],
 };
 
 /** Questions nouvelles de la V7, absentes des entretiens V6. */
@@ -3768,9 +3819,10 @@ export const V7_ADDED: ReadonlySet<string> = new Set(
 );
 
 /**
- * Évolutions de la V7.1 (sous-ensemble de `V7_CHANGES`, même vocabulaire) :
- * ce qui a changé depuis la V7 publiée, pour les documents. Détail et raisons
- * dans `docs/QUESTIONNAIRE_V7.md`, section « V7.1 ».
+ * Évolutions de la V7.1 (même vocabulaire que `V7_CHANGES`, mais par
+ * rapport à la V7 publiée) : ce qui a changé, pour les documents. Une
+ * question nouvelle ou retirée l'est aussi dans `V7_CHANGES`. Détail et
+ * raisons dans `docs/QUESTIONNAIRE_V7.md`, section « V7.1 ».
  */
 export const V71_CHANGES: Record<
   string,
@@ -3819,6 +3871,24 @@ export const V71_CHANGES: Record<
   M9_Q26: 'nouvelle',
   M9_Q27: 'nouvelle',
   M9_Q28: 'nouvelle',
+  // Lieu de vie lu avec la ville et le pays de chacun (B4).
+  M0_Q03: 'regle',
+  M7_Q07: 'regle',
+  // Options « aucun » exclusives ; options sensibles masquées sans accord.
+  M2_Q04: 'modifiee',
+  M2_Q05: 'modifiee',
+  M6_Q02: 'modifiee',
+  M6_Q19: 'modifiee',
+  M7_Q19: 'modifiee',
+  M8_Q12: 'modifiee',
+  // Origine : par région, données sensibles (article 9).
+  M1_Q01: 'retiree',
+  M1_Q21: 'nouvelle',
+  M1_Q02: 'regle',
+  // Hors du seul système français ; créole ajouté.
+  M0_Q07: 'modifiee',
+  M0_Q10: 'modifiee',
+  M4_Q13: 'regle',
 };
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */
@@ -3854,8 +3924,9 @@ export interface SensitiveEntry {
 }
 
 export const SENSITIVE_QUESTIONS: Record<string, SensitiveEntry> = {
-  // V7.1, origine ethnique : le continent d'origine, et la culture souhaitée
-  // chez l'autre, lue avec lui.
+  // V7.1, origine ethnique : la région d'origine (V7 : le continent, réponses
+  // encore enregistrées), et la culture souhaitée chez l'autre, lue avec elle.
+  M1_Q21: { category: 'origine_ethnique', reach: 'direct' },
   M1_Q01: { category: 'origine_ethnique', reach: 'direct' },
   M1_Q02: { category: 'origine_ethnique', reach: 'indirect' },
   // V7, convictions religieuses.

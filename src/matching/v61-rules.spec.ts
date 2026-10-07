@@ -339,9 +339,10 @@ describe('Retours du 5 octobre : âge, langues, double origine', () => {
   });
 
   it('accepte deux origines (métissage) et en tient compte partout', () => {
-    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q01')!;
-    expect(isValidAnswer(origin, 'A,C')).toBe(true);
-    expect(isValidAnswer(origin, 'A,C,E')).toBe(false);
+    // V7.1 : la région (M1_Q21) remplace le continent (M1_Q01, encore lu).
+    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q21')!;
+    expect(isValidAnswer(origin, 'A,J')).toBe(true);
+    expect(isValidAnswer(origin, 'A,J,G')).toBe(false);
     // « La même culture » exigée : une origine commune suffit.
     expect(
       find({ M1_Q01: 'A,C', M1_Q02: 'A' }, { M1_Q01: 'C' }, 'M1_Q02'),

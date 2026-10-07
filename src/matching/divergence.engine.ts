@@ -45,8 +45,10 @@ import {
   faithRequirement,
   foodRuleOf,
   keysWithout,
+  nearOrigin,
   nonNegotiableThemesOf,
   nonNegotiablesOf,
+  shareOrigin,
   stillAttached,
   upgradeAnswers,
 } from './answer-bridge';
@@ -431,8 +433,9 @@ export const DIVERGENCE_RULES: Rule[] = [
     relative: ['C'],
   },
   {
+    // V7.1 : rangée dans l'argent (biens, partage), plus dans le lieu de vie.
     questionId: 'M4_Q13',
-    theme: 'lieu',
+    theme: 'argent',
     label: 'Partage des affaires personnelles',
     topic: 'Le partage des affaires personnelles',
     severity: pairs({ AD: 'moderee', AC: 'mineure', BD: 'mineure' }, null),
@@ -1869,15 +1872,22 @@ function homeRule(
   });
 }
 
-/** Culture : « la même culture » (M1_Q02) face à des origines sans rien de commun (M1_Q01). */
+/** Origine telle que le membre l'a dite : région (V7.1) ou continent (V7). */
+const originView = (x: RawAnswers): AnswerView =>
+  x.M1_Q21 ? view('M1_Q21', x.M1_Q21) : view('M1_Q01', x.M1_Q01);
+
+/**
+ * Culture : « la même culture » (M1_Q02) face à des origines sans rien de
+ * commun (M1_Q21, V7 : M1_Q01). V7.1 : deux régions d'un même continent
+ * (Antilles et Amérique du Nord, Afrique de l'Ouest et de l'Est) sont des
+ * cultures proches, pas la même : à explorer pour qui veut « la même ».
+ */
 function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
-  if (!a.M1_Q01 || !b.M1_Q01) return;
+  const common = shareOrigin(a, b);
+  if (common === null) return;
   const wants = [a.M1_Q02, b.M1_Q02];
   if (!wants[0] && !wants[1]) return;
   // Double origine : une origine commune suffit.
-  const common = answerKeys(a.M1_Q01).some((k) =>
-    answerKeys(b.M1_Q01).includes(k),
-  );
   if (common) {
     c.agree('M1_Q02', 1);
     if (wants.some((w) => w === 'A' || w === 'B'))
@@ -1885,14 +1895,17 @@ function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
         questionId: 'M1_Q02',
         theme: 'famille',
         label: 'Vous partagez une origine culturelle',
-        answer: optionText('M1_Q01', a.M1_Q01),
+        answer: originView(a).text,
         topic: 'L’origine culturelle',
       });
     return;
   }
+  const near = nearOrigin(a, b);
   const severity: Severity | null = wants.includes('A')
-    ? 'majeure'
-    : wants.includes('B')
+    ? near
+      ? 'moderee'
+      : 'majeure'
+    : wants.includes('B') && !near
       ? 'mineure'
       : null;
   if (!severity) {
@@ -1905,8 +1918,8 @@ function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     severity,
     label: 'Culture du partenaire idéal',
     question: questionText('M1_Q02'),
-    a: view('M1_Q01', a.M1_Q01),
-    b: view('M1_Q01', b.M1_Q01),
+    a: originView(a),
+    b: originView(b),
   });
 }
 
@@ -2335,13 +2348,10 @@ function availabilityRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
 }
 
 /**
- * Origines culturelles communes (M1_Q01) ; null si l'un des deux ne l'a pas
- * dit (rien n'est supposé).
+ * Origines culturelles communes (M1_Q21, V7 : M1_Q01) ; null si l'un des
+ * deux ne l'a pas dit (rien n'est supposé).
  */
-function sameOrigin(a: RawAnswers, b: RawAnswers): boolean | null {
-  if (!a.M1_Q01 || !b.M1_Q01) return null;
-  return answerKeys(a.M1_Q01).some((k) => answerKeys(b.M1_Q01).includes(k));
-}
+const sameOrigin = shareOrigin;
 
 /**
  * V7.1 — « tout se transmet » des deux côtés (M1_Q13 A), avec deux religions

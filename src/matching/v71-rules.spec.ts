@@ -3,7 +3,16 @@
  * clinique (B1 à B7, M1 à M14, m1 à m9). Chaque cas reproduit la situation
  * vérifiée lors de l'audit et fixe le comportement corrigé.
  */
-import { QUESTION_INDEX } from '../interview/questions.data';
+import {
+  languageChoices,
+  suggestLanguages,
+} from '../interview/country-languages';
+import {
+  QUESTIONS,
+  QUESTION_INDEX,
+  V71_CHANGES,
+  V7_CHANGES,
+} from '../interview/questions.data';
 import { QUESTIONS_EN } from '../interview/questions.en';
 import {
   SCALES,
@@ -26,7 +35,7 @@ import {
   Divergence,
   RawAnswers,
 } from './divergence.engine';
-import { homeContext } from './discover-filters';
+import { homeContext, shareLanguage } from './discover-filters';
 import { resolveScore } from './match-view';
 
 const report = (a: RawAnswers, b: RawAnswers) => buildDivergenceReport(a, b);
@@ -818,5 +827,85 @@ describe('B7 — un membre sans accord ne fait plus disparaître les incompatibi
         (d) => d.questionId,
       ),
     ).not.toContain('M10_Q17');
+  });
+});
+
+describe('Point 6 — relecture culturelle', () => {
+  const culture = (a: RawAnswers, b: RawAnswers) => severityOf(a, b, 'M1_Q02');
+
+  it('origine par région : une Martiniquaise et une Américaine, un Congolais et un Somalien ne partagent plus « la même origine »', () => {
+    // Caraïbes (G) et Amérique du Nord (H) : même continent, cultures proches.
+    expect(
+      culture({ M1_Q21: 'G', M1_Q02: 'A' }, { M1_Q21: 'H', M1_Q02: 'A' }),
+    ).toEqual(['moderee']);
+    // Afrique centrale (B) et Afrique de l'Est (C).
+    expect(culture({ M1_Q21: 'B', M1_Q02: 'A' }, { M1_Q21: 'C' })).toEqual([
+      'moderee',
+    ]);
+    // « Une culture proche » : deux régions d'un même continent conviennent.
+    expect(culture({ M1_Q21: 'B', M1_Q02: 'B' }, { M1_Q21: 'C' })).toEqual([]);
+    // Deux continents : comme avant.
+    expect(culture({ M1_Q21: 'A', M1_Q02: 'A' }, { M1_Q21: 'J' })).toEqual([
+      'majeure',
+    ]);
+    const same = report({ M1_Q21: 'G', M1_Q02: 'A' }, { M1_Q21: 'A,G' });
+    expect(same.convergences.map((c) => c.label)).toContain(
+      'Vous partagez une origine culturelle',
+    );
+  });
+
+  it('une réponse V7 (continent) reste comparée par continent, sans rien supposer de plus fin', () => {
+    expect(
+      culture({ M1_Q01: 'A', M1_Q02: 'A' }, { M1_Q21: 'B', M1_Q02: 'A' }),
+    ).toEqual([]);
+    expect(culture({ M1_Q01: 'E', M1_Q02: 'A' }, { M1_Q21: 'A' })).toEqual([
+      'majeure',
+    ]);
+    // La transmission lit la même origine.
+    const both = { M1_Q13: 'A', M1_Q16: 'D' };
+    expect(
+      find({ ...both, M1_Q21: 'G' }, { ...both, M1_Q21: 'H' }, 'M1_Q13').map(
+        (d) => d.label,
+      ),
+    ).toEqual(['Deux transmissions à concilier']);
+  });
+
+  it('le créole (Kreyòl) : proposé en Haïti, pré-écrit aux Antilles, reconnu en toutes lettres', () => {
+    expect(suggestLanguages('Port-au-Prince, Haïti')).toEqual({
+      keys: ['J', 'A'],
+    });
+    expect(languageChoices('Fort-de-France, Martinique')).toEqual({
+      optionKeys: ['A', 'B', 'H', 'I'],
+      suggested: ['A', 'I'],
+      other: 'Créole',
+    });
+    expect(
+      shareLanguage(
+        { M0_Q10: 'A,I', M0_Q10_AUTRE: 'Créole' },
+        { M0_Q10: 'J,H' },
+      ),
+    ).toBe(true);
+    const q = QUESTION_INDEX.get('M0_Q10')!;
+    expect(q.options.map((o) => o.text)).toContain('Créole — Kreyòl');
+    expect(QUESTIONS_EN.M0_Q10.options).toHaveLength(q.options.length);
+  });
+
+  it('niveau d’études hors du seul système français ; « bride price » en anglais ; M4_Q13 dans l’argent', () => {
+    const studies = QUESTION_INDEX.get('M0_Q07')!.options.map((o) => o.text);
+    expect(studies.join(' ')).not.toMatch(/CAP|BEP|Bac \+/);
+    expect(QUESTIONS_EN.M4_Q17.text).toMatch(/bride price/);
+    expect(JSON.stringify(QUESTIONS_EN)).not.toMatch(/dowry/i);
+    expect(
+      find({ M4_Q13: 'A' }, { M4_Q13: 'D' }, 'M4_Q13').map((d) => d.theme),
+    ).toEqual(['argent']);
+  });
+
+  it('table V7.1 : une question nouvelle ou retirée l’est aussi dans la V7', () => {
+    const current = new Set(QUESTIONS.map((q) => q.id));
+    for (const [id, change] of Object.entries(V71_CHANGES)) {
+      if (change === 'nouvelle' || change === 'retiree')
+        expect(V7_CHANGES[id]).toBe(change);
+      expect(current.has(id)).toBe(change !== 'retiree');
+    }
   });
 });

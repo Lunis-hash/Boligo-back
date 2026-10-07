@@ -126,6 +126,12 @@ const LANGUAGE_KEY_BY_NAME: Record<string, string> = {
   espagnol: 'H',
   spanish: 'H',
   espanol: 'H',
+  // V7.1 : créoles des Antilles et d'Haïti.
+  creole: 'J',
+  kreyol: 'J',
+  'creole haitien': 'J',
+  'haitian creole': 'J',
+  'kreyol ayisyen': 'J',
 };
 
 /** Langues écrites par le membre (« une autre langue »), sans accents ni casse. */

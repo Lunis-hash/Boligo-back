@@ -882,10 +882,11 @@ export const NON_NEGOTIABLE_WORDS: Phrases = {
 };
 
 export const DETAIL_EDUCATION: Phrases = {
-  A: 'CAP-BEP ou sans diplôme',
-  B: 'Baccalauréat',
-  C: 'Bac +2 à Bac +4',
-  D: 'Bac +5 et plus',
+  // V7.1 : hors du seul système français.
+  A: 'Formation courte ou sans diplôme',
+  B: 'Études secondaires',
+  C: 'Études supérieures (2 à 4 ans)',
+  D: 'Études supérieures (5 ans et plus)',
 };
 
 export const DETAIL_SMOKING: Phrases = {

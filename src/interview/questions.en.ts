@@ -98,10 +98,10 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M0_Q07: {
     text: 'Your level of education:',
     options: [
-      'No diploma / vocational qualification',
-      'High-school diploma (baccalaureate, A-levels)',
-      'Two to four years of higher education',
-      'Five years or more (master’s level and above)',
+      'No diploma, or short vocational training',
+      'Completed secondary school (high-school diploma or equivalent)',
+      'Two to four years of higher education (bachelor’s, associate degree…)',
+      'Five years or more of higher education (master’s, doctorate…)',
     ],
   },
   M0_Q09: {
@@ -156,19 +156,26 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Wolof',
       'Portuguese — Português',
       'Spanish — Español',
+      'Creole — Kreyòl',
       'Another language (please specify)',
     ],
   },
 
   // ── Module 1 — Identity & culture
-  M1_Q01: {
-    text: 'Your continent of origin or cultural reference (two at most if you have mixed heritage):',
+  M1_Q21: {
+    text: 'Your region of origin or cultural reference (two at most if you have mixed heritage):',
     options: [
-      'Sub-Saharan Africa',
-      'Maghreb / Middle East',
+      'West Africa',
+      'Central Africa',
+      'East Africa and the Indian Ocean (Madagascar, Comoros…)',
+      'Southern Africa',
+      'North Africa (Maghreb)',
+      'Middle East',
+      'Caribbean (French Antilles, Haiti…)',
+      'North America',
+      'Latin America',
       'Europe',
       'Asia',
-      'Americas / Caribbean',
       'Oceania',
     ],
   },

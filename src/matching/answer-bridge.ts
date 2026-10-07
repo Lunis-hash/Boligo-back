@@ -78,6 +78,68 @@ export function keysWithout(value: string | undefined, none: string): string[] {
   return keys.length > 1 ? keys.filter((k) => k !== none) : keys;
 }
 
+// ─── Origine ─────────────────────────────────────────────────────────────────
+
+/**
+ * V7.1 — région d'origine (M1_Q21) → continent de la V7 (M1_Q01) : A
+ * Afrique subsaharienne, B Maghreb / Moyen-Orient, C Europe, D Asie,
+ * E Amériques / Caraïbes, F Océanie.
+ */
+export const ORIGIN_CONTINENT: Record<string, string> = {
+  A: 'A', // Afrique de l'Ouest
+  B: 'A', // Afrique centrale
+  C: 'A', // Afrique de l'Est et océan Indien
+  D: 'A', // Afrique australe
+  E: 'B', // Maghreb
+  F: 'B', // Moyen-Orient
+  G: 'E', // Caraïbes
+  H: 'E', // Amérique du Nord
+  I: 'E', // Amérique latine
+  J: 'C', // Europe
+  K: 'D', // Asie
+  L: 'F', // Océanie
+};
+
+/**
+ * Origines d'un membre : régions (V7.1) quand il les a dites, et toujours
+ * continents (V7, ou déduits des régions). Null s'il n'a rien dit.
+ */
+export function originsOf(
+  x: RawAnswers,
+): { regions: string[] | null; continents: string[] } | null {
+  if (x.M1_Q21) {
+    const regions = answerKeys(x.M1_Q21);
+    const continents = [...new Set(regions.map((k) => ORIGIN_CONTINENT[k]))];
+    return { regions, continents: continents.filter(Boolean) };
+  }
+  if (x.M1_Q01) return { regions: null, continents: answerKeys(x.M1_Q01) };
+  return null;
+}
+
+/**
+ * Une origine commune : même région quand les deux l'ont dite (V7.1), sinon
+ * même continent (on ne suppose rien de plus fin). Null si l'un des deux ne
+ * l'a pas dite.
+ */
+export function shareOrigin(a: RawAnswers, b: RawAnswers): boolean | null {
+  const oa = originsOf(a);
+  const ob = originsOf(b);
+  if (!oa || !ob) return null;
+  if (oa.regions && ob.regions)
+    return oa.regions.some((k) => ob.regions!.includes(k));
+  return oa.continents.some((k) => ob.continents.includes(k));
+}
+
+/** Même continent, sans région commune (V7.1 des deux côtés) : des cultures proches. */
+export function nearOrigin(a: RawAnswers, b: RawAnswers): boolean {
+  const oa = originsOf(a);
+  const ob = originsOf(b);
+  if (!oa?.regions || !ob?.regions) return false;
+  return (
+    !shareOrigin(a, b) && oa.continents.some((k) => ob.continents.includes(k))
+  );
+}
+
 // ─── Religion ────────────────────────────────────────────────────────────────
 
 export type FaithFamily =

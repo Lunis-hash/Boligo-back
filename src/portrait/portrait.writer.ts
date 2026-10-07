@@ -446,6 +446,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   G: 'portugais',
   H: 'espagnol',
   I: 'une autre langue',
+  J: 'créole',
 };
 
 /** « Français et anglais » ; null si la question n'a pas été posée. */
