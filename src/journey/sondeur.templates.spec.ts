@@ -17,6 +17,7 @@ import {
 import { RED_FLAG_HABITS } from '../psychometrics/psychometrics';
 import {
   BODY_HEALTH,
+  COMPROMISE,
   MORALE,
   MORALE_PREFIX,
   PAINFUL_STORY,
@@ -56,6 +57,7 @@ import {
   THEME_POOL,
   TOPIC_DAYS,
   TOPIC_DEEP,
+  TOPIC_DEEP_THIRD,
   TOPIC_DEEP_VARIANTS,
   TOPIC_FAMILIES,
   TOPIC_PHRASES,
@@ -156,6 +158,39 @@ function formIssues(text: string): string[] {
   return issues;
 }
 
+/** Mot interrogatif qui ouvre une seconde interrogation coordonnée. */
+const SECOND_QUESTION = `(?:qu['’]est-ce|qu['’]${L}+-(?:t-)?(?:vous|il|elle|on)|que\\s+${L}+-(?:t-)?(?:vous|il|elle|on)|quel(?:le)?s?(?!${L})|qui(?!${L})|quoi(?!${L})|comment(?!${L})|où(?!${L})|pourquoi(?!${L})|combien(?!${L})|lequel|laquelle)`;
+/** « …, et comment ? », « …, ou que perdait-on ? », « …, et au bout de combien de temps ? » */
+const COORDINATED_QUESTION = new RegExp(
+  `,\\s*(?:et|ou)\\s+(?:(?:à|au bout de|dans|de|d['’]|pour|avec|par|sur|en|depuis|jusqu['’]à|selon|après|avant)\\s+)?${SECOND_QUESTION}`,
+  'iu',
+);
+/** « … et comment… », « … et à quel moment… », sans virgule. */
+const BARE_COORDINATED_QUESTION =
+  /\set\s+(?:comment|pourquoi|combien|au bout de combien|à quel moment)(?!\p{L})/iu;
+/** Deux verbes interrogatifs coordonnés (« que gagnait-on ou que perdait-on »). */
+const INVERTED_VERB = `(?<!${L})(?!rendez-vous)${L}+-(?:t-)?(?:vous|il|elle|on)(?!${L})`;
+const TWO_INVERTED_VERBS = new RegExp(
+  `${INVERTED_VERB}[^?]*\\s(?:et|ou)\\s[^?]*${INVERTED_VERB}`,
+  'iu',
+);
+/** Relance d'une échelle : une seule question avec son « pourquoi ce chiffre ». */
+const SCALE_FOLLOW_UP =
+  /,\s*et\s+(?:pourquoi pas un point de (?:moins|plus)|qu['’]est-ce qui vous fait choisir ce chiffre)\s*\?$/iu;
+
+/** Deux questions en une : deux « ? », ou deux interrogations coordonnées. */
+function isDoubleQuestion(text: string): boolean {
+  if ((text.match(/\?/g) ?? []).length >= 2) return true;
+  const t = /de 0 à 10/iu.test(text)
+    ? text.replace(SCALE_FOLLOW_UP, ' ?')
+    : text;
+  return (
+    COORDINATED_QUESTION.test(t) ||
+    BARE_COORDINATED_QUESTION.test(t) ||
+    TWO_INVERTED_VERBS.test(t)
+  );
+}
+
 /**
  * Plan de mise en sécurité : ce que l'on ferait pour se protéger, où l'on
  * irait, comment fuir. L'autre lit la réponse : jamais demandé.
@@ -243,15 +278,21 @@ const staticTemplates = (): Array<{
       ...(t as PoolTemplate),
     })),
   ),
+  ...Object.entries(TOPIC_DEEP_THIRD).flatMap(([id, days]) =>
+    Object.entries(days).map(([day, t]) => ({
+      where: `TOPIC_DEEP_THIRD.${id}[${day}]`,
+      ...(t as PoolTemplate),
+    })),
+  ),
 ];
 
 /** Phrase d'accord + question (sans phrase : la question seule). */
 const joinAgreement = (statement: string, text: string) =>
   statement ? `${statement} ${text}` : text;
 
-/** Relances propres d'un accord : la principale, puis sa variante. */
+/** Relances propres d'un accord : la principale, sa variante, la troisième. */
 const ownProbes = (a: Agreement): PoolTemplate[] =>
-  [a.probe, a.probeVariant].filter((t): t is PoolTemplate => !!t);
+  [a.probe, a.probeVariant, a.probeThird].filter((t): t is PoolTemplate => !!t);
 
 /** Questions de limite (sécurité et contrôle), avec leur grille cachée. */
 const limitTemplates = (): Array<{
@@ -420,6 +461,7 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
     for (const [id, days] of [
       ...Object.entries(TOPIC_DEEP),
       ...Object.entries(TOPIC_DEEP_VARIANTS),
+      ...Object.entries(TOPIC_DEEP_THIRD),
     ])
       for (const [day, t] of Object.entries(days))
         if (day !== '3') expect(`${id} ${t!.text}`).not.toMatch(INTIMATE);
@@ -455,14 +497,15 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
             })),
           ),
         ),
-        ...[TOPIC_DEEP, TOPIC_DEEP_VARIANTS].flatMap((table) =>
-          Object.entries(table).flatMap(([id, days]) =>
-            Object.entries(days).map(([day, t]) => ({
-              where: `${id}[${day}]`,
-              options: t!.options,
-              children: CHILD_SUBJECTS.has(id),
-            })),
-          ),
+        ...[TOPIC_DEEP, TOPIC_DEEP_VARIANTS, TOPIC_DEEP_THIRD].flatMap(
+          (table) =>
+            Object.entries(table).flatMap(([id, days]) =>
+              Object.entries(days).map(([day, t]) => ({
+                where: `${id}[${day}]`,
+                options: t!.options,
+                children: CHILD_SUBJECTS.has(id),
+              })),
+            ),
         ),
         ...[TARGETED, SHARED_RISK, CONVERGENT, SAFETY_TEMPLATES].flatMap(
           (table, n) =>
@@ -497,6 +540,52 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
           bad.push(`${where} : ${o}`);
       }
     expect(bad).toEqual([]);
+  });
+
+  it('aucune question double (deux « ? », ou deux interrogations coordonnées par « et » / « ou »)', () => {
+    // Le détecteur reconnaît les questions doubles relevées par le contre-audit…
+    for (const text of [
+      'Dans une famille recomposée, qui poserait les règles, selon vous, et comment ?',
+      "Après une dispute, qu'est-ce qui vous ramène à la douceur, et au bout de combien de temps ?",
+      "Qu'est-ce qui, chez quelqu'un, fait naître votre attirance, et à quel moment d'une rencontre ?",
+      'Dans votre famille, que gagnait-on, ou que perdait-on, à avoir raison dans une dispute ?',
+      "Dans votre famille, qu'est-ce qu'on prêtait volontiers, et qu'est-ce qu'on gardait pour soi ?",
+      'Que ressentez-vous ? Et que diriez-vous ?',
+    ])
+      expect(`${text} → ${isDoubleQuestion(text)}`).toBe(`${text} → true`);
+    // … sans compter l'échelle et sa relance, ni deux noms coordonnés.
+    for (const text of [
+      'De 0 à 10, à quel point aimez-vous que l’avenir soit planifié, et pourquoi pas un point de moins ?',
+      "De 0 à 10, quelle place aimeriez-vous laisser à vos familles dans votre vie à deux, et qu'est-ce qui vous fait choisir ce chiffre ?",
+      "Au quotidien, quel geste ou quelle parole de l'autre vous montrerait que votre limite de sécurité est respectée ?",
+      "Pour vous, à quel endroit ou à quel moment la cigarette n'aurait-elle jamais sa place ?",
+      'Quelle part de votre culture avez-vous reçue sans la choisir, et que vous êtes fier(ère) de porter ?',
+    ])
+      expect(`${text} → ${isDoubleQuestion(text)}`).toBe(`${text} → false`);
+    const written = [
+      ...staticTemplates(),
+      ...renderTopic(TARGETED, 'TARGETED'),
+      ...renderTopic(SHARED_RISK, 'SHARED_RISK'),
+      ...limitTemplates(),
+      ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
+        ownProbes(a).map((t) => ({
+          where: `AGREEMENTS.${key}`,
+          text: joinAgreement(a.statement, t.text),
+        })),
+      ),
+      ...[1, 2, 3].flatMap((day) =>
+        CONVERGENT[day].map((t, i) => ({
+          where: `CONVERGENT[${day}][${i}]`,
+          text: t.text,
+        })),
+      ),
+    ];
+    expect(written.length).toBeGreaterThan(2000);
+    expect(
+      written
+        .filter((t) => isDoubleQuestion(t.text))
+        .map((t) => `${t.where} : ${t.text}`),
+    ).toEqual([]);
   });
 });
 
@@ -670,13 +759,22 @@ describe('Techniques cliniques adaptées à deux inconnus', () => {
       expect(t.text).toMatch(/proche|amis|entourage|famille/i);
   });
 
-  it('échelle : toujours avec sa relance, en une seule question', () => {
+  it('échelle : toujours avec sa relance, en une seule question, jamais orientée vers le haut', () => {
     const scales = staticTemplates().filter((t) => t.technique === 'echelle');
     expect(scales.length).toBeGreaterThanOrEqual(10);
     for (const t of scales)
       expect(t.text).toMatch(
-        /0 à 10.*pourquoi pas un point de (moins|plus) \?$/,
+        /0 à 10.*(?:pourquoi pas un point de moins|et qu['’]est-ce qui vous fait choisir ce chiffre) \?$/,
       );
+    // « Pourquoi pas un point de plus ? » pousse vers davantage (famille,
+    // argent commun, foi) : la relance reste neutre.
+    expect(
+      staticTemplates().filter((t) => /un point de plus/.test(t.text)),
+    ).toEqual([]);
+    const faith = THEME_POOL.spiritualite[3].find(
+      (t) => t.technique === 'echelle',
+    );
+    expect(faith?.text).toMatch(/la foi ou à vos convictions/);
   });
 });
 
@@ -812,14 +910,22 @@ describe('Sécurité, couche IA et résumé pour l’IA', () => {
     const everything = JSON.stringify({
       THEME_POOL,
       TOPIC_DEEP,
+      TOPIC_DEEP_VARIANTS,
+      TOPIC_DEEP_THIRD,
       AGREEMENTS,
       CONVERGENT,
       SAFETY_TEMPLATES,
+      CONTROL_LIMITS,
       targeted: renderTopic(TARGETED, 'T').map((t) => t.text),
       shared: renderTopic(SHARED_RISK, 'S').map((t) => t.text),
     });
     expect(everything).not.toMatch(
       /ligne rouge pour vous|Si rien ne bougeait|mettre fin à votre relation|vivable|tendance à|un signal pour fuir|l'un de vous a répondu|cela change-t-il vos sentiments|qu'est-ce que l'autre devrait accepter/i,
+    );
+    // Quatrième contre-audit : plan de mise en sécurité, accommodement sur le
+    // désir, présupposés, rôles, contrôle, repères culturels, langue.
+    expect(everything).not.toMatch(
+      /feriez-vous pour vous protéger|ne se rencontreraient pas, qu'attendriez|Proposer un moment|Écouter son besoin|à quelles conditions un déménagement|faisait passer son travail|quoi qu'en pense votre famille|voir partagée, avant même|vous engager maintenant|une ancienne histoire|vos anciennes relations|consultait votre téléphone|savoir où est l'autre|désiré\(e\)|dimanche|voie spirituelle|acceptable ou inacceptable|aux journées|qu'on verra en parlant|D'ici un engagement officiel|vous sembleraient réunies|limite est franchie|votre future vie à deux|selon vous, et comment|point de plus|Beaucoup","Un peu","Rien/i,
     );
   });
 });
@@ -1128,18 +1234,63 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
 
 // ─── Premier et second parcours : 600 couples ────────────────────────────────
 
-/** Formulations propres (principales et variantes) : le reste est générique. */
+/** Formulations propres (principales, variantes, troisièmes) : le reste est générique. */
 const DEEP_TEXTS = new Set(
-  [TOPIC_DEEP, TOPIC_DEEP_VARIANTS].flatMap((table) =>
+  [TOPIC_DEEP, TOPIC_DEEP_VARIANTS, TOPIC_DEEP_THIRD].flatMap((table) =>
     Object.values(table).flatMap((days) =>
       Object.values(days).map((t) => t!.text),
     ),
   ),
 );
 
-/** Jour 3 : ce qu'il faudrait savoir avant de s'engager. */
+/**
+ * Jour 3 : ce qu'il faudrait savoir avant de s'engager, sous l'une des
+ * formules de l'angle (variées, pour ne pas répéter trois fois la même).
+ */
 const BEFORE_COMMITMENT =
-  /avant (?:de vous engager|tout engagement|un engagement|de vivre|de partager|même|de dire oui|d['’]unir vos vies)/iu;
+  /avant (?:de vous engager|tout engagement|un engagement|de vivre|de partager|même|de dire oui|de vous dire oui|une vie commune|d['’]unir vos vies)|pour une vie à deux|au quotidien, à deux/iu;
+
+/** Textes de la réserve étiquetés « compromis » (thème et formulations propres). */
+const COMPROMISE_TEXTS = new Set([
+  ...THEME_LIST.flatMap((theme) =>
+    [1, 2, 3].flatMap((day) =>
+      THEME_POOL[theme][day].filter((t) => t.compromise).map((t) => t.text),
+    ),
+  ),
+  ...[TOPIC_DEEP, TOPIC_DEEP_VARIANTS, TOPIC_DEEP_THIRD].flatMap((table) =>
+    Object.values(table).flatMap((days) =>
+      Object.values(days)
+        .filter((t) => t!.compromise)
+        .map((t) => t!.text),
+    ),
+  ),
+]);
+
+/**
+ * Question de compromis, étiquetée ou non : gabarit étiqueté, formulation
+ * de compromis d'un écart, ou tournure de compromis repérée par le code.
+ */
+function suggestsCompromise(
+  report: DivergenceReport,
+  q: SondeurQuestion,
+): boolean {
+  const d =
+    q.source === 'divergence'
+      ? report.divergences.find((x) => topicKey(x) === q.subject)
+      : undefined;
+  const statement =
+    q.source === 'convergence'
+      ? agreementFor(
+          report.convergences.find((x) => x.questionId === q.subject)!,
+        ).statement
+      : '';
+  const probe = statement ? q.text.slice(statement.length + 1) : q.text;
+  return (
+    COMPROMISE_TEXTS.has(q.text) ||
+    (!!d && compromiseTextsFor(d).has(q.text)) ||
+    COMPROMISE.test(probe)
+  );
+}
 
 /** Formulations de compromis possibles pour un écart (propres et ciblées). */
 function compromiseTextsFor(d: Divergence): Set<string> {
@@ -1550,6 +1701,37 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
       ),
     ].filter(clumsy);
     expect([...served, ...combos]).toEqual([]);
+  });
+
+  it('aucune question de compromis, étiquetée ou non, dans un thème qui porte un écart non négociable', () => {
+    // Les gabarits qui suggèrent un arrangement sont étiquetés.
+    for (const text of [
+      'Imaginez un endroit où vous vous sentiriez chez vous tous les deux : quel serait le premier détail qui vous le dirait ?',
+      'Si vos familles vivaient dans deux pays différents, comment aimeriez-vous partager les fêtes et les vacances ?',
+      "Le jour où l'un de vous aurait le mal du pays, comment aimeriez-vous que l'autre réagisse ?",
+      'Si un travail rêvé vous attendait loin, de quoi auriez-vous besoin pour en décider à deux ?',
+      'Si un doute traversait un jour vos convictions, à qui en parleriez-vous en premier ?',
+      "Si vos convictions évoluaient avec le temps, comment aimeriez-vous en parler à l'autre ?",
+    ])
+      expect(COMPROMISE_TEXTS.has(text)).toBe(true);
+    expect(TOPIC_DEEP.M0_Q03[1]!.text).not.toMatch(/à quelles conditions/);
+    const served: string[] = [];
+    let strictServed = 0;
+    for (const { report, questions, where } of passes) {
+      const strictThemes = new Set(
+        report.divergences
+          .filter((d) => isNonNegotiable(d))
+          .map((d) => d.theme),
+      );
+      for (const q of questions) {
+        if (!strictThemes.has(q.themeKey)) continue;
+        strictServed++;
+        if (suggestsCompromise(report, q))
+          served.push(`${where} [${q.themeKey}] ${q.text}`);
+      }
+    }
+    expect(strictServed).toBeGreaterThan(10000);
+    expect(served).toEqual([]);
   });
 });
 
