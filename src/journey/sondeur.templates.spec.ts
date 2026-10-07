@@ -397,6 +397,42 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
     expect(day3).toMatch(/respectée/);
   });
 
+  it('limites : une norme partagée ou une valeur, jamais un seuil personnel ni un point de rupture', () => {
+    // L'autre lit la réponse : « à quel moment ne vous sentiriez-vous plus en
+    // sécurité ? » ou « même une seule fois » lui apprendrait le seuil de
+    // chacun, qu'un partenaire contrôlant pourrait approcher sans le franchir.
+    const THRESHOLD =
+      /à quel moment|à partir de quand|à partir de combien|combien de fois|une seule fois|plus en sécurité|ne vous sentiriez plus|point de rupture|jusqu['’]où/iu;
+    const limits = limitTemplates();
+    expect(limits.length).toBeGreaterThanOrEqual(12);
+    expect(
+      limits
+        .filter(
+          (t) => THRESHOLD.test(t.text) || THRESHOLD.test(t.options.join(' ')),
+        )
+        .map((t) => `${t.where} : ${t.text}`),
+    ).toEqual([]);
+    // Ni négociable ni conditionnel.
+    for (const t of limits)
+      expect(`${t.where} ${t.text}`).not.toMatch(
+        /(?<!non )négociable|ça dépend|selon les cas|à quelles conditions|souplesse|compromis/iu,
+      );
+  });
+
+  it('limite de contrôle : trois formulations, dont une valeur ou un principe', () => {
+    expect(CONTROL_LIMITS).toHaveLength(3);
+    expect(
+      CONTROL_LIMITS.filter((t) => /valeur|principe/iu.test(t.text)).length,
+    ).toBeGreaterThanOrEqual(1);
+    for (const t of CONTROL_LIMITS) {
+      expect(formIssues(t.text)).toEqual([]);
+      expect(t.text).not.toMatch(LIVED_SCENE);
+      expect(t.text).not.toMatch(PROTECTION_PLAN_WIDE);
+      expect(t.options.join(' ')).not.toMatch(PROTECTION_OPTIONS);
+      expect(optionIssues([...t.options, 'Autre...'])).toEqual([]);
+    }
+  });
+
   it('sécurité : aucun gabarit ne demande ce que l’on ferait pour se protéger, où l’on irait, ni un plan de fuite', () => {
     // Questions de limite : version large, sur le texte et la grille cachée.
     const limits = limitTemplates();

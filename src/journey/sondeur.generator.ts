@@ -382,36 +382,35 @@ export function isQuotableDivergence(d: Divergence): boolean {
 /**
  * Questions de limite (sécurité), sans citer les réponses. Face à la violence
  * ou aux mots blessants, jamais de réconciliation ni de signal pour « reprendre
- * plus tard » : seulement où chacun place sa limite de sécurité (jour 1), la
- * valeur ou le principe qui la rend non négociable (jour 2, jamais le récit de
- * ce qui a été vécu ou vu), et ce qui montrerait au quotidien qu'elle est
- * respectée (jour 3). Jamais ce que l'on ferait pour se protéger, où l'on
- * irait ni qui l'on appellerait : l'autre lit la réponse, et un plan de mise
- * en sécurité reste confidentiel. Trois formulations par jour : un membre qui
- * enchaîne les parcours ne retrouve pas toujours la même.
+ * plus tard » : seulement la règle de respect que chacun tient pour non
+ * négociable dans un couple (jour 1), la valeur ou le principe qui la fonde
+ * (jour 2, jamais le récit de ce qui a été vécu ou vu), et ce qui montrerait
+ * au quotidien que les limites de chacun sont respectées (jour 3). Toujours
+ * une norme partagée ou une valeur, jamais un seuil personnel (« à quel
+ * moment… », « même une seule fois… ») qu'un partenaire contrôlant pourrait
+ * apprendre puis approcher. Jamais ce que l'on ferait pour se protéger, où
+ * l'on irait ni qui l'on appellerait : l'autre lit la réponse, et un plan de
+ * mise en sécurité reste confidentiel. Trois formulations par jour : un membre
+ * qui enchaîne les parcours ne retrouve pas toujours la même.
  */
 export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
   1: [
     {
-      text: "Dans une dispute, à quel moment sentiriez-vous que vous n'êtes plus en sécurité ?",
-      options: [
-        'Dès un mot blessant',
-        'Dès un geste brusque',
-        'Je le saurais sur le moment',
-      ],
-    },
-    {
-      text: 'Quelle limite, en dispute, ne pourrait jamais être franchie avec vous, même une seule fois ?',
+      text: "Même en colère, qu'est-ce qui n'a jamais sa place dans un couple, selon vous ?",
       options: ['Les insultes', 'Toute violence', 'Les menaces'],
     },
     {
-      text: 'Pour vous, quelle façon de se parler en dispute resterait toujours hors de question ?',
+      text: 'Quelle règle de respect tiendriez-vous pour absolue dans un foyer ?',
+      options: ['Ni cris ni insultes', 'Aucune violence', 'Aucune menace'],
+    },
+    {
+      text: "Entre deux personnes qui s'aiment, quelle façon de se parler reste exclue pour vous, même en dispute ?",
       options: ['Crier', 'Rabaisser', 'Menacer'],
     },
   ],
   2: [
     {
-      text: 'Quelle valeur rend, pour vous, votre limite de sécurité non négociable ?',
+      text: "Sur quelle valeur repose, pour vous, l'idée qu'aucun désaccord n'autorise un mot ou un geste qui blesse ?",
       options: ['Le respect', 'La dignité', 'La confiance'],
     },
     {
@@ -419,17 +418,17 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       options: ['Le respect', 'La douceur', 'La parole donnée'],
     },
     {
-      text: 'Pour vous, quelle valeur fait que la colère ne donne jamais le droit de faire peur ?',
+      text: 'Quelle valeur fait, à vos yeux, que la colère ne donne jamais le droit de faire peur ?',
       options: ["L'égalité", 'La dignité', 'La confiance'],
     },
   ],
   3: [
     {
-      text: "Pour vous sentir en sécurité dans une vie à deux, quelle limite aimeriez-vous que l'autre connaisse dès le début ?",
+      text: "Dès le début d'une vie à deux, quelle limite commune aimeriez-vous poser, pour l'un comme pour l'autre ?",
       options: ['Aucun geste violent', 'Aucune insulte', 'Aucune menace'],
     },
     {
-      text: "Au quotidien, quel geste ou quelle parole de l'autre vous montrerait que votre limite de sécurité est respectée ?",
+      text: 'Au quotidien, quel geste ou quelle parole montrerait, pour vous, que les limites de chacun sont respectées ?',
       options: [
         'Un ton qui reste calme',
         'Une pause respectée',
@@ -437,7 +436,7 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       ],
     },
     {
-      text: 'Pour vous, à quoi ressemblerait un désaccord vécu en sécurité, dans une vie à deux ?',
+      text: 'À quoi ressemblerait, pour vous, un désaccord vécu en sécurité dans une vie à deux ?',
       options: ['Un ton posé', 'Le droit de dire non', 'Sans peur ni menace'],
     },
   ],
@@ -460,25 +459,31 @@ function usableDeep(
 /**
  * Signal de contrôle (jalousie qui surveille, accès total au téléphone voulu
  * par l'un) : traité comme une limite de sécurité, jamais comme un compromis.
+ * Même exigence que les questions de limite : une norme partagée ou une
+ * valeur, jamais un seuil personnel, un récit vécu ni un plan de protection.
  */
 export const CONTROL_LIMIT: PoolTemplate = {
-  text: "Quel geste de contrôle, venant de l'autre, serait pour vous une limite à ne jamais franchir ?",
+  text: "Même par inquiétude, quel geste de surveillance n'a pas sa place dans un couple, selon vous ?",
   options: [
-    'Fouiller mon téléphone',
-    'Exiger de savoir où je suis',
-    "M'isoler de mes proches",
+    'Fouiller un téléphone',
+    "Exiger de savoir où l'on est",
+    "Isoler l'autre de ses proches",
   ],
 };
 
 export const CONTROL_LIMITS: PoolTemplate[] = [
   CONTROL_LIMIT,
   {
-    text: "À quel geste de l'autre sentiriez-vous qu'on passe de la confiance à la surveillance ?",
+    text: 'Dans un couple, où passe pour vous la frontière entre la confiance et la surveillance ?',
     options: [
-      'Lire mes messages',
-      'Suivre ma position',
-      'Contrôler mes sorties',
+      "Lire les messages de l'autre",
+      'Suivre sa position',
+      'Contrôler ses sorties',
     ],
+  },
+  {
+    text: "Quel principe vous fait dire qu'aimer ne donne aucun droit de regard sur le téléphone ou les sorties de l'autre ?",
+    options: ['La liberté de chacun', 'Le respect', 'La dignité'],
   },
 ];
 
