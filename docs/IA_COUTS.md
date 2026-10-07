@@ -96,7 +96,7 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
      (Meta) relit.
 
    Il voit la méthode et la cible de chaque proposition, et refuse au moindre
-   défaut, selon 14 règles :
+   défaut, selon 19 règles :
    - question orientée ;
    - jargon ou diagnostic ;
    - corps ou santé ;
@@ -110,9 +110,20 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
    - récit douloureux ;
    - violence traitée comme négociable ;
    - plus de 180 caractères ;
-   - méthode absente.
+   - méthode absente ;
+   - question qui n'a pas de sens pour l'un des deux ;
+   - demande d'un montant, d'un employeur, de papiers, d'un détail sur des
+     enfants ou un ex ;
+   - compromis sur un point non négociable ;
+   - mention de l'âge, du genre ou de la ville ;
+   - exemple de la consigne recopié.
 
-   Dans chaque créneau, il désigne la meilleure des deux propositions.
+   Il rend un verdict pour **chaque** proposition, jour par jour, et chaque
+   jour est relu par une autre famille que celle de son rédacteur : une
+   proposition sans verdict explicite n'est jamais servie. Il reçoit le
+   contexte du couple, l'angle des jours et la liste des questions du Grand
+   Entretien. Dans chaque créneau, il désigne la meilleure des deux
+   propositions.
 4. **Sécurité d'abord.** Un écart sur la violence ou les insultes reçoit
    toujours la question de limite écrite et vérifiée à l'avance, jamais une
    question de l'IA.
@@ -145,7 +156,17 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
    décrits. Le code contrôle sa forme, puis le relecteur choisit la meilleure
    des deux propositions. Elle ne touche jamais un thème de sécurité ni une
    journée déjà commencée.
-10. **Températures basses** : 0,6 pour les questions, 0,3 pour les lectures,
+10. **Signal de danger.** Si une réponse libre évoque une violence subie ou
+    exercée, une menace, une détresse ou une demande d'argent, l'IA ne lit pas
+    cette journée : la version des règles s'affiche, aucune question
+    d'approfondissement n'est posée, et la modération reçoit un signalement.
+11. **Plancher de qualité.** En secours sur Groq, un parcours payé n'utilise
+    jamais un petit modèle : sans grand modèle disponible, les questions
+    modèles de BOLIGO s'affichent.
+12. **Traçabilité.** Pour chaque question sont enregistrés son origine, sa
+    méthode, sa cible, le rédacteur et le relecteur. Rien de tout cela n'est
+    jamais envoyé à l'app.
+13. **Températures basses** : 0,6 pour les questions, 0,3 pour les lectures,
     0 pour les relectures.
 
 Ce qui est en place pour chaque **parcours payé** :
@@ -202,26 +223,33 @@ GPT-5.5 (≈ 5 $ / 30 $), en comptant 1 $ pour 1 € :
 
 | Tâche | Appels | Coût estimé |
 |---|---|---|
-| Questions du Sondeur (3 jours, 2 propositions par créneau) | 3 | ≈ 0,26 € |
-| Relecture du Sondeur (42 propositions) | 1 | ≈ 0,07 € |
+| Questions du Sondeur (3 jours, 2 propositions par créneau) | 3 | ≈ 0,35 € |
+| Relecture du Sondeur, jour par jour (verdict pour chaque question) | 3 | ≈ 0,36 € |
 | Lectures du jour | 3 | ≈ 0,12 € |
-| Vérifications anti-invention (3 lectures + bilan) | 4 | ≈ 0,13 € |
-| Questions d'approfondissement : rédaction et relecture | 4 | ≈ 0,16 € |
+| Vérifications anti-invention (3 lectures + bilan) | 4 | ≈ 0,23 € |
+| Questions d'approfondissement : rédaction et relecture | 4 | ≈ 0,29 € |
 | Bilan Harmonie | 1 | ≈ 0,07 € |
-| **Total par parcours** | **16** | **≈ 0,80 €** |
+| **Total par parcours** | **18** | **≈ 1,40 €** |
 
-Selon la longueur des réponses, le total va de **0,60 € à 0,90 €** environ.
-Une relance après un échec peut l'augmenter un peu : le budget de **3 € par
-parcours** laisse une large marge.
+Selon la longueur des réponses, le total va de **1,00 € à 1,60 €** environ.
+Le relecteur et le rédacteur reçoivent la liste des questions du Grand
+Entretien, pour ne jamais les reposer, et le relecteur réfléchit davantage avant
+de juger : c'est le prix de la qualité. Le budget de **3 € par parcours** laisse
+de la marge pour une relance après un échec.
 
-Pour la recette d'un parcours (30 €, 15 € par membre), l'IA représente donc
-environ 3 %. Pour 1 000 000 de parcours payés, cela fait 600 000 € à 900 000 €
-d'IA, pour 30 millions d'euros de recette.
+Pour la recette d'un parcours (30 €, 15 € par membre), l'IA représente environ
+5 %. Pour 1 000 000 de parcours payés : 1 à 1,6 million d'euros d'IA, pour
+30 millions d'euros de recette.
 
 Le Sondeur est préparé en arrière-plan dès que le parcours est accepté. Rédigé
 puis relu, il prend une à trois minutes. Il est presque toujours prêt quand les
 membres ouvrent l'application ; sinon, l'app recharge toute seule pendant
 quatre minutes.
+
+**Le laboratoire IA** (tableau de bord, administrateurs) rejoue le Sondeur avec
+les vrais modèles sur 10 couples types fictifs : questions servies, propositions
+écartées et pourquoi, lecture du jour, coût réel. Comptez environ 1 € par couple
+(plafonné à 1,50 €), compté dans la dépense IA du mois.
 
 ## Les limites de dépense
 
@@ -239,7 +267,7 @@ En clair :
   ne peut jamais coûter plus de 3 € d'IA, même en cas d'erreur ou de relance.
   Au-delà, la suite de ce parcours passe aux versions sans IA.
 - **Pas de plafond mensuel global** : plus il y a de parcours payés, plus la
-  dépense monte, toujours à moins de 3 € par parcours. Pour en fixer un quand
+  dépense monte, toujours à moins de 3 € par parcours (1,40 € en moyenne). Pour en fixer un quand
   même, renseignez `AI_JOURNEY_MONTHLY_CAP_EUR` (par exemple `500`).
 - **Le prix plafond ne bride pas la qualité.** Il laisse passer les meilleurs
   modèles (Claude Opus, GPT-5.5). Il écarte seulement les variantes « pro » ou
@@ -255,7 +283,7 @@ En clair :
     leurs modèles (réglage `data_collection: deny`).
 - **Plafond sur la clé OpenRouter** : c'est un second verrou, indépendant de
   BOLIGO. Réglez-le dans le tableau de bord OpenRouter selon le nombre de
-  parcours attendus, par exemple 1 € par parcours prévu dans le mois.
+  parcours attendus, par exemple 2 € par parcours prévu dans le mois.
 
 ## 4. Plafond mensuel pour le reste
 

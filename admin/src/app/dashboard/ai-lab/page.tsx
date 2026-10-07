@@ -131,7 +131,7 @@ export default function AiLabPage() {
       <section className="mb-6 rounded-xl border bg-card p-5">
         <h2 className="mb-1 text-lg font-semibold">Lancer une évaluation</h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          Environ 0,50 à 1 € par couple (coût réel, compté dans la dépense IA du mois), et 2 à 4 minutes par couple.
+          Environ 1 € par couple (coût réel, compté dans la dépense IA du mois, plafonné à 1,50 €), et 2 à 4 minutes par couple.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <label className="text-sm" htmlFor="couples">Couples types</label>
@@ -144,7 +144,7 @@ export default function AiLabPage() {
           >
             {[1, 3, 5, 10].map((n) => (
               <option key={n} value={n}>
-                {n} couple{n > 1 ? "s" : ""} (≈ {euro(n * 0.8)})
+                {n} couple{n > 1 ? "s" : ""} (≈ {euro(n * 1)})
               </option>
             ))}
           </select>
