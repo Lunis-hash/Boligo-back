@@ -187,6 +187,13 @@ const SUBJECT_PATTERNS: RegExp[] = [
   );
 
 /**
+ * Signatures déjà calculées : chaque assemblage compare des centaines de
+ * formulations, toujours les mêmes, à quelque 150 sujets.
+ */
+const SIGNATURES = new Map<string, string>();
+const MAX_SIGNATURES = 20000;
+
+/**
  * Signature d'une question : le texte sans les réponses citées entre « », sans
  * le sujet nommé (« l'argent que l'on envoie à sa famille ») ni la
  * ponctuation. Deux questions bâties sur le même gabarit, appliqué à d'autres
@@ -194,6 +201,8 @@ const SUBJECT_PATTERNS: RegExp[] = [
  * qu'une fois.
  */
 export function questionSignature(text: string): string {
+  const cached = SIGNATURES.get(text);
+  if (cached !== undefined) return cached;
   let sig = text
     .toLowerCase()
     .replace(/«[^»]*»/g, '«»')
@@ -202,6 +211,8 @@ export function questionSignature(text: string): string {
     .replace(/\s+/g, ' ')
     .trim();
   for (const pattern of SUBJECT_PATTERNS) sig = sig.replace(pattern, '«»');
+  if (SIGNATURES.size >= MAX_SIGNATURES) SIGNATURES.clear();
+  SIGNATURES.set(text, sig);
   return sig;
 }
 
