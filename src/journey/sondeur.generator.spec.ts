@@ -43,15 +43,22 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     });
   });
 
-  it('cible les divergences réelles avant tout gabarit', () => {
+  it('cible les divergences réelles avant tout gabarit, sans jamais citer les réponses', () => {
     const qs = assembleSondeur({ report, firstNames: ['Steve', 'Nadia'] });
     const famille = qs.find((q) => q.day === 1 && q.themeKey === 'famille');
     expect(famille?.source).toBe('divergence');
     expect(famille?.text).toMatch(/enfants/i);
-    expect(famille?.text).toContain('Oui, absolument');
-    const intimite = qs.find((q) => q.day === 2 && q.themeKey === 'intimite');
-    expect(intimite?.source).toBe('divergence');
-    expect(intimite?.text).toMatch(/fidélité/i);
+    // Le sujet est nommé, jamais ce que chacun a répondu.
+    const answers = report.divergences.flatMap((d) => [d.a.text, d.b.text]);
+    for (const q of qs) {
+      expect(q.text).not.toMatch(/[«»]/);
+      for (const answer of answers) expect(q.text).not.toContain(answer);
+    }
+    const intimite = qs.filter(
+      (q) => q.themeKey === 'intimite' && q.source === 'divergence',
+    );
+    expect(intimite).toHaveLength(1);
+    expect(intimite[0].text).toMatch(/fidélité/i);
     // aucun écart détecté sur la spiritualité → gabarit du thème
     expect(qs.find((q) => q.themeKey === 'spiritualite')?.source).toBe(
       'gabarit',
@@ -104,7 +111,7 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(validateSondeurGrid(qs)).toBe(true);
   });
 
-  it('questions de l’IA relues : elles passent avant les gabarits, sauf jargon ou redite', () => {
+  it('questions de l’IA (toujours relues) : elles passent avant les gabarits, sauf jargon ou redite', () => {
     const aiFor = (
       day: number,
       themeKey: (typeof THEME_LIST)[number],
@@ -144,11 +151,12 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       history,
     };
 
-    // Sans relecture, la divergence réelle garde la priorité.
+    // Une question de l'IA transmise a toujours été relue en amont : elle
+    // passe avant le gabarit ciblé, que preferAi soit posé ou non.
     const plain = assembleSondeur(base);
     expect(
       plain.find((q) => q.day === 1 && q.themeKey === 'famille')?.source,
-    ).toBe('divergence');
+    ).toBe('ia');
 
     const reviewed = assembleSondeur({ ...base, preferAi: true });
     const famille = reviewed.find(
@@ -180,8 +188,17 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
     expect(texts).not.toMatch(/vivable/i);
     const comm = qs.filter((q) => q.themeKey === 'communication');
     expect(comm.every((q) => !/«/.test(q.text))).toBe(true);
+    expect(comm.map((q) => q.subject)).toEqual([
+      'securite',
+      'securite',
+      'securite',
+    ]);
     expect(comm.map((q) => q.text).join(' ')).toMatch(
-      /plus en sécurité|jamais être franchie|sans se faire de mal|dispute était terminée|signal pour arrêter|baisser les armes/,
+      /plus en sécurité|jamais être franchie|sans se faire de mal|qu'on aime|dès le début|vous protéger/,
+    );
+    // Jamais de réconciliation ni de « reprendre plus tard » après la violence.
+    expect(texts).not.toMatch(
+      /baisser les armes|reprendre plus tard|réconcili|revenir vers/i,
     );
     const ai = describeReportForAi(violent, ['A', 'B']);
     expect(ai).toMatch(/LIMITE DE SÉCURITÉ/);
