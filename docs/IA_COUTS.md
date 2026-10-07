@@ -196,11 +196,15 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       modération choisit la bonne catégorie dans le tableau de bord avant de
       décider. C'est aussi pourquoi le message d'aide envoyé pour une menace
       ou un contrôle est neutre : il ne présume ni victime ni auteur.
-    - **Second étage, l'IA, dès l'envoi (parcours payé).** Le relecteur haut de
-      gamme lit chaque réponse au moment où elle est envoyée et repère ce que
-      le code ne voit pas. Coût : environ 0,15 € par parcours (42 réponses
-      courtes), pris sur l'enveloppe de 3 €. Une confidence de violence subie
-      est relue aussi, car la même réponse peut contenir une menace.
+    - **Second étage, l'IA, dès l'envoi.** Sur un parcours payé, le relecteur
+      haut de gamme lit chaque réponse au moment où elle est envoyée et
+      repère ce que le code ne voit pas. Coût : environ 0,15 € par parcours
+      (42 réponses courtes), pris sur l'enveloppe de 3 €. Sur un parcours non
+      payé, c'est le modèle économique qui relit chaque réponse (moins d'un
+      centime par parcours, dans le plafond mensuel) : la sécurité n'est pas
+      réservée aux parcours payés. Une confidence de violence subie est relue
+      aussi, car la même réponse peut contenir une menace ou venir de
+      l'auteur.
       L'IA peut aussi lever une alerte dans la lecture du jour, dans le bilan
       et dans le contrôle de fidélité.
     - **IA lente ou en panne : fermé par défaut.** Au-delà de 10 secondes, ou
@@ -214,9 +218,12 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       tombe sous 95 % par catégorie, ou si une phrase saine retient la
       messagerie. Ces phrases ont servi à écrire les motifs : ce n'est pas un
       taux réel. Sur des phrases neuves écrites par des auditeurs
-      indépendants, le code seul en repère entre un tiers et la moitié selon
-      le corpus (33 % au dernier contre-audit), et presque aucune menace ni
-      aucun contrôle formulés autrement. C'est la relecture de l'IA à l'envoi
+      indépendants, le code seul en repérait entre un quart et la moitié
+      selon le corpus (23 % au sixième contre-audit, presque aucune menace ni
+      aucun contrôle formulés autrement). Des familles de tournures ont été
+      ajoutées depuis ; elles ont été écrites à partir de ce corpus, donc le
+      prochain contre-audit, sur des phrases neuves, donnera le vrai taux.
+      C'est la relecture de l'IA à l'envoi
       qui porte la sécurité d'un parcours payé ; son taux n'a pas encore été
       mesuré sur de vraies réponses. Le laboratoire IA contient quatre couples
       dont le danger est invisible pour le code, pour la mesurer. Seul un corpus de vraies réponses, annoté par des
@@ -225,21 +232,29 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       enregistrement : si le signalement échoue, la réponse n'est pas
       enregistrée non plus. Un membre qui s'arrête en route n'y échappe pas.
       Il y a un signalement par réponse (le texte haché sert de clé), et une seule alerte
-      de l'IA ouverte par membre. Une réponse refusée par la modération IA
-      (insulte, proposition sexuelle, contact) est signalée pour trace, sans
-      retenir la messagerie : elle n'a jamais été montrée.
+      de l'IA ouverte par membre. Une réponse refusée (insulte, proposition
+      sexuelle, coordonnées), par le code comme par l'IA, est toujours
+      signalée pour trace, avec les dangers que le code y voit : elle n'a
+      jamais été montrée et ne retient pas la messagerie, sauf si elle
+      évoque une menace, un contrôle ou un autre danger pour l'autre, auquel
+      cas la messagerie attend la décision de l'équipe. Le simple nom d'une
+      messagerie dans un récit (« il lisait mes messages WhatsApp ») n'est pas
+      refusé.
     - **Ce qui se passe ensuite** :
       - aucune lecture ni question d'approfondissement par l'IA pour la
         journée ;
       - une lecture de sécurité s'affiche : rien n'est commenté, la liberté de
         chacun est rappelée, et aucune piste de premier message n'est donnée ;
       - la modération reçoit la ou les catégories et la réponse.
-    - **Réponse cachée.** L'autre membre voit « Réponse en cours de
-      vérification par l'équipe BOLIGO. » à la place de la réponse. C'est
-      fermé par défaut : le texte reste caché si le code y voit un danger,
-      même sans signalement écrit, si l'IA n'a pas encore pu le relire, ou si
-      une alerte de l'IA vise ce membre, jusqu'à ce que l'équipe tranche. Une
-      confidence de violence subie n'est jamais cachée.
+    - **Réponse cachée.** L'autre membre voit « Réponse disponible plus
+      tard. » à la place de toutes les réponses de ce membre pour la
+      journée, pour ne pas désigner la question en cause (une détresse est
+      une donnée de santé). C'est fermé par défaut : le texte reste caché si
+      le code y voit un danger, même sans signalement écrit, si l'IA n'a pas
+      encore pu le relire, ou si une alerte de l'IA vise ce membre, jusqu'à
+      ce que l'équipe tranche. Une confidence de violence subie seule n'est
+      pas cachée ; elle l'est si l'IA y voit aussi une autre catégorie ou
+      lève une alerte sur ce membre.
     - **Messagerie.** Un seul chemin du code l'ouvre, et un test le vérifie.
       Elle attend la décision de l'équipe. Seule exception : une confidence de
       violence subie, sans autre catégorie, ne retient pas la victime ; la
@@ -308,8 +323,10 @@ Ce qui est en place pour chaque **parcours payé** :
    - trois premières questions possibles ;
    - un conseil pour le premier échange.
 
-**Parcours sans paiement** : aucun appel d'IA pour le Sondeur. Les questions
-modèles de BOLIGO et les lectures écrites par les règles s'affichent.
+**Parcours sans paiement** : aucune rédaction par l'IA (questions, lectures,
+bilan). Les questions modèles de BOLIGO et les lectures écrites par les règles
+s'affichent. Seule la relecture de sécurité de chaque réponse passe par le
+modèle économique, dans le plafond mensuel.
 
 Garde-fous sur les données :
 

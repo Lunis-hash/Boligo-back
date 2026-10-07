@@ -72,7 +72,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><title>BOLIGO Con
 <li><b>Lecture de chaque journée</b>, quand les deux membres l'ont finie : accords et points à explorer, chacun cité mot pour mot dans les réponses. Un relecteur vérifie que rien n'est inventé.</li>
 <li><b>Question d'approfondissement</b> pour les jours 2 et 3.</li>
 <li><b>Bilan Harmonie</b> à la fin des trois jours.</li>
-<li><b>Relecture de sécurité de chaque réponse à l'envoi</b> : un danger que le code ne voit pas est signalé tout de suite à l'équipe.</li>
+<li><b>Relecture de sécurité de chaque réponse à l'envoi</b> : un danger que le code ne voit pas est signalé tout de suite à l'équipe. Sur un parcours non payé, c'est le modèle économique qui relit (moins d'un centime par parcours).</li>
 </ul>
 <p><b>Sujets non négociables</b> : jamais de compromis, de terrain d'entente ni de « vivre avec ». Les sujets sont : ${esc(NON_NEGOTIABLE_TOPICS)}.</p>
 
@@ -98,12 +98,12 @@ ${block(`${fidelity.system}\n\n---\n\n${fidelity.prompt}`)}
 <p>Le code et l'IA repèrent dans chaque réponse : violence subie ou exercée, menace, contrôle, détresse, demande d'argent, âge de moins de 18 ans. Ce qui se passe ensuite :</p>
 <ul>
 <li>la réponse est signalée dès son envoi ;</li>
-<li>elle reste cachée à l'autre membre jusqu'à la décision de l'équipe ;</li>
+<li>les réponses de ce membre pour la journée restent cachées à l'autre (« Réponse disponible plus tard. ») jusqu'à la décision de l'équipe ;</li>
 <li>la messagerie attend ;</li>
 <li>l'IA ne commente pas la journée ;</li>
 <li>l'auteur reçoit en privé des ressources d'aide.</li>
 </ul>
-<p>Une confidence de violence subie n'est jamais cachée et ne retient pas la messagerie. Le détail figure dans docs/IA_COUTS.md.</p>
+<p>Une confidence de violence subie seule n'est pas cachée et ne retient pas la messagerie. Une réponse refusée (insulte, coordonnées) laisse toujours une trace ; si elle menace, la messagerie attend aussi. Le détail figure dans docs/IA_COUTS.md.</p>
 </body></html>`;
 
 const out = path.join(
