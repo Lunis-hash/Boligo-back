@@ -176,37 +176,81 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
    des deux propositions. Elle ne touche jamais un thème de sécurité ni une
    journée déjà commencée.
 10. **Sécurité à deux étages.**
-    - Le code repère les signaux de danger dans chaque réponse, par catégorie :
-      violence subie ou exercée, menace, contrôle (téléphone fouillé,
-      passeport confisqué, proches interdits), détresse ou idées de mort,
-      demande d'argent (Western Union, mobile money…), âge de moins de 18 ans.
-      En français, registre africain, SMS et anglais. Une limite écrite (« s'il
-      levait la main sur moi, je partirais ») n'est pas un signal.
-    - Le signalement part dès l'envoi de la réponse, sans attendre la fin de
-      la journée : un membre qui s'arrête en route n'y échappe pas.
-    - Si le code ne voit rien, l'IA peut lever une alerte dans la lecture,
-      dans la relecture et dans le contrôle de fidélité.
-    - Dans les deux cas : aucune lecture ni question d'approfondissement par
-      l'IA ; une lecture de sécurité s'affiche (rien n'est commenté, la
-      liberté de chacun est rappelée) ; la modération reçoit un signalement
-      avec la ou les catégories.
-    - Tant que le signalement attend l'équipe, l'autre membre voit « Réponse
-      en cours de vérification par l'équipe BOLIGO. » à la place de la
-      réponse.
-    - La messagerie attend la décision de l'équipe. Seule exception : une
-      confidence de violence subie, sans autre catégorie, ne retient pas la
-      victime.
-    - Sur un parcours payé, la messagerie attend aussi que les lectures de
-      l'IA soient écrites (ou qu'elles aient échoué trois fois), puisqu'elles
-      peuvent lever une alerte.
-    - L'équipe reçoit une notification discrète : son texte ne contient
-      jamais la réponse du membre.
-    - Détresse ou violences : l'auteur reçoit en privé des ressources d'aide
-      (3114 et 3919 en France ; ailleurs, les urgences du pays). La liste des
-      numéros par pays est à faire valider par l'équipe.
-    - Une réponse qui évoque un danger n'est jamais refusée par la
-      modération : une victime peut citer les mots subis (masqués chez
-      l'autre), et l'auteur d'une menace ne peut pas la reformuler sans trace.
+    - **Premier étage, le code.** Il repère les signaux de danger dans chaque
+      réponse, par catégorie : violence subie ou exercée, menace, contrôle
+      (téléphone fouillé, passeport confisqué, proches interdits), détresse ou
+      idées de mort, demande d'argent (Western Union, mobile money…), âge de
+      moins de 18 ans. En français, registre africain, SMS, anglais et créole.
+      Ne sont pas des signaux :
+      - une limite écrite (« s'il levait la main sur moi, je partirais ») ;
+      - un souvenir d'enfance dit comme tel ;
+      - un idiome (« ce qui m'a frappé ») ;
+      - un engagement associatif ;
+      - un modèle de couple choisi (« mon mari gère mon salaire, ça me
+        convient »).
+    - **Second étage, l'IA, dès l'envoi (parcours payé).** Le relecteur haut de
+      gamme lit chaque réponse au moment où elle est envoyée et repère ce que
+      le code ne voit pas. Coût : environ 0,15 € par parcours (42 réponses
+      courtes), pris sur l'enveloppe de 3 €. Au-delà de 10 secondes, la
+      réponse est enregistrée et le classement se termine en arrière-plan.
+      L'IA peut aussi lever une alerte dans la lecture du jour, dans le bilan
+      et dans le contrôle de fidélité.
+    - **Mesure.** Un corpus de non-régression (plus de 230 phrases, dont des
+      phrases saines) fait échouer l'intégration si le repérage par le code
+      tombe sous 95 % par catégorie, ou si une phrase saine retient la
+      messagerie. Ces phrases ont servi à écrire les motifs. Seul un corpus de
+      vraies réponses, annoté par des spécialistes, donnera un taux fiable
+      (voir plus bas).
+    - **Signalement.** Il part dès l'envoi de la réponse, et avant son
+      enregistrement : si le signalement échoue, la réponse n'est pas
+      enregistrée non plus. Un membre qui s'arrête en route n'y échappe pas.
+      Il y a un signalement par réponse, jamais en double. Une réponse refusée
+      par la modération IA est signalée aussi, avec la catégorie « autre » :
+      elle ne disparaît pas sans trace.
+    - **Ce qui se passe ensuite** :
+      - aucune lecture ni question d'approfondissement par l'IA pour la
+        journée ;
+      - une lecture de sécurité s'affiche : rien n'est commenté, la liberté de
+        chacun est rappelée, et aucune piste de premier message n'est donnée ;
+      - la modération reçoit la ou les catégories et la réponse.
+    - **Réponse cachée.** L'autre membre voit « Réponse en cours de
+      vérification par l'équipe BOLIGO. » à la place de la réponse. C'est
+      fermé par défaut : le texte reste caché même si le signalement n'a pas
+      pu être écrit, et jusqu'à ce que l'équipe le rejette. Une confidence de
+      violence subie n'est jamais cachée.
+    - **Messagerie.** Un seul chemin du code l'ouvre, et un test le vérifie.
+      Elle attend la décision de l'équipe. Seule exception : une confidence de
+      violence subie, sans autre catégorie, ne retient pas la victime ; la
+      lecture de sécurité dit alors « l'équipe en a été informée », sans
+      promettre de vérification. Sur un parcours payé, la messagerie attend
+      aussi les lectures de l'IA (ou leur troisième échec).
+    - **Décision de l'équipe** (tableau de bord, page Signalements) :
+      - **Fausse alerte** : la réponse redevient visible, la lecture de l'IA
+        est écrite, et la messagerie s'ouvre si rien d'autre n'attend ;
+      - **Confirmer** : le parcours est clos pour les deux membres et le
+        crédit est rendu au membre mis en danger. Pour une détresse ou une
+        minorité, où personne n'est en faute, les deux crédits sont rendus.
+        Les deux membres sont prévenus sans que le motif soit donné.
+    - **Parcours clos.** Un parcours arrêté (par un membre, l'anti-ghosting ou
+      la modération) ne laisse plus passer aucun message.
+    - **Ressources d'aide.** L'auteur de la réponse les reçoit en privé, sans
+      commentaire :
+      - détresse : le 3114 (France) ;
+      - violences subies : le 3919 (France) ;
+      - menace ou contrôle : un message neutre, ni victime ni auteur présumés ;
+      - gestes violents : un message à l'auteur.
+
+      Ailleurs, une association d'aide du pays, jamais la police seule (ce
+      renvoi n'est pas sûr partout) ; en cas de danger immédiat, les secours.
+      Une détresse n'est jamais effacée par une violence évoquée en même
+      temps. Le même message n'est jamais envoyé deux fois. Une alerte de
+      l'IA sans membre désigné n'envoie aucun message. La notification ne
+      montre jamais le contenu sur l'écran verrouillé.
+    - **À valider par l'équipe** :
+      - les ressources d'aide par pays, avec des associations locales ;
+      - un délai de traitement des signalements de détresse, 24 h/24 ;
+      - une analyse d'impact RGPD : la détresse est une donnée de santé, et
+        la lecture de sécurité, visible des deux, révèle qu'un signal existe.
 11. **Plancher de qualité.** En secours sur Groq, un parcours payé n'utilise
     jamais un petit modèle : sans grand modèle disponible, les questions
     modèles de BOLIGO s'affichent.
@@ -276,16 +320,17 @@ GPT-5.5 (≈ 5 $ / 30 $), en comptant 1 $ pour 1 € :
 | Vérifications anti-invention (3 lectures + bilan) | 4 | ≈ 0,23 € |
 | Questions d'approfondissement : rédaction et relecture | 4 | ≈ 0,29 € |
 | Bilan Harmonie | 1 | ≈ 0,07 € |
-| **Total par parcours** | **18** | **≈ 1,40 €** |
+| Relecture de sécurité de chaque réponse à l'envoi (21 × 2) | 42 | ≈ 0,15 € |
+| **Total par parcours** | **60** | **≈ 1,55 €** |
 
-Selon la longueur des réponses, le total va de **1,00 € à 1,60 €** environ.
+Selon la longueur des réponses, le total va de **1,15 € à 1,75 €** environ.
 Le relecteur et le rédacteur reçoivent la liste des questions du Grand
 Entretien, pour ne jamais les reposer, et le relecteur réfléchit davantage avant
 de juger : c'est le prix de la qualité. Le budget de **3 € par parcours** laisse
 de la marge pour une relance après un échec.
 
 Pour la recette d'un parcours (30 €, 15 € par membre), l'IA représente environ
-5 %. Pour 1 000 000 de parcours payés : 1 à 1,6 million d'euros d'IA, pour
+5 %. Pour 1 000 000 de parcours payés : 1,15 à 1,75 million d'euros d'IA, pour
 30 millions d'euros de recette.
 
 Le Sondeur est préparé en arrière-plan dès que le parcours est accepté. Rédigé
@@ -316,7 +361,7 @@ En clair :
   ne peut jamais coûter plus de 3 € d'IA, même en cas d'erreur ou de relance.
   Au-delà, la suite de ce parcours passe aux versions sans IA.
 - **Pas de plafond mensuel global** : plus il y a de parcours payés, plus la
-  dépense monte, toujours à moins de 3 € par parcours (1,40 € en moyenne). Pour en fixer un quand
+  dépense monte, toujours à moins de 3 € par parcours (1,55 € en moyenne). Pour en fixer un quand
   même, renseignez `AI_JOURNEY_MONTHLY_CAP_EUR` (par exemple `500`).
 - **Le prix plafond ne bride pas la qualité.** Il laisse passer les meilleurs
   modèles (Claude Opus, GPT-5.5). Il écarte seulement les variantes « pro » ou

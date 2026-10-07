@@ -228,6 +228,24 @@ const DANGER_CASES_2: Case[] = [
 
 const RESERVED_CASES: Case[] = [
   ['J’aimerais en parler de vive voix.', true, ''],
+  ['Je réserve ma réponse pour notre rencontre.', true, ''],
+  ['Mieux vaut en parler face à face.', true, ''],
+  ['Je passe mon tour sur celle-ci.', true, ''],
+  ['Pas maintenant, plus tard peut-être.', true, ''],
+  ['I’d rather talk about it in person.', true, ''],
+  // Un retrait décrit n'est pas une réserve : la lecture doit le voir.
+  [
+    'Je préfère ne pas répondre quand je suis en colère, j’attends d’être calme.',
+    false,
+    '',
+  ],
+  [
+    'Quand on me crie dessus, je préfère ne pas répondre et je sors marcher.',
+    false,
+    '',
+  ],
+  ['J’aime en parler de vive voix avec ma mère chaque dimanche.', false, ''],
+  ['Pas maintenant, je veux d’abord finir mes études.', false, ''],
   ['Je préfère ne pas y répondre.', true, ''],
   ['Je préfère pas répondre.', true, ''],
   ['Je préférerais ne pas répondre.', true, ''],

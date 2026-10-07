@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   Optional,
   forwardRef,
@@ -16,7 +17,7 @@ import {
 } from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
 import { PrismaService } from '../prisma/prisma.service';
-import { AiService } from '../ai/ai.service';
+import { AiService, SondeurModeration } from '../ai/ai.service';
 import { QUESTIONS_BANK } from './questions.bank';
 import { HarmonyQuestionPayload } from './harmony-question.types';
 import { buildDivergenceReport, collectRawAnswers } from '../matching/divergence.engine';
@@ -27,9 +28,10 @@ import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
 import { farewellText } from './farewell';
 import { JourneyInsightsService } from './journey-insights.service';
+import { CHAT_OPEN_WHERE, chatOpen } from './chat-access';
 import {
+  DangerCategory,
   dangerCategories,
-  hasDangerSignal,
   holdsSafety,
 } from './sondeur-insights';
 
@@ -114,7 +116,7 @@ export class JourneyService {
           { userAId: userId },
           { userBId: userId },
         ],
-        currentStep: { in: ['chat_libre', 'video', 'echange_contacts', 'termine'] },
+        AND: [CHAT_OPEN_WHERE],
       },
     });
 
@@ -231,6 +233,9 @@ export class JourneyService {
 
   /** Attente maximale d'une préparation en cours avant de répondre à l'app. */
   private static readonly SONDEUR_WAIT_MS = 25_000;
+  /** Au-delà, la réponse est enregistrée et la relecture de l'IA finit en arrière-plan. */
+  private static readonly MODERATION_WAIT_MS = 10_000;
+  private readonly logger = new Logger('Parcours');
 
   /** Génère les 21 questions (3 jours × 7) une seule fois par parcours — IA par défaut. */
   async ensureHarmonyQuestions(journeyId: string) {
@@ -370,10 +375,19 @@ export class JourneyService {
       include: { responses: true },
     });
 
-    // Réponse qui évoque un danger pour l'autre : cachée tant que l'équipe
-    // n'a pas tranché (jamais une confidence de violence subie).
-    const underReview =
-      (await this.insights?.pendingSafetyReview(journeyId)) ?? false;
+    // Réponse qui évoque un danger pour l'autre : cachée tant que l'équipe ne
+    // l'a pas rejetée (jamais une confidence de violence subie). Sans le
+    // service des lectures, le code seul décide, par prudence.
+    const safety = this.insights ? await this.insights.safety(journeyId) : null;
+    const hidden = (
+      authorId: string,
+      day: number,
+      question: string,
+      text: string,
+    ) =>
+      safety
+        ? safety.hidden(authorId, day, question, text)
+        : holdsSafety(dangerCategories(text));
     return this.pickCanonicalHarmonyQuestions(questions).map((q) => {
       const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
       const storedOptions = Array.isArray(q.options) ? (q.options as string[]) : null;
@@ -391,10 +405,14 @@ export class JourneyService {
             ? r
             : {
                 ...r,
-                responseText:
-                  underReview && holdsSafety(dangerCategories(r.responseText))
-                    ? 'Réponse en cours de vérification par l’équipe BOLIGO.'
-                    : maskProfanityForDisplay(r.responseText),
+                responseText: hidden(
+                  r.userId,
+                  q.day,
+                  q.questionText,
+                  r.responseText,
+                )
+                  ? 'Réponse en cours de vérification par l’équipe BOLIGO.'
+                  : maskProfanityForDisplay(r.responseText),
               },
         ),
         partnerAnswered: q.responses.some((r) => r.userId !== userId),
@@ -602,16 +620,50 @@ export class JourneyService {
     // Une réponse qui évoque un danger (violence subie ou exercée, menace,
     // contrôle, détresse, demande d'argent, minorité) est toujours
     // enregistrée : une victime peut citer ce qu'elle a subi, et la
-    // modération est prévenue à la lecture du jour. Refusée, elle
-    // disparaîtrait sans laisser de trace.
-    if (!hasDangerSignal(trimmed)) {
+    // modération est prévenue dès l'envoi. Refusée, elle disparaîtrait sans
+    // laisser de trace.
+    const codeDanger = dangerCategories(trimmed);
+    let aiDanger: DangerCategory[] = [];
+    let late: Promise<SondeurModeration> | null = null;
+    if (!codeDanger.length) {
       const local = moderateAnswerLocally(trimmed);
       if (!local.allowed) {
         throw new BadRequestException(local.reason);
       }
-      if (shouldRunAiModeration(trimmed)) {
-        const aiMod = await this.aiService.moderateSondeurAnswer(trimmed);
-        if (!aiMod.allowed) {
+      // Parcours payé : chaque réponse est relue par l'IA à l'envoi, qui
+      // repère aussi un danger que le code ne voit pas (seconde ligne de
+      // défense, sans attendre la fin de la journée de l'autre membre).
+      const paid = await this.aiService.journeyAiEligible(journey.id);
+      if (paid || shouldRunAiModeration(trimmed)) {
+        const pending = this.aiService.moderateSondeurAnswer(
+          trimmed,
+          journey.id,
+        );
+        const aiMod = await Promise.race([
+          pending,
+          new Promise<null>((resolve) => {
+            const timer = setTimeout(
+              () => resolve(null),
+              JourneyService.MODERATION_WAIT_MS,
+            );
+            timer.unref();
+          }),
+        ]);
+        if (aiMod === null) {
+          // Relecture lente : la réponse est enregistrée, le classement suit.
+          late = pending;
+        } else if (aiMod.danger?.length) {
+          aiDanger = aiMod.danger;
+        } else if (!aiMod.allowed) {
+          await this.insights?.reportAnswer(
+            journey.id,
+            question.day,
+            userId,
+            question.questionText,
+            trimmed,
+            ['autre'],
+            `Réponse refusée par la modération IA (${aiMod.category ?? 'motif non précisé'} : ${aiMod.reason ?? 'sans détail'}). Le membre a pu la reformuler. À vérifier.`,
+          );
           throw new BadRequestException(
             aiMod.reason || 'Réponse incompatible avec les règles BOLIGO.',
           );
@@ -619,6 +671,19 @@ export class JourneyService {
       }
     }
 
+    // Danger : signalé dès l'envoi, avant d'enregistrer la réponse (si le
+    // signalement échoue, la réponse n'est pas enregistrée non plus).
+    const danger = [...new Set([...codeDanger, ...aiDanger])];
+    if (danger.length) {
+      await this.insights?.reportAnswer(
+        journey.id,
+        question.day,
+        userId,
+        question.questionText,
+        trimmed,
+        danger,
+      );
+    }
     const response = await this.prisma.harmonyResponse.create({
       data: {
         questionId,
@@ -626,19 +691,25 @@ export class JourneyService {
         responseText: trimmed,
       },
     });
-    // Danger : signalé dès l'envoi, sans attendre la fin de la journée.
-    const danger = dangerCategories(trimmed);
-    if (danger.length) {
-      await this.insights
-        ?.reportAnswer(
-          journey.id,
-          question.day,
-          userId,
-          question.questionText,
-          trimmed,
-          danger,
+    if (late) {
+      void late
+        .then((m) =>
+          m.danger?.length
+            ? this.insights?.reportAnswer(
+                journey.id,
+                question.day,
+                userId,
+                question.questionText,
+                trimmed,
+                m.danger,
+              )
+            : undefined,
         )
-        .catch(() => undefined);
+        .catch((err: Error) =>
+          this.logger.error(
+            `Parcours ${journey.id} : classement tardif impossible (${err.message}).`,
+          ),
+        );
     }
 
     // Vérifier si toutes les questions sont répondues pour débloquer l'étape suivante
@@ -676,8 +747,7 @@ export class JourneyService {
       throw new ForbiddenException('Vous ne faites pas partie de ce parcours');
     }
 
-    const chatSteps = ['chat_libre', 'video', 'echange_contacts', 'termine'];
-    if (!chatSteps.includes(journey.currentStep)) {
+    if (!chatOpen(journey)) {
       throw new BadRequestException(
         'Les messages sont disponibles après la phase Harmonie (chat libre).',
       );
@@ -741,55 +811,66 @@ export class JourneyService {
   private async checkProgression(questionId: string) {
     const question = await this.prisma.harmonyQuestion.findUnique({
       where: { id: questionId },
+      select: { journeyId: true },
+    });
+    // Les DEUX doivent avoir répondu à TOUTES les questions pour débloquer.
+    if (question) await this.openChatIfReady(question.journeyId);
+  }
+
+  /**
+   * Seul chemin vers la messagerie : les deux membres ont répondu à tout le
+   * Sondeur et rien ne la retient (signalement, lecture de l'IA attendue).
+   * Sans le service des lectures, elle reste fermée. Renvoie vrai si la
+   * messagerie vient de s'ouvrir.
+   */
+  async openChatIfReady(journeyId: string): Promise<boolean> {
+    const journey = await this.prisma.journey.findUnique({
+      where: { id: journeyId },
       include: {
-        journey: {
-          include: {
-            userA: true,
-            userB: true,
-            harmonyQuestions: { include: { responses: true } },
-          },
+        userA: { select: { firstName: true } },
+        userB: { select: { firstName: true } },
+        harmonyQuestions: {
+          include: { responses: { select: { userId: true } } },
         },
       },
     });
-
-    if (!question) return;
-
-    const journey = question.journey;
-    const allQuestions = journey.harmonyQuestions;
-
-    if (journey.currentStep !== 'phase_harmonie') return;
-
-    // Vérifier si au moins un utilisateur a répondu à TOUTES les questions
-    // (on ne bloque pas le parcours si l'autre n'a pas encore répondu)
-    const userAHasAll = allQuestions.every(q =>
-      q.responses.some(r => r.userId === journey.userAId),
+    if (
+      !journey ||
+      journey.currentStep !== 'phase_harmonie' ||
+      journey.result !== 'en_cours'
+    )
+      return false;
+    const answeredAll = (memberId: string) =>
+      journey.harmonyQuestions.length > 0 &&
+      journey.harmonyQuestions.every((q) =>
+        q.responses.some((r) => r.userId === memberId),
+      );
+    if (!answeredAll(journey.userAId) || !answeredAll(journey.userBId))
+      return false;
+    // Une réponse évoque un danger et la modération n'a pas tranché : la
+    // messagerie attend (elle s'ouvrira à la prochaine visite, après la
+    // décision de l'équipe).
+    if (!this.insights || (await this.insights.holdsChat(journeyId)))
+      return false;
+    // Le chat libre dure 3 jours à partir de maintenant, pas du début du parcours.
+    const moved = await this.prisma.journey.updateMany({
+      where: {
+        id: journeyId,
+        currentStep: 'phase_harmonie',
+        result: 'en_cours',
+      },
+      data: { currentStep: 'chat_libre', stepStartDate: new Date() },
+    });
+    if (moved.count === 0) return false;
+    await this.notificationService.notifyVideoUnlock(
+      journey.userAId,
+      journey.userB.firstName,
     );
-    const userBHasAll = allQuestions.every(q =>
-      q.responses.some(r => r.userId === journey.userBId),
+    await this.notificationService.notifyVideoUnlock(
+      journey.userBId,
+      journey.userA.firstName,
     );
-
-    // Les DEUX doivent avoir répondu à TOUTES les questions pour débloquer
-    const isFinished = userAHasAll && userBHasAll;
-
-    if (isFinished) {
-      // Une réponse évoque un danger et la modération n'a pas tranché : la
-      // messagerie attend (elle s'ouvrira à la prochaine visite, après la
-      // décision de l'équipe).
-      if (await this.insights?.holdsChat(journey.id)) return;
-      // Le chat libre dure 3 jours à partir de maintenant, pas du début du parcours.
-      const moved = await this.prisma.journey.updateMany({
-        where: { id: journey.id, currentStep: 'phase_harmonie' },
-        data: {
-          currentStep: 'chat_libre',
-          stepStartDate: new Date(),
-        },
-      });
-      if (moved.count === 0) return;
-
-      // Notification des deux utilisateurs
-      await this.notificationService.notifyVideoUnlock(journey.userAId, journey.userB.firstName);
-      await this.notificationService.notifyVideoUnlock(journey.userBId, journey.userA.firstName);
-    }
+    return true;
   }
 
   // Auto-réparer les parcours et appliquer la Règle de Justice (anti-ghosting)
@@ -800,26 +881,13 @@ export class JourneyService {
         currentStep: { in: ['phase_harmonie', 'chat_libre'] },
         result: 'en_cours',
       },
-      include: { harmonyQuestions: { include: { responses: true } } },
+      select: { id: true, currentStep: true, stepStartDate: true },
     });
 
     for (const journey of journeys) {
       // phase_harmonie → chat_libre : les deux ont répondu à tout le Sondeur
-      if (journey.currentStep === 'phase_harmonie') {
-        const allQuestions = journey.harmonyQuestions;
-        const answeredAll = (memberId: string) =>
-          allQuestions.length > 0 && allQuestions.every((q) => q.responses.some((r) => r.userId === memberId));
-        if (
-          answeredAll(journey.userAId) &&
-          answeredAll(journey.userBId) &&
-          !(await this.insights?.holdsChat(journey.id))
-        ) {
-          await this.prisma.journey.updateMany({
-            where: { id: journey.id, currentStep: 'phase_harmonie' },
-            data: { currentStep: 'chat_libre', stepStartDate: new Date() },
-          });
-        }
-      }
+      if (journey.currentStep === 'phase_harmonie')
+        await this.openChatIfReady(journey.id);
 
       // chat_libre → video : après 3 jours
       if (journey.currentStep === 'chat_libre') {

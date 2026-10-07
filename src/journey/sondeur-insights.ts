@@ -200,7 +200,11 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
  * demande d'argent, minorité) : rien n'est commenté, la liberté de chacun
  * est rappelée et l'équipe vérifie avant l'ouverture de la messagerie.
  */
-export function safetyReading(day: number): SondeurReading {
+export function safetyReading(
+  day: number,
+  /** La messagerie attend la décision de l'équipe. */
+  held = true,
+): SondeurReading {
   return {
     day,
     source: 'regles',
@@ -210,11 +214,10 @@ export function safetyReading(day: number): SondeurReading {
         : `Journée ${day} terminée par vous deux.`,
     together: [],
     toDiscuss: [],
-    openers: [
-      'Quelle limite aimeriez-vous que l’autre connaisse dès maintenant ?',
-    ],
-    advice:
-      "Certaines réponses touchent à la sécurité de chacun : BOLIGO ne les commente pas, et l'équipe BOLIGO les vérifie avant l'ouverture de la messagerie. Vous restez libres de mettre fin au parcours à tout moment, sans vous justifier, et l'équipe BOLIGO reste joignable depuis votre profil.",
+    // Aucune piste de premier message après un signal : rien ne pousse à
+    // reprendre le sujet avec l'autre.
+    openers: [],
+    advice: `Certaines réponses touchent à la sécurité de chacun : BOLIGO ne les commente pas${held ? ", et l'équipe BOLIGO les vérifie avant l'ouverture de la messagerie" : ", et l'équipe BOLIGO en a été informée"}. Vous restez libres de mettre fin au parcours à tout moment, sans vous justifier, et l'équipe BOLIGO reste joignable depuis votre profil.`,
   };
 }
 
@@ -265,7 +268,12 @@ const HYPOTHESIS_END = String.raw`(?=\s(?:je\b|j')|[,.;:!?]|$)`;
 const HYPOTHESIS = new RegExp(
   [
     String.raw`\bs(?:i |')(?:jamais )?(?:il|elle|on|quelqu'un|un homme|une femme|mon (?:mari|conjoint|partenaire)|ma (?:femme|conjointe|partenaire))\b[^,.;:!?]*?${HYPOTHESIS_END}`,
-    String.raw`\b(?:ne )?(?:supporte|tolere|accepte|refuse)\w* (?:pas |jamais |plus )?(?:qu'|que )[^,.;:!?]*?${HYPOTHESIS_END}`,
+    // « plus » est exclu : « je ne supporte plus qu'il me frappe » décrit un fait.
+    String.raw`\b(?:ne )?(?:supporte|tolere|accepte|refuse)\w* (?:pas |jamais )?(?:qu'|que )[^,.;:!?]*?${HYPOTHESIS_END}`,
+    String.raw`\b(?:ne )?(?:veux|voudrais|veut)\w* (?:pas|jamais|plus) (?:d'un|d'une|de) (?:homme|femme|mari|epouse|personne|partenaire|conjointe?)\b[^,.;:!?]*?${HYPOTHESIS_END}`,
+    String.raw`\b(?:ne )?(?:veux|voudrais|veut|souhaite)\w* (?:pas|jamais) (?:qu'|que )[^,.;:!?]*?${HYPOTHESIS_END}`,
+    String.raw`\b(?:un|une) (?:homme|femme|mari|epouse|personne|conjointe?) qui\b[^.;!?]*(?:jamais|inacceptable|honte|interdit|perd|pas un homme|lache|je partirais|c'est non)[^.;!?]*`,
+    String.raw`(?:^|[.;:!?]\s*)(?:jamais )?(?:lever la main sur|donner (?:une|des) (?:gifles?|claques?|coups?)|recevoir (?:une|des) (?:gifles?|claques?|coups?)|mettre (?:une|des) (?:gifles?|claques?))[^.;!?]*(?:jamais|inacceptable|honte|interdit|lache|pas un homme|je partirais|je pars|c'est non)[^.;!?]*`,
     String.raw`\b(?:jamais je ne laisserai|je ne laisserai (?:jamais )?|(?:personne|nul) n'a le droit de|le jour ou (?:il|elle|on|quelqu'un) me\b|celui qui|celle qui|quiconque|quand on)[^,.;:!?]*?${HYPOTHESIS_END}`,
   ].join('|'),
   'g',
@@ -277,7 +285,21 @@ const HYPOTHESIS = new RegExp(
  * danger actuel. Retirée avant de chercher des faits.
  */
 const CHILDHOOD =
-  /\b(?:mon pere|ma mere|mes parents|mon oncle|ma tante|ma grand-mere|mon grand-pere|le maitre|la maitresse|a l'ecole)\b[^.;]{0,60}\b(?:me|m') ?(?:chicot|frapp|tap|batt|fouett|corrig)\w*/g;
+  /\b(?:mon pere|ma mere|mes parents|mon oncle|ma tante|ma grand-mere|mon grand-pere|le maitre|la maitresse|a l'ecole)\b[^.;]{0,60}\b(?:me|m') ?(?:a )?(?:chicot|frapp|tap|batt|fouett|corrig)\w*|\b(?:manman|papa) mwen\b[^.;]{0,60}\b(?:bat|kale|fwape|frape) (?:m|mwen)\b/g;
+/**
+ * Frères, sœurs, cousins, ou menaces reçues d'un parent : un souvenir
+ * d'enfance seulement si la phrase le dit (« quand j'étais petit », « à
+ * l'école », « quand on jouait »). Sinon, une menace d'un frère adulte reste
+ * un danger (violences dites « d'honneur »).
+ */
+const SIBLING_CHILDHOOD =
+  /[^.;!?]*\b(?:mon (?:grand |petit )?frere|ma (?:grande |petite )?soeur|mon cousin|ma cousine|mon pere|ma mere|mes parents)\b[^.;!?]{0,60}\b(?:me|m') ?(?:a )?(?:chicot|frapp|tap|batt|fouett|corrig|cogn|menac)\w*[^.;!?]*/g;
+const CHILD_MARKER =
+  /\b(?:quand j'etais (?:petite?|enfant|jeune|ado\w*)|(?:petite?|enfant|gamine?|ados?) |enfance|a l'ecole|au (?:primaire|college)|quand on (?:jouait|etait (?:petits|enfants|jeunes))|mauvaises? notes?|bulletin|rien de grave)/;
+
+/** Idiomes et tiers (« ce qui m'a frappé », « battu en finale », association contre les violences). */
+const IDIOMS =
+  /\b(?:ce qui|ce qu'il|ce que)(?: \w+)? m'a (?:le plus )?frapp\w*|m'a frapp\w* (?:de plein fouet|par (?:sa|son|ses|leur|leurs))|m'a tape sur l'epaule|m'(?:a|ont) battue? (?:au|aux|en finale|a plate couture)\b|ete battue? (?:au|aux|en finale)\b|beat me at (?:chess|cards|football|soccer|tennis|games?)\b|(?:movie|film|song|news|it|that|this) (?:really )?hit me hard\b|\b(?:association|benevole|militant\w*|sensibilis\w*)\b[^.]{0,40}violences?(?: \w+)?|violences?[^.]{0,40}\bchez (?:ma|mon|mes|une|des) (?:tante|soeur|mere|voisin\w*|ami\w*|cousin\w*|parents)\b/g;
 
 /** Catégorie d'un signal de danger, transmise à la modération. */
 export type DangerCategory =
@@ -291,9 +313,9 @@ export type DangerCategory =
   | 'mineur';
 
 /** Demande adressée à l'autre (« peux-tu m'envoyer », « fais-moi un dépôt »). */
-const REQUEST = String.raw`(?:\b(?:tu|vous) (?:peux|pouvez|pourrais|pourriez) (?:me\b|m')|\b(?:envoie|envoi|envoyez|prete|pretez|vire|virez|fais|faites|aide|aidez|depanne|depannez|achete|achetez|recharge|rechargez)[- ]moi\b|\bm'(?:envoyer|aider|avancer|depanner|preter)\b|\bme (?:preter|depanner|faire un|virer|transferer|avancer)\b|\bil me faut\b|\bsend me\b|\bcan you send\b)`;
+const REQUEST = String.raw`(?:\b(?:tu|vous) (?:peux|pouvez|pourrais|pourriez) (?:me\b|m')|\b(?:envoie|envoi|envoyez|prete|pretez|vire|virez|fais|faites|aide|aidez|depanne|depannez|achete|achetez|recharge|rechargez)[- ]moi\b|\b(?:tu|vous|toi)\b[^.?!]{0,25}\bm'(?:envoyer|aider|avancer|depanner|preter)\b|\bme (?:preter|depanner|faire un|virer|transferer|avancer)\b|\bil me faut\b|\bsend me\b|\bcan you send\b)`;
 /** Argent ou moyen de transfert : seul, il ne suffit pas (envois familiaux légitimes). */
-const MONEY = String.raw`(?:argent|\bsous\b|\d{3,}|\d+ ?(?:€|euros?|f\b|fcfa|cfa|francs?|dollars?|\$)|credit|virement|depot|transfert|western union|money ?gram|(?:orange|moov|mtn|airtel|mobile|wave) money|\bwave\b|m-?pesa|transcash|neosurf|coupons? pcs|cartes? (?:cadeau|google play|itunes|steam)|bitcoin|\bcash\b)`;
+const MONEY = String.raw`(?:argent|\bsous\b|\d{3,}|\d+ ?k\b|\d+ ?(?:€|euros?|f\b|fcfa|cfa|francs?|dollars?|\$)|credit|virement|depot|transfert|western union|money ?gram|(?:orange|moov|mtn|airtel|mobile|wave) money|\bwave\b|m-?pesa|transcash|neosurf|coupons? pcs|cartes? (?:cadeau|google play|itunes|steam)|bitcoin|\bcash\b)`;
 
 /** Années de naissance d'un mineur, calculées chaque jour. */
 function minorBirthYears(): string {
@@ -315,6 +337,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
           String.raw`(?:forc|oblig)\w* a (?:coucher|avoir des (?:rapports|relations)|faire l'amour)`,
           String.raw`\b(?:hit|hits|beat|beats|beaten|slapped|choked|raped|abused|punched|kicked|strangled|hurt) me\b|\b(?:used to|would) (?:hit|beat|slap|choke|punch|kick|strangle) me\b|\bi was (?:raped|abused|beaten|assaulted)\b`,
           String.raw`\b(?:bat|bate|fwape|frape|kale|kraze) mwen\b`,
+          String.raw`\b(?:il|elle|on|mon \w+|ma \w+) (?:me )?(?:a |avait )?lev\w* la main sur moi`,
         ].join('|'),
       ),
     ],
@@ -324,7 +347,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
         [
           // « je la frappe », « j'ai levé la main », « une bonne correction ».
           String.raw`\bje (?:l'|la |le |lui )(?:ai )?(?:deja )?(?:frappe|gifle|cogne|tabasse|tape|corrige)e?\b|\bj'ai (?:deja )?(?:frappe|gifle|cogne|tabasse|bouscule)|\bje (?:peux|pourrais|risque de) (?:frapper|gifler|cogner|taper)|\bje cogne\b|casse la gueule`,
-          String.raw`lev\w* la main sur|m'arriv\w* de lever la main|j'ai (?:deja )?leve la main`,
+          String.raw`m'arriv\w* de lever la main|j'ai (?:deja )?leve la main|\bje (?:leve|leverai|pourrais lever) la main sur`,
           String.raw`une bonne (?:gifle|claque|correction|raclee|fessee)|(?:merite|meritent|donner|recevoir) une (?:bonne )?correction|corrig\w* (?:sa|ma|leur) (?:femme|epouse|mari)`,
         ].join('|'),
       ),
@@ -345,7 +368,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
       'controle',
       new RegExp(
         [
-          String.raw`(?:fouill|control|surveill|epluch)(?:e|es|ent|ait|ais|aient|era|erai)\b (?:tous |toutes )?(?:mon|son|ton|le|sa|ses|mes) (?:telephone|portable|messages|sms|conversations)|(?:verifi(?:e|es|ent|ais|ait|aient|erai)|regard(?:e|ais|ait)|lis|lit|lisait|lisais|consult(?:e|ais|ait))\b (?:tous |toutes )?(?:le (?:telephone|portable)|les messages|mes messages|ses messages|mes sms) ?(?:de|d')?|(?:exig|impos)\w* (?:mes|ses|tes|les|ma|sa|la) (?:codes?|mots de passe|localisation|geolocalisation|position)|donner (?:mon|ses|mes|son|sa|ma) (?:code|mots? de passe)|me geolocalis|me suivait partout`,
+          String.raw`(?:fouill|control|surveill|epluch)(?:e|es|ent|ait|ais|aient|era|erai)\b (?:tous |toutes )?(?:mon|son|ton|le|sa|ses|mes) (?:telephone|portable|messages|sms|conversations)|(?:verifi(?:e|es|ent|ais|ait|aient|erai)|regard(?:e|ais|ait)|lis|lit|lisait|lisais|consult(?:e|ais|ait))\b (?:tous |toutes )?(?:le (?:telephone|portable)|les messages de (?:ma|sa|mon|son) (?:femme|mari|copine|copain|conjoint\w*|epou\w*|partenaire)|mes messages|ses messages|mes sms) ?(?:de|d')?|(?:exig|impos)\w* (?:mes|ses|tes|les|ma|sa|la) (?:codes?|mots de passe|localisation|geolocalisation|position)|donner (?:mon|ses|mes|son|sa|ma) (?:code|mots? de passe)|me geolocalis|me suivait partout`,
           String.raw`interdi\w* de (?:voir|frequenter|parler a|sortir avec) (?:mes|ses|tes) \w+|(?:m'|l')empech\w* de (?:voir|travailler|sortir)|(?:sortir|sortira|travailler|travaillera|voir|depenser|depensera)\b[^,.;]{0,30} sans (?:ma|mon|sa|son) (?:permission|autorisation)|(?:il|elle|on) (?:m'|l')enferm|sequestr|confisqu\w* (?:mon|son|mes|ses) (?:passeport|papiers|carte|telephone|salaire)|(?:gard|pren|pris)\w* (?:tout |toute )?(?:mon|son|ma|sa) (?:salaire|argent|paie|paye)|m'appel\w* (?:\w+ )?fois par jour|\b(?:check(?:ed|s)?|read|went through) my (?:phone|messages|texts)\b`,
         ].join('|'),
       ),
@@ -365,15 +388,58 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
     [
       'mineur',
       new RegExp(
-        String.raw`\bj'?ai (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ?ans?\b(?! (?:d'|de |depuis|que|quand))|\bje suis (?:mineure?|collegien(?:ne)?|lyceen(?:ne)?)\b|\bje suis au (?:college|lycee)\b(?! (?:\w+ )?(?:comme|en tant que))|\bje suis en (?:seconde|2nde|premiere|1ere|terminale|troisieme|3e|3eme|quatrieme|4e)\b|\bnee? en (?:${minorBirthYears()})\b|\bi'?m (?:1[0-7]|thirteen|fourteen|fifteen|sixteen|seventeen)\b|\b1[0-7] ?(?:yo|y\/o|years old)\b`,
+        String.raw`\bj'?ai (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ?ans?\b(?! (?:d'|de |depuis|que|quand))|\bje suis (?:mineure?|collegien(?:ne)?|lyceen(?:ne)?)\b|\bje suis au (?:college|lycee)\b(?! (?:\w+ )?(?:comme|en tant que))|\bje suis en (?:seconde|2nde|premiere|1ere|terminale|troisieme|3e|3eme|quatrieme|4e)\b(?! (?:position|ligne|place|main|rang|annee de (?:master|licence|fac|medecine)))|\bnee? en (?:${minorBirthYears()})\b|\bi'?m (?:1[0-7]|thirteen|fourteen|fifteen|sixteen|seventeen)\b|\b1[0-7] ?(?:yo|y\/o|years old)\b`,
       ),
     ],
   ];
 }
 
+/**
+ * Formulations complémentaires (gestes, menaces, contrôle, détresse, argent,
+ * âge), en français courant, registre africain, SMS, anglais et créole.
+ */
+const EXTRA: Array<[DangerCategory, RegExp]> = [
+  [
+    'violence_subie',
+    /\b(?:me|m') ?(?:serr\w* le cou|crach\w* dessus|tir\w* (?:par )?les cheveux|humili\w*|rabaiss\w*)|\bm'a (?:casse|brise|fracture) (?:le|la|les|mon|ma) \w+|aux urgences a cause de (?:lui|elle)|\b(?:forc|oblig)\w* a (?:des choses|faire des choses)[^.]{0,30}(?:au lit|sexuel)|\b(?:il|elle|mon \w+|ma \w+) m'(?:a|avait) (?:poussee?|bousculee?|projetee?|jetee?|plaquee?) (?:contre|dans|par terre|au sol|a terre)|\bm'(?:a|avait) (?:etranglee?|etouffee?|mordue?|brulee?)\b|\bme (?:tap|frapp|cogn)\w* (?:tt|tout) le (?:tps|temps)|\bme tape (?:tt|tout|souvent|dessus)|\b(?:qu'il|qu'elle|il|elle) me (?:batte|frappe|cogne|gifle)\b|\bdragged me\b|put me in (?:the )?hospital|\b(?:pushed|shoved|threw) me (?:against|down|into)|\b(?:kale|bat|fwape|fouté|foute) (?:m|mwen)\b|\bfoute mwen kou\b/,
+  ],
+  [
+    'violence_exercee',
+    /\bje (?:la|le|lui) (?:remets|remettrai) a sa place avec une (?:claque|gifle)|\bje (?:lui|la|le) (?:mets|met|mettrai|donne|donnerai|colle|balance) une (?:gifle|claque|baffe|tarte|beigne|raclee)|m'(?:est|arrive)\w*(?: deja)?(?: arrive)? de (?:la|le|lui|les) (?:bousculer|frapper|gifler|pousser|secouer|taper|cogner)|\bon (?:la|le) chicott?e\b|(?:lui|leur) ai mis une (?:raclee|claque|gifle|correction)|\b(?:je (?:vais|vas)|j'?vais) (?:la|le|te) (?:taper|frapper|cogner)\b(?! la discute)|\bi (?:slapped|hit|punched|beat|pushed|shoved|choked) (?:her|him|my (?:wife|girlfriend|husband|boyfriend|partner))\b|ca se dresse/,
+  ],
+  [
+    'menace',
+    /\b(?:a )?menac\w* de (?:me |te |la |le |nous )?(?:tuer|publier|diffuser|partir avec|prendre (?:les|mes|nos) enfants|defigurer|bruler|frapper)|\bj'?te tue\b|\bje (?:brule|bruler(?:ai|ais)) ta (?:maison|voiture)|plus jamais (?:mes|tes|les|ses|vos) enfants|\b(?:ne )?(?:reverra|reverras|reverrez|verra|verras|verrez) (?:plus |jamais )+(?:tes|vos|les|ses|mes) enfants|\b(?:il|elle|qu'il|qu'elle) (?:me|nous) tuer(?:a|ait|ai|ont)\b|(?:publier|diffuser|envoyer|montrer) (?:mes|tes|ses|des|nos) (?:photos|videos) (?:intimes|nues?)|\b(?:balancer|jeter) de l'acide|tu vas voir ce qui va t'arriver|i'?d regret leaving|\bi (?:will|'ll) kill (?:you|her|him)\b|ke tchouye mwen|i ke tchouye/,
+  ],
+  [
+    'controle',
+    /\bpas le droit de (?:travailler|sortir|voir|telephoner)|applis? (?:espion|de surveillance)|exig\w* que je (?:lui )?(?:envoie|donne|montre) (?:ma|mes) (?:position|localisation|codes?|messages)|coup\w* ma carte (?:bancaire)?|(?:pris|prend|garde|gardait|cache|cachait|confisque)\w* (?:mon|son|mes|ses) (?:passeport|papiers|carte d'identite|titre de sejour)|\bdevra (?:me|lui) demander (?:la |l')?(?:permission|autorisation)|demander (?:la |l')?(?:permission|autorisation) (?:pour|de|avant de) (?:sortir|travailler|voir (?:ses|mes) (?:amie?s|parents|proches)|depenser)|devais lui demander (?:de l'argent|pour (?:acheter|sortir|manger|depenser))|control\w* (?:chaque centime|tout mon argent|mes depenses|mon salaire|mes comptes)|(?:verifi(?:e|es|ent|ais|ait|aient|erai)|fouill\w*|surveill\w*) (?:tous les jours )?(?:son|ton) (?:telephone|portable|tel)|wouldn'?t let me (?:see|go|work)|took my (?:passport|wages|phone|papers)|\btrack(?:ed|s)? my (?:location|phone)|\bmonitor(?:ed|s)? my (?:phone|messages)|\bfouill\w* mon tel\b/,
+  ],
+  [
+    'detresse',
+    /\bme pendre\b|\bpense\w* (?:souvent |parfois )?(?:a la mort|a tout arreter)|si je n'etais plus la|si je n'existais (?:plus|pas)|(?:mieux|plus simple) sans moi|ne plus me reveiller|ne vaut plus rien|cachets?\b[^.]{0,30}\b(?:pour|afin de) (?:ne plus me reveiller|mourir|en finir|dormir pour toujours)|better off without me|\banvi mouri\b|\b(?:man|mwen) le mo\b/,
+  ],
+  [
+    'argent',
+    /(?:envoie|envoi|envoyer|send)[- ]?(?:moi|me)?[^.?!]{0,25}\b(?:l'?wari|les dos?)\b|gift ?cards?|\bmets[- ]moi du credit\b|\bvir(?:e)? moi \d/,
+  ],
+  [
+    'mineur',
+    /\bj'aurai (?:18|dix-huit) ans\b|\bje suis encore au (?:college|lycee)\b|\bjsuis? en (?:3|4|2nde|seconde|1ere|terminale)|\b(?:9th|10th|11th) grade\b/,
+  ],
+];
+
+/**
+ * Accord exprimé par celui qui écrit (« ma copine lit mes messages si elle
+ * veut, je n'ai rien à cacher », « mon mari gère mon salaire, ça me
+ * convient ») : un modèle de couple choisi n'est pas un contrôle.
+ */
+const CONSENTED =
+  /[^.;!?]*(?:si (?:il|elle) (?:le )?veut|je n'ai rien a cacher|ca me (?:convient|va)(?! pas)|d'un commun accord|on l'a decide ensemble|c'est notre accord|par choix)[^.;!?]*/g;
+
 /** Menaces avec condition (« si tu me quittes, je te tue ») : sur le texte entier. */
 const THREAT =
-  /\bje (?:te|vous|le|la|l') ?(?:tue|tuerai|tuerais)\b|\bje vais (?:te |vous |le |la |l')?tuer|\b(?:va|vas|vont) (?:le |me le |me )regretter\b|\b(?:va|vas|vont) me le payer\b/;
+  /\bje (?:te|vous|le|la|l') ?(?:tue|tuerai|tuerais)\b|\bje vais (?:te |vous |le |la |l')?tuer|(?:quitt|\bpar(?:s|t|tir|tais)\b|tromp|\bment|respect|desobei)[^.?!]{0,60}\b(?:va|vas|vont) (?:le |me le |me )regretter\b|\b(?:va|vas|vont) (?:le |me le |me )regretter\b[^.?!]{0,60}(?:quitt|\bpar(?:s|t|tir|tais)\b|tromp|\bment|respect|desobei)|\b(?:va|vas|vont) me le payer\b/;
 
 /**
  * Signaux de danger dans une réponse libre : violence subie, exercée ou
@@ -382,10 +448,20 @@ const THREAT =
  */
 export function dangerCategories(text: string): DangerCategory[] {
   const p = plain(text);
-  const facts = p.replace(HYPOTHESIS, ' ').replace(CHILDHOOD, ' ');
+  const facts = p
+    .replace(HYPOTHESIS, ' ')
+    .replace(CHILDHOOD, ' ')
+    .replace(SIBLING_CHILDHOOD, (s) => (CHILD_MARKER.test(s) ? ' ' : s))
+    .replace(IDIOMS, ' ');
+  // Le contrôle se lit sans les accords exprimés par celui qui écrit.
+  const factsFor = (category: DangerCategory) =>
+    category === 'controle' ? facts.replace(CONSENTED, ' ') : facts;
   const found = dangerFacts()
-    .filter(([, re]) => re.test(facts))
+    .filter(([category, re]) => re.test(factsFor(category)))
     .map(([category]) => category);
+  for (const [category, re] of EXTRA)
+    if (re.test(factsFor(category)) && !found.includes(category))
+      found.push(category);
   // Une violence subie ou exercée précise rend inutile la catégorie ambiguë.
   if (
     found.includes('violence') &&
@@ -409,16 +485,33 @@ export function hasDangerSignal(text: string): boolean {
 }
 const RESERVED_MARK = '[réservé à la rencontre]';
 
+/** Autres façons courtes de garder une réponse pour la rencontre. */
+const RESERVED_MORE =
+  /^\s*(?:je réserve ma réponse[^.!?]*|je (?:la )?passe(?: mon tour)?(?: sur celle-ci)?|pas maintenant(?:, plus tard)?(?: peut-être)?|next|i['’]?d rather (?:talk about it|tell you) in person|mieux vaut en parler (?:de vive voix|face à face|en personne))\s*[.!]?\s*$/iu;
+/**
+ * Une réponse qui décrit quelque chose (« je préfère ne pas répondre quand je
+ * suis en colère, j'attends d'être calme ») n'est pas une réserve : c'est
+ * souvent un retrait, que la lecture doit voir.
+ */
+const RESERVED_CONTENT =
+  /(?<!\p{L})(?:quand(?! (?:on|nous) (?:se verra|nous verrons|se rencontrera))|lorsque|parce que|et je|j['’]attends|je sors|avec (?:ma|mon|mes)|chaque|si (?:on|il|elle|tu|vous))(?!\p{L})/iu;
+
 export function isReservedAnswer(answer: string): boolean {
-  return answer.trim().length <= 120 && RESERVED.test(answer);
+  const t = answer.trim();
+  return (
+    t.length <= 80 &&
+    (RESERVED.test(t) || RESERVED_MORE.test(t)) &&
+    !RESERVED_CONTENT.test(t)
+  );
 }
 
 function commonRules(names: [string, string]): string {
   return `- Appuie-toi uniquement sur ce qu'ils ont écrit : n'invente rien et ne recopie pas une réponse entière.
 - Chaque accord et chaque point à explorer porte "n" (le numéro de la question) et deux extraits recopiés mot pour mot, de 2 à 8 mots (un seul mot seulement si la réponse en compte trois au plus) : "a" dans la réponse de ${names[0]}, "b" dans celle de ${names[1]}. Un point dont un extrait ne figure pas dans la réponse sera supprimé.
 - Les extraits restent dans la langue où ils sont écrits, sans traduction ; ta lecture est toujours en français.
+- Rapporte, n'affirme pas : une phrase sur l'un de vous ou sur vous deux contient un verbe qui rapporte ce qui est écrit (« Inès écrit… », « l'un décrit…, l'autre parle de… », « vous évoquez tous deux… »), jamais « Karim fuit le conflit » ni « vous éprouvez de la frustration ».
 - Une réponse vide ou évasive n'est ni un accord ni un désaccord. Une réponse de moins de quatre mots ne sert jamais à un accord ; deux réponses courtes qui emploient le même mot vont dans les points à explorer (« même mot, sens à préciser »).
-- Une réponse ${RESERVED_MARK} ne sert jamais d'extrait.
+- Une réponse ${RESERVED_MARK} ne sert jamais d'extrait et n'est jamais interprétée ; lève seulement l'alerte si elle évoque un danger.
 - Aucun jugement, aucun diagnostic, aucune étiquette psychologique, aucune prédiction sur l'avenir du couple, aucun score.
 - Aucun conseil de poursuivre ou d'arrêter la relation, aucune promesse (« vous trouverez »), aucune mise en garde sur l'avenir : la décision leur appartient.
 - Sur un point non négociable (${NON_NEGOTIABLE_TOPICS}), jamais de compromis, de terrain d'entente ni de « vivre avec » : décris la condition et l'écart tels quels.
@@ -454,10 +547,12 @@ export function itemsBlock(
 ): string {
   // Réponses entre ‹ › (jamais présents dans une réponse) : une réponse ne
   // peut pas fermer la citation pour glisser une consigne.
+  // Une réserve reste visible : jamais interprétée, mais l'IA peut y voir un
+  // danger (« je préfère ne pas répondre. Il me serrait le cou… »).
+  const text = (t: string) =>
+    `‹ ${t.replace(/[‹›]/g, "'").replace(/\s+/g, ' ').trim()} ›`;
   const quote = (t: string) =>
-    isReservedAnswer(t)
-      ? RESERVED_MARK
-      : `‹ ${t.replace(/[‹›]/g, "'").replace(/\s+/g, ' ').trim()} ›`;
+    isReservedAnswer(t) ? `${RESERVED_MARK} ${text(t)}` : text(t);
   const [a, b] = promptNames(names);
   return items
     .map(
@@ -664,6 +759,51 @@ function attributesUnwrittenFeeling(
   );
 }
 
+/**
+ * Verbes qui rapportent ce qui est écrit (« Inès écrit… », « l'un décrit… »,
+ * « vous employez tous deux le mot… ») : une phrase sur l'un d'eux ou sur
+ * eux deux en contient un, sinon elle affirme au lieu de rapporter
+ * (« Karim fuit le conflit », « vous éprouvez de la frustration »).
+ */
+const REPORTING =
+  /(?<!\p{L})(?:écri\p{L}*|di(?:t|tes|sent)|répond\p{L}*|décri\p{L}*|évoqu\p{L}*|parl\p{L}*|mentionn\p{L}*|cit(?:e|ez|ent)|emplo[iy]\p{L}*|utilis\p{L}*|nomm\p{L}*|pos(?:e|ez|ent)|précis\p{L}*|voi(?:t|ent|yez)|gard\p{L}*|associ\p{L}*|choisi\p{L}*|indiqu\p{L}*|exprim\p{L}*|raconte\p{L}*|insist\p{L}*|souhaite\p{L}*)(?!\p{L})/iu;
+/** Sujets qui exigent un verbe de rapport. */
+const READING_SUBJECT = String.raw`l['’]une?(?: de vous| d['’]entre vous)?|l['’]autre|vous deux|(?:tous|toutes) (?:les )?deux|chacun(?:e)? de vous`;
+/** Sujet non négociable : aucune proposition d'arrangement, dans aucune phrase. */
+const NN_TOPIC =
+  /(?<!\p{L})(?:foi|relig\p{L}*|conver\p{L}*|pri(?:e|ère)s?|enfants?|polygam\p{L}*|coépouse\p{L}*|pays|fidélité|intimité|alcool|halal|casher|téléphone)(?!\p{L})/iu;
+const PROPOSAL =
+  /(?<!\p{L})(?:pourr\p{L}*|solution\p{L}*|évolu\p{L}*|altern\p{L}*|essai|du sien|coexist\p{L}*|laisser de côté|ouverture|progressi\p{L}*|à mi-chemin|terrain\p{L}*|arrangement\p{L}*)(?!\p{L})/iu;
+const MORE_EVALUATION =
+  /auspices|proches? sur l['’]essentiel|point de friction|pomme de discorde/iu;
+
+/**
+ * Une phrase de la lecture affirme-t-elle au lieu de rapporter (sujet sans
+ * verbe de rapport), ou propose-t-elle un arrangement sur un point non
+ * négociable ?
+ */
+function assertsInsteadOfReporting(
+  text: string,
+  names: [string, string],
+): boolean {
+  const esc = (n: string) => n.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const subject = new RegExp(
+    `(?<!\\p{L})(?:${names
+      .filter((n) => n.trim())
+      .map(esc)
+      .join('|')}|${READING_SUBJECT})(?!\\p{L})`,
+    'iu',
+  );
+  return text
+    .split(/(?<=[.!?;:])\s+/)
+    .some(
+      (sentence) =>
+        !REPORTING.test(sentence) &&
+        (subject.test(sentence) ||
+          (NN_TOPIC.test(sentence) && PROPOSAL.test(sentence))),
+    );
+}
+
 export function readingText(
   value: unknown,
   max: number,
@@ -675,6 +815,9 @@ export function readingText(
   const shown = promptNames(names);
   return text &&
     !EVALUATION.test(text) &&
+    !MORE_EVALUATION.test(text) &&
+    !assertsInsteadOfReporting(text, names) &&
+    !assertsInsteadOfReporting(text, shown) &&
     !COMPROMISE.test(text) &&
     !LABEL.test(text) &&
     !hasReadingInterpretation(text) &&
@@ -721,18 +864,38 @@ const FUNCTION_WORDS = new Set(
 const NEGATION =
   /(?:^|\s)(?:ne|n'\S*|pas|jamais|plus|sans|aucun\S*|not|never|no|don't|won't)(?=\s|$)/;
 
-/** L'extrait coupe-t-il une négation écrite juste avant lui (« je ne veux pas | vivre avec… ») ? */
-function dropsNegation(excerpt: string, answer: string): boolean {
+/** Refus qui suit et renverse ce qui précède (pas une nuance : « pas avant trente ans »). */
+const REVERSAL =
+  /^(?:jamais(?! sans)|non\b|pas question|hors de question|surtout pas|certainement pas|pas du tout|pas pour moi|(?:je )?n'y crois pas|j'y crois pas|très peu pour moi|no way|never|not for me)/;
+
+/** L'extrait coupe-t-il une négation écrite juste avant lui (« je ne veux pas | vivre avec… »), ou après lui pour un accord ? */
+function dropsNegation(
+  excerpt: string,
+  answer: string,
+  /** Accord : la négation qui suit l'extrait compte aussi (« vivre avec ma belle-famille, jamais de la vie »). */
+  after = false,
+): boolean {
   const e = comparable(excerpt);
   const a = ` ${comparable(answer)} `;
   const at = a.indexOf(` ${e} `);
   if (at < 0) return false;
   const before = a.slice(0, at).trim().split(' ').slice(-4).join(' ');
-  return NEGATION.test(before) && !NEGATION.test(e);
+  // Après l'extrait : une négation qui le renverse aussitôt (« …, jamais de
+  // la vie », « … ? je n'y crois pas »), pas une nuance (« oui, mais pas
+  // tout de suite »).
+  const next = a
+    .slice(at + e.length + 2)
+    .trim()
+    .split(' ')
+    .slice(0, 5)
+    .join(' ');
+  const reversed =
+    after && !/(?:^|\s)(?:oui|yes)(?=\s|$)/.test(e) && REVERSAL.test(next);
+  return (NEGATION.test(before) || reversed) && !NEGATION.test(e);
 }
 
 /** L'extrait figure-t-il mot pour mot dans la réponse (réservée : jamais) ? */
-function quoted(excerpt: unknown, answer: string): boolean {
+function quoted(excerpt: unknown, answer: string, strict = false): boolean {
   if (typeof excerpt !== 'string' || isReservedAnswer(answer)) return false;
   const e = comparable(excerpt);
   const a = comparable(answer);
@@ -749,7 +912,7 @@ function quoted(excerpt: unknown, answer: string): boolean {
   return (
     ` ${a} `.includes(` ${e} `) &&
     (shortAnswer || (words >= 2 && meaningful)) &&
-    !dropsNegation(excerpt, answer)
+    !dropsNegation(excerpt, answer, strict)
   );
 }
 
@@ -772,7 +935,10 @@ function anchoredPoints(
     const n = Number(o.n);
     const item = Number.isInteger(n) ? items[n - 1] : undefined;
     if (!item) continue;
-    if (!quoted(o.a, item.answers[0]) || !quoted(o.b, item.answers[1]))
+    if (
+      !quoted(o.a, item.answers[0], agreement) ||
+      !quoted(o.b, item.answers[1], agreement)
+    )
       continue;
     const words = (t: string) =>
       comparable(t).split(' ').filter(Boolean).length;
@@ -942,6 +1108,8 @@ export function fidelityPrompt(
   items: AnsweredItem[],
   members: [string, string],
   reading: SondeurReading,
+  /** Analyse des entretiens, que le rédacteur a pu utiliser : un fait qui en vient n'est pas une invention. */
+  analysis?: string,
 ): { system: string; prompt: string } {
   const names = promptNames(members);
   const extracts = (q?: [string, string]) =>
@@ -959,7 +1127,7 @@ export function fidelityPrompt(
   ];
   const prompt = `RÉPONSES DES DEUX MEMBRES :
 ${itemsBlock(items, names)}
-
+${analysisBlock(analysis)}
 LECTURE À VÉRIFIER :
 ${lines.map((l, i) => `${i + 1}. ${l}`).join('\n')}
 
@@ -977,7 +1145,7 @@ Refuse la lecture si une seule ligne :
 11. conseille de poursuivre ou d'arrêter la relation, ou fait une promesse sur l'avenir ;
 12. prête à l'un d'eux, à eux deux ou à « l'un de vous » une émotion, un besoin ou un trait de caractère qui n'a pas été écrit.
 Une piste formulée comme une question posée aux deux (« qu'est-ce qui… ? ») est acceptable si elle part des réponses.
-Si une réponse évoque une violence (subie ou exercée), une menace, un contrôle, une détresse ou des idées de mort, une demande d'argent ou un âge de moins de 18 ans, refuse la lecture et ajoute "alerte" : "violence_subie", "violence_exercee", "menace", "controle", "detresse", "argent" ou "mineur", et "membre" : "a" (${names[0]}) ou "b" (${names[1]}).
+Si une réponse évoque une violence (subie ou exercée), une menace, un contrôle, une détresse ou des idées de mort, une demande d'argent ou un âge de moins de 18 ans, refuse la lecture et ajoute "alerte" : "violence_subie", "violence_exercee", "menace", "controle", "detresse", "argent" ou "mineur" (une liste si plusieurs), et "membre" : "a" (${names[0]}) ou "b" (${names[1]}). Une réponse ${RESERVED_MARK} suivie d'un texte n'est jamais interprétée, mais elle compte pour l'alerte.
 
 Retourne UNIQUEMENT ce JSON : {"fidele": true} ou {"fidele": false, "raisons": ["..."], "alerte": "aucune", "membre": null}`;
   return { system: FIDELITY_SYSTEM, prompt };
@@ -998,36 +1166,58 @@ export const ALERT_CATEGORIES = [
 export type AlertCategory = (typeof ALERT_CATEGORIES)[number];
 
 export interface ReadingAlert {
-  category: AlertCategory;
+  /** Une ou plusieurs catégories (« menace » et « contrôle » ensemble). */
+  categories: AlertCategory[];
   /** 0 : premier membre, 1 : second, null : non précisé. */
   member: 0 | 1 | null;
 }
 
-/**
- * Alerte levée par le modèle (seconde ligne de défense après les signaux de
- * danger du code), ou null. Une alerte inconnue n'en est pas une.
- */
-export function parseAlert(raw: string | null): ReadingAlert | null {
-  if (!raw) return null;
-  const o = parseJsonObject(raw);
-  const value: unknown = Array.isArray(o?.alerte) ? o?.alerte[0] : o?.alerte;
-  if (value === undefined || value === null || value === false) return null;
-  // Libellé tolérant : accents, casse, espaces (« Détresse », « violence subie »).
-  const label = String(value as string)
+/** Libellé tolérant : accents, casse, espaces (« Détresse », « violence subie »). */
+function alertLabel(value: unknown): string {
+  return String(value as string)
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
     .toLowerCase()
     .trim()
     .replace(/[\s-]+/g, '_');
-  if (NO_ALERT.has(label)) return null;
-  // Alerte inconnue : on reste prudent, la modération vérifie.
-  const category = (
-    (ALERT_CATEGORIES as readonly string[]).includes(label) ? label : 'autre'
-  ) as AlertCategory;
-  const m = String((o?.membre as string | null | undefined) ?? '')
+}
+
+/**
+ * Alerte levée par le modèle (seconde ligne de défense après les signaux de
+ * danger du code), ou null. La clé est lue sans tenir compte de la casse ni
+ * de la langue (« alerte », « Alerte », « alert ») ; toutes les catégories
+ * sont gardées. Une catégorie inconnue devient « autre » : la modération
+ * vérifie.
+ */
+export function parseAlert(raw: string | null): ReadingAlert | null {
+  if (!raw) return null;
+  const o = parseJsonObject(raw);
+  if (!o) return null;
+  const key = Object.keys(o).find((k) => /^alert(?:e|es|s)?$/i.test(k.trim()));
+  const value: unknown = key ? o[key] : undefined;
+  const values = (Array.isArray(value) ? value : [value])
+    .filter((v) => v !== undefined && v !== null && v !== false)
+    .map(alertLabel)
+    .filter((label) => !NO_ALERT.has(label));
+  if (values.length === 0) return null;
+  const categories = [
+    ...new Set(
+      values.map((label) =>
+        (ALERT_CATEGORIES as readonly string[]).includes(label)
+          ? (label as AlertCategory)
+          : 'autre',
+      ),
+    ),
+  ];
+  const memberKey = Object.keys(o).find((k) =>
+    /^(?:membre|member)$/i.test(k.trim()),
+  );
+  const m = String(
+    (memberKey ? (o[memberKey] as string | null | undefined) : '') ?? '',
+  )
     .trim()
     .toLowerCase();
-  return { category, member: m === 'a' ? 0 : m === 'b' ? 1 : null };
+  return { categories, member: m === 'a' ? 0 : m === 'b' ? 1 : null };
 }
 
 const NO_ALERT = new Set([

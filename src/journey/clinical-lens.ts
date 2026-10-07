@@ -47,7 +47,7 @@ CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
 - Même réponse des deux côtés : vérifie que les mots veulent dire la même chose ; demande une scène ordinaire où cette réponse se voit.
 - Même réponse qui pose un risque (deux silences, deux réconciliations lentes) : exception tirée de la famille ou des proches, ou signal de réparation.
 - L'un veut parler tout de suite, l'autre s'éloigne : demande à chacun ce qu'il espère que l'autre comprenne à ce moment-là.
-- Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; demande où chacun place sa limite de sécurité et ce qu'il ferait pour se protéger si elle était franchie. Contrôle : téléphone ou localisation surveillés, argent confisqué ou attribué, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
+- Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; demande où chacun place sa limite et d'où elle lui vient ; jamais ce qu'il ferait pour se protéger ni où il irait (un plan de mise en sécurité reste confidentiel, et l'autre lira la réponse). Contrôle : téléphone ou localisation surveillés, argent confisqué ou accès refusé à ses propres ressources, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
 - Rôles, autorité, argent, famille élargie : demande comment chacun vivrait la place qu'il occuperait (décider, suivre, dépendre, être aidé), jamais quel modèle est le bon ; ne présuppose ni l'égalité ni la hiérarchie.
 
 CE QUE TU CHERCHES : pas la faille, mais la question que les deux membres ne se seraient jamais posée eux-mêmes : l'attente implicite, le besoin derrière la position, l'héritage familial, le scénario jamais imaginé, deux réponses identiques qui cachent des sens différents.
@@ -366,10 +366,20 @@ export const LENS_EXAMPLES = [
  * ouverte, courte, sans citation des réponses, sans jargon, interprétation
  * ni demande intrusive, et qui ne recopie pas un exemple de la consigne.
  */
+/**
+ * Question de l'IA qui met en scène un geste violent, un contrôle ou une
+ * blessure (« que ressentiriez-vous s'il vous giflait une seule fois ? »,
+ * « …s'il lisait vos messages par amour ? ») : jamais posée. Les gabarits de
+ * limite de l'équipe, relus par des humains, ne passent pas par ce filtre.
+ */
+const STAGED_HARM =
+  /(?<!\p{L})(?:gifl\p{L}*|frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
+
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
   return (
     passesFormRules(t) &&
+    !STAGED_HARM.test(t) &&
     !LENS_EXAMPLES.some((e) => similarQuestions(e, t) || e === t)
   );
 }

@@ -17,6 +17,11 @@ import { AccountDeletionService } from '../account/account-deletion.service';
 import { checkDiscount, normalizePromoCode } from './promo-rules';
 import { revenueByCode } from '../partners/partner-sales';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
+import { CreditService } from '../credit/credit.service';
+import {
+  holdsCategories,
+  parseSondeurReport,
+} from '../journey/journey-insights.service';
 
 const userListSelect = {
   id: true,
@@ -63,6 +68,7 @@ export class AdminService {
     private jwtService: JwtService,
     private notificationService: NotificationService,
     private accountDeletion: AccountDeletionService,
+    private credits: CreditService,
   ) {}
 
   /**
@@ -594,10 +600,69 @@ export class AdminService {
   }
 
   async updateReport(id: string, status: ReportStatus) {
-    return this.prisma.report.update({
+    const report = await this.prisma.report.update({
       where: { id },
       data: { status },
     });
+    if (status === 'traite')
+      await this.closeJourneyAfterConfirmedSignal(report);
+    return report;
+  }
+
+  /**
+   * Signal du Sondeur confirmé par la modération (menace, contrôle, violence
+   * exercée, détresse, minorité, demande d'argent…) : le parcours est clos, la
+   * réponse reste cachée, et le crédit est rendu au membre mis en danger (aux
+   * deux pour une détresse ou une minorité, où personne n'est en faute). Une
+   * confidence de violence subie seule ne clôt rien. Les deux membres sont
+   * prévenus sans que le motif soit donné.
+   */
+  private async closeJourneyAfterConfirmedSignal(report: {
+    reportedId: string;
+    status: string;
+    description: string | null;
+  }) {
+    const signal = parseSondeurReport(report);
+    if (!signal || !holdsCategories(signal.categories)) return;
+    const journey = await this.prisma.journey.findUnique({
+      where: { id: signal.journeyId },
+      select: { userAId: true, userBId: true },
+    });
+    if (!journey) return;
+    const closed = await this.prisma.journey.updateMany({
+      where: { id: signal.journeyId, result: 'en_cours' },
+      data: {
+        currentStep: 'termine',
+        result: 'abandonne',
+        endDate: new Date(),
+        closingReason:
+          'Sécurité : signalement du Sondeur confirmé par la modération',
+      },
+    });
+    if (closed.count === 0) return;
+    const partnerId =
+      journey.userAId === signal.authorId ? journey.userBId : journey.userAId;
+    const noFault = signal.categories.every((c) =>
+      ['detresse', 'mineur', 'violence_subie'].includes(c),
+    );
+    const refundTo = noFault ? [partnerId, signal.authorId] : [partnerId];
+    for (const memberId of [journey.userAId, journey.userBId]) {
+      const refunded = refundTo.includes(memberId)
+        ? await this.credits.refundJourneyOnce(
+            memberId,
+            signal.journeyId,
+            'Parcours clos par l’équipe BOLIGO : crédit rendu',
+          )
+        : 0;
+      await this.notificationService
+        .sendPushNotification(
+          memberId,
+          'systeme',
+          'Parcours terminé',
+          `L’équipe BOLIGO a mis fin à votre parcours.${refunded ? ' Votre crédit vous a été rendu.' : ''} Elle reste joignable depuis votre profil.`,
+        )
+        .catch(() => undefined);
+    }
   }
 
   async listBlockedMessages(params: { page?: number; limit?: number }) {

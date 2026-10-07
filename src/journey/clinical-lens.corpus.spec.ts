@@ -8,6 +8,7 @@ import {
   hasClinicalJargon,
   isIntrusiveQuestion,
   isOpenQuestion,
+  isWellFormedQuestion,
   passesFormRules,
 } from './clinical-lens';
 import { readingText } from './sondeur-insights';
@@ -265,4 +266,34 @@ describe('Second contre-audit : lectures et questions', () => {
   ])('grille de forme : « %s » → %s', (text, expected) => {
     expect(passesFormRules(text)).toBe(expected);
   });
+});
+
+describe('Troisième contre-audit : questions de l’IA', () => {
+  it.each<Case>([
+    [
+      'Que ressentiriez-vous si votre conjoint vous giflait une seule fois ?',
+      false,
+    ],
+    [
+      'Que penseriez-vous si votre conjoint lisait vos messages par amour ?',
+      false,
+    ],
+    ['Comment réagiriez-vous si votre conjoint contrôle vos dépenses ?', false],
+    ['Qu’est-ce qui vous a le plus blessé(e) dans votre enfance ?', false],
+    [
+      'Qu’est-ce qui vous blesse le plus dans une remarque sur votre famille ?',
+      true,
+    ],
+    ['Quel a été votre dernier coup de cœur pour un lieu ?', true],
+    [
+      'Comment aimeriez-vous que l’autre vous rassure après une dispute ?',
+      true,
+    ],
+    ['Où placez-vous la frontière entre confiance et surveillance ?', true],
+  ])(
+    'jamais de scène de violence ou de contrôle : « %s » → %s',
+    (text, expected) => {
+      expect(isWellFormedQuestion(text)).toBe(expected);
+    },
+  );
 });

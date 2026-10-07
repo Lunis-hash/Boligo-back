@@ -29,6 +29,18 @@ const THEME_ORDER = [
   'lieu',
 ] as const;
 
+type StoredReport = {
+  reporterId: string;
+  reportedId: string;
+  reason: string;
+  description: string;
+  status: string;
+};
+type ReportWhere = {
+  reportedId?: string;
+  description: { startsWith: string };
+};
+
 /** Base en mémoire : un parcours de 21 questions (3 jours × 7 thèmes). */
 function memoryDb(journeyId: string) {
   let n = 0;
@@ -48,6 +60,7 @@ function memoryDb(journeyId: string) {
     }
   }
   const insights: Insight[] = [];
+  const reports: StoredReport[] = [];
   const journey = () => ({
     id: journeyId,
     userAId: 'a',
@@ -95,11 +108,21 @@ function memoryDb(journeyId: string) {
     },
     interviewIA: { findFirst: jest.fn(() => Promise.resolve(null)) },
     report: {
-      findFirst: jest.fn(() => Promise.resolve(null)),
-      create: jest.fn((args: unknown) => Promise.resolve(args)),
-      count: jest.fn(() => Promise.resolve(0)),
-      findMany: jest.fn(() =>
-        Promise.resolve([] as Array<{ description: string }>),
+      create: jest.fn(({ data }: { data: Omit<StoredReport, 'status'> }) => {
+        const row = { ...data, status: 'en_attente' };
+        reports.push(row);
+        return Promise.resolve(row);
+      }),
+      findMany: jest.fn(({ where }: { where: ReportWhere }) =>
+        Promise.resolve(
+          reports
+            .filter(
+              (r) =>
+                (!where.reportedId || r.reportedId === where.reportedId) &&
+                r.description.startsWith(where.description.startsWith),
+            )
+            .map((r) => ({ ...r })),
+        ),
       ),
     },
   };
@@ -121,7 +144,12 @@ function memoryDb(journeyId: string) {
         }
       });
   };
-  return { prisma, questions, insights, answerDay };
+  /** Décision de la modération sur les signalements qui correspondent. */
+  const decide = (status: 'traite' | 'rejete', match = '') => {
+    for (const r of reports)
+      if (r.description.includes(match)) r.status = status;
+  };
+  return { prisma, questions, insights, reports, answerDay, decide };
 }
 
 /** Lecture du jour : chaque point cite la question et les deux réponses. */
@@ -476,24 +504,56 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     );
     await service.refresh(id);
     expect(ai.journeyCompletion).not.toHaveBeenCalled();
-    expect(db.insights).toHaveLength(1);
-    expect(db.insights[0]).toMatchObject({ day: 1, source: 'regles' });
+    // Rien n'est enregistré : la lecture de sécurité est recalculée.
+    expect(db.insights).toHaveLength(0);
     expect(db.questions.some((q) => q.followUp)).toBe(false);
-    expect(db.prisma.report.create).toHaveBeenCalledTimes(1);
-    const [{ data }] = db.prisma.report.create.mock.calls[0] as unknown as [
-      { data: { reporterId: string; reportedId: string; description: string } },
-    ];
-    expect(data).toMatchObject({ reporterId: 'b', reportedId: 'b' });
-    expect(data.description).toMatch(/lever la main/);
-    // La lecture des règles est enregistrée : rien n'est relancé.
+    expect(db.reports).toHaveLength(1);
+    expect(db.reports[0]).toMatchObject({ reporterId: 'b', reportedId: 'b' });
+    expect(db.reports[0].description).toMatch(/lever la main/);
+    expect(db.reports[0].description).toMatch(/jour 1 · réponse [0-9a-f]{10}/);
+    expect(db.reports[0].description).toMatch(/catégorie : violence/);
+    // Rien n'est relancé, aucun doublon.
     await service.refresh(id);
     expect(ai.journeyCompletion).not.toHaveBeenCalled();
+    expect(db.reports).toHaveLength(1);
     const view = await service.view(id);
     expect(view.days[0].source).toBe('regles');
     expect(view.days[0].advice).toMatch(/sécurité/);
+    expect(view.days[0].advice).toMatch(/avant l'ouverture de la messagerie/);
     expect(view.days[0].toDiscuss).toEqual([]);
+    expect(view.days[0].openers).toEqual([]);
     expect(view.writing).toBe(false);
-    expect(data.description).toMatch(/catégorie : violence/);
+  });
+
+  it('fausse alerte rejetée par la modération : la lecture de l’IA est écrite, sans nouveau signalement', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+      journeyAiEligible: jest.fn(() => Promise.resolve(true)),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1, ['a', 'b'], (userId, i) =>
+      userId === 'b' && i === 4
+        ? 'Il fouillait mon téléphone tous les soirs.'
+        : `Réponse détaillée de ${userId}`,
+    );
+    await service.refresh(id);
+    expect(db.reports).toHaveLength(1);
+    expect(await service.holdsChat(id)).toBe(true);
+    db.decide('rejete');
+    await service.refresh(id);
+    expect(ai.journeyCompletion).toHaveBeenCalled();
+    expect(db.insights).toHaveLength(1);
+    expect((await service.view(id)).days[0].source).toBe('ia');
+    // Les trois journées et le bilan : jamais de signalement « bilan ».
+    db.answerDay(2);
+    db.answerDay(3);
+    await service.refresh(id);
+    expect(db.reports).toHaveLength(1);
+    expect(db.reports.some((r) => r.description.includes('bilan'))).toBe(false);
   });
 
   it('détresse : signalement et ressources d’aide envoyées en privé à l’auteur', async () => {
@@ -526,6 +586,70 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     expect(text).toMatch(/3114/);
   });
 
+  it('détresse et violence ensemble : le 3114 n’est jamais effacé, un message n’est jamais envoyé deux fois', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const notifications = {
+      sendPushNotification: jest.fn(() => Promise.resolve()),
+    };
+    const service = new JourneyInsightsService(
+      db.prisma as never,
+      ai as never,
+      notifications as never,
+    );
+    await service.reportAnswer(
+      id,
+      1,
+      'a',
+      'Question 1 ?',
+      'Il me frappait et depuis je veux mourir.',
+      ['violence_subie', 'detresse'],
+    );
+    const [, , , text] = notifications.sendPushNotification.mock
+      .calls[0] as unknown as [string, string, string, string];
+    expect(text).toMatch(/3114/);
+    expect(text).toMatch(/3919/);
+    await service.reportAnswer(
+      id,
+      1,
+      'a',
+      'Question 2 ?',
+      'Je pense encore à la mort.',
+      ['detresse'],
+    );
+    expect(notifications.sendPushNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('menace : message neutre (ni victime ni auteur présumés), jamais celui des victimes seul', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const notifications = {
+      sendPushNotification: jest.fn(() => Promise.resolve()),
+    };
+    const service = new JourneyInsightsService(
+      db.prisma as never,
+      {} as never,
+      notifications as never,
+    );
+    await service.reportAnswer(
+      id,
+      1,
+      'b',
+      'Question ?',
+      'Si elle part sans rien dire, je la tue.',
+      ['menace'],
+    );
+    const [, , , text] = notifications.sendPushNotification.mock
+      .calls[0] as unknown as [string, string, string, string];
+    expect(text).toMatch(/craignez vos propres réactions/);
+    expect(text).not.toMatch(/^Vous avez évoqué des violences/);
+  });
+
   it('alerte levée par l’IA : signalement du membre désigné, lecture de sécurité, pas de question de suivi', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
@@ -548,16 +672,53 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1);
     await service.refresh(id);
-    expect(db.insights[0]).toMatchObject({ day: 1, source: 'regles' });
+    expect(db.insights).toHaveLength(0);
     expect(db.questions.some((q) => q.followUp)).toBe(false);
-    const [{ data }] = db.prisma.report.create.mock.calls[0] as unknown as [
-      { data: { reportedId: string; description: string } },
-    ];
-    expect(data.reportedId).toBe('b');
-    expect(data.description).toMatch(/catégorie : contrôle/);
+    expect(db.reports).toHaveLength(1);
+    expect(db.reports[0].reportedId).toBe('b');
+    expect(db.reports[0].description).toMatch(/jour 1 · alerte/);
+    expect(db.reports[0].description).toMatch(/catégorie : contrôle/);
+    expect((await service.view(id)).days[0].advice).toMatch(/sécurité/);
+    // Pas de nouvel appel tant que l'alerte attend la modération.
+    await service.refresh(id);
+    expect(ai.journeyCompletion).toHaveBeenCalledTimes(1);
+    // Alerte rejetée puis relevée de nouveau : version des règles, sans boucle.
+    db.decide('rejete');
+    await service.refresh(id);
+    await service.refresh(id);
+    expect(ai.journeyCompletion).toHaveBeenCalledTimes(2);
+    expect(db.reports).toHaveLength(1);
+    expect((await service.view(id)).days[0].advice ?? '').not.toMatch(
+      /sécurité/,
+    );
   });
 
-  it('messagerie retenue tant qu’un signalement du Sondeur attend la modération', async () => {
+  it('alerte de l’IA sans membre désigné : signalée pour les deux, aucun message d’aide envoyé', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: jest.fn(() =>
+        written(JSON.stringify({ alerte: ['menace', 'controle'] })),
+      ),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const notifications = {
+      sendPushNotification: jest.fn(() => Promise.resolve()),
+    };
+    const service = new JourneyInsightsService(
+      db.prisma as never,
+      ai as never,
+      notifications as never,
+    );
+    db.answerDay(1);
+    await service.refresh(id);
+    expect(db.reports.map((r) => r.reportedId).sort()).toEqual(['a', 'b']);
+    expect(db.reports[0].description).toMatch(/catégories=\[menace,controle\]/);
+    expect(notifications.sendPushNotification).not.toHaveBeenCalled();
+  });
+
+  it('messagerie retenue tant qu’un signalement du Sondeur attend la modération (ou est confirmé)', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
     const ai = {
@@ -572,19 +733,66 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
         ? 'Il fouillait mon téléphone tous les soirs.'
         : `Réponse détaillée de ${userId}`,
     );
-    db.prisma.report.findMany.mockResolvedValueOnce([
-      { description: `Signal · catégorie : contrôle · catégories=[controle]` },
-    ]);
     expect(await service.holdsChat(id)).toBe(true);
-    expect(db.prisma.report.create).toHaveBeenCalledTimes(1);
-    // Une confidence de violence subie seule ne retient pas la messagerie.
-    db.prisma.report.findMany.mockResolvedValueOnce([
-      {
-        description: `Signal · catégorie : violence subie · catégories=[violence_subie]`,
-      },
+    expect(db.reports).toHaveLength(1);
+    // Confirmé : toujours retenue (le parcours est clos par la modération).
+    db.decide('traite');
+    expect(await service.holdsChat(id)).toBe(true);
+    db.decide('rejete');
+    expect(await service.holdsChat(id)).toBe(false);
+    expect(db.reports).toHaveLength(1);
+  });
+
+  it('une confidence de violence subie seule ne retient pas la messagerie, et la lecture ne promet pas de vérification', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+      journeyAiEligible: jest.fn(() => Promise.resolve(false)),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1, ['a', 'b'], (userId, i) =>
+      userId === 'a' && i === 0
+        ? 'Mon ex me battait, je suis partie avec ma fille.'
+        : `Réponse détaillée de ${userId}`,
+    );
+    expect(await service.holdsChat(id)).toBe(false);
+    const advice = (await service.view(id)).days[0].advice ?? '';
+    expect(advice).toMatch(/en a été informée/);
+    expect(advice).not.toMatch(/avant l'ouverture/);
+  });
+
+  it('réponse cachée à l’autre : fermé par défaut, rouvert seulement par un rejet', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const service = new JourneyInsightsService(db.prisma as never, {} as never);
+    const threat = 'Si elle part sans rien dire, je la tue.';
+    // Signalement absent (son écriture a échoué) : cachée quand même.
+    expect((await service.safety(id)).hidden('b', 1, 'Q ?', threat)).toBe(true);
+    await service.reportAnswer(id, 1, 'b', 'Q ?', threat, ['menace']);
+    expect((await service.safety(id)).hidden('b', 1, 'Q ?', threat)).toBe(true);
+    db.decide('rejete');
+    expect((await service.safety(id)).hidden('b', 1, 'Q ?', threat)).toBe(
+      false,
+    );
+    // Danger repéré par l'IA seule : caché tant que le signalement attend.
+    await service.reportAnswer(id, 1, 'a', 'Q2 ?', 'Tu me le paieras.', [
+      'menace',
     ]);
-    expect(await service.holdsChat(id)).toBe(false);
-    expect(await service.holdsChat(id)).toBe(false);
+    expect(
+      (await service.safety(id)).hidden('a', 1, 'Q2 ?', 'Tu me le paieras.'),
+    ).toBe(true);
+    // Une confidence de violence subie n'est jamais cachée.
+    expect(
+      (await service.safety(id)).hidden(
+        'a',
+        1,
+        'Q3 ?',
+        'Mon ex me battait, je suis partie.',
+      ),
+    ).toBe(false);
   });
 
   it('parcours payé : la messagerie attend la lecture de l’IA (seconde ligne de défense)', async () => {

@@ -7,6 +7,7 @@ import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { NotificationModule } from '../notifications/notification.module';
 import { AccountDeletionService } from '../account/account-deletion.service';
 import { AiLabService } from '../ai-lab/ai-lab.service';
+import { CreditModule } from '../credit/credit.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AiLabService } from '../ai-lab/ai-lab.service';
       signOptions: { expiresIn: '8h' },
     }),
     NotificationModule,
+    CreditModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, JwtStrategy, AccountDeletionService, AiLabService],

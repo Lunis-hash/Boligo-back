@@ -49,7 +49,13 @@ function setup(promos: Promo[]) {
       ),
     },
   };
-  const service = new AdminService(prisma as never, {} as never, {} as never, {} as never);
+  const service = new AdminService(
+    prisma as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+  );
   return { service, prisma, promos };
 }
 

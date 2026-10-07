@@ -193,38 +193,23 @@ export class MatchingService {
     return map;
   }
 
-  // Auto-réparer les journeys en phase_harmonie où un utilisateur a tout répondu
+  // Auto-réparer les journeys en phase_harmonie où les deux membres ont tout répondu
   // Et aussi faire avancer chat_libre → video après 3 jours
   private async autoAdvanceStaleJourneys(userId: string) {
     const journeys = await this.prisma.journey.findMany({
       where: {
         OR: [{ userAId: userId }, { userBId: userId }],
         currentStep: { in: ['phase_harmonie', 'chat_libre'] },
+        result: 'en_cours',
       },
-      include: {
-        harmonyQuestions: { include: { responses: true } },
-      },
+      select: { id: true, currentStep: true, stepStartDate: true },
     });
 
     for (const journey of journeys) {
-      // phase_harmonie → chat_libre : si un utilisateur a répondu à toutes les questions
+      // phase_harmonie → chat_libre : uniquement par JourneyService, qui
+      // vérifie les signalements du Sondeur. Sans lui, rien ne s'ouvre.
       if (journey.currentStep === 'phase_harmonie') {
-        const allQuestions = journey.harmonyQuestions;
-        if (allQuestions.length === 0) continue;
-
-        const userAHasAll = allQuestions.every(q =>
-          q.responses.some(r => r.userId === journey.userAId),
-        );
-        const userBHasAll = allQuestions.every(q =>
-          q.responses.some(r => r.userId === journey.userBId),
-        );
-
-        if (userAHasAll && userBHasAll) {
-          await this.prisma.journey.update({
-            where: { id: journey.id },
-            data: { currentStep: 'chat_libre', stepStartDate: new Date() },
-          });
-        }
+        await this.journeyService?.openChatIfReady(journey.id);
       }
 
       // chat_libre → video : si 3 jours de chat sont passés

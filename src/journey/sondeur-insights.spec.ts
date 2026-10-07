@@ -17,6 +17,7 @@ import {
   parseAlert,
   parseReview,
   promptNames,
+  readingText,
   reviewPrompt,
   ruleDayReading,
   ruleReview,
@@ -92,9 +93,13 @@ describe('Suivi du Sondeur — règles pures', () => {
     expect(system).not.toMatch(/cherche le besoin derrière/);
     expect(prompt).toContain('Inès : ‹ Je veux des enfants ›');
     expect(prompt).toContain('Karim : ‹ Pas tout de suite ›');
-    // Sujet gardé pour la rencontre : jamais montré ni interprété.
+    // Sujet gardé pour la rencontre : jamais interprété.
     expect(prompt).toContain('Inès : [réservé à la rencontre]');
-    expect(prompt).not.toContain('vive voix.');
+    // La réserve est marquée (jamais interprétée) mais son texte reste lisible,
+    // pour qu'un danger glissé dedans puisse lever l'alerte.
+    expect(prompt).toContain(
+      "[réservé à la rencontre] ‹ J'aimerais en parler de vive voix. ›",
+    );
     expect(prompt).toMatch(/mot pour mot/);
     expect(prompt).not.toContain('followUp');
     expect(reviewPrompt(items, ['Inès', 'Karim']).prompt).toContain(
@@ -334,22 +339,127 @@ describe('Suivi du Sondeur — règles pures', () => {
       together: [],
       toDiscuss: [],
     });
-    expect(parseAlert(raw)).toEqual({ category: 'detresse', member: 1 });
+    expect(parseAlert(raw)).toEqual({ categories: ['detresse'], member: 1 });
     expect(parseAlert(JSON.stringify({ alerte: 'aucune' }))).toBeNull();
     // Libellé approximatif : reconnu ; libellé inconnu : prudence (« autre »).
     expect(
       parseAlert(JSON.stringify({ alerte: 'Détresse', membre: 'A' })),
-    ).toEqual({ category: 'detresse', member: 0 });
+    ).toEqual({ categories: ['detresse'], member: 0 });
     expect(parseAlert(JSON.stringify({ alerte: ['violence subie'] }))).toEqual({
-      category: 'violence_subie',
+      categories: ['violence_subie'],
       member: null,
     });
     expect(parseAlert(JSON.stringify({ alerte: 'harcèlement' }))).toEqual({
-      category: 'autre',
+      categories: ['autre'],
       member: null,
     });
+    // Clé en anglais ou en majuscule, plusieurs catégories : rien n'est perdu.
+    expect(parseAlert(JSON.stringify({ alert: 'menace' }))).toEqual({
+      categories: ['menace'],
+      member: null,
+    });
+    expect(
+      parseAlert(JSON.stringify({ Alerte: 'detresse', Membre: 'b' })),
+    ).toEqual({ categories: ['detresse'], member: 1 });
+    expect(
+      parseAlert(JSON.stringify({ alerte: ['menace', 'controle', 'aucune'] })),
+    ).toEqual({ categories: ['menace', 'controle'], member: null });
     expect(parseAlert(JSON.stringify({ alerte: 'none' }))).toBeNull();
     expect(parseDayReading(raw, 1, items, ['Inès', 'Karim'])).toBeNull();
+  });
+
+  it('lecture : rapporte au lieu d’affirmer, aucun arrangement sur un point non négociable', () => {
+    const own: [string, string] = [
+      'Je prie chaque matin. J’ai peur de la trahison.',
+      'Je ne pratique pas.',
+    ];
+    const refused: string[] = [
+      'L’un de vous semble vivre ce sujet comme un rejet.',
+      'Vous éprouvez tous deux de la frustration face à l’argent.',
+      'Pour Karim, la famille est un refuge contre la solitude.',
+      'Inès a été marquée par l’absence de son père.',
+      'Karim manque de confiance en lui.',
+      'Inès est quelqu’un de très indépendant.',
+      'Karim se montre fermé sur la religion.',
+      'Votre histoire commence sous de bons auspices.',
+      'Vous êtes très proches sur l’essentiel.',
+      'Ce sujet pourrait devenir un point de friction entre vous.',
+      'Karim vit la foi d’Inès comme une menace pour sa liberté.',
+      'Inès attend sans le dire que Karim prenne les décisions.',
+      'Vous cherchez tous les deux à reproduire le modèle de vos parents.',
+      'Karim fuit le conflit, Inès le cherche.',
+      'Sur la religion, chacun pourrait mettre un peu du sien.',
+      'Sur la conversion, vous pourriez trouver une solution qui vous convienne à tous les deux.',
+      'Sur la polygamie, une période d’essai pourrait vous éclairer.',
+      'Sur le pays de vie, vous pourriez alterner quelques années ici et là-bas.',
+      'Sur la foi, une ouverture progressive de part et d’autre reste possible.',
+      'Sur les enfants, le temps pourra peut-être faire évoluer vos positions.',
+    ];
+    const kept: string[] = [
+      'L’un écrit qu’il prie chaque matin, l’autre qu’il ne pratique pas : la place de la prière reste à préciser.',
+      'Sur l’argent, l’un parle de comptes séparés, l’autre ne précise pas encore sa façon de faire.',
+      'Dans vos familles, l’un décrit des décisions prises à deux, l’autre un père qui tranchait.',
+      'Sur la dot, l’un la voit comme un honneur pour les parents, l’autre comme une affaire de couple.',
+      'Vous parlez tous deux de vos familles d’origine, avec des mots différents.',
+      'L’un écrit vouloir des enfants, mais pas tout de suite : le rythme reste à préciser.',
+      // phrases neutres des specs existantes
+      'L’un pose la conversion comme condition, l’autre écrit qu’il ne changera jamais de religion.',
+      'L’un décrit des désaccords réglés autour de la table, l’autre des conflits évités.',
+      'Vous employez tous deux le mot « confiance » : ce qu’il recouvre reste à préciser.',
+      'Un point commun se dégage : la place de la famille.',
+      'L’un ferme la discussion pour se calmer, l’autre préfère parler.',
+      'Inès écrit qu’elle a peur de la trahison.',
+      'Karim parle de paix, Inès de famille.',
+    ];
+    const read = (t: string) =>
+      readingText(t, 240, ['Inès', 'Karim'], own) !== null;
+    expect(refused.filter(read)).toEqual([]);
+    expect(kept.filter((t) => !read(t))).toEqual([]);
+  });
+
+  it('accord : un extrait suivi d’un refus n’est pas un accord, une nuance si', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.famille.emoji, {
+          a: 'Vivre avec ma belle-famille, jamais de la vie, même au début.',
+          b: 'Vivre avec ma belle-famille au début me semble naturel chez nous.',
+        }),
+        question('q2', 1, THEMES.argent.emoji, {
+          a: 'Tout mettre en commun ? Je n’y crois pas une seconde.',
+          b: 'Tout mettre en commun est pour moi une preuve de confiance.',
+        }),
+        question('q3', 1, THEMES.famille.emoji, {
+          a: 'Je veux deux enfants, pas avant trente ans.',
+          b: 'Des enfants oui, quand nous serons installés.',
+        }),
+      ],
+      A,
+      B,
+    );
+    const agreement = (n: number, a: string, b: string) =>
+      parseDayReading(
+        JSON.stringify({
+          headline: 'Vous avez parlé de famille.',
+          together: [{ n, a, b, text: 'Vous évoquez tous deux ce point.' }],
+          toDiscuss: [],
+        }),
+        1,
+        items,
+        ['Inès', 'Karim'],
+      )?.together ?? [];
+    expect(
+      agreement(
+        1,
+        'Vivre avec ma belle-famille',
+        'Vivre avec ma belle-famille',
+      ),
+    ).toEqual([]);
+    expect(
+      agreement(2, 'Tout mettre en commun', 'Tout mettre en commun'),
+    ).toEqual([]);
+    expect(agreement(3, 'Je veux deux enfants', 'Des enfants oui')).toEqual([
+      'Vous évoquez tous deux ce point.',
+    ]);
   });
 
   it('prénoms piégés ou identiques : nettoyés et distingués dans les prompts', () => {

@@ -334,8 +334,8 @@ export class AiLabService {
             : null;
         if (!written) base.readingStatus = 'IA indisponible';
         else if (alert) {
-          base.danger.ai = alert.category;
-          base.readingStatus = `bloquée : alerte de l'IA (${alert.category}) — lecture de sécurité, modération prévenue`;
+          base.danger.ai = alert.categories.join(', ');
+          base.readingStatus = `bloquée : alerte de l'IA (${alert.categories.join(', ')}) — lecture de sécurité, modération prévenue`;
         } else if (!reading)
           base.readingStatus = 'illisible ou sans point vérifiable';
         else {
@@ -351,8 +351,8 @@ export class AiLabService {
           const fidelityAlert = parseAlert(raw);
           base.reading = reading;
           if (fidelityAlert) {
-            base.danger.ai = fidelityAlert.category;
-            base.readingStatus = `bloquée : alerte du relecteur (${fidelityAlert.category})`;
+            base.danger.ai = fidelityAlert.categories.join(', ');
+            base.readingStatus = `bloquée : alerte du relecteur (${fidelityAlert.categories.join(', ')})`;
           } else
             base.readingStatus =
               verdict === true

@@ -25,6 +25,7 @@ import {
   dangerCategories,
   fidelityPrompt,
   followUpPrompt,
+  holdsSafety,
   itemsBlock,
   parseAlert,
   parseDayReading,
@@ -56,28 +57,195 @@ const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
 };
 
 /**
- * Message privé à l'auteur d'une réponse qui évoque une détresse ou des
- * violences : des ressources d'aide, sans rien commenter. Numéros français
- * (gratuits, 24 h/24) ; ailleurs, les urgences du pays.
+ * Messages privés de ressources d'aide, sans rien commenter. Numéros
+ * français (gratuits, 24 h/24) ; ailleurs, une association du pays (jamais
+ * un renvoi vers la police seule : il n'est pas sûr partout). La liste des
+ * ressources par pays reste à faire valider par l'équipe.
  */
-const VIOLENCE_SUPPORT =
-  "Vous avez évoqué des violences, une menace ou un contrôle. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.";
-const SUPPORT_MESSAGE: Partial<Record<DangerCategory | AlertCategory, string>> =
-  {
-    detresse:
-      "Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e) : en France, le 3114 répond 24 h/24, gratuitement. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
-    violence_subie: VIOLENCE_SUPPORT,
-    violence: VIOLENCE_SUPPORT,
-    menace: VIOLENCE_SUPPORT,
-    controle: VIOLENCE_SUPPORT,
-    violence_exercee:
-      "Une de vos réponses évoque des gestes violents. Si vous craignez vos propres réactions, parlez-en à un professionnel de santé ou à une association d'aide ; en cas de danger, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
-  };
+const DISTRESS_SUPPORT =
+  "Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e) : en France, le 3114 répond 24 h/24, gratuitement. Ailleurs, une ligne d'écoute de votre pays ou les secours peuvent vous aider. L'équipe BOLIGO reste joignable depuis votre profil.";
+const VICTIM_SUPPORT =
+  "Vous avez évoqué des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, une association d'aide aux victimes de votre pays peut vous écouter ; en cas de danger immédiat, appelez les secours. L'équipe BOLIGO reste joignable depuis votre profil.";
+/** Menace, contrôle, violence sans sujet clair : ni victime ni auteur présumés. */
+const FEAR_SUPPORT =
+  "Une de vos réponses touche à la peur, aux menaces ou au contrôle dans un couple. Si vous le vivez ou l'avez vécu : en France, le 3919 répond gratuitement et anonymement, 24 h/24 ; ailleurs, une association d'aide aux victimes de votre pays. Si vous craignez vos propres réactions, parlez-en à un professionnel ou à une association. En cas de danger immédiat, appelez les secours. L'équipe BOLIGO reste joignable depuis votre profil.";
+const AUTHOR_SUPPORT =
+  "Une de vos réponses évoque des gestes violents. Si vous craignez vos propres réactions, parlez-en à un professionnel de santé ou à une association d'aide ; en cas de danger, appelez les secours de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.";
+
+/** Ordre de priorité : la détresse d'abord, l'auteur de gestes violents en dernier. */
+const SUPPORT_ORDER: Array<[DangerCategory | AlertCategory, string]> = [
+  ['detresse', DISTRESS_SUPPORT],
+  ['violence_subie', VICTIM_SUPPORT],
+  ['violence', FEAR_SUPPORT],
+  ['menace', FEAR_SUPPORT],
+  ['controle', FEAR_SUPPORT],
+  ['violence_exercee', AUTHOR_SUPPORT],
+];
+
+/**
+ * Messages d'aide pour ces catégories, du plus urgent au moins urgent : une
+ * détresse n'est jamais effacée par une violence évoquée en même temps.
+ */
+export function supportMessages(categories: string[]): string[] {
+  let messages = [
+    ...new Set(
+      SUPPORT_ORDER.filter(([c]) => categories.includes(c)).map(([, m]) => m),
+    ),
+  ];
+  // Le message aux victimes couvre déjà la peur ; celui sur la peur couvre
+  // déjà l'auteur qui craint ses réactions.
+  if (messages.includes(VICTIM_SUPPORT))
+    messages = messages.filter((m) => m !== FEAR_SUPPORT);
+  if (messages.includes(FEAR_SUPPORT))
+    messages = messages.filter((m) => m !== AUTHOR_SUPPORT);
+  return messages;
+}
 
 /** Catégories d'un signalement, lisibles par le code (« catégories=[a,b] »). */
 function categoriesOf(description: string | null): string[] {
   const m = /catégories=\[([^\]]*)\]/.exec(description ?? '');
   return m ? m[1].split(',').filter(Boolean) : [];
+}
+
+/** Empreinte d'une réponse dans son signalement (« réponse <empreinte> »). */
+export function answerFingerprint(question: string, answer: string): string {
+  return createHash('sha256')
+    .update(`${question}|${answer}`)
+    .digest('hex')
+    .slice(0, 10);
+}
+
+/**
+ * Catégories qui retiennent la messagerie et cachent la réponse à l'autre :
+ * toutes, sauf une confidence de violence subie seule (la victime n'est pas
+ * mise en cause). Sans catégorie lisible : par prudence, oui.
+ */
+export function holdsCategories(categories: string[]): boolean {
+  return (
+    categories.length === 0 || categories.some((c) => c !== 'violence_subie')
+  );
+}
+
+/** Signalement du Sondeur, relu depuis sa description. */
+export interface SondeurReport {
+  journeyId: string;
+  authorId: string;
+  status: 'en_attente' | 'traite' | 'rejete';
+  /** 1 à 3, ou REVIEW_DAY pour le bilan. */
+  day: number;
+  /** Empreinte de la réponse signalée ; null pour une alerte de journée. */
+  answer: string | null;
+  categories: string[];
+}
+
+const REPORT_TAG =
+  /^Signal automatique BOLIGO · Sondeur · parcours ([0-9A-Za-z-]+) · (?:jour (\d)|bilan)(?: · (?:réponse ([0-9a-f]{10})|alerte))?(?: ·|\n|$)/;
+
+export function parseSondeurReport(r: {
+  reportedId: string;
+  status: string;
+  description: string | null;
+}): SondeurReport | null {
+  const m = REPORT_TAG.exec(r.description ?? '');
+  if (!m) return null;
+  return {
+    journeyId: m[1],
+    authorId: r.reportedId,
+    status: r.status as SondeurReport['status'],
+    day: m[2] ? Number(m[2]) : REVIEW_DAY,
+    answer: m[3] ?? null,
+    categories: categoriesOf(r.description),
+  };
+}
+
+/**
+ * État de sécurité d'un parcours, d'après ses signalements : quelles réponses
+ * sont signalées, cachées à l'autre, et si la messagerie attend. Une réponse
+ * dont le signalement a été rejeté par la modération redevient ordinaire.
+ */
+export class SondeurSafety {
+  constructor(readonly reports: SondeurReport[]) {}
+
+  private forAnswer(authorId: string, question: string, answer: string) {
+    const fingerprint = answerFingerprint(question, answer);
+    return this.reports.find(
+      (r) => r.authorId === authorId && r.answer === fingerprint,
+    );
+  }
+
+  /** Catégories de danger d'une réponse (code ou classement de l'IA à l'envoi). */
+  flagged(authorId: string, question: string, answer: string): string[] {
+    const report = this.forAnswer(authorId, question, answer);
+    if (report?.status === 'rejete') return [];
+    return [
+      ...new Set([...dangerCategories(answer), ...(report?.categories ?? [])]),
+    ];
+  }
+
+  /**
+   * Réponse cachée à l'autre membre : fermé par défaut. Il suffit que le code
+   * y voie un danger pour l'autre, ou qu'un signalement non rejeté la vise,
+   * même si son écriture a échoué.
+   */
+  hidden(authorId: string, day: number, question: string, answer: string) {
+    const report = this.forAnswer(authorId, question, answer);
+    if (report?.status === 'rejete') return false;
+    if (holdsSafety(dangerCategories(answer))) return true;
+    if (report && holdsCategories(report.categories)) return true;
+    return this.reports.some(
+      (r) =>
+        r.answer === null &&
+        r.authorId === authorId &&
+        r.day === day &&
+        r.status !== 'rejete' &&
+        holdsCategories(r.categories),
+    );
+  }
+
+  /**
+   * Journée (ou bilan) sans lecture de l'IA : une réponse signalée, ou une
+   * alerte de l'IA que la modération n'a pas rejetée.
+   */
+  dayFlagged(
+    day: number,
+    items: AnsweredItem[],
+    members: [string, string],
+  ): boolean {
+    return (
+      items.some((it) =>
+        members.some(
+          (m, k) => this.flagged(m, it.question, it.answers[k]).length > 0,
+        ),
+      ) ||
+      this.reports.some(
+        (r) =>
+          r.answer === null &&
+          r.status !== 'rejete' &&
+          (day === REVIEW_DAY || r.day === day),
+      )
+    );
+  }
+
+  /** La modération a rejeté l'alerte de l'IA pour ce membre et cette journée. */
+  alertRejected(day: number, authorId: string): boolean {
+    return this.reports.some(
+      (r) =>
+        r.answer === null &&
+        r.day === day &&
+        r.authorId === authorId &&
+        r.status === 'rejete',
+    );
+  }
+
+  /**
+   * La messagerie attend : un signalement en attente, ou confirmé (le
+   * parcours est alors clos par la modération).
+   */
+  get holds(): boolean {
+    return this.reports.some(
+      (r) => r.status !== 'rejete' && holdsCategories(r.categories),
+    );
+  }
 }
 
 /** Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart. */
@@ -111,32 +279,38 @@ export class JourneyInsightsService {
 
   /**
    * Messagerie retenue : une réponse du Sondeur évoque un danger et la
-   * modération n'a pas encore tranché. Les signalements manquants sont créés
-   * au passage. Une confidence de violence subie (classée par l'IA) ne
-   * retient pas la messagerie : le membre n'est pas mis en cause.
+   * modération n'a pas tranché (ou l'a confirmé). Les signalements manquants
+   * sont créés au passage. Une confidence de violence subie seule ne retient
+   * pas la messagerie : le membre n'est pas mis en cause.
    */
   async holdsChat(journeyId: string): Promise<boolean> {
     const journey = await this.load(journeyId);
-    if (!journey) return false;
+    if (!journey) return true;
     const { userAId, userBId, harmonyQuestions: qs } = journey;
-    for (const day of [1, 2, 3]) {
-      if (!dayComplete(qs, day, userAId, userBId)) continue;
-      const items = answeredItems(
-        qs.filter((q) => q.day === day),
+    const members: [string, string] = [userAId, userBId];
+    const complete = [1, 2, 3].filter((d) =>
+      dayComplete(qs, d, userAId, userBId),
+    );
+    const itemsOf = (day?: number) =>
+      answeredItems(
+        qs.filter((q) => day === undefined || q.day === day),
         userAId,
         userBId,
       );
-      await this.handleDanger(journeyId, day, items, [userAId, userBId]);
-    }
+    for (const day of complete)
+      await this.handleDanger(journeyId, itemsOf(day), members);
+    const safety = await this.safety(journeyId);
     // Lecture de l'IA attendue (parcours payé) : elle peut lever une alerte
     // que le code ne voit pas. La messagerie attend qu'elle soit écrite (ou
-    // qu'elle ait échoué trois fois) ; la visite suivante la rouvrira.
+    // qu'elle ait échoué trois fois) ; la visite suivante la rouvrira. Une
+    // journée signalée n'attend pas de lecture : l'IA ne la lit pas.
     if (await this.ai.journeyAiEligible(journeyId)) {
       const written = new Set(journey.insights.map((i) => i.day));
-      const awaited = [1, 2, 3]
-        .filter((d) => dayComplete(qs, d, userAId, userBId))
+      const awaited = complete
+        .filter((d) => !safety.dayFlagged(d, itemsOf(d), members))
         .concat(
-          [1, 2, 3].every((d) => dayComplete(qs, d, userAId, userBId))
+          complete.length === 3 &&
+            !safety.dayFlagged(REVIEW_DAY, itemsOf(), members)
             ? [REVIEW_DAY]
             : [],
         )
@@ -146,26 +320,14 @@ export class JourneyInsightsService {
         return true;
       }
     }
-    const pending = await this.prisma.report.findMany({
-      where: {
-        status: 'en_attente',
-        description: { startsWith: sondeurReportPrefix(journeyId) },
-      },
-      select: { description: true },
-    });
-    // Une confidence de violence subie seule ne retient pas la messagerie.
-    return pending.some((r) => {
-      const categories = categoriesOf(r.description);
-      return (
-        categories.length === 0 ||
-        categories.some((c) => c !== 'violence_subie')
-      );
-    });
+    return safety.holds;
   }
 
   /**
    * Réponse qui évoque un danger, signalée dès qu'elle est écrite : un membre
-   * qui n'achève pas sa journée n'échappe pas à la modération.
+   * qui n'achève pas sa journée n'échappe pas à la modération. Une réponse
+   * refusée par la modération IA est signalée aussi (« autre ») : elle ne
+   * disparaît pas sans trace.
    */
   async reportAnswer(
     journeyId: string,
@@ -173,7 +335,8 @@ export class JourneyInsightsService {
     authorId: string,
     question: string,
     answer: string,
-    categories: DangerCategory[],
+    categories: Array<DangerCategory | AlertCategory>,
+    summary = 'Une réponse évoque peut-être un danger (signalée dès son envoi). À vérifier par la modération.',
   ): Promise<void> {
     if (!categories.length) return;
     await this.fileReport(
@@ -181,22 +344,25 @@ export class JourneyInsightsService {
       day,
       authorId,
       categories,
-      'Une réponse évoque peut-être un danger (signalée dès son envoi). À vérifier par la modération.',
+      summary,
       [`« ${question} » → ${answer.slice(0, 500)}`],
-      `réponse ${createHash('sha256').update(`${question}|${answer}`).digest('hex').slice(0, 10)}`,
+      `réponse ${answerFingerprint(question, answer)}`,
     );
   }
 
-  /** Signalements du Sondeur encore en attente de la modération, pour ce parcours. */
-  async pendingSafetyReview(journeyId: string): Promise<boolean> {
-    const pending = await this.prisma.report.findMany({
+  /** État de sécurité du parcours : réponses signalées, cachées, messagerie retenue. */
+  async safety(journeyId: string): Promise<SondeurSafety> {
+    const rows = await this.prisma.report.findMany({
       where: {
-        status: 'en_attente',
-        description: { startsWith: sondeurReportPrefix(journeyId) },
+        description: { startsWith: `${sondeurReportPrefix(journeyId)} · ` },
       },
-      select: { description: true },
+      select: { reportedId: true, status: true, description: true },
     });
-    return pending.length > 0;
+    return new SondeurSafety(
+      rows
+        .map(parseSondeurReport)
+        .filter((r): r is SondeurReport => r !== null),
+    );
   }
 
   /**
@@ -223,44 +389,47 @@ export class JourneyInsightsService {
     const journey = await this.load(journeyId);
     if (!journey) return { days: [], review: null, writing: false };
     const { userAId, userBId, harmonyQuestions: qs } = journey;
+    const members: [string, string] = [userAId, userBId];
+    const safety = await this.safety(journeyId);
     const stored = new Map(
       journey.insights.map((i) => [
         i.day,
         i.content as unknown as SondeurReading,
       ]),
     );
+    const itemsOf = (day?: number) =>
+      answeredItems(
+        qs.filter((q) => day === undefined || q.day === day),
+        userAId,
+        userBId,
+      );
 
     // Lectures attendues mais pas encore écrites par l'IA.
     const pending: number[] = [];
     const days: SondeurReading[] = [];
     for (const day of [1, 2, 3]) {
       if (!dayComplete(qs, day, userAId, userBId)) continue;
+      // Signal de sécurité : jamais de lecture ni de « nuance à aborder »,
+      // même si une lecture avait été écrite avant le signalement.
+      if (safety.dayFlagged(day, itemsOf(day), members)) {
+        days.push(safetyReading(day, safety.holds));
+        continue;
+      }
       const reading = stored.get(day);
       if (!reading) pending.push(day);
-      // Version des règles : jamais de « nuance à aborder » après un signal
-      // de sécurité.
-      const danger = (d?: number) =>
-        answeredItems(
-          qs.filter((q) => d === undefined || q.day === d),
-          userAId,
-          userBId,
-        ).some((it) => it.answers.some((a) => dangerCategories(a).length > 0));
-      days.push(
-        reading ?? (danger(day) ? safetyReading(day) : ruleDayReading(day)),
-      );
+      days.push(reading ?? ruleDayReading(day));
     }
 
     let review: SondeurReading | null = null;
     if (days.length === 3) {
-      review = stored.get(REVIEW_DAY) ?? null;
-      if (!review) {
-        pending.push(REVIEW_DAY);
-        const flagged = answeredItems(qs, userAId, userBId).some((it) =>
-          it.answers.some((a) => dangerCategories(a).length > 0),
-        );
-        review = flagged
-          ? safetyReading(REVIEW_DAY)
-          : ruleReview(await this.interviewReport(userAId, userBId));
+      if (safety.dayFlagged(REVIEW_DAY, itemsOf(), members)) {
+        review = safetyReading(REVIEW_DAY, safety.holds);
+      } else {
+        review = stored.get(REVIEW_DAY) ?? null;
+        if (!review) {
+          pending.push(REVIEW_DAY);
+          review = ruleReview(await this.interviewReport(userAId, userBId));
+        }
       }
     }
 
@@ -290,11 +459,13 @@ export class JourneyInsightsService {
     const journey = await this.load(journeyId);
     if (!journey) return;
     const { userAId, userBId, harmonyQuestions: qs } = journey;
+    const members: [string, string] = [userAId, userBId];
     const names: [string, string] = [
       journey.userA.firstName,
       journey.userB.firstName,
     ];
     const done = new Set(journey.insights.map((i) => i.day));
+    const safety = await this.safety(journeyId);
 
     for (const day of [1, 2, 3]) {
       if (done.has(day) || this.coolingDown(journeyId, day)) continue;
@@ -305,12 +476,11 @@ export class JourneyInsightsService {
         userBId,
       );
       // Signal de danger (violence, menace, contrôle, détresse, demande
-      // d'argent, minorité) : l'IA ne commente pas cette journée, la
-      // modération est prévenue.
-      if (await this.handleDanger(journeyId, day, items, [userAId, userBId])) {
-        await this.save(journeyId, safetyReading(day));
-        continue;
-      }
+      // d'argent, minorité) : l'IA ne lit pas cette journée, la modération
+      // est prévenue. Rien n'est enregistré : si la modération rejette le
+      // signalement, la lecture sera écrite.
+      await this.handleDanger(journeyId, items, members);
+      if (safety.dayFlagged(day, items, members)) continue;
       const { system, prompt } = dayReadingPrompt(
         day,
         items,
@@ -326,11 +496,7 @@ export class JourneyInsightsService {
       // Seconde ligne de défense : le modèle lève une alerte.
       const alert = parseAlert(written?.content ?? null);
       if (alert) {
-        await this.reportAlert(journeyId, day, alert, items, [
-          userAId,
-          userBId,
-        ]);
-        await this.save(journeyId, safetyReading(day));
+        await this.onAlert(journeyId, day, alert, items, members, safety);
         continue;
       }
       const reading = written
@@ -339,14 +505,24 @@ export class JourneyInsightsService {
       // Garde-fou anti-invention : chaque point cite les réponses (vérifié par
       // le code), puis le relecteur confirme que rien n'est inventé.
       const verdict = reading
-        ? await this.fidelity(journeyId, items, names, reading, written?.model)
+        ? await this.fidelity(
+            journeyId,
+            items,
+            names,
+            reading,
+            written?.model,
+            await this.analysisFor(userAId, userBId, names),
+          )
         : null;
       if (verdict?.alert) {
-        await this.reportAlert(journeyId, day, verdict.alert, items, [
-          userAId,
-          userBId,
-        ]);
-        await this.save(journeyId, safetyReading(day));
+        await this.onAlert(
+          journeyId,
+          day,
+          verdict.alert,
+          items,
+          members,
+          safety,
+        );
         continue;
       }
       if (!reading || !verdict?.faithful) {
@@ -372,17 +548,11 @@ export class JourneyInsightsService {
     )
       return;
     const all = answeredItems(qs, userAId, userBId);
-    if (
-      await this.handleDanger(journeyId, REVIEW_DAY, all, [userAId, userBId])
-    ) {
-      await this.save(journeyId, safetyReading(REVIEW_DAY));
-      return;
-    }
-    const { system, prompt } = reviewPrompt(
-      all,
-      names,
-      await this.analysisFor(userAId, userBId, names),
-    );
+    // Les réponses signalées l'ont été jour par jour : aucun nouveau
+    // signalement pour le bilan.
+    if (safety.dayFlagged(REVIEW_DAY, all, members)) return;
+    const analysis = await this.analysisFor(userAId, userBId, names);
+    const { system, prompt } = reviewPrompt(all, names, analysis);
     const written = await this.ai.journeyCompletion(
       journeyId,
       system,
@@ -391,23 +561,29 @@ export class JourneyInsightsService {
     );
     const alert = parseAlert(written?.content ?? null);
     if (alert) {
-      await this.reportAlert(journeyId, REVIEW_DAY, alert, all, [
-        userAId,
-        userBId,
-      ]);
-      await this.save(journeyId, safetyReading(REVIEW_DAY));
+      await this.onAlert(journeyId, REVIEW_DAY, alert, all, members, safety);
       return;
     }
     const review = written ? parseReview(written.content, all, names) : null;
     const verdict = review
-      ? await this.fidelity(journeyId, all, names, review, written?.model)
+      ? await this.fidelity(
+          journeyId,
+          all,
+          names,
+          review,
+          written?.model,
+          analysis,
+        )
       : null;
     if (verdict?.alert) {
-      await this.reportAlert(journeyId, REVIEW_DAY, verdict.alert, all, [
-        userAId,
-        userBId,
-      ]);
-      await this.save(journeyId, safetyReading(REVIEW_DAY));
+      await this.onAlert(
+        journeyId,
+        REVIEW_DAY,
+        verdict.alert,
+        all,
+        members,
+        safety,
+      );
       return;
     }
     if (!review || !verdict?.faithful) {
@@ -418,67 +594,80 @@ export class JourneyInsightsService {
   }
 
   /**
-   * Réponse qui évoque un danger (violence, menace, contrôle, détresse,
-   * demande d'argent, minorité) : un signalement est adressé à la modération
-   * (une fois par journée et par membre), avec ses catégories. Renvoie true
-   * si la journée doit rester sans IA.
+   * Réponses où le code voit un danger (violence, menace, contrôle, détresse,
+   * demande d'argent, minorité) : un signalement par réponse, avec ses
+   * catégories (le même que celui créé à l'envoi : jamais de doublon). Une
+   * réponse déjà rejetée par la modération n'est pas signalée de nouveau.
    */
   private async handleDanger(
     journeyId: string,
-    day: number,
     items: AnsweredItem[],
     members: [string, string],
-  ): Promise<boolean> {
-    let found = false;
+  ): Promise<void> {
     for (const [k, authorId] of members.entries()) {
-      const flagged = items
-        .map((it) => ({ it, categories: dangerCategories(it.answers[k]) }))
-        .filter((f) => f.categories.length > 0);
-      if (flagged.length === 0) continue;
-      found = true;
-      const categories = [...new Set(flagged.flatMap((f) => f.categories))];
-      await this.fileReport(
-        journeyId,
-        day,
-        authorId,
-        categories,
-        'Une réponse évoque peut-être un danger. À vérifier par la modération.',
-        flagged.map(
-          ({ it }) => `« ${it.question} » → ${it.answers[k].slice(0, 500)}`,
-        ),
-      );
+      for (const it of items) {
+        const categories = dangerCategories(it.answers[k]);
+        if (categories.length === 0) continue;
+        await this.fileReport(
+          journeyId,
+          it.day,
+          authorId,
+          categories,
+          'Une réponse évoque peut-être un danger. À vérifier par la modération.',
+          [`« ${it.question} » → ${it.answers[k].slice(0, 500)}`],
+          `réponse ${answerFingerprint(it.question, it.answers[k])}`,
+        );
+      }
     }
-    return found;
   }
 
-  /** Alerte levée par le modèle : signalement, comme un signal du code. */
-  private async reportAlert(
+  /**
+   * Alerte levée par le modèle : signalement, comme un signal du code. Si la
+   * modération a déjà rejeté cette alerte, la journée garde la version des
+   * règles (l'IA n'est pas relancée en boucle).
+   */
+  private async onAlert(
     journeyId: string,
     day: number,
     alert: ReadingAlert,
     items: AnsweredItem[],
     members: [string, string],
+    safety: SondeurSafety,
   ) {
     const targets = alert.member === null ? [0, 1] : [alert.member];
+    if (targets.every((k) => safety.alertRejected(day, members[k]))) {
+      this.logger.warn(
+        `Parcours ${journeyId} : alerte de l'IA déjà rejetée par la modération, version des règles.`,
+      );
+      this.giveUp(journeyId, day);
+      return;
+    }
     for (const k of targets) {
       await this.fileReport(
         journeyId,
         day,
         members[k],
-        [alert.category],
-        alert.category === 'violence_subie'
-          ? "Confidence possible d'une violence subie : le membre n'est pas mis en cause. Alerte levée par l'IA, à vérifier."
-          : "Alerte levée par l'IA à la lecture des réponses. À vérifier par la modération.",
+        alert.categories,
+        alert.member === null
+          ? "Alerte levée par l'IA sans membre désigné : les réponses des deux membres sont jointes. À vérifier par la modération."
+          : alert.categories.every((c) => c === 'violence_subie')
+            ? "Confidence possible d'une violence subie : le membre n'est pas mis en cause. Alerte levée par l'IA, à vérifier."
+            : "Alerte levée par l'IA à la lecture des réponses. À vérifier par la modération.",
         items.map(
           (it) => `« ${it.question} » → ${it.answers[k].slice(0, 500)}`,
         ),
+        'alerte',
+        // Sans membre désigné, personne ne reçoit de message : aucun des deux
+        // n'est présumé victime ou auteur.
+        alert.member !== null,
       );
     }
   }
 
   /**
-   * Signalement (une fois par journée et par membre) et, pour une détresse
-   * ou des violences, un message privé de ressources d'aide à l'auteur.
+   * Signalement (une seule fois par réponse, ou par journée et par membre
+   * pour une alerte de l'IA) et, pour une détresse ou des violences, un
+   * message privé de ressources d'aide à l'auteur, jamais deux fois le même.
    */
   private async fileReport(
     journeyId: string,
@@ -487,43 +676,55 @@ export class JourneyInsightsService {
     categories: Array<DangerCategory | AlertCategory>,
     summary: string,
     excerpts: string[],
-    /** Précision du signalement (une réponse) : sinon un par journée et par membre. */
-    detail?: string,
+    /** « réponse <empreinte> » ou « alerte ». */
+    detail: string,
+    notify = true,
   ) {
-    const tag = `${sondeurReportPrefix(journeyId)} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`}${detail ? ` · ${detail}` : ''}`;
-    const already = await this.prisma.report.findFirst({
-      where: { reportedId: authorId, description: { startsWith: tag } },
-      select: { id: true },
+    const prefix = sondeurReportPrefix(journeyId);
+    const tag = `${prefix} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`} · ${detail}`;
+    const earlier = await this.prisma.report.findMany({
+      where: {
+        reportedId: authorId,
+        description: { startsWith: `${prefix} · ` },
+      },
+      select: { description: true },
     });
-    if (already) return;
-    const labels = categories.map((c) => CATEGORY_LABEL[c]).join(', ');
+    if (earlier.some((r) => r.description?.startsWith(tag))) return;
+    const unique = [...new Set(categories)];
+    const labels = unique.map((c) => CATEGORY_LABEL[c]).join(', ');
     await this.prisma.report.create({
       data: {
         reporterId: authorId,
         reportedId: authorId,
         reason: 'autre',
-        description: `${tag} · catégorie : ${labels} · catégories=[${[...new Set(categories)].join(',')}]\n${summary}\n${excerpts.join('\n')}`,
+        description: `${tag} · catégorie : ${labels} · catégories=[${unique.join(',')}]\n${summary}\n${excerpts.join('\n')}`,
       },
     });
     this.logger.warn(
       `Parcours ${journeyId} : signal de sécurité (${labels}), modération prévenue.`,
     );
-    const support = categories
-      .map((c) => SUPPORT_MESSAGE[c])
-      .find((m): m is string => !!m);
-    if (support) {
-      // Écran verrouillé : rien de sensible dans la notification (un
-      // agresseur peut la voir) ; le message complet est dans l'app.
-      await this.notifications
-        ?.sendPushNotification(
-          authorId,
-          'systeme',
-          'BOLIGO',
-          support,
-          'Un message de l’équipe BOLIGO vous attend dans l’application.',
-        )
-        .catch(() => undefined);
-    }
+    if (!notify) return;
+    // Un message d'aide déjà envoyé dans ce parcours ne l'est pas de nouveau.
+    const sent = new Set(
+      supportMessages(earlier.flatMap((r) => categoriesOf(r.description))),
+    );
+    const support = supportMessages(unique).filter((m) => !sent.has(m));
+    if (support.length === 0) return;
+    // Écran verrouillé : rien de sensible dans la notification (un agresseur
+    // peut la voir) ; le message complet est dans l'app.
+    await this.notifications
+      ?.sendPushNotification(
+        authorId,
+        'systeme',
+        'BOLIGO',
+        support.join('\n\n'),
+        'Un message de l’équipe BOLIGO vous attend dans l’application.',
+      )
+      .catch((err: Error) =>
+        this.logger.error(
+          `Parcours ${journeyId} : message d'aide non envoyé (${err.message}).`,
+        ),
+      );
   }
 
   /**
@@ -536,8 +737,10 @@ export class JourneyInsightsService {
     names: [string, string],
     reading: SondeurReading,
     writerModel?: string,
+    /** Analyse des entretiens, que le rédacteur a pu utiliser. */
+    analysis?: string,
   ): Promise<{ faithful: boolean; alert: ReadingAlert | null }> {
-    const { system, prompt } = fidelityPrompt(items, names, reading);
+    const { system, prompt } = fidelityPrompt(items, names, reading, analysis);
     const raw = await this.ai.journeyCritique(
       journeyId,
       system,
@@ -742,6 +945,14 @@ export class JourneyInsightsService {
   ): Promise<string | undefined> {
     const report = await this.interviewReport(userAId, userBId);
     return report ? describeReportForAi(report, names) : undefined;
+  }
+
+  /** Plus de nouvelle tentative pour cette lecture : la version des règles reste. */
+  private giveUp(journeyId: string, day: number) {
+    JourneyInsightsService.failures.set(`${journeyId}:${day}`, {
+      count: MAX_ATTEMPTS,
+      at: Date.now(),
+    });
   }
 
   private coolingDown(journeyId: string, day: number): boolean {

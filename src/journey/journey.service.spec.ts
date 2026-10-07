@@ -13,6 +13,7 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
   const mockPrismaService = {
     journey: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),

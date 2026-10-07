@@ -12,10 +12,9 @@ import {
   moderateMessageLocally,
 } from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
+import { chatOpen } from '../journey/chat-access';
 
 const MAX_MESSAGE_LENGTH = 2000;
-/** Étapes où la messagerie est ouverte (même règle que POST /journey/:id/messages). */
-const CHAT_STEPS = ['chat_libre', 'video', 'echange_contacts', 'termine'];
 
 @Injectable()
 export class ChatService {
@@ -37,12 +36,13 @@ export class ChatService {
   }) {
     const journey = await this.prisma.journey.findUnique({
       where: { id: data.journeyId },
-      select: { userAId: true, userBId: true, currentStep: true },
+      select: { userAId: true, userBId: true, currentStep: true, result: true },
     });
     if (!journey || (journey.userAId !== data.senderId && journey.userBId !== data.senderId)) {
       throw new ForbiddenException('Accès non autorisé à cette conversation');
     }
-    if (!CHAT_STEPS.includes(journey.currentStep)) {
+    // Même règle que POST /journey/:id/messages.
+    if (!chatOpen(journey)) {
       throw new BadRequestException(
         'Les messages sont disponibles après le Sondeur (conversation libre).',
       );
