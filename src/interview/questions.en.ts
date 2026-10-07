@@ -18,6 +18,8 @@ export interface QuestionTranslation {
   text: string;
   /** Textes des options, dans l'ordre des clés ; absent pour une échelle. */
   options?: string[];
+  /** V7.1 — aide affichée sous la question. */
+  assistance?: string;
 }
 
 const AGREEMENT_EN = [
@@ -61,6 +63,8 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
   M0_Q04: {
     text: 'Your current situation:',
+    assistance:
+      'BOLIGO is only for people who are free to commit: single, separated with a finalised divorce, or widowed.',
     options: [
       'Single',
       'Separated / divorced',
@@ -78,7 +82,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M0_Q06: {
-    text: 'Do you want children in the future?',
+    text: 'Do you want to have children (or more children) in the future?',
     options: [
       'Yes, absolutely',
       'Yes, if the conditions are right',
@@ -86,13 +90,22 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'No, that’s final',
     ],
   },
+  M0_Q14: {
+    text: 'A partner who already has children:',
+    options: [
+      'That suits me completely',
+      'That suits me, as long as they don’t live with us full-time',
+      'I’d rather avoid it',
+      'I couldn’t accept it',
+    ],
+  },
   M0_Q07: {
     text: 'Your level of education:',
     options: [
-      'No diploma / vocational qualification',
-      'High-school diploma (baccalaureate, A-levels)',
-      'Two to four years of higher education',
-      'Five years or more (master’s level and above)',
+      'No diploma, or short vocational training',
+      'Completed secondary school (high-school diploma or equivalent)',
+      'Two to four years of higher education (bachelor’s, associate degree…)',
+      'Five years or more of higher education (master’s, doctorate…)',
     ],
   },
   M0_Q09: {
@@ -124,6 +137,18 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Doesn’t matter to me',
     ],
   },
+  M0_Q15: {
+    text: 'Yourself, gambling (sports betting, casino, lottery):',
+    options: ['Never', 'Rarely, for fun', 'Every week', 'Almost every day'],
+  },
+  M0_Q16: {
+    text: 'Gambling (sports betting, casino, lottery) in a partner:',
+    options: [
+      'I couldn’t accept it, even rarely',
+      'Acceptable if it stays rare and low-stakes',
+      'Doesn’t matter to me',
+    ],
+  },
   M0_Q10: {
     text: 'Which languages are you comfortable living a relationship in, day to day? (several answers possible)',
     options: [
@@ -135,19 +160,26 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Wolof',
       'Portuguese — Português',
       'Spanish — Español',
+      'Creole — Kreyòl',
       'Another language (please specify)',
     ],
   },
 
   // ── Module 1 — Identity & culture
-  M1_Q01: {
-    text: 'Your continent of origin or cultural reference (two at most if you have mixed heritage):',
+  M1_Q21: {
+    text: 'Your region of origin or cultural reference (two at most if you have mixed heritage):',
     options: [
-      'Sub-Saharan Africa',
-      'Maghreb / Middle East',
+      'West Africa',
+      'Central Africa',
+      'East Africa and the Indian Ocean (Madagascar, Comoros…)',
+      'Southern Africa',
+      'North Africa (Maghreb)',
+      'Middle East',
+      'Caribbean (French Antilles, Haiti…)',
+      'North America',
+      'Latin America',
       'Europe',
       'Asia',
-      'Americas / Caribbean',
       'Oceania',
     ],
   },
@@ -160,15 +192,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I have no preference',
     ],
   },
-  M1_Q03: {
-    text: 'How important are the marriage traditions of your culture to you?',
-    options: [
-      'Central — I will respect all of them (dowry, zaffa, sacred fire, lazo…)',
-      'Important — I’ll keep the main ones',
-      'Moderate — I’ll choose a few',
-      'Not very important — I prefer personal symbolism',
-    ],
-  },
   M1_Q16: {
     text: 'Your religion or belief:',
     options: [
@@ -177,7 +200,8 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Christian: another Church',
       'Muslim',
       'Jewish',
-      'Buddhist or Hindu',
+      'Buddhist',
+      'Hindu',
       'A traditional or ancestral religion',
       'A personal spirituality, without religion',
       'No religion',
@@ -197,7 +221,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'If the person you love did not share your religion or beliefs:',
     options: [
       'It wouldn’t be possible: I’m looking for someone who shares them',
-      'I would want them to adopt mine before marriage',
+      'It would be a condition: they would have to adopt mine before marriage',
       'I would wish for it, without making it a condition',
       'We would each keep our own, respecting the other’s',
       'I could adopt theirs myself',
@@ -214,13 +238,13 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'No rules: I eat everything',
     ],
   },
-  M1_Q11: {
-    text: 'Your position on polygamy:',
+  M1_Q20: {
+    text: 'For your own relationship, polygamy (one husband with several wives):',
     options: [
-      'Unacceptable — exclusive monogamy, no discussion',
-      'I respect it in others, but not for my relationship',
-      'Conceivable within a religious, consensual and transparent framework',
-      'I’d rather talk about it in person',
+      'Ruled out, not open to discussion',
+      'Ruled out, but I’m willing to talk about it',
+      'Conceivable if everyone consents, within a religious or customary framework',
+      'I don’t have a settled position yet',
     ],
   },
   M1_Q13: {
@@ -251,7 +275,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Not being good enough',
       'Being betrayed',
       'Not getting enough attention and affection',
-      'Having to erase myself to be loved',
+      'Having to put myself last to be loved',
       'None of these fears really speaks to me',
     ],
   },
@@ -274,21 +298,12 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     ],
   },
   M2_Q22: {
-    text: 'After an argument in which you think you were mostly right, you usually:',
+    text: 'After an argument in which you think you were mostly right, what do you usually do?',
     options: [
       'I acknowledge my share, even if it is small',
       'I take a step towards the other, without going back over the substance',
       'I wait for the other person to come back to me',
       'I don’t apologise as long as I think I was right',
-    ],
-  },
-  M2_Q10: {
-    text: 'If you were going through a difficult time, asking a professional for help (psychologist, couples counsellor) would be:',
-    options: [
-      'Natural — I have done it or would do it without hesitation',
-      'Possible, after first trying on my own',
-      'I’ve never needed it, but I’m open to it',
-      'Difficult — I prefer to get through it on my own',
     ],
   },
   M2_Q23: {
@@ -384,13 +399,13 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'They are part of my close circle',
     ],
   },
-  M3_Q07: {
-    text: 'Do you have unresolved conflicts with your ex-partner? (several answers possible)',
+  M3_Q13: {
+    text: 'Your partner keeping ties with their ex:',
     options: [
-      'No — everything is resolved',
-      'Tensions over child custody',
-      'Financial tensions still active',
-      'We never had real closure',
+      'It’s not a problem for me',
+      'Only for the children',
+      'Only with full transparency, without seeing them alone',
+      'I couldn’t accept it',
     ],
   },
   M3_Q10: {
@@ -468,31 +483,22 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I haven’t really thought about it yet',
     ],
   },
-  M4_Q05: {
-    text: 'Your approach to sending money to the extended family:',
+  M4_Q16: {
+    text: 'Supporting your family financially (parents, brothers and sisters…) once you are a couple:',
     options: [
-      'Normal and regular — my family counts on me',
-      'We discuss it as a couple before any decision',
-      'It’s my money — my business',
-      'It must be limited to protect our home',
+      'A regular duty: my family counts on me, it’s not up for discussion',
+      'Regular help, with the amount decided together',
+      'Occasional help, when there is a real need',
+      'The household’s money should not go to the extended family',
     ],
   },
-  M4_Q06: {
-    text: 'Buying property in your life plan:',
+  M4_Q17: {
+    text: 'The bride price for your marriage:',
     options: [
-      'Alone — it’s my independence',
-      'Together — it’s a shared project',
-      'Flexible renting for now',
-      'Not a priority',
-    ],
-  },
-  M4_Q07: {
-    text: 'The dowry or mahr in your culture:',
-    options: [
-      'An obligation I fully respect',
-      'An important symbolic tradition',
-      'I practise it in a modernised way',
-      'Not part of my culture, or I don’t adhere to it',
+      'Essential: my marriage won’t happen without it',
+      'Important, in a symbolic or modernised form',
+      'Not part of my culture, but I would respect it in my partner’s',
+      'I don’t adhere to it, even if my partner cares about it',
     ],
   },
   M4_Q09: {
@@ -563,11 +569,11 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M5_Q02: {
     text: 'Your mother (or father) disrespects your partner. You:',
     options: [
-      'Defend your partner immediately and clearly',
+      'Stand up for your partner in front of your parent',
       'Try to understand before acting',
       'Wait for it to settle on its own',
       'Tell your partner not to take it too much to heart',
-      'Support your partner in the moment, then talk to your parent one-to-one',
+      'Back your partner, then talk to your parent in private',
     ],
   },
   M5_Q03: {
@@ -601,7 +607,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'Access to your partner’s phone and messages:',
     options: [
       'Total transparency — each has access to everything',
-      'Trust without control — each keeps their privacy',
+      'Each keeps their phone to themselves',
       'Access only in case of serious doubt',
       'I’ve never thought about it',
     ],
@@ -696,6 +702,9 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I try to ignore it if it’s not recurring',
     ],
   },
+  M6_Q24: {
+    text: 'In a couple, there are situations where a slap can be understood.',
+  },
   M6_Q18: {
     text: 'If your partner cheated on you, it would be:',
     options: [
@@ -715,15 +724,6 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'Kissing someone else',
       'Watching adult content',
       'None of these: only a physical relationship counts',
-    ],
-  },
-  M6_Q08: {
-    text: 'When you don’t feel like physical intimacy and your partner suggests it:',
-    options: [
-      'I say so gently and we find a tender alternative',
-      'I go along with it to please them — this often happens',
-      'I say no clearly, without guilt',
-      'I find it hard to refuse — I don’t want to disappoint',
     ],
   },
 
@@ -769,6 +769,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’m open — it depends on the life plan',
     ],
   },
+  M7_Q36: {
+    text: 'Living one day in your family’s country of origin:',
+    options: [
+      'It’s my plan, in the coming years',
+      'I’m thinking about it, with no set date',
+      'No, my life is where I live now',
+      'I already live in my family’s country of origin',
+    ],
+  },
   M7_Q08: {
     text: 'Ideally, the time spent together during the week:',
     options: [
@@ -785,7 +794,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'When a friend asks me a favour that’s a bit inconvenient, I still do it willingly.',
   },
   M7_Q22: {
-    text: 'I deal with my bills and paperwork on time.',
+    text: 'When I have some paperwork to do, I deal with it without waiting until the last minute.',
   },
   M7_Q23: {
     text: 'Over a small annoyance (a delay, a lost item), I can get irritated very quickly.',
@@ -815,7 +824,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
     text: 'I often find myself looking for my keys or papers because they aren’t put away.',
   },
   M7_Q32: {
-    text: 'When I’m criticised at work, I take it without losing my calm.',
+    text: 'When I’m criticised (at work, in my studies or in my family), I take it without losing my calm.',
   },
   M7_Q33: {
     text: 'In the evening, I can usually put the day’s worries aside.',
@@ -837,23 +846,22 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’m open to seeing what comes',
     ],
   },
-  M8_Q02: {
-    text: 'Within what timeframe do you see an official commitment?',
+  M8_Q17: {
+    text: 'If the relationship goes well, within what timeframe would you like an official commitment (engagement or marriage)?',
     options: [
-      'Within 12 months if all goes well',
-      'Within 2 to 3 years',
-      'No pressure — at our natural pace',
-      'When the conditions are right',
+      'Within a year',
+      'Within one to two years',
+      'Within two to three years',
+      'Later, or with no specific timeframe',
     ],
   },
-  M8_Q03: {
-    text: 'Your vision of marriage:',
+  M8_Q16: {
+    text: 'For you, a marriage is only complete with: (several answers possible)',
     options: [
-      'A fundamental religious and spiritual act',
-      'A civil and symbolic commitment',
-      'Both — civil and religious',
-      'An optional choice — love matters more than paperwork',
-      'Above all customary or traditional',
+      'A civil marriage',
+      'A religious marriage',
+      'A customary marriage (bride price, meeting of the families)',
+      'No ceremony is essential to me',
     ],
   },
   M8_Q15: {
@@ -863,6 +871,33 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'A firm framework, explained with kindness',
       'Dialogue: rules are discussed with them',
       'Freedom: children mostly learn by themselves',
+    ],
+  },
+  M8_Q19: {
+    text: 'Living together before marriage:',
+    options: [
+      'Ruled out for me',
+      'Only after an engagement',
+      'Possible once the relationship is solid',
+      'Desirable, to really get to know each other',
+    ],
+  },
+  M8_Q20: {
+    text: 'A smack or spanking to discipline a child:',
+    options: [
+      'It’s part of a good upbringing',
+      'Acceptable in exceptional cases',
+      'I’d rather avoid it',
+      'Never: it’s a form of violence',
+    ],
+  },
+  M8_Q18: {
+    text: 'In which religion would you raise your children?',
+    options: [
+      'In my religion — it’s essential',
+      'In one of ours, chosen together',
+      'In both our traditions; they’ll choose later',
+      'Without a religious upbringing',
     ],
   },
   M8_Q04: {
@@ -1034,7 +1069,16 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
   M9_Q15: { text: 'During time together, I check my phone.' },
   M9_Q24: {
-    text: 'When my partner says no, I insist to make them change their mind.',
+    text: 'When my partner refuses something that concerns them (a gesture, an outing, a purchase), I insist until they give in.',
+  },
+  M9_Q26: {
+    text: 'In a couple, each person should be able to know where the other is at all times.',
+  },
+  M9_Q27: {
+    text: 'My partner should ask for my approval before going out with their friends.',
+  },
+  M9_Q28: {
+    text: 'The one who earns more should decide how the other spends money.',
   },
   M9_Q23: {
     text: 'When I’m tired, I am sometimes less patient with those close to me.',
@@ -1173,6 +1217,15 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I’d think it was up to them to adapt',
     ],
   },
+  M10_Q19: {
+    text: 'When your partner suggests intimacy and you don’t feel like it:',
+    options: [
+      'I say so simply, and we find another tender moment',
+      'I go along with it anyway, so as not to disappoint them',
+      'I refuse, but I feel guilty',
+      'I refuse without difficulty',
+    ],
+  },
 };
 
 const TRANSLATIONS: Record<
@@ -1214,6 +1267,7 @@ export function localizeQuestion(
   return {
     ...q,
     text: t.text,
+    ...(q.assistance ? { assistance: t.assistance ?? q.assistance } : {}),
     options: q.options.map((o, i) => ({
       ...o,
       text: options?.[i] ?? o.text,

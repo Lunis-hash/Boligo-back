@@ -17,6 +17,7 @@ import {
   isValidFreeText,
   FREE_TEXT_SUFFIX,
   askIfMet,
+  questionDisplayText,
 } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
@@ -81,7 +82,7 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     signOut: 'Se déconnecter',
     languageHint: 'Langue de l’entretien',
     consentText:
-      'Les questions suivantes portent sur votre religion ou votre vie intime. Ce sont des données sensibles : BOLIGO ne les enregistre qu’avec votre accord explicite. Elles servent à calculer votre compatibilité et peuvent apparaître, résumées, sur votre profil. Vous pourrez retirer votre accord à tout moment depuis votre profil : vos réponses seront alors effacées.',
+      'Les questions suivantes portent sur votre origine, votre religion ou votre vie intime. Ce sont des données sensibles : BOLIGO ne les enregistre qu’avec votre accord explicite. Elles servent à calculer votre compatibilité et peuvent apparaître, résumées, sur votre profil. Sans accord, ces questions sont passées, et les réponses qui touchent à la foi ou à l’intimité ne vous sont pas proposées ailleurs dans l’entretien. Vous pourrez retirer votre accord à tout moment depuis votre profil : vos réponses seront alors effacées.',
     consentYes: 'J’accepte de répondre',
     consentNo: 'Je préfère passer ces questions',
   },
@@ -111,7 +112,7 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     signOut: 'Sign out',
     languageHint: 'Interview language',
     consentText:
-      'The next questions are about your religion or your intimate life. This is sensitive data: BOLIGO only saves it with your explicit consent. It is used to work out your compatibility and may appear, summarised, on your profile. You can withdraw your consent at any time from your profile: your answers will then be deleted.',
+      'The next questions are about your origins, your religion or your intimate life. This is sensitive data: BOLIGO only saves it with your explicit consent. It is used to work out your compatibility and may appear, summarised, on your profile. Without consent, these questions are skipped, and answers touching on faith or intimacy are not offered elsewhere in the interview. You can withdraw your consent at any time from your profile: your answers will then be deleted.',
     consentYes: 'I agree to answer',
     consentNo: 'I’d rather skip these questions',
   },
@@ -243,7 +244,7 @@ export default function DynamicInterviewScreen() {
         const last = prev[prev.length - 1];
         const translated: Message = {
           id: Math.random().toString(36).substring(7),
-          text: current.text,
+          text: questionDisplayText(current),
           type: 'ai',
           options: current.options,
           questionId: current.id,
@@ -322,7 +323,7 @@ export default function DynamicInterviewScreen() {
     // Langues : celles du pays de résidence sont cochées d'office.
     setPicked(initialPicked(q));
     setOtherText(q.suggestedOther ?? '');
-    addAIMessage(q.text, q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
+    addAIMessage(questionDisplayText(q), q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
   };
 
   const addAIMessage = (

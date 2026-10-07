@@ -31,19 +31,24 @@ import {
   QUESTION_INDEX,
   answerKeys,
   answerText,
+  isV7Interview,
 } from '../interview/questions.data';
 import {
+  STYLE_HIGH,
   buildPsychProfile,
   psychometricDivergences,
 } from '../psychometrics/psychometrics';
 import {
+  Faith,
   FaithRequirement,
   faithOf,
   faithRequirement,
   foodRuleOf,
   keysWithout,
-  nonNegotiableThemeOf,
+  nearOrigin,
+  nonNegotiableThemesOf,
   nonNegotiablesOf,
+  shareOrigin,
   stillAttached,
   upgradeAnswers,
 } from './answer-bridge';
@@ -123,6 +128,18 @@ export interface Divergence {
   shared?: boolean;
   /** Sujet déclaré non négociable par l'un des deux (M8_Q12) : gravité relevée. */
   nonNegotiable?: boolean;
+  /**
+   * V7.1 — tendance tirée de l'entretien (contrôle, justification de la
+   * violence) : seul le sujet est affiché, jamais les réponses ni le membre
+   * concerné.
+   */
+  neutral?: boolean;
+  /**
+   * V7.1 — sujet central que l'un des deux n'a pas renseigné (sans accord
+   * pour les données sensibles) : affiché comme tel, jamais comme une
+   * réponse.
+   */
+  undisclosed?: boolean;
 }
 
 export interface Convergence {
@@ -161,6 +178,19 @@ export interface DivergenceReport {
   comparisons?: Comparison[];
 }
 
+/**
+ * V7.1 — où vit chacun (« Ville, Pays » de l'inscription, normalisé : voir
+ * `homeContext` dans discover-filters.ts). Les réponses « je reste où je
+ * suis » n'ont de sens qu'avec le lieu : sans lui, elles sont lues comme
+ * avant.
+ */
+export interface ReportContext {
+  cityA?: string | null;
+  cityB?: string | null;
+  countryA?: string | null;
+  countryB?: string | null;
+}
+
 /** Gravité d'une paire de réponses ; `null` = compatible / convergent. */
 type SeverityFn = (a: string, b: string) => Severity | null;
 
@@ -194,6 +224,20 @@ interface Rule {
   risksOnly?: boolean;
   /** Aveu sur soi : jamais de divergence affichée, seulement l'affinité. */
   silent?: boolean;
+  /**
+   * V7.1 — un fait sur soi (avoir des enfants, la place de son ex) : jamais
+   * comparé comme une préférence, ni écart ni point d'affinité ; seul un
+   * accord qui a sa phrase est affiché. Ce que l'autre accepte de ce fait se
+   * compare par une règle croisée.
+   */
+  fact?: boolean;
+  /**
+   * V7.1 — réponses relatives au lieu où chacun vit (« je reste où je
+   * suis ») : deux réponses identiques ne sont ni un accord ni un point
+   * d'affinité quand les deux membres ne vivent pas au même endroit
+   * (`homeRule` les lit).
+   */
+  relative?: string[];
   /** Similarité de deux réponses compatibles (choix multiples), 0–1. */
   similarity?: (a: string, b: string) => number;
   /** Convergence calculée (choix multiples : réponses communes). */
@@ -245,11 +289,15 @@ function overlap(a: string[], b: string[]): number {
   return a.filter((k) => b.includes(k)).length / union.size;
 }
 
-/** Retrait en dispute confirmé par une autre réponse (échelle, scénario, réparation). */
+/**
+ * Retrait en dispute confirmé par une autre réponse (échelle, scénario,
+ * réparation). V7.1 : le point neutre (50, « parfois ») ne confirme rien ;
+ * il faut le pôle haut de l'échelle (60 et plus).
+ */
 function withdrawalConfirmed(x: RawAnswers, exclude: string): boolean {
   const p = buildPsychProfile(x);
   return (
-    (p.conflict.stonewalling ?? 0) >= 50 ||
+    (p.conflict.stonewalling ?? 0) >= STYLE_HIGH ||
     (p.attachment.avoidance ?? 0) >= 60 ||
     x.M6_Q16 === 'D' ||
     (exclude !== 'M6_Q01' && ['C', 'D'].includes(x.M6_Q01)) ||
@@ -344,6 +392,7 @@ export const DIVERGENCE_RULES: Rule[] = [
       A: 'Vous êtes tous les deux prêts à déménager pour le couple',
       D: 'Vous tenez tous les deux à rester où vous êtes',
     },
+    relative: ['C', 'D'],
   },
   {
     questionId: 'M7_Q07',
@@ -358,10 +407,35 @@ export const DIVERGENCE_RULES: Rule[] = [
       A: 'Vous vous voyez tous les deux rester dans votre ville',
       C: "Vous envisagez tous les deux une vie à l'étranger",
     },
+    relative: ['A'],
   },
   {
-    questionId: 'M4_Q13',
+    // V7.1 — le retour au pays d'origine de sa famille, projet fréquent
+    // dans la diaspora : un projet proche face à « ma vie est ici » est
+    // majeur.
+    questionId: 'M7_Q36',
     theme: 'lieu',
+    label: 'Retour au pays d’origine',
+    topic: 'Le retour au pays d’origine',
+    severity: pairs({
+      AC: 'majeure',
+      BC: 'moderee',
+      AB: 'mineure',
+      AD: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      C: 'Vous voyez tous les deux votre vie là où vous vivez aujourd’hui',
+    },
+    // Deux « je vis déjà au pays » : peut-être pas le même pays.
+    discreet: ['D'],
+    relative: ['C'],
+  },
+  {
+    // V7.1 : rangée dans l'argent (biens, partage), plus dans le lieu de vie.
+    questionId: 'M4_Q13',
+    theme: 'argent',
     label: 'Partage des affaires personnelles',
     topic: 'Le partage des affaires personnelles',
     severity: pairs({ AD: 'moderee', AC: 'mineure', BD: 'mineure' }, null),
@@ -374,10 +448,14 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'famille',
     label: "Désir d'enfants",
     topic: "Le désir d'enfants",
+    // V7.1 : « oui, si les conditions sont réunies » face à « non, c'est
+    // définitif » est le non-négociable le plus robuste de la recherche sur
+    // les critères de rupture : une incompatibilité déclarée, comme « oui,
+    // absolument ». « Je ne suis pas certain(e) » face à « non » : majeure.
     severity: pairs({
       AD: 'critique',
-      BD: 'majeure',
-      CD: 'moderee',
+      BD: 'critique',
+      CD: 'majeure',
       AC: 'moderee',
       BC: 'mineure',
       AB: 'mineure',
@@ -392,7 +470,10 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'famille',
     label: 'Enfants déjà présents',
     topic: "La présence d'enfants",
-    severity: pairs({ AC: 'moderee', AB: 'mineure', AD: 'mineure' }, 'mineure'),
+    // V7.1 : un fait, plus une préférence ; l'acceptation des enfants de
+    // l'autre (M0_Q14) se compare à lui (`childrenAcceptRule`).
+    fact: true,
+    severity: () => null,
     convergence: {
       A: 'Vous n’avez ni l’un ni l’autre d’enfant à charge',
       B: 'Vous êtes tous les deux parents d’un enfant à charge',
@@ -439,6 +520,10 @@ export const DIVERGENCE_RULES: Rule[] = [
       BD: 'mineure',
       CD: 'mineure',
     }),
+    // V7.1 : deux « je suis leur avis pour garder la paix » (fusion), deux
+    // oppositions vives ou deux prises de distance (coupure) ne sont pas un
+    // accord : personne ne tient la position du couple (Bowen).
+    sameRisk: { A: 'moderee', C: 'moderee', D: 'moderee' },
     convergence: {
       B: 'Vous décidez tous les deux à deux, et l’expliquez calmement à vos proches',
     },
@@ -459,6 +544,9 @@ export const DIVERGENCE_RULES: Rule[] = [
             AC: 'moderee',
             CE: 'moderee',
           })(a, b),
+    // V7.1 : deux attentes que « ça se règle naturellement », ou deux
+    // « ne le prends pas à cœur » : personne ne protège le partenaire.
+    sameRisk: { C: 'moderee', D: 'moderee' },
     convergence: {
       A: 'Vous défendriez tous les deux votre partenaire face à votre famille',
       E: 'Vous soutiendriez tous les deux votre partenaire, avant d’en parler seul à seul avec votre parent',
@@ -533,6 +621,27 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
+    // V7.1 — une tape ou une fessée pour éduquer : « une bonne éducation »
+    // face à « jamais, c'est une violence » est majeure. Aucune convergence
+    // affichée sur une tolérance partagée.
+    questionId: 'M8_Q20',
+    theme: 'famille',
+    label: 'Punitions corporelles',
+    topic: 'Les punitions corporelles',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: {
+      D: 'Vous refusez tous les deux toute tape pour éduquer un enfant',
+    },
+    discreet: ['A', 'B'],
+  },
+  {
     questionId: 'M1_Q15',
     theme: 'famille',
     label: 'Si la famille désapprouve',
@@ -547,33 +656,35 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M4_Q07',
+    // V7.1 — remplace M4_Q07, posée à tous : « indispensable » face à « je
+    // n'y adhère pas » est une incompatibilité déclarée ; face à quelqu'un
+    // qui la respecterait sans la pratiquer, une nuance.
+    questionId: 'M4_Q17',
     theme: 'famille',
-    label: 'Dot ou mahr',
-    topic: 'La dot ou le mahr',
+    label: 'Dot',
+    topic: 'La dot',
     severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BD: 'moderee',
+      AD: 'critique',
+      BD: 'majeure',
+      AC: 'mineure',
       AB: 'mineure',
       BC: 'mineure',
       CD: 'mineure',
     }),
-    convergence: { A: 'La dot ou le mahr compte pour vous deux' },
+    convergence: {
+      A: 'La dot est indispensable pour vous deux',
+      B: 'La dot compte pour vous deux, sous une forme symbolique ou modernisée',
+    },
   },
   {
     questionId: 'M3_Q05',
     theme: 'famille',
     label: "Place de l'ex",
     topic: "La place de l'ex",
-    severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BD: 'moderee',
-      AB: 'mineure',
-      BC: 'mineure',
-      CD: 'mineure',
-    }),
+    // V7.1 : « aucune place à mon ex » ne dit pas ce que l'on accepte chez
+    // l'autre ; comparée à M3_Q13 (`exTiesRule`).
+    fact: true,
+    severity: () => null,
   },
   {
     // V7 — partage des tâches de la maison.
@@ -657,18 +768,26 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M4_Q05',
+    // V7.1 — remplace M4_Q05, posée à tous (un couple mixte n'était jamais
+    // comparé) : « un devoir qui ne se discute pas » face à « jamais l'argent
+    // du foyer » est une incompatibilité déclarée.
+    questionId: 'M4_Q16',
     theme: 'argent',
-    label: 'Envois à la famille élargie',
-    topic: "Les envois d'argent à la famille",
+    label: 'Aide financière à la famille',
+    topic: "L'aide financière à la famille",
     severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BC: 'moderee',
+      AD: 'critique',
+      AC: 'majeure',
+      BD: 'majeure',
       CD: 'moderee',
-      AB: 'mineure',
-      BD: 'mineure',
+      AB: 'moderee',
+      BC: 'mineure',
     }),
+    convergence: {
+      A: 'Aider votre famille est pour vous deux un devoir régulier',
+      B: 'Vous décideriez tous les deux à deux de l’aide à vos familles',
+      D: 'Pour vous deux, l’argent du foyer reste au foyer',
+    },
   },
   {
     questionId: 'M4_Q09',
@@ -723,70 +842,45 @@ export const DIVERGENCE_RULES: Rule[] = [
   // ── Religion & spiritualité (la religion, la pratique et l'alimentation
   // sont des règles croisées, lues en V7 comme en V6)
   {
-    questionId: 'M1_Q03',
-    theme: 'spiritualite',
-    label: 'Traditions de mariage',
-    topic: 'Les traditions de mariage',
-    severity: pairs({
-      AD: 'moderee',
-      BD: 'mineure',
-      AC: 'mineure',
-      AB: 'mineure',
-      BC: 'mineure',
-      CD: 'mineure',
-    }),
-  },
-  {
-    questionId: 'M8_Q03',
-    theme: 'spiritualite',
-    label: 'Vision du mariage',
-    topic: 'La vision du mariage',
-    severity: pairs({
-      AD: 'majeure',
-      AB: 'moderee',
-      CD: 'moderee',
-      BD: 'moderee',
-      DE: 'moderee',
-      AC: 'mineure',
-      BC: 'mineure',
-      AE: 'mineure',
-      BE: 'mineure',
-      CE: 'mineure',
-    }),
-    convergence: {
-      A: 'Le mariage est pour vous deux un acte religieux et spirituel',
-      C: 'Vous voulez tous les deux un mariage civil et religieux',
-      E: 'Le mariage est pour vous deux avant tout coutumier',
-    },
-  },
-  {
-    questionId: 'M1_Q11',
+    // V7.1 — remplace M1_Q11 (cérémonies : règle croisée `marriageRule`).
+    // Exclue (avec ou sans discussion) face à « envisageable » : une
+    // incompatibilité déclarée ; « pas de position arrêtée » face à
+    // « exclue sans discussion » : majeure.
+    questionId: 'M1_Q20',
     theme: 'spiritualite',
     label: 'Polygamie',
     topic: 'La polygamie',
-    // V7 : « Je préfère en parler en personne » ne neutralise plus la règle
-    // face à « monogamie exclusive, sans discussion ».
-    severity: (a, b) => {
-      if (a === b) return null;
-      if (a === 'D' || b === 'D')
-        return a === 'A' || b === 'A' ? 'moderee' : 'mineure';
-      return pairs({ AC: 'critique', BC: 'majeure', AB: 'mineure' })(a, b);
+    severity: pairs({
+      AC: 'critique',
+      BC: 'critique',
+      AD: 'majeure',
+      BD: 'moderee',
+      CD: 'moderee',
+      AB: 'mineure',
+    }),
+    convergence: {
+      A: 'Monogamie exclusive pour vous deux',
+      B: 'Vous excluez tous les deux la polygamie pour votre couple',
     },
-    convergence: { A: 'Monogamie exclusive pour vous deux' },
+    // Deux positions non arrêtées : ni écart ni accord à afficher.
+    discreet: ['D'],
   },
 
   // ── Intimité & sexualité
   {
-    // V7 — remplace M6_Q10 : des réponses ordonnées, sans jugement moral ;
-    // aucune ne déclare seule une incompatibilité (voir M8_Q12).
+    // V7 — remplace M6_Q10 : des réponses ordonnées, sans jugement moral.
+    // V7.1 : la question mesure la réaction à une infidélité, pas la
+    // fidélité : pardonner n'est pas être infidèle. Elle ne relève plus du
+    // thème « fidélité » de M8_Q12 et pèse peu ; ce que chacun appelle
+    // « tromper » (M6_Q19) reste la vraie divergence.
     questionId: 'M6_Q18',
     theme: 'intimite',
-    label: 'Fidélité',
-    topic: 'La fidélité',
+    label: 'Réaction à une infidélité',
+    topic: 'La réaction à une infidélité',
     severity: pairs({
-      AD: 'majeure',
-      AC: 'moderee',
-      BD: 'moderee',
+      AD: 'moderee',
+      AC: 'mineure',
+      BD: 'mineure',
       AB: 'mineure',
       BC: 'mineure',
       CD: 'mineure',
@@ -935,10 +1029,12 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'communication',
     label: 'Le premier pas après une dispute',
     topic: 'Le premier pas après une dispute',
+    // V7.1 : « j'attends que l'autre revienne » face à « je ne m'excuse
+    // pas » : personne ne fait le premier pas non plus (comme C/C et D/D).
     severity: (a, b) =>
       ['A', 'B'].includes(a) && ['A', 'B'].includes(b)
         ? null
-        : pairs({ AD: 'moderee' }, 'mineure')(a, b),
+        : pairs({ AD: 'moderee', CD: 'moderee' }, 'mineure')(a, b),
     // Deux attentes que l'autre revienne, ou deux refus de s'excuser : personne
     // ne fait le premier pas.
     sameRisk: { C: 'moderee', D: 'moderee' },
@@ -948,22 +1044,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
-    // Limite de sécurité. « Ça dépend des circonstances » face à « limite
-    // absolue » : incompatibilité déclarée. Toute tolérance partagée est un
-    // risque, jamais un accord.
+    // Limite de sécurité. « Ça dépend des circonstances » face à une limite
+    // (absolue, ou « inacceptable ») : incompatibilité déclarée. Toute
+    // tolérance partagée est un risque, jamais un accord ; deux « ça
+    // dépend » : une incompatibilité déclarée (V7.1).
     questionId: 'M6_Q04',
     theme: 'communication',
     label: 'Limite face à la violence physique',
     topic: 'La limite face à la violence physique',
     severity: pairs({
       AC: 'critique',
-      BC: 'majeure',
+      BC: 'critique',
+      CD: 'majeure',
       AD: 'moderee',
-      CD: 'moderee',
       AB: 'mineure',
       BD: 'mineure',
     }),
-    sameRisk: { B: 'moderee', C: 'majeure', D: 'majeure' },
+    sameRisk: { B: 'moderee', C: 'critique', D: 'majeure' },
     convergence: {
       A: 'La violence physique est pour vous deux une limite absolue',
     },
@@ -1122,18 +1219,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
-    questionId: 'M8_Q02',
+    // V7.1 — remplace M8_Q02 (délais exhaustifs, sans recoupement).
+    questionId: 'M8_Q17',
     theme: 'projet',
     label: "Délai d'engagement",
     topic: "Le délai d'engagement",
     severity: pairs({
+      AD: 'majeure',
       AC: 'moderee',
-      AD: 'moderee',
+      BD: 'moderee',
       AB: 'mineure',
       BC: 'mineure',
-      BD: 'mineure',
       CD: 'mineure',
     }),
+    convergence: {
+      A: 'Vous envisagez tous les deux un engagement officiel dans l’année',
+      B: 'Vous envisagez tous les deux un engagement officiel dans un à deux ans',
+    },
   },
   {
     // V7 — l'attitude face à la séparation, indicateur d'engagement.
@@ -1226,18 +1328,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     }),
   },
   {
-    questionId: 'M4_Q06',
+    // V7.1 — vivre ensemble avant le mariage.
+    questionId: 'M8_Q19',
     theme: 'projet',
-    label: 'Projet immobilier',
-    topic: 'Le projet immobilier',
+    label: 'Vie commune avant le mariage',
+    topic: 'La vie commune avant le mariage',
     severity: pairs({
-      AB: 'moderee',
+      AD: 'majeure',
+      AC: 'moderee',
       BD: 'moderee',
-      AC: 'mineure',
-      AD: 'mineure',
+      AB: 'mineure',
       BC: 'mineure',
       CD: 'mineure',
     }),
+    convergence: {
+      A: 'Vous attendez tous les deux le mariage pour vivre ensemble',
+      B: 'Vous attendez tous les deux les fiançailles pour vivre ensemble',
+    },
   },
   {
     questionId: 'M8_Q11',
@@ -1375,6 +1482,125 @@ export const LEGACY_RULES: Rule[] = [
     }),
     supersededBy: ['M7_Q19'],
   },
+  // ── Questions V7 retirées en V7.1 (règles V7, lues quand la remplaçante
+  // manque d'un côté ; les réponses de même sens sont traduites par
+  // `answer-bridge.ts`).
+  {
+    // Remplacée par les cérémonies (M8_Q16) et la dot (M4_Q17).
+    questionId: 'M1_Q03',
+    theme: 'spiritualite',
+    label: 'Traditions de mariage',
+    topic: 'Les traditions de mariage',
+    severity: pairs({
+      AD: 'moderee',
+      BD: 'mineure',
+      AC: 'mineure',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    supersededBy: ['M8_Q16'],
+  },
+  {
+    // Sujet abandonné (faible pouvoir de discrimination) : lu entre deux
+    // entretiens antérieurs.
+    questionId: 'M4_Q06',
+    theme: 'projet',
+    label: 'Projet immobilier',
+    topic: 'Le projet immobilier',
+    severity: pairs({
+      AB: 'moderee',
+      BD: 'moderee',
+      AC: 'mineure',
+      AD: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+  },
+  {
+    questionId: 'M1_Q11',
+    theme: 'spiritualite',
+    label: 'Polygamie',
+    topic: 'La polygamie',
+    severity: (a, b) => {
+      if (a === b) return null;
+      if (a === 'D' || b === 'D')
+        return a === 'A' || b === 'A' ? 'moderee' : 'mineure';
+      return pairs({ AC: 'critique', BC: 'critique', AB: 'mineure' })(a, b);
+    },
+    convergence: { A: 'Monogamie exclusive pour vous deux' },
+    supersededBy: ['M1_Q20'],
+  },
+  {
+    questionId: 'M4_Q05',
+    theme: 'argent',
+    label: 'Envois à la famille élargie',
+    topic: "Les envois d'argent à la famille",
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BC: 'moderee',
+      CD: 'moderee',
+      AB: 'mineure',
+      BD: 'mineure',
+    }),
+    supersededBy: ['M4_Q16'],
+  },
+  {
+    questionId: 'M4_Q07',
+    theme: 'famille',
+    label: 'Dot ou mahr',
+    topic: 'La dot ou le mahr',
+    severity: pairs({
+      AD: 'majeure',
+      AC: 'moderee',
+      BD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      CD: 'mineure',
+    }),
+    convergence: { A: 'La dot ou le mahr compte pour vous deux' },
+    supersededBy: ['M4_Q17'],
+  },
+  {
+    questionId: 'M8_Q02',
+    theme: 'projet',
+    label: "Délai d'engagement",
+    topic: "Le délai d'engagement",
+    severity: pairs({
+      AC: 'moderee',
+      AD: 'moderee',
+      AB: 'mineure',
+      BC: 'mineure',
+      BD: 'mineure',
+      CD: 'mineure',
+    }),
+    supersededBy: ['M8_Q17'],
+  },
+  {
+    questionId: 'M8_Q03',
+    theme: 'spiritualite',
+    label: 'Vision du mariage',
+    topic: 'La vision du mariage',
+    severity: pairs({
+      AD: 'majeure',
+      AB: 'moderee',
+      CD: 'moderee',
+      BD: 'moderee',
+      DE: 'moderee',
+      AC: 'mineure',
+      BC: 'mineure',
+      AE: 'mineure',
+      BE: 'mineure',
+      CE: 'mineure',
+    }),
+    convergence: {
+      A: 'Le mariage est pour vous deux un acte religieux et spirituel',
+      C: 'Vous voulez tous les deux un mariage civil et religieux',
+      E: 'Le mariage est pour vous deux avant tout coutumier',
+    },
+    supersededBy: ['M8_Q16'],
+  },
 ];
 
 /** Convergences positives sans comparaison (scénarios sur soi : seule une même bonne pratique se signale). */
@@ -1443,6 +1669,10 @@ class Collector {
   adjustable = new Set<Divergence>();
   /** Relevées par une déclaration de non-négociable : P9 n'y touche plus. */
   declared = new Set<Divergence>();
+  /** Questions déjà lues par une règle croisée : leur règle simple est sautée. */
+  handled = new Set<string>();
+  /** V7.1 — les deux membres ne vivent pas au même endroit (`homeRule`). */
+  apart = false;
   compared = 0;
 
   diverge(d: Divergence, adjustable = !d.shared): void {
@@ -1482,7 +1712,21 @@ function applyRule(rule: Rule, a: RawAnswers, b: RawAnswers, c: Collector) {
   const ka = a[rule.questionId];
   const kb = b[rule.questionId];
   if (!ka || !kb) return;
+  if (c.handled.has(rule.questionId)) return;
+  if (c.apart && ka === kb && rule.relative?.includes(ka)) return;
   if (rule.supersededBy?.some((id) => a[id] && b[id])) return;
+  if (rule.fact) {
+    const label = ka === kb ? rule.convergence?.[ka] : undefined;
+    if (label)
+      c.converge({
+        questionId: rule.questionId,
+        theme: rule.theme,
+        label,
+        answer: optionText(rule.questionId, ka),
+        topic: rule.topic,
+      });
+    return;
+  }
   if (
     rule.skipIfFlagged?.some((id) =>
       c.divergences.some((d) => d.questionId === id),
@@ -1548,15 +1792,102 @@ function applyRule(rule: Rule, a: RawAnswers, b: RawAnswers, c: Collector) {
 
 // ─── Règles croisées : plusieurs questions, ou une question V7 et sa version V6 ─
 
-/** Culture : « la même culture » (M1_Q02) face à des origines sans rien de commun (M1_Q01). */
+/** Distance entre les deux lieux de vie : autre pays, autre ville, ou rien de connu. */
+function distanceOf(ctx?: ReportContext): 'pays' | 'ville' | null {
+  if (!ctx) return null;
+  const { countryA, countryB, cityA, cityB } = ctx;
+  if (countryA && countryB && countryA !== countryB) return 'pays';
+  if (cityA && cityB && !cityA.includes(cityB) && !cityB.includes(cityA))
+    return 'ville';
+  return null;
+}
+
+/** « Non, je reste où je suis » (M0_Q03 D) : un refus net de déménager. */
+const staysFirmly = (x: RawAnswers) => x.M0_Q03 === 'D';
+
+/**
+ * Attaché(e) à son lieu sans l'avoir dit nettement : se voit dans la même
+ * ville dans cinq ans (M7_Q07 A) ou dit « ma vie est là où je vis » (M7_Q36
+ * C), sans s'être dit prêt(e) à déménager (M0_Q03 A ou B).
+ */
+const staysHome = (x: RawAnswers) =>
+  staysFirmly(x) ||
+  (x.M0_Q03 !== 'A' &&
+    x.M0_Q03 !== 'B' &&
+    (x.M7_Q07 === 'A' || x.M7_Q36 === 'C'));
+
+/**
+ * V7.1 (B4) — lieu de vie : « je reste où je suis » et « la même ville
+ * qu'aujourd'hui » sont relatifs. Deux membres qui vivent dans deux pays et
+ * tiennent chacun à rester ne sont pas d'accord : ils ne pourront pas vivre
+ * ensemble. Deux refus nets : critique ; un seul attachement, ou deux sans
+ * refus net : majeure ; deux « cela dépend de la distance » : modérée (la
+ * distance est un pays). Deux villes d'un même pays : majeure pour deux refus
+ * nets, modérée pour deux attachements. Dans tous les cas, les réponses
+ * relatives identiques ne comptent plus comme des accords (`relative`).
+ */
+function homeRule(
+  a: RawAnswers,
+  b: RawAnswers,
+  ctx: ReportContext | undefined,
+  c: Collector,
+): void {
+  const distance = distanceOf(ctx);
+  if (!distance) return;
+  c.apart = true;
+  const answered = (x: RawAnswers) => !!(x.M0_Q03 || x.M7_Q07 || x.M7_Q36);
+  if (!answered(a) || !answered(b)) return;
+  const firm = [staysFirmly(a), staysFirmly(b)].filter(Boolean).length;
+  const attached = [staysHome(a), staysHome(b)].filter(Boolean).length;
+  let severity: Severity | null = null;
+  if (distance === 'pays') {
+    if (firm === 2) severity = 'critique';
+    else if (attached > 0) severity = 'majeure';
+    // Deux « cela dépend de la distance », et la distance est un pays.
+    else if (a.M0_Q03 === 'C' && b.M0_Q03 === 'C') severity = 'moderee';
+  } else if (attached === 2) {
+    severity = firm === 2 ? 'majeure' : 'moderee';
+  }
+  if (!severity) return;
+  c.handled.add('M0_Q03');
+  const shown = (x: RawAnswers) =>
+    x.M0_Q03
+      ? view('M0_Q03', x.M0_Q03)
+      : x.M7_Q07
+        ? view('M7_Q07', x.M7_Q07)
+        : view('M7_Q36', x.M7_Q36);
+  c.diverge({
+    questionId: 'M0_Q03',
+    theme: 'lieu',
+    severity,
+    label:
+      distance === 'ville'
+        ? 'Chacun attaché à sa ville'
+        : attached === 2
+          ? 'Chacun attaché à son pays'
+          : 'Vivre dans le même pays',
+    question: questionText('M0_Q03'),
+    a: shown(a),
+    b: shown(b),
+  });
+}
+
+/** Origine telle que le membre l'a dite : région (V7.1) ou continent (V7). */
+const originView = (x: RawAnswers): AnswerView =>
+  x.M1_Q21 ? view('M1_Q21', x.M1_Q21) : view('M1_Q01', x.M1_Q01);
+
+/**
+ * Culture : « la même culture » (M1_Q02) face à des origines sans rien de
+ * commun (M1_Q21, V7 : M1_Q01). V7.1 : deux régions d'un même continent
+ * (Antilles et Amérique du Nord, Afrique de l'Ouest et de l'Est) sont des
+ * cultures proches, pas la même : à explorer pour qui veut « la même ».
+ */
 function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
-  if (!a.M1_Q01 || !b.M1_Q01) return;
+  const common = shareOrigin(a, b);
+  if (common === null) return;
   const wants = [a.M1_Q02, b.M1_Q02];
   if (!wants[0] && !wants[1]) return;
   // Double origine : une origine commune suffit.
-  const common = answerKeys(a.M1_Q01).some((k) =>
-    answerKeys(b.M1_Q01).includes(k),
-  );
   if (common) {
     c.agree('M1_Q02', 1);
     if (wants.some((w) => w === 'A' || w === 'B'))
@@ -1564,14 +1895,17 @@ function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
         questionId: 'M1_Q02',
         theme: 'famille',
         label: 'Vous partagez une origine culturelle',
-        answer: optionText('M1_Q01', a.M1_Q01),
+        answer: originView(a).text,
         topic: 'L’origine culturelle',
       });
     return;
   }
+  const near = nearOrigin(a, b);
   const severity: Severity | null = wants.includes('A')
-    ? 'majeure'
-    : wants.includes('B')
+    ? near
+      ? 'moderee'
+      : 'majeure'
+    : wants.includes('B') && !near
       ? 'mineure'
       : null;
   if (!severity) {
@@ -1584,8 +1918,8 @@ function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     severity,
     label: 'Culture du partenaire idéal',
     question: questionText('M1_Q02'),
-    a: view('M1_Q01', a.M1_Q01),
-    b: view('M1_Q01', b.M1_Q01),
+    a: originView(a),
+    b: originView(b),
   });
 }
 
@@ -1621,6 +1955,26 @@ const SAME_FAITH: Partial<Record<string, string>> = {
   sans: 'Vous êtes tous les deux sans religion',
 };
 
+/** V7.1 : bouddhiste (F) et hindoue (K), deux religions distinctes en V7. */
+const SAME_FAITH_BY_KEY: Partial<Record<string, string>> = {
+  F: 'Vous partagez la spiritualité bouddhiste',
+  K: 'Vous partagez la foi hindoue',
+};
+
+/**
+ * Deux réponses V7 (M1_Q16) d'une même famille qui désignent pourtant deux
+ * religions : bouddhiste et hindoue (V7.1). La réponse V6 « bouddhiste /
+ * hindouiste » reste compatible avec l'une comme avec l'autre.
+ */
+function distinctFaiths(fa: Faith, fb: Faith): boolean {
+  return (
+    fa.family === 'bouddhiste_hindou' &&
+    fa.questionId === 'M1_Q16' &&
+    fb.questionId === 'M1_Q16' &&
+    fa.key !== fb.key
+  );
+}
+
 /** Religion (V7 : M1_Q16 à M1_Q18 ; V6 : M1_Q05 et M1_Q06), puis pratique. */
 function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
   const fa = faithOf(a);
@@ -1643,12 +1997,21 @@ function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
       b: view(fb.questionId, fb.key),
     });
 
-  if (fa.family !== fb.family) {
+  if (fa.family !== fb.family || distinctFaiths(fa, fb)) {
     religionDivergence(faithGap(ra, rb));
     return;
   }
   if (fa.family === 'autre') {
-    // Deux « autre religion » : peut-être pas la même ; ni écart ni accord affiché.
+    // Deux « autre religion » : peut-être pas la même ; ni accord affiché,
+    // et un écart à explorer si l'un exige la sienne (V7.1).
+    if (strictFaith(ra) || strictFaith(rb)) religionDivergence('moderee');
+    else c.agree(qid, COMPATIBLE_DIFFERENT);
+  } else if (
+    fa.family === 'bouddhiste_hindou' &&
+    fa.questionId !== fb.questionId
+  ) {
+    // V6 « bouddhiste / hindouiste » face à une réponse V7 : compatible, sans
+    // accord affiché (on ne sait pas laquelle des deux).
     c.agree(qid, COMPATIBLE_DIFFERENT);
   } else if (
     fa.family === 'chretien' &&
@@ -1661,7 +2024,9 @@ function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     else c.agree(qid, COMPATIBLE_DIFFERENT);
   } else {
     c.agree(qid, 1);
-    const label = SAME_FAITH[fa.family];
+    const label =
+      (fa.questionId === 'M1_Q16' ? SAME_FAITH_BY_KEY[fa.key] : undefined) ??
+      SAME_FAITH[fa.family];
     if (label)
       c.converge({
         questionId: qid,
@@ -1778,6 +2143,61 @@ function foodRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     });
 }
 
+/** Cérémonies qui accomplissent un mariage (M8_Q16), pour les accords. */
+const CEREMONY_WORDS: Record<string, string> = {
+  A: 'le mariage civil',
+  B: 'le mariage religieux',
+  C: 'le mariage coutumier',
+};
+
+/**
+ * V7.1 — cérémonies indispensables (M8_Q16, choix multiple ; V7 : M8_Q03,
+ * traduite par la passerelle). Un mariage religieux exigé d'un seul côté :
+ * à explorer, majeure face à quelqu'un sans religion ; un mariage coutumier
+ * exigé d'un seul côté : à explorer ; seul le civil diffère : une nuance.
+ * Accord sur les cérémonies communes.
+ */
+function marriageRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  if (!a.M8_Q16 || !b.M8_Q16) return;
+  const needs = (x: RawAnswers) =>
+    keysWithout(x.M8_Q16, 'D').filter((k) => k !== 'D');
+  const ka = needs(a);
+  const kb = needs(b);
+  const onlyOne = (k: string) => ka.includes(k) !== kb.includes(k);
+  const withoutFaith = (x: RawAnswers) => {
+    const f = faithOf(x)?.family;
+    return f === 'sans' || f === 'spirituel';
+  };
+  let severity: Severity | null = null;
+  if (onlyOne('B')) {
+    const other = ka.includes('B') ? b : a;
+    severity = withoutFaith(other) ? 'majeure' : 'moderee';
+  } else if (onlyOne('C')) severity = 'moderee';
+  else if (onlyOne('A')) severity = 'mineure';
+  if (severity) {
+    c.diverge({
+      questionId: 'M8_Q16',
+      theme: 'spiritualite',
+      severity,
+      label: 'Cérémonies du mariage',
+      question: questionText('M8_Q16'),
+      a: view('M8_Q16', a.M8_Q16),
+      b: view('M8_Q16', b.M8_Q16),
+    });
+    return;
+  }
+  c.agree('M8_Q16', 1);
+  c.converge({
+    questionId: 'M8_Q16',
+    theme: 'spiritualite',
+    label: ka.length
+      ? `Pour vous deux, un mariage passe par ${joinWords(ka.map((k) => CEREMONY_WORDS[k]))}`
+      : 'Aucune cérémonie n’est indispensable pour vous deux',
+    answer: optionText('M8_Q16', ka.length ? ka.join(',') : 'D'),
+    topic: 'Les cérémonies du mariage',
+  });
+}
+
 /**
  * Tabac : ce que l'un refuse chez l'autre (M0_Q11 ; V6 : M0_Q08) face à ce
  * que l'autre fait (M0_Q09). Un fumeur qui a répondu « sans importance » pour
@@ -1800,10 +2220,20 @@ function tobaccoRule(
   ] as const) {
     const level = smoker.M0_Q09;
     const accept = refuser.M0_Q11;
-    if (!accept || (level !== 'B' && level !== 'C')) continue;
+    // V7.1 : la réponse V6 (M0_Q08) mêlait tabac, alcool et substances ;
+    // « rédhibitoire » ou « avec modération » face à un fumeur ne sont que
+    // des sujets à explorer, jamais une incompatibilité déclarée.
+    const legacy =
+      !accept && ['A', 'B'].includes(refuser.M0_Q08)
+        ? refuser.M0_Q08
+        : undefined;
+    if ((!accept && !legacy) || (level !== 'B' && level !== 'C')) continue;
     comparable = true;
-    const severity: Severity | null =
-      accept === 'A'
+    const severity: Severity | null = legacy
+      ? legacy === 'A' && level === 'C'
+        ? 'moderee'
+        : 'mineure'
+      : accept === 'A'
         ? level === 'C'
           ? 'critique'
           : 'majeure'
@@ -1897,12 +2327,13 @@ function availabilityRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     [a, b, true],
     [b, a, false],
   ] as const) {
-    if (!stillAttached(x) || y.M8_Q02 !== 'A') continue;
+    // V7.1 : délai lu dans M8_Q17 (M8_Q02 traduite par la passerelle).
+    if (!stillAttached(x) || y.M8_Q17 !== 'A') continue;
     const situation =
       x.M3_Q11 === 'A' || x.M3_Q11 === 'B'
         ? view('M3_Q11', x.M3_Q11)
         : view('M0_Q04', 'D');
-    const hurry = view('M8_Q02', 'A');
+    const hurry = view('M8_Q17', 'A');
     c.diverge({
       questionId: 'M3_Q11',
       theme: 'projet',
@@ -1914,6 +2345,262 @@ function availabilityRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     });
     return;
   }
+}
+
+/**
+ * Origines culturelles communes (M1_Q21, V7 : M1_Q01) ; null si l'un des
+ * deux ne l'a pas dit (rien n'est supposé).
+ */
+const sameOrigin = shareOrigin;
+
+/**
+ * V7.1 — « tout se transmet » des deux côtés (M1_Q13 A), avec deux religions
+ * ou deux cultures différentes : deux transmissions concurrentes, jamais un
+ * accord. Majeure quand les religions diffèrent, à explorer quand seules les
+ * origines diffèrent.
+ */
+function transmissionRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  if (a.M1_Q13 !== 'A' || b.M1_Q13 !== 'A') return;
+  const fa = faithOf(a);
+  const fb = faithOf(b);
+  const otherFaith =
+    !!fa && !!fb && (fa.family !== fb.family || distinctFaiths(fa, fb));
+  const otherOrigin = sameOrigin(a, b) === false;
+  if (!otherFaith && !otherOrigin) return;
+  c.handled.add('M1_Q13');
+  const answer = view('M1_Q13', 'A');
+  c.diverge({
+    questionId: 'M1_Q13',
+    theme: 'famille',
+    severity: otherFaith ? 'majeure' : 'moderee',
+    label: 'Deux transmissions à concilier',
+    question: questionText('M1_Q13'),
+    a: answer,
+    b: answer,
+    shared: true,
+  });
+}
+
+/**
+ * V7.1 — accueillir les enfants de l'autre (M0_Q14) face aux enfants qu'il
+ * ou elle a déjà (M0_Q05). Enfants à charge : « je ne pourrais pas
+ * l'accepter » est une incompatibilité déclarée, « je préférerais l'éviter »
+ * une divergence majeure, « s'ils ne vivent pas avec nous » un sujet à
+ * explorer ; enfants autonomes : un cran en dessous.
+ */
+function childrenAcceptRule(a: RawAnswers, b: RawAnswers, c: Collector) {
+  let worst: Divergence | null = null;
+  let comparable = false;
+  for (const [x, y, xIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    const accept = x.M0_Q14;
+    const kids = y.M0_Q05;
+    if (!accept || !['B', 'C', 'D'].includes(kids)) continue;
+    comparable = true;
+    const table: Record<string, Severity> =
+      kids === 'D'
+        ? { D: 'moderee', C: 'mineure' }
+        : { D: 'critique', C: 'majeure', B: 'moderee' };
+    const severity = table[accept];
+    if (!severity) continue;
+    if (worst && SEVERITY_RANK[worst.severity] >= SEVERITY_RANK[severity])
+      continue;
+    const accepts = view('M0_Q14', accept);
+    const has = view('M0_Q05', kids);
+    worst = {
+      questionId: 'M0_Q14',
+      theme: 'famille',
+      severity,
+      label: 'Accueillir les enfants de l’autre',
+      question: questionText('M0_Q14'),
+      a: xIsA ? accepts : has,
+      b: xIsA ? has : accepts,
+    };
+  }
+  if (worst) c.diverge(worst);
+  else if (comparable) c.agree('M0_Q14', 1);
+}
+
+/**
+ * V7.1 — ce que l'un accepte des liens de l'autre avec son ex (M3_Q13) face
+ * à la place que l'autre lui garde (M3_Q05). « Je ne pourrais pas
+ * l'accepter » face à un ex encore présent : majeure ; « seulement pour les
+ * enfants » face à une amitié ou un ex proche : à explorer ; « seulement en
+ * toute transparence » face à un ex dans l'entourage proche : une nuance.
+ */
+function exTiesRule(a: RawAnswers, b: RawAnswers, c: Collector) {
+  let worst: Divergence | null = null;
+  let comparable = false;
+  for (const [x, y, xIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    const accept = x.M3_Q13;
+    const place = y.M3_Q05;
+    if (!accept || !place) continue;
+    comparable = true;
+    const severity: Severity | null =
+      accept === 'D' && ['B', 'C', 'D'].includes(place)
+        ? 'majeure'
+        : accept === 'B' && ['C', 'D'].includes(place)
+          ? 'moderee'
+          : accept === 'C' && place === 'D'
+            ? 'mineure'
+            : null;
+    if (!severity) continue;
+    if (worst && SEVERITY_RANK[worst.severity] >= SEVERITY_RANK[severity])
+      continue;
+    const accepts = view('M3_Q13', accept);
+    const ex = view('M3_Q05', place);
+    worst = {
+      questionId: 'M3_Q13',
+      theme: 'famille',
+      severity,
+      label: 'Les liens avec un ex',
+      question: questionText('M3_Q13'),
+      a: xIsA ? accepts : ex,
+      b: xIsA ? ex : accepts,
+    };
+  }
+  if (worst) c.diverge(worst);
+  else if (comparable) c.agree('M3_Q13', 1);
+}
+
+/**
+ * V7.1 — « une gifle peut se comprendre » (M6_Q24, d'accord ou tout à fait)
+ * face à quelqu'un pour qui la violence est une limite (M6_Q04 A ou B), ou
+ * des deux côtés : une incompatibilité déclarée. Tendance, jamais citée.
+ */
+function slapRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  const justifies = (x: RawAnswers) => ['D', 'E'].includes(x.M6_Q24);
+  const refuses = (x: RawAnswers) => ['A', 'B'].includes(x.M6_Q04);
+  const both = justifies(a) && justifies(b);
+  if (!both && !(justifies(a) && refuses(b)) && !(justifies(b) && refuses(a)))
+    return;
+  const view = {
+    key: 'tendance',
+    text: 'Point de vigilance tiré des entretiens',
+  };
+  c.diverge({
+    questionId: 'M6_Q24',
+    theme: 'communication',
+    severity: 'critique',
+    label: 'Limite face à la violence physique',
+    question: 'La place de la violence dans un couple',
+    a: view,
+    b: view,
+    neutral: true,
+    ...(both ? { shared: true } : {}),
+  });
+}
+
+/** Religion des enfants (M8_Q18), pour les accords. */
+const CHILD_FAITH_SAME: Record<string, string> = {
+  A: 'Vous élèveriez tous les deux vos enfants dans votre religion commune',
+  B: 'Vous choisiriez à deux la religion de vos enfants',
+  C: 'Vos enfants grandiraient dans vos deux traditions',
+  D: 'Vous élèveriez tous les deux vos enfants sans éducation religieuse',
+};
+
+/**
+ * V7.1 — religion des enfants (M8_Q18), lue avec la religion de chacun.
+ * « Dans ma religion, c'est indispensable » face à « sans éducation
+ * religieuse », ou des deux côtés avec deux religions différentes : une
+ * incompatibilité déclarée ; face à un choix à deux ou aux deux traditions,
+ * majeure quand les religions diffèrent.
+ */
+function childFaithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  const ka = a.M8_Q18;
+  const kb = b.M8_Q18;
+  if (!ka || !kb) return;
+  const fa = faithOf(a);
+  const fb = faithOf(b);
+  const differ =
+    fa && fb ? fa.family !== fb.family || distinctFaiths(fa, fb) : null;
+  let severity: Severity | null;
+  if (ka === kb) {
+    severity = ka === 'A' && differ === true ? 'critique' : null;
+  } else {
+    const pair = [ka, kb].sort().join('');
+    if (pair === 'AD') severity = 'critique';
+    else if (pair === 'AB' || pair === 'AC')
+      severity =
+        differ === true ? 'majeure' : differ === false ? 'mineure' : 'moderee';
+    else if (pair === 'BD') severity = 'moderee';
+    else severity = 'mineure';
+  }
+  if (severity) {
+    c.diverge({
+      questionId: 'M8_Q18',
+      theme: 'spiritualite',
+      severity,
+      label: 'Religion des enfants',
+      question: questionText('M8_Q18'),
+      a: view('M8_Q18', ka),
+      b: view('M8_Q18', kb),
+    });
+    return;
+  }
+  c.agree('M8_Q18', ka === kb ? 1 : COMPATIBLE_DIFFERENT);
+  // « Dans ma religion » des deux côtés : un accord seulement si c'est la même.
+  if (ka === kb && (ka !== 'A' || differ === false))
+    c.converge({
+      questionId: 'M8_Q18',
+      theme: 'spiritualite',
+      label: CHILD_FAITH_SAME[ka],
+      answer: optionText('M8_Q18', ka),
+      topic: 'La religion des enfants',
+    });
+}
+
+/**
+ * V7.1 — jeux d'argent : ce que l'un accepte (M0_Q16) face à ce que l'autre
+ * fait (M0_Q15), sur le modèle de l'alcool. « Même rarement, non » face à
+ * des paris occasionnels : majeure ; face à des paris chaque semaine ou
+ * presque chaque jour : incompatibilité déclarée.
+ */
+function gamblingRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  let worst: Divergence | null = null;
+  let comparable = false;
+  for (const [refuser, player, refuserIsA] of [
+    [a, b, true],
+    [b, a, false],
+  ] as const) {
+    const level = player.M0_Q15;
+    const accept = refuser.M0_Q16;
+    if (!accept || !level || level === 'A') continue;
+    comparable = true;
+    const severity: Severity | null =
+      accept === 'A'
+        ? level === 'B'
+          ? 'majeure'
+          : 'critique'
+        : accept === 'B'
+          ? level === 'D'
+            ? 'majeure'
+            : level === 'C'
+              ? 'moderee'
+              : null
+          : null;
+    if (!severity) continue;
+    if (worst && SEVERITY_RANK[worst.severity] >= SEVERITY_RANK[severity])
+      continue;
+    const refusal = view('M0_Q16', accept);
+    const habit = view('M0_Q15', level);
+    worst = {
+      questionId: 'M0_Q15',
+      theme: 'argent',
+      severity,
+      label: 'Jeux d’argent',
+      question: questionText('M0_Q15'),
+      a: refuserIsA ? refusal : habit,
+      b: refuserIsA ? habit : refusal,
+    };
+  }
+  if (worst) c.diverge(worst);
+  else if (comparable) c.agree('M0_Q15', COMPATIBLE_DIFFERENT);
 }
 
 /** Fusionne les réponses de tous les modules d'un entretien (rawResponses par module). */
@@ -1939,31 +2626,105 @@ const up: Record<Severity, Severity> = {
   critique: 'critique',
 };
 
-/** Limites de sécurité : jamais adoucies par une déclaration ou une croyance. */
-const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
+/**
+ * Limites de sécurité : jamais adoucies par une déclaration ou une croyance
+ * (V7.1 : justification de la violence, contrôle).
+ */
+const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05', 'M6_Q24', 'M9_Q24']);
+
+/**
+ * V7.1 — projet de vie et valeurs : jamais adoucis par P2 ni par P9. Ne pas
+ * cocher un sujet dans M8_Q12 (trois choix au plus, « tout se discute » étant
+ * la réponse attendue) ne prouve pas qu'il se négocie ; et M8_Q14 parle des
+ * désaccords de caractère et d'habitudes, pas du projet de vie. Les refus
+ * explicites (« je ne pourrais pas vivre avec ») y figurent aussi.
+ */
+export const CORE_DEALBREAKERS: ReadonlySet<string> = new Set([
+  // Enfants (désir, enfants de l'autre)
+  'M0_Q06',
+  'M0_Q14',
+  // Lieu de vie
+  'M0_Q03',
+  'M7_Q07',
+  'M7_Q36',
+  // Religion, pratique, polygamie, intimité avant le mariage
+  'M1_Q16',
+  'M1_Q05',
+  'M1_Q17',
+  'M1_Q11',
+  'M1_Q20',
+  'M8_Q16',
+  'M10_Q17',
+  // Dot et aide financière à la famille
+  'M4_Q16',
+  'M4_Q17',
+  // Objectif, vie commune, rôles et éducation
+  'M8_Q01',
+  'M8_Q19',
+  'M4_Q04',
+  'M4_Q15',
+  'M8_Q15',
+  'M8_Q18',
+  'M8_Q20',
+  // Refus explicites (tabac, alcool, jeux d'argent)
+  'M0_Q09',
+  'M0_Q12',
+  'M0_Q15',
+]);
+
+/**
+ * V7.1 — P9 : M8_Q14 parle de « caractère, habitudes ». Seuls ces sujets
+ * (rythme, style, petites manières de faire) montent ou descendent selon la
+ * façon dont chacun vit les désaccords qui durent.
+ */
+export const PERPETUAL_TOPICS: ReadonlySet<string> = new Set([
+  'M7_Q02',
+  'M7_Q05',
+  'M7_Q08',
+  'M8_Q06',
+  'M9_Q02',
+  'M9_Q03',
+  'M9_Q06',
+  'M9_Q07',
+  'M6_Q03',
+  'M6_Q11',
+  'M2_Q07',
+  'M2_Q22',
+  'M4_Q10',
+  'M4_Q13',
+  'M4_Q14',
+  'M5_Q07',
+  'M10_Q15',
+]);
 
 /**
  * P2 — ce qui est non négociable (M8_Q12). Une divergence sur un sujet
  * déclaré non négociable par l'un des deux monte d'un cran (modérée →
  * majeure, majeure → incompatibilité déclarée) ; quand les deux membres ont
- * répondu et qu'aucun n'a déclaré ce sujet, une majeure redevient un sujet à
- * explorer. Généralise la ligne rouge V6 (M8_Q05 = « enfants ou religion »).
+ * coché des sujets et qu'aucun n'a coché celui-ci, une majeure redevient un
+ * sujet à explorer, sauf sur le projet de vie (CORE_DEALBREAKERS).
+ * Généralise la ligne rouge V6 (M8_Q05 = « enfants ou religion »).
  */
 function applyNonNegotiables(a: RawAnswers, b: RawAnswers, c: Collector) {
   const na = nonNegotiablesOf(a);
   const nb = nonNegotiablesOf(b);
   if (!na && !nb) return;
   for (const d of c.adjustable) {
-    const key = nonNegotiableThemeOf(d.questionId);
-    if (!key) continue;
-    if (na?.keys.has(key) || nb?.keys.has(key)) {
+    const keys = nonNegotiableThemesOf(d.questionId);
+    if (!keys.length) continue;
+    if (keys.some((k) => na?.keys.has(k) || nb?.keys.has(k))) {
       const raised = up[d.severity];
       if (raised !== d.severity) {
         d.severity = raised;
         d.nonNegotiable = true;
       }
       c.declared.add(d);
-    } else if (na?.explicit && nb?.explicit && d.severity === 'majeure') {
+    } else if (
+      na?.explicit &&
+      nb?.explicit &&
+      d.severity === 'majeure' &&
+      !CORE_DEALBREAKERS.has(d.questionId)
+    ) {
       d.severity = 'moderee';
     }
   }
@@ -1974,12 +2735,110 @@ function applyNonNegotiables(a: RawAnswers, b: RawAnswers, c: Collector) {
  * qu'on n'est pas faits l'un pour l'autre fait monter d'un cran la divergence
  * modérée la plus importante (une seule) ; deux membres qui acceptent les
  * désaccords durables gardent les divergences modérées au rang de nuances.
+ * V7.1 : seulement sur les sujets de caractère et d'habitudes.
  */
+/**
+ * V7.1 (B7) — sujets centraux qu'un seul des deux a renseignés : l'autre n'a
+ * pas donné son accord pour les données sensibles (ou son entretien ne les
+ * posait pas). Sans ce signal, une incompatibilité déclarée disparaissait en
+ * silence. Jamais une réponse citée, ni celle de l'un ni l'absence de
+ * l'autre : seulement le sujet, à aborder avec tact. Majeure quand celui qui
+ * a répondu en a fait un non-négociable (M8_Q12) ou une position nette ;
+ * modérée sinon.
+ */
+export const UNDISCLOSED_SUBJECTS: Array<{
+  questionId: string;
+  theme: Theme;
+  subject: string;
+  /** Réponse connue (V7 ou V6 lue dans les termes de la V7). */
+  known: (x: RawAnswers) => boolean;
+  /** Clé de M8_Q12 qui en fait un non-négociable. */
+  nonNegotiable: string;
+  /** Position nette, qui l'autre doit connaître avant de s'engager. */
+  firm: (x: RawAnswers) => boolean;
+  /** Réponse « j'en parlerai en personne » : le sujet n'est pas relancé. */
+  deferred?: (x: RawAnswers) => boolean;
+  /** La question était posée dans l'entretien de celui qui n'a pas répondu. */
+  asked?: (x: RawAnswers) => boolean;
+}> = [
+  {
+    questionId: 'M1_Q16',
+    theme: 'spiritualite',
+    subject: 'la religion',
+    known: (x) => !!faithOf(x),
+    nonNegotiable: 'B',
+    firm: (x) => ['exclusive', 'conversion'].includes(faithRequirement(x)!),
+  },
+  {
+    questionId: 'M1_Q20',
+    theme: 'spiritualite',
+    subject: 'la polygamie',
+    // V7 (M1_Q11) : « j'en parlerai en personne » n'a pas d'équivalent.
+    known: (x) => !!(x.M1_Q20 || x.M1_Q11),
+    nonNegotiable: 'H',
+    firm: (x) => x.M1_Q20 === 'A' || x.M1_Q20 === 'C',
+    deferred: (x) => !x.M1_Q20 && x.M1_Q11 === 'D',
+  },
+  {
+    questionId: 'M10_Q17',
+    theme: 'intimite',
+    subject: 'l’intimité avant le mariage',
+    known: (x) => !!x.M10_Q17,
+    nonNegotiable: 'G',
+    firm: (x) => x.M10_Q17 === 'A',
+    deferred: (x) => x.M10_Q17 === 'D',
+    // Question propre à la V7 : un entretien V6 ne la posait pas.
+    asked: isV7Interview,
+  },
+];
+
+const NOT_SHOWN: AnswerView = {
+  key: 'non_renseigne',
+  text: 'Non renseigné',
+};
+const SHOWN: AnswerView = { key: 'renseigne', text: 'Renseigné' };
+
+function undisclosedDivergences(
+  a: RawAnswers,
+  b: RawAnswers,
+  rawA: RawAnswers,
+  rawB: RawAnswers,
+): Divergence[] {
+  const out: Divergence[] = [];
+  for (const s of UNDISCLOSED_SUBJECTS) {
+    const ka = s.known(a);
+    const kb = s.known(b);
+    if (ka === kb) continue;
+    const told = ka ? a : b;
+    if (s.deferred?.(told)) continue;
+    // Entretien d'origine (avant lecture V6 → V7) de celui qui n'a pas
+    // répondu : il a bien passé ce module, et la question y était posée.
+    const silent = ka ? rawB : rawA;
+    const prefix = `${s.questionId.split('_')[0]}_`;
+    if (!Object.keys(silent).some((id) => id.startsWith(prefix))) continue;
+    if (s.asked && !s.asked(silent)) continue;
+    const declared = !!nonNegotiablesOf(told)?.keys.has(s.nonNegotiable);
+    out.push({
+      questionId: s.questionId,
+      theme: s.theme,
+      severity: declared || s.firm(told) ? 'majeure' : 'moderee',
+      label: `Sujet non renseigné par l’un de vous : ${s.subject}`,
+      question: questionText(s.questionId),
+      a: ka ? SHOWN : NOT_SHOWN,
+      b: kb ? SHOWN : NOT_SHOWN,
+      undisclosed: true,
+      ...(declared ? { nonNegotiable: true } : {}),
+    });
+  }
+  return out;
+}
+
 function applyPerpetualProblems(a: RawAnswers, b: RawAnswers, c: Collector) {
   const candidates = [...c.adjustable]
     .filter(
       (d) =>
         d.severity === 'moderee' &&
+        PERPETUAL_TOPICS.has(d.questionId) &&
         !SAFETY_QUESTIONS.has(d.questionId) &&
         !c.declared.has(d),
     )
@@ -1994,21 +2853,34 @@ function applyPerpetualProblems(a: RawAnswers, b: RawAnswers, c: Collector) {
 export function buildDivergenceReport(
   rawA: RawAnswers,
   rawB: RawAnswers,
+  ctx?: ReportContext,
 ): DivergenceReport {
   // Réponses V6 lues dans les termes de la V7 quand le sens est le même.
   const a = upgradeAnswers(rawA);
   const b = upgradeAnswers(rawB);
   const c = new Collector();
 
+  homeRule(a, b, ctx, c);
+  transmissionRule(a, b, c);
   for (const rule of DIVERGENCE_RULES) applyRule(rule, a, b, c);
+  childrenAcceptRule(a, b, c);
+  exTiesRule(a, b, c);
   cultureRule(a, b, c);
   faithRule(a, b, c);
   foodRule(a, b, c);
+  marriageRule(a, b, c);
+  childFaithRule(a, b, c);
   tobaccoRule(a, b, rawA, rawB, c);
   alcoholRule(a, b, c);
+  gamblingRule(a, b, c);
+  slapRule(a, b, c);
   availabilityRule(a, b, c);
   for (const rule of LEGACY_RULES) applyRule(rule, a, b, c);
-  for (const p of POSITIVE_CONVERGENCES) {
+  // V7.1 : une « bonne pratique » partagée n'est affichée que si aucun des
+  // deux portraits n'est idéalisé (la sincérité pondère aussi les scénarios).
+  const sincere =
+    !buildPsychProfile(a).idealized && !buildPsychProfile(b).idealized;
+  for (const p of sincere ? POSITIVE_CONVERGENCES : []) {
     if (a[p.questionId] === p.key && b[p.questionId] === p.key)
       c.converge({
         questionId: p.questionId,
@@ -2026,6 +2898,8 @@ export function buildDivergenceReport(
   const divergences = [
     ...c.divergences,
     ...psychometricDivergences(a, b, c.divergences),
+    // V7.1 : sujets centraux renseignés d'un seul côté.
+    ...undisclosedDivergences(a, b, rawA, rawB),
   ];
 
   divergences.sort(
@@ -2084,6 +2958,19 @@ export interface CompatibilitySheet {
   /** Lecture par thème pour l'affichage (statut par thème). */
   themes: ThemeSummary[];
   hardStop: boolean;
+  /**
+   * V7.1 — sujets centraux renseignés d'un seul côté (« la religion ») :
+   * toujours nommés dans la vigilance, jamais attribués.
+   */
+  undisclosed: string[];
+}
+
+/** Sujet d'une divergence « non renseigné » (« la religion »). */
+function undisclosedSubject(d: Divergence): string {
+  return (
+    UNDISCLOSED_SUBJECTS.find((s) => s.questionId === d.questionId)?.subject ??
+    d.label.toLowerCase()
+  );
 }
 
 /** Fiche de compatibilité lisible, du point de vue du membre A regardant le membre B. */
@@ -2115,16 +3002,35 @@ export function buildCompatibilitySheet(
     const declared = top.nonNegotiable
       ? ' Ce sujet est non négociable pour l’un de vous.'
       : '';
-    vigilance = top.shared
-      ? `${intensity} — ${top.label.toLowerCase()} : vous avez répondu tous les deux « ${top.a.text} ».${declared} À aborder franchement pendant le Sondeur.`
-      : `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ».${declared} À aborder franchement pendant le Sondeur.`;
+    // V7.1 : une tendance (contrôle, violence) n'est jamais citée ni
+    // attribuée ; un sujet non renseigné n'est pas une réponse.
+    vigilance = top.neutral
+      ? `${intensity} — ${top.label.toLowerCase()} : un point de vigilance tiré de vos entretiens, sans qu’aucune réponse ne soit citée. Le Sondeur l’aborde par les limites de chacun.`
+      : top.undisclosed
+        ? `${intensity} — ${top.label.toLowerCase()}.${declared} À aborder avec tact pendant le Sondeur.`
+        : top.shared
+          ? `${intensity} — ${top.label.toLowerCase()} : vous avez répondu tous les deux « ${top.a.text} ».${declared} À aborder franchement pendant le Sondeur.`
+          : `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ».${declared} À aborder franchement pendant le Sondeur.`;
   }
+
+  // V7.1 : un sujet central non renseigné par l'un des deux n'est jamais
+  // tu, même quand une autre divergence occupe la vigilance.
+  const hidden = report.divergences.filter((d) => d.undisclosed);
+  const others = hidden.filter((d) => d !== top).map(undisclosedSubject);
+  if (others.length)
+    vigilance = [
+      vigilance,
+      `Non renseigné par l’un de vous : ${others.join(', ')}. À aborder avec tact pendant le Sondeur.`,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
   return {
     rassemble,
     vigilance,
     themes: report.themes,
     hardStop: report.hardStop,
+    undisclosed: hidden.map(undisclosedSubject),
   };
 }
 
@@ -2150,9 +3056,13 @@ export function buildDiscussionTopics(
       id: d.questionId,
       theme: d.theme,
       title: `${THEMES[d.theme].emoji} ${THEMES[d.theme].label} — ${d.label.toLowerCase()}`,
-      prompt: d.shared
-        ? `Vous avez répondu tous les deux « ${d.a.text} ». Le jour où cela arrivera entre vous, qui fera le premier pas, et comment ?`
-        : `Vous : « ${d.a.text} ». ${partnerFirstName} : « ${d.b.text} ». Qu'est-ce qui, pour chacun de vous, rend cette position importante ?`,
+      prompt: d.neutral
+        ? 'Quelles limites, pour chacun de vous, garantissent le respect et la liberté de l’autre dans un couple ?'
+        : d.undisclosed
+          ? `L’un de vous n’a pas renseigné ce sujet dans l’entretien. Quelle place aimeriez-vous lui donner, chacun, dans une vie à deux ?`
+          : d.shared
+            ? `Vous avez répondu tous les deux « ${d.a.text} ». Le jour où cela arrivera entre vous, qui fera le premier pas, et comment ?`
+            : `Vous : « ${d.a.text} ». ${partnerFirstName} : « ${d.b.text} ». Qu'est-ce qui, pour chacun de vous, rend cette position importante ?`,
     });
     if (topics.length >= max) break;
   }

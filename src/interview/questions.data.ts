@@ -3,6 +3,11 @@ export interface QuestionOption {
   text: string;
   /** Option à préciser en toutes lettres (réponse enregistrée sous `<id>_AUTRE`). */
   freeText?: boolean;
+  /**
+   * V7.1 — option « aucun » d'un choix multiple : elle ne se coche jamais
+   * avec une autre (l'app décoche les autres ; le serveur refuse le mélange).
+   */
+  exclusive?: boolean;
 }
 
 export interface QuestionDependency {
@@ -40,6 +45,8 @@ export interface Question {
   suggested?: string[];
   /** Précision pré-remplie de l'option à préciser (« Allemand »). */
   suggestedOther?: string;
+  /** V7.1 — aide affichée sous la question (« BOLIGO est réservé… »). */
+  assistance?: string;
 }
 
 /** Suffixe de la précision écrite d'une option `freeText` (« M0_Q10_AUTRE »). */
@@ -92,6 +99,18 @@ export function isValidAnswer(q: Question, value: unknown): boolean {
   if (q.maxChoices && keys.length > q.maxChoices) return false;
   if (new Set(keys).size !== keys.length) return false;
   return keys.every((k) => q.options.some((o) => o.key === k));
+}
+
+/**
+ * V7.1 — une option « aucun » (`exclusive`) cochée avec une autre : « Aucune
+ * de ces peurs » et « être abandonné(e) » se contredisent.
+ */
+export function mixesExclusive(q: Question, value: string): boolean {
+  const keys = answerKeys(value);
+  return (
+    keys.length > 1 &&
+    q.options.some((o) => o.exclusive && keys.includes(o.key))
+  );
 }
 
 /** Réponse rangée dans l'ordre des options (« B,A » → « A,B ») ; à appeler sur une réponse valide. */
@@ -233,6 +252,9 @@ export const QUESTIONS: Question[] = [
     id: 'M0_Q04',
     moduleNumber: 0,
     text: 'Votre situation actuelle :',
+    // V7.1 (m7) : pas d'option « Marié(e) » ; l'aide le dit.
+    assistance:
+      "BOLIGO est réservé aux personnes libres de s'engager : célibataire, séparé(e) avec un divorce prononcé, veuf ou veuve.",
     options: [
       { key: 'A', text: 'Célibataire' },
       { key: 'B', text: 'Séparé(e) / divorcé(e)' },
@@ -259,9 +281,11 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — modifiée : « (ou d'autres enfants) », pour qu'un parent puisse
+    // répondre sans se contredire ; les clés gardent leur sens.
     id: 'M0_Q06',
     moduleNumber: 0,
-    text: "Souhaitez-vous des enfants à l'avenir ?",
+    text: "Souhaitez-vous avoir des enfants (ou d'autres enfants) à l'avenir ?",
     options: [
       { key: 'A', text: 'Oui, absolument' },
       { key: 'B', text: 'Oui, si les conditions sont réunies' },
@@ -271,14 +295,45 @@ export const QUESTIONS: Question[] = [
     rules: { maxAge: 55 }, // 🎯 Désactivée si 55+ ans
   },
   {
+    // V7.1 — nouvelle : accueillir les enfants de l'autre. Avoir des enfants
+    // est un fait (M0_Q05) ; c'est l'acceptation de ceux de l'autre qui se
+    // compare.
+    id: 'M0_Q14',
+    moduleNumber: 0,
+    text: 'Un(e) partenaire qui a déjà des enfants :',
+    options: [
+      { key: 'A', text: 'Cela me convient tout à fait' },
+      {
+        key: 'B',
+        text: "Cela me convient, s'ils ne vivent pas avec nous à plein temps",
+      },
+      { key: 'C', text: "Je préférerais l'éviter" },
+      { key: 'D', text: "Je ne pourrais pas l'accepter" },
+    ],
+  },
+  {
+    // V7.1 — options sorties du système français (CAP-BEP, Bac +2) : les
+    // clés gardent leur sens.
     id: 'M0_Q07',
     moduleNumber: 0,
     text: "Votre niveau d'études :",
     options: [
-      { key: 'A', text: 'Sans diplôme / CAP-BEP' },
-      { key: 'B', text: 'Baccalauréat' },
-      { key: 'C', text: 'Bac +2 à Bac +4' },
-      { key: 'D', text: 'Bac +5 et plus' },
+      {
+        key: 'A',
+        text: 'Sans diplôme, ou formation professionnelle courte',
+      },
+      {
+        key: 'B',
+        text: 'Fin des études secondaires (baccalauréat ou équivalent)',
+      },
+      {
+        key: 'C',
+        text: 'Études supérieures de 2 à 4 ans (licence, BTS, bachelor…)',
+      },
+      {
+        key: 'D',
+        text: 'Études supérieures de 5 ans et plus (master, doctorat…)',
+      },
     ],
   },
   {
@@ -329,6 +384,32 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — nouvelle : les jeux d'argent du membre lui-même (les paris
+    // sportifs en tête), sur le modèle du tabac et de l'alcool. Croisée avec
+    // M0_Q16 chez l'autre.
+    id: 'M0_Q15',
+    moduleNumber: 0,
+    text: "Vous-même, les jeux d'argent (paris sportifs, casino, loterie) :",
+    options: [
+      { key: 'A', text: 'Jamais' },
+      { key: 'B', text: 'Rarement, pour le plaisir' },
+      { key: 'C', text: 'Chaque semaine' },
+      { key: 'D', text: 'Presque tous les jours' },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : ce que le membre accepte chez l'autre. Croisée avec
+    // M0_Q15.
+    id: 'M0_Q16',
+    moduleNumber: 0,
+    text: "Les jeux d'argent (paris sportifs, casino, loterie) chez votre partenaire :",
+    options: [
+      { key: 'A', text: "Je ne pourrais pas l'accepter, même rarement" },
+      { key: 'B', text: "Acceptables s'ils restent rares et sans enjeu" },
+      { key: 'C', text: 'Sans importance pour moi' },
+    ],
+  },
+  {
     // V6 — croisement par langue : deux membres ne sont présentés l'un à
     // l'autre que s'ils partagent au moins une langue (« Autre » exceptée).
     id: 'M0_Q10',
@@ -344,24 +425,39 @@ export const QUESTIONS: Question[] = [
       { key: 'F', text: 'Wolof' },
       { key: 'G', text: 'Portugais — Português' },
       { key: 'H', text: 'Espagnol — Español' },
+      // V7.1 : Haïti, Antilles, Guyane (suggéré selon le pays de résidence).
+      { key: 'J', text: 'Créole — Kreyòl' },
       { key: 'I', text: 'Une autre langue (précisez)', freeText: true },
     ],
   },
 
   // --- MODULE 1 : IDENTITÉ & CULTURE ---
   {
-    id: 'M1_Q01',
+    // V7.1 — nouvelle : remplace M1_Q01 (continents), trop grossière : une
+    // Martiniquaise et une Américaine, un Congolais et un Somalien y avaient
+    // « la même origine ». Une réponse M1_Q01 reste lue par son continent
+    // (`originsOf`, answer-bridge.ts).
+    id: 'M1_Q21',
     moduleNumber: 1,
-    text: "Votre continent d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
+    text: "Votre région d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
     multiple: true,
     maxChoices: 2,
     options: [
-      { key: 'A', text: 'Afrique subsaharienne' },
-      { key: 'B', text: 'Maghreb / Moyen-Orient' },
-      { key: 'C', text: 'Europe' },
-      { key: 'D', text: 'Asie' },
-      { key: 'E', text: 'Amériques / Caraïbes' },
-      { key: 'F', text: 'Océanie' },
+      { key: 'A', text: "Afrique de l'Ouest" },
+      { key: 'B', text: 'Afrique centrale' },
+      {
+        key: 'C',
+        text: "Afrique de l'Est et océan Indien (Madagascar, Comores…)",
+      },
+      { key: 'D', text: 'Afrique australe' },
+      { key: 'E', text: 'Maghreb' },
+      { key: 'F', text: 'Moyen-Orient' },
+      { key: 'G', text: 'Caraïbes (Antilles, Haïti…)' },
+      { key: 'H', text: 'Amérique du Nord' },
+      { key: 'I', text: 'Amérique latine' },
+      { key: 'J', text: 'Europe' },
+      { key: 'K', text: 'Asie' },
+      { key: 'L', text: 'Océanie' },
     ],
   },
   {
@@ -378,23 +474,6 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M1_Q03',
-    moduleNumber: 1,
-    text: 'Quelle place accordez-vous aux traditions de mariage dans votre culture ?',
-    options: [
-      {
-        key: 'A',
-        text: 'Centrale — je les respecterai toutes (dot, zaffa, feu sacré, lazo…)',
-      },
-      { key: 'B', text: "Importante — j'en garderai les principales" },
-      { key: 'C', text: "Modérée — j'en choisirai quelques-unes" },
-      {
-        key: 'D',
-        text: 'Peu importante — je privilégie le symbolisme personnel',
-      },
-    ],
-  },
-  {
     // V7 — remplace M1_Q05 : l'appartenance seule (la pratique est demandée à
     // part). Le croyant non pratiquant a enfin une réponse.
     id: 'M1_Q16',
@@ -406,7 +485,9 @@ export const QUESTIONS: Question[] = [
       { key: 'C', text: 'Chrétienne : une autre Église' },
       { key: 'D', text: 'Musulmane' },
       { key: 'E', text: 'Juive' },
-      { key: 'F', text: 'Bouddhiste ou hindoue' },
+      // V7.1 : bouddhisme et hindouisme séparés (deux religions) ; K ajoutée.
+      { key: 'F', text: 'Bouddhiste' },
+      { key: 'K', text: 'Hindoue' },
       { key: 'G', text: 'Une religion traditionnelle ou des ancêtres' },
       { key: 'H', text: 'Une spiritualité personnelle, sans religion' },
       { key: 'I', text: 'Sans religion' },
@@ -422,7 +503,7 @@ export const QUESTIONS: Question[] = [
     rules: {
       dependsOn: {
         questionId: 'M1_Q16',
-        values: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'J'],
+        values: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K'],
       },
     },
     options: [
@@ -447,8 +528,9 @@ export const QUESTIONS: Question[] = [
         text: "Ce ne serait pas possible : je cherche quelqu'un qui les partage",
       },
       {
+        // V7.1 : la condition est dite (le moteur la lit comme une condition).
         key: 'B',
-        text: "Je souhaiterais qu'elle adopte les miennes avant le mariage",
+        text: "J'en ferais une condition : qu'elle adopte les miennes avant le mariage",
       },
       { key: 'C', text: 'Je le souhaiterais, sans en faire une condition' },
       {
@@ -474,22 +556,20 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    // V7 — question inchangée ; seule la règle change : « Je préfère en
-    // parler en personne » face à « Inacceptable » n'est plus neutre.
-    id: 'M1_Q11',
+    // V7.1 — remplace M1_Q11 : une seule idée (son propre couple, et non le
+    // regard porté sur les autres), et plus de réponse refuge sur un
+    // non-négociable (« je préfère en parler en personne »).
+    id: 'M1_Q20',
     moduleNumber: 1,
-    text: 'Votre position sur la polygamie :',
+    text: 'Pour votre propre couple, la polygamie (plusieurs épouses pour un même mari) :',
     options: [
-      { key: 'A', text: 'Inacceptable — monogamie exclusive, sans discussion' },
-      {
-        key: 'B',
-        text: 'Je la respecte chez les autres, mais pas pour mon couple',
-      },
+      { key: 'A', text: 'Exclue, sans discussion possible' },
+      { key: 'B', text: "Exclue, mais j'accepte d'en parler" },
       {
         key: 'C',
-        text: 'Envisageable dans un cadre religieux, consenti et transparent',
+        text: 'Envisageable si chacun y consent, dans un cadre religieux ou coutumier',
       },
-      { key: 'D', text: 'Je préfère en parler en personne' },
+      { key: 'D', text: "Je n'ai pas encore de position arrêtée" },
     ],
   },
   {
@@ -542,72 +622,11 @@ export const QUESTIONS: Question[] = [
       { key: 'D', text: 'Être trahi(e)' },
       { key: 'E', text: "Manquer d'attention et de tendresse" },
       { key: 'F', text: 'Devoir m’effacer pour être aimé(e)' },
-      { key: 'G', text: 'Aucune de ces peurs ne me parle vraiment' },
-    ],
-  },
-  {
-    // V7 — modifiée : choix multiple (on peut avoir reçu plusieurs reproches).
-    // Question miroir, confrontée à ce que le membre déclare de lui-même.
-    id: 'M2_Q05',
-    moduleNumber: 2,
-    text: "On m'a déjà reproché dans une relation de : (plusieurs réponses possibles)",
-    multiple: true,
-    options: [
-      { key: 'A', text: "Trop m'inquiéter ou manquer de confiance" },
       {
-        key: 'B',
-        text: 'Fuir ou mettre de la distance quand ça devient intense',
+        key: 'G',
+        text: 'Aucune de ces peurs ne me parle vraiment',
+        exclusive: true,
       },
-      { key: 'C', text: 'Avoir du mal à exprimer ce que je ressentais' },
-      { key: 'D', text: "On ne m'a jamais fait ce type de reproche" },
-    ],
-  },
-  {
-    // V6 — rétablie depuis la V5 (Q07) : vitesse de réparation après un conflit.
-    id: 'M2_Q07',
-    moduleNumber: 2,
-    text: 'Après une dispute sérieuse, vous revenez à la douceur en :',
-    options: [
-      { key: 'A', text: 'Quelques heures — je ne laisse pas traîner' },
-      { key: 'B', text: "Une journée — j'ai besoin de digérer" },
-      { key: 'C', text: 'Plusieurs jours — les blessures durent' },
-      { key: 'D', text: 'Très longtemps — je peux tenir des semaines' },
-    ],
-  },
-  {
-    // V7 — remplace M2_Q08 (« si je me rends compte que j'ai commis une
-    // erreur » contredisait la question ; « ego » orientait la réponse).
-    id: 'M2_Q22',
-    moduleNumber: 2,
-    text: 'Après une dispute où vous pensez avoir eu plutôt raison, le plus souvent :',
-    options: [
-      { key: 'A', text: 'Je reconnais ma part, même si elle est petite' },
-      {
-        key: 'B',
-        text: "Je fais un pas vers l'autre, sans revenir sur le fond",
-      },
-      { key: 'C', text: "J'attends que l'autre revienne vers moi" },
-      { key: 'D', text: "Je ne m'excuse pas tant que je pense avoir raison" },
-    ],
-  },
-  {
-    // V6 — reformulée : on mesure l'ouverture à l'aide (une attitude), plus un
-    // antécédent de suivi psychologique (donnée de santé, RGPD article 9).
-    // Les clés gardent leur sens : A = suivi régulier, D = préfère gérer seul(e).
-    id: 'M2_Q10',
-    moduleNumber: 2,
-    text: "Si vous traversiez une période difficile, demander l'aide d'un professionnel (psychologue, conseiller conjugal) serait pour vous :",
-    options: [
-      {
-        key: 'A',
-        text: "Naturel — je l'ai déjà fait ou je le ferais sans hésiter",
-      },
-      { key: 'B', text: "Possible, après avoir d'abord essayé seul(e)" },
-      {
-        key: 'C',
-        text: "Je n'en ai jamais eu besoin, mais j'y suis ouvert(e)",
-      },
-      { key: 'D', text: "Difficile — je préfère m'en sortir seul(e)" },
     ],
   },
   // V7 — Façon d'aimer : deux dimensions, six situations concrètes chacune
@@ -710,6 +729,57 @@ export const QUESTIONS: Question[] = [
     scale: 'accord',
     text: "Quand l'autre me demande ce que je ressens, je réponds souvent « ça va » pour couper court.",
     options: AGREEMENT_OPTIONS,
+  },
+  // V7.1 — trois scénarios entre l'attachement et les émotions : plus jamais
+  // vingt et une affirmations d'affilée.
+  {
+    // V7 — modifiée : choix multiple (on peut avoir reçu plusieurs reproches).
+    // Question miroir, confrontée à ce que le membre déclare de lui-même.
+    id: 'M2_Q05',
+    moduleNumber: 2,
+    text: "On m'a déjà reproché dans une relation de : (plusieurs réponses possibles)",
+    multiple: true,
+    options: [
+      { key: 'A', text: "Trop m'inquiéter ou manquer de confiance" },
+      {
+        key: 'B',
+        text: 'Fuir ou mettre de la distance quand ça devient intense',
+      },
+      { key: 'C', text: 'Avoir du mal à exprimer ce que je ressentais' },
+      {
+        key: 'D',
+        text: "On ne m'a jamais fait ce type de reproche",
+        exclusive: true,
+      },
+    ],
+  },
+  {
+    // V6 — rétablie depuis la V5 (Q07) : vitesse de réparation après un conflit.
+    id: 'M2_Q07',
+    moduleNumber: 2,
+    text: 'Après une dispute sérieuse, vous revenez à la douceur en :',
+    options: [
+      { key: 'A', text: 'Quelques heures — je ne laisse pas traîner' },
+      { key: 'B', text: "Une journée — j'ai besoin de digérer" },
+      { key: 'C', text: 'Plusieurs jours — les blessures durent' },
+      { key: 'D', text: 'Très longtemps — je peux tenir des semaines' },
+    ],
+  },
+  {
+    // V7 — remplace M2_Q08 (« si je me rends compte que j'ai commis une
+    // erreur » contredisait la question ; « ego » orientait la réponse).
+    id: 'M2_Q22',
+    moduleNumber: 2,
+    text: 'Après une dispute où vous pensez avoir eu plutôt raison, le plus souvent :',
+    options: [
+      { key: 'A', text: 'Je reconnais ma part, même si elle est petite' },
+      {
+        key: 'B',
+        text: "Je fais un pas vers l'autre, sans revenir sur le fond",
+      },
+      { key: 'C', text: "J'attends que l'autre revienne vers moi" },
+      { key: 'D', text: "Je ne m'excuse pas tant que je pense avoir raison" },
+    ],
   },
   // V7 — Gestion des émotions : prendre du recul (trois situations, une
   // inversée : ruminer) et retenir ses émotions (trois situations, une
@@ -837,20 +907,20 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    // V7 — modifiée : choix multiple (garde des enfants et argent peuvent
-    // coexister) et posée seulement après une relation sérieuse.
-    id: 'M3_Q07',
+    // V7.1 — nouvelle : ce que l'on accepte chez l'autre. M3_Q05 dit un fait
+    // sur soi (la place de son ex), pas ce que l'on accepte ; elle n'est plus
+    // comparée qu'à cette question.
+    id: 'M3_Q13',
     moduleNumber: 3,
-    text: 'Avez-vous des conflits non résolus avec votre ex-partenaire ? (plusieurs réponses possibles)',
-    multiple: true,
-    rules: {
-      dependsOn: { questionId: 'M3_Q11', values: ['A', 'B', 'C', 'D'] },
-    },
+    text: 'Que votre partenaire garde des liens avec son ex :',
     options: [
-      { key: 'A', text: 'Non — tout est clarifié' },
-      { key: 'B', text: 'Des tensions sur la garde des enfants' },
-      { key: 'C', text: 'Des tensions financières encore actives' },
-      { key: 'D', text: "Nous n'avons jamais eu de vraie clôture" },
+      { key: 'A', text: 'Cela ne me pose pas de problème' },
+      { key: 'B', text: 'Seulement pour les enfants' },
+      {
+        key: 'C',
+        text: 'Seulement en toute transparence, sans le ou la voir seul(e)',
+      },
+      { key: 'D', text: "Je ne pourrais pas l'accepter" },
     ],
   },
   {
@@ -1008,44 +1078,49 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M4_Q05',
+    // V7.1 — remplace M4_Q05 : posée à tous (et non plus selon le continent
+    // d'origine : un couple mixte n'était jamais comparé), des options
+    // ordonnées, de « devoir régulier » à « jamais l'argent du foyer ».
+    id: 'M4_Q16',
     moduleNumber: 4,
-    text: "Votre rapport aux envois d'argent à la famille élargie :",
+    text: 'Aider financièrement votre famille (parents, frères et sœurs…) une fois en couple :',
     options: [
       {
         key: 'A',
-        text: "C'est normal et régulier — ma famille compte sur moi",
+        text: 'Un devoir régulier : ma famille compte sur moi, cela ne se discute pas',
       },
-      { key: 'B', text: 'Ça se discute en couple avant toute décision' },
-      { key: 'C', text: "C'est mon argent — c'est mon affaire" },
-      { key: 'D', text: 'Ça doit être limité pour préserver notre foyer' },
-    ],
-    rules: {
-      dependsOn: { questionId: 'M1_Q01', values: ['A', 'B', 'D'] }, // Afrique, Maghreb, Asie
-    },
-  },
-  {
-    id: 'M4_Q06',
-    moduleNumber: 4,
-    text: "L'achat immobilier dans votre projet de vie :",
-    options: [
-      { key: 'A', text: "Seul(e) — c'est mon indépendance" },
-      { key: 'B', text: "À deux — c'est un projet commun" },
-      { key: 'C', text: "Location flexible pour l'instant" },
-      { key: 'D', text: 'Pas une priorité' },
+      {
+        key: 'B',
+        text: 'Une aide régulière, dont le montant se décide à deux',
+      },
+      { key: 'C', text: 'Une aide ponctuelle, en cas de vrai besoin' },
+      {
+        key: 'D',
+        text: "L'argent du foyer ne doit pas servir à la famille élargie",
+      },
     ],
   },
   {
-    // V6 — rétablie depuis la V5 (Q07) : posée si l'origine est l'Afrique subsaharienne ou le Maghreb / Moyen-Orient.
-    id: 'M4_Q07',
+    // V7.1 — remplace M4_Q07 : posée à tous ; « pas dans ma culture » et « je
+    // n'y adhère pas » sont séparés, car ils ne disent pas la même chose face
+    // à un partenaire qui y tient.
+    id: 'M4_Q17',
     moduleNumber: 4,
-    rules: { dependsOn: { questionId: 'M1_Q01', values: ['A', 'B'] } },
-    text: 'La dot ou le mahr dans votre culture :',
+    text: 'La dot pour votre mariage :',
     options: [
-      { key: 'A', text: 'Une obligation que je respecte pleinement' },
-      { key: 'B', text: 'Une tradition symbolique importante' },
-      { key: 'C', text: 'Je la pratique de façon modernisée' },
-      { key: 'D', text: "Pas dans ma culture, ou je n'y adhère pas" },
+      {
+        key: 'A',
+        text: 'Indispensable : mon mariage ne se fera pas sans elle',
+      },
+      { key: 'B', text: 'Importante, sous une forme symbolique ou modernisée' },
+      {
+        key: 'C',
+        text: 'Absente de ma culture, mais je la respecterais dans celle de mon/ma partenaire',
+      },
+      {
+        key: 'D',
+        text: "Je n'y adhère pas, même si mon/ma partenaire y tient",
+      },
     ],
   },
   {
@@ -1157,15 +1232,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    // V7 — modifiée : ajout de la réponse que retiendrait un clinicien (E) ;
-    // A à D gardent leur sens. La question a désormais sa règle.
+    // V7 — modifiée : ajout d'une cinquième réponse (E) ; A à D gardent leur
+    // sens. La question a désormais sa règle. V7.1 : A et E reformulées sur
+    // le même ton que les autres, pour qu'aucune ne sonne comme la « bonne »
+    // réponse (désirabilité sociale) ; les clés gardent leur sens.
     id: 'M5_Q02',
     moduleNumber: 5,
     text: 'Votre mère (ou votre père) manque de respect à votre partenaire. Vous :',
     options: [
       {
         key: 'A',
-        text: 'Défendez votre partenaire immédiatement et clairement',
+        text: 'Prenez la défense de votre partenaire devant votre parent',
       },
       { key: 'B', text: "Cherchez à comprendre avant d'agir" },
       { key: 'C', text: 'Attendez que ça se règle naturellement' },
@@ -1175,7 +1252,7 @@ export const QUESTIONS: Question[] = [
       },
       {
         key: 'E',
-        text: 'Soutenez votre partenaire sur le moment, puis parlez seul(e) à seul(e) avec votre parent',
+        text: 'Soutenez votre partenaire, puis parlez-en à votre parent en privé',
       },
     ],
   },
@@ -1221,12 +1298,14 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — modifiée : B ne dit plus « confiance sans contrôle » (la bonne
+    // réponse évidente) ; les clés gardent leur sens.
     id: 'M5_Q08',
     moduleNumber: 5,
     text: "L'accès au téléphone et aux messages de votre partenaire :",
     options: [
       { key: 'A', text: 'Transparence totale — chacun a accès à tout' },
-      { key: 'B', text: 'Confiance sans contrôle — chacun garde son intimité' },
+      { key: 'B', text: 'Chacun garde son téléphone pour lui' },
       { key: 'C', text: 'Accès possible seulement en cas de doute sérieux' },
       { key: 'D', text: 'Je ne me suis jamais posé la question' },
     ],
@@ -1283,7 +1362,11 @@ export const QUESTIONS: Question[] = [
       { key: 'A', text: 'Parler trop fort ou trop vite' },
       { key: 'B', text: 'Fuir ou couper la communication' },
       { key: 'C', text: 'Être sarcastique ou blessant(e) avec les mots' },
-      { key: 'D', text: "On ne m'a jamais fait ce type de reproche" },
+      {
+        key: 'D',
+        text: "On ne m'a jamais fait ce type de reproche",
+        exclusive: true,
+      },
     ],
   },
   {
@@ -1406,6 +1489,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — nouvelle : la justification de la violence, mesurée à part de
+    // la tolérance (M6_Q04 « ça dépend des circonstances » mêlait les deux).
+    // Lue avec les habitudes et les attitudes de contrôle (`controlRisk`),
+    // jamais citée.
+    id: 'M6_Q24',
+    moduleNumber: 6,
+    scale: 'accord',
+    text: 'Dans un couple, il y a des situations où une gifle peut se comprendre.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
     // V7 — remplace M6_Q10 (« les tentations existent » classé critique face
     // à « absolue » : une réponse honnête devenait une incompatibilité). Des
     // réponses ordonnées, sans jugement moral.
@@ -1454,25 +1548,8 @@ export const QUESTIONS: Question[] = [
       {
         key: 'G',
         text: 'Aucun de ceux-là : seule une relation physique compte',
+        exclusive: true,
       },
-    ],
-  },
-  {
-    // V6 — rétablie depuis la V5 (Q08) : savoir poser une limite intime.
-    id: 'M6_Q08',
-    moduleNumber: 6,
-    text: "Quand vous n'avez pas envie d'intimité physique et que votre partenaire le propose :",
-    options: [
-      {
-        key: 'A',
-        text: "Je l'exprime doucement et on trouve une alternative tendre",
-      },
-      {
-        key: 'B',
-        text: "J'accepte pour lui faire plaisir — ça m'arrive souvent",
-      },
-      { key: 'C', text: 'Je dis non clairement, sans culpabilité' },
-      { key: 'D', text: "J'ai du mal à refuser — je ne veux pas décevoir" },
     ],
   },
 
@@ -1528,17 +1605,6 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M7_Q07',
-    moduleNumber: 7,
-    text: 'Où vous voyez-vous vivre dans 5 ans ?',
-    options: [
-      { key: 'A', text: "Dans la même ville qu'aujourd'hui" },
-      { key: 'B', text: 'Dans une autre ville ou région de mon pays' },
-      { key: 'C', text: 'Dans un autre pays' },
-      { key: 'D', text: 'Je suis ouvert(e) — ça dépend du projet de vie' },
-    ],
-  },
-  {
     id: 'M7_Q08',
     moduleNumber: 7,
     text: 'Le temps passé ensemble dans la semaine, idéalement :',
@@ -1574,11 +1640,12 @@ export const QUESTIONS: Question[] = [
     options: AGREEMENT_OPTIONS,
   },
   {
-    // Sens de l'organisation.
+    // Sens de l'organisation. V7.1 : sans « factures », qui mesuraient aussi
+    // le revenu.
     id: 'M7_Q22',
     moduleNumber: 7,
     scale: 'accord',
-    text: 'Je règle mes factures et mes papiers administratifs dans les délais.',
+    text: "Quand j'ai une démarche administrative à faire, je m'en occupe sans attendre la dernière minute.",
     options: AGREEMENT_OPTIONS,
   },
   {
@@ -1621,6 +1688,35 @@ export const QUESTIONS: Question[] = [
     text: 'Quand je promets de faire quelque chose, je le fais, même si cela me coûte.',
     options: AGREEMENT_OPTIONS,
   },
+  // V7.1 — le lieu de vie coupe les seize affirmations de personnalité en
+  // deux (jamais plus de douze affirmations d'affilée).
+  {
+    id: 'M7_Q07',
+    moduleNumber: 7,
+    text: 'Où vous voyez-vous vivre dans 5 ans ?',
+    options: [
+      { key: 'A', text: "Dans la même ville qu'aujourd'hui" },
+      { key: 'B', text: 'Dans une autre ville ou région de mon pays' },
+      { key: 'C', text: 'Dans un autre pays' },
+      { key: 'D', text: 'Je suis ouvert(e) — ça dépend du projet de vie' },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : le retour au pays d'origine, projet fréquent dans la
+    // diaspora, que M7_Q07 (« un autre pays ») ne disait pas.
+    id: 'M7_Q36',
+    moduleNumber: 7,
+    text: "Vivre un jour dans le pays d'origine de votre famille :",
+    options: [
+      { key: 'A', text: "C'est mon projet, dans les années qui viennent" },
+      { key: 'B', text: "J'y pense, sans date précise" },
+      { key: 'C', text: 'Non, ma vie est là où je vis aujourd’hui' },
+      {
+        key: 'D',
+        text: "Je vis déjà dans le pays d'origine de ma famille",
+      },
+    ],
+  },
   {
     // Sérénité (inversé : inquiétude).
     id: 'M7_Q28',
@@ -1654,11 +1750,11 @@ export const QUESTIONS: Question[] = [
     options: AGREEMENT_OPTIONS,
   },
   {
-    // Sérénité.
+    // Sérénité. V7.1 : ne suppose plus un emploi.
     id: 'M7_Q32',
     moduleNumber: 7,
     scale: 'accord',
-    text: "Quand je reçois une critique au travail, je l'encaisse sans perdre mon calme.",
+    text: "Quand on me fait une critique (au travail, dans mes études ou en famille), je l'encaisse sans perdre mon calme.",
     options: AGREEMENT_OPTIONS,
   },
   {
@@ -1704,27 +1800,51 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 'M8_Q02',
+    // V7.1 — remplace M8_Q02 : des délais exhaustifs et sans recoupement
+    // (il manquait douze à vingt-quatre mois ; « sans pression » et « quand
+    // les conditions seront mûres » disaient la même chose).
+    id: 'M8_Q17',
     moduleNumber: 8,
-    text: 'Dans quel délai envisagez-vous un engagement officiel ?',
+    text: 'Si la relation se passe bien, dans quel délai souhaitez-vous un engagement officiel (fiançailles ou mariage) ?',
     options: [
-      { key: 'A', text: 'Dans les 12 mois si tout va bien' },
-      { key: 'B', text: 'Dans 2 à 3 ans' },
-      { key: 'C', text: 'Sans pression — à notre rythme naturel' },
-      { key: 'D', text: 'Quand les conditions seront mûres' },
+      { key: 'A', text: "Dans l'année" },
+      { key: 'B', text: 'Dans un à deux ans' },
+      { key: 'C', text: 'Dans deux à trois ans' },
+      { key: 'D', text: 'Plus tard, ou sans échéance précise' },
     ],
   },
   {
-    // V7 — modifiée : ajout du mariage coutumier (E) ; A à D gardent leur sens.
-    id: 'M8_Q03',
+    // V7.1 — remplace M8_Q03 : mariage civil, religieux et coutumier se
+    // cumulent souvent ; un seul choix ne pouvait pas le dire.
+    id: 'M8_Q16',
     moduleNumber: 8,
-    text: 'Votre vision du mariage :',
+    text: "Pour vous, un mariage n'est accompli qu'avec : (plusieurs réponses possibles)",
+    multiple: true,
     options: [
-      { key: 'A', text: 'Un acte religieux et spirituel fondamental' },
-      { key: 'B', text: 'Un engagement civil et symbolique' },
-      { key: 'C', text: 'Les deux — civil et religieux' },
-      { key: 'D', text: "Un choix optionnel — l'amour prime sur le papier" },
-      { key: 'E', text: 'Avant tout coutumier ou traditionnel' },
+      { key: 'A', text: 'Le mariage civil' },
+      { key: 'B', text: 'Le mariage religieux' },
+      {
+        key: 'C',
+        text: 'Le mariage coutumier (dot, présentation des familles)',
+      },
+      {
+        key: 'D',
+        text: "Aucune cérémonie n'est indispensable pour moi",
+        exclusive: true,
+      },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : vivre ensemble avant le mariage, sujet de friction
+    // fréquent entre deux traditions.
+    id: 'M8_Q19',
+    moduleNumber: 8,
+    text: 'Vivre ensemble avant le mariage :',
+    options: [
+      { key: 'A', text: 'Exclu pour moi' },
+      { key: 'B', text: 'Seulement après les fiançailles' },
+      { key: 'C', text: 'Possible quand la relation est solide' },
+      { key: 'D', text: 'Souhaitable, pour bien se connaître' },
     ],
   },
   {
@@ -1745,6 +1865,44 @@ export const QUESTIONS: Question[] = [
       { key: 'B', text: 'Un cadre ferme, expliqué avec bienveillance' },
       { key: 'C', text: 'Le dialogue : on discute les règles avec eux' },
       { key: 'D', text: "La liberté : l'enfant apprend surtout par lui-même" },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : les punitions corporelles, grand point de friction
+    // des couples entre deux cultures (et interdites en France depuis 2019).
+    id: 'M8_Q20',
+    moduleNumber: 8,
+    text: 'Une tape ou une fessée pour éduquer un enfant :',
+    rules: {
+      dependsOn: [
+        { questionId: 'M0_Q05', values: ['B', 'C', 'D'] },
+        { questionId: 'M0_Q06', values: ['A', 'B', 'C'] },
+      ],
+    },
+    options: [
+      { key: 'A', text: "Cela fait partie d'une bonne éducation" },
+      { key: 'B', text: 'Acceptable de façon exceptionnelle' },
+      { key: 'C', text: "Je préfère l'éviter" },
+      { key: 'D', text: "Jamais : c'est une violence" },
+    ],
+  },
+  {
+    // V7.1 — nouvelle : la religion des enfants, l'une des décisions les plus
+    // difficiles d'un couple de deux religions.
+    id: 'M8_Q18',
+    moduleNumber: 8,
+    text: 'Dans quelle religion élèveriez-vous vos enfants ?',
+    rules: {
+      dependsOn: [
+        { questionId: 'M0_Q05', values: ['B', 'C', 'D'] },
+        { questionId: 'M0_Q06', values: ['A', 'B', 'C'] },
+      ],
+    },
+    options: [
+      { key: 'A', text: "Dans ma religion, c'est indispensable" },
+      { key: 'B', text: "Dans celle de l'un de nous, choisie à deux" },
+      { key: 'C', text: 'Dans nos deux traditions ; ils choisiront plus tard' },
+      { key: 'D', text: 'Sans éducation religieuse' },
     ],
   },
   {
@@ -1914,7 +2072,7 @@ export const QUESTIONS: Question[] = [
       { key: 'H', text: 'La polygamie' },
       { key: 'I', text: "Le tabac ou l'alcool" },
       { key: 'J', text: "Les rôles de l'homme et de la femme dans le foyer" },
-      { key: 'K', text: 'Aucun : pour moi, tout se discute' },
+      { key: 'K', text: 'Aucun : pour moi, tout se discute', exclusive: true },
     ],
   },
 
@@ -2003,6 +2161,61 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
+  // V7.1 — les habitudes (échelle de fréquence) d'un seul tenant, puis les
+  // affirmations d'accord : une seule bascule d'échelle dans le module.
+  {
+    id: 'M9_Q10',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Au début d'une relation, je dis très vite à l'autre qu'il ou elle est la personne de ma vie.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q11',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand j'ai un doute, je regarde le téléphone de l'autre ou je lui demande où il ou elle se trouve.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q12',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand une relation ne me convient plus, je préfère disparaître plutôt que m'expliquer.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q14',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand je parle de mes ex, c'est surtout pour dire ce qu'ils ou elles ont mal fait.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q15',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: 'Pendant un moment à deux, je consulte mon téléphone.',
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    // V7 — habitude croisée avec le signal d'alerte I de M8_Q10 (« ne pas
+    // respecter un non »), le plus important pour la sécurité. V7.1 : la
+    // situation est dite (insister pour quoi ?), même idée.
+    id: 'M9_Q24',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand l'autre refuse quelque chose qui le ou la concerne (un geste, une sortie, une dépense), j'insiste jusqu'à ce qu'il ou elle cède.",
+    options: FREQUENCY_OPTIONS,
+  },
+  {
+    id: 'M9_Q16',
+    moduleNumber: 9,
+    scale: 'frequence',
+    text: "Quand je n'obtiens pas ce que je veux, je le fais sentir (bouderie, froideur).",
+    options: FREQUENCY_OPTIONS,
+  },
+  // V7.1 — deux scénarios entre les habitudes et les affirmations d'accord.
   {
     // V7 — nouvelle : répondre aux petites demandes d'attention (Gottman :
     // « se tourner vers l'autre »), le versant positif qui protège un couple.
@@ -2022,122 +2235,9 @@ export const QUESTIONS: Question[] = [
       { key: 'D', text: 'Je continue sans vraiment l’écouter' },
     ],
   },
-  // Contrôle de sincérité (désirabilité sociale) : cinq affirmations, dont
-  // trois inversées, mêlées aux habitudes. Elles modulent la confiance
-  // accordée aux échelles, jamais la note. Jamais montrées aux autres membres.
   {
-    id: 'M9_Q08',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Il ne m'est jamais arrivé d'être jaloux(se), même un tout petit peu.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    // Sincérité (inversé : ne pas l'admettre signale un portrait idéalisé).
-    id: 'M9_Q20',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Il m'est déjà arrivé de bouder pour une broutille.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    id: 'M9_Q10',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: "Au début d'une relation, je dis très vite à l'autre qu'il ou elle est la personne de ma vie.",
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    id: 'M9_Q11',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: "Quand j'ai un doute, je regarde le téléphone de l'autre ou je lui demande où il ou elle se trouve.",
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    // Sincérité.
-    id: 'M9_Q21',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Je n'ai jamais été de mauvaise humeur avec quelqu'un que j'aime.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    id: 'M9_Q12',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: "Quand une relation ne me convient plus, je préfère disparaître plutôt que m'expliquer.",
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    id: 'M9_Q13',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: 'Je préfère ne pas définir la relation trop tôt, pour garder mes options ouvertes.',
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    // Sincérité (inversé). Remplace M9_Q09 (« jamais le moindre mensonge »),
-    // qu'un croyant pouvait approuver comme un idéal plutôt qu'une description.
-    id: 'M9_Q22',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Il m'est déjà arrivé de dire « je suis en route » alors que je n'étais pas encore parti(e).",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    id: 'M9_Q14',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: "Quand je parle de mes ex, c'est surtout pour dire ce qu'ils ou elles ont mal fait.",
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    id: 'M9_Q15',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: 'Pendant un moment à deux, je consulte mon téléphone.',
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    // V7 — habitude croisée avec le signal d'alerte I de M8_Q10 (« ne pas
-    // respecter un non »), le plus important pour la sécurité.
-    id: 'M9_Q24',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: "Quand l'autre me dit non, j'insiste pour le faire changer d'avis.",
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    // Sincérité (inversé).
-    id: 'M9_Q23',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Quand je suis fatigué(e), il m'arrive d'être moins patient(e) avec mes proches.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    id: 'M9_Q16',
-    moduleNumber: 9,
-    scale: 'frequence',
-    text: "Quand je n'obtiens pas ce que je veux, je le fais sentir (bouderie, froideur).",
-    options: FREQUENCY_OPTIONS,
-  },
-  {
-    id: 'M9_Q17',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Dans un couple, j'attends que l'autre devine mes envies sans que j'aie à les dire.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    id: 'M9_Q18',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Quand j'ai envie de quelque chose, j'ai du mal à attendre.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
+    // V7.1 — déplacée entre les habitudes et les affirmations (moins de
+    // bascules d'échelle, pas plus de douze affirmations d'affilée).
     id: 'M9_Q19',
     moduleNumber: 9,
     text: "Face à un(e) partenaire qui boude quand il ou elle n'obtient pas ce qu'il ou elle veut :",
@@ -2150,6 +2250,96 @@ export const QUESTIONS: Question[] = [
       { key: 'C', text: "Ça m'agace vite — je ne cède pas" },
       { key: 'D', text: "C'est rédhibitoire pour moi" },
     ],
+  },
+  // Contrôle de sincérité (désirabilité sociale) : cinq affirmations, dont
+  // trois inversées, mêlées aux attitudes. Elles modulent la confiance
+  // accordée aux échelles, jamais la note. Jamais montrées aux autres membres.
+  // V7.1 : trois attitudes de contrôle coercitif (surveillance, isolement,
+  // argent), lues avec les habitudes (`controlRisk`), jamais citées.
+  {
+    id: 'M9_Q13',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: 'Je préfère ne pas définir la relation trop tôt, pour garder mes options ouvertes.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q08',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il ne m'est jamais arrivé d'être jaloux(se), même un tout petit peu.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q17',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Dans un couple, j'attends que l'autre devine mes envies sans que j'aie à les dire.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // V7.1 — attitude de contrôle : la surveillance.
+    id: 'M9_Q26',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Dans un couple, chacun devrait pouvoir savoir à tout moment où se trouve l'autre.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité (inversé : ne pas l'admettre signale un portrait idéalisé).
+    id: 'M9_Q20',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il m'est déjà arrivé de bouder pour une broutille.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q18',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Quand j'ai envie de quelque chose, j'ai du mal à attendre.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // V7.1 — attitude de contrôle : l'isolement.
+    id: 'M9_Q27',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: 'Mon ou ma partenaire devrait me demander mon accord avant de sortir avec ses amis.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité.
+    id: 'M9_Q21',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Je n'ai jamais été de mauvaise humeur avec quelqu'un que j'aime.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // V7.1 — attitude de contrôle : l'argent.
+    id: 'M9_Q28',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Celui qui gagne le plus devrait décider des dépenses de l'autre.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité (inversé). Remplace M9_Q09 (« jamais le moindre mensonge »),
+    // qu'un croyant pouvait approuver comme un idéal plutôt qu'une description.
+    id: 'M9_Q22',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il m'est déjà arrivé de dire « je suis en route » alors que je n'étais pas encore parti(e).",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité (inversé).
+    id: 'M9_Q23',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Quand je suis fatigué(e), il m'arrive d'être moins patient(e) avec mes proches.",
+    options: AGREEMENT_OPTIONS,
   },
 
   // --- MODULE 10 : ALCHIMIE, VIBE & DÉSIR (CLEF DE VOÛTE) ---
@@ -2224,6 +2414,87 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
+  // V7 — Le désir, presque absent jusqu'ici. Données sensibles (RGPD,
+  // article 9) : des questions d'attitude, sobres, jamais de détail intime.
+  // V7.1 : posées avant les questions d'allure, pas à bout de fatigue.
+  {
+    // V7 — remplace M6_Q06 (trois axes mêlés et une réponse refuge) : une
+    // seule idée, l'importance.
+    id: 'M10_Q16',
+    moduleNumber: 10,
+    text: "La place de l'intimité physique dans votre vie de couple :",
+    options: [
+      { key: 'A', text: "Essentielle : c'est un pilier de la relation" },
+      { key: 'B', text: 'Importante, sans être au centre' },
+      {
+        key: 'C',
+        text: "Secondaire : d'autres choses comptent davantage pour moi",
+      },
+      {
+        key: 'D',
+        text: 'Je ne sais pas encore : cela dépendra de la relation',
+      },
+    ],
+  },
+  {
+    // V7 — nouvelle : l'intimité avant le mariage, probablement la
+    // divergence la plus fréquente sur ce sujet pour le public de BOLIGO.
+    id: 'M10_Q17',
+    moduleNumber: 10,
+    text: "L'intimité physique avant le mariage :",
+    options: [
+      { key: 'A', text: "Exclue pour moi : j'attends le mariage" },
+      {
+        key: 'B',
+        text: 'Je préfère attendre un engagement sérieux (fiançailles, projet officiel)',
+      },
+      {
+        key: 'C',
+        text: 'Possible quand la relation est solide, sans attendre un engagement officiel',
+      },
+      { key: 'D', text: 'Je préfère en parler directement avec la personne' },
+    ],
+  },
+  {
+    // V7 — remplace M6_Q07 (fréquence souhaitée : détail intime, options
+    // incomplètes) : la façon de vivre un écart de désir prédit mieux
+    // l'usure d'un couple que la fréquence souhaitée.
+    id: 'M10_Q18',
+    moduleNumber: 10,
+    text: "Si, pendant plusieurs mois, vous aviez moins envie d'intimité que votre partenaire :",
+    options: [
+      {
+        key: 'A',
+        text: "J'en parlerais pour chercher ensemble ce qui nous convient",
+      },
+      { key: 'B', text: 'Je me forcerais pour éviter les tensions' },
+      { key: 'C', text: "J'attendrais que ça passe, sans en parler" },
+      {
+        key: 'D',
+        text: "Je penserais que c'est à lui ou à elle de s'adapter",
+      },
+    ],
+  },
+  {
+    // V7.1 — remplace M6_Q08 (options B et D qui se recoupaient, question
+    // isolée loin du bloc intime) : savoir dire non. Jamais comparée entre
+    // deux membres ; une observation au membre seul (B, C).
+    id: 'M10_Q19',
+    moduleNumber: 10,
+    text: "Quand votre partenaire propose un moment d'intimité et que vous n'en avez pas envie :",
+    options: [
+      {
+        key: 'A',
+        text: 'Je le dis simplement, et nous trouvons un autre moment de tendresse',
+      },
+      {
+        key: 'B',
+        text: 'J’accepte quand même, pour ne pas le ou la décevoir',
+      },
+      { key: 'C', text: 'Je refuse, mais je me sens coupable' },
+      { key: 'D', text: 'Je refuse sans difficulté' },
+    ],
+  },
   {
     id: 'M10_Q11',
     moduleNumber: 10,
@@ -2293,75 +2564,32 @@ export const QUESTIONS: Question[] = [
       { key: 'D', text: 'Ça dépend vraiment des personnes' },
     ],
   },
-  // V7 — Le désir, presque absent jusqu'ici. Données sensibles (RGPD,
-  // article 9) : des questions d'attitude, sobres, jamais de détail intime.
-  {
-    // V7 — remplace M6_Q06 (trois axes mêlés et une réponse refuge) : une
-    // seule idée, l'importance.
-    id: 'M10_Q16',
-    moduleNumber: 10,
-    text: "La place de l'intimité physique dans votre vie de couple :",
-    options: [
-      { key: 'A', text: "Essentielle : c'est un pilier de la relation" },
-      { key: 'B', text: 'Importante, sans être au centre' },
-      {
-        key: 'C',
-        text: "Secondaire : d'autres choses comptent davantage pour moi",
-      },
-      {
-        key: 'D',
-        text: 'Je ne sais pas encore : cela dépendra de la relation',
-      },
-    ],
-  },
-  {
-    // V7 — nouvelle : l'intimité avant le mariage, probablement la
-    // divergence la plus fréquente sur ce sujet pour le public de BOLIGO.
-    id: 'M10_Q17',
-    moduleNumber: 10,
-    text: "L'intimité physique avant le mariage :",
-    options: [
-      { key: 'A', text: "Exclue pour moi : j'attends le mariage" },
-      {
-        key: 'B',
-        text: 'Je préfère attendre un engagement sérieux (fiançailles, projet officiel)',
-      },
-      {
-        key: 'C',
-        text: 'Possible quand la relation est solide, sans attendre un engagement officiel',
-      },
-      { key: 'D', text: 'Je préfère en parler directement avec la personne' },
-    ],
-  },
-  {
-    // V7 — remplace M6_Q07 (fréquence souhaitée : détail intime, options
-    // incomplètes) : la façon de vivre un écart de désir prédit mieux
-    // l'usure d'un couple que la fréquence souhaitée.
-    id: 'M10_Q18',
-    moduleNumber: 10,
-    text: "Si, pendant plusieurs mois, vous aviez moins envie d'intimité que votre partenaire :",
-    options: [
-      {
-        key: 'A',
-        text: "J'en parlerais pour chercher ensemble ce qui nous convient",
-      },
-      { key: 'B', text: 'Je me forcerais pour éviter les tensions' },
-      { key: 'C', text: "J'attendrais que ça passe, sans en parler" },
-      {
-        key: 'D',
-        text: "Je penserais que c'est à lui ou à elle de s'adapter",
-      },
-    ],
-  },
 ];
 
 /**
- * Questions V6 retirées en V7 : elles ne sont plus posées, mais restent lues
- * pour les entretiens déjà enregistrés (règles, échelles, fiches). Texte et
- * options de la V6, inchangés. La table `V7_REPLACEMENTS` donne leurs
- * remplaçantes.
+ * Questions retirées (en V7, puis en V7.1) : elles ne sont plus posées, mais
+ * restent lues pour les entretiens déjà enregistrés (règles, échelles,
+ * fiches). Texte et options de leur dernière version, inchangés. La table
+ * `V7_REPLACEMENTS` donne leurs remplaçantes.
  */
 export const RETIRED_QUESTIONS: Question[] = [
+  {
+    // Retirée en V7.1 (remplacée par M1_Q21, par région) : réponses lues par
+    // continent.
+    id: 'M1_Q01',
+    moduleNumber: 1,
+    text: "Votre continent d'origine ou de référence culturelle (deux au plus si vous avez une double origine) :",
+    multiple: true,
+    maxChoices: 2,
+    options: [
+      { key: 'A', text: 'Afrique subsaharienne' },
+      { key: 'B', text: 'Maghreb / Moyen-Orient' },
+      { key: 'C', text: 'Europe' },
+      { key: 'D', text: 'Asie' },
+      { key: 'E', text: 'Amériques / Caraïbes' },
+      { key: 'F', text: 'Océanie' },
+    ],
+  },
   {
     id: 'M0_Q08',
     moduleNumber: 0,
@@ -2910,6 +3138,146 @@ export const RETIRED_QUESTIONS: Question[] = [
       },
     ],
   },
+  // ── Retirées en V7.1 (texte et options de la V7, encore lus) ──
+  {
+    id: 'M1_Q03',
+    moduleNumber: 1,
+    text: 'Quelle place accordez-vous aux traditions de mariage dans votre culture ?',
+    options: [
+      {
+        key: 'A',
+        text: 'Centrale — je les respecterai toutes (dot, zaffa, feu sacré, lazo…)',
+      },
+      { key: 'B', text: "Importante — j'en garderai les principales" },
+      { key: 'C', text: "Modérée — j'en choisirai quelques-unes" },
+      {
+        key: 'D',
+        text: 'Peu importante — je privilégie le symbolisme personnel',
+      },
+    ],
+  },
+  {
+    id: 'M2_Q10',
+    moduleNumber: 2,
+    text: "Si vous traversiez une période difficile, demander l'aide d'un professionnel (psychologue, conseiller conjugal) serait pour vous :",
+    options: [
+      {
+        key: 'A',
+        text: "Naturel — je l'ai déjà fait ou je le ferais sans hésiter",
+      },
+      { key: 'B', text: "Possible, après avoir d'abord essayé seul(e)" },
+      {
+        key: 'C',
+        text: "Je n'en ai jamais eu besoin, mais j'y suis ouvert(e)",
+      },
+      { key: 'D', text: "Difficile — je préfère m'en sortir seul(e)" },
+    ],
+  },
+  {
+    id: 'M3_Q07',
+    moduleNumber: 3,
+    text: 'Avez-vous des conflits non résolus avec votre ex-partenaire ? (plusieurs réponses possibles)',
+    multiple: true,
+    options: [
+      { key: 'A', text: 'Non — tout est clarifié' },
+      { key: 'B', text: 'Des tensions sur la garde des enfants' },
+      { key: 'C', text: 'Des tensions financières encore actives' },
+      { key: 'D', text: "Nous n'avons jamais eu de vraie clôture" },
+    ],
+  },
+  {
+    id: 'M4_Q06',
+    moduleNumber: 4,
+    text: "L'achat immobilier dans votre projet de vie :",
+    options: [
+      { key: 'A', text: "Seul(e) — c'est mon indépendance" },
+      { key: 'B', text: "À deux — c'est un projet commun" },
+      { key: 'C', text: "Location flexible pour l'instant" },
+      { key: 'D', text: 'Pas une priorité' },
+    ],
+  },
+  {
+    id: 'M6_Q08',
+    moduleNumber: 6,
+    text: "Quand vous n'avez pas envie d'intimité physique et que votre partenaire le propose :",
+    options: [
+      {
+        key: 'A',
+        text: "Je l'exprime doucement et on trouve une alternative tendre",
+      },
+      {
+        key: 'B',
+        text: "J'accepte pour lui faire plaisir — ça m'arrive souvent",
+      },
+      { key: 'C', text: 'Je dis non clairement, sans culpabilité' },
+      { key: 'D', text: "J'ai du mal à refuser — je ne veux pas décevoir" },
+    ],
+  },
+  {
+    id: 'M1_Q11',
+    moduleNumber: 1,
+    text: 'Votre position sur la polygamie :',
+    options: [
+      { key: 'A', text: 'Inacceptable — monogamie exclusive, sans discussion' },
+      {
+        key: 'B',
+        text: 'Je la respecte chez les autres, mais pas pour mon couple',
+      },
+      {
+        key: 'C',
+        text: 'Envisageable dans un cadre religieux, consenti et transparent',
+      },
+      { key: 'D', text: 'Je préfère en parler en personne' },
+    ],
+  },
+  {
+    id: 'M4_Q05',
+    moduleNumber: 4,
+    text: "Votre rapport aux envois d'argent à la famille élargie :",
+    options: [
+      {
+        key: 'A',
+        text: "C'est normal et régulier — ma famille compte sur moi",
+      },
+      { key: 'B', text: 'Ça se discute en couple avant toute décision' },
+      { key: 'C', text: "C'est mon argent — c'est mon affaire" },
+      { key: 'D', text: 'Ça doit être limité pour préserver notre foyer' },
+    ],
+  },
+  {
+    id: 'M4_Q07',
+    moduleNumber: 4,
+    text: 'La dot ou le mahr dans votre culture :',
+    options: [
+      { key: 'A', text: 'Une obligation que je respecte pleinement' },
+      { key: 'B', text: 'Une tradition symbolique importante' },
+      { key: 'C', text: 'Je la pratique de façon modernisée' },
+      { key: 'D', text: "Pas dans ma culture, ou je n'y adhère pas" },
+    ],
+  },
+  {
+    id: 'M8_Q02',
+    moduleNumber: 8,
+    text: 'Dans quel délai envisagez-vous un engagement officiel ?',
+    options: [
+      { key: 'A', text: 'Dans les 12 mois si tout va bien' },
+      { key: 'B', text: 'Dans 2 à 3 ans' },
+      { key: 'C', text: 'Sans pression — à notre rythme naturel' },
+      { key: 'D', text: 'Quand les conditions seront mûres' },
+    ],
+  },
+  {
+    id: 'M8_Q03',
+    moduleNumber: 8,
+    text: 'Votre vision du mariage :',
+    options: [
+      { key: 'A', text: 'Un acte religieux et spirituel fondamental' },
+      { key: 'B', text: 'Un engagement civil et symbolique' },
+      { key: 'C', text: 'Les deux — civil et religieux' },
+      { key: 'D', text: "Un choix optionnel — l'amour prime sur le papier" },
+      { key: 'E', text: 'Avant tout coutumier ou traditionnel' },
+    ],
+  },
 ];
 
 /** Questions actuelles (V7) puis questions V6 retirées, encore lues pour les entretiens V6. */
@@ -3194,6 +3562,18 @@ export const V7_CHANGES: Record<
 > = {
   M0_Q04: 'modifiee',
   M0_Q05: 'modifiee',
+  M0_Q06: 'modifiee',
+  M0_Q14: 'nouvelle',
+  M0_Q15: 'nouvelle',
+  M0_Q16: 'nouvelle',
+  M1_Q13: 'regle',
+  M3_Q13: 'nouvelle',
+  M7_Q36: 'nouvelle',
+  M8_Q18: 'nouvelle',
+  M8_Q19: 'nouvelle',
+  M8_Q20: 'nouvelle',
+  M10_Q19: 'nouvelle',
+  M5_Q08: 'modifiee',
   M1_Q02: 'modifiee',
   M0_Q11: 'nouvelle',
   M0_Q12: 'nouvelle',
@@ -3202,7 +3582,7 @@ export const V7_CHANGES: Record<
   M1_Q17: 'nouvelle',
   M1_Q18: 'nouvelle',
   M1_Q19: 'nouvelle',
-  M1_Q11: 'regle',
+  M1_Q20: 'nouvelle',
   M2_Q07: 'regle',
   M6_Q03: 'regle',
   M6_Q05: 'regle',
@@ -3234,13 +3614,14 @@ export const V7_CHANGES: Record<
   M3_Q11: 'nouvelle',
   M3_Q03: 'modifiee',
   M3_Q05: 'modifiee',
-  M3_Q07: 'modifiee',
   M3_Q10: 'modifiee',
   M3_Q12: 'nouvelle',
   M3_Q04: 'modifiee',
   M4_Q14: 'nouvelle',
   M4_Q03: 'modifiee',
   M4_Q15: 'nouvelle',
+  M4_Q16: 'nouvelle',
+  M4_Q17: 'nouvelle',
   M5_Q10: 'nouvelle',
   M5_Q02: 'modifiee',
   M5_Q09: 'nouvelle',
@@ -3273,7 +3654,8 @@ export const V7_CHANGES: Record<
   M7_Q34: 'nouvelle',
   M7_Q35: 'nouvelle',
   M8_Q01: 'modifiee',
-  M8_Q03: 'modifiee',
+  M8_Q16: 'nouvelle',
+  M8_Q17: 'nouvelle',
   M8_Q15: 'nouvelle',
   M8_Q04: 'modifiee',
   M8_Q14: 'nouvelle',
@@ -3286,6 +3668,10 @@ export const V7_CHANGES: Record<
   M9_Q22: 'nouvelle',
   M9_Q24: 'nouvelle',
   M9_Q23: 'nouvelle',
+  M9_Q26: 'nouvelle',
+  M9_Q27: 'nouvelle',
+  M9_Q28: 'nouvelle',
+  M6_Q24: 'nouvelle',
   M10_Q03: 'modifiee',
   M10_Q16: 'nouvelle',
   M10_Q17: 'nouvelle',
@@ -3340,6 +3726,21 @@ export const V7_CHANGES: Record<
   M10_Q01: 'retiree',
   M10_Q06: 'retiree',
   M10_Q10: 'retiree',
+  // Retirées en V7.1
+  M1_Q03: 'retiree',
+  M2_Q10: 'retiree',
+  M3_Q07: 'retiree',
+  M4_Q06: 'retiree',
+  M6_Q08: 'retiree',
+  M1_Q11: 'retiree',
+  M4_Q05: 'retiree',
+  M4_Q07: 'retiree',
+  M8_Q02: 'retiree',
+  M8_Q03: 'retiree',
+  M1_Q01: 'retiree',
+  M1_Q21: 'nouvelle',
+  M0_Q07: 'modifiee',
+  M0_Q10: 'modifiee',
 };
 
 /** Questions V6 retirées → questions V7 qui en reprennent le sujet (vide : sujet abandonné). */
@@ -3407,6 +3808,18 @@ export const V7_REPLACEMENTS: Record<string, string[]> = {
   M10_Q01: [],
   M10_Q06: [],
   M10_Q10: [],
+  // V7.1
+  M1_Q03: ['M8_Q16', 'M4_Q17'],
+  M2_Q10: [],
+  M3_Q07: [],
+  M4_Q06: [],
+  M6_Q08: ['M10_Q19'],
+  M1_Q11: ['M1_Q20'],
+  M4_Q05: ['M4_Q16'],
+  M4_Q07: ['M4_Q17'],
+  M8_Q02: ['M8_Q17'],
+  M8_Q03: ['M8_Q16'],
+  M1_Q01: ['M1_Q21'],
 };
 
 /** Questions nouvelles de la V7, absentes des entretiens V6. */
@@ -3415,6 +3828,81 @@ export const V7_ADDED: ReadonlySet<string> = new Set(
     .filter(([, change]) => change === 'nouvelle')
     .map(([id]) => id),
 );
+
+/**
+ * Évolutions de la V7.1 (même vocabulaire que `V7_CHANGES`, mais par
+ * rapport à la V7 publiée) : ce qui a changé, pour les documents. Une
+ * question nouvelle ou retirée l'est aussi dans `V7_CHANGES`. Détail et
+ * raisons dans `docs/QUESTIONNAIRE_V7.md`, section « V7.1 ».
+ */
+export const V71_CHANGES: Record<
+  string,
+  'nouvelle' | 'modifiee' | 'regle' | 'retiree'
+> = {
+  M0_Q06: 'modifiee',
+  M1_Q18: 'modifiee',
+  M5_Q02: 'modifiee',
+  M5_Q08: 'modifiee',
+  M7_Q22: 'modifiee',
+  M7_Q32: 'modifiee',
+  M6_Q18: 'regle',
+  M5_Q10: 'regle',
+  M2_Q22: 'regle',
+  M1_Q16: 'modifiee',
+  M1_Q20: 'nouvelle',
+  M4_Q16: 'nouvelle',
+  M4_Q17: 'nouvelle',
+  M8_Q16: 'nouvelle',
+  M8_Q17: 'nouvelle',
+  M1_Q11: 'retiree',
+  M4_Q05: 'retiree',
+  M4_Q07: 'retiree',
+  M8_Q02: 'retiree',
+  M8_Q03: 'retiree',
+  M0_Q05: 'regle',
+  M0_Q14: 'nouvelle',
+  M1_Q13: 'regle',
+  M3_Q05: 'regle',
+  M3_Q13: 'nouvelle',
+  M10_Q19: 'nouvelle',
+  M6_Q08: 'retiree',
+  M0_Q15: 'nouvelle',
+  M0_Q16: 'nouvelle',
+  M7_Q36: 'nouvelle',
+  M8_Q18: 'nouvelle',
+  M8_Q19: 'nouvelle',
+  M8_Q20: 'nouvelle',
+  M1_Q03: 'retiree',
+  M2_Q10: 'retiree',
+  M3_Q07: 'retiree',
+  M4_Q06: 'retiree',
+  M6_Q04: 'regle',
+  M6_Q24: 'nouvelle',
+  M9_Q24: 'modifiee',
+  M9_Q26: 'nouvelle',
+  M9_Q27: 'nouvelle',
+  M9_Q28: 'nouvelle',
+  // Lieu de vie lu avec la ville et le pays de chacun (B4).
+  M0_Q03: 'regle',
+  M7_Q07: 'regle',
+  // Options « aucun » exclusives ; options sensibles masquées sans accord.
+  M2_Q04: 'modifiee',
+  M2_Q05: 'modifiee',
+  M6_Q02: 'modifiee',
+  M6_Q19: 'modifiee',
+  M7_Q19: 'modifiee',
+  M8_Q12: 'modifiee',
+  // Origine : par région, données sensibles (article 9).
+  M1_Q01: 'retiree',
+  M1_Q21: 'nouvelle',
+  M1_Q02: 'regle',
+  // Hors du seul système français ; créole ajouté.
+  M0_Q07: 'modifiee',
+  M0_Q10: 'modifiee',
+  M4_Q13: 'regle',
+  // Aide : BOLIGO est réservé aux personnes libres de s'engager (m7).
+  M0_Q04: 'modifiee',
+};
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */
 export function isV7Interview(answers: Record<string, string>): boolean {
@@ -3430,34 +3918,58 @@ export function isV7Interview(answers: Record<string, string>): boolean {
  *  - « indirect » : une option peut révéler une conviction religieuse ou une
  *    position sur la vie intime (par prudence).
  * Les questions V6 retirées y figurent : leurs réponses restent enregistrées.
+ * V7.1 : origine ethnique et santé ajoutées ; une question peut relever de
+ * plusieurs catégories (`categories`, la première étant `category`).
  */
-export const SENSITIVE_QUESTIONS: Record<
-  string,
-  {
-    category: 'convictions_religieuses' | 'vie_sexuelle' | 'violences_subies';
-    reach: 'direct' | 'indirect';
-  }
-> = {
+export type SensitiveCategory =
+  | 'convictions_religieuses'
+  | 'vie_sexuelle'
+  | 'violences_subies'
+  | 'origine_ethnique'
+  | 'sante';
+
+export interface SensitiveEntry {
+  /** Catégorie principale. */
+  category: SensitiveCategory;
+  /** Toutes les catégories concernées, quand il y en a plusieurs. */
+  categories?: SensitiveCategory[];
+  reach: 'direct' | 'indirect';
+}
+
+export const SENSITIVE_QUESTIONS: Record<string, SensitiveEntry> = {
+  // V7.1, origine ethnique : la région d'origine (V7 : le continent, réponses
+  // encore enregistrées), et la culture souhaitée chez l'autre, lue avec elle.
+  M1_Q21: { category: 'origine_ethnique', reach: 'direct' },
+  M1_Q01: { category: 'origine_ethnique', reach: 'direct' },
+  M1_Q02: { category: 'origine_ethnique', reach: 'indirect' },
   // V7, convictions religieuses.
   M1_Q16: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q17: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q18: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q19: { category: 'convictions_religieuses', reach: 'direct' },
+  M1_Q20: { category: 'convictions_religieuses', reach: 'indirect' },
+  M8_Q18: { category: 'convictions_religieuses', reach: 'direct' },
+  M1_Q13: {
+    category: 'convictions_religieuses',
+    categories: ['convictions_religieuses', 'origine_ethnique'],
+    reach: 'indirect',
+  },
+  // Retirée en V7.1 (réponses encore enregistrées) : « je l'ai déjà fait »
+  // révélait un suivi psychologique, donc une donnée de santé.
+  M2_Q10: { category: 'sante', reach: 'indirect' },
+  // Retirées en V7.1, réponses encore enregistrées.
   M8_Q03: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q11: { category: 'convictions_religieuses', reach: 'indirect' },
-  M1_Q13: { category: 'convictions_religieuses', reach: 'indirect' },
   M4_Q07: { category: 'convictions_religieuses', reach: 'indirect' },
-  M7_Q19: { category: 'convictions_religieuses', reach: 'indirect' },
   // V7, vie sexuelle.
   M6_Q08: { category: 'vie_sexuelle', reach: 'direct' },
   M6_Q19: { category: 'vie_sexuelle', reach: 'direct' },
+  M10_Q19: { category: 'vie_sexuelle', reach: 'direct' },
   M10_Q16: { category: 'vie_sexuelle', reach: 'direct' },
   M10_Q17: { category: 'vie_sexuelle', reach: 'direct' },
   M10_Q18: { category: 'vie_sexuelle', reach: 'direct' },
   // Réaction à une infidélité : la vie intime du couple, par prudence.
   M6_Q18: { category: 'vie_sexuelle', reach: 'indirect' },
-  // Non-négociables : « la religion et sa pratique », « l'intimité avant le mariage ».
-  M8_Q12: { category: 'vie_sexuelle', reach: 'indirect' },
   // V6 retirées, réponses encore enregistrées.
   M1_Q05: { category: 'convictions_religieuses', reach: 'direct' },
   M1_Q06: { category: 'convictions_religieuses', reach: 'direct' },
@@ -3468,3 +3980,92 @@ export const SENSITIVE_QUESTIONS: Record<
   M6_Q10: { category: 'vie_sexuelle', reach: 'indirect' },
   M3_Q08: { category: 'violences_subies', reach: 'direct' },
 };
+
+/** Catégories d'une question sensible (toutes, la principale en premier). */
+export function sensitiveCategories(
+  entry: SensitiveEntry | undefined,
+): SensitiveCategory[] {
+  if (!entry) return [];
+  return entry.categories ?? [entry.category];
+}
+
+/**
+ * V7.1 — options sensibles d'une question qui ne l'est pas en entier : une
+ * seule option révèle une conviction ou la vie intime. Sans accord explicite,
+ * ces options ne sont pas proposées et ne sont jamais enregistrées ; la
+ * question reste posée avec les autres.
+ */
+export const SENSITIVE_OPTIONS: Record<
+  string,
+  SensitiveEntry & { options: string[] }
+> = {
+  // Valeurs : « le respect des traditions et de ma foi ».
+  M7_Q19: {
+    category: 'convictions_religieuses',
+    reach: 'indirect',
+    options: ['B'],
+  },
+  // Cérémonies : « le mariage religieux ».
+  M8_Q16: {
+    category: 'convictions_religieuses',
+    reach: 'indirect',
+    options: ['B'],
+  },
+  // Non-négociables : « la religion et sa pratique », « l'intimité avant le
+  // mariage », « la polygamie ».
+  M8_Q12: {
+    category: 'convictions_religieuses',
+    categories: ['convictions_religieuses', 'vie_sexuelle'],
+    reach: 'indirect',
+    options: ['B', 'G', 'H'],
+  },
+};
+
+/** Réponse sans ses options sensibles (« B,C » → « C ») ; vide si rien ne reste. */
+export function withoutSensitiveOptions(id: string, value: string): string {
+  const hidden = SENSITIVE_OPTIONS[id]?.options;
+  if (!hidden) return value;
+  return answerKeys(value)
+    .filter((k) => !hidden.includes(k))
+    .join(',');
+}
+
+/**
+ * Réponses enregistrées sans leurs options sensibles : une réponse qui n'en
+ * contenait que des options sensibles disparaît.
+ */
+export function withoutSensitiveOptionAnswers<T>(
+  raw: Record<string, T>,
+): Record<string, T> {
+  const kept: Record<string, T> = {};
+  for (const [id, value] of Object.entries(raw)) {
+    if (!SENSITIVE_OPTIONS[id] || typeof value !== 'string') {
+      kept[id] = value;
+      continue;
+    }
+    const rest = withoutSensitiveOptions(id, value);
+    if (rest) kept[id] = rest as T;
+  }
+  return kept;
+}
+
+/**
+ * Question servie au membre : options « aucun » signalées (`exclusive`) et,
+ * sans accord explicite, options sensibles retirées.
+ */
+export function presentOptions<
+  Q extends { id: string; options: QuestionOption[] },
+>(q: Q, consent: boolean): Q {
+  const base = QUESTION_INDEX.get(q.id);
+  const hidden = consent ? [] : (SENSITIVE_OPTIONS[q.id]?.options ?? []);
+  return {
+    ...q,
+    options: q.options
+      .filter((o) => !hidden.includes(o.key))
+      .map((o) =>
+        base?.options.find((b) => b.key === o.key)?.exclusive
+          ? { ...o, exclusive: true }
+          : o,
+      ),
+  };
+}

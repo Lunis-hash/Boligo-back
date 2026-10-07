@@ -308,8 +308,15 @@ function pickFresh(
 /**
  * Sujets de sécurité : jamais présentés comme un compromis ni « à rendre
  * vivables ». Le Sondeur n'y pose que des questions de limite et d'origine.
+ * V7.1 : justification de la violence (M6_Q24) et contrôle coercitif
+ * (M9_Q24, tendance tirée de l'entretien).
  */
-export const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
+export const SAFETY_QUESTIONS = new Set([
+  'M6_Q04',
+  'M6_Q05',
+  'M6_Q24',
+  'M9_Q24',
+]);
 
 /**
  * Auto-évaluations (aveux, fréquences sur soi) : la réponse d'un membre n'est
@@ -1260,6 +1267,10 @@ export function describeReportForAi(
       if (SAFETY_QUESTIONS.has(d.questionId)) {
         lines.push(
           `${head} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions sur la limite de chacun (jamais un plan de protection ni un récit vécu), jamais de compromis, de réconciliation ni « comment le rendre vivable ».`,
+        );
+      } else if (d.undisclosed) {
+        lines.push(
+          `${head} : SUJET NON RENSEIGNÉ par l'un des deux — aucune réponse à citer ni à supposer ; l'aborder avec tact, sans demander pourquoi il ne l'a pas été.${marks(d)}`,
         );
       } else if (!isQuotableDivergence(d)) {
         lines.push(

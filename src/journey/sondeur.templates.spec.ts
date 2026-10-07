@@ -2217,7 +2217,10 @@ describe('Simulation réaliste : un membre garde ses réponses et change de part
         `Parcours ${pass} (réaliste, 300 membres) : écarts génériques ${divGeneric}/${div} = ${divShare.toFixed(1)} %, accords génériques ${convGeneric}/${conv} = ${convShare.toFixed(1)} %`,
       );
       expect(div).toBeGreaterThan(2000);
-      expect(conv).toBeGreaterThan(900);
+      // V7.1 : 11 questions retirées et de nouveaux écarts (sujet non
+      // renseigné, respect des limites) laissent un peu moins de place aux
+      // accords (≈ 860 pour 300 membres).
+      expect(conv).toBeGreaterThan(800);
       expect(divShare).toBeLessThan(pass === 3 ? 3 : 1);
       expect(convShare).toBeLessThan(pass === 3 ? 5 : 1);
     }

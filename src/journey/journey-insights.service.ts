@@ -7,6 +7,7 @@ import {
   collectRawAnswers,
   THEMES,
 } from '../matching/divergence.engine';
+import { homeContext } from '../matching/discover-filters';
 import { NotificationService } from '../notifications/notification.service';
 import { EmailService } from '../common/email.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -1242,13 +1243,14 @@ export class JourneyInsightsService {
           this.prisma.interviewIA.findFirst({
             where: { userId, status: { in: ['en_cours', 'termine'] } },
             orderBy: { startDate: 'desc' },
-            include: { responses: true },
+            include: { responses: true, user: { select: { city: true } } },
           }),
         ),
       );
       return buildDivergenceReport(
         collectRawAnswers(a?.responses),
         collectRawAnswers(b?.responses),
+        homeContext(a?.user, b?.user),
       );
     } catch {
       return null;

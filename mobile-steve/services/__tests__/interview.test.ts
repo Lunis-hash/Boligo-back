@@ -7,6 +7,7 @@ import {
   joinMultipleAnswer,
   LAST_MODULE,
   Question,
+  questionDisplayText,
   togglePick,
 } from '@/services/interview';
 
@@ -91,6 +92,39 @@ describe('Langues proposées et signaux d’alerte (V6.1)', () => {
     for (const k of ['A', 'B', 'C', 'D']) picked = togglePick(flags, picked, k);
     expect(picked).toEqual(['A', 'B', 'C']);
     expect(togglePick(flags, picked, 'B')).toEqual(['A', 'C']);
+  });
+
+  it('V7.1 : l’option « aucun » décoche les autres, et une autre option la décoche', () => {
+    const nonNegotiables: Question = {
+      id: 'M8_Q12',
+      text: 'Non négociables',
+      multiple: true,
+      maxChoices: 3,
+      options: [
+        ...['A', 'C', 'D'].map((key) => ({ key, text: key })),
+        { key: 'K', text: 'Aucun : pour moi, tout se discute', exclusive: true },
+      ],
+    };
+    let picked = togglePick(nonNegotiables, ['A', 'C', 'D'], 'K');
+    expect(picked).toEqual(['K']);
+    picked = togglePick(nonNegotiables, picked, 'C');
+    expect(picked).toEqual(['C']);
+    // Au maximum (3), « aucun » reste possible : il remplace les autres.
+    expect(togglePick(nonNegotiables, ['A', 'C', 'D'], 'K')).toEqual(['K']);
+    expect(togglePick(nonNegotiables, ['K'], 'K')).toEqual([]);
+  });
+
+  it('V7.1 : l’aide d’une question s’affiche sous son énoncé', () => {
+    const situation: Question = {
+      id: 'M0_Q04',
+      text: 'Votre situation actuelle :',
+      assistance: 'BOLIGO est réservé aux personnes libres de s’engager.',
+      options: [{ key: 'A', text: 'Célibataire' }],
+    };
+    expect(questionDisplayText(situation)).toBe(
+      'Votre situation actuelle :\n\nBOLIGO est réservé aux personnes libres de s’engager.',
+    );
+    expect(questionDisplayText({ ...situation, assistance: undefined })).toBe('Votre situation actuelle :');
   });
 
   it('affiche la langue écrite à la place de « une autre langue »', () => {

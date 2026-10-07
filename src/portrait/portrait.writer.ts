@@ -53,6 +53,7 @@ import {
   EXPECT_LOVE,
   EXPECT_NEVER,
   EXPECT_TIMING,
+  EXPECT_TIMING_V71,
   FAITH,
   FAITH_IMPACT,
   FAITH_PARTNER,
@@ -77,6 +78,7 @@ import {
   QUESTION_SHORT_LABEL,
   RECONCILE,
   TIMING,
+  TIMING_V71,
   TOGETHER,
   TRADITIONS,
   TRAITS,
@@ -242,9 +244,10 @@ function analysisSentences(input: PortraitInput): string[] {
   // 2. Projet de couple et délai.
   const goal = pick(GOAL, a, 'M8_Q01', g);
   if (goal) {
+    // V7.1 : M8_Q17 ; un entretien antérieur garde sa réponse M8_Q02.
     const timing =
       a.M8_Q01 === 'A' || a.M8_Q01 === 'B'
-        ? pick(TIMING, a, 'M8_Q02', g)
+        ? (pick(TIMING_V71, a, 'M8_Q17', g) ?? pick(TIMING, a, 'M8_Q02', g))
         : null;
     out.push(timing ? `${goal}, ${timing}` : goal);
   }
@@ -408,7 +411,9 @@ export function valueChips(a: RawAnswers): ValueChip[] {
 function expectations(a: RawAnswers, g: Gender): Expectation[] {
   const out: Expectation[] = [];
   if (a.M8_Q01 === 'A' || a.M8_Q01 === 'B') {
-    const t = pick(EXPECT_TIMING, a, 'M8_Q02', g);
+    const t =
+      pick(EXPECT_TIMING_V71, a, 'M8_Q17', g) ??
+      pick(EXPECT_TIMING, a, 'M8_Q02', g);
     if (t) out.push({ icon: '⏱️', text: t });
   }
   const energy = pick(EXPECT_ENERGY, a, 'M10_Q03', g);
@@ -441,6 +446,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   G: 'portugais',
   H: 'espagnol',
   I: 'une autre langue',
+  J: 'créole',
 };
 
 /** « Français et anglais » ; null si la question n'a pas été posée. */
@@ -478,7 +484,7 @@ function religionV7(a: RawAnswers, g: Gender): string | null {
   const base = pick(DETAIL_RELIGION_V7, a, 'M1_Q16', g);
   if (!base) return null;
   const practising =
-    ['A', 'B', 'C', 'D', 'E', 'F'].includes(a.M1_Q16) &&
+    ['A', 'B', 'C', 'D', 'E', 'F', 'K'].includes(a.M1_Q16) &&
     ['A', 'B'].includes(a.M1_Q17);
   return practising ? `${base} ${agree('pratiquant{e}', g)}` : base;
 }

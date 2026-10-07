@@ -1,7 +1,8 @@
 # Grand Entretien BOLIGO — V7
 
 Date : 7 octobre 2026. Ce document décrit la V7 du Grand Entretien, ce qui
-change par rapport à la V6.2 et pourquoi. Il répond point par point à l'audit
+change par rapport à la V6.2 et pourquoi ; la section 14 décrit la V7.1
+(corrections de l'audit clinique de la V7, 168 questions). Il répond point par point à l'audit
 clinique (`docs/audit-clinique/grand-entretien.md`, note de 5,5/10) : les dix
 propositions P1 à P10, les gains rapides de la section 6, les défauts de calcul
 de la section 4.6 et la section 7 (questionnaires protégés, RGPD).
@@ -756,3 +757,238 @@ l'ouverture à l'aide, M8_Q11 l'attitude face à la maladie d'un partenaire.
 - **M6_Q08** (refuser l'intimité) : les options B et D se recoupent encore
   (accepter pour faire plaisir, avoir du mal à refuser) ; question conservée
   telle quelle pour garder les réponses V6 comparables.
+
+## 14. V7.1 : corrections de l'audit clinique de la V7
+
+Date : 7 octobre 2026. La V7.1 applique l'audit clinique de la V7 (constats
+B1 à B7, M1 à M14, m1 à m9 sauf m8, et sa section 3). Chaque cas vérifié de
+l'audit est devenu un test de non-régression dans
+`src/matching/v71-rules.spec.ts`. Les changements sont listés dans
+`V71_CHANGES` (`questions.data.ts`) ; une question nouvelle ou retirée
+l'est aussi dans `V7_CHANGES`. Les sections 1 à 13 décrivent la V7 publiée ;
+quand elles diffèrent de cette section, la V7.1 prime.
+
+### 14.1 En bref
+
+| | V7 | V7.1 |
+|---|---|---|
+| Questions | 160 | **168** (plafond fixé : 168) |
+| dont affirmations d'échelle | 60 | 64 |
+| Questions nouvelles | — | 19 (dont 7 qui en remplacent une plus faible) |
+| Questions retirées (réponses toujours lues) | — | 11 |
+| Plus longue suite d'affirmations d'affilée | 21 | 12 |
+
+| Module | V7 | V7.1 |
+|---|---|---|
+| M0 Critères essentiels | 12 | 15 |
+| M1 Identité & culture | 10 | 9 |
+| M2 Attachement & émotions | 26 | 25 |
+| M3 Vécu & contexte | 7 | 7 |
+| M4 Vision économique | 13 | 12 |
+| M5 Famille & vie sociale | 7 | 7 |
+| M6 Communication & limites | 18 | 18 |
+| M7 Trajectoire & personnalité | 21 | 22 |
+| M8 Projet de couple | 12 | 15 |
+| M9 Effort & réciprocité | 22 | 25 |
+| M10 Alchimie & désir | 12 | 13 |
+
+### 14.2 Bloquants (B1 à B7)
+
+- **B1 — non-négociables protégés.** Le projet de vie (enfants, accueil des
+  enfants de l'autre, religion et pratique, polygamie, cérémonies, dot,
+  aide à la famille, lieu de vie, jeux d'argent : `CORE_DEALBREAKERS`)
+  n'est jamais adouci par M8_Q12 ni par M8_Q14. « Tout se discute » seul
+  n'est plus une déclaration. Le « problème perpétuel » (Gottman, P9) ne
+  joue que sur le caractère et les habitudes (`PERPETUAL_TOPICS`).
+  Référence : Gottman et Silver, *The Seven Principles*, sur les problèmes
+  insolubles, qui portent sur la personnalité et non sur le projet de vie.
+- **B2 — désir d'enfants.** « Oui si les conditions sont réunies » face à
+  « non, définitif » est une incompatibilité déclarée ; M0_Q06 s'adresse
+  aussi aux parents (« ou d'autres enfants »).
+- **B3 — polygamie.** M1_Q20 remplace M1_Q11 : une seule idée (son propre
+  couple), sans réponse refuge (« en parler en personne ») ; « exclue »
+  face à « envisageable » est une incompatibilité déclarée.
+- **B4 — lieu de vie.** « Je reste où je suis » (M0_Q03 D), « la même ville
+  qu'aujourd'hui » (M7_Q07 A) et « ma vie est là où je vis » (M7_Q36 C) sont
+  relatifs. Le moteur reçoit la ville et le pays de chacun (« Ville, Pays »
+  de l'inscription, `homeContext`) : deux refus nets dans deux pays sont une
+  incompatibilité déclarée, un seul attachement une divergence majeure ;
+  deux villes d'un même pays, majeure ou modérée. Ces réponses identiques ne
+  comptent plus comme des accords quand les lieux diffèrent.
+- **B5 — aide à la famille et dot posées à tous.** M4_Q16 et M4_Q17
+  remplacent M4_Q05 et M4_Q07, qui n'étaient posées qu'à certains
+  continents : le couple mixte, celui qui en a le plus besoin, est enfin
+  comparé. En anglais, « bride price ».
+- **B6 — contrôle coercitif.** Trois attitudes (surveillance M9_Q26,
+  isolement M9_Q27, argent M9_Q28) sont lues avec les habitudes (M9_Q11,
+  M9_Q24) et les normes (téléphone, jalousie) par `controlRisk`. Deux signes
+  ou plus donnent une divergence neutre, « Respect des limites et de la
+  liberté de l'autre » (thème communication, majeure ; critique seulement
+  avec au moins une habitude déclarée, car des attitudes seules peuvent
+  refléter une norme culturelle), qui ne cite aucune réponse ; un profil
+  acquiesçant ne compte pas ; aucun
+  signalement automatique à la modération. Le Sondeur la traite comme une
+  limite de sécurité (jamais un compromis). Références : Stark, *Coercive
+  Control* (2007) ; Johnson, typologie des violences conjugales.
+- **B7 — membre sans consentement.** Un sujet central renseigné d'un seul
+  côté (religion, polygamie, intimité avant le mariage) devient « Sujet non
+  renseigné par l'un de vous » : majeure si l'autre en a fait un
+  non-négociable ou une position nette, modérée sinon, jamais une
+  incompatibilité ; la fiche de compatibilité le nomme toujours, le Sondeur
+  en reçoit le sujet, sans réponse.
+
+### 14.3 Majeurs (M1 à M14)
+
+- **M1** : réagir à une infidélité (M6_Q18) n'est pas être fidèle ; la
+  fidélité déclarée non négociable ne lit plus M6_Q18.
+- **M2** : M1_Q18 B dit une condition (« qu'elle adopte les miennes avant
+  le mariage »), plus un souhait.
+- **M3** : la justification de la violence (M6_Q24, « une gifle peut se
+  comprendre ») est mesurée à part de la tolérance (M6_Q04). Deux « ça
+  dépend des circonstances », ou un « ça dépend » face à un refus net, sont
+  une incompatibilité déclarée.
+- **M4** : deux fusions ou deux coupures face aux proches (Bowen) sont un
+  risque partagé, plus un accord.
+- **M5** : « tout se transmet » des deux côtés, avec deux religions ou deux
+  cultures, devient « deux transmissions à concilier ».
+- **M6** : M3_Q05 (la place de son ex) est un fait ; ce que l'on accepte des
+  liens de l'autre avec son ex (M3_Q13, nouvelle) se compare.
+- **M7** : M0_Q14 (accueillir les enfants de l'autre) se compare aux enfants
+  que l'autre a déjà ; M0_Q05 devient un fait.
+- **M8** : M8_Q17 remplace M8_Q02 (délais exhaustifs, sans recoupement).
+- **M9** : M8_Q16 remplace M8_Q03 : civil, religieux et coutumier se
+  cumulent (choix multiple, « aucune cérémonie » exclusive).
+- **M10** : origine ethnique (M1_Q21, M1_Q02 ; M1_Q01 retirée) et santé
+  (M2_Q10, retirée) dans les données sensibles ; catégories multiples.
+- **M11** : M10_Q19 remplace M6_Q08 dans le bloc intime ; jamais comparée,
+  elle donne au membre seul une observation bienveillante.
+- **M12** : une « bonne pratique » partagée n'est affichée que si aucun des
+  deux portraits n'est idéalisé ; M5_Q02 et M5_Q08 sans option évidente.
+- **M13** : le point neutre (50) ne confirme plus un retrait (seuil 60).
+- **M14** : les antidotes des cavaliers ne font plus d'acquiescement.
+
+### 14.4 Mineurs (m1 à m9, sauf m8)
+
+- **m1** : le « rédhibitoire » V6 (tabac, alcool ou substances) n'est plus lu
+  comme un refus du tabac.
+- **m2** : une affirmation d'accord (M9_Q13) se cite en accord.
+- **m3** : bouddhisme (F) et hindouisme (K) séparés ; deux « autre religion »
+  dont l'un exige la sienne sont à explorer.
+- **m4** : M7_Q22 et M7_Q32 sans biais de revenu ni d'emploi.
+- **m5** : jamais plus de douze affirmations d'affilée, une bascule accord /
+  fréquence au plus par module ; le désir (M10_Q16 à M10_Q19) avant l'allure.
+- **m6** : parité de l'anglais (M2_Q22, M2_Q04 F).
+- **m7** : pas d'option « Marié(e) » ; M0_Q04 dit, en français et en anglais,
+  que BOLIGO est réservé aux personnes libres de s'engager. Les CGU le
+  disent déjà (« célibataires ou libres de tout engagement »).
+- **m8** : traité à part (Sondeur).
+- **m9** : M2_Q22 C face à D (personne ne fait le premier pas) est un risque.
+
+### 14.5 Questions décisives ajoutées (section 3 de l'audit)
+
+| Question | Sujet | Règle | Pourquoi |
+|---|---|---|---|
+| M8_Q18 | Religion dans laquelle élever les enfants | « dans ma religion » face à « sans éducation religieuse » ; deux « dans ma religion » avec deux religions | premier conflit des couples interreligieux à l'arrivée d'un enfant |
+| M8_Q19 | Vivre ensemble avant le mariage | « exclu » face à « souhaitable » : majeure | norme très différente selon la religion et la culture |
+| M8_Q20 | Tape ou fessée pour éduquer | « fait partie d'une bonne éducation » face à « jamais » : majeure | grand point de friction des couples Afrique-Europe ; jamais un accord partagé affiché |
+| M7_Q36 | Retour au pays d'origine | projet proche face à « ma vie est ici » : majeure | projet fréquent dans la diaspora, que M7_Q07 ne disait pas |
+| M0_Q15, M0_Q16 | Jeux d'argent (soi, chez l'autre) | croisées comme le tabac et l'alcool | risque financier majeur, absent depuis le retrait des « autres substances » |
+| M9_Q26 à M9_Q28, M6_Q24 | Attitudes de contrôle, justification de la violence | lues par `controlRisk` et la règle de la gifle | voir B6 et M3 |
+| M0_Q14, M3_Q13 | Enfants de l'autre, liens avec un ex | voir M7, M6 | |
+| M1_Q20, M4_Q16, M4_Q17, M8_Q16, M8_Q17, M10_Q19, M1_Q21 | remplacent une question plus faible | voir B3, B5, M8, M9, M11, 14.7 | |
+
+### 14.6 Retraits (réponses toujours lues)
+
+Les questions retirées restent dans `RETIRED_QUESTIONS` : les entretiens
+déjà enregistrés sont relus, par des passerelles (`LEGACY_UPGRADES`,
+`answer-bridge.ts`) quand le sens est le même, ou par leur ancienne règle
+(`LEGACY_RULES`, ignorée quand la question qui la remplace est répondue des
+deux côtés).
+
+| Retirée | Remplacée par | Pourquoi |
+|---|---|---|
+| M1_Q01 (continent) | M1_Q21 (région) | trop grossière : une Martiniquaise et une Américaine, un Congolais et un Somalien avaient « la même origine » ; une réponse M1_Q01 reste comparée par continent |
+| M1_Q03 (traditions de mariage) | M8_Q16, M4_Q17 | doublon des cérémonies et de la dot |
+| M1_Q11 (polygamie) | M1_Q20 | deux idées, réponse refuge (B3) |
+| M2_Q10 (aide d'un professionnel) | — | sans usage dans le moteur ; « je l'ai déjà fait » révélait un suivi psychologique (donnée de santé) |
+| M3_Q07 | — | sans usage dans le moteur |
+| M4_Q05 (envois d'argent) | M4_Q16 | posée selon le continent (B5) |
+| M4_Q06 | — | faible pouvoir de discrimination |
+| M4_Q07 (dot) | M4_Q17 | posée selon le continent (B5) |
+| M6_Q08 (refuser l'intimité) | M10_Q19 | options qui se recoupent, sans usage, loin du bloc intime (M11) |
+| M8_Q02 (délai d'engagement) | M8_Q17 | options non exhaustives (M8) |
+| M8_Q03 (cérémonies) | M8_Q16 | choix unique alors que les cérémonies se cumulent (M9) |
+
+### 14.7 Relecture culturelle
+
+- **Origine** : M1_Q21, douze régions (Afrique de l'Ouest, centrale, de
+  l'Est et océan Indien, australe, Maghreb, Moyen-Orient, Caraïbes, Amérique
+  du Nord, Amérique latine, Europe, Asie, Océanie). Deux régions d'un même
+  continent sont des cultures proches : « la même culture » exigée y est à
+  explorer (modérée), plus un accord. M1_Q02 n'a pas changé de texte : elle
+  est relative (« la même que la mienne ») et se lit avec la région. Aucune
+  question ne dépendait de M1_Q01 ; le croisement par origine (`originsOf`,
+  `shareOrigin`) lit l'une ou l'autre version.
+- **Langues** : « Créole — Kreyòl » (M0_Q10 J), proposé d'abord en Haïti,
+  pré-écrit à côté du français aux Antilles et en Guyane, reconnu en toutes
+  lettres pour le croisement par langue.
+- **Études** (M0_Q07) : options sorties du système français (plus de
+  CAP-BEP ni de Bac +), mêmes clés.
+- **M4_Q13** (prêter ses affaires) passe dans le thème argent.
+
+### 14.8 Données sensibles (V7.1)
+
+| Catégorie | Question entière | Options seulement (sans accord : ni proposées, ni enregistrées) |
+|---|---|---|
+| Origine ethnique | M1_Q21, M1_Q02 (et M1_Q01, retirée) ; M1_Q13 (aussi religion) | — |
+| Convictions religieuses | M1_Q16 à M1_Q20, M8_Q18, M1_Q13 | M7_Q19 B, M8_Q16 B, M8_Q12 B et H |
+| Vie sexuelle | M6_Q19, M10_Q16 à M10_Q19, M6_Q18 | M8_Q12 G |
+| Santé | M2_Q10 (retirée, réponses V7 encore enregistrées) | — |
+| Violences subies | M3_Q08 (V6, retirée) | — |
+
+Le retrait de l'accord efface les réponses entières et les options
+sensibles des autres réponses (« B,D » devient « D »). Le texte d'accord de
+l'app, les textes du profil et la politique de confidentialité nomment
+l'origine.
+
+### 14.9 App
+
+- Options exclusives (`exclusive`) : « aucun » de M2_Q04, M2_Q05, M6_Q02,
+  M6_Q19, M8_Q16 et M8_Q12. L'app décoche les autres réponses quand on la
+  coche, et inversement ; le serveur refuse un mélange.
+- Aide sous la question (`assistance`), traduite (M0_Q04).
+
+### 14.10 Sondeur
+
+Pour chaque nouveau sujet : une tournure (`TOPIC_PHRASES`), ses jours
+(`TOPIC_DAYS`) et sa famille (`TOPIC_FAMILIES`) ; les sujets intimes ne
+vont qu'au jour 3 ; les sujets de sécurité (M6_Q24, M9_Q24) n'ont aucune
+tournure de compromis et rejoignent `SAFETY_QUESTIONS`. Pour que les
+gabarits génériques restent sous leurs seuils, quelques entrées de plus ont
+été nécessaires : alias de formulations (`DEEP_ALIASES`) et d'accords
+(`AGREEMENT_ALIASES`) vers la question remplacée quand le sens est le même,
+formulations propres à M0_Q14, M0_Q15, M3_Q13 et M8_Q18. `agreementKey` lit
+aussi les questions retirées : les accords des entretiens V6 et V7 sur ces
+questions sont enfin servis. Le résumé donné à l'IA nomme un sujet non
+renseigné sans réponse.
+
+### 14.11 Validation
+
+`scripts/psychometric-validation.ts` (lecture seule, base locale par défaut)
+et le protocole `docs/VALIDATION_CLINIQUE.md` : au moins 300 entretiens
+pour la fiabilité des échelles, 50 couples cotés à l'aveugle par deux
+cliniciens (kappa ≥ 0,70), recalage des seuils.
+
+### 14.12 Ce qui reste perfectible
+
+- **Étalonnage** : tant que la validation n'a pas eu lieu, seuils et
+  gravités restent des choix cliniques raisonnés.
+- **Cavaliers** à deux affirmations : fiabilité attendue faible (voir la
+  simulation de `docs/VALIDATION_CLINIQUE.md`).
+- **M0_Q04 D** (« en transition : séparation ou divorce pas encore
+  terminé ») reste proposée alors que l'aide et les CGU réservent BOLIGO aux
+  personnes libres de s'engager : décision à prendre (retirer l'option, ou
+  bloquer la mise en relation).
+- **Ressources d'aide** (3919 en France et équivalents) quand une réponse
+  signale un risque : non faites dans cette version.
+- **Documents** : `scripts/questionnaire-doc.ts` cite encore M1_Q01.

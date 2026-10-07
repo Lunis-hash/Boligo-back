@@ -122,18 +122,18 @@ export default function ProfileScreen() {
     if (sensitiveConsent === true) {
       Alert.alert(
         'Retirer votre accord ?',
-        'Vos réponses sur votre religion, votre vie intime et les violences vécues seront effacées, et votre portrait sera recalculé sans elles. Vos compatibilités seront un peu moins précises.',
+        'Vos réponses sur votre origine, votre religion, votre vie intime et les violences vécues seront effacées, et votre portrait sera recalculé sans elles. Vos compatibilités seront un peu moins précises.',
         [{ text: 'Annuler', style: 'cancel' }, withdraw],
       );
     } else if (sensitiveConsent === false) {
       Alert.alert(
         'Questions sensibles',
-        'Vous avez choisi de ne pas répondre aux questions sur votre religion, votre vie intime et les violences vécues. Aucune réponse de ce type n’est enregistrée.',
+        'Vous avez choisi de ne pas répondre aux questions sur votre origine, votre religion, votre vie intime et les violences vécues. Aucune réponse de ce type n’est enregistrée.',
       );
     } else {
       Alert.alert(
         'Questions sensibles',
-        'Vos réponses sur votre religion, votre vie intime et les violences vécues servent à calculer vos compatibilités et peuvent apparaître, résumées, sur votre profil. Vous pouvez donner votre accord ou effacer ces réponses.',
+        'Vos réponses sur votre origine, votre religion, votre vie intime et les violences vécues servent à calculer vos compatibilités et peuvent apparaître, résumées, sur votre profil. Vous pouvez donner votre accord ou effacer ces réponses.',
         [
           { text: 'Plus tard', style: 'cancel' },
           withdraw,
@@ -515,7 +515,7 @@ export default function ProfileScreen() {
           {sensitiveConsent !== undefined && (
             <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={handleSensitive} testID="sensitive-consent-row">
               <Text style={styles.legalRowText}>
-                Questions sensibles (religion, vie intime) :{' '}
+                Questions sensibles (origine, religion, vie intime) :{' '}
                 {sensitiveConsent === true ? 'accord donné' : sensitiveConsent === false ? 'refusées' : 'accord à confirmer'}
               </Text>
               <ChevronRight size={18} color={Colors.text.primary40} />

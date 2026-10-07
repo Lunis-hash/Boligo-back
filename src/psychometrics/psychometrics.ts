@@ -308,7 +308,8 @@ export const RED_FLAG_HABITS: Record<
     item: 'M9_Q24',
     label: 'Respect d’un refus',
     theme: 'communication',
-    habit: 'quand l’autre me dit non, j’insiste pour le faire changer d’avis',
+    habit:
+      'quand l’autre refuse quelque chose qui le ou la concerne, j’insiste jusqu’à ce qu’il ou elle cède',
   },
   J: {
     item: 'M9_Q15',
@@ -328,13 +329,22 @@ export const HABIT_ITEM_IDS = [
   'M9_Q24',
 ];
 
+/**
+ * V7.1 — attitudes de contrôle coercitif (surveillance, isolement, argent)
+ * et justification de la violence : lues avec les habitudes par
+ * `controlRisk`, jamais comparées une à une ni citées.
+ */
+export const CONTROL_ATTITUDE_IDS = ['M9_Q26', 'M9_Q27', 'M9_Q28', 'M6_Q24'];
+
 /** Toutes les affirmations notées sur 5 points (jamais comparées une à une entre membres). */
 export const SCALE_ITEM_IDS: string[] = [
   ...new Set(
     Object.values(SCALES)
       .flatMap((s) => [...s.items, ...(s.legacy ?? [])])
       .map((i) => i.id)
-      .concat(SOCIAL_DESIRABILITY, HABIT_ITEM_IDS, ['M2_Q21']),
+      .concat(SOCIAL_DESIRABILITY, HABIT_ITEM_IDS, CONTROL_ATTITUDE_IDS, [
+        'M2_Q21',
+      ]),
   ),
 ];
 
@@ -493,16 +503,17 @@ function mean(values: Array<number | null>, min: number): number | null {
   return Math.round(v.reduce((s, x) => s + x, 0) / v.length);
 }
 
-/** Échelles V7 qui mêlent affirmations directes et inversées. */
+/**
+ * Échelles V7 qui mêlent affirmations directes et inversées. V7.1 : les
+ * quatre cavaliers n'y figurent plus : sur une échelle de fréquence, faire
+ * « souvent » un reproche et « souvent » son antidote n'est pas une
+ * contradiction (on fait les deux, selon les jours).
+ */
 const MIXED_SCALES: Item[][] = [
   ATTACHMENT_ANXIETY,
   ATTACHMENT_AVOIDANCE,
   REAPPRAISAL,
   SUPPRESSION,
-  CRITICISM,
-  CONTEMPT,
-  DEFENSIVENESS,
-  STONEWALLING,
   ...Object.values(BIG_FIVE),
   SHYNESS,
 ];
@@ -645,14 +656,14 @@ const optionText = (id: string, key: string) =>
  * Pôle « relance » du cycle de dispute : insister ou relancer quand l'autre
  * demande une pause (M6_Q17), corroboré par les reproches, le ton qui monte
  * ou l'inquiétude pour le lien. Sans scénario (entretien V6) : reproches
- * fréquents seulement.
+ * fréquents seulement. V7.1 : le point neutre (50) ne corrobore rien.
  */
 function pursuit(p: PsychProfile, x: RawAnswers) {
   const scenario = x.M6_Q17 === 'C' || x.M6_Q17 === 'D';
   const crit = p.conflict.criticism ?? 0;
   const strong =
     (scenario &&
-      (crit >= MID ||
+      (crit >= STYLE_HIGH ||
         x.M6_Q16 === 'C' ||
         (p.attachment.anxiety ?? 0) >= STYLE_HIGH)) ||
     (crit >= HIGH && (p.items.criticism ?? 0) >= 2);
@@ -666,14 +677,15 @@ function pursuit(p: PsychProfile, x: RawAnswers) {
 /**
  * Pôle « repli » : partir ou se taire sans rien expliquer quand on n'arrive
  * plus à écouter (M6_Q16 ; V6 : M6_Q01), corroboré par l'échelle de repli,
- * une réparation lente ou l'inconfort avec la proximité.
+ * une réparation lente ou l'inconfort avec la proximité. V7.1 : le point
+ * neutre (50) ne corrobore rien.
  */
 function withdrawal(p: PsychProfile, x: RawAnswers) {
   const scenarioV7 = x.M6_Q16 === 'D';
   const scenarioV6 = x.M6_Q01 === 'C' || x.M6_Q01 === 'D';
   const wall = p.conflict.stonewalling ?? 0;
   const corroborated =
-    wall >= MID ||
+    wall >= STYLE_HIGH ||
     x.M2_Q07 === 'C' ||
     x.M2_Q07 === 'D' ||
     (p.attachment.avoidance ?? 0) >= STYLE_HIGH;
@@ -813,7 +825,82 @@ export function psychometricDivergences(
   out.push(...redFlagDivergences(a, b));
   out.push(...demandingnessDivergences(pa, pb, a, b));
   out.push(...shynessDivergences(pa, pb, a, b));
+  out.push(...controlDivergences(a, b, pa, pb));
   return out;
+}
+
+export type ControlRisk = 'aucun' | 'a_verifier' | 'eleve';
+
+/**
+ * V7.1 — risque de contrôle coercitif d'un membre (Stark ; échelles de
+ * comportements de contrôle). Trois sources, jamais une seule réponse :
+ *  - habitudes, « souvent » ou « très souvent » : regarder le téléphone de
+ *    l'autre ou lui demander où il est (M9_Q11), insister jusqu'à ce que
+ *    l'autre cède (M9_Q24) ;
+ *  - attitudes, « plutôt » ou « tout à fait d'accord » : savoir à tout moment
+ *    où est l'autre (M9_Q26), donner son accord à ses sorties (M9_Q27),
+ *    décider de ses dépenses (M9_Q28), une gifle « peut se comprendre »
+ *    (M6_Q24), et « ça dépend des circonstances » face à la violence
+ *    (M6_Q04) ; elles ne comptent pas si les réponses sont acquiescentes ;
+ *  - normes de couple (seules, jamais suffisantes) : accès au téléphone de
+ *    l'autre (M5_Q08 A ou C), amitiés de l'autre sexe refusées (M5_Q09 D).
+ * Élevé : trois signes de contrôle, ou deux avec une norme, dont au moins
+ * une habitude déclarée (le contrôle coercitif est un comportement : des
+ * attitudes seules, parfois des normes culturelles, ne suffisent pas) ; à
+ * vérifier : deux signes. Ce n'est pas un diagnostic, et rien n'est signalé
+ * à la modération : le Sondeur pose alors des questions de limite.
+ */
+export function controlRisk(
+  x: RawAnswers,
+  p = buildPsychProfile(x),
+): ControlRisk {
+  const often = (id: string) => ['D', 'E'].includes(x[id]);
+  const agrees = (id: string) => ['D', 'E'].includes(x[id]);
+  const habits = [often('M9_Q11'), often('M9_Q24')].filter(Boolean).length;
+  const attitudes = p.acquiescent
+    ? 0
+    : [...CONTROL_ATTITUDE_IDS.map(agrees), x.M6_Q04 === 'C'].filter(Boolean)
+        .length;
+  const norm = x.M5_Q08 === 'A' || x.M5_Q08 === 'C' || x.M5_Q09 === 'D' ? 1 : 0;
+  const signs = habits + attitudes;
+  if (habits > 0 && (signs >= 3 || (signs >= 2 && norm))) return 'eleve';
+  if (signs >= 2) return 'a_verifier';
+  return 'aucun';
+}
+
+/**
+ * Respect des limites et de la liberté de l'autre : une divergence par
+ * paire, sur le risque le plus élevé des deux membres (critique s'il est
+ * élevé, majeure s'il est à vérifier). Tendance tirée de l'entretien :
+ * jamais une réponse citée, ni le membre concerné.
+ */
+function controlDivergences(
+  a: RawAnswers,
+  b: RawAnswers,
+  pa: PsychProfile,
+  pb: PsychProfile,
+): Divergence[] {
+  const ra = controlRisk(a, pa);
+  const rb = controlRisk(b, pb);
+  const rank = { aucun: 0, a_verifier: 1, eleve: 2 };
+  const worst = rank[ra] >= rank[rb] ? ra : rb;
+  if (worst === 'aucun') return [];
+  const view = {
+    key: 'tendance',
+    text: 'Point de vigilance tiré des entretiens',
+  };
+  return [
+    {
+      questionId: 'M9_Q24',
+      theme: 'communication',
+      severity: worst === 'eleve' ? 'critique' : 'majeure',
+      label: 'Respect des limites et de la liberté de l’autre',
+      question: 'Le respect des limites et de la liberté de chacun',
+      a: view,
+      b: view,
+      neutral: true,
+    },
+  ];
 }
 
 const OFTEN: Record<string, { word: string }> = {
@@ -872,9 +959,14 @@ export function redFlagDivergences(a: RawAnswers, b: RawAnswers): Divergence[] {
         key: flag,
         text: `Ce qui me ferait fuir : ${map.label.toLowerCase()}`,
       };
+      // V7.1 : une affirmation d'accord (M9_Q13) se cite en accord, jamais
+      // en fréquence.
+      const agreement = QUESTION_INDEX.get(map.item)?.scale === 'accord';
       const habit = {
         key: freq!,
-        text: `Il m’arrive ${often.word} que ${map.habit}`,
+        text: agreement
+          ? `${freq === 'E' ? 'Tout à fait' : 'Plutôt'} d’accord : ${map.habit}`
+          : `Il m’arrive ${often.word} que ${map.habit}`,
       };
       out.push({
         questionId: 'M8_Q10',
@@ -1288,6 +1380,16 @@ export function buildRelationalProfile(
   if (answers.M10_Q18 === 'B' || answers.M10_Q18 === 'C') {
     observations.push(
       'Quand l’envie n’est pas la même des deux côtés, en parler tôt, sans vous forcer ni attendre, protège la complicité du couple.',
+    );
+  }
+  // V7.1 — dire non à l'intimité (M10_Q19 ; V6 : M6_Q08, « j'accepte pour
+  // lui faire plaisir » ou « j'ai du mal à refuser ») : pour le membre seul.
+  if (
+    ['B', 'C'].includes(answers.M10_Q19) ||
+    (!answers.M10_Q19 && ['B', 'D'].includes(answers.M6_Q08))
+  ) {
+    observations.push(
+      'Votre envie compte autant que celle de l’autre : dire non simplement, sans vous forcer ni vous en vouloir, fait partie d’une intimité sereine.',
     );
   }
   if (

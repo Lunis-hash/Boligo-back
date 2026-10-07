@@ -21,6 +21,7 @@ import { AiService, SondeurModeration } from '../ai/ai.service';
 import { QUESTIONS_BANK } from './questions.bank';
 import { HarmonyQuestionPayload } from './harmony-question.types';
 import { buildDivergenceReport, collectRawAnswers } from '../matching/divergence.engine';
+import { homeContext } from '../matching/discover-filters';
 import { AiSondeurQuestion, assembleSondeur } from './sondeur.generator';
 import { draftReviewedSondeur } from './sondeur-ai';
 import { NotificationService } from '../notifications/notification.service';
@@ -519,6 +520,7 @@ export class JourneyService {
     const report = buildDivergenceReport(
       collectRawAnswers(interviewA?.responses),
       collectRawAnswers(interviewB?.responses),
+      homeContext(journey.userA, journey.userB),
     );
     // Prénoms écrits par les membres : courts, sur une ligne, sans guillemets
     // (ils entrent dans les consignes de l'IA).

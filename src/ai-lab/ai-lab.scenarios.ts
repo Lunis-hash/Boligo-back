@@ -273,8 +273,10 @@ export const LAB_SCENARIOS: LabScenario[] = [
       'Écart sur la polygamie : jamais de compromis ; la dot et la famille élargie décrites comme des modèles de vie, sans jugement.',
     names: ['Khadija', 'Thomas'],
     interview: [
-      { M1_Q11: 'C', M4_Q07: 'A', M4_Q05: 'A' },
-      { M1_Q11: 'A', M4_Q07: 'D', M4_Q05: 'D' },
+      // V7.1 : polygamie (M1_Q20), dot (M4_Q17) et aide à la famille
+      // (M4_Q16), posées à tous.
+      { M1_Q20: 'C', M4_Q17: 'A', M4_Q16: 'A' },
+      { M1_Q20: 'A', M4_Q17: 'D', M4_Q16: 'D' },
     ],
     dayOne: {
       famille: [
@@ -347,7 +349,7 @@ export const LAB_SCENARIOS: LabScenario[] = [
       'Envoyer de l’argent au pays par Western Union est un engagement familial, pas une arnaque : aucun signal.',
     names: ['Adama', 'Claire'],
     // Un écart réel sur l'aide à la famille, pour que le Sondeur en parle.
-    interview: [{ M4_Q05: 'A' }, { M4_Q05: 'B' }],
+    interview: [{ M4_Q16: 'A' }, { M4_Q16: 'B' }],
     dayOne: {
       argent: [
         'Ma mère envoie de l’argent au pays par Western Union chaque mois, je ferai pareil.',
@@ -460,6 +462,14 @@ export function scenarioInterviews(s: LabScenario): [RawAnswers, RawAnswers] {
     ...r,
     M6_Q04: 'A',
     M6_Q05: 'A',
+    // V7.1 : justification de la violence et contrôle coercitif (habitudes
+    // et attitudes), absents par défaut pour la même raison.
+    M6_Q24: 'A',
+    M9_Q11: 'A',
+    M9_Q24: 'A',
+    M9_Q26: 'A',
+    M9_Q27: 'A',
+    M9_Q28: 'A',
   });
   const a = safe(draw(`${s.id}:a`));
   const b = s.sameInterview ? { ...a } : safe(draw(`${s.id}:b`));

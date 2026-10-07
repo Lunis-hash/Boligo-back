@@ -5,7 +5,7 @@
  * que si chacun entre dans les critères de l'autre.
  */
 import { answerKeys } from '../interview/questions.data';
-import { RawAnswers } from './divergence.engine';
+import { RawAnswers, ReportContext } from './divergence.engine';
 
 export interface FilterSubject {
   /** Âge exact (anniversaire compris), null si inconnu. */
@@ -32,6 +32,30 @@ export function filterCity(user: {
   profile?: { displayedCity?: string | null } | null;
 }): string | null {
   return user.city || user.profile?.displayedCity || null;
+}
+
+type Located = {
+  city?: string | null;
+  profile?: { displayedCity?: string | null } | null;
+};
+
+/**
+ * V7.1 — où vit chacun, pour lire « je reste où je suis » (M0_Q03, M7_Q07,
+ * M7_Q36) : la ville (premier élément) et le pays (dernier élément de
+ * « Ville, Pays » ; inconnu si le lieu n'a qu'un élément).
+ */
+export function homeContext(
+  a: Located | null | undefined,
+  b: Located | null | undefined,
+): ReportContext {
+  const pa = cityParts(a ? filterCity(a) : null);
+  const pb = cityParts(b ? filterCity(b) : null);
+  return {
+    cityA: pa[0] ?? null,
+    cityB: pb[0] ?? null,
+    countryA: pa.length >= 2 ? pa[pa.length - 1] : null,
+    countryB: pb.length >= 2 ? pb[pb.length - 1] : null,
+  };
 }
 
 /** Région : avant-dernier élément de « Ville, Région, Pays », sinon le premier. */
@@ -102,6 +126,12 @@ const LANGUAGE_KEY_BY_NAME: Record<string, string> = {
   espagnol: 'H',
   spanish: 'H',
   espanol: 'H',
+  // V7.1 : créoles des Antilles et d'Haïti.
+  creole: 'J',
+  kreyol: 'J',
+  'creole haitien': 'J',
+  'haitian creole': 'J',
+  'kreyol ayisyen': 'J',
 };
 
 /** Langues écrites par le membre (« une autre langue »), sans accents ni casse. */

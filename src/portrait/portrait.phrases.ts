@@ -131,6 +131,7 @@ export const MODULES: ModuleInfo[] = [
 export const UNDECIDED: Record<string, string[]> = {
   M0_Q06: ['C'],
   M1_Q11: ['D'],
+  M1_Q20: ['D'],
   M2_Q03: ['D'],
   M3_Q08: ['D'],
   M3_Q10: ['C'],
@@ -188,6 +189,19 @@ export const QUESTION_SHORT_LABEL: Record<string, string> = {
   M7_Q19: 'Ce qui compte le plus',
   M8_Q01: 'Objectif',
   M8_Q02: "Délai d'engagement",
+  M8_Q17: "Délai d'engagement",
+  M8_Q16: 'Cérémonies du mariage',
+  M1_Q20: 'Polygamie',
+  M4_Q16: 'Aide à la famille',
+  M4_Q17: 'Dot',
+  M0_Q14: 'Enfants de l’autre',
+  M0_Q15: 'Jeux d’argent',
+  M0_Q16: 'Jeux d’argent chez l’autre',
+  M3_Q13: 'Liens de l’autre avec son ex',
+  M7_Q36: 'Retour au pays d’origine',
+  M8_Q18: 'Religion des enfants',
+  M8_Q19: 'Vie commune avant le mariage',
+  M8_Q20: 'Tape ou fessée',
   M8_Q04: 'Ce qui vous touche le plus',
   M8_Q12: 'Non négociable',
   M9_Q01: 'Décisions',
@@ -212,7 +226,7 @@ export const MODULE_KEY_QUESTIONS: Record<number, string[]> = {
   5: ['M5_Q01', 'M5_Q10', 'M5_Q03', 'M5_Q08'],
   6: ['M6_Q01', 'M6_Q16', 'M6_Q18', 'M6_Q10', 'M6_Q06'],
   7: ['M7_Q19', 'M7_Q01', 'M7_Q03', 'M7_Q07', 'M7_Q08'],
-  8: ['M8_Q01', 'M8_Q02', 'M8_Q12', 'M8_Q04'],
+  8: ['M8_Q01', 'M8_Q17', 'M8_Q02', 'M8_Q12', 'M8_Q04'],
   9: ['M9_Q02', 'M9_Q01', 'M9_Q06'],
   10: ['M10_Q09', 'M10_Q03', 'M10_Q10'],
 };
@@ -445,6 +459,14 @@ export const TIMING: Phrases = {
   D: 'lorsque les conditions seront mûres',
 };
 
+/** V7.1 : délai d'engagement (M8_Q17). */
+export const TIMING_V71: Phrases = {
+  A: 'envisagé dans l’année si tout va bien',
+  B: 'à l’horizon d’un à deux ans',
+  C: 'à l’horizon de deux à trois ans',
+  D: 'sans échéance précise',
+};
+
 export const CHILDREN_WISH: Phrases = {
   A: 'Fonder une famille fait clairement partie de son projet',
   B: '{Il} souhaite des enfants si les conditions sont réunies',
@@ -531,7 +553,8 @@ export const FAITH_V7: Phrases = {
   C: 'Sa foi chrétienne',
   D: 'Sa foi musulmane',
   E: 'Sa foi juive',
-  F: 'Sa spiritualité bouddhiste ou hindoue',
+  F: 'Sa spiritualité bouddhiste',
+  K: 'Sa foi hindoue',
   G: 'Sa religion traditionnelle',
   J: 'Sa religion',
 };
@@ -709,7 +732,7 @@ export const VALUE_CHIPS: Array<{
   {
     id: 'traditions',
     label: 'Traditions',
-    when: { M1_Q03: ['A', 'B'], M7_Q19: ['B'] },
+    when: { M1_Q03: ['A', 'B'], M7_Q19: ['B'], M4_Q17: ['A', 'B'] },
   },
   { id: 'famille', label: 'Famille', when: { M5_Q01: ['A', 'B'] } },
   {
@@ -768,6 +791,14 @@ export const EXPECT_TIMING: Phrases = {
   B: "Un engagement officiel **d'ici deux à trois ans**.",
   C: 'Un engagement **sans pression**, au rythme naturel du couple.',
   D: 'Un engagement **quand les conditions seront mûres**.',
+};
+
+/** V7.1 : délai d'engagement (M8_Q17). */
+export const EXPECT_TIMING_V71: Phrases = {
+  A: 'Un engagement officiel envisagé **dans l’année**, si tout va bien.',
+  B: 'Un engagement officiel **d’ici un à deux ans**.',
+  C: 'Un engagement officiel **d’ici deux à trois ans**.',
+  D: 'Un engagement **sans échéance précise**.',
 };
 
 export const EXPECT_ENERGY: Phrases = {
@@ -829,7 +860,8 @@ export const DETAIL_RELIGION_V7: Phrases = {
   C: 'Chrétien{|ne}',
   D: 'Musulman{|e}',
   E: '{Juif|Juive}',
-  F: 'Bouddhiste ou hindou{|e}',
+  F: 'Bouddhiste',
+  K: 'Hindou{|e}',
   G: 'Religion traditionnelle',
   H: 'Spirituel{|le}, sans religion',
   I: 'Sans religion',
@@ -850,10 +882,11 @@ export const NON_NEGOTIABLE_WORDS: Phrases = {
 };
 
 export const DETAIL_EDUCATION: Phrases = {
-  A: 'CAP-BEP ou sans diplôme',
-  B: 'Baccalauréat',
-  C: 'Bac +2 à Bac +4',
-  D: 'Bac +5 et plus',
+  // V7.1 : hors du seul système français.
+  A: 'Formation courte ou sans diplôme',
+  B: 'Études secondaires',
+  C: 'Études supérieures (2 à 4 ans)',
+  D: 'Études supérieures (5 ans et plus)',
 };
 
 export const DETAIL_SMOKING: Phrases = {

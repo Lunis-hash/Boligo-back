@@ -29,7 +29,7 @@ const find = (a: RawAnswers, b: RawAnswers, id: string) =>
   report(a, b).divergences.filter((d) => d.questionId === id);
 
 describe('Questionnaire V6.1 : intégrité', () => {
-  it('ajoute 24 questions, toutes traduites quand elles sont encore posées (V7 : 160 questions)', () => {
+  it('ajoute 24 questions, toutes traduites quand elles sont encore posées (V7.1 : 168 questions au plus)', () => {
     expect(V61_ADDED.size).toBe(24);
     for (const id of V61_ADDED) {
       expect(QUESTION_INDEX.get(id)).toBeDefined();
@@ -40,7 +40,7 @@ describe('Questionnaire V6.1 : intégrité', () => {
       expect(en).toBeDefined();
       if (!q.scale) expect(en.options).toHaveLength(q.options.length);
     }
-    expect(QUESTIONS).toHaveLength(160);
+    expect(QUESTIONS.length).toBeLessThanOrEqual(168);
   });
 
   it('limite les signaux d’alerte à trois réponses', () => {
@@ -339,9 +339,10 @@ describe('Retours du 5 octobre : âge, langues, double origine', () => {
   });
 
   it('accepte deux origines (métissage) et en tient compte partout', () => {
-    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q01')!;
-    expect(isValidAnswer(origin, 'A,C')).toBe(true);
-    expect(isValidAnswer(origin, 'A,C,E')).toBe(false);
+    // V7.1 : la région (M1_Q21) remplace le continent (M1_Q01, encore lu).
+    const origin = QUESTION_BY_ID_FOR_TESTS.get('M1_Q21')!;
+    expect(isValidAnswer(origin, 'A,J')).toBe(true);
+    expect(isValidAnswer(origin, 'A,J,G')).toBe(false);
     // « La même culture » exigée : une origine commune suffit.
     expect(
       find({ M1_Q01: 'A,C', M1_Q02: 'A' }, { M1_Q01: 'C' }, 'M1_Q02'),
@@ -352,13 +353,13 @@ describe('Retours du 5 octobre : âge, langues, double origine', () => {
 });
 
 describe('Double origine et questions conditionnelles', () => {
-  it('pose la question de la dot dès qu’une des deux origines est concernée', () => {
+  it('pose la question de la dot à tous, quelle que soit l’origine (V7.1)', () => {
     const { pendingQuestions } = jest.requireActual<
       typeof import('../interview/questions.service')
     >('../interview/questions.service');
     const ids = (M1_Q01: string) =>
       pendingQuestions(4, { M1_Q01 }, 30, 'F').map((q) => q.id);
-    expect(ids('C,A')).toContain('M4_Q07');
-    expect(ids('C,E')).not.toContain('M4_Q07');
+    expect(ids('C,A')).toContain('M4_Q17');
+    expect(ids('C,E')).toContain('M4_Q17');
   });
 });

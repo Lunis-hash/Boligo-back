@@ -6,6 +6,8 @@ export interface QuestionOption {
   text: string;
   /** Option à préciser en toutes lettres (« Une autre langue (précisez) »). */
   freeText?: boolean;
+  /** Option « aucun » : elle ne se coche jamais avec une autre. */
+  exclusive?: boolean;
 }
 
 export interface Question {
@@ -23,7 +25,7 @@ export interface Question {
   suggested?: string[];
   /** Précision pré-remplie de l'option à préciser (« Allemand »). */
   suggestedOther?: string;
-  /** Donnée sensible (religion, vie intime, violences subies) : accord demandé avant. */
+  /** Donnée sensible (origine, religion, vie intime, violences subies) : accord demandé avant. */
   sensitive?: boolean;
   /**
    * Question de suite : posée seulement si l'une de ces réponses, données plus
@@ -61,11 +63,23 @@ export function initialPicked(question: Question): string[] {
   return question.maxChoices ? keys.slice(0, question.maxChoices) : keys;
 }
 
-/** Coche ou décoche une réponse, sans dépasser le nombre maximal. */
+/** Texte affiché d'une question : l'énoncé, puis son aide s'il y en a une. */
+export function questionDisplayText(question: Question): string {
+  const help = question.assistance?.trim();
+  return help ? `${question.text}\n\n${help}` : question.text;
+}
+
+/**
+ * Coche ou décoche une réponse, sans dépasser le nombre maximal. Une option
+ * « aucun » (`exclusive`) décoche les autres ; une autre option la décoche.
+ */
 export function togglePick(question: Question, picked: string[], key: string): string[] {
   if (picked.includes(key)) return picked.filter((k) => k !== key);
-  if (question.maxChoices && picked.length >= question.maxChoices) return picked;
-  return [...picked, key];
+  const exclusive = new Set(question.options.filter((o) => o.exclusive).map((o) => o.key));
+  if (exclusive.has(key)) return [key];
+  const kept = picked.filter((k) => !exclusive.has(k));
+  if (question.maxChoices && kept.length >= question.maxChoices) return picked;
+  return [...kept, key];
 }
 
 /** Précision écrite acceptée par le serveur : 2 à 60 lettres, espaces, tirets, apostrophes, virgules. */

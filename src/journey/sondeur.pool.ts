@@ -28,7 +28,7 @@
  * Les options ne sont jamais affichées (réponse libre de 500 caractères) :
  * elles restent une grille de lecture cachée, courte et neutre.
  */
-import { QUESTIONS } from '../interview/questions.data';
+import { QUESTION_INDEX } from '../interview/questions.data';
 import type {
   Convergence,
   Divergence,
@@ -267,6 +267,22 @@ export const TOPIC_PHRASES: Record<string, string> = {
   M6_Q17: 'le besoin de pause dans un désaccord',
   M6_Q16: 'la pause, puis le retour au dialogue',
   M8_Q14: 'les désaccords qui durent',
+  // Grand Entretien V7.1
+  M1_Q20: 'la polygamie',
+  M4_Q16: "l'argent que l'on envoie à sa famille",
+  M4_Q17: 'la tradition de la dot',
+  M8_Q17: 'le délai avant un engagement officiel',
+  M8_Q16: 'les cérémonies du mariage',
+  M0_Q14: "l'accueil des enfants de l'autre",
+  M3_Q13: "les liens que l'on garde avec son passé",
+  M7_Q36: 'le retour aux racines de sa famille',
+  M8_Q19: 'la vie commune avant le mariage',
+  M8_Q20: 'la manière de punir un enfant',
+  M8_Q18: 'la religion dans laquelle élever des enfants',
+  M0_Q15: "les jeux d'argent",
+  // Sujets de sécurité (questions de limite seulement)
+  M6_Q24: 'la limite face à la violence',
+  M9_Q24: 'le respect des limites de chacun',
 };
 
 /**
@@ -341,14 +357,24 @@ export const TOPIC_FAMILIES: string[][] = [
   ['M6_Q10', 'M6_Q18', 'M6_Q19'],
   ['M6_Q06', 'M6_Q07', 'M10_Q16', 'M10_Q17', 'M10_Q18'],
   ['M1_Q09', 'M1_Q19'],
-  ['M4_Q08', 'M4_Q14'],
+  ['M4_Q08', 'M4_Q14', 'M0_Q15'],
   ['M6_Q16', 'M6_Q17'],
-  ['M1_Q13', 'M8_Q15'],
+  ['M1_Q13', 'M8_Q15', 'M8_Q18', 'M8_Q20'],
   ['M5_Q01', 'M1_Q10'],
-  ['M0_Q05', 'M3_Q04'],
+  ['M0_Q05', 'M3_Q04', 'M0_Q14'],
   ['M4_Q03', 'M4_Q04'],
   ['M5_Q08', 'M8_Q10:B'],
   ['M8_Q01', 'M8_Q10:D'],
+  // V7.1 : une question remplacée et sa remplaçante sont un même sujet.
+  ['M1_Q11', 'M1_Q20'],
+  ['M4_Q05', 'M4_Q16'],
+  ['M4_Q07', 'M4_Q17'],
+  ['M8_Q02', 'M8_Q17'],
+  ['M8_Q03', 'M8_Q16', 'M8_Q19'],
+  ['M3_Q05', 'M3_Q13'],
+  ['M7_Q07', 'M7_Q36'],
+  ['M6_Q04', 'M6_Q24'],
+  ['M8_Q10:I', 'M9_Q24'],
 ];
 
 /** Le sujet et ses voisins (lui seul s'il n'a pas de famille). */
@@ -509,6 +535,21 @@ export const TOPIC_DAYS: Record<string, number[]> = {
   M6_Q17: [2, 3],
   M6_Q16: [3, 2],
   M8_Q14: [3, 2],
+  // Grand Entretien V7.1
+  M1_Q20: [1, 2],
+  M4_Q16: [1, 2, 3],
+  M4_Q17: [2, 1],
+  M8_Q17: [1, 3],
+  M8_Q16: [2, 3],
+  M0_Q14: [3, 2],
+  M3_Q13: [1, 2],
+  M7_Q36: [3, 1, 2],
+  M8_Q19: [2, 3],
+  M8_Q20: [3, 2],
+  M8_Q18: [3, 2],
+  M0_Q15: [2, 3],
+  M6_Q24: [1, 2, 3],
+  M9_Q24: [1, 2, 3],
 };
 
 const DEFAULT_DAYS: Record<Severity, number[]> = {
@@ -652,8 +693,10 @@ export const AGREEMENT_CONTRADICTIONS: Record<
   // face à « un choix optionnel » (M8_Q03 D) ; « un engagement dans l'année »
   // face à « ouvert à voir ce qui se présente » (M8_Q01 D).
   'M8_Q11:A': { M8_Q13: ['D'] },
-  'M8_Q01:A': { M8_Q03: ['D'] },
+  'M8_Q01:A': { M8_Q03: ['D'], M8_Q16: ['D'] },
   'M8_Q02:A': { M8_Q01: ['D'] },
+  // V7.1 : mêmes démentis pour les questions remplaçantes.
+  'M8_Q17:A': { M8_Q01: ['D'] },
 };
 
 /** L'accord est démenti par un écart ou un autre accord sur le sujet voisin. */
@@ -2992,6 +3035,60 @@ export const TOPIC_DEEP: Record<
       ['Des moments à soi', 'La confiance', 'Des rituels'],
     ),
   },
+  // V7.1 — jeux d'argent (M0_Q15, croisée avec M0_Q16).
+  M0_Q15: {
+    2: q(
+      "Qu'avez-vous vu, autour de vous, de ce que les paris ou les jeux d'argent changent dans un foyer ?",
+      'origine',
+      ['Des espoirs', 'Des tensions', 'Rien de grave'],
+    ),
+    3: q(
+      "Avant de partager un budget, que voudriez-vous savoir du rapport de l'autre aux jeux d'argent ?",
+      'limite',
+      ['Une règle claire', 'Un plafond convenu', 'Aucun pari'],
+    ),
+  },
+  // V7.1 — ce que l'on accepte des liens de l'autre avec son ex (M3_Q13).
+  M3_Q13: {
+    1: q(
+      "Pour vous, qu'est-ce qui distingue un lien apaisé avec un ancien amour d'un lien qui empiète sur le couple ?",
+      'limite',
+      ['La transparence', 'La fréquence', 'Le respect du couple'],
+    ),
+    2: q(
+      "Qu'avez-vous appris, autour de vous, sur la place qu'un couple laisse aux histoires d'avant ?",
+      'origine',
+      ['Qu’elles s’effacent', 'Qu’elles restent', 'Que cela dépend'],
+    ),
+  },
+  // V7.1 — religion des enfants (M8_Q18).
+  M8_Q18: {
+    2: q(
+      "Qu'avez-vous reçu, enfant, de la foi ou des convictions de votre famille, que vous aimeriez transmettre ?",
+      'origine',
+      ['Des fêtes', 'Des valeurs', 'Une pratique'],
+    ),
+    3: q(
+      "Avant de vous engager, que voudriez-vous savoir de ce que l'autre souhaite transmettre de ses convictions à des enfants ?",
+      'limite',
+      ['Une pratique', 'Des valeurs', 'La liberté de choisir'],
+    ),
+  },
+  // V7.1 — accueillir les enfants de l'autre (M0_Q14) : un point non
+  // négociable possible ; au jour 3, ce qu'il faudrait savoir avant de
+  // s'engager.
+  M0_Q14: {
+    2: q(
+      "Autour de vous, qu'est-ce qui a aidé un adulte à trouver sa place auprès des enfants de l'autre ?",
+      'exception',
+      ['Du temps', 'Des rôles clairs', 'De la patience'],
+    ),
+    3: q(
+      "Avant une vie commune, que voudriez-vous savoir de la place que l'autre souhaite donner à des enfants déjà là ?",
+      'limite',
+      ['Leur rythme', 'Le rôle de chacun', 'Le temps qu’il faudra'],
+    ),
+  },
   M0_Q05: {
     3: q(
       "Quand une vie à deux commence avec des enfants déjà là, qu'est-ce qui vous semble le plus important à protéger les premiers mois ?",
@@ -4117,6 +4214,56 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Le lieu de vie', 'La foi', 'Avoir des enfants ou non'],
     ),
   },
+  // V7.1 — jeux d'argent, liens avec un ex, religion des enfants.
+  M0_Q15: {
+    2: q(
+      "Qui, dans votre entourage, a le plus influencé votre regard sur les jeux d'argent ?",
+      'origine',
+      ['Un parent', 'Des amis', 'Mon expérience'],
+    ),
+    3: q(
+      "Pour une vie à deux, quelle règle sur les jeux d'argent vous semblerait juste dès le début ?",
+      'limite',
+      ['Aucun pari', 'Un plafond convenu', 'Chacun décide'],
+    ),
+  },
+  M3_Q13: {
+    1: q(
+      "Quelle limite poseriez-vous, dès le début, aux liens que l'autre garde avec une histoire passée ?",
+      'limite',
+      ['Aucun secret', 'Pas de tête-à-tête', 'Aucune limite'],
+    ),
+    2: q(
+      "D'où vous vient votre regard sur les amitiés avec un ancien amour ?",
+      'origine',
+      ['Ma famille', 'Mes amis', 'Mon expérience'],
+    ),
+  },
+  M8_Q18: {
+    2: q(
+      "Dans votre famille, comment la foi ou les convictions passaient-elles d'une génération à l'autre ?",
+      'origine',
+      ['Par l’exemple', 'Par des règles', 'Par la liberté'],
+    ),
+    3: q(
+      "Pour une vie à deux, quelle place aimeriez-vous donner aux convictions dans l'éducation ?",
+      'limite',
+      ['Une place centrale', 'Une place partagée', 'Un choix libre'],
+    ),
+  },
+  // V7.1 — accueillir les enfants de l'autre (M0_Q14).
+  M0_Q14: {
+    2: q(
+      "Qu'avez-vous appris, en grandissant ou auprès de vos proches, sur les familles où des enfants arrivent d'une autre union ?",
+      'origine',
+      ['Qu’il faut du temps', 'Que les rôles comptent', 'Que l’amour aide'],
+    ),
+    3: q(
+      "Le jour où des enfants de l'un vivraient avec vous, qu'aimeriez-vous comprendre du rôle que l'autre imagine pour le beau-parent ?",
+      'limite',
+      ['Une présence', 'Une autorité partagée', 'Un rôle à construire'],
+    ),
+  },
   // Sujets du jour 3 qui n'avaient qu'une formulation propre.
   M0_Q05: {
     3: q(
@@ -4272,6 +4419,28 @@ export const TOPIC_DEEP_THIRD: Record<
       'Pour une vie à deux avec des enfants déjà là, quel rythme vous semblerait juste pour trouver chacun sa place ?',
       'projection',
       ['Quelques mois', 'Une année', 'Le rythme des enfants'],
+    ),
+  },
+  // V7.1 — troisième formulation des nouveaux sujets (troisième parcours).
+  M0_Q15: {
+    2: q(
+      "Dans votre famille, comment parlait-on de l'argent gagné ou perdu au jeu ?",
+      'origine',
+      ['Avec méfiance', 'En riant', 'On n’en parlait pas'],
+    ),
+  },
+  M3_Q13: {
+    1: q(
+      "Dans une vie à deux, quelle transparence attendriez-vous sur les liens de l'autre avec une histoire passée ?",
+      'limite',
+      ['Tout savoir', 'L’essentiel', 'Rien de particulier'],
+    ),
+  },
+  M8_Q18: {
+    3: q(
+      "Avant de vous dire oui, qu'aimeriez-vous savoir des traditions que l'autre voudrait faire vivre à des enfants ?",
+      'limite',
+      ['Des fêtes', 'Des valeurs', 'Une pratique'],
     ),
   },
   M1_Q19: {
@@ -4534,6 +4703,20 @@ export const DEEP_ALIASES: Record<string, string> = {
   M1_Q09: 'M1_Q19',
   M7_Q01: 'M7_Q19',
   M6_Q01: 'M6_Q16',
+  // V7.1 → V7 : la question remplaçante garde les formulations du sujet.
+  M1_Q20: 'M1_Q11',
+  M4_Q16: 'M4_Q05',
+  M4_Q17: 'M4_Q07',
+  M8_Q17: 'M8_Q02',
+  M8_Q16: 'M8_Q03',
+  // V7.1, sujets nouveaux : les formulations d'un sujet voisin.
+  M0_Q14: 'M0_Q05',
+  M3_Q13: 'M3_Q05',
+  M7_Q36: 'M7_Q07',
+  M8_Q19: 'M8_Q03',
+  M8_Q20: 'M8_Q15',
+  M8_Q18: 'M1_Q13',
+  M0_Q15: 'M4_Q14',
 };
 
 function deepEntry(
@@ -7152,9 +7335,13 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
   ],
 };
 
-/** Clé de réponse d'un accord (« A ») retrouvée à partir du texte de l'option. */
+/**
+ * Clé de réponse d'un accord (« A ») retrouvée à partir du texte de l'option.
+ * Questions actuelles et questions retirées (V6, V7) : un accord entre deux
+ * entretiens anciens garde sa phrase et ses relances propres.
+ */
 export function agreementKey(c: Convergence): string | undefined {
-  return QUESTIONS.find((x) => x.id === c.questionId)?.options.find(
+  return QUESTION_INDEX.get(c.questionId)?.options.find(
     (o) => o.text === c.answer,
   )?.key;
 }
@@ -7208,9 +7395,30 @@ export function isDeferredAgreement(c: Convergence): boolean {
   return DEFERRED_ANSWERS.has(`${c.questionId}:${agreementKey(c) ?? ''}`);
 }
 
+/**
+ * V7.1 : accord sur une question remplaçante dont la réponse garde le sens
+ * de celle de la question remplacée (passerelle V7 → V7.1) : même phrase et
+ * mêmes relances que l'accord écrit pour la question remplacée.
+ */
+export const AGREEMENT_ALIASES: Record<string, string> = {
+  'M1_Q20:A': 'M1_Q11:A',
+  'M4_Q16:A': 'M4_Q05:A',
+  'M4_Q16:B': 'M4_Q05:B',
+  'M4_Q16:C': 'M4_Q05:D',
+  'M4_Q17:A': 'M4_Q07:A',
+  'M4_Q17:B': 'M4_Q07:A',
+  'M8_Q17:A': 'M8_Q02:A',
+  'M8_Q17:D': 'M8_Q02:D',
+  'M8_Q16:A': 'M8_Q03:B',
+  'M8_Q16:B': 'M8_Q03:A',
+  'M8_Q16:D': 'M8_Q03:D',
+};
+
 export function agreementFor(c: Convergence): Agreement {
+  const key = `${c.questionId}:${agreementKey(c) ?? ''}`;
   const found =
-    AGREEMENTS[`${c.questionId}:${agreementKey(c) ?? ''}`] ??
+    AGREEMENTS[key] ??
+    AGREEMENTS[AGREEMENT_ALIASES[key]] ??
     AGREEMENTS[c.questionId];
   // Accord sans phrase écrite pour lui : pas de question d'accord générique
   // (« vous avez répondu de la même façon sur… » dit ce que chacun a répondu

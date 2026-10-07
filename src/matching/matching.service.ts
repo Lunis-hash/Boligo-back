@@ -152,7 +152,12 @@ export class MatchingService {
 
     // Réponses du Grand Entretien des candidats : toute la fiche (score, modules,
     // textes) en est déduite — jamais d'une valeur inventée.
-    const viewer = { answers: viewerAnswers, mentalMap: viewerMentalMap };
+    const viewer = {
+      answers: viewerAnswers,
+      mentalMap: viewerMentalMap,
+      city: currentUser.city,
+      profile: currentUser.profile,
+    };
 
     const scored = candidatesToScore
       .map((m) => {
@@ -232,14 +237,32 @@ export class MatchingService {
   }
 
   private async resolveCompatibilityScore(userId: string, targetUserId: string) {
-    const [viewerMap, candidateMap, answers] = await Promise.all([
+    const [viewerMap, candidateMap, answers, users] = await Promise.all([
       this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
       this.prisma.mentalMap.findFirst({ where: { userId: targetUserId }, orderBy: { generatedAt: 'desc' } }),
       this.answersByUser([userId, targetUserId]),
+      // V7.1 : lieu de vie de chacun, pour lire « je reste où je suis ».
+      this.prisma.user.findMany({
+        where: { id: { in: [userId, targetUserId] } },
+        select: {
+          id: true,
+          city: true,
+          profile: { select: { displayedCity: true } },
+        },
+      }),
     ]);
+    const home = (id: string) => users.find((u) => u.id === id);
     const resolved = resolveScore(
-      { answers: answers.get(userId) ?? {}, mentalMap: viewerMap },
-      { answers: answers.get(targetUserId) ?? {}, mentalMap: candidateMap },
+      {
+        ...home(userId),
+        answers: answers.get(userId) ?? {},
+        mentalMap: viewerMap,
+      },
+      {
+        ...home(targetUserId),
+        answers: answers.get(targetUserId) ?? {},
+        mentalMap: candidateMap,
+      },
     );
     const top = resolved.report.divergences[0];
     const summary = top
@@ -343,7 +366,10 @@ export class MatchingService {
       const testUnlock = isVideoUnlockEnv === 'true' || isVideoUnlockEnv === '1';
       const videoEnabled = step === 'video' || (testUnlock && step === 'chat_libre');
 
-      const { _score, id, firstName, ...view } = buildMatchView(viewer, {
+      // V7.1 : lieu de vie du membre, pour lire « je reste où je suis ».
+      const self = p.sourceUserId === userId ? p.sourceUser : p.targetUser;
+      const me = { ...viewer, city: self.city, profile: self.profile };
+      const { _score, id, firstName, ...view } = buildMatchView(me, {
         id: partner.id,
         firstName: partner.firstName,
         gender: partner.gender,
@@ -679,11 +705,20 @@ export class MatchingService {
       },
     });
 
-    const [viewerMap, answers] = await Promise.all([
+    const [viewerMap, answers, self] = await Promise.all([
       this.prisma.mentalMap.findFirst({ where: { userId }, orderBy: { generatedAt: 'desc' } }),
       this.answersByUser([userId, ...proposals.map((p) => p.sourceUser.id)]),
+      // V7.1 : lieu de vie du membre, pour lire « je reste où je suis ».
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { city: true, profile: { select: { displayedCity: true } } },
+      }),
     ]);
-    const viewer = { answers: answers.get(userId) ?? {}, mentalMap: viewerMap };
+    const viewer = {
+      ...self,
+      answers: answers.get(userId) ?? {},
+      mentalMap: viewerMap,
+    };
 
     return proposals.map((p) => {
       const { _score, id, firstName, ...view } = buildMatchView(viewer, {

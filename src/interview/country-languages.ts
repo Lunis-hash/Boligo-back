@@ -5,7 +5,8 @@
  * qu'une pré-sélection : le membre coche ou décoche librement.
  *
  * Clés de M0_Q10 : A français, B anglais, C arabe, D lingala, E kiswahili,
- * F wolof, G portugais, H espagnol, I autre langue (à préciser).
+ * F wolof, G portugais, H espagnol, J créole (V7.1), I autre langue (à
+ * préciser).
  */
 import type { InterviewLanguage } from './questions.en';
 
@@ -58,11 +59,13 @@ const BY_COUNTRY: Record<string, CountryLanguages> = {
   madagascar: { keys: ['A'], other: other('Malgache', 'Malagasy') },
   rwanda: { keys: ['A', 'B', 'E'], other: other('Kinyarwanda', 'Kinyarwanda') },
   maurice: { keys: ['A', 'B'] },
-  haiti: { keys: ['A'], other: other('Créole haïtien', 'Haitian Creole') },
-  martinique: { keys: ['A'] },
-  guadeloupe: { keys: ['A'] },
+  // V7.1 : le créole (Kreyòl), langue de tous en Haïti, proposé d'abord ;
+  // aux Antilles et en Guyane, pré-écrit à côté du français.
+  haiti: { keys: ['J', 'A'] },
+  martinique: { keys: ['A', 'J'] },
+  guadeloupe: { keys: ['A', 'J'] },
   'la reunion': { keys: ['A'] },
-  guyane: { keys: ['A'] },
+  guyane: { keys: ['A', 'J'] },
 };
 
 const norm = (s: string) =>
@@ -108,6 +111,7 @@ const LANGUAGE_NAME: Record<InterviewLanguage, Record<string, string>> = {
     E: 'Kiswahili',
     F: 'Wolof',
     G: 'Portugais',
+    J: 'Créole',
   },
   en: {
     A: 'French',
@@ -116,6 +120,7 @@ const LANGUAGE_NAME: Record<InterviewLanguage, Record<string, string>> = {
     E: 'Kiswahili',
     F: 'Wolof',
     G: 'Portuguese',
+    J: 'Creole',
   },
 };
 
