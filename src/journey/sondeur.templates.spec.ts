@@ -35,12 +35,15 @@ import {
 import {
   CONTROL_LIMITS,
   DAY_ANGLES,
+  RELIGIOUS_OPTION,
   SAFETY_QUESTIONS,
   SAFETY_TEMPLATES,
   SELF_DISCLOSURE_QUESTIONS,
   SondeurQuestion,
   assembleSondeur,
   describeReportForAi,
+  hasNoReligiousPractice,
+  neutralOptions,
   questionOpening,
   questionSignature,
   safetyThemesOf,
@@ -2259,5 +2262,91 @@ describe('Accords démentis : exemple du contre-audit', () => {
         ),
       ).toBe(true);
     }
+  });
+});
+
+describe('Deux membres sans pratique religieuse : options cachées neutres', () => {
+  it('reconnaît, d’après le rapport, deux membres sans pratique religieuse', () => {
+    const report = (a: RawAnswers, b: RawAnswers) =>
+      hasNoReligiousPractice(buildDivergenceReport(a, b));
+    // Sans religion, ou spiritualité personnelle sans religion (V7, V6).
+    expect(report({ M1_Q16: 'I' }, { M1_Q16: 'I' })).toBe(true);
+    expect(report({ M1_Q16: 'H' }, { M1_Q16: 'I' })).toBe(true);
+    expect(report({ M1_Q05: 'E' }, { M1_Q16: 'I' })).toBe(true);
+    // Une religion déclarée, pratiquée « rarement ou jamais » des deux côtés.
+    expect(
+      report({ M1_Q16: 'A', M1_Q17: 'D' }, { M1_Q16: 'A', M1_Q17: 'D' }),
+    ).toBe(true);
+    // Une pratique chez l'un des deux, ou une pratique que le rapport ne dit
+    // pas : les options restent celles du gabarit.
+    expect(
+      report({ M1_Q16: 'A', M1_Q17: 'C' }, { M1_Q16: 'A', M1_Q17: 'D' }),
+    ).toBe(false);
+    expect(report({ M1_Q16: 'D', M1_Q17: 'A' }, { M1_Q16: 'I' })).toBe(false);
+    expect(report({ M1_Q16: 'D' }, { M1_Q16: 'I' })).toBe(false);
+    expect(report({}, {})).toBe(false);
+  });
+
+  it('remplace une option religieuse par une valeur, une conviction ou une tradition familiale, sans doublon', () => {
+    expect(
+      neutralOptions(['Ma foi', 'Mes valeurs', 'Une prière', 'Autre...']),
+    ).toEqual([
+      'Mes convictions',
+      'Mes valeurs',
+      'Une tradition familiale',
+      'Autre...',
+    ]);
+    const fetes = neutralOptions([
+      'Une fête religieuse',
+      'Une fête familiale',
+      'Une fête du pays',
+      'Autre...',
+    ]);
+    expect(new Set(fetes).size).toBe(4);
+    expect(fetes.some((o) => RELIGIOUS_OPTION.test(o))).toBe(false);
+    // Une option sans foi ni pratique reste telle quelle.
+    expect(
+      neutralOptions(['Un lien pratique', 'Le respect', 'Autre...']),
+    ).toEqual(['Un lien pratique', 'Le respect', 'Autre...']);
+  });
+
+  it('300 couples sans religion : aucune option cachée religieuse ; des croyants pratiquants les gardent', () => {
+    const rand = rng(20261011);
+    const answers = (faith: string, practice?: string): RawAnswers => {
+      const a: RawAnswers = {};
+      for (const q of QUESTIONS) a[q.id] = randomAnswer(rand, q);
+      a.M1_Q16 = faith;
+      if (practice) a.M1_Q17 = practice;
+      else delete a.M1_Q17;
+      return a;
+    };
+    const served = (faith: [string, string], practice?: string) =>
+      Array.from({ length: 150 }, (_, i) =>
+        assembleSondeur({
+          report: buildDivergenceReport(
+            answers(faith[0], practice),
+            answers(faith[1], practice),
+          ),
+          firstNames: ['A', 'B'],
+          seed: `r${faith.join('')}${i}`,
+        }),
+      ).flat();
+    const unbelievers = [...served(['I', 'I']), ...served(['H', 'I'])];
+    expect(unbelievers.length).toBe(300 * 21);
+    expect(
+      unbelievers
+        .filter((q) => q.options.some((o) => RELIGIOUS_OPTION.test(o)))
+        .map((q) => `${q.text} [${q.options.join(' | ')}]`),
+    ).toEqual([]);
+    for (const q of unbelievers) {
+      expect(new Set(q.options).size).toBe(q.options.length);
+      expect(q.options[q.options.length - 1]).toMatch(/^Autre/);
+    }
+    // Deux croyants qui pratiquent chaque jour : la grille reste celle du
+    // gabarit.
+    const believers = served(['D', 'D'], 'A');
+    expect(
+      believers.some((q) => q.options.some((o) => RELIGIOUS_OPTION.test(o))),
+    ).toBe(true);
   });
 });

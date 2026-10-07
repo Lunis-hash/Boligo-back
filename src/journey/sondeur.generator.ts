@@ -33,6 +33,7 @@ import {
   THEME_LIST,
   Theme,
 } from '../matching/divergence.engine';
+import { QUESTION_INDEX } from '../interview/questions.data';
 import {
   HarmonyQuestionPayload,
   ensureAutreOption,
@@ -1048,7 +1049,144 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
     }
   }
 
+  // Aucun des deux n'a de pratique religieuse : la grille cachée ne leur
+  // impose ni foi ni prière, seulement des valeurs, des convictions, des
+  // traditions familiales.
+  if (hasNoReligiousPractice(report))
+    for (const question of result)
+      question.options = neutralOptions(question.options);
+
   return result;
+}
+
+// ─── Options cachées sans religion ─────────────────────────────────────────────
+
+/** Texte d'une option de l'entretien (questions retirées comprises). */
+const interviewOption = (id: string, key: string): string =>
+  QUESTION_INDEX.get(id)?.options.find((o) => o.key === key)?.text ?? '';
+
+/** Religion ou conviction déclarée (V7 : M1_Q16 ; V6 : M1_Q05). */
+const FAITH_QUESTIONS = new Set(['M1_Q16', 'M1_Q05']);
+
+/**
+ * Sans religion : « sans religion » ou « une spiritualité personnelle, sans
+ * religion » (V7), « agnostique / athée » ou « spirituel(le) sans religion
+ * définie » (V6).
+ */
+const NO_RELIGION_ANSWERS = new Set(
+  [
+    interviewOption('M1_Q16', 'H'),
+    interviewOption('M1_Q16', 'I'),
+    interviewOption('M1_Q05', 'E'),
+    interviewOption('M1_Q05', 'F'),
+  ].filter(Boolean),
+);
+
+/** Pratique religieuse « rarement ou jamais » (M1_Q17, V7). */
+const NO_PRACTICE_ANSWER = interviewOption('M1_Q17', 'D');
+
+/**
+ * Aucun des deux membres n'a de pratique religieuse, d'après ce que le
+ * rapport laisse voir de leurs entretiens : chacun est sans religion
+ * (M1_Q16, M1_Q05), ou pratique « rarement ou jamais » (M1_Q17). Un membre
+ * dont le rapport ne dit rien de sa pratique est compté comme pratiquant :
+ * dans le doute, les options restent celles du gabarit.
+ */
+export function hasNoReligiousPractice(report: DivergenceReport): boolean {
+  // Pour chaque membre (A, B) : religion déclarée, pratique déclarée.
+  const religion: Array<boolean | undefined> = [undefined, undefined];
+  const practice: Array<boolean | undefined> = [undefined, undefined];
+  for (const d of report.divergences) {
+    const sides = [d.a.text, d.b.text];
+    if (FAITH_QUESTIONS.has(d.questionId))
+      sides.forEach((t, i) => (religion[i] = !NO_RELIGION_ANSWERS.has(t)));
+    if (d.questionId === 'M1_Q17')
+      sides.forEach((t, i) => (practice[i] = t !== NO_PRACTICE_ANSWER));
+  }
+  for (const c of report.convergences) {
+    if (FAITH_QUESTIONS.has(c.questionId))
+      religion[0] = religion[1] = !NO_RELIGION_ANSWERS.has(c.answer);
+    if (c.questionId === 'M1_Q17')
+      practice[0] = practice[1] = c.answer !== NO_PRACTICE_ANSWER;
+  }
+  return [0, 1].every((i) => religion[i] === false || practice[i] === false);
+}
+
+/** Option cachée qui suppose une foi ou une pratique religieuse. */
+export const RELIGIOUS_OPTION =
+  /(?<!\p{L})(?:foi|pri(?:è|e)r\p{L}*|dieu|religi\p{L}*|bénédiction\p{L}*|béni\p{L}*|rites?(?! familial)|culte|église|mosquée|temple|synagogue|messe|jeûne|ramadan|carême|halal|casher|sacr\p{L}*|recueillement|spiritu\p{L}*|croyan\p{L}*|croyant\p{L}*)(?!\p{L})|(?<!\p{L})(?:ma|mes|une|les|des|la|même|leur|leurs|sa|ses) pratiques?(?!\p{L})/iu;
+
+/**
+ * Équivalents neutres des options religieuses les plus courantes : des
+ * valeurs, des convictions, des traditions familiales.
+ */
+const NEUTRAL_OPTIONS: Record<string, string> = {
+  'Ma foi': 'Mes convictions',
+  'De ma foi': 'De mes convictions',
+  'La foi': 'Les valeurs',
+  'Une foi': 'Des valeurs',
+  'Leur foi': 'Leurs valeurs',
+  'Ma foi ou mes valeurs': 'Mes valeurs',
+  'Une exigence de foi': 'Une exigence de valeurs',
+  'Une condition de foi': 'Une condition de valeurs',
+  'Une parole de foi': 'Une parole de sagesse',
+  'La bénédiction': 'Le soutien des familles',
+  'La bénédiction des familles': 'Le soutien des familles',
+  'Une bénédiction': 'Un encouragement',
+  'Leur bénédiction': 'Leur soutien',
+  'Une prière': 'Une tradition familiale',
+  'Des prières': 'Des traditions familiales',
+  'La prière': 'Les traditions familiales',
+  'Par la prière': 'Par nos valeurs',
+  'La prière à deux': 'Des valeurs partagées',
+  'Un temps de prière': 'Un temps de silence',
+  'Le respect des rites': 'Le respect des traditions',
+  'Le respect des rites de chacun': 'Le respect des traditions de chacun',
+  'Un rite de ma tradition': 'Une tradition de ma famille',
+  'Une pratique': 'Une conviction',
+  'Une pratique moquée': 'Une conviction moquée',
+  'Une pratique ignorée': 'Une conviction ignorée',
+  'Ma pratique': 'Mes convictions',
+  'Mes pratiques': 'Mes convictions',
+  'Les pratiques': 'Les convictions',
+  'Le respect de mes pratiques': 'Le respect de mes convictions',
+  'Une même pratique': 'Des valeurs communes',
+  'Une promesse devant Dieu': 'Une promesse solennelle',
+  'La même religion': 'Les mêmes valeurs',
+  'Une religion proche': 'Des valeurs proches',
+  'La religion': 'Les convictions',
+  'La religieuse': 'La familiale',
+  'Une fête religieuse': 'Une fête traditionnelle',
+};
+
+/** Repli, dans l'ordre, quand l'équivalent est absent ou déjà proposé. */
+const NEUTRAL_FALLBACKS = [
+  'Mes valeurs',
+  'Mes convictions',
+  'Les traditions de ma famille',
+];
+
+/**
+ * Grille cachée sans option religieuse, pour deux membres sans pratique :
+ * chaque option qui suppose une foi devient une valeur, une conviction ou une
+ * tradition familiale, jamais deux fois la même.
+ */
+export function neutralOptions(options: string[]): string[] {
+  const out: string[] = [];
+  for (const o of options) {
+    if (!RELIGIOUS_OPTION.test(o)) {
+      out.push(o);
+      continue;
+    }
+    const taken = (x: string) => out.includes(x) || options.includes(x);
+    const mapped = NEUTRAL_OPTIONS[o];
+    out.push(
+      mapped && !taken(mapped)
+        ? mapped
+        : (NEUTRAL_FALLBACKS.find((x) => !taken(x)) ?? 'Mes valeurs'),
+    );
+  }
+  return out;
 }
 
 /** Sujets où une même réponse peut cacher un contrôle (téléphone, jalousie). */
