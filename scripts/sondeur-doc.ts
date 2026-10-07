@@ -15,7 +15,10 @@ import {
   LAB_SCENARIOS,
   scenarioInterviews,
 } from '../src/ai-lab/ai-lab.scenarios';
-import { THEMES, buildDivergenceReport } from '../src/matching/divergence.engine';
+import {
+  THEMES,
+  buildDivergenceReport,
+} from '../src/matching/divergence.engine';
 import {
   DAY_ANGLES,
   SondeurQuestion,

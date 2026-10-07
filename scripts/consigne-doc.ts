@@ -41,8 +41,7 @@ const block = (t: string) =>
   `<pre style="white-space: pre-wrap; font-family: Arial, sans-serif; font-size: 10pt; background: #f6f4ef; padding: 10px">${esc(t)}</pre>`;
 
 const scenario =
-  LAB_SCENARIOS.find((s) => s.id === 'religion-conversion') ??
-  LAB_SCENARIOS[0];
+  LAB_SCENARIOS.find((s) => s.id === 'religion-conversion') ?? LAB_SCENARIOS[0];
 const [a, b] = scenarioInterviews(scenario);
 const report = buildDivergenceReport(a, b);
 const analysis = describeReportForAi(report, scenario.names);
