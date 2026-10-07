@@ -124,7 +124,8 @@ export interface SondeurQuestion extends HarmonyQuestionPayload {
   source: 'divergence' | 'ia' | 'convergence' | 'gabarit';
   /**
    * Sujet visé (identifiant de la question d'entretien, « securite » pour une
-   * question de limite), pour la traçabilité. Jamais affiché.
+   * question de limite, « controle » pour la limite de contrôle), pour la
+   * traçabilité. Jamais affiché.
    */
   subject?: string;
 }
@@ -246,19 +247,31 @@ interface Memory {
 /**
  * Choisit la formulation la plus neuve, par ordre de préférence :
  * 1. gabarit jamais vu par les membres et pas encore utilisé dans ce Sondeur ;
- * 2. gabarit jamais vu, déjà utilisé ici sur un autre sujet ;
- * 3. gabarit déjà vu mais texte nouveau (appliqué à un autre sujet) ;
+ * 2. gabarit déjà vu lors d'un parcours précédent (texte nouveau, appliqué à
+ *    un autre sujet), mais pas encore utilisé dans ce Sondeur : une même
+ *    tournure ne revient pas deux fois dans un même Sondeur tant qu'il reste
+ *    une autre formulation ;
+ * 3. gabarit jamais vu, déjà utilisé ici sur un autre sujet ;
+ * 4. texte nouveau, quel que soit le gabarit.
  * Retourne null si seuls des textes déjà posés restent disponibles.
  */
 function pickFresh(
   candidates: PoolTemplate[],
   mem: Memory,
+  /** Faux : jamais une tournure déjà utilisée dans ce Sondeur (paliers 1 et 2). */
+  allowRepeat = true,
 ): PoolTemplate | null {
   const tiers: Array<(c: PoolTemplate, sig: string, key: string) => boolean> = [
     (_c, sig) => !mem.seenSig.has(sig) && !mem.usedSig.has(sig),
-    (_c, sig, key) => !mem.seenSig.has(sig) && !mem.usedText.has(key),
     (_c, sig, key) => !mem.seenText.has(key) && !mem.usedSig.has(sig),
-    (_c, _sig, key) => !mem.seenText.has(key) && !mem.usedText.has(key),
+    ...(allowRepeat
+      ? [
+          (_c: PoolTemplate, sig: string, key: string) =>
+            !mem.seenSig.has(sig) && !mem.usedText.has(key),
+          (_c: PoolTemplate, _sig: string, key: string) =>
+            !mem.seenText.has(key) && !mem.usedText.has(key),
+        ]
+      : []),
   ];
   const keyed = candidates.map((c) => ({
     c,
@@ -302,15 +315,20 @@ const RISKY_SAFETY_AGREEMENTS = new Set([
 ]);
 
 /**
- * Thèmes réservés aux questions de limite : écart de sécurité, partagé ou non,
- * ou même réponse qui n'est pas la limite absolue (« ça dépend » des deux
- * côtés). Aucune question de l'IA n'y est servie.
+ * Thèmes réservés aux questions de limite : écart de sécurité partagé ou au
+ * moins modéré, ou même réponse qui n'est pas la limite absolue (« ça
+ * dépend » des deux côtés). Un écart mineur entre deux refus de la violence
+ * ne réserve pas le thème. Aucune question de l'IA n'y est servie.
  */
 export function safetyThemesOf(report: DivergenceReport): Theme[] {
   return [
     ...new Set([
       ...report.divergences
-        .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
+        .filter(
+          (d) =>
+            SAFETY_QUESTIONS.has(d.questionId) &&
+            (d.severity !== 'mineure' || d.shared),
+        )
         .map((d) => d.theme),
       ...report.convergences
         .filter((c) =>
@@ -358,12 +376,8 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
   ],
   2: [
     {
-      text: "Qui vous a appris, par l'exemple, qu'on peut se disputer sans se faire de mal ?",
-      options: [
-        'Mes parents',
-        'Un proche',
-        "Personne : je l'ai appris seul(e)",
-      ],
+      text: "Quel signe, chez quelqu'un, vous dirait très tôt qu'il faut vous éloigner pour rester en sécurité ?",
+      options: ['Un geste brusque', 'Des menaces', 'Des mots qui rabaissent'],
     },
     {
       text: "Qu'avez-vous appris, en grandissant, sur ce qu'on ne fait jamais à quelqu'un qu'on aime ?",
@@ -393,6 +407,37 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
 function usableDeep(d: Divergence, day: number): PoolTemplate[] {
   const strict = isNonNegotiable(d);
   return topicDeepAll(d, day).filter((t) => !(strict && t.compromise));
+}
+
+/**
+ * Signal de contrôle (jalousie qui surveille, accès total au téléphone voulu
+ * par l'un) : traité comme une limite de sécurité, jamais comme un compromis.
+ */
+export const CONTROL_LIMIT: PoolTemplate = {
+  text: "Quel geste de contrôle, venant de l'autre, serait pour vous une limite à ne jamais franchir ?",
+  options: [
+    'Fouiller mon téléphone',
+    'Exiger de savoir où je suis',
+    "M'isoler de mes proches",
+  ],
+};
+
+export function isControlSignal(d: Divergence): boolean {
+  return (
+    topicKey(d) === 'M8_Q10:B' ||
+    (d.questionId === 'M5_Q08' && (d.a.key === 'A' || d.b.key === 'A'))
+  );
+}
+
+/**
+ * Thème où poser la limite de contrôle, au jour 2 : celui du signal le plus
+ * grave. Une seule fois par Sondeur, même si les deux signaux sont présents.
+ */
+export function controlThemeOf(report: DivergenceReport): Theme | undefined {
+  const signals = report.divergences
+    .filter(isControlSignal)
+    .sort((x, y) => SEVERITY_RANK[y.severity] - SEVERITY_RANK[x.severity]);
+  return signals[0]?.theme;
 }
 
 /** Une formulation propre au sujet existe-t-elle pour l'un des jours ? */
@@ -469,18 +514,50 @@ const SEVERITY_RANK: Record<Severity, number> = {
 };
 
 /**
- * Plan des écarts : chaque écart est posé un seul jour, le premier de ses
- * jours possibles (jour préféré d'abord) encore libre dans son thème. Les plus
+ * Jour où poser un écart : le premier de ses jours possibles (jour préféré
+ * d'abord) encore libre dans son thème et qui a une formulation. Un écart
+ * critique qui n'en trouve aucun essaie ensuite les autres jours, avec les
+ * seules formulations strictes (jamais avant le jour 3 pour l'intimité).
+ */
+function dayFor(
+  d: Divergence,
+  plan: Map<string, Divergence>,
+  reserved: Set<string>,
+): number | undefined {
+  const fits = (day: number) => {
+    const slot = `${day}|${d.theme}`;
+    return (
+      !plan.has(slot) &&
+      !reserved.has(slot) &&
+      (usableDeep(d, day).length > 0 || topicTemplates(day, d).length > 0)
+    );
+  };
+  const preferred = topicDays(d);
+  const found = preferred.find(fits);
+  if (found || d.severity !== 'critique' || d.theme === 'intimite')
+    return found;
+  return [1, 2, 3].filter((day) => !preferred.includes(day)).find(fits);
+}
+
+/**
+ * Plan des écarts : chaque écart est posé un seul jour (dayFor). Les plus
  * graves choisissent en premier, tous thèmes confondus. Un seul sujet par
  * famille de sujets voisins (la colère et la dispute, la foi et la religion…).
  * Un thème qui n'a qu'un écart le pose au jour dont l'angle convient ; ses
- * autres jours piochent dans les autres réserves.
+ * autres jours piochent dans les autres réserves. Les thèmes de sécurité
+ * n'en reçoivent aucun (leurs créneaux vont aux questions de limite), ni les
+ * créneaux réservés (limite de contrôle) : un écart prévu là serait perdu et
+ * bloquerait en plus ses sujets voisins.
  */
-function planDivergences(report: DivergenceReport): Map<string, Divergence> {
+function planDivergences(
+  report: DivergenceReport,
+  reserved: Set<string>,
+): Map<string, Divergence> {
   const plan = new Map<string, Divergence>();
   const planned = new Set<string>();
-  const candidates = THEME_LIST.flatMap((theme) =>
-    divergencesForTheme(report, theme),
+  const safety = new Set(safetyThemesOf(report));
+  const candidates = THEME_LIST.filter((theme) => !safety.has(theme)).flatMap(
+    (theme) => divergencesForTheme(report, theme),
   );
   // Tri stable : à gravité égale, l'ordre des thèmes, puis celui du moteur.
   const ordered = [...candidates].sort(
@@ -489,15 +566,10 @@ function planDivergences(report: DivergenceReport): Map<string, Divergence> {
   for (const d of ordered) {
     const related = relatedTopics(d);
     if (related.some((k) => planned.has(k))) continue;
-    for (const day of topicDays(d)) {
-      const slot = `${day}|${d.theme}`;
-      if (plan.has(slot)) continue;
-      if (!usableDeep(d, day).length && topicTemplates(day, d).length === 0)
-        continue;
-      plan.set(slot, d);
-      for (const k of related) planned.add(k);
-      break;
-    }
+    const day = dayFor(d, plan, reserved);
+    if (!day) continue;
+    plan.set(`${day}|${d.theme}`, d);
+    for (const k of related) planned.add(k);
   }
   return plan;
 }
@@ -603,11 +675,16 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   };
   const ai = aiQuestions ?? [];
   const result: SondeurQuestion[] = [];
-  const plan = planDivergences(report);
+  // Signal de contrôle : une question de limite au jour 2 de son thème.
+  const controlTheme = controlThemeOf(report);
+  const reserved = new Set(controlTheme ? [`2|${controlTheme}`] : []);
+  const plan = planDivergences(report, reserved);
   // Sujets déjà abordés ou prévus (et leurs voisins) : on ne les repose pas un
   // autre jour.
   const taken = new Set<string>();
   for (const d of plan.values()) markTaken(taken, d);
+  if (controlTheme)
+    markTaken(taken, { questionId: 'M5_Q08', label: '', theme: 'intimite' });
   const safetyThemes = new Set(safetyThemesOf(report));
   // Thèmes qui portent un écart non négociable : aucune question du thème qui
   // suppose de « vivre avec » la différence.
@@ -630,10 +707,19 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
 
       // 1. Écart de sécurité sur ce thème : une question de limite, jamais un
       // compromis ni une réconciliation, jamais une question de l'IA. Trois
-      // angles distincts : limite, origine, protection. Déjà vues lors d'un
-      // parcours précédent : elles reviennent plutôt que de laisser la place
-      // à une autre question.
-      if (safetyThemes.has(theme)) {
+      // angles distincts : limite, signe d'alerte, protection. Déjà vues lors
+      // d'un parcours précédent : elles reviennent plutôt que de laisser la
+      // place à une autre question. Signal de contrôle : au jour 2 de son
+      // thème, la limite de contrôle.
+      if (day === 2 && theme === controlTheme) {
+        question = {
+          ...base,
+          text: CONTROL_LIMIT.text,
+          options: ensureAutreOption(CONTROL_LIMIT.options),
+          source: 'divergence',
+          subject: 'controle',
+        };
+      } else if (safetyThemes.has(theme)) {
         const limits = arrange(SAFETY_TEMPLATES[day], seed, `${slot}|limite`);
         const pick =
           pickFresh(limits, mem) ??
@@ -682,9 +768,12 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       // 4. Point d'accord réel (deux par jour au plus).
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
         for (const c of convergencesFor(report, theme, day, taken)) {
+          // Un accord ne reprend jamais une tournure déjà posée dans ce
+          // Sondeur : le créneau prend alors une question du thème.
           const pick = pickFresh(
             convergenceCandidates(day, c, seed, slot),
             mem,
+            false,
           );
           if (!pick) continue;
           convergenceToday++;
