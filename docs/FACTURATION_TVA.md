@@ -161,12 +161,15 @@ Ces points ne se règlent pas dans le code.
   - raison sociale, forme, capital, SIREN, adresse et numéro de TVA ;
   - les variables `BILLING_SELLER_*` ;
   - les champs `company` des textes légaux.
-- **Médiateur de la consommation.** Il faut en désigner un et l'indiquer.
-- **Plateforme européenne de règlement des litiges.** Les CGU la citent
-  encore alors qu'elle a fermé le 20 juillet 2025 : retirer cette mention.
-- **CGU, section rétractation.** La clause actuelle confond « parcours
-  commencé » et « parcours entièrement exécuté ». La réécriture est préparée
-  avec la mise à jour des textes légaux.
+- **Médiateur de la consommation.** Il faut en désigner un et l'indiquer
+  (CGU section 13 et `BILLING_MEDIATOR`).
+- **Fait le 7 octobre 2026, à faire relire par un avocat :**
+  - mention de la plateforme européenne de règlement des litiges, fermée le
+    20 juillet 2025, retirée des CGU ;
+  - clause de rétractation réécrite : 14 jours, remboursement total si le
+    crédit n'a pas servi, montant proportionnel après le début, perte du
+    droit une fois le parcours entièrement exécuté, bouton de rétractation ;
+  - facture à chaque paiement et garantie légale de conformité ajoutées.
 - **Facturation électronique.** Depuis le 1er septembre 2026, l'entreprise
   doit pouvoir recevoir des factures électroniques. L'e-reporting des ventes
   aux particuliers commence le 1er septembre 2027 pour les PME. Il faut
