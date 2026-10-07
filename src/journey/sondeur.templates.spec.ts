@@ -48,6 +48,7 @@ import {
   THEME_POOL,
   TOPIC_DAYS,
   TOPIC_DEEP,
+  TOPIC_DEEP_VARIANTS,
   TOPIC_FAMILIES,
   TOPIC_PHRASES,
   Technique,
@@ -206,6 +207,12 @@ const staticTemplates = (): Array<{
       ...(t as PoolTemplate),
     })),
   ),
+  ...Object.entries(TOPIC_DEEP_VARIANTS).flatMap(([id, days]) =>
+    Object.entries(days).map(([day, t]) => ({
+      where: `TOPIC_DEEP_VARIANTS.${id}[${day}]`,
+      ...(t as PoolTemplate),
+    })),
+  ),
 ];
 
 /** Phrase d'accord + question (sans phrase : la question seule). */
@@ -293,7 +300,10 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
       for (const day of [1, 2])
         for (const t of THEME_POOL[theme][day])
           expect(`${day} ${t.text}`).not.toMatch(INTIMATE);
-    for (const [id, days] of Object.entries(TOPIC_DEEP))
+    for (const [id, days] of [
+      ...Object.entries(TOPIC_DEEP),
+      ...Object.entries(TOPIC_DEEP_VARIANTS),
+    ])
       for (const [day, t] of Object.entries(days))
         if (day !== '3') expect(`${id} ${t!.text}`).not.toMatch(INTIMATE);
     // Les sujets intimes eux-mêmes ne sont prévus qu'au jour 3.

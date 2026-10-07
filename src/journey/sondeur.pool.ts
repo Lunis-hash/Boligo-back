@@ -1869,6 +1869,22 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
         'Sa façon de vivre ce point',
       ],
     ),
+    tt(
+      (w) =>
+        `À propos ${w.de}, qu'aimeriez-vous que l'autre sache de vous avant même un premier projet commun ?`,
+      'besoin',
+      [
+        'Ce qui ne bougera pas',
+        'D’où vient ma position',
+        'Ce dont j’ai besoin',
+      ],
+    ),
+    tt(
+      (w) =>
+        `À propos ${w.de}, quelle parole claire aimeriez-vous échanger avec l'autre avant de vivre ensemble ?`,
+      'limite',
+      ['Une promesse', 'Une limite', 'Une attente'],
+    ),
   ],
 };
 
@@ -3170,7 +3186,146 @@ export const TOPIC_DEEP: Record<
 export const TOPIC_DEEP_VARIANTS: Record<
   string,
   Partial<Record<number, PoolTemplate>>
-> = {};
+> = {
+  // Les douze sujets d'écart les plus servis (600 couples aléatoires, octobre
+  // 2026), aux jours où ils sont posés.
+  M0_Q12: {
+    1: q(
+      "Lors d'une fête de famille, à quel moment la présence d'alcool deviendrait-elle une limite pour vous ?",
+      'limite',
+      ['Dès le premier verre', "Quand quelqu'un est ivre", 'Jamais vraiment'],
+    ),
+    2: q(
+      "Qui, dans votre entourage, a le plus compté dans votre façon de voir l'alcool ?",
+      'origine',
+      ['Un parent', 'Ma foi', 'Mes amis'],
+    ),
+  },
+  M0_Q09: {
+    1: q(
+      "Pour vous, à quel endroit ou à quel moment la cigarette n'aurait-elle jamais sa place ?",
+      'limite',
+      ['À la maison', 'En voiture', 'Pendant les repas'],
+    ),
+    2: q(
+      'Dans la famille où vous avez grandi, quelle place avait la cigarette ?',
+      'origine',
+      ['Aucune', 'Une habitude ordinaire', 'Un sujet de dispute'],
+    ),
+  },
+  M1_Q16: {
+    1: q(
+      "Qu'est-ce que partager, ou non, la même religion protégerait de plus précieux dans votre futur foyer ?",
+      'besoin',
+      ['La paix du foyer', 'La transmission', 'Le lien avec ma famille'],
+    ),
+    2: q(
+      "Dans votre famille, qu'espère-t-on de la religion de celui ou celle que vous épouserez ?",
+      'origine',
+      ['La même religion', 'Une religion proche', 'Rien de particulier'],
+    ),
+  },
+  M1_Q19: {
+    2: q(
+      "D'où vous viennent les règles alimentaires que vous suivez, ou votre liberté de tout manger ?",
+      'origine',
+      ['De ma foi', 'De ma famille', 'D’un choix personnel'],
+    ),
+    3: q(
+      "Avant de partager une cuisine avec quelqu'un, que voudriez-vous savoir de ses règles alimentaires, très concrètement ?",
+      'limite',
+      [
+        'Ce qu’il ou elle ne mange jamais',
+        'Ce qui compte à ses yeux',
+        'Ses habitudes aux fêtes',
+      ],
+    ),
+  },
+  M0_Q06: {
+    1: q(
+      "Quand vous pensez à la question des enfants, qu'est-ce qui, pour vous, ne pourra pas se discuter ?",
+      'limite',
+      ['Avoir des enfants ou non', 'Le moment', 'Leur nombre'],
+    ),
+  },
+  M8_Q01: {
+    1: q(
+      "Quelle intention aimeriez-vous entendre clairement de l'autre dès les premières semaines ?",
+      'besoin',
+      ['Le mariage', 'Une relation sérieuse', 'Prendre le temps'],
+    ),
+    2: q(
+      "Dans votre famille, à quel moment considérait-on qu'une relation devenait sérieuse ?",
+      'origine',
+      [
+        'Dès les présentations',
+        'À la demande en mariage',
+        'Avec la vie commune',
+      ],
+    ),
+    3: q(
+      "Imaginez la première année d'un engagement réussi : qu'est-ce qui vous dirait que vous avez bien choisi ?",
+      'projection',
+      ['Notre complicité', 'Nos projets', 'La paix au quotidien'],
+    ),
+  },
+  M4_Q11: {
+    1: q(
+      "Si l'un de vous traversait une longue période sans revenus, qu'est-ce qui resterait non négociable pour vous ?",
+      'limite',
+      ['La transparence', 'Qu’il ou elle cherche', 'Le partage des charges'],
+    ),
+    3: q(
+      "Le jour où l'argent viendrait à manquer chez vous, quelle première décision aimeriez-vous prendre à deux ?",
+      'projection',
+      ['Réduire les dépenses', 'Demander de l’aide', 'Revoir nos projets'],
+    ),
+  },
+  M10_Q17: {
+    3: q(
+      "Comment aimeriez-vous que l'autre vous dise ses attentes sur l'intimité avant le mariage, pour vous sentir respecté(e) ?",
+      'besoin',
+      ['Tôt et simplement', 'Avec délicatesse', 'Quand la confiance est là'],
+    ),
+  },
+  M4_Q05: {
+    1: q(
+      'Pour vous, quelle aide à vos proches resterait prioritaire, même quand le foyer aurait ses propres besoins ?',
+      'limite',
+      ['L’aide à mes parents', 'Les urgences', 'Les études d’un proche'],
+    ),
+  },
+  M4_Q10: {
+    1: q(
+      "Lors d'une première sortie, quel geste autour de l'addition vous mettrait mal à l'aise ?",
+      'limite',
+      [
+        'Qu’on insiste pour payer',
+        'Qu’on compte au centime',
+        'Qu’on me laisse tout payer',
+      ],
+    ),
+    2: q(
+      "Autour de vous, en grandissant, que voulait dire le fait d'inviter quelqu'un au restaurant ?",
+      'origine',
+      ['Du respect', 'Un engagement', 'Une simple politesse'],
+    ),
+  },
+  M0_Q03: {
+    1: q(
+      "Qu'est-ce qui, dans votre vie actuelle, ne pourrait pas se déplacer avec vous ?",
+      'limite',
+      ['Mon travail', 'Mes proches', 'Mes engagements'],
+    ),
+  },
+  M7_Q07: {
+    3: q(
+      'Quand vous imaginez vos vieux jours, dans quel pays ou dans quelle ville vous voyez-vous ?',
+      'projection',
+      ['Ici', 'Au pays', 'Là où seront nos proches'],
+    ),
+  },
+};
 
 /**
  * Sujets qui partagent une formulation propre : anciennes clés V6 (entretiens
