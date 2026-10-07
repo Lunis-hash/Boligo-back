@@ -195,8 +195,10 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       'securite',
     ]);
     expect(comm.map((q) => q.text).join(' ')).toMatch(
-      /plus en sécurité|jamais être franchie|sans se faire de mal|qu'on aime|dès le début|vous protéger/,
+      /plus en sécurité|jamais être franchie|hors de question|non négociable|qu'on aime|faire peur|dès le début|est respectée|vécu en sécurité/,
     );
+    // Jamais un plan de mise en sécurité : l'autre lit la réponse.
+    expect(texts).not.toMatch(/vous protéger|où iriez|refuge|fuir/i);
     // Jamais de réconciliation ni de « reprendre plus tard » après la violence.
     expect(texts).not.toMatch(
       /baisser les armes|reprendre plus tard|réconcili|revenir vers/i,

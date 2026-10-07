@@ -16,7 +16,8 @@
  * les autres jours du thème piochent dans les autres réserves.
  *
  * Un thème qui porte un écart de sécurité (violence, mots blessants) ne reçoit
- * que des questions de limite et de protection, écrites à l'avance.
+ * que des questions de limite, écrites à l'avance (jamais un plan de mise en
+ * sécurité, que l'autre lirait).
  *
  * Une couche IA (Groq / OpenRouter) peut proposer des formulations plus fines ;
  * ses questions, toujours relues en amont, passent avant les gabarits si elles
@@ -40,6 +41,7 @@ import {
   CHILDREN_TOPICS,
   CONVERGENT,
   PoolTemplate,
+  RECOMPOSED_TOPICS,
   SHARED_RISK,
   SUBJECT_FRAGMENTS,
   TARGETED,
@@ -47,6 +49,7 @@ import {
   agreementFor,
   agreementKey,
   TopicSource,
+  hasNoChildren,
   isAgreementWorthAsking,
   isDeferredAgreement,
   isChildFree,
@@ -155,8 +158,9 @@ const MINOR_WORTH_ASKING = new Set([
   'M10_Q15',
 ]);
 
+/** Texte comparable : casse, espaces et apostrophes (droite ou courbe) unifiés. */
 function normalizeKey(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, ' ').trim();
+  return text.toLowerCase().replace(/’/g, "'").replace(/\s+/g, ' ').trim();
 }
 
 /** Lettres et espaces seulement, comme une signature. */
@@ -372,8 +376,13 @@ export function isQuotableDivergence(d: Divergence): boolean {
 /**
  * Questions de limite (sécurité), sans citer les réponses. Face à la violence
  * ou aux mots blessants, jamais de réconciliation ni de signal pour « reprendre
- * plus tard » : seulement où chacun place sa limite de sécurité, d'où il la
- * tient, et ce qu'il ferait pour se protéger si elle était franchie.
+ * plus tard » : seulement où chacun place sa limite de sécurité (jour 1), la
+ * valeur ou le principe qui la rend non négociable (jour 2, jamais le récit de
+ * ce qui a été vécu ou vu), et ce qui montrerait au quotidien qu'elle est
+ * respectée (jour 3). Jamais ce que l'on ferait pour se protéger, où l'on
+ * irait ni qui l'on appellerait : l'autre lit la réponse, et un plan de mise
+ * en sécurité reste confidentiel. Trois formulations par jour : un membre qui
+ * enchaîne les parcours ne retrouve pas toujours la même.
  */
 export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
   1: [
@@ -389,15 +398,23 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       text: 'Quelle limite, en dispute, ne pourrait jamais être franchie avec vous, même une seule fois ?',
       options: ['Les insultes', 'Toute violence', 'Les menaces'],
     },
+    {
+      text: 'Pour vous, quelle façon de se parler en dispute resterait toujours hors de question ?',
+      options: ['Crier', 'Rabaisser', 'Menacer'],
+    },
   ],
   2: [
     {
-      text: "Quel signe, chez quelqu'un, vous dirait très tôt qu'il faut vous éloigner pour rester en sécurité ?",
-      options: ['Un geste brusque', 'Des menaces', 'Des mots qui rabaissent'],
+      text: 'Quelle valeur rend, pour vous, votre limite de sécurité non négociable ?',
+      options: ['Le respect', 'La dignité', 'La confiance'],
     },
     {
-      text: "Qu'avez-vous appris, en grandissant, sur ce qu'on ne fait jamais à quelqu'un qu'on aime ?",
-      options: ['Lever la main', 'Humilier', 'Menacer'],
+      text: "Quel principe, reçu de votre éducation ou de vos convictions, vous fait dire qu'on ne fait jamais peur à quelqu'un qu'on aime ?",
+      options: ['Le respect', 'La douceur', 'La parole donnée'],
+    },
+    {
+      text: 'Pour vous, quelle valeur fait que la colère ne donne jamais le droit de faire peur ?',
+      options: ["L'égalité", 'La dignité', 'La confiance'],
     },
   ],
   3: [
@@ -406,12 +423,16 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
       options: ['Aucun geste violent', 'Aucune insulte', 'Aucune menace'],
     },
     {
-      text: "Si quelqu'un franchissait un jour votre limite de sécurité, que feriez-vous pour vous protéger ?",
+      text: "Au quotidien, quel geste ou quelle parole de l'autre vous montrerait que votre limite de sécurité est respectée ?",
       options: [
-        'Partir aussitôt',
-        'Demander de l’aide à un proche',
-        'Appeler une association ou les secours',
+        'Un ton qui reste calme',
+        'Une pause respectée',
+        'Aucune menace, même en colère',
       ],
+    },
+    {
+      text: 'Pour vous, à quoi ressemblerait un désaccord vécu en sécurité, dans une vie à deux ?',
+      options: ['Un ton posé', 'Le droit de dire non', 'Sans peur ni menace'],
     },
   ],
 };
@@ -513,10 +534,13 @@ function divergencesForTheme(
  * pose problème) ou écart de positions. Jamais de gabarit qui suppose de
  * « vivre avec » la différence sur un point non négociable, ni dans un thème
  * qui en porte un. Aveux et scores : aucun gabarit générique, seulement leurs
- * formulations propres.
+ * formulations propres. Intimité : aucun gabarit générique non plus (ni
+ * dispute, ni premier pas, ni règle pour « se protéger ») ; un écart de désir
+ * n'est posé que par ses formulations propres, sinon le créneau prend une
+ * question du thème intimité.
  */
 function topicTemplates(day: number, d: Divergence, strictTheme = false) {
-  if (!isQuotableDivergence(d)) return [];
+  if (!isQuotableDivergence(d) || d.theme === 'intimite') return [];
   const strict = strictTheme || isNonNegotiable(d);
   const pool = d.shared ? SHARED_RISK[day] : TARGETED[day];
   return pool.filter((t) => !(strict && t.compromise));
@@ -535,16 +559,66 @@ export function questionOpening(text: string): string {
 }
 
 /**
- * Dans chaque groupe, les formulations dont l'ouverture n'a pas encore servi
- * ce jour-là passent en premier (ordre conservé) : une journée n'enchaîne pas
- * trois « Avant de vous engager… » quand une autre tournure existe.
+ * Formules d'angle repérées n'importe où dans la question, pas seulement à
+ * l'ouverture : « …, avant de vous engager ? » compte comme « Avant tout
+ * engagement, … ». Une même formule ne revient pas plus de deux fois dans une
+ * journée tant qu'une autre tournure existe.
+ */
+const FORMULAS: Array<[string, RegExp]> = [
+  [
+    'engagement',
+    /(?<!\p{L})avant (?:de vous engager|de s['’]engager|tout engagement|un engagement)/iu,
+  ],
+  [
+    'vie commune',
+    /(?<!\p{L})avant (?:de vivre|une vie commune|de partager un foyer)/iu,
+  ],
+  ['dire oui', /(?<!\p{L})avant de (?:vous )?dire oui/iu],
+  ['unir', /(?<!\p{L})avant d['’]unir vos vies/iu],
+  ['vie à deux', /(?<!\p{L})pour une vie à deux/iu],
+  ['quotidien à deux', /(?<!\p{L})au quotidien, à deux/iu],
+  ['échelle', /(?<!\p{L})de 0 à 10/iu],
+  [
+    "famille d'origine",
+    /(?<!\p{L})dans (?:votre famille|la famille où vous avez grandi|la maison où vous avez grandi)/iu,
+  ],
+];
+
+/** Une formule ne revient pas une troisième fois dans la journée. */
+const MAX_FORMULA_PER_DAY = 2;
+
+/** Formules d'angle présentes dans une question. */
+export function questionFormulas(text: string): string[] {
+  return FORMULAS.filter(([, re]) => re.test(text)).map(([name]) => name);
+}
+
+/** Ouvertures et formules déjà servies ce jour-là. */
+interface DayUsage {
+  openings: Set<string>;
+  formulas: Map<string, number>;
+}
+
+/**
+ * Dans chaque groupe (ordre conservé à rang égal), les formulations dont une
+ * formule a déjà servi deux fois ce jour-là passent en dernier, puis celles
+ * dont l'ouverture a déjà servi : une journée n'enchaîne pas trois « Avant de
+ * vous engager… », ni trois « …, avant de vous engager ? », quand une autre
+ * tournure existe.
  */
 function preferNewOpenings(
   list: PoolTemplate[],
-  usedOpenings: Set<string>,
+  used: DayUsage,
 ): PoolTemplate[] {
-  const fresh = (t: PoolTemplate) => !usedOpenings.has(questionOpening(t.text));
-  return [...list.filter(fresh), ...list.filter((t) => !fresh(t))];
+  const rank = (t: PoolTemplate) =>
+    (questionFormulas(t.text).some(
+      (f) => (used.formulas.get(f) ?? 0) >= MAX_FORMULA_PER_DAY,
+    )
+      ? 2
+      : 0) + (used.openings.has(questionOpening(t.text)) ? 1 : 0);
+  return list
+    .map((t, i) => ({ t, i, r: rank(t) }))
+    .sort((x, y) => x.r - y.r || x.i - y.i)
+    .map(({ t }) => t);
 }
 
 /**
@@ -559,7 +633,7 @@ function divergenceCandidates(
   seed: string | undefined,
   slot: string,
   strictTheme: boolean,
-  usedOpenings: Set<string>,
+  used: DayUsage,
 ): PoolTemplate[] {
   const words = topicWords(topicPhrase(d));
   const generic = topicTemplates(day, d, strictTheme).map((t) => ({
@@ -567,8 +641,8 @@ function divergenceCandidates(
     options: t.options,
   }));
   return [
-    ...preferNewOpenings(usableDeep(d, day, strictTheme), usedOpenings),
-    ...preferNewOpenings(arrange(generic, seed, `${slot}|div`), usedOpenings),
+    ...preferNewOpenings(usableDeep(d, day, strictTheme), used),
+    ...preferNewOpenings(arrange(generic, seed, `${slot}|div`), used),
   ];
 }
 
@@ -688,9 +762,10 @@ function convergencesFor(
 
 /**
  * Formulations d'un accord : la phrase qui le nomme, puis une question (la
- * relance propre, sa variante pour un membre qui l'a déjà vue, puis les
- * questions d'accord du jour). Sans phrase (risque partagé non signalé), les
- * relances propres seules.
+ * relance propre, sa variante puis sa troisième relance pour un membre qui les
+ * a déjà vues, puis les questions d'accord du jour). Sans phrase (risque
+ * partagé non signalé), les relances propres seules. Intimité : les relances
+ * propres seules, jamais une question d'accord générique.
  */
 function convergenceCandidates(
   day: number,
@@ -698,13 +773,13 @@ function convergenceCandidates(
   seed: string | undefined,
   slot: string,
 ): PoolTemplate[] {
-  const { statement, probe, probeVariant } = agreementFor(c);
+  const { statement, probe, probeVariant, probeThird } = agreementFor(c);
   // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
   // solidité d'un accord que les deux tiennent pour essentiel, ni par une
   // relance propre ni par une question générique.
   const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
   const allowed = (t: PoolTemplate) => !(strict && t.technique === 'limite');
-  const own = [probe, probeVariant].filter(
+  const own = [probe, probeVariant, probeThird].filter(
     (t): t is PoolTemplate => !!t && allowed(t),
   );
   if (!statement) return own;
@@ -712,7 +787,7 @@ function convergenceCandidates(
     text: `${statement} ${t.text}`,
     options: t.options,
   });
-  const generic = CONVERGENT[day].filter(allowed);
+  const generic = c.theme === 'intimite' ? [] : CONVERGENT[day].filter(allowed);
   return [
     ...own.map(withStatement),
     ...arrange(generic.map(withStatement), seed, `${slot}|conv`),
@@ -762,9 +837,14 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   // Signal de contrôle : une question de limite au jour 2 de son thème.
   const controlTheme = controlThemeOf(report);
   const reserved = new Set(controlTheme ? [`2|${controlTheme}`] : []);
-  // L'un ne veut pas d'enfants : aucune question qui en suppose.
+  // L'un ne veut pas d'enfants : aucune question qui en suppose. Aucun des
+  // deux n'a d'enfant : jamais la famille recomposée (enfants d'une autre
+  // union), ni comme écart ni comme accord.
   const childFree = isChildFree(report.divergences, report.convergences);
-  const excluded = childFree ? CHILDREN_TOPICS : new Set<string>();
+  const excluded = new Set<string>([
+    ...(childFree ? CHILDREN_TOPICS : []),
+    ...(hasNoChildren(report.convergences) ? RECOMPOSED_TOPICS : []),
+  ]);
   // Thèmes qui portent un écart non négociable : aucune question du thème qui
   // suppose de « vivre avec » la différence, même sur un sujet voisin.
   const strictThemes = new Set(
@@ -783,8 +863,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
     const angle = DAY_ANGLES[day];
     let convergenceToday = 0;
     const openingsToday = new Set<string>();
-    // Ouvertures des questions déjà retenues ce jour-là (toutes sources).
-    const questionOpenings = new Set<string>();
+    // Ouvertures et formules des questions déjà retenues ce jour-là (toutes
+    // sources).
+    const usedToday: DayUsage = { openings: new Set(), formulas: new Map() };
     for (const theme of THEME_LIST) {
       const slot = `${day}|${theme}`;
       const base = {
@@ -796,8 +877,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       let question: SondeurQuestion | null = null;
 
       // 1. Écart de sécurité sur ce thème : une question de limite, jamais un
-      // compromis ni une réconciliation, jamais une question de l'IA. Trois
-      // angles distincts : limite, signe d'alerte, protection. Déjà vues lors
+      // compromis ni une réconciliation, jamais une question de l'IA, jamais
+      // un plan de mise en sécurité. Trois angles distincts : la limite, la
+      // valeur qui la fonde, son respect au quotidien. Déjà vues lors
       // d'un parcours précédent : elles reviennent plutôt que de laisser la
       // place à une autre question. Signal de contrôle : au jour 2 de son
       // thème, la limite de contrôle.
@@ -848,7 +930,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
             seed,
             slot,
             strictThemes.has(theme),
-            questionOpenings,
+            usedToday,
           ),
           mem,
         );
@@ -912,9 +994,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         const ordered = [
           ...preferNewOpenings(
             pool.filter((t) => !touches(t)),
-            questionOpenings,
+            usedToday,
           ),
-          ...preferNewOpenings(pool.filter(touches), questionOpenings),
+          ...preferNewOpenings(pool.filter(touches), usedToday),
         ];
         // Réserve épuisée (au-delà de sept parcours) : une formulation déjà vue revient.
         const tpl =
@@ -930,7 +1012,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         };
       }
 
-      questionOpenings.add(questionOpening(question.text));
+      usedToday.openings.add(questionOpening(question.text));
+      for (const f of questionFormulas(question.text))
+        usedToday.formulas.set(f, (usedToday.formulas.get(f) ?? 0) + 1);
       mem.usedText.add(normalizeKey(question.text));
       mem.usedSig.add(questionSignature(question.text));
       mem.raw.push(question.text);
