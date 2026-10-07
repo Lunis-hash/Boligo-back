@@ -21,6 +21,28 @@ function isSondeurSignal(r: ReportRow): boolean {
   return (r.description ?? "").startsWith("Signal automatique BOLIGO · Sondeur");
 }
 
+/** Trace d'une réponse refusée par la modération (jamais montrée) : seulement classée. */
+function isRefusalTrace(r: ReportRow): boolean {
+  return / · refus [0-9a-f]{10}/.test(r.description ?? "");
+}
+
+/** Catégories qu'une modératrice peut confirmer pour un signal du Sondeur. */
+const CATEGORIES: Array<[string, string]> = [
+  ["menace", "Menace"],
+  ["controle", "Contrôle"],
+  ["violence_exercee", "Violence exercée"],
+  ["violence_subie", "Victime (confidence : ne clôt rien)"],
+  ["detresse", "Détresse (pause, crédits rendus)"],
+  ["mineur", "Moins de 18 ans"],
+  ["argent", "Demande d'argent"],
+  ["autre", "Autre"],
+];
+
+function currentCategory(r: ReportRow): string {
+  const m = /catégories=\[([^\],]*)/.exec(r.description ?? "");
+  return m?.[1] || "autre";
+}
+
 /** Détail lisible : la ligne d'en-tête technique est remplacée par les catégories. */
 function reportDetail(r: ReportRow): string {
   const text = r.message?.content ?? r.description ?? "";
@@ -34,6 +56,7 @@ export default function ReportsPage() {
   const [data, setData] = useState<Paginated<ReportRow> | null>(null);
   const [status, setStatus] = useState("en_attente");
   const [page, setPage] = useState(1);
+  const [chosen, setChosen] = useState<Record<string, string>>({});
 
   function load() {
     const params = new URLSearchParams({ page: String(page), limit: "20" });
@@ -48,11 +71,16 @@ export default function ReportsPage() {
   }, [page, status]);
 
   async function resolve(r: ReportRow, newStatus: "traite" | "rejete") {
+    const category = chosen[r.id] ?? currentCategory(r);
     if (
       newStatus === "traite" &&
       isSondeurSignal(r) &&
+      !isRefusalTrace(r) &&
+      category !== "violence_subie" &&
       !window.confirm(
-        "Confirmer ce signal clôt le parcours des deux membres : la réponse reste cachée et le crédit est rendu au membre mis en danger. Continuer ?",
+        category === "detresse"
+          ? "Confirmer une détresse met le parcours en pause : les deux crédits sont rendus et le membre reçoit à nouveau les ressources d'aide. Continuer ?"
+          : "Confirmer ce signal clôt le parcours des deux membres : la réponse reste cachée et le crédit est rendu au membre mis en danger. Continuer ?",
       )
     )
       return;
@@ -60,7 +88,11 @@ export default function ReportsPage() {
     await apiFetch(`/admin/reports/${id}`, {
       method: "PATCH",
       token: getToken(),
-      body: JSON.stringify({ status: newStatus }),
+      body: JSON.stringify(
+        newStatus === "traite" && isSondeurSignal(r) && !isRefusalTrace(r)
+          ? { status: newStatus, category }
+          : { status: newStatus },
+      ),
     });
     load();
   }
@@ -126,9 +158,23 @@ export default function ReportsPage() {
                   <TableCell className="text-sm text-muted-foreground">{formatDate(r.reportedAt)}</TableCell>
                   <TableCell>
                     {r.status === "en_attente" && (
-                      <div className="flex gap-1">
+                      <div className="flex flex-wrap gap-1">
+                        {isSondeurSignal(r) && !isRefusalTrace(r) && (
+                          <select
+                            aria-label="Catégorie confirmée"
+                            className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                            value={chosen[r.id] ?? currentCategory(r)}
+                            onChange={(e) => setChosen((c) => ({ ...c, [r.id]: e.target.value }))}
+                          >
+                            {CATEGORIES.map(([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                         <Button size="sm" variant="secondary" onClick={() => resolve(r, "traite")}>
-                          {isSondeurSignal(r) ? "Confirmer" : "Traiter"}
+                          {isRefusalTrace(r) ? "Classer" : isSondeurSignal(r) ? "Confirmer" : "Traiter"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => resolve(r, "rejete")}>
                           {isSondeurSignal(r) ? "Fausse alerte" : "Rejeter"}

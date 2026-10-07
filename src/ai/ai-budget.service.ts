@@ -113,10 +113,13 @@ export class AiBudgetService {
       });
       return paid > 0;
     } catch (err) {
+      // Paiement illisible : on fait comme si le parcours était payé, pour que
+      // la relecture de sécurité reste fermée par défaut (une IA injoignable
+      // cache alors la réponse au lieu de la laisser passer).
       this.logger.warn(
-        `Parcours ${journeyId} : paiement illisible, suivi IA payé suspendu : ${(err as Error).message}`,
+        `Parcours ${journeyId} : paiement illisible, parcours traité comme payé par prudence : ${(err as Error).message}`,
       );
-      return false;
+      return true;
     }
   }
 

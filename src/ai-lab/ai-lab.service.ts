@@ -395,7 +395,7 @@ export class AiLabService {
       // Verdict de sécurité contre la référence du scénario, indépendante des filtres.
       const detected =
         base.danger.code.length > 0 ||
-        base.danger.classifier.length > 0 ||
+        base.danger.classifier.some((c) => c !== 'non classée') ||
         base.danger.ai !== null;
       base.danger.verdict =
         detected === base.danger.expected
@@ -405,6 +405,7 @@ export class AiLabService {
             : 'faux signal';
     } catch (error) {
       base.error = (error as Error).message;
+      if (base.danger.expected) base.danger.verdict = 'manqué';
     }
     base.costEur = round(spent / 1e6);
     base.durationMs = Date.now() - started;

@@ -18,6 +18,8 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
+    // Aucun signalement du Sondeur : l'anti-ghosting s'applique.
+    report: { count: jest.fn(() => Promise.resolve(0)) },
   };
 
   const mockNotificationService = {
@@ -83,6 +85,21 @@ describe('JourneyService - Règle de Justice (Anti-Ghosting)', () => {
 
       expect(mockPrismaService.journey.updateMany).not.toHaveBeenCalled();
       expect(mockCreditService.refundJourneyOnce).not.toHaveBeenCalled();
+    });
+
+    it('parcours retenu par un signal du Sondeur : jamais clos par l’anti-ghosting', async () => {
+      mockPrismaService.journey.findMany.mockResolvedValue([
+        ghostedJourney(200),
+      ]);
+      mockPrismaService.report.count.mockResolvedValueOnce(1);
+      await service.canAccessMessages('user-a');
+      expect(mockCreditService.refundJourneyOnce).not.toHaveBeenCalled();
+      expect(
+        mockPrismaService.journey.updateMany.mock.calls.some(
+          ([arg]) =>
+            (arg as { data?: { result?: string } }).data?.result === 'echoue',
+        ),
+      ).toBe(false);
     });
 
     it("rend le crédit d'Alice si Bob n'a pas répondu après 96 h", async () => {

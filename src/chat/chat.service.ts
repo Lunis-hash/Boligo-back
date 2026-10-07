@@ -178,32 +178,15 @@ export class ChatService {
   }
 
   /**
-   * Étape et issue d'un parcours, relues au plus toutes les 5 secondes (les
-   * événements « en train d'écrire » sont fréquents).
+   * Étape et issue d'un parcours, relues à chaque événement : une clôture ou
+   * une retenue de sécurité ferme la salle tout de suite (pas de cache).
    */
   async journeyState(journeyId: string) {
-    const cached = ChatService.states.get(journeyId);
-    if (cached && cached.at > Date.now() - 5_000) return cached.journey;
-    const journey = await this.prisma.journey.findUnique({
+    return this.prisma.journey.findUnique({
       where: { id: journeyId },
       select: { userAId: true, userBId: true, currentStep: true, result: true },
     });
-    if (ChatService.states.size >= 5_000) ChatService.states.clear();
-    ChatService.states.set(journeyId, { at: Date.now(), journey });
-    return journey;
   }
-  private static states = new Map<
-    string,
-    {
-      at: number;
-      journey: {
-        userAId: string;
-        userBId: string;
-        currentStep: string;
-        result: string;
-      } | null;
-    }
-  >();
 
   async markMessagesAsRead(journeyId: string, userId: string) {
     // Marquer comme lus tous les messages non lus envoyés par l'autre utilisateur

@@ -19,8 +19,10 @@ import { revenueByCode } from '../partners/partner-sales';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
 import { CreditService } from '../credit/credit.service';
 import {
+  CATEGORY_LABEL,
   holdsCategories,
   parseSondeurReport,
+  supportMessages,
 } from '../journey/journey-insights.service';
 
 const userListSelect = {
@@ -599,10 +601,39 @@ export class AdminService {
     };
   }
 
-  async updateReport(id: string, status: ReportStatus) {
+  /**
+   * Décision de la modération. Pour un signal du Sondeur confirmé, l'équipe
+   * peut préciser la catégorie (une réponse « en attente de classement »
+   * n'en a pas encore) : elle décide de la clôture, du crédit rendu et du
+   * message d'aide.
+   */
+  async updateReport(id: string, status: ReportStatus, category?: string) {
+    let description: string | undefined;
+    if (status === 'traite' && category) {
+      if (!(category in CATEGORY_LABEL))
+        throw new BadRequestException('Catégorie inconnue.');
+      const current = await this.prisma.report.findUnique({
+        where: { id },
+        select: { description: true },
+      });
+      const label = CATEGORY_LABEL[category as keyof typeof CATEGORY_LABEL];
+      if (
+        current?.description &&
+        parseSondeurReport({
+          reportedId: '',
+          status,
+          description: current.description,
+        })
+      )
+        description =
+          current.description.replace(
+            / · catégorie : [^\n]*?catégories=\[[^\]]*\]/,
+            ` · catégorie : ${label} · catégories=[${category}]`,
+          ) + `\nCatégorie confirmée par la modération : ${label}.`;
+    }
     const report = await this.prisma.report.update({
       where: { id },
-      data: { status },
+      data: { status, ...(description ? { description } : {}) },
     });
     if (status === 'traite')
       await this.closeJourneyAfterConfirmedSignal(report);
@@ -623,7 +654,10 @@ export class AdminService {
     description: string | null;
   }) {
     const signal = parseSondeurReport(report);
-    if (!signal || !holdsCategories(signal.categories)) return;
+    // Une trace de réponse refusée (jamais montrée) ne clôt rien : elle est
+    // seulement classée.
+    if (!signal || signal.refused || !holdsCategories(signal.categories))
+      return;
     const journey = await this.prisma.journey.findUnique({
       where: { id: signal.journeyId },
       select: { userAId: true, userBId: true },
@@ -646,6 +680,9 @@ export class AdminService {
       ['detresse', 'mineur', 'violence_subie'].includes(c),
     );
     const refundTo = noFault ? [partnerId, signal.authorId] : [partnerId];
+    // Détresse confirmée : une pause pour prendre soin de soi, pas une
+    // sanction ; le message d'aide est renvoyé.
+    const distress = signal.categories.includes('detresse');
     for (const memberId of [journey.userAId, journey.userBId]) {
       const refunded = refundTo.includes(memberId)
         ? await this.credits.refundJourneyOnce(
@@ -654,12 +691,20 @@ export class AdminService {
             'Parcours clos par l’équipe BOLIGO : crédit rendu',
           )
         : 0;
+      const author = memberId === signal.authorId;
+      const text =
+        distress && author
+          ? `L’équipe BOLIGO a mis ce parcours en pause pour que vous puissiez prendre soin de vous.${refunded ? ' Votre crédit vous a été rendu : vous pourrez reprendre quand vous le souhaiterez.' : ''} ${supportMessages(['detresse']).join(' ')}`
+          : `L’équipe BOLIGO a mis fin à votre parcours.${refunded ? ' Votre crédit vous a été rendu.' : ''} Elle reste joignable depuis votre profil.`;
       await this.notificationService
         .sendPushNotification(
           memberId,
           'systeme',
-          'Parcours terminé',
-          `L’équipe BOLIGO a mis fin à votre parcours.${refunded ? ' Votre crédit vous a été rendu.' : ''} Elle reste joignable depuis votre profil.`,
+          distress && author ? 'BOLIGO' : 'Parcours terminé',
+          text,
+          distress && author
+            ? 'Un message de l’équipe BOLIGO vous attend dans l’application.'
+            : undefined,
         )
         .catch(() => undefined);
     }

@@ -665,6 +665,7 @@ export class JourneyService {
           unclassified = paid;
         } else if (aiMod.unavailable) {
           unclassified = paid;
+          aiDanger = aiMod.danger ?? [];
         } else if (aiMod.danger?.length) {
           aiDanger = aiMod.danger;
         } else if (!aiMod.allowed && !codeDanger.length) {
@@ -714,7 +715,11 @@ export class JourneyService {
             userId,
             question.questionText,
             trimmed,
-            m.unavailable ? null : (m.danger ?? []),
+            m.unavailable
+              ? null
+              : !m.allowed && !m.danger?.length
+                ? ['autre']
+                : (m.danger ?? []),
           ),
         )
         .catch((err: Error) =>

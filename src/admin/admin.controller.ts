@@ -195,8 +195,9 @@ export class AdminController {
   updateReport(
     @Param('id') id: string,
     @Body('status') status: ReportStatus,
+    @Body('category') category?: string,
   ) {
-    return this.adminService.updateReport(id, status);
+    return this.adminService.updateReport(id, status, category);
   }
 
   @Get('messages/blocked')

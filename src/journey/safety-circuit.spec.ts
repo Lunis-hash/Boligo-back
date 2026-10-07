@@ -277,17 +277,19 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
 });
 
 describe('Signal du Sondeur confirmé par la modération', () => {
-  const setup = (categories: string) => {
-    const description = `${sondeurReportPrefix('j1')} · jour 1 · réponse 0123456789 · catégorie : x · catégories=[${categories}]\nRésumé`;
+  const setup = (categories: string, kind = 'réponse') => {
+    const description = `${sondeurReportPrefix('j1')} · jour 1 · ${kind} 0123456789 · catégorie : x · catégories=[${categories}]\nRésumé`;
     const prisma = {
       report: {
-        update: jest.fn(({ data }: { data: { status: string } }) =>
-          Promise.resolve({
-            id: 'r1',
-            reportedId: 'b',
-            status: data.status,
-            description,
-          }),
+        findUnique: jest.fn(() => Promise.resolve({ description })),
+        update: jest.fn(
+          ({ data }: { data: { status: string; description?: string } }) =>
+            Promise.resolve({
+              id: 'r1',
+              reportedId: 'b',
+              status: data.status,
+              description: data.description ?? description,
+            }),
         ),
       },
       journey: {
@@ -334,6 +336,27 @@ describe('Signal du Sondeur confirmé par la modération', () => {
     const { service, credits } = setup('detresse');
     await service.updateReport('r1', 'traite');
     expect(credits.refundJourneyOnce).toHaveBeenCalledTimes(2);
+  });
+
+  it('trace d’une réponse refusée (jamais montrée) : classée sans clore le parcours', async () => {
+    const { service, prisma } = setup('autre', 'refus');
+    await service.updateReport('r1', 'traite');
+    expect(prisma.journey.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('réponse « en attente de classement » confirmée comme détresse : pause, crédits rendus, message d’aide', async () => {
+    const { service, prisma, credits, notifications } = setup('autre');
+    await service.updateReport('r1', 'traite', 'detresse');
+    const [{ data }] = prisma.report.update.mock.calls[0] as unknown as [
+      { data: { description: string } },
+    ];
+    expect(data.description).toMatch(/catégories=\[detresse\]/);
+    expect(credits.refundJourneyOnce).toHaveBeenCalledTimes(2);
+    const toAuthor = (
+      notifications.sendPushNotification.mock.calls as unknown as string[][]
+    ).find((c) => c[0] === 'b');
+    expect(toAuthor?.[3]).toMatch(/pause/);
+    expect(toAuthor?.[3]).toMatch(/3114/);
   });
 
   it('confidence de violence subie, ou fausse alerte : rien n’est clos', async () => {

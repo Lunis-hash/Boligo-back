@@ -44,7 +44,7 @@ export function sondeurReportPrefix(journeyId: string): string {
 }
 
 /** Libellés des catégories, pour la modération. */
-const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
+export const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
   violence: 'violence (subie ou exercée)',
   violence_subie: 'violence subie',
   violence_exercee: 'violence exercée',
@@ -457,7 +457,19 @@ export class JourneyInsightsService {
           ),
       },
     });
-    await this.sendSupport(journeyId, authorId, next, kept);
+    const earlier = await this.prisma.report.findMany({
+      where: {
+        reportedId: authorId,
+        description: { startsWith: `${sondeurReportPrefix(journeyId)} · ` },
+      },
+      select: { id: true, description: true },
+    });
+    await this.sendSupport(journeyId, authorId, next, [
+      ...kept,
+      ...earlier
+        .filter((r) => r.id !== report.id)
+        .flatMap((r) => categoriesOf(r.description)),
+    ]);
   }
 
   /** Les réponses encore « en attente de classement » sont relues de nouveau (au plus toutes les 10 minutes). */
@@ -496,7 +508,11 @@ export class JourneyInsightsService {
           r.userId,
           q.questionText,
           r.responseText,
-          m.unavailable ? null : (m.danger ?? []),
+          m.unavailable
+            ? null
+            : !m.allowed && !m.danger?.length
+              ? ['autre']
+              : (m.danger ?? []),
         );
       }
   }

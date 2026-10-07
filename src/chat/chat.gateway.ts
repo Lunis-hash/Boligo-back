@@ -210,6 +210,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const userId = await this.authenticatedUser(client);
     if (!userId || !this.inJourney(client, data?.journeyId)) return;
+    if (!(await this.chatOpenFor(client, data.journeyId))) return;
 
     try {
       await this.chatService.markMessagesAsRead(data.journeyId, userId);
@@ -278,11 +279,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('rejectCall')
-  handleRejectCall(
+  async handleRejectCall(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string },
   ) {
     if (!this.inJourney(client, data?.journeyId)) return;
+    if (!(await this.chatOpenFor(client, data.journeyId))) return;
     this.server.to(`journey:${data.journeyId}`).emit('callRejected', {
       journeyId: data.journeyId,
       userId: client.data.userId,

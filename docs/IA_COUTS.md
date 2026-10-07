@@ -191,7 +191,11 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
 
       Une menace ou un contrôle subis, racontés par la victime (« mon ex
       fouillait mon téléphone »), comptent comme une confidence de violence
-      subie : la victime n'est jamais traitée comme l'auteur.
+      subie. Le code reconnaît les tournures courantes ; une phrase ambiguë
+      peut encore être lue comme venant de l'auteur. Dans ce cas, la
+      modération choisit la bonne catégorie dans le tableau de bord avant de
+      décider. C'est aussi pourquoi le message d'aide envoyé pour une menace
+      ou un contrôle est neutre : il ne présume ni victime ni auteur.
     - **Second étage, l'IA, dès l'envoi (parcours payé).** Le relecteur haut de
       gamme lit chaque réponse au moment où elle est envoyée et repère ce que
       le code ne voit pas. Coût : environ 0,15 € par parcours (42 réponses
@@ -209,16 +213,18 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       phrases saines) fait échouer l'intégration si le repérage par le code
       tombe sous 95 % par catégorie, ou si une phrase saine retient la
       messagerie. Ces phrases ont servi à écrire les motifs : ce n'est pas un
-      taux réel. Sur 143 phrases neuves écrites par un auditeur indépendant,
-      le code seul en repère environ 45 %. C'est la relecture de l'IA à
-      l'envoi qui porte la sécurité d'un parcours payé ; le laboratoire IA
-      contient quatre couples dont le danger est invisible pour le code, pour
-      la mesurer. Seul un corpus de vraies réponses, annoté par des
+      taux réel. Sur des phrases neuves écrites par des auditeurs
+      indépendants, le code seul en repère entre un tiers et la moitié selon
+      le corpus (33 % au dernier contre-audit), et presque aucune menace ni
+      aucun contrôle formulés autrement. C'est la relecture de l'IA à l'envoi
+      qui porte la sécurité d'un parcours payé ; son taux n'a pas encore été
+      mesuré sur de vraies réponses. Le laboratoire IA contient quatre couples
+      dont le danger est invisible pour le code, pour la mesurer. Seul un corpus de vraies réponses, annoté par des
       spécialistes, donnera un taux fiable (voir plus bas).
     - **Signalement.** Il part dès l'envoi de la réponse, et avant son
       enregistrement : si le signalement échoue, la réponse n'est pas
       enregistrée non plus. Un membre qui s'arrête en route n'y échappe pas.
-      Il y a un signalement par réponse, jamais en double, et une seule alerte
+      Il y a un signalement par réponse (le texte haché sert de clé), et une seule alerte
       de l'IA ouverte par membre. Une réponse refusée par la modération IA
       (insulte, proposition sexuelle, contact) est signalée pour trace, sans
       retenir la messagerie : elle n'a jamais été montrée.
@@ -249,8 +255,9 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
         Les deux membres sont prévenus sans que le motif soit donné.
     - **Parcours clos.** Un parcours arrêté (par un membre, l'anti-ghosting ou
       la modération) ne laisse plus passer aucun message, aucun signal
-      « en train d'écrire » ni aucun appel. Les appels ne sonnent qu'à
-      l'étape vidéo d'un parcours en cours.
+      « en train d'écrire », aucun accusé de lecture ni aucun appel ou refus
+      d'appel : l'état du parcours est relu à chaque événement, sans cache.
+      Les appels ne sonnent qu'à l'étape vidéo d'un parcours en cours.
     - **Ressources d'aide.** L'auteur de la réponse les reçoit en privé, sans
       commentaire :
       - détresse : le 3114 (France) ;
@@ -261,7 +268,9 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       Ailleurs, une association d'aide du pays, jamais la police seule (ce
       renvoi n'est pas sûr partout) ; en cas de danger immédiat, les secours.
       Une détresse n'est jamais effacée par une violence évoquée en même
-      temps. Le même message n'est jamais envoyé deux fois. Une alerte de
+      temps. Le code évite de renvoyer un message d'aide déjà reçu dans le
+      parcours ; deux signalements arrivés au même instant peuvent encore en
+      envoyer deux. Une alerte de
       l'IA sans membre désigné n'envoie aucun message. La notification ne
       montre jamais le contenu sur l'écran verrouillé.
     - **À valider par l'équipe** :
@@ -357,7 +366,7 @@ membres ouvrent l'application ; sinon, l'app recharge toute seule pendant
 quatre minutes.
 
 **Le laboratoire IA** (tableau de bord, administrateurs) rejoue le Sondeur avec
-les vrais modèles sur 18 couples types fictifs : questions servies, propositions
+les vrais modèles sur 27 couples types fictifs : questions servies, propositions
 écartées et pourquoi, lecture du jour, coût réel. Chaque couple porte une
 référence indépendante des filtres (danger attendu ou non) : le laboratoire
 compte les dangers manqués et les faux signaux. Comptez environ 1 € par couple

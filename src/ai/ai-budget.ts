@@ -2,7 +2,7 @@
  * Garde-fous de dépense IA :
  * - budget mensuel (AI_MONTHLY_BUDGET_EUR, 10 € par défaut) pour tout ce qui
  *   n'est pas le suivi d'un parcours payé ;
- * - budget par parcours payé (AI_JOURNEY_BUDGET_EUR, 1 € par défaut).
+ * - budget par parcours payé (AI_JOURNEY_BUDGET_EUR, 3 € par défaut).
  * Au-delà, chaque fonction bascule sur sa version sans IA (portrait rédigé,
  * questions du Sondeur sur modèles, lectures par les règles, filtre local).
  */
