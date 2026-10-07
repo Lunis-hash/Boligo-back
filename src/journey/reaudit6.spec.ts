@@ -218,7 +218,7 @@ describe('Sixième contre-audit : circuit à l’envoi', () => {
     expect(categories).toEqual(['menace']);
   });
 
-  it('parcours non payé : un danger trouvé après coup est signalé', async () => {
+  it('parcours non payé : fermé par défaut, le danger trouvé après coup remplace « en attente »', async () => {
     jest.useFakeTimers();
     try {
       const { service, ai, insights } = setup({ allowed: true }, false);
@@ -232,10 +232,19 @@ describe('Sixième contre-audit : circuit à l’envoi', () => {
       const sent = service.respondToQuestion('q1', 'b', text);
       await jest.advanceTimersByTimeAsync(10_001);
       await sent;
-      expect(insights.reportAnswer).not.toHaveBeenCalled();
+      const [, , , , , categories] = insights.reportAnswer.mock
+        .calls[0] as unknown as [
+        string,
+        number,
+        string,
+        string,
+        string,
+        string[],
+      ];
+      expect(categories).toEqual(['autre']);
       answer({ allowed: true, danger: ['menace'] });
       await jest.advanceTimersByTimeAsync(1);
-      expect(insights.reportAnswer).toHaveBeenCalledWith(
+      expect(insights.resolveClassification).toHaveBeenCalledWith(
         'j1',
         1,
         'b',
@@ -243,7 +252,6 @@ describe('Sixième contre-audit : circuit à l’envoi', () => {
         text,
         ['menace'],
       );
-      expect(insights.resolveClassification).not.toHaveBeenCalled();
     } finally {
       jest.useRealTimers();
     }

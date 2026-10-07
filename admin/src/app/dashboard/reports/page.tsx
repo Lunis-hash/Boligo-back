@@ -43,6 +43,12 @@ function currentCategory(r: ReportRow): string {
   return m?.[1] || "autre";
 }
 
+/** Menace ou contrôle : la victime a pu être lue comme l'auteur, l'équipe choisit. */
+function needsExplicitCategory(r: ReportRow): boolean {
+  const m = /catégories=\[([^\]]*)\]/.exec(r.description ?? "");
+  return (m?.[1] ?? "").split(",").some((c) => c === "menace" || c === "controle");
+}
+
 /** Détail lisible : la ligne d'en-tête technique est remplacée par les catégories. */
 function reportDetail(r: ReportRow): string {
   const text = r.message?.content ?? r.description ?? "";
@@ -71,7 +77,14 @@ export default function ReportsPage() {
   }, [page, status]);
 
   async function resolve(r: ReportRow, newStatus: "traite" | "rejete") {
-    const category = chosen[r.id] ?? currentCategory(r);
+    const category =
+      chosen[r.id] ?? (needsExplicitCategory(r) ? "" : currentCategory(r));
+    if (newStatus === "traite" && isSondeurSignal(r) && !isRefusalTrace(r) && !category) {
+      window.alert(
+        "Choisissez d'abord la catégorie : menace ou contrôle exercés par la personne qui écrit, ou violence subie (elle est la victime).",
+      );
+      return;
+    }
     if (
       newStatus === "traite" &&
       isSondeurSignal(r) &&
@@ -163,9 +176,14 @@ export default function ReportsPage() {
                           <select
                             aria-label="Catégorie confirmée"
                             className="h-8 rounded-md border border-input bg-background px-2 text-xs"
-                            value={chosen[r.id] ?? currentCategory(r)}
+                            value={chosen[r.id] ?? (needsExplicitCategory(r) ? "" : currentCategory(r))}
                             onChange={(e) => setChosen((c) => ({ ...c, [r.id]: e.target.value }))}
                           >
+                            {needsExplicitCategory(r) && (
+                              <option value="" disabled>
+                                Choisir la catégorie…
+                              </option>
+                            )}
                             {CATEGORIES.map(([value, label]) => (
                               <option key={value} value={value}>
                                 {label}

@@ -120,6 +120,8 @@ export interface SondeurModeration {
   danger?: DangerCategory[];
   /** Relecture impossible (panne, réponse illisible) : rien n'a été vérifié. */
   unavailable?: boolean;
+  /** Le relecteur refusait la réponse (insulte, contenu sexuel) même si un danger la fait garder. */
+  refused?: boolean;
 }
 
 /**
@@ -1146,13 +1148,23 @@ N'y mets PAS : une limite posée (« s'il levait la main sur moi, je partirais �
 Retourne UNIQUEMENT un JSON:
 {"allowed": true, "danger": []} ou {"allowed": false, "reason": "motif court en français", "category": "sexual"|"harassment"|"spam", "danger": []}
 `;
-    return this.runModeration(
-      `sondeur:${lab ? 'labo' : paid ? 'payé' : 'libre'}:${content.trim().toLowerCase()}`,
+    const key = content.trim().toLowerCase();
+    const result = await this.runModeration(
+      `sondeur:${lab ? 'labo' : paid ? 'payé' : 'libre'}:${key}`,
       prompt,
       paid
         ? { journeyId: journeyId ?? 'labo', role: 'critic', lab }
         : undefined,
     );
+    // Enveloppe du parcours épuisée ou relecteur en panne : le modèle
+    // économique relit à sa place, pour ne pas geler tout le parcours.
+    if (result.unavailable && paid && !lab) {
+      this.logger.warn(
+        '⚠️ [MODÉRATION IA] Relecteur du parcours indisponible : relecture par le modèle économique.',
+      );
+      return this.runModeration(`sondeur:libre:${key}`, prompt);
+    }
+    return result;
   }
 
   async moderateChatMessage(content: string): Promise<{
@@ -1208,6 +1220,7 @@ Retourne UNIQUEMENT un JSON:
       const result: SondeurModeration = {
         // Un danger n'est jamais refusé : il doit rester visible de la modération.
         allowed: parsed.allowed || danger.length > 0,
+        refused: !parsed.allowed,
         reason: typeof parsed.reason === 'string' ? parsed.reason : undefined,
         category:
           typeof parsed.category === 'string' ? parsed.category : undefined,

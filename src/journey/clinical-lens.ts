@@ -24,7 +24,7 @@ TA POSTURE : tu raisonnes comme un clinicien du couple expérimenté, formé à 
 - Attachement (Bowlby, Ainsworth, Hazan et Shaver) : besoin de sécurité, peur d'être abandonné ou envahi, réaction quand l'autre s'éloigne ou se rapproche.
 - Méthode Gottman : problèmes perpétuels et problèmes solubles, manière d'entrer dans un désaccord et d'en sortir, demandes d'attention et réponses à ces demandes, rêve caché derrière une position ; mépris et mur de silence se repèrent sans jamais être nommés : explore plutôt comment chacun se calme et répare après un désaccord.
 - Thérapie centrée sur les émotions (Sue Johnson) : l'émotion visible et celle qu'elle protège, le cycle « l'un insiste, l'autre se retire ».
-- Approche psychodynamique et psychanalytique : ce que l'on rejoue de son histoire, loyautés envers ses parents, idéalisation, attentes jamais formulées, ce que l'on espère que l'autre répare.
+- Approche psychodynamique et psychanalytique : loyautés envers ses parents, idéalisation, attentes jamais formulées, toujours sous un angle positif (ce que l'on a reçu, ce que l'on espère construire) ; jamais une blessure à confier à un inconnu qui lira la réponse.
 - Approche systémique (Bowen, thérapies familiales) : place de la famille d'origine, rôles appris, manière dont chacun articule sa place dans sa famille et dans le couple, selon le modèle qu'il choisit.
 - Thérapies cognitives et des schémas (Beck, Young) : croyances sur l'amour, l'argent, la fidélité ; peur d'être abandonné, méfiance, exigence envers soi ou l'autre.
 - Approche orientée solutions et entretien motivationnel : questions d'échelle, d'exception, projection dans un moment précis du futur, ambivalence.
@@ -117,7 +117,10 @@ export const CRITIC_RULES = `Refuse une question si :
 18. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
 19. elle reprend, même reformulé, un exemple de la consigne ;
 20. elle présente un modèle culturel, religieux ou familial (égalité ou hiérarchie, famille élargie, dot, polygamie, cohabitation) comme allant de soi, dépassé ou problématique, ou demande l'ethnie, la tribu ou la caste (sauf le contrôle, règle 21) ;
-21. elle met en scène une violence, une insulte, une menace ou un contrôle, subis ou exercés (« que ressentiriez-vous si… », « si l'on vous… »), présente une permission à demander (sortir, travailler, voir ses proches, dépenser) comme un rôle, demande un seuil personnel (« à partir de quand », « jusqu'où », « combien de… avant que… ») ou ce que l'on ferait pour se protéger, où l'on irait, qui l'on appellerait.`;
+21. elle met en scène une violence, une insulte, une menace ou un contrôle, subis ou exercés (« que ressentiriez-vous si… », « si l'on vous… »), présente une permission à demander (sortir, travailler, voir ses proches, dépenser) comme un rôle, demande un seuil personnel (« à partir de quand », « jusqu'où », « combien de… avant que… ») ou ce que l'on ferait pour se protéger, où l'on irait, qui l'on appellerait ;
+22. elle aborde l'intimité ou la sexualité avant le jour 3 ;
+23. elle revient sur un sujet qu'un membre a gardé pour la rencontre (réponse « J'aimerais en parler de vive voix ») ;
+24. elle révèle ce que l'un a répondu à l'entretien, même sans le nommer.`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur
@@ -322,7 +325,7 @@ export function isOpenQuestion(text: string): boolean {
  * vie sexuelle, ou invitation au compromis.
  */
 const INTRUSIVE =
-  /(?<!\p{L})(?:montants?|quel(?:le)? (?:est|sont|serait|seraient) (?:votre|vos) (?:salaire|revenus?|épargne|économies|budget)|combien (?:d['’]argent|de partenaires|d['’]amants?|d['’]ex|de dot|seriez-vous prêt|gagn|envoy|épargn|mett|vers|pai|dépens|avez-vous|vous gagnez)\p{L}*|euros?|fcfa|francs? cfa|dollars?|nairas?|dirhams?|employeur|où travaillez|habitez-vous|adresse|titre de séjour|statut migratoire|visa|sans[- ]papiers|vos papiers|situation administrative|(?:votre|vos) (?:ethnie|tribu|caste|origines? ethniques?)|quel(?:le)? (?:ethnie|tribu|caste)|séparation de vos parents|vos (?:futurs |éventuels )?enfants|votre (?:ex|ancien(?:ne)? (?:conjoint\p{L}*|partenaire|compagn\p{L}*|mari|femme|époux|épouse)|dernière relation|précédente? (?:relation|union)|précédent mariage|premier mariage|rupture|veuvage|divorce)|fai(?:t|re|tes) l['’]amour|rapports? sexuels?|relations? sexuelles?|(?:votre|la) première fois|fantasme\p{L}*|virginité|rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|(?:trouver|faire) (?:un |des )?compromis|voie médiane|juste milieu)(?!\p{L})|[€$£]/iu;
+  /(?<!\p{L})(?:montants?|quel(?:le)? (?:est|sont|serait|seraient) (?:votre|vos) (?:salaire|revenus?|épargne|économies|budget)|(?<!0 à 10, )combien (?:d['’]argent|de partenaires|d['’]amants?|d['’]ex|de dot|seriez-vous prêt|gagn|envoy|épargn|mett|vers|pai|dépens|avez-vous|vous gagnez)\p{L}*|euros?|fcfa|francs? cfa|dollars?|nairas?|dirhams?|employeur|où travaillez|habitez-vous|adresse|titre de séjour|statut migratoire|visa|sans[- ]papiers|vos papiers|situation administrative|(?:votre|vos) (?:ethnie|tribu|caste|origines? ethniques?)|quel(?:le)? (?:ethnie|tribu|caste)|séparation de vos parents|vos (?:futurs |éventuels )?enfants|votre (?:ex|ancien(?:ne)? (?:conjoint\p{L}*|partenaire|compagn\p{L}*|mari|femme|époux|épouse)|dernière relation|précédente? (?:relation|union)|précédent mariage|premier mariage|rupture|veuvage|divorce)|fai(?:t|re|tes) l['’]amour|rapports? sexuels?|relations? sexuelles?|(?:votre|la) première fois|fantasme\p{L}*|virginité|rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|(?:trouver|faire) (?:un |des )?compromis|voie médiane|juste milieu)(?!\p{L})|[€$£]/iu;
 
 /**
  * Compromis ou « vivre avec » : interdit sur un point non négociable (foi
@@ -360,11 +363,11 @@ const prefix = (alternatives: string) =>
 
 /** Ultimatum : une réponse sincère difficile à montrer (« partiriez-vous ? »). */
 export const ULTIMATUM = prefix(
-  'partiriez|quitteriez|resteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez',
+  'partiriez|quitteriez|resteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez|ferai(?:t|ent) quitter(?! la (?:pièce|table|conversation|salle))|ferai(?:t|ent) partir',
 );
 /** Morale ou « bonne réponse » suggérée. */
 export const MORALE = word(
-  "devriez|devrait|devraient|(?<!qu['’](?:un|une|on)(?: \\p{L}+)? )doit|(?<!qu['’](?:un|une|on|ils|elles)(?: \\p{L}+)? )doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
+  "devriez|devrait|devraient|(?<=(?:on|chacun|un homme|une femme|un mari|une épouse|un conjoint|une conjointe|le mari|la femme|l['’]homme) )doit|doit-(?:on|il|elle)|(?<=(?:les hommes|les femmes|les maris|les épouses) )doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
 );
 export const MORALE_PREFIX = prefix('égoïs|caprice|capricieu');
 /** Passé commun supposé entre deux personnes qui ne se sont jamais parlé. */
@@ -391,6 +394,9 @@ export const TUTOIEMENT = word(
 export const VOUVOIEMENT = word(
   'vous|votre|vos|pensez|imaginez|rappelez|souvenez|décrivez|choisissez|citez|dites|prenez|regardez',
 );
+/** Question impersonnelle sur le sens d'un mot (« Que veut dire « respecter »… ? »). */
+const IMPERSONAL =
+  /^\s*(?:que veut dire|que signifie|qu['’]est-ce que (?:veut dire|signifie))(?!\p{L})/iu;
 /** Impératif tutoyé en tête de question (« Imagine un dimanche… »). */
 export const TUTOIEMENT_IMPERATIVE =
   /^\s*(?:imagine|pense|dis|décris|raconte|explique|choisis|écris|réfléchis|regarde|essaie|cite|rappelle-toi|souviens-toi)(?!\p{L})/iu;
@@ -426,13 +432,13 @@ export function isDoubleQuestion(text: string): boolean {
 
 /** Demandes identifiantes ou chiffrées que la liste INTRUSIVE ne couvre pas. */
 export const INTRUSIVE_MORE =
-  /(?<!\p{L})(?:quelle somme|mariage précédent|union précédente|fréquence[^?]{0,40}intim\p{L}*|intim\p{L}*[^?]{0,40}fréquence|quel traitement|traitement (?:suivez|prenez|médical)|combien (?:touchez|percevez|gagnez|empochez)|que gagnez|(?:votre|son) salaire|ancienne relation|parents (?:se sont |étaient )?séparés|vos ex(?!\p{L})|premier baiser|fréquence (?:de vos|des) (?:moments|rapports|relations) intimes|(?:où|dans quelle ville)[^?]{0,30}vivent vos parents|pays d['’]origine|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
+  /(?<!\p{L})(?:quelle somme|ethni\p{L}*|tribus?|castes?|mariage précédent|union précédente|fréquence[^?]{0,40}intim\p{L}*|intim\p{L}*[^?]{0,40}fréquence|quel traitement|traitement (?:suivez|prenez|médical)|combien (?:touchez|percevez|gagnez|empochez)|que gagnez|(?:votre|son) salaire|ancienne relation|parents (?:se sont |étaient )?séparés|vos ex(?!\p{L})|premier baiser|fréquence (?:de vos|des) (?:moments|rapports|relations) intimes|(?:où|dans quelle ville)[^?]{0,30}vivent vos parents|pays d['’]origine|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
 /** Violence présentée comme excusable, pardonnable ou réparable. */
 export const VIOLENCE_NORMALIZE =
   /(?<!\p{L})(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants|geste brusque|geste déplacé|bouscul)\p{L}*[^?]{0,60}(?:excus|justifi|réconcili|pardonn|répar|vivable|tourner la page|passer l['’]éponge)|(?<!\p{L})(?:excus|justifi|réconcili|pardonn|répar)\p{L}*[^?]{0,60}(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants|geste brusque|geste déplacé|bouscul)/iu;
 /** Trait de caractère ou difficulté présupposés (« votre jalousie », « avez-vous du mal à »). */
 export const PRESUPPOSED =
-  /(?<!\p{L})(?:votre (?:jalousie|possessivité|méfiance|colère|immaturité|égoïsme|besoin de contrôle)|(?:avez|auriez)-vous du mal à|vous empêche encore|encore d['’]accepter|toujours pas)(?!\p{L})/iu;
+  /(?<!\p{L})(?:votre (?:jalousie|possessivité|méfiance|colère|immaturité|égoïsme|besoin de contrôle)|(?:avez|auriez)-vous du mal à|vous empêche encore|encore d['’]accepter|toujours pas|encore (?:nécessaire|utile|d['’]actualité|pertinente?)|dépassée?s?|archaïques?|d['’]un autre temps)(?!\p{L})/iu;
 
 /** Bonnes questions données en exemple dans la consigne : jamais recopiées. */
 export const LENS_EXAMPLES = [
@@ -451,11 +457,11 @@ export const LENS_EXAMPLES = [
  * limite de l'équipe, relus par des humains, ne passent pas par ce filtre.
  */
 const STAGED_HARM =
-  /(?<!\p{L})(?:gifl\p{L}*|frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|vous protéger|vous réfugier|où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
+  /(?<!\p{L})(?:gifl\p{L}*|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|(?<![-\p{L}])vous protéger|vous réfugier|où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
 
 /** Arrangement ou concession sur un sujet non négociable, dans une question de l'IA. */
 const NN_ARRANGEMENT =
-  /(?:mettre|trouver) d['’]accord sur (?:la religion|la foi|les enfants|la polygamie|le pays|la conversion)|devenir acceptable|à mi-(?:temps|chemin)|(?:religion|foi|polygamie|conversion|enfants)[^?]{0,40}(?:céder|lâcher|assouplir|renoncer)/iu;
+  /(?:seconde|deuxième|autre|nouvelle) épouse|coépouse|(?:mettre|trouver) d['’]accord sur (?:la religion|la foi|les enfants|la polygamie|le pays|la conversion)|devenir acceptable|à mi-(?:temps|chemin)|(?:religion|foi|polygamie|conversion|enfants)[^?]{0,40}(?:céder|lâcher|assouplir|renoncer)/iu;
 
 /**
  * Sujets de sécurité : couverts par les questions de limite écrites par
@@ -463,7 +469,7 @@ const NN_ARRANGEMENT =
  * est écartée.
  */
 const SAFETY_TOPIC =
-  /(?<!\p{L})(?:gifl\p{L}*|claques?|frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
+  /(?<!\p{L})(?:gifl\p{L}*|claques?|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|ne plus voir vos|(?:connaître )?votre code|vérifi\p{L}* où vous|où vous êtes|décid\p{L}* seul\p{L}* de vos|vos sorties|votre passeport|jet\p{L}* vos affaires|punitions?|punir|hausser la voix|lever le ton|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
 /** Seuil personnel de tolérance (« à partir de combien de cris… »). */
 const THRESHOLD =
   /(?:à partir de (?:quand|combien|quel moment)|jusqu['’]où)[^?]{0,60}(?:accept|tolér|support|invivable|trop|limite|parler de|aller)/iu;
@@ -471,14 +477,16 @@ const THRESHOLD =
 const NN_QUESTION_TOPIC =
   /(?<!\p{L})(?:foi|relig\p{L}*|pri(?:e|ère|ent|ez)\p{L}*|conver\p{L}*|polygam\p{L}*|pays|enfants?|fidélité|pratique)(?!\p{L})/iu;
 const ARRANGE =
-  /(?<!\p{L})(?:concili\p{L}*|intermédiaire|acceptable|lâcher|raisonnables?|céder|renoncer|sacrifier|assouplir|compromis|mi-chemin|terrain d['’]entente|formule)(?!\p{L})/iu;
+  /(?<!\p{L})(?:concili\p{L}*|intermédiaire|acceptable|lâcher|raisonnables?|céder|renoncer|sacrifier|assouplir|compromis|mi-chemin|terrain d['’]entente|formule|entre parenthèses|mettre de côté|mettre en pause)(?!\p{L})/iu;
 
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
   return (
     passesFormRules(t) &&
     !STAGED_HARM.test(t) &&
-    !SAFETY_TOPIC.test(t) &&
+    !SAFETY_TOPIC.test(
+      t.replace(/frontière entre[^?]{0,40}?(?:surveill\p{L}*)/iu, 'frontière'),
+    ) &&
     !THRESHOLD.test(t) &&
     !(NN_QUESTION_TOPIC.test(t) && ARRANGE.test(t)) &&
     !NN_ARRANGEMENT.test(t) &&
@@ -514,7 +522,7 @@ export function passesFormRules(text: string): boolean {
     !TUTOIEMENT.test(t) &&
     !TUTOIEMENT_IMPERATIVE.test(t) &&
     !isDoubleQuestion(t) &&
-    VOUVOIEMENT.test(t) &&
+    (VOUVOIEMENT.test(t) || IMPERSONAL.test(t)) &&
     !INTRUSIVE_MORE.test(t) &&
     !VIOLENCE_NORMALIZE.test(t) &&
     !PRESUPPOSED.test(t)

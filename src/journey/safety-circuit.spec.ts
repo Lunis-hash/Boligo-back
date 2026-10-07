@@ -315,7 +315,12 @@ describe('Signal du Sondeur confirmé par la modération', () => {
 
   it('menace confirmée : parcours clos, crédit rendu au membre mis en danger, les deux prévenus sans motif', async () => {
     const { service, prisma, credits, notifications } = setup('menace');
-    await service.updateReport('r1', 'traite');
+    // Menace : la catégorie doit être choisie explicitement.
+    await expect(service.updateReport('r1', 'traite')).rejects.toThrow(
+      /Choisissez la catégorie/,
+    );
+    expect(prisma.journey.updateMany).not.toHaveBeenCalled();
+    await service.updateReport('r1', 'traite', 'menace');
     const [closing] = prisma.journey.updateMany.mock.calls[0] as unknown as [
       { where: unknown; data: { currentStep: string; result: string } },
     ];

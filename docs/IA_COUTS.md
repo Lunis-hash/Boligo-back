@@ -207,9 +207,14 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       l'auteur.
       L'IA peut aussi lever une alerte dans la lecture du jour, dans le bilan
       et dans le contrôle de fidélité.
-    - **IA lente ou en panne : fermé par défaut.** Au-delà de 10 secondes, ou
-      si l'IA ne répond pas, la réponse est enregistrée mais cachée à l'autre
-      membre et signalée « classement en attente » ; la messagerie attend.
+    - **IA lente ou en panne : fermé par défaut, payé ou non.** Au-delà de
+      10 secondes, ou si l'IA ne répond pas, la réponse est enregistrée mais
+      cachée à l'autre membre et signalée « classement en attente » ; la
+      messagerie attend. Quand l'enveloppe de 3 € d'un parcours est épuisée,
+      c'est le modèle économique (plafond mensuel) qui relit à la place du
+      relecteur haut de gamme, pour ne pas geler le parcours. Si lui aussi est
+      indisponible (plafond mensuel atteint, panne), toutes les réponses
+      restent en attente : il faut surveiller le plafond mensuel.
       Elle est relue automatiquement, au plus toutes les 10 minutes. Relue
       sans danger, elle redevient visible et le signalement se clôt seul.
       Pendant une longue panne, l'équipe peut trancher à la main.
@@ -218,11 +223,15 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       tombe sous 95 % par catégorie, ou si une phrase saine retient la
       messagerie. Ces phrases ont servi à écrire les motifs : ce n'est pas un
       taux réel. Sur des phrases neuves écrites par des auditeurs
-      indépendants, le code seul en repérait entre un quart et la moitié
-      selon le corpus (23 % au sixième contre-audit, presque aucune menace ni
-      aucun contrôle formulés autrement). Des familles de tournures ont été
-      ajoutées depuis ; elles ont été écrites à partir de ce corpus, donc le
-      prochain contre-audit, sur des phrases neuves, donnera le vrai taux.
+      indépendants, le code seul en repère environ la moitié (23 % au
+      sixième contre-audit, 52 % au septième), moins en anglais et en créole.
+      Le septième contre-audit a aussi montré que les motifs ajoutés
+      retenaient à tort un tiers des phrases saines, surtout sur des sujets
+      fréquents chez les membres africains (envois d'argent, montants en
+      FCFA, ville d'Abidjan) : ces faux positifs ont été corrigés et ses 68
+      phrases saines et 42 réponses de limite sont devenues des tests. Chaque
+      correction est écrite à partir d'un corpus : seul le contre-audit
+      suivant, sur des phrases neuves, donne le vrai taux.
       C'est la relecture de l'IA à l'envoi
       qui porte la sécurité d'un parcours payé ; son taux n'a pas encore été
       mesuré sur de vraies réponses. Le laboratoire IA contient quatre couples
@@ -267,7 +276,10 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       - **Confirmer** : le parcours est clos pour les deux membres et le
         crédit est rendu au membre mis en danger. Pour une détresse ou une
         minorité, où personne n'est en faute, les deux crédits sont rendus.
-        Les deux membres sont prévenus sans que le motif soit donné.
+        Les deux membres sont prévenus sans que le motif soit donné. Pour
+        une menace ou un contrôle, l'équipe choisit d'abord la catégorie
+        (exercés par la personne qui écrit, ou violence subie) : une victime
+        qui cite son agresseur ne doit pas être traitée en auteur.
     - **Parcours clos.** Un parcours arrêté (par un membre, l'anti-ghosting ou
       la modération) ne laisse plus passer aucun message, aucun signal
       « en train d'écrire », aucun accusé de lecture ni aucun appel ou refus
@@ -326,7 +338,9 @@ Ce qui est en place pour chaque **parcours payé** :
 **Parcours sans paiement** : aucune rédaction par l'IA (questions, lectures,
 bilan). Les questions modèles de BOLIGO et les lectures écrites par les règles
 s'affichent. Seule la relecture de sécurité de chaque réponse passe par le
-modèle économique, dans le plafond mensuel.
+modèle économique, dans le plafond mensuel, avec la même règle « fermé par
+défaut ». En pratique, chaque parcours accepté consomme un crédit : il est
+payé tant que `AI_JOURNEY_BUDGET_EUR` est supérieur à 0.
 
 Garde-fous sur les données :
 

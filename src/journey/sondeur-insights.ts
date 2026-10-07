@@ -173,7 +173,9 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
     seen.add(d.theme);
     toDiscuss.push({
       theme: THEMES[d.theme].label,
-      text: `Vos réponses à l'entretien diffèrent sur ce point : ${d.label.charAt(0).toLowerCase()}${d.label.slice(1)}.`,
+      // Un sujet, jamais ce que l'un a répondu à l'entretien (même règle
+      // que pour l'IA).
+      text: `Un sujet à aborder ensemble : ${d.label.charAt(0).toLowerCase()}${d.label.slice(1)}.`,
     });
     if (toDiscuss.length === 3) break;
   }
@@ -185,13 +187,10 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
     together: [],
     toDiscuss,
     openers: [...REVIEW_OPENERS],
+    // Toujours la même phrase sur la violence : sa présence ne révèle rien.
     advice: [
       'Prenez le temps de relire vos réponses comparées avant d’écrire votre premier message.',
-      ...(report?.divergences.some((d) => SAFETY_QUESTIONS.has(d.questionId))
-        ? [
-            'Sur la violence et les mots blessants, vos limites écrites à l’entretien ne sont pas les mêmes : BOLIGO ne présente jamais ce point comme un sujet à négocier.',
-          ]
-        : []),
+      'Sur la violence et les mots blessants, BOLIGO ne présente jamais une limite comme un sujet à négocier.',
     ].join(' '),
   };
 }
@@ -252,6 +251,8 @@ function plain(text: string): string {
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
     .toLowerCase()
+    .replace(/œ/g, 'oe')
+    .replace(/æ/g, 'ae')
     .replace(/[’‘`´ʼ]/g, "'")
     .replace(/\s+/g, ' ');
 }
@@ -269,6 +270,7 @@ const HYPOTHESIS_END = String.raw`(?=\s(?:je\b|j')|[,.;:!?]|$)`;
 const HYPOTHESIS = new RegExp(
   [
     String.raw`(?:^|[.;:!?]\s*)(?:qu'(?:il|elle|on|quelqu'un)|que (?:quelqu'un|l'autre))\b[^.;!?]*`,
+    String.raw`(?:^|[.;:!?]\s*)(?:avoir a|devoir|etre obligee? de|qu'on me (?:demande|force|oblige) (?:de|a)) [^.;!?]*`,
     String.raw`(?:^|[.;:!?]\s*)(?:(?:me|m')\s?(?:frapper|gifler|taper|cogner|menacer|insulter|rabaisser|humilier|forcer|obliger|empecher|interdire|pousser|bousculer|surveiller|controler|suivre|isoler|enfermer)|lever la main)\b[^.;!?]*`,
     String.raw`\bif (?:he|she|someone|anyone|a man|a woman|my \w+) (?:ever |even once )?(?:\w+ )?(?:hits?|slaps?|beats?|threatens?|hurts?|pushe?s?) me\b[^.;!?]*`,
     String.raw`\b(?:toute|aucune|zero|pas de|jamais de|sans) (?:forme de )?violences?(?: \w+)?`,
@@ -300,11 +302,11 @@ const CHILDHOOD =
 const SIBLING_CHILDHOOD =
   /[^.;!?]*\b(?:mon (?:grand |petit )?frere|ma (?:grande |petite )?soeur|mon cousin|ma cousine|mon pere|ma mere|mes parents)\b[^.;!?]{0,60}\b(?:me|m') ?(?:a )?(?:chicot|frapp|tap|batt|fouett|corrig|cogn|menac)\w*[^.;!?]*/g;
 const CHILD_MARKER =
-  /\b(?:quand j'etais (?:petite?|enfant|jeune|ado\w*)|(?:petite?|enfant|gamine?|ados?) |enfance|a l'ecole|au (?:primaire|college)|quand on (?:jouait|etait (?:petits|enfants|jeunes))|mauvaises? notes?|bulletin|rien de grave)/;
+  /\b(?:quand j'etais (?:petite?|enfant|jeune|ado\w*)|(?:petite?|enfant|gamine?|ados?) |enfance|a l'ecole|au (?:primaire|college)|quand on (?:jouait|etait (?:petit(?:e|s|es)?|enfants|jeunes))|mauvaises? notes?|bulletin|rien de grave)/;
 
 /** Idiomes et tiers (« ce qui m'a frappé », « battu en finale », association contre les violences). */
 const IDIOMS =
-  /\b(?:ce qui|ce qu'il|ce que)(?: \w+)? m'a (?:le plus )?frapp\w*|m'a frapp\w* (?:de plein fouet|par (?:sa|son|ses|leur|leurs))|m'a tape sur l'epaule|m'(?:a|ont) battue? (?:au|aux|en finale|a plate couture)\b|ete battue? (?:au|aux|en finale)\b|beat me at (?:chess|cards|football|soccer|tennis|games?)\b|(?:movie|film|song|news|it|that|this|breakup|divorce|loss|death|separation) (?:really )?hit me hard\b|\b(?:pris|prendre|prends|prend) une (?:claque|gifle|baffe) (?:en (?:voyant|decouvrant|lisant|regardant|ecoutant|visitant|arrivant)|devant|visuelle|monumentale)|\bme tap\w* (?:gentiment|pour rire|pour jouer|en jouant)|\b(?:association|benevole|militant\w*|sensibilis\w*|avocat\w*|juriste|magistrat\w*|travailleu\w* social\w*|assistante? social\w*|psycholog\w*|infirmi\w*|educat\w*|medecin|sage-femme|juge|policier\w*|policiere|gendarme|commissaire|enqueteu\w*)\b[^.]{0,50}(?:violences?|victimes?|femmes? battues?|maltrait\w*)(?: \w+){0,3}|\b(?:ca|cela) m'a (?:le plus )?frapp\w*|\b(?:film|livre|chanson|serie|match|nouvelle|concert|voyage|spectacle|discours|lecture)\b[^.]{0,30}m'a (?:mis|donne|colle) une (?:claque|gifle|baffe)|\b(?:cette|ce|la|le|mon|ma) (?:chaleur|fatigue|boulot|travail|patron|patronne|chef|trafic|embouteillage|attente|rythme|regime|sport|marathon|examen|semaine|journee) (?:va|vont) me tuer\b|\b(?:ma mere|mon pere|mes parents|ma soeur|mon frere|ma tante|mon patron|ma patronne|mon boss) (?:va|vont) me tuer\b|violences?[^.]{0,40}\bchez (?:ma|mon|mes|une|des) (?:tante|soeur|mere|voisin\w*|ami\w*|cousin\w*|parents)\b/g;
+  /\b(?:ce qui|ce qu'il|ce que)(?: \w+)? m'a (?:le plus )?frapp\w*|m'a frapp\w* (?:de plein fouet|par (?:sa|son|ses|leur|leurs))|m'a tape sur l'epaule|m'(?:a|ont) battue? (?:au|aux|en finale|a plate couture)\b|ete battue? (?:au|aux|en finale)\b|beat me at (?:chess|cards|football|soccer|tennis|games?)\b|(?:movie|film|song|news|it|that|this|breakup|divorce|loss|death|separation) (?:really )?hit me hard\b|\b(?:pris|prendre|prends|prend) une (?:claque|gifle|baffe) (?:en (?:voyant|decouvrant|lisant|regardant|ecoutant|visitant|arrivant)|devant|visuelle|monumentale)|\bme tap\w* (?:gentiment|pour rire|pour jouer|en jouant)|\b(?:envie|courage|force) de me battre\b|\bme battre (?:pour|contre)\b|\b(?:association|benevole|militant\w*|sensibilis\w*|avocat\w*|juriste|magistrat\w*|travailleu\w* social\w*|assistante? social\w*|psycholog\w*|infirmi\w*|educat\w*|medecin|sage-femme|juge|policier\w*|policiere|gendarme|commissaire|enqueteu\w*)\b[^.]{0,50}(?:violences?|victimes?|femmes? battues?|maltrait\w*|abus\w*)(?: \w+){0,3}|\b(?:ca|cela) m'a (?:le plus )?frapp\w*|\b(?:film|livre|chanson|serie|match|nouvelle|concert|voyage|spectacle|discours|lecture)\b[^.]{0,30}m'a (?:mis|donne|colle) une (?:claque|gifle|baffe)|\b(?:cette|ce|la|le|mon|ma) (?:chaleur|fatigue|boulot|travail|patron|patronne|chef|trafic|embouteillage|attente|rythme|regime|sport|marathon|examen|semaine|journee) (?:va|vont) me tuer\b|\b(?:ma mere|mon pere|mes parents|ma soeur|mon frere|ma tante|mon patron|ma patronne|mon boss|(?:mon|ma) (?:coach|prof\w*|entraineu\w*|chef))(?: \w+)? (?:va|vont) me tuer\b|violences?[^.]{0,40}\bchez (?:ma|mon|mes|une|des) (?:tante|soeur|mere|voisin\w*|ami\w*|cousin\w*|parents)\b/g;
 
 /** Catégorie d'un signal de danger, transmise à la modération. */
 export type DangerCategory =
@@ -318,9 +320,9 @@ export type DangerCategory =
   | 'mineur';
 
 /** Demande adressée à l'autre (« peux-tu m'envoyer », « fais-moi un dépôt »). */
-const REQUEST = String.raw`(?:\b(?:tu|vous) (?:peux|pouvez|pourrais|pourriez) (?:me\b|m')|\b(?:envoie|envoi|envoyez|prete|pretez|vire|virez|fais|faites|aide|aidez|depanne|depannez|achete|achetez|recharge|rechargez)[- ]moi\b|\b(?:tu|vous|toi)\b[^.?!]{0,25}\bm'(?:envoyer|aider|avancer|depanner|preter)\b|\bme (?:preter|depanner|faire un|virer|transferer|avancer)\b|\bil me faut\b|\bsend me\b|\bcan you send\b)`;
+const REQUEST = String.raw`(?:\b(?:tu|vous) (?:peux|pouvez|pourrais|pourriez) (?:me\b|m')(?! ?(?:faire confiance|croire|comprendre|connaitre|ecouter))|\b(?:envoie|envoi|envoyez|prete|pretez|vire|virez|fais|faites|aide|aidez|depanne|depannez|achete|achetez|recharge|rechargez)[- ]moi\b|\b(?:tu|vous|toi)\b[^.?!]{0,25}\bm'(?:envoyer|aider|avancer|depanner|preter)\b|\bme (?:preter|depanner|faire un|virer|transferer|avancer)\b|\bil me faut\b|\bsend me\b|\bcan you send\b)`;
 /** Argent ou moyen de transfert : seul, il ne suffit pas (envois familiaux légitimes). */
-const MONEY = String.raw`(?:argent|\bsous\b|\d{3,}|\d+ ?k\b|\d+ ?(?:€|euros?|f\b|fcfa|cfa|francs?|dollars?|\$)|credit|virement|depot|transfert|western union|money ?gram|(?:orange|moov|mtn|airtel|mobile|wave) money|\bwave\b|m-?pesa|transcash|neosurf|coupons? pcs|cartes? (?:cadeau|google play|itunes|steam)|bitcoin|\bcash\b)`;
+const MONEY = String.raw`(?:argent|\bsous\b|\d{3,}|\d+ ?k\b|\d+ ?(?:€|euros?|f\b|fcfa|cfa|francs?|dollars?|\$)|(?<!a )credit|virement|depot|transfert|western union|money ?gram|(?:orange|moov|mtn|airtel|mobile|wave) money|\bwave\b|m-?pesa|transcash|neosurf|coupons? pcs|cartes? (?:cadeau|google play|itunes|steam)|bitcoin|\bcash\b)`;
 
 /** Années de naissance d'un mineur, calculées chaque jour. */
 function minorBirthYears(): string {
@@ -361,7 +363,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
     [
       'violence',
       new RegExp(
-        String.raw`violences? (?:conjugales?|physiques?|sexuelles?|domestiques?)|abus sexuels?|agression sexuelle|inceste|(?:mis|mettre|donne|donner|recu|recevoir|pris|prendre|prend|prendra) (?:une|des) (?:claques?|gifles?|coups?)|des coups\b|etrangl|\bdomestic (?:violence|abuse)\b`,
+        String.raw`violences? (?:conjugales?|physiques?|sexuelles?|domestiques?)|abus sexuels?|agression sexuelle|inceste|(?:mis|mettre|donne|donner|recu|recevoir|pris|prendre|prend|prendra) (?:une|des) (?:claques?|gifles?|coups?)|des coups\b(?! de (?:fil|coeur|main|pouce|foudre|soleil|genie|tete|chance|bol))|(?<!gorge )(?<!voix )(?<!je )\b(?:me |m'|l'|la |le |te |t')etrangl|\bdomestic (?:violence|abuse)\b`,
       ),
     ],
     [
@@ -382,7 +384,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
     [
       'detresse',
       new RegExp(
-        String.raw`suicid|(?:envie|besoin|veux|voudrais|vais) (?:de )?mourir(?! (?:vieux|vieille|de (?:rire|faim|froid|chaud|honte|fatigue)|a cote|aupres|dans (?:tes|ses|vos) bras|ensemble|avec))|plus envie de vivre|(?:plus|aucune|pas) (?:de )?raison de vivre|en finir\b(?! avec (?:les |le |la |ce |cette |ces |tout ce|tout ca|la solitude|le celibat))|(?:pense|penser|pensais|envie|veux|voudrais|essaye|tente)\w* (?:a |de )?me (?:tuer|suicider|foutre en l'air)|me (?:fais|faire|suis fait) du mal|me scarifi|automutil|disparaitre (?:pour toujours|a jamais|de ce monde)|fatiguee? de vivre(?! (?:seule?|ici|loin|sans|a |en |dans|comme|chez))|la vie n'a plus de sens|mettre fin a (?:mes|ses) jours|m'oter la vie|mieux sans moi|(?:veux|veut) plus vivre|\b(?:want|wanna) to die\b|\bkill myself\b|don'?t want to live|\bend my life\b|\bmwen (?:vle|vl) mouri\b|\bpa vle viv\b`,
+        String.raw`suicid|(?:envie|besoin|veux|voudrais|vais) (?:de )?mourir(?! (?:vieux|vieille|de (?:rire|faim|froid|chaud|honte|fatigue)|a cote|aupres|dans (?:tes|ses|vos) bras|ensemble|avec))|plus envie de vivre(?! (?:seule?|ici|loin|sans|comme|chez|avec|a [a-z]|dans (?:cette|ce|une|un|la|le)|en (?!ce moment)[a-z]))|(?:plus|aucune|pas) (?:de )?raison de vivre|en finir(?: avec (?:la vie|tout|moi|ma vie|mes jours))?(?=\s*(?:[.,;!?]|$|une bonne fois|pour de bon))|(?:pense|penser|pensais|envie|veux|voudrais|essaye|tente)\w* (?:a |de )?me (?:tuer|suicider|foutre en l'air)|me (?:fais|faire|suis fait) du mal|me scarifi|automutil|disparaitre (?:pour toujours|a jamais|de ce monde)|fatiguee? de vivre(?! (?:seule?|ici|loin|sans|a |en |dans|comme|chez))|la vie n'a plus de sens|mettre fin a (?:mes|ses) jours|m'oter la vie|mieux sans moi|(?:veux|veut) plus vivre|\b(?:want|wanna) to die\b|\bkill myself\b|don'?t want to live|\bend my life\b|\bmwen (?:vle|vl) mouri\b|\bpa vle viv\b`,
       ),
     ],
     [
@@ -394,7 +396,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
     [
       'mineur',
       new RegExp(
-        String.raw`\bj'?ai (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ?ans?\b(?! (?:d'|de |depuis|que|quand))|\bje suis (?:mineure?|collegien(?:ne)?|lyceen(?:ne)?)\b|\bje suis au (?:college|lycee)\b(?! (?:\w+ )?(?:comme|en tant que))|\bje suis en (?:classe de )?(?:seconde|2nde|premiere|1ere|terminale|troisieme|3e|3eme|quatrieme|4e)\b(?! (?:position|ligne|place|main|rang|annee de (?:master|licence|fac|medecine)))|\bnee? en (?:${minorBirthYears()})\b|\bi'?m (?:1[0-7]|thirteen|fourteen|fifteen|sixteen|seventeen)\b(?! years? (?:into|of|in|at|with)| months?)|\b1[0-7] ?(?:yo|y\/o|years old)\b`,
+        String.raw`\bj'?ai (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ?ans?\b(?! (?:d'|de |depuis|que|quand))|\bje suis (?:mineure?|collegien(?:ne)?|lyceen(?:ne)?)\b|\bje suis au (?:college|lycee)\b(?! (?:\w+ )?(?:comme|en tant que))(?![^.]{0,40}(?:enseign|prof|surveill|cpe|cantine))|\bje suis en (?:classe de )?(?:seconde|2nde|premiere|1ere|terminale|troisieme|3e|3eme|quatrieme|4e)\b(?! (?:annee|semaine|position|ligne|place|main|rang))|(?:^|[.!?]\s*|je suis |jsuis |j'suis )nee? en (?:${minorBirthYears()})\b|\bi'?m (?:1[0-7]|thirteen|fourteen|fifteen|sixteen|seventeen)\b(?! years? (?:into|of|in|at|with)| months?)|\b1[0-7] ?(?:yo|y\/o|years old)\b`,
       ),
     ],
   ];
@@ -443,11 +445,11 @@ const EXTRA: Array<[DangerCategory, RegExp]> = [
 const MORE: Array<[DangerCategory, RegExp]> = [
   [
     'violence_subie',
-    /\b(?:me|m') ?(?:mettait|foutait|fichait|collait|donnait|a (?:mis|foutu|colle|donne)) (?:des|une) (?:coups?|baffes?|gifles?|claques?|tartes?|beignes?|raclees?)|\bencaiss\w* (?:ses|les|des) (?:coups|gifles|baffes|claques)|\bm'a (?:deja )?(?:envoyee?|mise?|conduite?) (?:a l'hopital|aux urgences)|\b(?:me|m') ?(?:balanc|jet|project|plaqu|pouss|cogn)\w* (?:contre|par terre|au sol|a terre|dans)|\b(?:me|m') ?crach\w* (?:au visage|dessus|a la figure)|\b(?:ete|etais|etait) (?:violentee?|tabassee?|cognee?|secouee?)\b|\b(?:il|elle|mon \w+|ma \w+|mon ex-\w+) (?:me |m')(?:corrig|pinc|tord|secou|plaqu|etrangl|enferm|sequestr)\w*|\bme (?:faisait|forcait a|obligeait a) (?:mettre|me mettre) a genoux|\b(?:me|m') ?(?:a |avait )?(?:forc|oblig)\w* a des (?:rapports|relations)|\bpeur de rentrer (?:chez moi|a la maison)|\b(?:throw|threw|throwing|threw things) (?:\w+ )?at me\b|\bgrab(?:bed|s)? me by the (?:throat|neck|hair)|\bban mwen (?:kalot|kou)\b/,
+    /(?<!je )\bm'etrangl\w*|\bme etrangl\w*|\b(?:me|m') ?(?:mettait|foutait|fichait|collait|donnait|a (?:mis|foutu|colle|donne)) (?:des|une) (?:coups?|baffes?|gifles?|claques?|tartes?|beignes?|raclees?)|\bencaiss\w* (?:ses|les|des) (?:coups|gifles|baffes|claques)|\bm'a (?:deja )?(?:envoyee?|mise?|conduite?) (?:a l'hopital|aux urgences)|\b(?:me|m') ?(?:balanc|jet|project|plaqu|pouss|cogn)\w* (?:contre|par terre|au sol|a terre|dans)|\b(?:me|m') ?crach\w* (?:au visage|dessus|a la figure)|\b(?:ete|etais|etait) (?:violentee?|tabassee?|cognee?|secouee?)\b|\b(?:il|elle|mon \w+|ma \w+|mon ex-\w+) (?:me |m')(?:corrig|pinc|tord|secou|plaqu|etrangl|enferm|sequestr)\w*|\bme (?:faisait|forcait a|obligeait a) (?:mettre|me mettre) a genoux|\b(?:me|m') ?(?:a |avait )?(?:forc|oblig)\w* a des (?:rapports|relations)|\bpeur de rentrer (?:chez moi|a la maison)|\b(?:throw|threw|throwing|threw things) (?:\w+ )?at me\b|\bgrab(?:bed|s)? me by the (?:throat|neck|hair)|\bban mwen (?:kalot|kou)\b/,
   ],
   [
     'violence_exercee',
-    /\b(?:lui|la|le|leur) en (?:coller|mettre|foutre|retourner|allonger) une\b|\b(?:j'ai|je l'ai|je lui ai) (?:deja )?(?:secoue|plaque|pousse|bouscule|etrangle|tire les cheveux|serre le cou|mis une (?:raclee|gifle|claque|baffe|correction|tarte|beigne))|\bje (?:la|le|l') ?(?:plaquais|plaque|poussais|bousculais|secouais|etranglais|cognais|frappais|giflais|recadre physiquement|corrige physiquement)\b|\bmerit\w* une (?:bonne )?(?:lecon|correction|raclee|gifle|claque)|\bserr\w* le cou (?:de|d')|\b(?:elle|il) prend (?:un coup|des coups)\b|\bje (?:force|oblige) (?:un peu )?(?:ma|mon) \w+ quand (?:elle|il) n'a pas envie|\bmon droit d'epou|\bi (?:slapped|hit|punched|choked|pushed|shoved|beat) (?:my|her|him)\b|\bmwen (?:ka |te )?bat\b/,
+    /\b(?:lui|la|le|leur) en (?:coller|mettre|foutre|retourner|allonger) une\b|\b(?:j'ai|je l'ai|je lui ai) (?:deja )?(?:secoue|plaque|pousse|bouscule|etrangle|tire les cheveux|serre le cou|mis une (?:raclee|gifle|claque|baffe|correction|tarte|beigne))|\bje (?:la|le|l') ?(?:plaquais|plaque|poussais|bousculais|secouais|etranglais|cognais|frappais|giflais|recadre physiquement|corrige physiquement)\b|\bmerit\w* une (?:bonne )?(?:lecon|correction|raclee|gifle|claque)|\bje lui ai (?:deja )?(?:colle|mis|donne|file|foutu|balance|envoye) une\b|\bserr\w* le cou (?:de|d')|\b(?:elle|il) prend (?:un coup|des coups)\b|\bje (?:force|oblige) (?:un peu )?(?:ma|mon) \w+ quand (?:elle|il) n'a pas envie|\bmon droit d'epou|\bi (?:slapped|hit|punched|choked|pushed|shoved|beat) (?:my|her|him)\b|\bmwen (?:ka |te )?bat\b/,
   ],
   [
     'menace',
@@ -455,19 +457,19 @@ const MORE: Array<[DangerCategory, RegExp]> = [
   ],
   [
     'controle',
-    /\b(?:me donne\w*|me montre\w*|exige\w*|je veux) (?:ses|tes|les) (?:mots? de passe|codes?)|\b(?:garde|gere|tiens)\w* (?:la|sa) carte (?:bancaire )?de (?:ma|mon) |\bsans (?:me prevenir et sans )?(?:mon|ma) (?:accord|permission|autorisation)\b|\b(?:appli|application|traceur|gps|localisation)[^.]{0,30}savoir ou (?:est|se trouve|elle est|il est)|\bje les choisis moi-meme\b|\b(?:doit|devra|devrait) me demander (?:avant|la permission|l'autorisation|mon accord)|\bi (?:check|go through|read|monitor) (?:her|his) (?:phone|messages|texts)|\bne (?:verra|reverra|sortira|travaillera) plus (?:ses|ces|avec ses) (?:amie?s|copines|proches|parents|famille)|\b(?:elle|il) ne (?:verra|reverra) plus ses (?:amie?s|copines|proches)|\bcoupe\w* (?:internet|le telephone|le wifi|la connexion) a\b|\b(?:verifi|fouill|regard|lis|consult|control|surveill)\w* (?:le|les|la) (?:whats?app|telephone|portable|messages|sms|facebook|messenger|insta\w*) (?:de|d') ?(?:ma|mon) (?:femme|epouse|copine|copain|mari|partenaire|cherie?|compagne|compagnon|conjoint\w*)|\b(?:il|elle|mon \w+|ma \w+) (?:me )?(?:fouill|lis|lisait|epluch)\w* (?:mon|mes) (?:whats?app|facebook|messenger|insta\w*|sms|messages|telephone|portable|sac|affaires)|\b(?:il|elle|mon \w+|ma \w+) me suiv\w* (?:jusqu|partout|au travail|au boulot)|\b(?:il|elle|mon (?:ex|mari|copain|conjoint|compagnon|homme|fiance|cheri)\S*|ma (?:femme|copine|compagne|conjointe|fiancee|cherie)) (?:me |m')interdis\w* de (?:voir|sortir|travailler|parler|telephoner)/,
+    /\b(?:me donne\w*|me montre\w*|exige\w*|je veux) (?:ses|tes|les) (?:mots? de passe|codes?)|\b(?:garde|gere|tiens)\w* (?:la|sa) carte (?:bancaire )?de (?:ma|mon) (?:femme|epouse|mari|copine|copain|partenaire|compagne|compagnon|conjoint\w*)\b|\bsans (?:me prevenir et sans )?(?:mon|ma) (?:accord|permission|autorisation)\b|\b(?:appli|application|traceur|gps|localisation)[^.]{0,30}savoir ou (?:est|se trouve|elle est|il est)|\bje les choisis moi-meme\b|\b(?:doit|devra|devrait) me demander (?:avant|la permission|l'autorisation|mon accord)|\bi (?:check|go through|read|monitor) (?:her|his) (?:phone|messages|texts)|\bne (?:verra|reverra|sortira|travaillera) plus (?:ses|ces|avec ses) (?:amie?s|copines|proches|parents|famille)|\b(?:elle|il) ne (?:verra|reverra) plus ses (?:amie?s|copines|proches)|\bcoupe\w* (?:internet|le telephone|le wifi|la connexion) a\b|\b(?:verifi|fouill|regard|lis|consult|control|surveill)\w* (?:le|les|la) (?:whats?app|telephone|portable|messages|sms|facebook|messenger|insta\w*) (?:de|d') ?(?:ma|mon) (?:femme|epouse|copine|copain|mari|partenaire|cherie?|compagne|compagnon|conjoint\w*)|\b(?:il|elle|mon \w+|ma \w+) (?:me )?(?:fouill|lis|lisait|epluch)\w* (?:mon|mes) (?:whats?app|facebook|messenger|insta\w*|sms|messages|telephone|portable|sac|affaires)|\b(?:il|elle|mon \w+|ma \w+) me suiv\w* (?:jusqu|partout|au travail|au boulot)|\b(?:il|elle|mon (?:ex|mari|copain|conjoint|compagnon|homme|fiance|cheri)\S*|ma (?:femme|copine|compagne|conjointe|fiancee|cherie)) (?:me |m')interdis\w* de (?:voir|sortir|travailler|parler|telephoner)|\bje devais (?:lui|leur) (?:rendre compte|demander la permission|tout justifier)/,
   ],
   [
     'detresse',
-    /\bj?veu[xt]? (?:mourir|crever|disparaitre)\b(?! (?:vieux|vieille|de (?:rire|faim|froid|chaud|honte|fatigue)|a cote|aupres|dans|ensemble|avec|heureu))|(?:plus|pas) la force de (?:continuer|vivre)|continuer a vivre|sauter (?:du|d'un|par la) (?:pont|immeuble|balcon|fenetre)|\b(?:une|ma|deja fait une) tentative\b|(?:vois|voir) plus l'interet de (?:vivre|me lever|continuer)|vie ne vaut (?:pas|plus) la peine|\bend(?:ing)? it all\b|\bdon'?t see the point\b|fatige lavi|\bpa vle rete\b|soulag\w* si je (?:partais|n'etais plus)/,
+    /\bj?veu[xt]? (?:mourir|crever|disparaitre)\b(?! (?:vieux|vieille|de (?:rire|faim|froid|chaud|honte|fatigue)|a cote|aupres|dans|ensemble|avec|heureu))|(?:plus|pas) la force de (?:continuer|vivre)|(?:a quoi bon|pourquoi|raison de) continuer a vivre|sauter (?:du|d'un|par la) (?:pont|immeuble|balcon|fenetre)|tentative de suicide|\bj'ai (?:deja )?fait une tentative\b(?! de (?!suicide))|(?:vois|voir) plus l'interet de (?:vivre|me lever|continuer)|vie ne vaut (?:pas|plus) la peine|\bend(?:ing)? it all\b|\bdon'?t see the point\b|fatige lavi|\bpa vle rete\b|soulag\w* si je (?:partais|n'etais plus)/,
   ],
   [
     'argent',
-    /\b(?:tu|vous) (?:pourrais|pourriez|peux|pouvez) m'aider (?:pour|a payer) (?:mon|ma|mes|le|la|les) (?:loyer|facture|frais|billet|visa|ecolage|scolarite|hopital|medicaments|ordonnance)|(?<!(?:j'|je |tu |il |on |nous |vous |elle ))\b(?:envoie|envoi|envoyez|mets|met|fais|faites|vire|virez)\b[^.?!]{0,12}\d+ ?(?:\d{3}|k|mil|mille|euros?|€|f\b|fcfa|dollars?|\$)|\bsi tu m'avances?\b|\bm'avance\w* (?:les|des|un peu|de l')|\b(?:wire|lend) me\b|\bcan you (?:wire|lend)\b|\bfais (?:un|le) (?:transfert|depot|virement)\b|\bil me manque \d|\bprouve[- ]le avec\b|\bpas de quoi payer\b[^.?!]{0,40}|\bmets[- ]moi \d|\bsur mon (?:momo|wave|orange money|mtn|moov)\b/,
+    /\b(?:tu|vous) (?:pourrais|pourriez|peux|pouvez) m'aider (?:pour|a payer) (?:mon|ma|mes|le|la|les) (?:loyer|facture|frais|billet|visa|ecolage|scolarite|hopital|medicaments|ordonnance)|(?<!(?:j'|je |tu |il |on |nous |vous |elle ))\b(?:envoie|envoi|envoyez|mets|fais|faites|vire|virez)\b(?![^.?!]{0,30}de cote)[^.?!]{0,12}\d+ ?(?:\d{3}|k|mil|mille|euros?|€|f\b|fcfa|dollars?|\$)|\bsi tu m'avances?\b|\bm'avance\w* (?:les|des|un peu|de l')|\b(?:wire|lend) me\b|\bcan you (?:wire|lend)\b|(?<!je )\bfais (?:un|le) (?:transfert|depot|virement)\b|\bil me manque \d|\bprouve[- ]le avec\b|\bpas de quoi payer\b[^.?!]{0,40}|(?<!je )\bmets[- ]moi \d|\bsur mon (?:momo|wave|orange money|mtn|moov)\b/,
   ],
   [
     'mineur',
-    /\b(?:avoir|avoir eu|fete\w*|feter|viens d'avoir) (?:mes )?(?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ans\b|\bi'?m in (?:high school|middle school|junior high)\b|\bma majorite dans\b|\b(?:en )?(?:3e|4e|5e|6e|troisieme|quatrieme|seconde|premiere|terminale) au (?:college|lycee)\b/,
+    /\b(?:je fete|je vais feter|viens d'avoir|vais avoir|j'aurai(?: bientot)?|(?:viens de|je vais) (?:feter|souffler)) (?:mes )?(?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) (?:ans|bougies)\b|\b(?:fete|souffle) mes (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) (?:ans|bougies)[^.]{0,20}(?:le mois dernier|la semaine derniere|hier|recemment|cette annee|ce week-end|il y a (?:peu|\w+ (?:jours|semaines|mois)))|\bavant mes (?:18|dix-huit) ans[^.]{0,30}\bdans (?:\d|un|deux|trois) ans?\b|\b(?:dans|d'ici) (?:\w+ )?ans? j'aurai (?:ma majorite|18 ans|dix-huit ans)|\bma classe de (?:6e|5e|4e|3e|sixieme|cinquieme|quatrieme|troisieme|seconde|premiere|terminale)\b|\bi'?m (?:a \w+ )?in (?:high school|middle school|junior high)\b|\bje suis encore mineure?\b|\bj'?ai (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ?(?:piges|balais)\b|\btoo young[^.]{0,30}\bat 1[0-7]\b|\bmwen gen 1[0-7] an\b|\bi'?m in (?:high school|middle school|junior high)\b|\bma majorite dans\b|(?:^|[.!?]\s*|je suis |jsuis |j'suis )(?:en )?(?:3e|4e|5e|6e|troisieme|quatrieme|seconde|premiere|terminale) au (?:college|lycee)\b/,
   ],
 ];
 
@@ -477,14 +479,14 @@ const MORE: Array<[DangerCategory, RegExp]> = [
  * convient ») : un modèle de couple choisi n'est pas un contrôle.
  */
 const CONSENTED =
-  /[^.;!?]*(?:si (?:il|elle) (?:le )?veut|je n'ai rien a cacher|ca me (?:convient|va)(?! pas)|d'un commun accord|on l'a decide ensemble|c'est notre accord|par choix)[^.;!?]*/g;
+  /[^.;!?]*(?:si (?:il|elle) (?:le )?veut|je n'ai rien a cacher|ca me (?:convient|va)(?! pas)|d'un commun accord|on l'a decide ensemble|c'est notre accord|par choix|et je (?:ferai|fais) (?:pareil|de meme|la meme chose)|moi aussi|mutuellement|l'un l'autre|decider a deux)[^.;!?]*/g;
 
 /** L'accord n'efface rien si celui qui écrit exerce le contrôle ou s'y dit contraint. */
 const WRITER_IS_CONTROLLER =
   /\bje (?:surveill|fouill|lis|lit|verifi|control|garde|regard|confisqu|consult)\w*|\bsans (?:ma|mon) (?:permission|autorisation|accord)\b|\bje devais\b|\bj'etais (?:obligee?|forcee?)\b|\bmeme si (?:elle|il) n'aime pas\b/;
 /** Menaces avec condition (« si tu me quittes, je te tue ») : sur le texte entier. */
 const THREAT =
-  /(?:ferai|ferais) de (?:sa|ta|leur) vie un enfer|\bfinir\w* (?:a la morgue|au cimetiere|six pieds sous terre)|\bje (?:lui|te|leur) casser\w* (?:les jambes|la gueule|les dents)|\bwon'?t live to\b|\bsaura qui je suis\b|\bqu'(?:elle|il) (?:essaie|essaye|ose) (?:de |d')(?:me quitter|partir|me tromper|me mentir)[^.]{0,25}\b(?:va|vas|verra) (?:voir|regretter|comprendre)\b|\bje (?:te|vous|le|la|l') ?(?:tue|tuerai|tuerais)\b|\bje vais (?:te |vous |le |la |l')?tuer|(?:quitt|\bpar(?:s|t|tir|tais)\b|tromp|\bment|respect|desobei)[^.?!]{0,60}\b(?:va|vas|vont) (?:le |me le |me )regretter\b|\b(?:va|vas|vont) (?:le |me le |me )regretter\b[^.?!]{0,60}(?:quitt|\bpar(?:s|t|tir|tais)\b|tromp|\bment|respect|desobei)|\b(?:va|vas|vont) me le payer\b/;
+  /(?:ferai|ferais) de (?:sa|ta|leur) vie un enfer|\bfinir\w* (?:a la morgue|au cimetiere|six pieds sous terre)|\bje (?:lui|te|leur) casser\w* (?:les jambes|la gueule|les dents)|\bwon'?t live to\b|\bsaura qui je suis\b|\bqu'(?:elle|il) (?:essaie|essaye|ose) (?:de |d')(?:me quitter|partir|me tromper|me mentir)[^.]{0,25}\b(?:va|vas|verra) (?:voir|regretter|comprendre)\b|\bje (?:te|vous|le|la|l') ?(?:tue|tuerai|tuerais)\b|\bje vais (?:te |vous |le |la |l')?tuer|(?:quitt|\bpar(?:s|t|tir|tais)\b|tromp|\bment|respect|desobei)[^.?!]{0,60}\b(?:tu vas|elle va|il va|vous allez) (?:le |me le |me )regretter\b|\b(?:tu vas|elle va|il va|vous allez) (?:le |me le |me )regretter\b[^.?!]{0,60}(?:quitt|\bpar(?:s|t|tir|tais)\b|tromp|\bment|respect|desobei)|\b(?:va|vas|vont) me le payer\b/;
 
 /**
  * Signaux de danger dans une réponse libre : violence subie, exercée ou
@@ -518,7 +520,13 @@ export function dangerCategories(text: string): DangerCategory[] {
   )
     found.splice(found.indexOf('violence'), 1);
   if (THREAT.test(p) && !found.includes('menace')) found.push('menace');
-  return sufferedAsVictim(p, found);
+  // « Plus la force de me battre » : une détresse, pas un coup reçu.
+  if (/(?:plus|pas) la force de (?:me battre|lutter)/.test(p)) {
+    if (!found.includes('detresse')) found.push('detresse');
+    if (!/\b(?:il|elle|mon \w+|ma \w+) (?:me|m')/.test(p))
+      return found.filter((c) => c !== 'violence_subie');
+  }
+  return sufferedAsVictim(p, facts, found);
 }
 
 /**
@@ -529,28 +537,34 @@ export function dangerCategories(text: string): DangerCategory[] {
  * exigence de celui qui écrit (« ma femme devra me demander… »).
  */
 const SUFFERED =
-  /\b(?:il|elle|on|mon ex|(?:mon|ma) (?:(?:premier|premiere|ancien\w*|dernier|derniere|defunt|feu|ex)[- ]?)?(?:ex-?\w*|mari|epoux|copain|compagnon|conjoint|fiance|homme|partenaire|gars|cheri|pere|frere|grand frere|oncle|patron|beau-pere|femme|copine|compagne|fiancee|mere|belle-mere|famille|ex|soeur)|le pere de (?:mes|ma|mon) \w+)\b[^.;!?]{0,60}?\b(?:me|m'|mon|ma|mes|moi)\b|\b(?:il|elle|mon \w+|ma \w+) (?:a |avait )?(?:control|surveill|espionn)\w*(?:ait|aient|e|ee)\b|\b(?:threatened|controlled|tracked|checked|took) (?:me|my)\b/;
+  /\b(?:il|elle|on|mon ex|(?:mon|ma) (?:(?:premier|premiere|ancien\w*|dernier|derniere|defunt|feu|ex)[- ]?)?(?:ex-?\w*|mari|epoux|copain|compagnon|conjoint|fiance|homme|partenaire|gars|cheri|pere|frere|grand frere|oncle|patron|beau-pere|femme|copine|compagne|fiancee|mere|belle-mere|famille|ex|soeur)|le pere de (?:mes|ma|mon) \w+)\b[^.;!?]{0,60}?\b(?:me|m'|mon|ma|mes|moi)\b|\b(?:il|elle|mon \w+|ma \w+) (?:a |avait )?(?:control|surveill|espionn)\w*(?:ait|aient|e|ee)\b|\b(?:threatened|controlled|tracked|checked|took) (?:me|my)\b|\bavec (?:lui|elle)\b[^.;!?]{0,40}\b(?:impossible|interdit|pas le droit|je devais|je ne pouvais)|\bje devais (?:lui|leur) (?:rendre compte|demander|tout justifier)|\bsans (?:sa|son) (?:permission|autorisation|accord)\b/;
 const ADDRESSED = /\b(?:tu|te|t'|ton|ta|tes|toi|vous|votre|vos|you|your)\b/;
 /** Formules de discours (« vous comprenez », « je vous le dis ») : pas une adresse à l'autre. */
 const DISCOURSE =
   /\b(?:vous|tu) (?:comprenez|comprends|voyez|vois|savez|sais)\b|\bje (?:vous|te) (?:le )?(?:dis|dirai|jure)\b/g;
 const IMPOSES =
-  /\b(?:je|j')(?: (?:la|le|lui|les)|\s?l')? ?(?:ai |avais )?(?:tue|tuerai|tuerais|frapp|gifl|corrig|surveill|fouill|controle|enferm|interdi|retrouverai|empecherai|ferai payer|menac(?!\w* (?:de |d')(?:porter plainte|appeler|partir|divorcer|le quitter|la quitter|m'en aller|tout dire)))\w*|\bmoi qui (?:menac|frapp|surveill|control)\w*|\b(?:devra|devront|doit|devrait|il faut(?! que je| qu'on m)|il faudra|faudrait|j'exige|je veux qu|je voudrais qu|n'aura pas le droit|n'auront pas le droit)\b|\b(?:va|vont) (?:le |me le )?regretter\b/;
+  /\b(?:je|j')(?: (?:la|le|lui|les)|\s?l')? ?(?:ai |avais )?(?:tue|tuerai|tuerais|frapp|gifl|corrig|surveill|fouill|controle|enferm|interdi|retrouverai|empecherai|ferai payer|menac(?!\w* (?:de |d')(?:porter plainte|appeler|partir|divorcer|le quitter|la quitter|m'en aller|tout dire)))\w*|\bmoi qui (?:menac|frapp|surveill|control)\w*|\b(?:devra|devront|doit|devrait|il faut(?! que je| qu'on m)|il faudra|faudrait|j'exige|je veux qu|je voudrais qu|n'aura pas le droit|n'auront pas le droit)\b|\b(?:tu vas|elle va|il va|vous allez) (?:le |me le )?regretter\b|\bje lui ai (?:deja )?(?:colle|mis|donne|file|foutu|balance|envoye) une\b/;
 /** Paroles citées (« … », " … ") : celles de l'agresseur, pas de celui qui écrit. */
 const QUOTED = /«[^»]*»|"[^"]*"|“[^”]*”/g;
+/** Discours rapporté sans guillemets (« il me hurlait dessus en disant tu vas voir… »). */
+const REPORTED =
+  /(?:en (?:disant|criant|hurlant|repetant)|(?:il|elle|on) me (?:disait|criait|hurlait|repetait|lancait)|me (?:disait|criait|hurlait|repetait)(?: que)?|(?:de dire|de raconter|d'aller dire)[^.;!?]*?\bque\b)[^.;!?]*/g;
 /** Celui qui écrit exerce le contrôle (« sans ma permission », « je garde son passeport »). */
 const WRITER_CONTROLS =
-  /\bje (?:surveill|fouill|lis|lit|verifi|control|regard|consult)\w* (?:le|la|les|son|sa|ses|tous|toutes)\b|\bsans (?:ma|mon) (?:permission|autorisation|accord)\b|\bje (?:garde|confisque|prends|cache|bloque)\w* (?:son|sa|ses) (?:passeport|papiers|carte|telephone|portable|salaire|argent)|\bc'est moi qui (?:gere|decide|controle)|\b(?:ne )?(?:reverra|reverras) (?:plus |jamais )+(?:ses|tes|les) enfants\b|\b(?:me donnera|me donnerait|devra me donner|me montrera) (?:ses|son|sa)\b|\bje les choisis\b|\bje (?:prefere )?(?:tout )?bruler?\b|\bje (?:ferai|ferais)\b|\bje (?:la|le|te) retrouverai|\bne partira (?:jamais|pas) avec (?:mes|nos) enfants|\b(?:elle|il|tu) (?:va|vas|verra|verras) voir\b/;
+  /\bje (?:surveill|fouill|lis|lit|verifi|control|regard|consult)\w* (?:le|la|les|son|sa|ses|tous|toutes)\b|\bsans (?:ma|mon) (?:permission|autorisation|accord)\b|\bje (?:garde|confisque|prends|cache|bloque)\w* (?:son|sa|ses) (?:passeport|papiers|carte|telephone|portable|salaire|argent)|\bc'est moi qui (?:gere|decide|controle)|\b(?:ne )?(?:re)?(?:verra|verras) (?:plus |jamais )+(?:ses|tes|les) enfants\b|\bje lui ai (?:deja )?(?:colle|mis|donne|file|foutu|balance) une\b|\b(?:me donnera|me donnerait|devra me donner|me montrera) (?:ses|son|sa)\b|\bje les choisis\b|\bje (?:prefere )?(?:tout )?bruler?\b|\bje (?:ferai|ferais)\b|\bje (?:la|le|te) retrouverai|\bne partira (?:jamais|pas) avec (?:mes|nos) enfants|\b(?:elle|il|tu) (?:va|vas|verra|verras) voir\b/;
 function sufferedAsVictim(
   p: string,
+  facts: string,
   found: DangerCategory[],
 ): DangerCategory[] {
+  // Ce que dit celui qui écrit, sans les paroles qu'il rapporte.
+  const own = p.replace(QUOTED, ' ').replace(REPORTED, ' ');
   if (
     !found.some((c) => c === 'menace' || c === 'controle') ||
-    !SUFFERED.test(p) ||
-    ADDRESSED.test(p.replace(DISCOURSE, ' ').replace(QUOTED, ' ')) ||
-    IMPOSES.test(p.replace(QUOTED, ' ')) ||
-    WRITER_CONTROLS.test(p)
+    !SUFFERED.test(facts) ||
+    ADDRESSED.test(own.replace(DISCOURSE, ' ')) ||
+    IMPOSES.test(own) ||
+    WRITER_CONTROLS.test(own)
   )
     return found;
   return [
@@ -799,7 +813,7 @@ const EVALUATION =
 
 /** Émotions, peurs et besoins : jamais attribués s'ils n'ont pas été écrits. */
 const FEELING =
-  /(?<!\p{L})(?:peurs?|crain\p{L}*|craign\p{L}*|angoiss\p{L}*|inqui[eèé]t\p{L}*|bless[ée]\p{L}*|souffr\p{L}*|colère|trist\p{L}*|honte|culpabil\p{L}*|méfian\p{L}*|rassur\p{L}*|insécur\p{L}*|anxi\p{L}*|besoins? d['’]être|se protég\p{L}*|redout\p{L}*|vulnérab\p{L}*|appréhens\p{L}*|nostalg\p{L}*|amertume|amer|amère|rancœur|rancoeur|rancune\p{L}*|ses distances|distant\p{L}*)(?!\p{L})/giu;
+  /(?<!\p{L})(?:peurs?|crain\p{L}*|craign\p{L}*|angoiss\p{L}*|inqui[eèé]t\p{L}*|bless[ée]\p{L}*|souffr\p{L}*|colère|trist\p{L}*|honte|culpabil\p{L}*|méfian\p{L}*|rassur\p{L}*|insécur\p{L}*|anxi\p{L}*|besoins? d['’]être|se protég\p{L}*|redout\p{L}*|vulnérab\p{L}*|appréhens\p{L}*|nostalg\p{L}*|manqué d['’]attention|amertume|amer|amère|rancœur|rancoeur|rancune\p{L}*|ses distances|distant\p{L}*)(?!\p{L})/giu;
 
 /** Attitude prêtée à un prénom (« Inès semble… », « chez Karim… ») : refusée. */
 function attributesAttitude(text: string, names: [string, string]): boolean {
@@ -817,7 +831,7 @@ function attributesAttitude(text: string, names: [string, string]): boolean {
 
 /** Étiquettes de caractère ou jugements : jamais dans une lecture. */
 const LABEL =
-  /(?<!\p{L})(?:jalou\p{L}*|possessi\p{L}*|immature\p{L}*|égoïste\p{L}*|froid\p{L}*|détaché\p{L}*|contrôlant\p{L}*|dominant\p{L}*|soumis\p{L}*|naïf|naïve|rigide\p{L}*|exigeant\p{L}*|tempérament\p{L}*|caractères? (?:opposés|différents|forts?|difficiles?)|fuyant\p{L}*|ce qui (?:la|le|les|vous) rend\p{L}*|(?:a|ont|avez) (?:raison|tort)|ne (?:semble|para[iî]t)\p{L}* pas (?:prêt|prête|capable))(?!\p{L})/iu;
+  /(?<!\p{L})(?:jalou\p{L}*|possessi\p{L}*|immature\p{L}*|égoïste\p{L}*|froid\p{L}*|détaché\p{L}*|contrôlant\p{L}*|dominant\p{L}*|soumis\p{L}*|naïf|naïve|rigide\p{L}*|exigeant\p{L}*|impatient\p{L}*|trait typique|typiques? des|stratégie de fuite|classiques?|tempérament\p{L}*|caractères? (?:opposés|différents|forts?|difficiles?)|fuyant\p{L}*|ce qui (?:la|le|les|vous) rend\p{L}*|(?:a|ont|avez) (?:raison|tort)|ne (?:semble|para[iî]t)\p{L}* pas (?:prêt|prête|capable))(?!\p{L})/iu;
 
 /**
  * Émotion, peur ou besoin prêtés dans une lecture, à « l'un de vous », à
@@ -876,24 +890,52 @@ function attributesUnwrittenFeeling(
 const REPORTING =
   /(?<!\p{L})(?:écri\p{L}*|di(?:t|tes|sent)|répond\p{L}*|décri\p{L}*|évoqu\p{L}*|parl\p{L}*|mentionn\p{L}*|cit(?:e|ez|ent)|emplo[iy]\p{L}*|utilis\p{L}*|nomm\p{L}*|précis\p{L}*|indiqu\p{L}*|exprim\p{L}*|raconte\p{L}*)(?!\p{L})|(?<!\p{L})associ\p{L}* [^.;:]{1,40} (?:à|au|aux) |(?<!\p{L})(?:pos(?:e|ez|ent)|voi(?:t|ent|yez)|gard\p{L}*|associ\p{L}*|choisi\p{L}*|insist\p{L}*|souhait\p{L}*)(?= (?:que|qu['’]|«|:|le mot|les mots|de |d['’]|vouloir|ne pas|n['’]|sur |comme ))/iu;
 /** Sujets qui exigent un verbe de rapport. */
-const READING_SUBJECT = String.raw`l['’]une?(?: de vous| d['’]entre vous)?|l['’]autre|vous deux|(?:tous|toutes) (?:les )?deux|chacun(?:e)? de vous`;
+const READING_SUBJECT = String.raw`(?<!(?:pour|de|par) )l['’]une?(?: de vous| d['’]entre vous)?|(?<!(?:pour|de|d['’]un côté|par) )l['’]autre|vous deux|(?:tous|toutes) (?:les )?deux|chacun(?:e)? de vous`;
 /** Sujet non négociable : aucune proposition d'arrangement, dans aucune phrase. */
 const NN_TOPIC =
-  /(?<!\p{L})(?:foi|relig\p{L}*|conver\p{L}*|pri(?:e|ère)s?|enfants?|polygam\p{L}*|coépouse\p{L}*|pays|lieu de vie|déménag\p{L}*|ville|fidélité|intimité|alcool|halal|casher)(?!\p{L})/iu;
+  /(?<!\p{L})(?:foi|relig\p{L}*|conver\p{L}*|pri(?:e|ère)s?|pri(?:er|ons|ez|ent|ait)|pratiqu\p{L}*|croire|croyan\p{L}*|cérémonie\p{L}*|enfants?|polygam\p{L}*|coépouse\p{L}*|pays|lieu de vie|déménag\p{L}*|ville|fidélité|intimité|alcool|halal|casher)(?!\p{L})/iu;
 /** Proposition d'arrangement sans équivoque : refusée même dans une phrase qui rapporte. */
 const PROPOSAL =
-  /(?<!\p{L})(?:solution\p{L}*|altern\p{L}*|essai|du sien|coexist\p{L}*|laisser de côté|à mi-chemin|terrain\p{L}*|arrangement\p{L}*|compromis|chacun (?:prie|pratique|vit|reste) de son côté|partager l['’]année|chacun garderait|garder (?:sa|leur|chacun sa) pratique|pour commencer|un seul enfant|entre les deux|à vous de)(?!\p{L})/iu;
+  /(?<!\p{L})(?:solution\p{L}*|altern\p{L}*|essai|du sien|coexist\p{L}*|laisser de côté|à mi-chemin|terrain\p{L}*|arrangement\p{L}*|compromis|chacun (?:prie|pratique|vit|reste) de son côté|partager l['’]année|chacun garderait|garder (?:sa|leur|chacun sa) pratique|pour commencer|un seul enfant|entre les deux|à vous de|à moitié|un peu des deux|une fois par semaine|ferai\p{L}* (?:peut-être )?le lien)(?!\p{L})/iu;
 /** Ouverture à une évolution : refusée seulement si la phrase ne rapporte pas une réponse. */
 const SOFT_PROPOSAL =
   /(?<!\p{L})(?:pourr\p{L}*|évolu\p{L}*|ouverture|progressi\p{L}*|possible|rapprochement)(?!\p{L})/iu;
 /** Violence, insultes, menaces ou contrôle présentés comme un sujet à discuter ou à nuancer. */
 const VIOLENCE_NEGOTIABLE =
-  /(?<!\p{L})(?:violen|gifl|claque|frapp|coups?(?!\p{L})|insult|menac|contrôl|surveill|lever la main|lève la main|cris?(?!\p{L})|crier|hurl)\p{L}*[^.]{0,80}(?:à discuter|à nuancer|à négocier|négociable|à aménager|à apprivoiser|un terrain|trouver un équilibre|en parler ensemble|parlez-en|chacun peut|chacun a sa|tolérance|à voir ensemble|cas par cas|à clarifier|selon le contexte|fixer les règles|peut arriver|des endroits différents)|(?<!\p{L})(?:discuter|nuancer|négocier|aménager)\p{L}*[^.]{0,40}(?:violen|gifl|frapp|coups?(?!\p{L})|insult|menac|contrôl)/iu;
+  /(?<!\p{L})(?:violen|gifl|claque|frapp|coups?(?!\p{L})|insult|menac|contrôl|surveill|lever la main|lève la main|cris?(?!\p{L})|crier|hurl|gestes? brusques?|téléphone de l['’]autre|localisation|sorties de l['’]autre)\p{L}*[^.]{0,80}(?:se négoci\p{L}*|à discuter|à nuancer|à négocier|négociable|à aménager|à apprivoiser|un terrain|trouver un équilibre|en parler ensemble|parlez-en|chacun peut|chacun a sa|tolérance|à voir ensemble|cas par cas|à clarifier|selon le contexte|fixer les règles|peut arriver|des endroits différents)|(?<!\p{L})(?:discuter|nuancer|négocier|aménager)\p{L}*[^.]{0,40}(?:violen|gifl|frapp|coups?(?!\p{L})|insult|menac|contrôl)/iu;
+/**
+ * Jamais dans une lecture : l'entretien (ce que l'un y a répondu), un conseil
+ * de consulter, un lien ou un domaine.
+ */
+const READING_FORBIDDEN =
+  /entretien|thérapeute|psychologue|psy(?!\p{L})|conseill\p{L}* conjuga\p{L}*|médiat\p{L}*|consulter|(?<!\p{L})[a-z0-9-]+\.(?:com|fr|net|org|io|app|co|ci|sn|cm|be|ch|ca)(?!\p{L})/iu;
+/** Morale : ce qu'il faudrait faire ou ce que l'on mérite. */
+const READING_MORALE =
+  /il serait (?:sage|bon|préférable|utile|souhaitable|mieux)|il faudrait|vous devriez|mérit\p{L}*|il est (?:important|essentiel|normal|indispensable) de/iu;
+/**
+ * Un prénom, « l'un » ou « l'autre », suivi d'un comportement affirmé
+ * (« Karim fuit le conflit », « Awa se ferme ») : un jugement, même si la
+ * phrase cite plus loin la réponse.
+ */
+function actsWithoutReporting(text: string, names: [string, string]): boolean {
+  const esc = (n: string) =>
+    n.trim().replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+  const subjects = [
+    ...names.filter((n) => n.trim()).map(esc),
+    String.raw`l['’]une?(?: de vous)?`,
+    String.raw`(?<!(?:pour|de|d['’]un côté|par) )l['’]autre`,
+  ].join('|');
+  return new RegExp(
+    String.raw`(?<!\p{L})(?:${subjects})(?:\s*\(\d\))?\s+(?:ne |n['’])?(?:fuit|évite|se ferme|s['’]emporte|s['’]énerve|domine|se tait|se soumet|manque|est pas|cède|impose|exige|veut tout|contrôle|garde le contrôle|choisit (?:toujours|souvent|la fuite)|refuse de|n['’]est pas)(?!\p{L})`,
+    'iu',
+  ).test(text);
+}
+
 /** Proposition d'arrangement, quel que soit le sujet (« un montant entre les deux »). */
 const READING_PROPOSAL =
   /trouver un (?:montant|accord|chiffre|terrain)|(?:un montant|une solution|un chiffre|une date|une ville) entre les deux|à vous de (?:partager|trouver|choisir|voir|décider|fixer)/iu;
 const MORE_EVALUATION =
-  /solide|atout|faits? pour vous|bonnes? chances?|obstacle|frein|compliquer|annonce\p{L}* (?:des|de|une|un)|sur la même page|vaut la peine|mieux vaut|si vous voulez continuer|décider si|dessine\p{L}* (?:un|une)|pourrai(?:t|ent) devenir|risque(?:nt)? de|auspices|augure|présage|promet(?:teu\p{L}*|tent)?(?!\p{L})|base solide|laisse(?:nt)? penser|sans doute|bien de la suite|proches? sur l['’]essentiel|point de friction|pomme de discorde|réfléchissez bien|avant de (?:continuer|poursuivre|aller plus loin)|à vous de voir|jusqu['’]où (?:chacun|vous|l['’]un)/iu;
+  /une force|un atout|une richesse|(?:reviendra|changera|évoluera) (?:peut-être |sûrement |sans doute )?(?:avec|un jour|une fois)|avec le temps|avec le mariage|une fois mariés?|tout pour réussir|il ne reste qu['’]à|lancez-vous|n['’]attendez plus|sûrement|certainement|solide|atout|faits? pour vous|bonnes? chances?|obstacle|frein|compliquer|annonce\p{L}* (?:des|de|une|un)|sur la même page|vaut la peine|mieux vaut|si vous voulez continuer|décider si|dessine\p{L}* (?:un|une)|pourrai(?:t|ent) devenir|risque(?:nt)? de|auspices|augure|présage|promet(?:teu\p{L}*|tent)?(?!\p{L})|base solide|laisse(?:nt)? penser|sans doute|bien de la suite|proches? sur l['’]essentiel|point de friction|pomme de discorde|réfléchissez bien|avant de (?:continuer|poursuivre|aller plus loin)|à vous de voir|jusqu['’]où (?:chacun|vous|l['’]un)/iu;
 
 /**
  * Une phrase de la lecture affirme-t-elle au lieu de rapporter (sujet sans
@@ -943,6 +985,10 @@ export function readingText(
   return text &&
     !VIOLENCE_NEGOTIABLE.test(text) &&
     !READING_PROPOSAL.test(text) &&
+    !READING_FORBIDDEN.test(text) &&
+    !unwrittenMatch(READING_MORALE, text, written, reports) &&
+    !actsWithoutReporting(text, names) &&
+    !actsWithoutReporting(text, shown) &&
     !unwrittenMatch(EVALUATION, text, written, reports) &&
     !unwrittenMatch(MORE_EVALUATION, text, written, reports) &&
     !assertsInsteadOfReporting(text, names) &&
@@ -1145,7 +1191,7 @@ function openQuestion(
 }
 
 /** Thèmes qu'un membre a gardés pour la rencontre. */
-function reservedThemes(items: AnsweredItem[]): string[] {
+export function reservedThemes(items: AnsweredItem[]): string[] {
   const themes = items
     .filter((it) => it.answers.some(isReservedAnswer))
     .map((it) => it.theme);

@@ -27,14 +27,14 @@ const BANNED_SOURCES = [
   String.raw`salopes?|connards?|connasses?`,
   String.raw`encul[eé]s?|ntm|nique[rz]?`,
   String.raw`fdp|fils\s*de\s*pute`,
-  String.raw`ta\s*gueule|\btg\b|ferme\s*la`,
+  String.raw`ta\s*gueule|\btg\b|ferme\s*la(?!\s+(?:porte|fenetre|boutique|lumiere|radio|tele|voiture|maison|marche))`,
   String.raw`bites?|couilles?|couillons?`,
   String.raw`chier|chiasse|pétasse|pouffiasse`,
-  String.raw`branle\w*|foutre|dégage|crève`,
+  String.raw`branle\w*|foutre|(?<!(?:se|s|ca|qui)\s)d[ée]gage(?![a-z])(?!\s+(?:de|d|une|un|la|le|les|du|des)\b)|cr[eè]ve(?!\s+d\W*envie|\s+de\s+(?:faim|chaud|froid|fatigue|rire))`,
   String.raw`salauds?|batards?`,
   String.raw`tafiole`,
   String.raw`porn\w*|sexe\s*cam|nudes?|nude|onlyfans`,
-  String.raw`baise[rz]?|plan\s*cul|cul\s*rapide`,
+  String.raw`(?<!(?:un|le|ce|du|mon|ton|son|des|les|premier|petit|gros|doux)\s)baise[rz]?|plan\s*cul|cul\s*rapide`,
   String.raw`pédé|pédale|tapette`,
 ];
 
@@ -96,7 +96,7 @@ const COORDINATES =
   /(?:\+|\b00)\d{2,3}[\s.-]?\d[\d\s.-]{6,}\d|\b0\d(?:[\s.-]?\d{2}){4}\b|\bwa\.me\b|\bt\.me\b|\S+@\S+\.\w{2,}|(?<![\w.])@[a-z0-9_.]{3,}/i;
 /** Invitation à se retrouver sur un réseau (« ajoute-moi sur Snap », « mon insta : … »). */
 const PLATFORM_INVITE =
-  /(?:ajoute|add|[ée]cri[st]|contacte|retrouve|rejoins|suis[- ]moi|follow|dm|mp|inbox|appelle|cherche)\S*[^.!?]{0,20}\b(?:whats?app|snap(?:chat)?|insta(?:gram)?|telegram|facebook|fb|messenger|tiktok)\b|\b(?:mon|ma|my) (?:snap(?:chat)?|insta(?:gram)?|whats?app|telegram|tiktok|facebook|fb)\b\s*(?:c['’]est|is|:|=)/i;
+  /(?:ajoute|add|[ée]cri[st]|contacte|retrouve|rejoins|suis[- ]moi|follow|dm|mp|inbox|appelle|cherche)\S*[^.!?]{0,20}\b(?:whats?app|snap(?:chat)?|insta(?:gram)?|telegram|facebook|fb|messenger|tiktok)\b|\b(?:mon|ma|my) (?:snap(?:chat)?|insta(?:gram)?|whats?app|telegram|tiktok|facebook|fb)\b\s*(?:[:=]|(?:c['’]est|is)\s*@?(?=[a-z0-9_.]*[_.\d])[a-z0-9_.]{3,})/i;
 
 /**
  * Coordonnées dans une réponse au Sondeur : un numéro, un e-mail, un lien ou
@@ -114,15 +114,27 @@ export function containsSondeurContact(text: string): boolean {
  */
 export function moderateAnswerLocally(text: string): LocalModerationResult {
   const result = moderateMessageLocally(text);
+  const quoted = normalizeQuotes(text);
   if (
     !result.allowed &&
     result.category === 'profanity' &&
-    REPORTED_SPEECH.test(normalizeQuotes(text))
+    (REPORTED_SPEECH.test(quoted) ||
+      (NAMED_INSULT.test(quoted) && LIMIT_WORDS.test(quoted)))
   ) {
     return { allowed: true };
   }
   return result;
 }
+
+/**
+ * Une limite qui nomme l'insulte qu'elle refuse (« Dire 'ferme ta gueule'…
+ * jamais », « les mots comme connard n'ont rien à faire dans un couple ») :
+ * elle répond à la question de limite, elle n'insulte personne.
+ */
+const NAMED_INSULT =
+  /\b(?:dire|traiter (?:l['’]autre )?de|des mots|les mots|mots comme|insultes? comme|qu['’]on me dise|entendre)\b|(?:^|\s)'[^']{2,40}'/i;
+const LIMIT_WORDS =
+  /\b(?:jamais|exclu|inacceptable|interdit|rien à faire|pas de place|non négociable|bannis?|hors de question)\b/i;
 
 function normalizeQuotes(text: string): string {
   return text.replace(/[“”]/g, '"');

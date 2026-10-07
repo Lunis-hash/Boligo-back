@@ -610,6 +610,29 @@ export class AdminService {
    */
   async updateReport(id: string, status: ReportStatus, category?: string) {
     let description: string | undefined;
+    // Menace ou contrôle : la victime peut avoir été lue comme l'auteur.
+    // L'équipe choisit la catégorie avant de confirmer (le parcours sera clos).
+    if (status === 'traite' && !category) {
+      const current = await this.prisma.report.findUnique({
+        where: { id },
+        select: { description: true },
+      });
+      const signal = current?.description
+        ? parseSondeurReport({
+            reportedId: '',
+            status,
+            description: current.description,
+          })
+        : null;
+      if (
+        signal &&
+        !signal.refused &&
+        signal.categories.some((c) => c === 'menace' || c === 'controle')
+      )
+        throw new BadRequestException(
+          'Choisissez la catégorie avant de confirmer : menace ou contrôle exercés, ou violence subie par la personne qui écrit.',
+        );
+    }
     if (status === 'traite' && category) {
       if (!(category in CATEGORY_LABEL))
         throw new BadRequestException('Catégorie inconnue.');

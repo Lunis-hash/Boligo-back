@@ -36,6 +36,7 @@ import {
   ruleDayReading,
   ruleReview,
   safetyReading,
+  reservedThemes,
 } from './sondeur-insights';
 
 /** Début de la description d'un signalement automatique du Sondeur. */
@@ -1013,8 +1014,13 @@ export class JourneyInsightsService {
         .filter((d) => SAFETY_QUESTIONS.has(d.questionId))
         .map((d) => d.theme),
     );
+    // Un thème qu'un membre a gardé pour la rencontre n'est pas relancé.
+    const reserved = new Set(reservedThemes(items));
     const candidates = parseFollowUps(written.content).filter(
-      (c) => !safety.has(c.themeKey) && !COMPROMISE.test(c.text),
+      (c) =>
+        !safety.has(c.themeKey) &&
+        !reserved.has(THEMES[c.themeKey].label) &&
+        !COMPROMISE.test(c.text),
     );
     if (candidates.length === 0) return null;
     const review = await this.ai.reviewSondeurQuestions(
