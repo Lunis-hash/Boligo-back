@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 /**
  * Gabarits du Sondeur : règles de forme sur chaque variante, couverture des
  * sujets, techniques cliniques, et simulation de 300 couples avec le vrai
@@ -862,6 +864,39 @@ describe('Sécurité, couche IA et résumé pour l’IA', () => {
     const calm = assembleSondeur({ report: safe, firstNames: ['A', 'B'] });
     expect(calm.some((q) => q.subject === 'securite')).toBe(false);
     expect(calm.some((q) => /violence/i.test(q.text))).toBe(false);
+  });
+
+  it('réponse à risque (« ça dépend », « je ne sais pas », « passer outre ») : le thème reste réservé aux limites, même pour un écart mineur', () => {
+    for (const [question, a, b] of [
+      ['M6_Q04', 'B', 'D'],
+      ['M6_Q05', 'C', 'D'],
+      ['M6_Q05', 'B', 'D'],
+    ] as const) {
+      const report = buildDivergenceReport(
+        { [question]: a },
+        { [question]: b },
+      );
+      const theme = safetyThemesOf(report);
+      expect(theme.length).toBe(1);
+      const qs = assembleSondeur({
+        report,
+        firstNames: ['A', 'B'],
+        seed: question + a + b,
+      });
+      expect(
+        qs
+          .filter((q) => q.themeKey === theme[0])
+          .every((q) => q.subject === 'securite'),
+      ).toBe(true);
+    }
+  });
+
+  it('aucune relance d’échelle orientée (« pourquoi pas un point de plus / de moins »), aucun « premier enfant » supposé', () => {
+    const source = ['sondeur.pool.ts', 'sondeur.generator.ts']
+      .map((f) => readFileSync(join(__dirname, f), 'utf8'))
+      .join('\n');
+    expect(source.match(/pourquoi pas un point/gi)).toBeNull();
+    expect(source.match(/premier enfant/gi)).toBeNull();
   });
 
   it('une question de l’IA (toujours relue) passe avant un gabarit ciblé, même sans preferAi', () => {

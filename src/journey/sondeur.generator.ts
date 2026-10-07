@@ -327,6 +327,9 @@ export const SELF_DISCLOSURE_QUESTIONS = new Set([
  * circonstances », « ça peut arriver dans un couple ») : traitée comme un
  * écart de sécurité, même avant que le moteur ne la signale lui-même.
  */
+/** Réponse qui n'est pas un refus (« ça dépend », « je ne sais pas », « ça peut arriver », « passer outre »). */
+const RISKY_SAFETY_KEYS = new Set(['C', 'D']);
+
 const RISKY_SAFETY_AGREEMENTS = new Set([
   'M6_Q04:C',
   'M6_Q04:D',
@@ -347,7 +350,10 @@ export function safetyThemesOf(report: DivergenceReport): Theme[] {
         .filter(
           (d) =>
             SAFETY_QUESTIONS.has(d.questionId) &&
-            (d.severity !== 'mineure' || d.shared),
+            (d.severity !== 'mineure' ||
+              d.shared ||
+              RISKY_SAFETY_KEYS.has(d.a.key) ||
+              RISKY_SAFETY_KEYS.has(d.b.key)),
         )
         .map((d) => d.theme),
       ...report.convergences

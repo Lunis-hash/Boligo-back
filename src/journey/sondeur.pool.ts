@@ -6,7 +6,7 @@
  * clinicien du couple, transposées à deux personnes qui ne se sont encore
  * jamais parlé et qui liront la réponse de l'autre :
  *  - question circulaire, par un proche (jamais « votre partenaire ») ;
- *  - échelle de 0 à 10, avec sa relance (« pourquoi pas un point de moins ? ») ;
+ *  - échelle de 0 à 10, avec sa relance neutre (« qu'est-ce qui vous fait choisir ce chiffre ? ») ;
  *  - exception tirée de la famille ou d'une relation passée (ce qu'on en a
  *    appris, jamais le récit) ;
  *  - question miracle, besoin caché, réparation, problème qui revient toujours,
@@ -686,7 +686,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M5_Q01', 'M1_Q10'],
       ),
       q(
-        "De 0 à 10, à quel point l'avis de votre famille sur la personne que vous choisirez compte-t-il, et pourquoi pas un point de moins ?",
+        "De 0 à 10, à quel point l'avis de votre famille sur la personne que vous choisirez compte-t-il, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M1_Q15'],
@@ -862,7 +862,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['Prudent', 'Généreux', 'Inquiet'],
       ),
       q(
-        'De 0 à 10, combien de calme vous apporte une épargne de côté, et pourquoi pas un point de moins ?',
+        "De 0 à 10, combien de calme vous apporte une épargne de côté, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M4_Q08'],
@@ -965,6 +965,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
           'En reparler sans juger',
         ],
         ['M4_Q08'],
+        true,
       ),
       q(
         "De 0 à 10, à quel point aimeriez-vous que l'argent soit mis en commun dans votre foyer, et qu'est-ce qui vous fait choisir ce chiffre ?",
@@ -987,7 +988,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
   spiritualite: {
     1: [
       q(
-        "Imaginez votre mariage sans cérémonie religieuse : qu'est-ce qui vous manquerait le plus ?",
+        "Le jour d'un mariage, qu'est-ce qui, religieux ou non, ne pourrait pas manquer pour vous ?",
         'scene',
         ['La bénédiction', 'La présence des miens', 'Rien en particulier'],
         ['M8_Q03', 'M1_Q03'],
@@ -999,7 +1000,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M1_Q06'],
       ),
       q(
-        "Si l'autre remettait en question l'une de vos pratiques devant votre famille, que ressentiriez-vous ?",
+        "Si l'autre remettait en question l'une de vos pratiques ou de vos convictions devant votre famille, que ressentiriez-vous ?",
         'emotion',
         ['De la gêne', 'De la peine', 'De la colère'],
       ),
@@ -1017,7 +1018,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M1_Q06'],
       ),
       q(
-        'De 0 à 10, à quel point partager les mêmes convictions compte-t-il pour vous, et pourquoi pas un point de moins ?',
+        "De 0 à 10, à quel point partager les mêmes convictions compte-t-il pour vous, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M1_Q06', 'M1_Q05'],
@@ -1142,7 +1143,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
       // Sans compromis : la place de ses propres convictions, jamais un
       // terrain d'entente.
       q(
-        'Dans votre futur foyer, quel moment de la semaine aimeriez-vous garder pour vos convictions ?',
+        'Dans votre futur foyer, quel moment de la semaine aimeriez-vous garder pour votre foi ou vos valeurs ?',
         'projection',
         ['Un temps de prière', 'Un temps de silence', 'Un temps en communauté'],
       ),
@@ -1265,7 +1266,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['Les attentions', 'Les mots', 'Le temps pris pour moi'],
       ),
       q(
-        "Qu'aimeriez-vous qu'on devine de vous, en tendresse, sans avoir à le demander ?",
+        "En tendresse, quel besoin aimeriez-vous pouvoir dire simplement, sans attendre qu'on le devine ?",
         'besoin',
         ['Un besoin de douceur', 'Un besoin de temps', 'Un besoin de mots'],
       ),
@@ -1324,7 +1325,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['Par le silence', 'Par la parole', 'Par le mouvement'],
       ),
       q(
-        'De 0 à 10, à quel point avez-vous besoin de parler tout de suite après un désaccord, et pourquoi pas un point de moins ?',
+        "De 0 à 10, à quel point avez-vous besoin de parler tout de suite après un désaccord, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M6_Q01'],
@@ -1389,7 +1390,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['Le ton', 'Le moment', "L'écoute"],
       ),
       q(
-        'De 0 à 10, à quel point arrivez-vous à dire ce qui vous contrarie au moment où cela arrive, et pourquoi pas un point de moins ?',
+        "De 0 à 10, à quel point arrivez-vous à dire ce qui vous contrarie au moment où cela arrive, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M9_Q04'],
@@ -1474,7 +1475,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M8_Q02'],
       ),
       q(
-        "Si l'autre voulait reprendre de longues études et gagner moins pendant des années, de quoi auriez-vous besoin pour le soutenir ?",
+        "Si l'autre voulait reprendre de longues études et gagner moins pendant des années, que se passerait-il en vous ?",
         'besoin',
         ["D'un plan", 'De confiance', 'De temps à deux'],
         ['M7_Q02'],
@@ -1490,7 +1491,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['De la stabilité', 'Du partage', 'De l’élan'],
       ),
       q(
-        "De 0 à 10, à quel point vous sentez-vous prêt(e) à vous engager dans l'année qui vient, et pourquoi pas un point de moins ?",
+        "De 0 à 10, à quel point vous sentez-vous prêt(e) à vous engager dans l'année qui vient, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M8_Q02'],
@@ -1572,7 +1573,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M7_Q08'],
       ),
       q(
-        "De 0 à 10, à quel point aimez-vous que l'avenir soit planifié, et pourquoi pas un point de moins ?",
+        "De 0 à 10, à quel point aimez-vous que l'avenir soit planifié, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M7_Q05'],
@@ -1630,7 +1631,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M7_Q07'],
       ),
       q(
-        "De 0 à 10, à quel point êtes-vous prêt(e) à changer de ville pour quelqu'un, et pourquoi pas un point de moins ?",
+        "De 0 à 10, à quel point êtes-vous prêt(e) à changer de ville pour quelqu'un, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M0_Q03'],
@@ -1645,6 +1646,8 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         "Si un travail vous éloignait de l'autre plusieurs mois, qu'est-ce qui vous aiderait à garder le lien ?",
         'besoin',
         ['Des appels réguliers', 'Une date de retour', 'Des visites'],
+        undefined,
+        true,
       ),
     ],
     2: [
@@ -1726,7 +1729,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ),
       ),
       q(
-        'De 0 à 10, à quel point avez-vous besoin de vivre près de votre famille, et pourquoi pas un point de moins ?',
+        "De 0 à 10, à quel point avez-vous besoin de vivre près de votre famille, et qu'est-ce qui vous fait choisir ce chiffre ?",
         'echelle',
         ['Note basse', 'Note moyenne', 'Note haute'],
         ['M5_Q07'],
@@ -1818,9 +1821,10 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
     ),
     tt(
       (w) =>
-        `De 0 à 10, à quel point votre position sur ${w.phrase} est-elle arrêtée, et pourquoi pas un point de moins ?`,
+        `De 0 à 10, à quel point votre position sur ${w.phrase} est-elle arrêtée, et qu'est-ce qui vous fait choisir ce chiffre ?`,
       'echelle',
       ['Position ouverte', 'Position réfléchie', 'Position arrêtée'],
+      true,
     ),
     tt(
       (w) =>
@@ -1865,7 +1869,7 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
     ),
     tt(
       (w) =>
-        `À propos ${w.de}, quelle condition poseriez-vous clairement à quelqu'un avant de vous engager ?`,
+        `À propos ${w.de}, qu'est-ce qui, pour vous, restera ferme quoi qu'il arrive ?`,
       'limite',
       [
         'Une condition de foi',
@@ -2544,7 +2548,7 @@ export const TOPIC_DEEP: Record<
       ],
     ),
     2: q(
-      "Qu'est-ce que le tabac évoque pour vous, au-delà de l'habitude ?",
+      "Qu'est-ce que le tabac évoque pour vous, que vous fumiez ou non ?",
       'sens',
       ['Un souvenir', 'Une gêne', 'Une pause'],
     ),
@@ -2943,7 +2947,7 @@ export const TOPIC_DEEP: Record<
   },
   M1_Q13: {
     2: q(
-      'Quelle part de votre culture avez-vous reçue sans la choisir, et que vous êtes fier(ère) de porter ?',
+      'Quelle part de votre culture, reçue sans la choisir, êtes-vous fier(ère) de porter ?',
       'origine',
       ['Une langue', 'Des fêtes', 'Des valeurs'],
     ),
@@ -3193,7 +3197,7 @@ export const TOPIC_DEEP: Record<
   // Grand Entretien V7
   M1_Q16: {
     1: q(
-      'Dans votre futur foyer, que changerait pour vous le fait de partager la même religion ?',
+      'Dans votre futur foyer, que changerait pour vous le fait de partager, ou non, les mêmes convictions ?',
       'besoin',
       ['La paix du foyer', 'La transmission', 'Le lien avec ma famille'],
     ),
@@ -3272,7 +3276,7 @@ export const TOPIC_DEEP: Record<
   },
   M5_Q10: {
     1: q(
-      "Quand vos proches insistent pour un choix qui ne regarde que vous deux, qu'est-ce qui vous coûterait le plus ?",
+      "Si vos proches insistaient sur un choix de couple, qu'est-ce qui vous coûterait le plus ?",
       'besoin',
       ['Les décevoir', 'Céder', 'Le conflit'],
     ),
@@ -4534,7 +4538,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M0_Q06:A': {
     statement: 'Vous souhaitez tous les deux des enfants.',
     probe: q(
-      "Qu'aimeriez-vous avoir construit dans votre vie avant l'arrivée d'un premier enfant ?",
+      "Qu'aimeriez-vous avoir construit dans votre vie avant l'arrivée d'un enfant ?",
       'sens',
       ['Un foyer', 'Une stabilité', 'Une complicité à deux'],
     ),
@@ -4710,7 +4714,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Aux sorties',
     ]),
     probeVariant: q(
-      'Quelle dépense du quotidien vous semblerait naturelle de payer à deux ?',
+      'Quelle dépense du quotidien vous semblerait-il naturel de payer à deux ?',
       'sens',
       ['Les courses', 'Les sorties', 'Les cadeaux aux familles'],
     ),
@@ -4782,17 +4786,17 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement:
       "Vous ne vous voyez ni l'un ni l'autre déménager pour un partenaire.",
     probe: q(
-      "Qu'est-ce qui vous attache le plus au lieu où vous vivez aujourd'hui ?",
+      "Qu'est-ce que ne pas déménager pour quelqu'un vous permet de protéger ?",
       'besoin',
       ['Mes proches', 'Mon travail', 'Mon histoire'],
     ),
     probeVariant: q(
-      "D'où vous vient ce besoin de rester là où sont vos repères ?",
+      "D'où vous vient l'idée qu'on ne déménage pas pour quelqu'un ?",
       'origine',
       ['De ma famille', 'De mon travail', 'De mon histoire'],
     ),
     probeThird: q(
-      "Qu'est-ce que rester là où vous êtes vous permet de construire ?",
+      "Qu'est-ce que ce choix de ne pas suivre quelqu'un vous permet de construire ?",
       'sens',
       ['Une stabilité', 'Des liens', 'Un avenir'],
     ),
@@ -5279,7 +5283,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement:
       'Vous voyez tous les deux une contribution selon les revenus de chacun.',
     probe: q(
-      "Pour vous, qu'est-ce qui entre dans le calcul, au-delà du salaire ?",
+      "Pour vous, qu'est-ce qui entre dans le calcul, au-delà de ce que chacun gagne ?",
       'sens',
       ['Le temps donné au foyer', 'Les dettes', 'Les charges de chacun'],
     ),
@@ -5643,7 +5647,7 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
     ),
     q(
       'Sur ce point, dans quelle situation concrète tiendriez-vous le plus à cet accord ?',
-      'sens',
+      'limite',
       ['Un choix important', 'Une période difficile', 'Le quotidien'],
     ),
     q(
