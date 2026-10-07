@@ -697,7 +697,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
       q(
         "Dans votre famille, quel rôle vous revenait sans que personne ne l'ait jamais dit ?",
         'origine',
-        ['Celui qui apaise', 'Celui qui aide', 'Celui qui réussit'],
+        ['Apaiser les tensions', 'Aider les autres', 'Réussir pour tous'],
       ),
       q(
         'Dans la famille où vous avez grandi, comment exprimait-on la colère ?',
@@ -1798,7 +1798,7 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
       'origine',
       [
         'Un exemple familial',
-        'Une relation passée',
+        'Une expérience vécue',
         'Une conviction mûrie seul(e)',
       ],
     ),
@@ -1971,7 +1971,7 @@ export const SHARED_RISK: Record<number, TopicTemplate[]> = {
       (w) =>
         `À propos ${w.de}, qui vous a appris, par l'exemple, à réagir comme vous le faites aujourd'hui ?`,
       'origine',
-      ['Un parent', 'Une relation passée', 'Personne : je me suis protégé(e)'],
+      ['Un parent', 'Une expérience vécue', 'Personne : je me suis protégé(e)'],
     ),
   ],
   3: [
@@ -2457,7 +2457,7 @@ export const TOPIC_DEEP: Record<
       'limite',
       [
         'Pas de tabac à l’intérieur',
-        'Pas devant les enfants',
+        'Pas devant mes proches',
         'Rien de particulier',
       ],
     ),
@@ -2515,7 +2515,7 @@ export const TOPIC_DEEP: Record<
     1: q(
       "Quelle décision de votre vie à deux ne regarderait que vous deux, quoi qu'en pense votre famille ?",
       'limite',
-      ['Le lieu de vie', 'Les enfants', "L'argent"],
+      ['Le lieu de vie', 'Avoir des enfants ou non', "L'argent"],
     ),
     2: q(
       'Dans votre famille, qui avait le dernier mot sur les grandes décisions ?',
@@ -2558,7 +2558,7 @@ export const TOPIC_DEEP: Record<
     2: q(
       "Qu'est-ce qu'une ancienne histoire peut garder, pour vous, dans une vie nouvelle ?",
       'sens',
-      ['Rien', 'Un respect', 'Un lien pour les enfants'],
+      ['Rien', 'Un respect', 'Une amitié'],
     ),
   },
   M8_Q01: {
@@ -3066,7 +3066,7 @@ export const TOPIC_DEEP: Record<
     2: q(
       "Quel changement, dans votre vie, vous a le plus appris sur votre façon de vivre l'imprévu ?",
       'origine',
-      ['Un déménagement', 'Un nouveau travail', 'Une séparation'],
+      ['Un déménagement', 'Un nouveau travail', 'Une rencontre'],
     ),
   },
   M7_Q02: {
@@ -3338,7 +3338,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
     2: q(
       "Qu'avez-vous vu, en grandissant, chez ceux qui tenaient tête à leur famille ?",
       'origine',
-      ['Du respect', 'Une rupture', 'Une réconciliation'],
+      ['Du respect', 'Une brouille', 'Une réconciliation'],
     ),
   },
   M9_Q07: {
@@ -3928,7 +3928,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "Sur quel sujet l'avis d'un parent pèserait-il le plus ?",
       'sens',
-      ['Le mariage', 'Les enfants', 'Le lieu de vie'],
+      ['Le mariage', 'Les projets de famille', 'Le lieu de vie'],
     ),
   },
   'M0_Q06:A': {
@@ -4075,7 +4075,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "Qu'est-ce que ce départ viendrait chercher, pour vous ?",
       'besoin',
-      ["De l'aventure", 'Des opportunités', 'Un retour aux sources'],
+      ["De l'aventure", 'Des opportunités', 'Un nouveau départ'],
     ),
   },
   'M2_Q03:A': {
@@ -4288,7 +4288,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "Pour vous, qu'est-ce qui fait partie des décisions importantes ?",
       'sens',
-      ["L'argent", 'Le lieu de vie', 'Les enfants'],
+      ["L'argent", 'Le lieu de vie', 'Avoir des enfants ou non'],
     ),
   },
   'M9_Q01:D': {
@@ -4411,7 +4411,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "À quel moment un envoi mérite-t-il, selon vous, d'en parler d'abord à deux ?",
       'sens',
-      ['Dès le premier euro', 'Au-delà d’un montant', 'S’il devient régulier'],
+      ['Dès le premier envoi', 'Au-delà d’un montant', 'S’il devient régulier'],
     ),
   },
   'M4_Q05:D': {
@@ -4429,7 +4429,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "Pour vous, qu'est-ce qui entre dans le calcul, au-delà du salaire ?",
       'sens',
-      ['Le temps donné au foyer', 'Les dettes', 'Les enfants'],
+      ['Le temps donné au foyer', 'Les dettes', 'Les charges de chacun'],
     ),
   },
   'M4_Q01:D': {
@@ -4502,7 +4502,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       'Concrètement, quelles décisions passeraient par la famille ?',
       'sens',
-      ['Le mariage', 'Le lieu de vie', 'Les enfants'],
+      ['Le mariage', 'Le lieu de vie', 'Les projets de famille'],
     ),
   },
   'M5_Q01:C': {
@@ -4528,7 +4528,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "Pour vous, jusqu'où va cette ouverture dans un foyer commun ?",
       'limite',
-      ['Les fêtes', "L'éducation des enfants", 'Les pratiques'],
+      ['Les fêtes', 'Les repas', 'Les pratiques'],
     ),
   },
   'M0_Q03:B': {
@@ -4589,7 +4589,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     probe: q(
       "Qu'est-ce qui, pour vous, montrerait un engagement sans passer par le mariage ?",
       'sens',
-      ['Un logement commun', 'Des enfants', 'Une parole donnée'],
+      ['Un logement commun', 'Des projets communs', 'Une parole donnée'],
     ),
   },
   'M1_Q13:C': {
@@ -4661,7 +4661,7 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
     q(
       'Dans quelle situation de la vie à deux cet accord serait-il le plus mis à l’épreuve ?',
       'limite',
-      ["L'arrivée d'enfants", 'Un déménagement', 'Une période difficile'],
+      ['Un désaccord familial', 'Un déménagement', 'Une période difficile'],
     ),
     q(
       "Le jour où l'un de vous changerait d'avis, comment aimeriez-vous l'apprendre ?",
@@ -4671,7 +4671,7 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
     q(
       'Dans quelle décision de votre future vie à deux cet accord compterait-il le plus ?',
       'projection',
-      ['Le lieu de vie', "L'argent", 'Les enfants'],
+      ['Le lieu de vie', "L'argent", 'Les projets de famille'],
     ),
   ],
 };

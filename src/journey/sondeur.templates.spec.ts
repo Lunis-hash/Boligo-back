@@ -318,6 +318,85 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
     // Les sujets intimes eux-mêmes ne sont prévus qu'au jour 3.
     for (const id of ['M6_Q06', 'M6_Q07']) expect(TOPIC_DAYS[id]).toEqual([3]);
   });
+
+  it('aucune option cachée ne présuppose une situation (enfants, séparation, ex, migration, monnaie)', () => {
+    /** Fin d'une relation, ex, relation passée, migration, monnaie d'un pays. */
+    const SITUATION =
+      /séparation|divorc|rupture|veuv|deuil|(?<!\p{L})ex(?!\p{L})|ex-|relation passée|ancienne relation|retour aux sources|pays d['’]origine|exil|(?<!\p{L})euros?(?!\p{L})|fcfa/iu;
+    /** Sujets où des enfants sont déjà en question. */
+    const CHILD_SUBJECTS = new Set([
+      'M0_Q06',
+      'M0_Q05',
+      'M3_Q04',
+      'M8_Q15',
+      'M1_Q13',
+    ]);
+    /** Questions sur la famille où l'on a grandi : « les enfants », c'est soi. */
+    const FAMILY_OF_ORIGIN = new Set([
+      'Dans votre famille, qui faisait le premier pas après un conflit ?',
+      'Dans chaque famille, certains sujets reviennent toujours : lequel, dans la vôtre, aimeriez-vous garder hors de votre foyer ?',
+    ]);
+    const all: Array<{ where: string; options: string[]; children: boolean }> =
+      [
+        ...THEME_LIST.flatMap((theme) =>
+          [1, 2, 3].flatMap((day) =>
+            THEME_POOL[theme][day].map((t, i) => ({
+              where: `THEME_POOL.${theme}[${day}][${i}]`,
+              options: t.options,
+              children: !!t.needsChildren || FAMILY_OF_ORIGIN.has(t.text),
+            })),
+          ),
+        ),
+        ...[TOPIC_DEEP, TOPIC_DEEP_VARIANTS].flatMap((table) =>
+          Object.entries(table).flatMap(([id, days]) =>
+            Object.entries(days).map(([day, t]) => ({
+              where: `${id}[${day}]`,
+              options: t!.options,
+              children: CHILD_SUBJECTS.has(id),
+            })),
+          ),
+        ),
+        ...[TARGETED, SHARED_RISK, CONVERGENT, SAFETY_TEMPLATES].flatMap(
+          (table, n) =>
+            [1, 2, 3].flatMap((day) =>
+              (table[day] as Array<{ options: string[] }>).map((t, i) => ({
+                where: `table ${n}[${day}][${i}]`,
+                options: t.options,
+                children: false,
+              })),
+            ),
+        ),
+        ...CONTROL_LIMITS.map((t, i) => ({
+          where: `CONTROL_LIMITS[${i}]`,
+          options: t.options,
+          children: false,
+        })),
+        ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
+          [a.probe].flatMap((t) =>
+            t
+              ? [
+                  {
+                    where: `AGREEMENTS.${key}`,
+                    options: t.options,
+                    children:
+                      !!a.needsChildren ||
+                      CHILD_SUBJECTS.has(key.split(':')[0]),
+                  },
+                ]
+              : [],
+          ),
+        ),
+      ];
+    expect(all.length).toBeGreaterThan(400);
+    const bad: string[] = [];
+    for (const { where, options, children } of all)
+      for (const o of options) {
+        if (SITUATION.test(o)) bad.push(`${where} : ${o}`);
+        if (/enfant/iu.test(o) && !children && o !== 'Avoir des enfants ou non')
+          bad.push(`${where} : ${o}`);
+      }
+    expect(bad).toEqual([]);
+  });
 });
 
 describe('Gabarits du Sondeur : quasi-doublons et redites de l’entretien', () => {
