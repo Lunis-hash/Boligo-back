@@ -4311,7 +4311,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M4_Q01:A': {
     statement: "Vous voyez tous les deux l'argent du foyer en pot commun.",
     probe: q(
-      'Pour vous, quelle dépense resterait personnelle, même avec un pot commun ?',
+      'Pour vous, quelle dépense resterait malgré tout personnelle ?',
       'sens',
       ['Un cadeau', 'Un loisir', "L'aide aux miens"],
     ),
@@ -4816,7 +4816,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement:
       "Pour vous deux, un envoi d'argent à la famille se décide d'abord à deux.",
     probe: q(
-      "À quel moment un envoi mérite-t-il, selon vous, d'en parler d'abord à deux ?",
+      "À partir de quel moment un envoi mérite-t-il, selon vous, qu'on en parle ensemble ?",
       'sens',
       ['Dès le premier envoi', 'Au-delà d’un montant', 'S’il devient régulier'],
     ),
@@ -4870,7 +4870,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M3_Q04:A': {
     statement: "Pour vous deux, l'enfant de l'un devient l'enfant de l'autre.",
     probe: q(
-      "Le jour où une règle serait à poser à cet enfant, qu'est-ce que cela voudrait dire concrètement pour vous ?",
+      'Dans une famille recomposée, qui poserait les règles, selon vous, et comment ?',
       'sens',
       [
         'Décider ensemble',
