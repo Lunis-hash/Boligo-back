@@ -1055,7 +1055,7 @@ export function describeReportForAi(
       const head = `- [${d.severity}] ${THEMES[d.theme].label} — ${d.label}`;
       if (SAFETY_QUESTIONS.has(d.questionId)) {
         lines.push(
-          `${head} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions de limite et de protection, jamais de compromis, de réconciliation ni « comment le rendre vivable ».`,
+          `${head} : LIMITE DE SÉCURITÉ. Jamais négociable : uniquement des questions sur la limite de chacun (jamais un plan de protection ni un récit vécu), jamais de compromis, de réconciliation ni « comment le rendre vivable ».`,
         );
       } else if (!isQuotableDivergence(d)) {
         lines.push(
