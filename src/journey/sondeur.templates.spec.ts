@@ -29,7 +29,7 @@ import {
   similarQuestions,
 } from './clinical-lens';
 import {
-  CONTROL_LIMIT,
+  CONTROL_LIMITS,
   DAY_ANGLES,
   SAFETY_QUESTIONS,
   SAFETY_TEMPLATES,
@@ -63,6 +63,10 @@ import {
   topicPhrase,
   topicWords,
 } from './sondeur.pool';
+
+/** Question de limite sur le contrôle (l'une des formulations). */
+const isControlLimit = (text: string) =>
+  CONTROL_LIMITS.some((l) => l.text === text);
 
 // ─── Règles de forme ──────────────────────────────────────────────────────────
 
@@ -817,7 +821,7 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
   });
   const limitsOf = (qs: SondeurQuestion[]) =>
     qs
-      .filter((q) => q.text === CONTROL_LIMIT.text)
+      .filter((q) => isControlLimit(q.text))
       .map((q) => [q.day, q.themeKey, q.subject]);
 
   it('jalousie qui surveille (M8_Q10:B majeure) : limite de contrôle au jour 2, avant l’IA', () => {
@@ -1082,17 +1086,13 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
     expect(control.length).toBeGreaterThan(50);
     for (const { questions } of control)
       expect(
-        questions
-          .filter((q) => q.text === CONTROL_LIMIT.text)
-          .map((q) => q.day),
+        questions.filter((q) => isControlLimit(q.text)).map((q) => q.day),
       ).toEqual([2]);
     // Sans signal de contrôle, jamais.
     expect(
       passes
         .filter((p) => !control.includes(p))
-        .some(({ questions }) =>
-          questions.some((q) => q.text === CONTROL_LIMIT.text),
-        ),
+        .some(({ questions }) => questions.some((q) => isControlLimit(q.text))),
     ).toBe(false);
   });
 

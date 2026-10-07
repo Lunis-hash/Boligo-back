@@ -50,6 +50,7 @@ import {
   isAgreementWorthAsking,
   isDeferredAgreement,
   isChildFree,
+  isContradictedAgreement,
   isDeferredDivergence,
   isNonNegotiable,
   relatedTopics,
@@ -309,6 +310,8 @@ export const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
  * jamais citée à l'autre.
  */
 export const SELF_DISCLOSURE_QUESTIONS = new Set([
+  'M6_Q03',
+  'M9_Q03',
   'M2_Q11',
   'M6_Q13',
   'M6_Q15',
@@ -434,6 +437,18 @@ export const CONTROL_LIMIT: PoolTemplate = {
     "M'isoler de mes proches",
   ],
 };
+
+export const CONTROL_LIMITS: PoolTemplate[] = [
+  CONTROL_LIMIT,
+  {
+    text: "À quel geste de l'autre sentiriez-vous qu'on passe de la confiance à la surveillance ?",
+    options: [
+      'Lire mes messages',
+      'Suivre ma position',
+      'Contrôler mes sorties',
+    ],
+  },
+];
 
 export function isControlSignal(d: Divergence): boolean {
   return (
@@ -575,7 +590,9 @@ function planDivergences(
     .filter((d) => !excluded.has(d.questionId));
   // Tri stable : à gravité égale, l'ordre des thèmes, puis celui du moteur.
   const ordered = [...candidates].sort(
-    (x, y) => SEVERITY_RANK[y.severity] - SEVERITY_RANK[x.severity],
+    (x, y) =>
+      SEVERITY_RANK[y.severity] - SEVERITY_RANK[x.severity] ||
+      Number(isNonNegotiable(y)) - Number(isNonNegotiable(x)),
   );
   for (const d of ordered) {
     const related = relatedTopics(d);
@@ -613,6 +630,7 @@ function convergencesFor(
       !SELF_DISCLOSURE_QUESTIONS.has(c.questionId) &&
       !SAFETY_QUESTIONS.has(c.questionId) &&
       !taken.has(c.questionId) &&
+      !isContradictedAgreement(c, report.divergences, report.convergences) &&
       isAgreementWorthAsking(c) &&
       !(childFree && agreementFor(c).needsChildren) &&
       topicDays({ ...c, label: c.topic ?? c.label }).includes(day),
@@ -714,6 +732,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   for (let day = 1; day <= SONDEUR_DAYS; day++) {
     const angle = DAY_ANGLES[day];
     let convergenceToday = 0;
+    const openingsToday = new Set<string>();
     for (const theme of THEME_LIST) {
       const slot = `${day}|${theme}`;
       const base = {
@@ -731,10 +750,11 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       // place à une autre question. Signal de contrôle : au jour 2 de son
       // thème, la limite de contrôle.
       if (day === 2 && theme === controlTheme) {
+        const limit = pickFresh(CONTROL_LIMITS, mem) ?? CONTROL_LIMIT;
         question = {
           ...base,
-          text: CONTROL_LIMIT.text,
-          options: ensureAutreOption(CONTROL_LIMIT.options),
+          text: limit.text,
+          options: ensureAutreOption(limit.options),
           source: 'divergence',
           subject: 'controle',
         };
@@ -787,6 +807,12 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       // 4. Point d'accord réel (deux par jour au plus).
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
         for (const c of convergencesFor(report, theme, day, taken, childFree)) {
+          const opening = agreementFor(c)
+            .statement.split(/[ ,]/)
+            .slice(0, 3)
+            .join(' ')
+            .toLowerCase();
+          if (opening && openingsToday.has(opening)) continue;
           // Un accord ne reprend jamais une tournure déjà posée dans ce
           // Sondeur : le créneau prend alors une question du thème.
           const pick = pickFresh(
@@ -796,6 +822,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           );
           if (!pick) continue;
           convergenceToday++;
+          if (opening) openingsToday.add(opening);
           markTaken(taken, { ...c, label: c.topic ?? c.label });
           question = {
             ...base,
