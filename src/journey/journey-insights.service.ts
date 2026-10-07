@@ -8,6 +8,7 @@ import {
   THEMES,
 } from '../matching/divergence.engine';
 import { NotificationService } from '../notifications/notification.service';
+import { EmailService } from '../common/email.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { COMPROMISE, similarQuestions } from './clinical-lens';
 import { SAFETY_QUESTIONS, describeReportForAi } from './sondeur.generator';
@@ -289,6 +290,9 @@ export class SondeurSafety {
   }
 }
 
+/** Catégories traitées en priorité, 24 h/24 : l'équipe reçoit une alerte. */
+const URGENT_CATEGORIES = ['detresse', 'mineur', 'menace', 'violence_exercee'];
+
 /** Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart. */
 const MAX_ATTEMPTS = 3;
 const RETRY_AFTER_MS = 10 * 60 * 1000;
@@ -318,7 +322,57 @@ export class JourneyInsightsService {
     private readonly prisma: PrismaService,
     private readonly ai: AiService,
     @Optional() private readonly notifications?: NotificationService,
+    @Optional() private readonly email?: EmailService,
   ) {}
+
+  /**
+   * Signal urgent (détresse, mineur, menace, violence exercée) : l'équipe est
+   * prévenue tout de suite par e-mail, 24 h/24 (SAFETY_ALERT_EMAILS). L'e-mail
+   * ne contient ni nom ni réponse : seulement la catégorie et le lien vers le
+   * tableau de bord.
+   */
+  private async alertTeam(categories: string[]): Promise<void> {
+    const urgent = categories.filter((c) => URGENT_CATEGORIES.includes(c));
+    if (urgent.length === 0) return;
+    const to = (process.env.SAFETY_ALERT_EMAILS ?? '')
+      .split(',')
+      .map((a) => a.trim())
+      .filter(Boolean);
+    if (!this.email || to.length === 0) {
+      this.logger.error(
+        'Signalement urgent : aucune adresse SAFETY_ALERT_EMAILS, personne n’est prévenu en dehors du tableau de bord.',
+      );
+      return;
+    }
+    const labels = urgent
+      .map((c) => CATEGORY_LABEL[c as keyof typeof CATEGORY_LABEL] ?? c)
+      .join(', ');
+    const admin = (process.env.ADMIN_ALLOWED_ORIGINS ?? '')
+      .split(',')[0]
+      ?.trim();
+    for (const address of to)
+      await this.email
+        .sendSimpleEmail(
+          address,
+          `BOLIGO : signalement urgent (${labels})`,
+          'Signalement urgent à traiter',
+          [
+            `Un signalement du Sondeur classé « ${labels} » attend une décision de l'équipe.`,
+            'Délai cible : une heure pour une détresse ou un mineur, quatre heures pour une menace ou une violence exercée, de jour comme de nuit.',
+            'Pour protéger les membres, cet e-mail ne contient ni nom ni réponse : ouvrez le tableau de bord.',
+          ],
+          'fr',
+          admin
+            ? {
+                label: 'Ouvrir les signalements',
+                url: `${admin}/dashboard/reports`,
+              }
+            : undefined,
+        )
+        .catch((err: Error) =>
+          this.logger.error(`Alerte urgente non envoyée : ${err.message}`),
+        );
+  }
 
   /**
    * Messagerie retenue : une réponse du Sondeur évoque un danger et la
@@ -488,6 +542,7 @@ export class JourneyInsightsService {
       },
       select: { id: true, description: true },
     });
+    await this.alertTeam(next);
     await this.sendSupport(journeyId, authorId, next, [
       ...kept,
       ...earlier
@@ -901,6 +956,7 @@ export class JourneyInsightsService {
     this.logger.warn(
       `Parcours ${journeyId} : signal de sécurité (${labels}), modération prévenue.`,
     );
+    await this.alertTeam(unique);
     if (!notify) return;
     await this.sendSupport(
       journeyId,

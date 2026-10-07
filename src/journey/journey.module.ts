@@ -9,6 +9,7 @@ import { ChatModule } from '../chat/chat.module';
 import { CreditModule } from '../credit/credit.module';
 import { GhostingService } from './ghosting.service';
 import { JourneyInsightsService } from './journey-insights.service';
+import { EmailService } from '../common/email.service';
 
 @Module({
   imports: [PrismaModule, AiModule, CreditModule, forwardRef(() => ChatModule)],
@@ -19,6 +20,7 @@ import { JourneyInsightsService } from './journey-insights.service';
     JourneyInsightsService,
     DailyService,
     VideoCallService,
+    EmailService,
   ],
   exports: [JourneyService, GhostingService, VideoCallService],
 })

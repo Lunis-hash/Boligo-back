@@ -43,6 +43,14 @@ function currentCategory(r: ReportRow): string {
   return m?.[1] || "autre";
 }
 
+/** Détresse, mineur, menace, violence exercée : à traiter en premier, de jour comme de nuit. */
+function isUrgent(r: ReportRow): boolean {
+  const m = /catégories=\[([^\]]*)\]/.exec(r.description ?? "");
+  return (m?.[1] ?? "")
+    .split(",")
+    .some((c) => ["detresse", "mineur", "menace", "violence_exercee"].includes(c));
+}
+
 /** Menace ou contrôle : la victime a pu être lue comme l'auteur, l'équipe choisit. */
 function needsExplicitCategory(r: ReportRow): boolean {
   const m = /catégories=\[([^\]]*)\]/.exec(r.description ?? "");
@@ -155,7 +163,10 @@ export default function ReportsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              data.data.map((r) => (
+              // Urgents d'abord (détresse, mineur, menace), puis l'ordre reçu.
+              [...data.data]
+                .sort((x, y) => Number(isUrgent(y)) - Number(isUrgent(x)))
+                .map((r) => (
                 <TableRow key={r.id}>
                   <TableCell>
                     {r.reported.firstName} {r.reported.lastName}
@@ -167,6 +178,11 @@ export default function ReportsPage() {
                   <TableCell className="max-w-md whitespace-pre-line text-sm">{reportDetail(r)}</TableCell>
                   <TableCell>
                     <StatusBadge status={r.status} />
+                    {r.status === "en_attente" && isUrgent(r) && (
+                      <span className="ml-1 inline-block rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                        Urgent
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{formatDate(r.reportedAt)}</TableCell>
                   <TableCell>

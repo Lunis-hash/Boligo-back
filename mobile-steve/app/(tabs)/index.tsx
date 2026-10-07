@@ -804,6 +804,11 @@ export default function MatchesScreen() {
               {/* ── Timeline 3 jours ────────────────────────────────── */}
               <View style={styles.timelineCard}>
                 <Text style={styles.sectionTitle}>Parcours Harmonie — 3 jours</Text>
+                <Text style={styles.privacyNote}>
+                  Certaines questions partent d'un point où vos réponses à l'entretien se rejoignent : l'autre
+                  comprend alors que vous avez répondu pareil sur ce point. Jamais ce que vous seul(e) avez
+                  répondu, et jamais un sujet sensible sans votre accord.
+                </Text>
                 <View style={styles.timeline}>
                   {dayThemes.map((d, i) => (
                     <DayStep
@@ -1133,6 +1138,14 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.bold,
     fontSize: 16,
     color: Colors.text.primary100,
+    marginBottom: Spacing.lg,
+  },
+  privacyNote: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: Colors.text.primary70,
+    marginTop: -Spacing.sm,
     marginBottom: Spacing.lg,
   },
   timeline: { gap: 0 },
