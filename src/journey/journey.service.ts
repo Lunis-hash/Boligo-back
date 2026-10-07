@@ -8,7 +8,11 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { ChatGateway } from '../chat/chat.gateway';
-import { moderateMessageLocally, maskProfanityForDisplay } from '../moderation/chat-moderation';
+import {
+  moderateAnswerLocally,
+  moderateMessageLocally,
+  maskProfanityForDisplay,
+} from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
@@ -22,6 +26,7 @@ import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
 import { farewellText } from './farewell';
 import { JourneyInsightsService } from './journey-insights.service';
+import { hasDangerSignal } from './sondeur-insights';
 
 /** Champs du membre transmis à l'IA du Sondeur : jamais de coordonnées. */
 const MEMBER_CONTEXT_FIELDS = {
@@ -366,9 +371,17 @@ export class JourneyService {
       // La réponse du partenaire n'est révélée qu'après la sienne : personne
       // ne peut s'aligner sur l'autre avant d'avoir répondu.
       const answered = q.responses.some((r) => r.userId === userId);
+      // Mots grossiers cités dans un récit : masqués chez l'autre membre.
+      const visible = answered
+        ? q.responses
+        : q.responses.filter((r) => r.userId === userId);
       return {
         ...q,
-        responses: answered ? q.responses : q.responses.filter((r) => r.userId === userId),
+        responses: visible.map((r) =>
+          r.userId === userId
+            ? r
+            : { ...r, responseText: maskProfanityForDisplay(r.responseText) },
+        ),
         partnerAnswered: q.responses.some((r) => r.userId !== userId),
         emoji: q.emoji ?? bankQ?.emoji ?? '💬',
         options: storedOptions ?? bankQ?.options ?? null,
@@ -558,16 +571,29 @@ export class JourneyService {
     }
 
     const trimmed = text.trim();
-    const local = moderateMessageLocally(trimmed);
-    if (!local.allowed) {
-      throw new BadRequestException(local.reason);
+    if (!trimmed) throw new BadRequestException('Réponse vide.');
+    if (trimmed.length > 2000) {
+      throw new BadRequestException(
+        'Réponse trop longue (2000 caractères max).',
+      );
     }
-    if (shouldRunAiModeration(trimmed)) {
-      const aiMod = await this.aiService.moderateChatMessage(trimmed);
-      if (!aiMod.allowed) {
-        throw new BadRequestException(
-          aiMod.reason || 'Réponse incompatible avec les règles BOLIGO.',
-        );
+    // Une réponse qui évoque un danger (violence subie ou exercée, menace,
+    // contrôle, détresse, demande d'argent, minorité) est toujours
+    // enregistrée : une victime peut citer ce qu'elle a subi, et la
+    // modération est prévenue à la lecture du jour. Refusée, elle
+    // disparaîtrait sans laisser de trace.
+    if (!hasDangerSignal(trimmed)) {
+      const local = moderateAnswerLocally(trimmed);
+      if (!local.allowed) {
+        throw new BadRequestException(local.reason);
+      }
+      if (shouldRunAiModeration(trimmed)) {
+        const aiMod = await this.aiService.moderateSondeurAnswer(trimmed);
+        if (!aiMod.allowed) {
+          throw new BadRequestException(
+            aiMod.reason || 'Réponse incompatible avec les règles BOLIGO.',
+          );
+        }
       }
     }
 

@@ -1024,19 +1024,43 @@ Retourne UNIQUEMENT un JSON:
   // 🛡️ 5. MÉDIATEUR & MODÉRATION IA — Sécurité & Modération en Temps Réel
   // =========================================================================
 
+  /**
+   * Réponse au Sondeur : seules une insulte adressée à l'autre membre, une
+   * proposition sexuelle explicite, un lien ou un contact sont refusés. Le
+   * récit d'une violence subie, une limite, une menace, un contrôle, une
+   * détresse ou une demande d'argent sont toujours enregistrés : la
+   * modération doit pouvoir les voir (signalement à la lecture du jour).
+   */
+  async moderateSondeurAnswer(content: string): Promise<{
+    allowed: boolean;
+    reason?: string;
+    category?: string;
+  }> {
+    const prompt = `
+Tu modères une réponse au questionnaire d'une application de rencontres sérieuses (BOLIGO). Les deux membres répondent chacun de leur côté à la même question.
+
+RÉPONSE:
+"""
+${content.slice(0, 1500)}
+"""
+
+BLOQUE seulement : une insulte adressée à l'autre membre, une proposition sexuelle explicite, un lien ou un moyen de contact.
+Ne bloque JAMAIS (renvoie {"allowed": true}) : le récit d'une violence subie, même avec les mots exacts de l'agresseur ; une limite face à la violence ; une réponse qui évoque une violence exercée, une menace, un contrôle, une détresse ou une demande d'argent, car elle doit être enregistrée pour que l'équipe de modération la voie.
+
+Retourne UNIQUEMENT un JSON:
+{"allowed": true} ou {"allowed": false, "reason": "motif court en français", "category": "sexual"|"harassment"|"spam"}
+`;
+    return this.runModeration(
+      `sondeur:${content.trim().toLowerCase()}`,
+      prompt,
+    );
+  }
+
   async moderateChatMessage(content: string): Promise<{
     allowed: boolean;
     reason?: string;
     category?: string;
   }> {
-    const cacheKey = createHash('sha256')
-      .update(content.trim().toLowerCase())
-      .digest('hex');
-    const cached = this.moderationCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.result;
-    }
-
     const prompt = `
 Tu es le modérateur de sécurité de BOLIGO (application de rencontres sérieuses et de coaching amoureux).
 Analyse ce message privé :
@@ -1053,6 +1077,19 @@ AUTORISE : flirt respectueux, compliments, questions personnelles bienveillantes
 Retourne UNIQUEMENT un JSON:
 {"allowed": true} ou {"allowed": false, "reason": "motif court en français", "category": "sexual"|"harassment"|"profanity"|"spam"}
 `;
+    return this.runModeration(content.trim().toLowerCase(), prompt);
+  }
+
+  /** Décision de modération mise en cache une heure (clé : texte normalisé). */
+  private async runModeration(
+    key: string,
+    prompt: string,
+  ): Promise<{ allowed: boolean; reason?: string; category?: string }> {
+    const cacheKey = createHash('sha256').update(key).digest('hex');
+    const cached = this.moderationCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.result;
+    }
 
     try {
       // Décision stable et courte : température 0, réponse JSON de quelques mots.

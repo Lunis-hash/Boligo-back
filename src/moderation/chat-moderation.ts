@@ -10,7 +10,12 @@ export type LocalModerationResult =
 function normalizeForScan(raw: string): string {
   let s = raw.toLowerCase();
   s = s.normalize('NFD').replace(/\p{M}/gu, '');
-  s = s.replace(/[@4]/g, 'a').replace(/[13!|]/g, 'i').replace(/0/g, 'o').replace(/[$5]/g, 's').replace(/7/g, 't');
+  s = s
+    .replace(/[@4]/g, 'a')
+    .replace(/[13!|]/g, 'i')
+    .replace(/0/g, 'o')
+    .replace(/[$5]/g, 's')
+    .replace(/7/g, 't');
   s = s.replace(/(.)\1{2,}/g, '$1$1');
   s = s.replace(/[^a-zàâäéèêëïîôùûüçœæ0-9\s]/gi, ' ');
   return s;
@@ -66,6 +71,34 @@ export function moderateMessageLocally(text: string): LocalModerationResult {
   }
 
   return { allowed: true };
+}
+
+/**
+ * Discours rapporté (« mon ex me traitait de… », « il me criait « dégage » ») :
+ * une personne qui cite les mots qu'elle a subis ne les adresse à personne.
+ */
+const REPORTED_SPEECH =
+  /\b(?:trait\w*|appel\w*|insult\w*|cri\w*|hurl\w*|disai\w*|disait|dit|lan[cç]\w*)\b[^.!?]{0,40}(?:\bde\b|«|"|:)|«[^»]{1,60}»/i;
+
+/**
+ * Modération locale d'une réponse au Sondeur : comme un message, sauf qu'un
+ * mot grossier cité dans un récit (discours rapporté) n'est pas refusé. Il
+ * est masqué à l'affichage chez l'autre membre.
+ */
+export function moderateAnswerLocally(text: string): LocalModerationResult {
+  const result = moderateMessageLocally(text);
+  if (
+    !result.allowed &&
+    result.category === 'profanity' &&
+    REPORTED_SPEECH.test(normalizeQuotes(text))
+  ) {
+    return { allowed: true };
+  }
+  return result;
+}
+
+function normalizeQuotes(text: string): string {
+  return text.replace(/[“”]/g, '"');
 }
 
 export function maskProfanityForDisplay(text: string): string {

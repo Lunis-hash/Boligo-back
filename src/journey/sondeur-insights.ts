@@ -190,20 +190,115 @@ const THEME_KEYS = THEME_LIST.map((t) => `${t} (${THEMES[t].label})`).join(
   ', ',
 );
 
-/** Réponse par laquelle un membre garde un sujet pour la rencontre. */
+/**
+ * Réponse par laquelle un membre garde un sujet pour la rencontre (« je
+ * préfère ne pas y répondre », « on en parlera en face »). Une réponse qui
+ * parle simplement de l'oral (« je préfère régler les conflits de vive
+ * voix ») n'en est pas une.
+ */
 const RESERVED =
-  /vive voix|réservé à la rencontre|en parler (?:en personne|lors de (?:la|notre) rencontre|quand (?:on|nous) (?:se verra|nous verrons|se rencontrera))|on en parlera (?:plus tard|en vrai|quand)|préf[èe]re ne pas répondre|pas ici/i;
+  /(?:parler|discuter|répondre|aborder)\p{L}* (?:de vive voix|à l['’]oral|en (?:personne|face|vrai)|face à face|plus tard|lors de (?:la|notre) rencontre|quand (?:on|nous) (?:se verra|nous verrons|se rencontrera|se verra))|(?:préf[éèe]r\p{L}*|souhaite\p{L}*|veux|voudrais) (?:ne )?pas (?:y )?répondre|ne (?:souhaite|veux|voudrais|préfère) pas (?:y )?répondre|réservé à la rencontre|garde (?:ça|cela|ce sujet|la réponse) pour (?:la|notre) rencontre|^\s*(?:joker|je passe|pas ici|rather not say|pass)\s*[.!]?\s*$/iu;
+
+/** Texte comparable : sans accents, en minuscules, apostrophes droites. */
+function plain(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[’‘`´ʼ]/g, "'")
+    .replace(/\s+/g, ' ');
+}
 
 /**
- * Signal de danger dans une réponse libre : violence subie ou exercée,
- * menace, détresse, minorité, demande d'argent. L'IA ne lit pas une telle
- * journée et la modération est prévenue.
+ * Hypothèses et limites (« s'il levait la main sur moi, je partirais », « je
+ * ne supporte pas qu'on me menace ») : retirées avant de chercher des faits.
+ * Ce sont les réponses que les questions de limite appellent.
  */
-const DANGER =
-  /(?<!\p{L})(?:lever la main|levé la main|(?:il|elle|on) (?:me )?(?:frappe|frappait|bat|battait|menace|menaçait)|m['’]a (?:frappée?|giflée?|battue?|menacée?|étranglée?|violée?|forcée?)|me (?:frappait|battait|menaçait|forçait)|(?:je|j['’]ai) (?:déjà )?(?:frappé|giflé|cogné)|je (?:peux|pourrais) (?:frapper|gifler|cogner)|étrangl|je (?:te |vous |le |la )?tuerai|menaces? de mort|suicid|plus envie de vivre|en finir avec (?:la vie|tout)|me faire du mal|j['’]ai 1[0-7] ans|western union|mandat cash|envoie[sz]?[- ]moi de l['’]argent|prête[sz]?[- ]moi de l['’]argent)/iu;
+const HYPOTHESIS =
+  /\bs(?:i |')(?:jamais )?(?:il|elle|on|quelqu'un|un homme|une femme|mon (?:mari|conjoint|partenaire)|ma (?:femme|conjointe|partenaire))\b[^,.;:!?]*|\b(?:ne )?(?:supporte|tolere|accepte|refuse)\w* (?:pas |jamais |plus )?(?:qu'|que )[^,.;:!?]*/g;
+
+/** Catégorie d'un signal de danger, transmise à la modération. */
+export type DangerCategory =
+  | 'violence'
+  | 'menace'
+  | 'controle'
+  | 'detresse'
+  | 'argent'
+  | 'mineur';
+
+/** Faits (cherchés sur le texte sans hypothèse), par catégorie. */
+const DANGER_FACTS: Array<[DangerCategory, RegExp]> = [
+  [
+    'violence',
+    new RegExp(
+      [
+        // Violence subie ou exercée : pronom complément + verbe conjugué.
+        String.raw`\b(?:me|m'|m'?a|m'ont|m'avait|l'(?:ai|a|avait)|la|le|lui) (?:deja |souvent |encore )?(?:frapp(?:e|ee|es|ait|aient|er|era|erait)|tap(?:e|ee|ait|aient|er)(?! dans l'(?:oeil|œil))|batt(?:u|ue|ait|aient|re)|bat|bats|cogn(?:e|ee|ait|aient|er)|gifl(?:e|ee|ait|er)|tabass(?:e|ee|ait|er)|viol(?:e|ee|ait|er)|chicott?(?:e|ee|ait|er)|bastonn(?:e|ee|ait|er)|brutalis(?:e|ee|ait|er)|maltrait(?:e|ee|ait|er)|pouss(?:e|ee|ait) (?:contre|par terre|dans l'escalier))\b`,
+        String.raw`\b(?:ete|etais|etait) (?:battue?|frappee?|violee?|giflee?|tabassee?|agressee?|brutalisee?|maltraitee?|sequestree?|etranglee?)\b`,
+        String.raw`etrangl`,
+        String.raw`violences? (?:conjugales?|physiques?|sexuelles?|domestiques?)|violente? avec (?:moi|elle|lui|nous)|abus sexuels?|agression sexuelle|inceste|(?:mis|mettre|donne|donner|recu|recevoir|pris|prendre) (?:une|des) (?:claques?|gifles?|coups?)|des coups\b|une bonne (?:gifle|claque|correction|raclee|fessee)|(?:merite|meritent|donner|recevoir) une (?:bonne )?correction|corrig\w* (?:sa|ma|leur) (?:femme|epouse|mari)`,
+        String.raw`lev\w* la main sur|m'arriv\w* de lever la main|j'ai (?:deja )?leve la main`,
+        String.raw`\bj'ai (?:deja )?(?:frappe|gifle|cogne|tabasse|bouscule)|\bje (?:l'|la |le |lui )(?:ai )?(?:deja )?(?:frappe|gifle|cogne|tabasse)e?\b|\bje (?:peux|pourrais|risque de) (?:frapper|gifler|cogner|taper)`,
+        String.raw`\b(?:hit|hits|beat|beats|beaten|slapped|choked|raped|abused) me\b|\bused to (?:hit|beat|slap|choke) me`,
+      ].join('|'),
+    ),
+  ],
+  [
+    'menace',
+    new RegExp(
+      String.raw`\b(?:me|m'a|m'ont|m'avait) ?menac\w*|\b(?:il|elle|on) (?:me )?menac\w*|menaces? de mort|menac\w* de (?:me |la |le )?(?:tuer|frapper|prendre les enfants)|\bthreatened me\b|\bkill you\b`,
+    ),
+  ],
+  [
+    'controle',
+    new RegExp(
+      [
+        String.raw`(?:fouill|control|surveill|epluch)\w* (?:mon|son|ton|le|sa|ses|mes) (?:telephone|portable|messages|conversations)|(?:verifi|regard|lis|lit|lisait|consult)\w* (?:le (?:telephone|portable)|les messages) (?:de|d')|(?:exig|impos)\w* (?:mes|ses|tes|les|ma|sa|la) (?:codes?|mots de passe|localisation|geolocalisation|position)|me geolocalis|me suivait partout`,
+        String.raw`(?:m'|l'|lui )interdi\w* de (?:voir|frequenter|parler a) (?:mes|ses|tes) (?:amie?s|proches|parents|famille|soeurs?|freres?)|(?:m'|l')empech\w* de (?:voir|travailler|sortir)|(?:sortir|sortira|travailler|travaillera|voir|depenser|depensera)\b[^,.;]{0,30} sans (?:ma|mon|sa|son) (?:permission|autorisation)|(?:il|elle|on) (?:m'|l')enferm|sequestr|confisqu\w* (?:mon|son|mes|ses) (?:passeport|papiers|carte|telephone|salaire)|(?:gard|pren|pris)\w* (?:tout )?(?:mon|son) (?:salaire|argent)`,
+      ].join('|'),
+    ),
+  ],
+  [
+    'detresse',
+    new RegExp(
+      String.raw`suicid|(?:envie|besoin|veux|voudrais|vais) (?:de )?mourir|plus envie de vivre|(?:plus|aucune|pas) (?:de )?raison de vivre|en finir\b(?! avec (?:les |le |la |ce |cette |ces |tout ce|tout ca|la solitude|le celibat))|(?:pense|penser|pensais|envie|veux|voudrais|essaye|tente)\w* (?:a |de )?me (?:tuer|suicider|foutre en l'air)|me (?:fais|faire|suis fait) du mal|me scarifi|automutil|disparaitre (?:pour toujours|a jamais|de ce monde)|fatiguee? de vivre|la vie n'a plus de sens|\b(?:want|wanna) to die\b|\bkill myself\b`,
+    ),
+  ],
+  [
+    'argent',
+    new RegExp(
+      String.raw`western union|money ?gram|mandat cash|(?:orange|moov|mtn|airtel|mobile) money|m-?pesa|transcash|neosurf|coupons? pcs|cartes? (?:cadeau|google play|itunes|steam)|bitcoin|\b(?:me|m') ?(?:preter|pretes|pretez|envoyer|envoies|envoyez|avancer|depanner|virer|transferer)\b[^.?!]{0,25}(?:argent|sous|\d|euros?|cfa|francs|dollars)|\b(?:envoie|envoyez|prete|pretez|vire|virez|fais)[- ]moi\b[^.?!]{0,30}(?:argent|sous|\d|transfert|virement|euros?|cfa|money)|bloquee? a l'aeroport|frais de (?:douane|visa|dossier)|\bsend me (?:money|\$|\d)`,
+    ),
+  ],
+  [
+    'mineur',
+    new RegExp(
+      String.raw`\bj'?ai (?:1[0-7]|douze|treize|quatorze|quinze|seize|dix-sept) ?ans\b(?! (?:d'|de |depuis|que|quand))|\bje suis (?:mineure?|au (?:college|lycee))\b|\bi'?m 1[0-7]\b`,
+    ),
+  ],
+];
+
+/** Menaces avec condition (« si tu me quittes, je te tue ») : sur le texte entier. */
+const THREAT =
+  /\bje (?:te|vous|le|la|l') ?(?:tue|tuerai|tuerais)\b|\bje vais (?:te |vous |le |la |l')?tuer|\b(?:va|vas|vont) (?:le |me le |me )regretter\b|\b(?:va|vas|vont) me le payer\b/;
+
+/**
+ * Signaux de danger dans une réponse libre : violence subie ou exercée,
+ * menace, contrôle, détresse, demande d'argent, minorité. L'IA ne lit pas une
+ * telle journée et la modération est prévenue (avec ces catégories).
+ */
+export function dangerCategories(text: string): DangerCategory[] {
+  const p = plain(text);
+  const facts = p.replace(HYPOTHESIS, ' ');
+  const found = DANGER_FACTS.filter(([, re]) => re.test(facts)).map(
+    ([category]) => category,
+  );
+  if (THREAT.test(p) && !found.includes('menace')) found.push('menace');
+  return found;
+}
 
 export function hasDangerSignal(text: string): boolean {
-  return DANGER.test(text);
+  return dangerCategories(text).length > 0;
 }
 const RESERVED_MARK = '[réservé à la rencontre]';
 
