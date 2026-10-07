@@ -68,9 +68,17 @@ export interface PoolTemplate {
    * deux façons de faire) : jamais servie sur un point non négociable.
    */
   compromise?: boolean;
+  /** Suppose des enfants à venir : jamais servie si l'un n'en veut pas. */
+  needsChildren?: boolean;
 }
 
 const opts = (a: string, b: string, c: string) => [a, b, c, 'Autre...'];
+
+/** Formulation qui suppose des enfants à venir. */
+const withChildren = (t: PoolTemplate): PoolTemplate => ({
+  ...t,
+  needsChildren: true,
+});
 
 function q(
   text: string,
@@ -542,6 +550,27 @@ const NON_POSITION_ANSWERS = new Set([
   'M6_Q04:D',
 ]);
 
+/**
+ * Sujets qui supposent des enfants à venir : écartés quand l'un des deux n'en
+ * veut pas (M0_Q06 = D).
+ */
+export const CHILDREN_TOPICS = new Set(['M8_Q15', 'M1_Q13']);
+
+/** L'un des deux, ou les deux, ne veulent pas d'enfants. */
+export function isChildFree(
+  divergences: Divergence[],
+  convergences: Convergence[],
+): boolean {
+  return (
+    divergences.some(
+      (d) => d.questionId === 'M0_Q06' && (d.a.key === 'D' || d.b.key === 'D'),
+    ) ||
+    convergences.some(
+      (c) => c.questionId === 'M0_Q06' && agreementKey(c) === 'D',
+    )
+  );
+}
+
 /** Questions factuelles (enfants déjà nés) : une même réponse n'est pas un accord. */
 const FACT_QUESTIONS = new Set(['M0_Q05']);
 
@@ -687,10 +716,16 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
           'Les vieilles rancunes',
         ],
       ),
-      q(
-        'Si vous éleviez un enfant un jour, quelle phrase entendue dans votre enfance aimeriez-vous lui redire ?',
-        'origine',
-        ["Une phrase d'encouragement", 'Une règle de vie', 'Une parole de foi'],
+      withChildren(
+        q(
+          'Si vous éleviez un enfant un jour, quelle phrase entendue dans votre enfance aimeriez-vous lui redire ?',
+          'origine',
+          [
+            "Une phrase d'encouragement",
+            'Une règle de vie',
+            'Une parole de foi',
+          ],
+        ),
       ),
       q(
         'De 0 à 10, quelle place aimeriez-vous laisser à vos familles dans votre vie à deux, et pourquoi pas un point de plus ?',
@@ -963,10 +998,12 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
       ),
     ],
     3: [
-      q(
-        'Si un enfant choisissait un jour une autre voie spirituelle que la vôtre, comment aimeriez-vous réagir ?',
-        'projection',
-        ['Avec confiance', 'Avec dialogue', 'Avec peine, mais présent(e)'],
+      withChildren(
+        q(
+          'Si un enfant choisissait un jour une autre voie spirituelle que la vôtre, comment aimeriez-vous réagir ?',
+          'projection',
+          ['Avec confiance', 'Avec dialogue', 'Avec peine, mais présent(e)'],
+        ),
       ),
       q(
         "Imaginez une grande fête religieuse ou familiale, dans quelques années : qu'est-ce qui la rendrait réussie pour vous ?",
@@ -1574,10 +1611,12 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         'projection',
         ['En alternance', 'Moitié chez chacun', 'Nos propres voyages'],
       ),
-      q(
-        "Pour élever un enfant, qu'est-ce qu'un lieu de vie aurait à offrir avant tout à vos yeux ?",
-        'sens',
-        ['La sécurité', 'La famille proche', 'Des écoles'],
+      withChildren(
+        q(
+          "Pour élever un enfant, qu'est-ce qu'un lieu de vie aurait à offrir avant tout à vos yeux ?",
+          'sens',
+          ['La sécurité', 'La famille proche', 'Des écoles'],
+        ),
       ),
       q(
         'De 0 à 10, à quel point avez-vous besoin de vivre près de votre famille, et pourquoi pas un point de moins ?',
@@ -3191,10 +3230,14 @@ export function topicDeepAll(d: TopicSource, day: number): PoolTemplate[] {
  * la même réponse est un risque partagé, la question parle alors de soi, seule.
  * Clé : « question:clé de réponse », ou la question seule pour toute réponse.
  */
-export const AGREEMENTS: Record<
-  string,
-  { statement: string; probe?: PoolTemplate }
-> = {
+export interface Agreement {
+  statement: string;
+  probe?: PoolTemplate;
+  /** Suppose des enfants à venir : jamais servi si l'un n'en veut pas. */
+  needsChildren?: boolean;
+}
+
+export const AGREEMENTS: Record<string, Agreement> = {
   'M1_Q06:A': {
     statement: 'Partager la même foi compte pour vous deux.',
     probe: q(
@@ -3320,6 +3363,7 @@ export const AGREEMENTS: Record<
     ),
   },
   'M1_Q13:A': {
+    needsChildren: true,
     statement:
       'Vous voulez tous les deux transmettre langue, traditions et religion.',
     probe: q(
@@ -3329,6 +3373,7 @@ export const AGREEMENTS: Record<
     ),
   },
   'M1_Q13:B': {
+    needsChildren: true,
     statement: 'Pour vous deux, des enfants grandiraient entre deux cultures.',
     probe: q(
       'Quelle fête de votre enfance tiendriez-vous à leur faire vivre ?',
@@ -3962,6 +4007,7 @@ export const AGREEMENTS: Record<
     ),
   },
   'M1_Q13:C': {
+    needsChildren: true,
     statement:
       'Pour vous deux, des enfants choisiraient eux-mêmes leur culture en grandissant.',
     probe: q(
@@ -4100,10 +4146,7 @@ export function isDeferredAgreement(c: Convergence): boolean {
   return DEFERRED_ANSWERS.has(`${c.questionId}:${agreementKey(c) ?? ''}`);
 }
 
-export function agreementFor(c: Convergence): {
-  statement: string;
-  probe?: PoolTemplate;
-} {
+export function agreementFor(c: Convergence): Agreement {
   const found =
     AGREEMENTS[`${c.questionId}:${agreementKey(c) ?? ''}`] ??
     AGREEMENTS[c.questionId];

@@ -37,6 +37,7 @@ import {
   ensureAutreOption,
 } from './harmony-question.types';
 import {
+  CHILDREN_TOPICS,
   CONVERGENT,
   PoolTemplate,
   SHARED_RISK,
@@ -48,6 +49,7 @@ import {
   TopicSource,
   isAgreementWorthAsking,
   isDeferredAgreement,
+  isChildFree,
   isDeferredDivergence,
   isNonNegotiable,
   relatedTopics,
@@ -552,13 +554,14 @@ function dayFor(
 function planDivergences(
   report: DivergenceReport,
   reserved: Set<string>,
+  excluded: Set<string>,
 ): Map<string, Divergence> {
   const plan = new Map<string, Divergence>();
   const planned = new Set<string>();
   const safety = new Set(safetyThemesOf(report));
-  const candidates = THEME_LIST.filter((theme) => !safety.has(theme)).flatMap(
-    (theme) => divergencesForTheme(report, theme),
-  );
+  const candidates = THEME_LIST.filter((theme) => !safety.has(theme))
+    .flatMap((theme) => divergencesForTheme(report, theme))
+    .filter((d) => !excluded.has(d.questionId));
   // Tri stable : à gravité égale, l'ordre des thèmes, puis celui du moteur.
   const ordered = [...candidates].sort(
     (x, y) => SEVERITY_RANK[y.severity] - SEVERITY_RANK[x.severity],
@@ -591,6 +594,7 @@ function convergencesFor(
   theme: Theme,
   day: number,
   taken: Set<string>,
+  childFree: boolean,
 ): Convergence[] {
   const eligible = report.convergences.filter(
     (c) =>
@@ -599,6 +603,7 @@ function convergencesFor(
       !SAFETY_QUESTIONS.has(c.questionId) &&
       !taken.has(c.questionId) &&
       isAgreementWorthAsking(c) &&
+      !(childFree && agreementFor(c).needsChildren) &&
       topicDays({ ...c, label: c.topic ?? c.label }).includes(day),
   );
   return [
@@ -678,10 +683,13 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   // Signal de contrôle : une question de limite au jour 2 de son thème.
   const controlTheme = controlThemeOf(report);
   const reserved = new Set(controlTheme ? [`2|${controlTheme}`] : []);
-  const plan = planDivergences(report, reserved);
+  // L'un ne veut pas d'enfants : aucune question qui en suppose.
+  const childFree = isChildFree(report.divergences, report.convergences);
+  const excluded = childFree ? CHILDREN_TOPICS : new Set<string>();
+  const plan = planDivergences(report, reserved, excluded);
   // Sujets déjà abordés ou prévus (et leurs voisins) : on ne les repose pas un
   // autre jour.
-  const taken = new Set<string>();
+  const taken = new Set<string>(excluded);
   for (const d of plan.values()) markTaken(taken, d);
   if (controlTheme)
     markTaken(taken, { questionId: 'M5_Q08', label: '', theme: 'intimite' });
@@ -767,7 +775,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
 
       // 4. Point d'accord réel (deux par jour au plus).
       if (!question && convergenceToday < MAX_CONVERGENCE_PER_DAY) {
-        for (const c of convergencesFor(report, theme, day, taken)) {
+        for (const c of convergencesFor(report, theme, day, taken, childFree)) {
           // Un accord ne reprend jamais une tournure déjà posée dans ce
           // Sondeur : le créneau prend alors une question du thème.
           const pick = pickFresh(
@@ -795,7 +803,9 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
       if (!question) {
         const pool = arrange(
           THEME_POOL[theme][day].filter(
-            (t) => !(strictThemes.has(theme) && t.compromise),
+            (t) =>
+              !(strictThemes.has(theme) && t.compromise) &&
+              !(childFree && t.needsChildren),
           ),
           seed,
           `${slot}|gen`,
