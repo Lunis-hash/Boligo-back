@@ -182,12 +182,25 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       demande d'argent (Western Union, mobile money…), âge de moins de 18 ans.
       En français, registre africain, SMS et anglais. Une limite écrite (« s'il
       levait la main sur moi, je partirais ») n'est pas un signal.
-    - Si le code ne voit rien, l'IA peut lever une alerte dans la lecture
-      comme dans la relecture.
+    - Le signalement part dès l'envoi de la réponse, sans attendre la fin de
+      la journée : un membre qui s'arrête en route n'y échappe pas.
+    - Si le code ne voit rien, l'IA peut lever une alerte dans la lecture,
+      dans la relecture et dans le contrôle de fidélité.
     - Dans les deux cas : aucune lecture ni question d'approfondissement par
       l'IA ; une lecture de sécurité s'affiche (rien n'est commenté, la
       liberté de chacun est rappelée) ; la modération reçoit un signalement
-      avec la catégorie ; la messagerie attend la décision de l'équipe.
+      avec la ou les catégories.
+    - Tant que le signalement attend l'équipe, l'autre membre voit « Réponse
+      en cours de vérification par l'équipe BOLIGO. » à la place de la
+      réponse.
+    - La messagerie attend la décision de l'équipe. Seule exception : une
+      confidence de violence subie, sans autre catégorie, ne retient pas la
+      victime.
+    - Sur un parcours payé, la messagerie attend aussi que les lectures de
+      l'IA soient écrites (ou qu'elles aient échoué trois fois), puisqu'elles
+      peuvent lever une alerte.
+    - L'équipe reçoit une notification discrète : son texte ne contient
+      jamais la réponse du membre.
     - Détresse ou violences : l'auteur reçoit en privé des ressources d'aide
       (3114 et 3919 en France ; ailleurs, les urgences du pays). La liste des
       numéros par pays est à faire valider par l'équipe.
