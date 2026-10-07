@@ -8,6 +8,7 @@ import {
   questionSignature,
   validateSondeurGrid,
 } from './sondeur.generator';
+import { AGREEMENTS } from './sondeur.pool';
 
 describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
   const report = buildDivergenceReport(
@@ -300,6 +301,22 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       expect(again.map((q) => q.text)).toEqual(a.map((q) => q.text));
       const common = a.filter((q, i) => q.text === b[i].text).length;
       expect(common).toBeLessThan(21);
+    });
+
+    it('accord déjà exploré : la seconde relance propre, pas une question générique', () => {
+      const agreed = buildDivergenceReport({ M4_Q01: 'A' }, { M4_Q01: 'A' });
+      const { statement, probe, probeVariant } = AGREEMENTS['M4_Q01:A'];
+      expect(probeVariant).toBeDefined();
+      const first = assembleSondeur({ report: agreed, firstNames: ['A', 'B'] });
+      expect(first.map((q) => q.text)).toContain(`${statement} ${probe!.text}`);
+      const second = assembleSondeur({
+        report: agreed,
+        firstNames: ['A', 'B'],
+        history: first.map((q) => q.text),
+      });
+      expect(second.map((q) => q.text)).toContain(
+        `${statement} ${probeVariant!.text}`,
+      );
     });
 
     it('approfondit les points d’accord réels, deux fois par jour au plus', () => {

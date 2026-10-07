@@ -8,6 +8,7 @@ import {
   Convergence,
   DIVERGENCE_RULES,
   Divergence,
+  DivergenceReport,
   RawAnswers,
   THEME_LIST,
   Theme,
@@ -33,6 +34,7 @@ import {
   DAY_ANGLES,
   SAFETY_QUESTIONS,
   SAFETY_TEMPLATES,
+  SELF_DISCLOSURE_QUESTIONS,
   SondeurQuestion,
   assembleSondeur,
   describeReportForAi,
@@ -42,6 +44,8 @@ import {
 } from './sondeur.generator';
 import {
   AGREEMENTS,
+  AGREEMENT_CONTRADICTIONS,
+  Agreement,
   CHILDREN_TOPICS,
   CONVERGENT,
   PoolTemplate,
@@ -57,6 +61,7 @@ import {
   Technique,
   TopicTemplate,
   agreementFor,
+  agreementKey,
   isNonNegotiable,
   topicDeepAll,
   topicKey,
@@ -228,6 +233,10 @@ const staticTemplates = (): Array<{
 const joinAgreement = (statement: string, text: string) =>
   statement ? `${statement} ${text}` : text;
 
+/** Relances propres d'un accord : la principale, puis sa variante. */
+const ownProbes = (a: Agreement): PoolTemplate[] =>
+  [a.probe, a.probeVariant].filter((t): t is PoolTemplate => !!t);
+
 function agreementStatements(): string[] {
   return [
     ...Object.values(AGREEMENTS)
@@ -255,15 +264,14 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
 
   it("gabarits d'accord : chaque phrase d'accord avec chaque question", () => {
     const all: Array<{ where: string; text: string }> = [];
-    for (const [key, a] of Object.entries(AGREEMENTS)) {
-      if (a.probe) {
+    for (const [key, a] of Object.entries(AGREEMENTS))
+      for (const probe of ownProbes(a)) {
         all.push({
           where: `AGREEMENTS.${key}`,
-          text: joinAgreement(a.statement, a.probe.text),
+          text: joinAgreement(a.statement, probe.text),
         });
-        expect(optionIssues(a.probe.options)).toEqual([]);
+        expect(optionIssues(probe.options)).toEqual([]);
       }
-    }
     for (const statement of agreementStatements())
       for (const [day, questions] of Object.entries(CONVERGENT))
         questions.forEach((q, i) => {
@@ -372,19 +380,12 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
           children: false,
         })),
         ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
-          [a.probe].flatMap((t) =>
-            t
-              ? [
-                  {
-                    where: `AGREEMENTS.${key}`,
-                    options: t.options,
-                    children:
-                      !!a.needsChildren ||
-                      CHILD_SUBJECTS.has(key.split(':')[0]),
-                  },
-                ]
-              : [],
-          ),
+          ownProbes(a).map((t) => ({
+            where: `AGREEMENTS.${key}`,
+            options: t.options,
+            children:
+              !!a.needsChildren || CHILD_SUBJECTS.has(key.split(':')[0]),
+          })),
         ),
       ];
     expect(all.length).toBeGreaterThan(400);
@@ -402,9 +403,9 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
 describe('Gabarits du Sondeur : quasi-doublons et redites de l’entretien', () => {
   const statics = [
     ...staticTemplates(),
-    ...Object.entries(AGREEMENTS)
-      .filter(([, a]) => a.probe)
-      .map(([key, a]) => ({ where: `AGREEMENTS.${key}`, text: a.probe!.text })),
+    ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
+      ownProbes(a).map((t) => ({ where: `AGREEMENTS.${key}`, text: t.text })),
+    ),
   ];
 
   it('aucune paire de formulations trop proches (même sens, presque les mêmes mots)', () => {
@@ -1282,5 +1283,181 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
     }
     expect(neighbours).toBeGreaterThan(500);
     expect(served).toEqual([]);
+  });
+
+  /** Accord d'une question servie (source « convergence »). */
+  const agreementOf = (report: DivergenceReport, q: SondeurQuestion) =>
+    report.convergences.find((x) => x.questionId === q.subject)!;
+
+  it('relances d’accord : moins de 15 % de questions génériques, au 1er et au 2e parcours', () => {
+    for (const pass of ['first', 'second'] as const) {
+      let total = 0;
+      let generic = 0;
+      for (const { report, [pass]: questions } of runs)
+        for (const q of questions) {
+          if (q.source !== 'convergence') continue;
+          const a = agreementFor(agreementOf(report, q));
+          total++;
+          const own = ownProbes(a).map((t) =>
+            joinAgreement(a.statement, t.text),
+          );
+          if (!own.includes(q.text)) generic++;
+        }
+      const share = (100 * generic) / total;
+      console.log(
+        `Relances d'accord génériques (${pass === 'first' ? '1er' : '2e'} parcours) : ${generic}/${total} = ${share.toFixed(1)} %`,
+      );
+      expect(total).toBeGreaterThan(1000);
+      expect(share).toBeLessThan(15);
+    }
+  });
+
+  it('aucun accord démenti par la réponse de l’un des deux à un sujet voisin', () => {
+    // Le cas relevé par le contre-audit : « la décision finale vous revient »
+    // ou « ne regardent que le couple » quand l'un suit l'avis des siens pour
+    // garder la paix (M5_Q10 A, dans questions.data.ts).
+    expect(AGREEMENT_CONTRADICTIONS['M5_Q01:B'].M5_Q10).toEqual(['A']);
+    expect(AGREEMENT_CONTRADICTIONS['M5_Q01:D'].M5_Q10).toEqual(['A']);
+    // Vérifié sur les réponses brutes des deux entretiens, pas sur le rapport :
+    // une réponse que le rapport ne laisse pas voir ferait échouer le test.
+    const belied: string[] = [];
+    let checked = 0;
+    for (const { a, b, report, questions, where } of passes)
+      for (const q of questions) {
+        if (q.source !== 'convergence') continue;
+        const c = agreementOf(report, q);
+        const rules =
+          AGREEMENT_CONTRADICTIONS[`${c.questionId}:${agreementKey(c) ?? ''}`];
+        if (!rules) continue;
+        checked++;
+        for (const [id, keys] of Object.entries(rules))
+          if (keys.includes(a[id]) || keys.includes(b[id]))
+            belied.push(
+              `${where} ${c.questionId} (${id} = ${a[id]} / ${b[id]}) : ${q.text}`,
+            );
+      }
+    expect(checked).toBeGreaterThan(500);
+    expect(belied).toEqual([]);
+  });
+
+  it('toute relance d’accord qui met l’accord à l’épreuve est étiquetée « limite », jamais servie sur un point non négociable', () => {
+    /** Imaginer l'accord rompu, changé, poussé à bout ou à sa limite. */
+    const PUT_TO_TEST =
+      /changer\p{L}* d['’]avis|à l['’]épreuve|se complique|limite (?:est )?(?:franchie|atteinte)|n['’]y est plus|jusqu['’]où|faire bouger|impossible|ne lâcheriez pas|cess\p{L}*(?:-t-(?:il|elle))?(?:, pour vous,)? d['’]être/iu;
+    const probes = [
+      ...[1, 2, 3].flatMap((day) =>
+        CONVERGENT[day].map((t, i) => ({
+          where: `CONVERGENT[${day}][${i}]`,
+          t,
+        })),
+      ),
+      ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
+        ownProbes(a).map((t) => ({ where: `AGREEMENTS.${key}`, t })),
+      ),
+    ];
+    const tested = probes.filter(({ t }) => PUT_TO_TEST.test(t.text));
+    expect(tested.length).toBeGreaterThanOrEqual(6);
+    expect(
+      tested
+        .filter(({ t }) => t.technique !== 'limite')
+        .map(({ where, t }) => `${where} : ${t.text}`),
+    ).toEqual([]);
+    const limits = new Set(
+      probes.filter(({ t }) => t.technique === 'limite').map(({ t }) => t.text),
+    );
+    const served: string[] = [];
+    let strict = 0;
+    for (const { report, questions, where } of passes)
+      for (const q of questions) {
+        if (q.source !== 'convergence') continue;
+        const c = agreementOf(report, q);
+        if (!isNonNegotiable({ ...c, label: c.topic ?? c.label })) continue;
+        strict++;
+        const { statement } = agreementFor(c);
+        const probe = statement ? q.text.slice(statement.length + 1) : q.text;
+        if (limits.has(probe)) served.push(`${where} : ${q.text}`);
+      }
+    expect(strict).toBeGreaterThan(500);
+    expect(served).toEqual([]);
+  });
+
+  it('aucun aveu nommé, ni dans une question servie ni dans une formulation écrite', () => {
+    // Tournures des auto-évaluations (dernier mot, compte de ce que l'on
+    // donne, silences en dispute…) : jamais dans le texte d'une question.
+    const confessions = Object.entries(TOPIC_PHRASES)
+      .filter(([key]) => SELF_DISCLOSURE_QUESTIONS.has(key.split(':')[0]))
+      .map(([, phrase]) => phrase.toLowerCase());
+    expect(confessions).toContain("le besoin d'avoir le dernier mot");
+    expect(confessions).toContain("l'équilibre entre donner et recevoir");
+    const names = (text: string) =>
+      confessions.some((c) => text.toLowerCase().includes(c));
+    const named = passes.flatMap(({ questions, where }) =>
+      questions.filter((q) => names(q.text)).map((q) => `${where} : ${q.text}`),
+    );
+    const written = [
+      ...staticTemplates(),
+      ...Object.entries(AGREEMENTS).flatMap(([key, a]) =>
+        ownProbes(a).map((t) => ({
+          where: `AGREEMENTS.${key}`,
+          text: joinAgreement(a.statement, t.text),
+        })),
+      ),
+    ]
+      .filter((t) => names(t.text))
+      .map((t) => `${t.where} : ${t.text}`);
+    expect([...named, ...written]).toEqual([]);
+  });
+
+  it('langue : jamais deux « façon » dans une question, jamais « Pour vous deux… Pour vous… »', () => {
+    const CLUMSY = [/façon[^?]*façon/iu, /^Pour vous deux[^.]*\. Pour vous/u];
+    const clumsy = (text: string) => CLUMSY.some((re) => re.test(text));
+    const served = passes.flatMap(({ questions, where }) =>
+      questions
+        .filter((q) => clumsy(q.text))
+        .map((q) => `${where} : ${q.text}`),
+    );
+    // Toutes les combinaisons écrites à l'avance : sujet × gabarit, phrase
+    // d'accord × relance propre ou question d'accord du jour.
+    const combos = [
+      ...staticTemplates().map((t) => t.text),
+      ...renderTopic(TARGETED, 'T').map((t) => t.text),
+      ...renderTopic(SHARED_RISK, 'S').map((t) => t.text),
+      ...Object.values(AGREEMENTS).flatMap((a) =>
+        [...ownProbes(a), ...[1, 2, 3].flatMap((day) => CONVERGENT[day])].map(
+          (t) => joinAgreement(a.statement, t.text),
+        ),
+      ),
+    ].filter(clumsy);
+    expect([...served, ...combos]).toEqual([]);
+  });
+});
+
+describe('Accords démentis : exemple du contre-audit', () => {
+  it('« la décision finale vous revient » n’est jamais nommé quand l’un suit l’avis des siens pour garder la paix', () => {
+    for (const key of ['B', 'D']) {
+      const { statement } = AGREEMENTS[`M5_Q01:${key}`];
+      const belied = buildDivergenceReport(
+        { M5_Q01: key, M5_Q10: 'A' },
+        { M5_Q01: key, M5_Q10: 'B' },
+      );
+      for (let i = 0; i < 10; i++)
+        expect(
+          assembleSondeur({
+            report: belied,
+            firstNames: ['A', 'B'],
+            seed: `d${i}`,
+          }).some((q) => q.text.startsWith(statement)),
+        ).toBe(false);
+      // Sans la réponse qui le dément, l'accord reste exploré.
+      const free = buildDivergenceReport(
+        { M5_Q01: key, M5_Q10: 'B' },
+        { M5_Q01: key, M5_Q10: 'B' },
+      );
+      expect(
+        assembleSondeur({ report: free, firstNames: ['A', 'B'] }).some((q) =>
+          q.text.startsWith(statement),
+        ),
+      ).toBe(true);
+    }
   });
 });

@@ -649,15 +649,21 @@ function convergencesFor(
       !(childFree && agreementFor(c).needsChildren) &&
       topicDays({ ...c, label: c.topic ?? c.label }).includes(day),
   );
+  const hasProbe = (c: Convergence) => {
+    const a = agreementFor(c);
+    return !!(a.probe || a.probeVariant);
+  };
   return [
-    ...eligible.filter((c) => agreementFor(c).probe),
-    ...eligible.filter((c) => !agreementFor(c).probe),
+    ...eligible.filter(hasProbe),
+    ...eligible.filter((c) => !hasProbe(c)),
   ];
 }
 
 /**
- * Formulations d'un accord : la phrase qui le nomme, puis une question. Sans
- * phrase (risque partagé non signalé), la question propre seule.
+ * Formulations d'un accord : la phrase qui le nomme, puis une question (la
+ * relance propre, sa variante pour un membre qui l'a déjà vue, puis les
+ * questions d'accord du jour). Sans phrase (risque partagé non signalé), les
+ * relances propres seules.
  */
 function convergenceCandidates(
   day: number,
@@ -665,20 +671,23 @@ function convergenceCandidates(
   seed: string | undefined,
   slot: string,
 ): PoolTemplate[] {
-  const { statement, probe } = agreementFor(c);
-  if (!statement) return probe ? [probe] : [];
+  const { statement, probe, probeVariant } = agreementFor(c);
+  // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
+  // solidité d'un accord que les deux tiennent pour essentiel, ni par une
+  // relance propre ni par une question générique.
+  const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
+  const allowed = (t: PoolTemplate) => !(strict && t.technique === 'limite');
+  const own = [probe, probeVariant].filter(
+    (t): t is PoolTemplate => !!t && allowed(t),
+  );
+  if (!statement) return own;
   const withStatement = (t: PoolTemplate) => ({
     text: `${statement} ${t.text}`,
     options: t.options,
   });
-  // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
-  // solidité d'un accord que les deux tiennent pour essentiel.
-  const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
-  const generic = CONVERGENT[day].filter(
-    (t) => !(strict && t.technique === 'limite'),
-  );
+  const generic = CONVERGENT[day].filter(allowed);
   return [
-    ...(probe ? [withStatement(probe)] : []),
+    ...own.map(withStatement),
     ...arrange(generic.map(withStatement), seed, `${slot}|conv`),
   ];
 }

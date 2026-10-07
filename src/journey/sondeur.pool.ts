@@ -170,7 +170,7 @@ export const TOPIC_PHRASES: Record<string, string> = {
   M9_Q01: 'la façon de prendre les décisions',
   M9_Q02: "la place de l'effort en amour",
   M9_Q06: "les sacrifices que l'on fait par amour",
-  M8_Q04: 'la façon de montrer son amour',
+  M8_Q04: 'les attentions qui font se sentir aimé',
   // Écarts tirés des échelles (jamais un score, jamais un aveu)
   M2_Q11: "l'équilibre entre proximité et espace",
   M6_Q15: 'la façon de réagir quand une dispute monte',
@@ -572,16 +572,46 @@ export function isChildFree(
 }
 
 /**
- * Accord de lieu démenti par une réponse au sujet voisin : « ouverts sur le
- * lieu de vie » face à « je reste où je suis », « rester là où vous vivez »
- * face à « dans une autre ville ou un autre pays ».
+ * Accord démenti par la réponse de l'un des deux à un sujet voisin : la phrase
+ * qui le nomme serait fausse pour lui ou pour elle. « Accord » → { question
+ * voisine : réponses qui le démentent } (clés de questions.data.ts).
+ *
+ * Chaque réponse listée doit rester visible dans le rapport (écart ou accord
+ * sur la question voisine), quelle que soit la réponse de l'autre : sinon, la
+ * phrase d'accord est réécrite pour ne dire que ce qui a été répondu (« ne se
+ * voit pas déménager pour un partenaire » plutôt que « rester là où vous
+ * vivez », que M7_Q07 B ou C face à D ne laisse pas voir).
  */
 export const AGREEMENT_CONTRADICTIONS: Record<
   string,
   Record<string, string[]>
 > = {
+  // Lieu : « ouverts sur le lieu de vie » ou « une vie à l'étranger » face à
+  // « je reste où je suis » (M0_Q03 D).
   'M7_Q07:D': { M0_Q03: ['D'] },
-  'M0_Q03:D': { M7_Q07: ['B', 'C'] },
+  'M7_Q07:C': { M0_Q03: ['D'] },
+  // Famille : « la décision finale vous revient », « les décisions ne
+  // regardent que le couple », « consultée sans obligation » face à « je suis
+  // leur avis pour garder la paix » (M5_Q10 A) ou « je revois ma décision »
+  // quand la famille désapprouve (M1_Q15 A).
+  'M5_Q01:B': { M5_Q10: ['A'], M1_Q15: ['A'] },
+  'M5_Q01:C': { M5_Q10: ['A'], M1_Q15: ['A'] },
+  'M5_Q01:D': { M5_Q10: ['A'], M1_Q15: ['A'] },
+  // Argent : « un pot commun » face à « c'est mon argent, c'est mon affaire »
+  // (M4_Q05 C) ; « ce qui est à l'un est à l'autre » face à « l'argent reste
+  // une affaire individuelle » (M4_Q01 D).
+  'M4_Q01:A': { M4_Q05: ['C'] },
+  'M4_Q13:A': { M4_Q01: ['D'] },
+  // Dispute : « se demander pardon » face à « je ne m'excuse pas tant que je
+  // pense avoir raison » (M2_Q22 D).
+  'M6_Q11:A': { M2_Q22: ['D'] },
+  // Engagement : « prendre soin de l'autre dans l'épreuve, une évidence »
+  // face à « je partirais sans trop attendre » (M8_Q13 D) ; « le mariage »
+  // face à « un choix optionnel » (M8_Q03 D) ; « un engagement dans l'année »
+  // face à « ouvert à voir ce qui se présente » (M8_Q01 D).
+  'M8_Q11:A': { M8_Q13: ['D'] },
+  'M8_Q01:A': { M8_Q03: ['D'] },
+  'M8_Q02:A': { M8_Q01: ['D'] },
 };
 
 /** L'accord est démenti par un écart ou un autre accord sur le sujet voisin. */
@@ -3818,6 +3848,14 @@ export function topicDeepAll(d: TopicSource, day: number): PoolTemplate[] {
 export interface Agreement {
   statement: string;
   probe?: PoolTemplate;
+  /**
+   * Seconde relance propre, pour les accords les plus servis : un membre qui a
+   * déjà vu la première reçoit encore une question pensée pour cet accord,
+   * plutôt qu'une question d'accord générique. Même règle que `probe` : une
+   * relance qui met l'accord à l'épreuve est étiquetée « limite » (jamais
+   * servie sur un point non négociable).
+   */
+  probeVariant?: PoolTemplate;
   /** Suppose des enfants à venir : jamais servi si l'un n'en veut pas. */
   needsChildren?: boolean;
 }
@@ -3847,6 +3885,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un message caché', 'Un rendez-vous', 'Un mensonge'],
     ),
+    probeVariant: q(
+      "D'où vous vient cette exigence de fidélité absolue ?",
+      'origine',
+      ['De ma famille', 'De ma foi', 'De ce que j’ai vu'],
+    ),
   },
   'M6_Q18:C': {
     statement:
@@ -3855,6 +3898,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce qui permettrait, pour vous, de réparer la confiance après un écart ?",
       'sens',
       ['La vérité dite', 'Le temps', 'Des preuves'],
+    ),
+    probeVariant: q(
+      "Qu'est-ce qui vous a appris qu'une confiance blessée peut se reconstruire ?",
+      'origine',
+      ['Ma famille', 'Mon expérience', 'Ma foi'],
     ),
   },
   'M6_Q10:A': {
@@ -3872,6 +3920,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Rien', 'Un engagement devant les miens', 'Une vie commune'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui vous donne envie de vous marier, plutôt que de seulement vivre à deux ?",
+      'besoin',
+      ['Ma foi', 'Un engagement devant les miens', 'Une sécurité'],
+    ),
   },
   'M8_Q01:B': {
     statement: 'Vous voulez tous les deux une relation sérieuse.',
@@ -3879,6 +3932,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce qui, pour vous, fait passer une rencontre agréable au rang de relation sérieuse ?",
       'sens',
       ['Un projet', 'Une parole donnée', 'Les proches'],
+    ),
+    probeVariant: q(
+      "Qu'est-ce qu'une relation sérieuse vous demanderait de changer dans votre vie actuelle ?",
+      'projection',
+      ['Mon emploi du temps', 'Mes priorités', 'Rien de particulier'],
     ),
   },
   'M8_Q06:A': {
@@ -3921,6 +3979,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ["Je l'écoute", "J'en parle à deux", 'Je le laisse de côté'],
     ),
+    probeVariant: q(
+      "D'où vous vient cette idée que le foyer décide seul ?",
+      'origine',
+      ['De ma famille', 'De ce que j’ai vu', 'D’un choix personnel'],
+    ),
   },
   'M5_Q01:B': {
     statement:
@@ -3930,6 +3993,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le mariage', 'Les projets de famille', 'Le lieu de vie'],
     ),
+    probeVariant: q(
+      'Comment aimeriez-vous dire non à un parent, sur une décision qui vous revient ?',
+      'besoin',
+      ['Avec douceur', 'Avec des raisons', 'Avec l’appui de l’autre'],
+    ),
   },
   'M0_Q06:A': {
     statement: 'Vous souhaitez tous les deux des enfants.',
@@ -3938,6 +4006,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un foyer', 'Une stabilité', 'Une complicité à deux'],
     ),
+    probeVariant: q(
+      "Quand vous imaginez votre vie avec des enfants, qu'est-ce qui vous fait le plus envie ?",
+      'projection',
+      ['Transmettre', 'Une maison vivante', 'Les voir grandir'],
+    ),
   },
   'M0_Q06:D': {
     statement: "Aucun de vous deux ne souhaite d'enfants.",
@@ -3945,6 +4018,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce que ce choix vous permet d'imaginer pour votre vie ?",
       'sens',
       ['Des voyages', 'Un engagement', 'Une liberté'],
+    ),
+    probeVariant: q(
+      "Qu'aimeriez-vous que vos proches comprennent de ce choix ?",
+      'besoin',
+      ['Qu’il est réfléchi', 'Qu’il est définitif', 'Qu’il m’appartient'],
     ),
   },
   'M1_Q13:A': {
@@ -3956,6 +4034,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'origine',
       ['Une langue', 'Une fête', 'Une foi'],
     ),
+    probeVariant: q(
+      'Quelle part de cette transmission vous tiendrait le plus à cœur ?',
+      'sens',
+      ['La langue', 'Les traditions', 'La foi'],
+    ),
   },
   'M1_Q13:B': {
     needsChildren: true,
@@ -3965,6 +4048,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'origine',
       ['Une fête religieuse', 'Une fête familiale', 'Une fête du pays'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui, à vos yeux, aide un enfant à se sentir chez lui dans deux cultures ?",
+      'sens',
+      ['La langue', 'Les fêtes', 'Les deux familles'],
+    ),
   },
   'M4_Q07:A': {
     statement: 'La dot ou le mahr compte pour vous deux.',
@@ -3972,6 +4060,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce qui, pour vous, en fait davantage qu'une formalité ?",
       'sens',
       ['Le respect', 'La parole donnée', 'Le lien entre familles'],
+    ),
+    probeVariant: q(
+      "Qu'aimeriez-vous que la dot ou le mahr dise de vous à la famille de l'autre ?",
+      'sens',
+      ['Mon respect', 'Mon sérieux', 'Ma fidélité aux traditions'],
     ),
   },
   'M8_Q03:A': {
@@ -3981,6 +4074,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une promesse devant Dieu', 'Une communauté', 'Une durée'],
     ),
+    probeVariant: q(
+      'Quel exemple, dans votre entourage, a donné au mariage religieux tout son sens pour vous ?',
+      'origine',
+      ['Un parent', 'Un grand-parent', 'Ma communauté'],
+    ),
   },
   'M8_Q03:C': {
     statement: 'Vous voulez tous les deux un mariage civil et religieux.',
@@ -3989,19 +4087,39 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La loi', 'La foi', 'Les familles'],
     ),
+    probeVariant: q(
+      'Quel moment de ces deux cérémonies vous tient le plus à cœur ?',
+      'scene',
+      ['L’engagement civil', 'La bénédiction', 'La fête'],
+    ),
   },
   'M4_Q11:A': {
     statement:
       "Vous soutiendriez tous les deux l'autre sans compter si l'argent manquait.",
-    probe: q("Au bout d'un an, à quoi ressemblerait ce soutien ?", 'sens', [
-      'Le même',
-      'Plus organisé',
-      'Plus difficile',
-    ]),
+    probe: q(
+      'Pour vous, soutenir sans compter, à quoi cela ressemblerait-il au quotidien ?',
+      'sens',
+      ['Prendre les charges', 'Être présent(e)', 'Encourager'],
+    ),
+    probeVariant: q(
+      'Qui, dans votre entourage, incarne pour vous ce soutien sans condition ?',
+      'origine',
+      ['Un parent', 'Un ami', 'Personne encore'],
+    ),
   },
   'M4_Q11:B': {
     statement:
       "Vous traverseriez tous les deux un manque d'argent avec un plan.",
+    probe: q(
+      'Concrètement, quelle serait la toute première étape de ce plan, pour vous ?',
+      'sens',
+      ['Réduire les dépenses', 'Chercher des revenus', 'Faire le point à deux'],
+    ),
+    probeVariant: q(
+      'Qui, autour de vous, vous a montré comment traverser une période difficile à deux ?',
+      'origine',
+      ['Mes parents', 'Un couple ami', 'Personne encore'],
+    ),
   },
   'M4_Q01:A': {
     statement: "Vous voyez tous les deux l'argent du foyer en pot commun.",
@@ -4009,6 +4127,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Pour vous, quelle dépense resterait personnelle, même avec un pot commun ?',
       'sens',
       ['Un cadeau', 'Un loisir', "L'aide aux miens"],
+    ),
+    probeVariant: q(
+      "Le jour d'un achat important, que voudrait dire ce pot commun pour vous ?",
+      'sens',
+      ['Décider à deux', 'Payer ensemble', 'En parler avant'],
     ),
   },
   'M4_Q01:C': {
@@ -4019,6 +4142,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Aux courses',
       'Aux sorties',
     ]),
+    probeVariant: q(
+      'Quelle dépense du quotidien vous semblerait naturelle de payer à deux ?',
+      'sens',
+      ['Les courses', 'Les sorties', 'Les cadeaux aux familles'],
+    ),
   },
   'M4_Q10:A': {
     statement:
@@ -4028,6 +4156,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le respect', "L'engagement", 'La tradition'],
     ),
+    probeVariant: q(
+      "Qui vous a transmis l'idée que ce geste revient à l'homme ?",
+      'origine',
+      ['Ma famille', 'Ma culture', 'Ma foi'],
+    ),
   },
   'M4_Q10:C': {
     statement: "Vous partagez tous les deux l'addition, moitié-moitié.",
@@ -4035,6 +4168,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Si l'autre insistait un soir pour tout payer, qu'est-ce que cela réveillerait en vous ?",
       'emotion',
       ['De la gêne', 'De la gratitude', 'Le sentiment d’être redevable'],
+    ),
+    probeVariant: q(
+      "Pour vous, que dit d'une personne le fait de partager l'addition ?",
+      'sens',
+      ['Son indépendance', 'Son respect', 'Son sens de l’égalité'],
     ),
   },
   'M4_Q13:A': {
@@ -4044,6 +4182,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Un espace',
       'Un moment',
     ]),
+    probeVariant: q(
+      'Dans votre famille, comment se partageaient les affaires de chacun ?',
+      'origine',
+      ['Tout était à tous', 'Chacun ses affaires', 'Selon les objets'],
+    ),
   },
   'M0_Q03:A': {
     statement: 'Vous êtes tous les deux prêts à déménager pour le couple.',
@@ -4052,13 +4195,24 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'scene',
       ['Mes proches', 'Mes habitudes', 'Mon quartier'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui rendrait un départ pour le couple léger plutôt que lourd, pour vous ?",
+      'besoin',
+      ['Un projet commun', 'Un travail', 'Des proches à portée'],
+    ),
   },
   'M0_Q03:D': {
-    statement: 'Vous tenez tous les deux à rester là où vous vivez.',
+    statement:
+      'Vous ne vous voyez ni l’un ni l’autre déménager pour un partenaire.',
     probe: q(
-      "Si vos deux vies étaient loin l'une de l'autre, qu'est-ce qui pourrait vous faire bouger ?",
-      'limite',
-      ['Un projet commun', 'Un travail', 'Rien'],
+      "Qu'est-ce qui vous attache le plus au lieu où vous vivez aujourd'hui ?",
+      'besoin',
+      ['Mes proches', 'Mon travail', 'Mon histoire'],
+    ),
+    probeVariant: q(
+      "D'où vous vient ce besoin de rester là où sont vos repères ?",
+      'origine',
+      ['De ma famille', 'De mon travail', 'De mon histoire'],
     ),
   },
   'M7_Q07:A': {
@@ -4069,6 +4223,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Mes proches', 'Mon travail', 'Mon histoire'],
     ),
+    probeVariant: q(
+      'Qui, dans votre ville, compte le plus dans votre quotidien ?',
+      'besoin',
+      ['Ma famille', 'Mes amis', 'Ma communauté'],
+    ),
   },
   'M7_Q07:C': {
     statement: "Vous envisagez tous les deux une vie à l'étranger.",
@@ -4076,6 +4235,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce que ce départ viendrait chercher, pour vous ?",
       'besoin',
       ["De l'aventure", 'Des opportunités', 'Un nouveau départ'],
+    ),
+    probeVariant: q(
+      "Qu'aimeriez-vous garder de votre culture, où que vous viviez ?",
+      'besoin',
+      ['Une langue', 'Des fêtes', 'Des liens'],
     ),
   },
   'M2_Q03:A': {
@@ -4107,7 +4271,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement: 'Vous dites tous les deux donner sans compter.',
     probe: q(
       "À quoi sentiriez-vous, malgré tout, que l'équilibre n'y est plus ?",
-      'sens',
+      'limite',
       ['La fatigue', 'Le manque de merci', "L'agacement"],
     ),
   },
@@ -4126,9 +4290,25 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['La confiance', 'La dignité', 'La paix'],
     ),
+    probeVariant: q(
+      "D'où vous vient cette conviction qu'une union se vit à deux ?",
+      'origine',
+      ['De ma foi', 'De ma famille', 'De ce que j’ai vu'],
+    ),
   },
   'M8_Q11:A': {
-    statement: "Pour vous deux, on s'engage pour le meilleur et pour le pire.",
+    statement:
+      'Pour vous deux, prendre soin de l’autre dans l’épreuve serait une évidence.',
+    probe: q(
+      "Qu'est-ce que prendre soin de l'autre voudrait dire, très concrètement, pour vous ?",
+      'sens',
+      ['Être présent(e)', 'Organiser l’aide', 'Rester patient(e)'],
+    ),
+    probeVariant: q(
+      "Quel exemple de présence fidèle dans l'épreuve vous a le plus marqué(e) ?",
+      'origine',
+      ['Un parent', 'Un proche', 'Personne encore'],
+    ),
   },
   'M2_Q06:A': {
     statement: 'Vous dites tous les deux clairement quand vous êtes en colère.',
@@ -4200,7 +4380,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M6_Q11:A': {
     statement:
       'Pour vous deux, une réconciliation passe par en reparler et se demander pardon.',
-    probe: q("Pour vous, qu'est-ce qui rend un pardon sincère ?", 'sens', [
+    probe: q("Qu'est-ce qui rend un pardon sincère à vos yeux ?", 'sens', [
       'Les mots',
       'Le regard',
       'Les actes',
@@ -4218,7 +4398,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M6_Q11:C': {
     statement: 'Pour vous deux, chacun prend du recul, puis on tourne la page.',
     probe: q(
-      "Pour vous, qu'est-ce qui reste à dire avant de tourner la page ?",
+      "Qu'est-ce qui, à vos yeux, reste à dire avant de passer à autre chose ?",
       'sens',
       ['Une excuse', 'Ce qui a blessé', 'Rien'],
     ),
@@ -4241,7 +4421,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Quand un message reste sans réponse, vous patientez tous les deux sereinement.',
     probe: q(
       "Pour vous, après combien de temps un silence cesse-t-il d'être anodin ?",
-      'sens',
+      'limite',
       ['Quelques heures', 'Une journée', 'Plusieurs jours'],
     ),
   },
@@ -4310,6 +4490,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
         'Avant tout engagement',
       ],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui vous pousse à poser tôt les questions qui fâchent ?",
+      'besoin',
+      ['Ne pas perdre de temps', 'La sincérité', 'Le respect de l’autre'],
+    ),
   },
   'M8_Q02:A': {
     statement: "Vous envisagez tous les deux un engagement dans l'année.",
@@ -4317,6 +4502,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'aimeriez-vous avoir découvert de l'autre avant cette échéance ?",
       'besoin',
       ['Sa famille', 'Sa façon de traverser un désaccord', 'Ses projets'],
+    ),
+    probeVariant: q(
+      "Qu'est-ce qui rend ce délai d'un an juste pour vous ?",
+      'sens',
+      ['Ma foi', 'Mon projet de vie', 'Le sérieux de ma démarche'],
     ),
   },
   'M8_Q02:D': {
@@ -4326,6 +4516,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Quelles conditions rendraient le moment mûr, très concrètement ?',
       'sens',
       ['Une stabilité', 'Une vraie confiance', "L'accord des familles"],
+    ),
+    probeVariant: q(
+      'Qui, autour de vous, vous a appris à attendre que les conditions soient réunies ?',
+      'origine',
+      ['Mes parents', 'Ma foi', 'Mon expérience'],
     ),
   },
   'M7_Q01:A': {
@@ -4344,6 +4539,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une soirée seul(e)', 'Une activité', 'Des amis'],
     ),
+    probeVariant: q(
+      'Quel moment à vous, dans une semaine, vous rend plus présent(e) ensuite ?',
+      'besoin',
+      ['Un sport', 'Une soirée entre amis', 'Un temps seul(e)'],
+    ),
   },
   'M9_Q07:A': {
     statement: 'Pour vous deux, la tendresse au quotidien est essentielle.',
@@ -4352,6 +4552,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Au moment choisi',
       'À la douceur',
     ]),
+    probeVariant: q(
+      "D'où vous vient ce besoin de tendresse au quotidien ?",
+      'origine',
+      ['De ma famille', 'De ce qui m’a manqué', 'De mon caractère'],
+    ),
   },
   'M0_Q08:A': {
     statement:
@@ -4365,7 +4570,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M0_Q08:B': {
     statement:
       'Pour vous deux, tabac et alcool restent acceptables avec modération.',
-    probe: q("Pour vous, où commence l'excès, très concrètement ?", 'sens', [
+    probe: q("Où commence l'excès, très concrètement, à vos yeux ?", 'sens', [
       'Au quotidien',
       'En soirée',
       'Devant les proches',
@@ -4375,7 +4580,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement:
       'Pour vous deux, la fidélité compte, et une réconciliation reste possible.',
     probe: q(
-      "Pour vous, qu'est-ce qui rendrait une réconciliation encore possible après un écart ?",
+      "Qu'est-ce qui, à vos yeux, rendrait une réconciliation encore possible après un écart ?",
       'sens',
       ['La vérité dite', 'Le temps', 'Un engagement renouvelé'],
     ),
@@ -4388,6 +4593,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un foyer stable', 'Une sécurité financière', 'Un couple solide'],
     ),
+    probeVariant: q(
+      "D'où vous vient le besoin de réunir certaines conditions avant d'accueillir un enfant ?",
+      'origine',
+      ['De ma famille', 'De ce que j’ai vu', 'De ma foi'],
+    ),
   },
   'M0_Q06:C': {
     statement: "Vous hésitez tous les deux sur le désir d'enfants.",
@@ -4396,13 +4606,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Le temps', 'Une rencontre', 'Une conversation sincère'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui, dans cette hésitation, pèse le plus pour vous aujourd'hui ?",
+      'besoin',
+      ['Ma liberté', 'Le bon moment', 'La peur de mal faire'],
+    ),
   },
   'M4_Q05:A': {
     statement: 'Pour vous deux, aider sa famille fait partie du quotidien.',
     probe: q(
       "À quel moment une aide à la famille cesse-t-elle, pour vous, d'être ordinaire ?",
-      'sens',
+      'limite',
       ['Un montant', 'Une urgence', 'Une fréquence'],
+    ),
+    probeVariant: q(
+      "Qu'est-ce que cette aide aux vôtres vous apporte, à vous ?",
+      'besoin',
+      ['De la fierté', 'De la paix', 'Le sentiment d’être utile'],
     ),
   },
   'M4_Q05:B': {
@@ -4413,6 +4633,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Dès le premier envoi', 'Au-delà d’un montant', 'S’il devient régulier'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui rend, à vos yeux, une décision d'argent vraiment prise à deux ?",
+      'sens',
+      ['En parler avant', 'Un accord des deux', 'La même information'],
+    ),
   },
   'M4_Q05:D': {
     statement:
@@ -4421,6 +4646,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'À quel signe sentiriez-vous que cette limite est atteinte ?',
       'limite',
       ['Un montant', 'Une fréquence', 'Une décision à deux'],
+    ),
+    probeVariant: q(
+      'Comment aimeriez-vous expliquer ce choix à vos proches, le jour où vous direz non ?',
+      'besoin',
+      ['Calmement', 'Avec l’autre à mes côtés', 'Au cas par cas'],
     ),
   },
   'M4_Q01:B': {
@@ -4431,6 +4661,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le temps donné au foyer', 'Les dettes', 'Les charges de chacun'],
     ),
+    probeVariant: q(
+      'Pour vous, une contribution juste, à quoi se voit-elle à la fin du mois ?',
+      'sens',
+      ['Aux factures payées', 'À l’absence de gêne', 'À ce qui reste à chacun'],
+    ),
   },
   'M4_Q01:D': {
     statement: "Pour vous deux, l'argent reste une affaire individuelle.",
@@ -4439,6 +4674,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Les projets',
       'Les imprévus',
     ]),
+    probeVariant: q(
+      'Que protège, à vos yeux, le fait de garder son argent à soi ?',
+      'besoin',
+      ['Ma liberté', 'La paix du couple', 'Ma sécurité'],
+    ),
   },
   'M3_Q04:A': {
     statement: "Pour vous deux, l'enfant de l'un devient l'enfant de l'autre.",
@@ -4451,6 +4691,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
         'Poser la règle moi-même',
       ],
     ),
+    probeVariant: q(
+      "Qu'est-ce que le mot parent veut dire pour vous, au-delà du lien du sang ?",
+      'sens',
+      ['Protéger', 'Éduquer', 'Aimer'],
+    ),
   },
   'M3_Q04:B': {
     statement:
@@ -4459,6 +4704,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce qui reviendrait toujours au parent, selon vous, même avec le temps ?",
       'sens',
       ['Les règles', "L'autorité", 'Les grandes décisions'],
+    ),
+    probeVariant: q(
+      'À quoi se voit, selon vous, une place affectueuse qui ne prend le rôle de personne ?',
+      'sens',
+      ['Une écoute', 'Des attentions', 'De la discrétion'],
     ),
   },
   'M3_Q04:D': {
@@ -4469,6 +4719,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Des confidences', 'Des rires', 'Des moments demandés'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qui, selon vous, fait grandir la confiance entre des personnes qui deviennent une famille ?",
+      'sens',
+      ['Le temps', 'La patience', 'Des moments partagés'],
+    ),
   },
   'M5_Q03:A': {
     statement:
@@ -4478,6 +4733,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Quelques semaines', 'Quelques mois', 'Le temps nécessaire'],
     ),
+    probeVariant: q(
+      'À quoi verriez-vous, pendant ce temps-là, que les règles sont respectées ?',
+      'sens',
+      ['Un espace préservé', 'Une durée tenue', 'Des décisions à deux'],
+    ),
   },
   'M5_Q03:B': {
     statement: 'Pour vous deux, le foyer appartient au couple.',
@@ -4485,6 +4745,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Quand un parent aurait besoin d'aide, quelle forme de soutien resterait possible pour vous ?",
       'sens',
       ['Une aide de loin', 'Des visites', 'Un soutien financier'],
+    ),
+    probeVariant: q(
+      "Qu'est-ce que ce foyer à deux protège de plus précieux à vos yeux ?",
+      'besoin',
+      ['Notre intimité', 'Nos décisions', 'Notre calme'],
     ),
   },
   'M5_Q03:C': {
@@ -4495,6 +4760,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Des règles claires', 'Un espace à soi', 'Du respect'],
     ),
+    probeVariant: q(
+      'Dans votre famille, comment se partageait la maison entre les générations ?',
+      'origine',
+      ['Chacun son espace', 'Tout en commun', 'Selon les âges'],
+    ),
   },
   'M5_Q01:A': {
     statement:
@@ -4504,6 +4774,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le mariage', 'Le lieu de vie', 'Les projets de famille'],
     ),
+    probeVariant: q(
+      "Dans votre famille, qui donne l'avis qui compte le plus ?",
+      'origine',
+      ['Un parent', 'Un aîné', 'Toute la famille'],
+    ),
   },
   'M5_Q01:C': {
     statement:
@@ -4512,6 +4787,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Pour vous, où s’arrête un conseil et où commence une pression ?',
       'sens',
       ['Au ton', "À l'insistance", 'Aux conséquences'],
+    ),
+    probeVariant: q(
+      "Sur quel sujet demanderiez-vous d'abord conseil aux vôtres ?",
+      'sens',
+      ['Le mariage', 'Un achat important', 'Le lieu de vie'],
     ),
   },
   'M1_Q06:B': {
@@ -4539,6 +4819,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un engagement', 'Un travail', 'Une date'],
     ),
+    probeVariant: q(
+      "Si vous partiez pour le couple, qu'aimeriez-vous emporter de votre vie actuelle ?",
+      'projection',
+      ['Mes habitudes', 'Mes amitiés', 'Mon travail'],
+    ),
   },
   'M0_Q03:C': {
     statement:
@@ -4548,13 +4833,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une autre ville', 'Une autre région', 'Un autre pays'],
     ),
+    probeVariant: q(
+      "Qu'est-ce qu'un départ trop lointain vous ferait perdre en premier ?",
+      'besoin',
+      ['Mes proches', 'Mon travail', 'Mes repères'],
+    ),
   },
   'M7_Q07:D': {
     statement: 'Vous êtes tous les deux ouverts sur le lieu de vie.',
     probe: q(
-      'Pour vous, quel lieu resterait malgré tout impossible à imaginer ?',
-      'limite',
-      ['Trop loin des miens', 'Une grande ville', 'Un autre pays'],
+      "Qu'est-ce qui ferait d'un lieu nouveau un vrai chez-vous ?",
+      'sens',
+      ['Mes proches', 'Mes habitudes', 'Un projet à deux'],
+    ),
+    probeVariant: q(
+      "Sur quoi aimeriez-vous fonder le choix d'un lieu de vie, le moment venu ?",
+      'sens',
+      ['Le travail', 'La famille', 'La qualité de vie'],
     ),
   },
   'M4_Q08:A': {
@@ -4583,6 +4878,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un engagement', 'Une famille', 'Une fierté'],
     ),
+    probeVariant: q(
+      "Quel geste, le jour d'un mariage, porte pour vous tout le sens de l'engagement ?",
+      'sens',
+      ['L’échange des consentements', 'Les alliances', 'La signature'],
+    ),
   },
   'M8_Q03:D': {
     statement: "Pour vous deux, le mariage est un choix, l'amour passe avant.",
@@ -4590,6 +4890,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       "Qu'est-ce qui, pour vous, montrerait un engagement sans passer par le mariage ?",
       'sens',
       ['Un logement commun', 'Des projets communs', 'Une parole donnée'],
+    ),
+    probeVariant: q(
+      "Qu'est-ce qui, dans votre histoire, a rendu l'amour plus important que le papier ?",
+      'origine',
+      ['Ma famille', 'Ce que j’ai vu', 'Une conviction'],
     ),
   },
   'M1_Q13:C': {
@@ -4601,6 +4906,11 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une langue', 'Des fêtes', 'Des histoires de famille'],
     ),
+    probeVariant: q(
+      "D'où vous vient cette idée de laisser un enfant choisir sa culture ?",
+      'origine',
+      ['De mon histoire', 'De ma famille', 'D’une conviction'],
+    ),
   },
   'M4_Q06:B': {
     statement:
@@ -4610,14 +4920,19 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une sécurité', 'Un ancrage', 'Un avenir'],
     ),
+    probeVariant: q(
+      "Dans votre famille, que représentait le fait d'avoir sa maison ?",
+      'origine',
+      ['Une sécurité', 'Une fierté', 'Un héritage'],
+    ),
   },
   M8_Q04: {
-    statement: 'Vous avez la même façon préférée de montrer votre amour.',
-    probe: q("À quoi verriez-vous que l'autre la reçoit vraiment ?", 'sens', [
-      'À ses mots',
-      'À ses gestes',
-      'À son sourire',
-    ]),
+    statement: 'Pour vous deux, les mêmes attentions disent l’amour.',
+    probe: q(
+      'Quelle attention précise, dans une journée ordinaire, vous touche le plus ?',
+      'sens',
+      ['Un mot tendre', 'Un service rendu', 'Du temps ensemble'],
+    ),
   },
 };
 
@@ -4665,7 +4980,7 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
     ),
     q(
       "Le jour où l'un de vous changerait d'avis, comment aimeriez-vous l'apprendre ?",
-      'reparation',
+      'limite',
       ['Tout de suite', 'Calmement', 'Avec ses raisons'],
     ),
     q(
