@@ -1,4 +1,4 @@
-import { pendingQuestions } from './questions.service';
+import { moduleQuestions, pendingQuestions } from './questions.service';
 
 describe('pendingQuestions', () => {
   it("ne considère pas le module 0 terminé avec la seule réponse d'inscription (M0_Q02)", () => {
@@ -59,5 +59,48 @@ describe('pendingQuestions', () => {
     const answers: Record<string, string> = { M0_Q02: 'D' };
     for (const q of pendingQuestions(0, answers, 30, 'H')) answers[q.id] = 'A';
     expect(pendingQuestions(0, answers, 30, 'H')).toHaveLength(0);
+  });
+});
+
+describe('moduleQuestions : questions de suite du même module', () => {
+  const ids = (qs: Array<{ id: string }>) => qs.map((q) => q.id);
+
+  it('joint la suite avec sa condition, dans l’ordre, pour que l’app la pose', () => {
+    const qs = moduleQuestions(3, {}, 30, 'F');
+    const rupture = qs.find((q) => q.id === 'M3_Q03');
+    expect(rupture?.askIf).toEqual([
+      { questionId: 'M3_Q11', values: ['A', 'B', 'C', 'D'] },
+    ]);
+    expect(ids(qs).indexOf('M3_Q11')).toBeLessThan(ids(qs).indexOf('M3_Q03'));
+    // Le contrôle de fin de module, lui, ne l’attend pas encore.
+    expect(ids(pendingQuestions(3, {}, 30, 'F'))).not.toContain('M3_Q03');
+  });
+
+  it('ne repose rien quand la réponse déclencheuse ferme la suite', () => {
+    const qs = moduleQuestions(3, { M3_Q11: 'E' }, 30, 'F');
+    expect(ids(qs)).not.toContain('M3_Q03');
+    expect(ids(qs)).not.toContain('M3_Q11');
+  });
+
+  it('pose la suite sans condition quand la réponse est déjà enregistrée', () => {
+    const qs = moduleQuestions(3, { M3_Q11: 'B' }, 30, 'F');
+    const rupture = qs.find((q) => q.id === 'M3_Q03');
+    expect(rupture).toBeDefined();
+    expect(rupture?.askIf).toBeUndefined();
+  });
+
+  it('pratique religieuse après la religion ; rien si les questions sensibles sont refusées', () => {
+    const qs = moduleQuestions(1, {}, 30, 'F');
+    expect(qs.find((q) => q.id === 'M1_Q17')?.askIf?.[0].questionId).toBe(
+      'M1_Q16',
+    );
+    const refused = moduleQuestions(1, {}, 30, 'F', true);
+    expect(ids(refused)).not.toContain('M1_Q16');
+    expect(ids(refused)).not.toContain('M1_Q17');
+  });
+
+  it('une dépendance d’un autre module non remplie écarte la question', () => {
+    const qs = moduleQuestions(1, { M0_Q05: 'A', M0_Q06: 'D' }, 30, 'F');
+    expect(ids(qs)).not.toContain('M1_Q13');
   });
 });

@@ -25,6 +25,19 @@ export interface Question {
   suggestedOther?: string;
   /** Donnée sensible (religion, vie intime, violences subies) : accord demandé avant. */
   sensitive?: boolean;
+  /**
+   * Question de suite : posée seulement si l'une de ces réponses, données plus
+   * tôt dans le même module, l'ouvre (ex. « dernière relation » → la rupture).
+   */
+  askIf?: { questionId: string; values: string[] }[];
+}
+
+/** La condition d'une question de suite est-elle remplie par ces réponses ? */
+export function askIfMet(q: Question, answers: Record<string, string>): boolean {
+  if (!q.askIf?.length) return true;
+  return q.askIf.some((d) =>
+    (answers[d.questionId] ?? '').split(',').some((k) => d.values.includes(k.trim())),
+  );
 }
 
 /** Accord pour les questions sensibles : null s'il n'a pas encore été demandé. */

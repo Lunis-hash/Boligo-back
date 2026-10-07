@@ -16,6 +16,7 @@ import {
   togglePick,
   isValidFreeText,
   FREE_TEXT_SUFFIX,
+  askIfMet,
 } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
@@ -153,6 +154,8 @@ export default function DynamicInterviewScreen() {
   const [picked, setPicked] = useState<string[]>([]);
   // Accord pour les questions sensibles : undefined tant qu'il n'est pas lu.
   const consentRef = useRef<boolean | null | undefined>(undefined);
+  /** Relectures du module après enregistrement (questions de suite débloquées). */
+  const followUpRounds = useRef(0);
   // Précision écrite de l'option « une autre langue ».
   const [otherText, setOtherText] = useState('');
 
@@ -187,6 +190,7 @@ export default function DynamicInterviewScreen() {
       setCurrentQuestionIndex(0);
       setAnswers({});
       setPicked([]);
+      followUpRounds.current = 0;
 
       if (data.length > 0) {
         if (consentRef.current === undefined && data.some((q) => q.sensitive)) {
@@ -266,9 +270,11 @@ export default function DynamicInterviewScreen() {
     list: Question[] = questions,
   ) => {
     let i = index;
-    if (consentRef.current === false) {
-      while (i < list.length && list[i].sensitive) i++;
-    }
+    // Sautées : questions sensibles refusées, et questions de suite que la
+    // réponse donnée plus tôt n'ouvre pas.
+    const skip = (q: Question) =>
+      (consentRef.current === false && !!q.sensitive) || !askIfMet(q, answersSoFar);
+    while (i < list.length && skip(list[i])) i++;
     if (i >= list.length) {
       handleModuleComplete(answersSoFar);
       return;
@@ -407,6 +413,23 @@ export default function DynamicInterviewScreen() {
     setIsSaving(true);
     try {
       await InterviewService.saveModule(modNum, finalAnswers);
+
+      // Filet de sécurité : une question de suite débloquée par ces réponses
+      // (et pas encore posée) est posée tout de suite, sans quitter le module.
+      if (followUpRounds.current < 2) {
+        followUpRounds.current += 1;
+        const more = (await InterviewService.getQuestions(modNum, lang ?? 'fr').catch(
+          () => [] as Question[],
+        )).filter((q) => !(q.id in finalAnswers));
+        if (more.length) {
+          setAnswers(finalAnswers);
+          setQuestions(more);
+          setCurrentQuestionIndex(0);
+          setIsAnswering(false);
+          presentQuestion(0, finalAnswers, more);
+          return;
+        }
+      }
 
       if (modNum < LAST_MODULE) {
         setTimeout(() => {

@@ -1,4 +1,5 @@
 import {
+  askIfMet,
   deviceLanguage,
   getResumeModule,
   initialPicked,
@@ -103,5 +104,21 @@ describe('Langues proposées et signaux d’alerte (V6.1)', () => {
     expect(isValidFreeText('Créole haïtien')).toBe(true);
     expect(isValidFreeText('b')).toBe(false);
     expect(isValidFreeText('<script>')).toBe(false);
+  });
+});
+
+describe('askIfMet : questions de suite du même module', () => {
+  const base = { id: 'M3_Q03', text: 'Rupture ?', options: [] };
+  const rupture = { ...base, askIf: [{ questionId: 'M3_Q11', values: ['A', 'B', 'C', 'D'] }] };
+
+  it('pose la suite seulement si la réponse donnée l’ouvre', () => {
+    expect(askIfMet(rupture, { M3_Q11: 'B' })).toBe(true);
+    expect(askIfMet(rupture, { M3_Q11: 'E' })).toBe(false);
+    expect(askIfMet(rupture, {})).toBe(false);
+  });
+
+  it('choix multiple : une des réponses suffit ; sans condition, toujours posée', () => {
+    expect(askIfMet(rupture, { M3_Q11: 'E,C' })).toBe(true);
+    expect(askIfMet(base, {})).toBe(true);
   });
 });
