@@ -523,9 +523,35 @@ function topicTemplates(day: number, d: Divergence, strictTheme = false) {
 }
 
 /**
+ * Ouverture d'une question (jusqu'à la première virgule, quatre mots au plus) :
+ * « avant de vous engager », « de 0 à 10 », « dans votre famille »…
+ */
+export function questionOpening(text: string): string {
+  return (text.toLowerCase().split(/[,:?]/)[0] ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 4)
+    .join(' ');
+}
+
+/**
+ * Dans chaque groupe, les formulations dont l'ouverture n'a pas encore servi
+ * ce jour-là passent en premier (ordre conservé) : une journée n'enchaîne pas
+ * trois « Avant de vous engager… » quand une autre tournure existe.
+ */
+function preferNewOpenings(
+  list: PoolTemplate[],
+  usedOpenings: Set<string>,
+): PoolTemplate[] {
+  const fresh = (t: PoolTemplate) => !usedOpenings.has(questionOpening(t.text));
+  return [...list.filter(fresh), ...list.filter((t) => !fresh(t))];
+}
+
+/**
  * Formulations d'un jour pour un écart : les formulations propres d'abord
  * (sauf un compromis sur un point non négociable ou dans son thème), puis les
- * gabarits ciblés.
+ * gabarits ciblés ; dans chacun des deux groupes, une ouverture neuve ce
+ * jour-là d'abord (jamais un gabarit avant une formulation propre).
  */
 function divergenceCandidates(
   day: number,
@@ -533,6 +559,7 @@ function divergenceCandidates(
   seed: string | undefined,
   slot: string,
   strictTheme: boolean,
+  usedOpenings: Set<string>,
 ): PoolTemplate[] {
   const words = topicWords(topicPhrase(d));
   const generic = topicTemplates(day, d, strictTheme).map((t) => ({
@@ -540,8 +567,8 @@ function divergenceCandidates(
     options: t.options,
   }));
   return [
-    ...usableDeep(d, day, strictTheme),
-    ...arrange(generic, seed, `${slot}|div`),
+    ...preferNewOpenings(usableDeep(d, day, strictTheme), usedOpenings),
+    ...preferNewOpenings(arrange(generic, seed, `${slot}|div`), usedOpenings),
   ];
 }
 
@@ -756,6 +783,8 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
     const angle = DAY_ANGLES[day];
     let convergenceToday = 0;
     const openingsToday = new Set<string>();
+    // Ouvertures des questions déjà retenues ce jour-là (toutes sources).
+    const questionOpenings = new Set<string>();
     for (const theme of THEME_LIST) {
       const slot = `${day}|${theme}`;
       const base = {
@@ -819,6 +848,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
             seed,
             slot,
             strictThemes.has(theme),
+            questionOpenings,
           ),
           mem,
         );
@@ -880,8 +910,11 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         const touches = (t: PoolTemplate) =>
           (t.about ?? []).some((id) => taken.has(id));
         const ordered = [
-          ...pool.filter((t) => !touches(t)),
-          ...pool.filter(touches),
+          ...preferNewOpenings(
+            pool.filter((t) => !touches(t)),
+            questionOpenings,
+          ),
+          ...preferNewOpenings(pool.filter(touches), questionOpenings),
         ];
         // Réserve épuisée (au-delà de sept parcours) : une formulation déjà vue revient.
         const tpl =
@@ -897,6 +930,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         };
       }
 
+      questionOpenings.add(questionOpening(question.text));
       mem.usedText.add(normalizeKey(question.text));
       mem.usedSig.add(questionSignature(question.text));
       mem.raw.push(question.text);

@@ -38,6 +38,7 @@ import {
   SondeurQuestion,
   assembleSondeur,
   describeReportForAi,
+  questionOpening,
   questionSignature,
   safetyThemesOf,
   validateSondeurGrid,
@@ -1039,7 +1040,7 @@ const DEEP_TEXTS = new Set(
 
 /** Jour 3 : ce qu'il faudrait savoir avant de s'engager. */
 const BEFORE_COMMITMENT =
-  /avant (?:de vous engager|tout engagement|un engagement|de vivre|de partager|même un premier projet)/iu;
+  /avant (?:de vous engager|tout engagement|un engagement|de vivre|de partager|même|de dire oui|d['’]unir vos vies)/iu;
 
 /** Formulations de compromis possibles pour un écart (propres et ciblées). */
 function compromiseTextsFor(d: Divergence): Set<string> {
@@ -1406,6 +1407,27 @@ describe('Simulation : 600 couples, premier et second parcours', () => {
       .filter((t) => names(t.text))
       .map((t) => `${t.where} : ${t.text}`);
     expect([...named, ...written]).toEqual([]);
+  });
+
+  it('une journée enchaîne rarement trois questions qui s’ouvrent de la même façon', () => {
+    let days = 0;
+    const repeated: string[] = [];
+    for (const { questions, where } of passes)
+      for (const day of [1, 2, 3]) {
+        days++;
+        const count = new Map<string, number>();
+        for (const q of questions.filter((x) => x.day === day)) {
+          const o = questionOpening(q.text);
+          count.set(o, (count.get(o) ?? 0) + 1);
+        }
+        for (const [o, n] of count)
+          if (n >= 3) repeated.push(`${where} J${day} : ${n} × « ${o} »`);
+      }
+    const share = (100 * repeated.length) / days;
+    console.log(
+      `Journées avec trois fois la même ouverture : ${repeated.length}/${days} = ${share.toFixed(1)} %`,
+    );
+    expect(share).toBeLessThan(2);
   });
 
   it('langue : jamais deux « façon » dans une question, jamais « Pour vous deux… Pour vous… »', () => {

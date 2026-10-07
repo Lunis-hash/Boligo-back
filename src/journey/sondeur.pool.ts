@@ -1891,13 +1891,13 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
     ),
     tt(
       (w) =>
-        `Avant de vous engager, que voudriez-vous avoir clarifié à deux sur ${w.phrase} ?`,
+        `Sur ${w.phrase}, que voudriez-vous avoir clarifié à deux avant de vous engager ?`,
       'limite',
       ['Nos attentes', 'Ce qui ne se discute pas', 'Une règle simple'],
     ),
     tt(
       (w) =>
-        `Avant de vous engager, quel exemple concret aimeriez-vous entendre de l'autre sur ${w.phrase} ?`,
+        `Quel exemple concret aimeriez-vous entendre de l'autre sur ${w.phrase}, avant de vous engager ?`,
       'sens',
       [
         'Une scène de son quotidien',
@@ -2075,7 +2075,7 @@ export const TOPIC_DEEP: Record<
       ['On les aidait', 'On les jugeait', "On n'en parlait pas"],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous que l'autre sache de ce que vous attendriez de lui ou d'elle si l'argent manquait longtemps ?",
+      "Avant d'unir vos vies, qu'aimeriez-vous que l'autre sache de ce que vous attendriez de lui ou d'elle si l'argent manquait longtemps ?",
       'besoin',
       ['Qu’il ou elle cherche', 'De la transparence', 'Un plan à deux'],
     ),
@@ -2553,7 +2553,7 @@ export const TOPIC_DEEP: Record<
       ['Un parent', 'Les aînés', 'Chacun pour soi'],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous comprendre de la place que l'avis des aînés tient dans les décisions de l'autre ?",
+      "Qu'aimeriez-vous comprendre, avant de vous engager, de la place que l'avis des aînés tient dans les décisions de l'autre ?",
       'limite',
       ['Un poids décisif', 'Un conseil écouté', 'Un avis parmi d’autres'],
     ),
@@ -2570,7 +2570,7 @@ export const TOPIC_DEEP: Record<
       ["Qu'il l'accueille", "Qu'il l'aide de loin", "Qu'il décide à deux"],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir de ce que l'autre envisagerait si un parent âgé ne pouvait plus vivre seul ?",
+      "Si un parent âgé ne pouvait plus vivre seul, que voudriez-vous savoir des choix de l'autre avant de vous engager ?",
       'limite',
       [
         "L'accueillir chez nous",
@@ -2900,7 +2900,7 @@ export const TOPIC_DEEP: Record<
       ['Une langue', 'Des fêtes', 'Des valeurs'],
     ),
     3: q(
-      "Avant tout engagement, que voudriez-vous comprendre de ce que l'autre tient à transmettre de sa culture, si des enfants venaient ?",
+      "Que voudriez-vous comprendre, avant de vous engager, de ce que l'autre tient à transmettre de sa culture ?",
       'limite',
       ['Une langue', 'Des fêtes', 'Une foi'],
     ),
@@ -2972,7 +2972,7 @@ export const TOPIC_DEEP: Record<
       ['Du respect', 'Une gêne', 'Une richesse'],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous que l'autre comprenne de vos règles alimentaires, ou de votre liberté de tout manger ?",
+      "Avant de dire oui, qu'aimeriez-vous que l'autre comprenne de vos règles alimentaires, ou de votre liberté de tout manger ?",
       'besoin',
       [
         'Ce qu’elles signifient',
@@ -3000,7 +3000,7 @@ export const TOPIC_DEEP: Record<
       ['Leur place dans la famille', 'Leur foi', 'Peu de choses'],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous comprendre de ce que le mariage engage pour l'autre, au-delà de l'amour ?",
+      "Avant de dire oui, qu'aimeriez-vous comprendre de ce que le mariage engage pour l'autre, au-delà de l'amour ?",
       'sens',
       ['Une promesse', 'Deux familles', 'Une foi'],
     ),
@@ -3085,7 +3085,7 @@ export const TOPIC_DEEP: Record<
       ['Aux imprévus', 'Aux projets', 'À aider les proches'],
     ),
     3: q(
-      "Avant de vous engager, que voudriez-vous comprendre du rapport de l'autre entre l'épargne et les envies du moment ?",
+      "Que voudriez-vous comprendre, avant de vous engager, du rapport de l'autre entre l'épargne et les envies du moment ?",
       'limite',
       ['La prudence', 'Le plaisir', 'Un équilibre'],
     ),
@@ -3109,7 +3109,7 @@ export const TOPIC_DEEP: Record<
       ['La sécurité', 'La fierté', 'Le sacrifice'],
     ),
     3: q(
-      "Avant tout engagement, quel équilibre entre travail et vie à deux aimeriez-vous connaître chez l'autre ?",
+      "Quel équilibre entre travail et vie à deux aimeriez-vous connaître chez l'autre, avant de vous engager ?",
       'limite',
       ['Une priorité au travail', 'Un équilibre', 'Une priorité au foyer'],
     ),
@@ -3234,7 +3234,7 @@ export const TOPIC_DEEP: Record<
       ['On respectait son choix', 'On insistait', 'On prenait ses distances'],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir de la manière dont l'autre répond aux siens quand ils insistent ?",
+      "Avant d'unir vos vies, qu'aimeriez-vous savoir de la manière dont l'autre répond aux siens quand ils insistent ?",
       'limite',
       ['Avec calme', 'En cédant parfois', 'En tenant bon'],
     ),
@@ -3246,7 +3246,7 @@ export const TOPIC_DEEP: Record<
       ['Par l’autorité', 'Par l’explication', 'Par l’exemple'],
     ),
     3: q(
-      "Avant tout engagement, qu'aimeriez-vous comprendre de l'idée que l'autre se fait de l'autorité auprès d'un enfant ?",
+      "Avant de vous engager, qu'aimeriez-vous comprendre de l'idée que l'autre se fait de l'autorité auprès d'un enfant ?",
       'limite',
       ['Avec fermeté', 'Avec des explications', 'Par l’exemple'],
     ),
@@ -3259,7 +3259,7 @@ export const TOPIC_DEEP: Record<
       ['Ma sincérité', 'La relation naissante', 'Mon temps'],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir de la façon dont l'autre aborde un désaccord sur l'avenir ?",
+      "Qu'aimeriez-vous savoir, avant de vous engager, de la façon dont l'autre aborde un désaccord sur l'avenir ?",
       'limite',
       ['Tôt et franchement', 'Avec le temps', 'En cherchant une solution'],
     ),
@@ -3313,12 +3313,12 @@ export const TOPIC_DEEP: Record<
   },
   M8_Q06: {
     2: q(
-      'Dans votre famille, de quoi ne parlait-on jamais à table ?',
+      'À la table de votre enfance, de quoi ne parlait-on jamais ?',
       'origine',
       ['Des sentiments', 'De l’argent', 'Des conflits'],
     ),
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir de la place que l'autre donne aux longues conversations ?",
+      'Quelle place aimeriez-vous que les longues conversations prennent dans votre vie à deux ?',
       'limite',
       ['Chaque jour', 'Pour l’essentiel', 'Quand c’est nécessaire'],
     ),
@@ -3337,12 +3337,12 @@ export const TOPIC_DEEP: Record<
   },
   M9_Q01: {
     2: q(
-      'Dans votre famille, qui tranchait quand les avis divergeaient ?',
+      'Chez vous, enfant, qui tranchait quand les avis divergeaient ?',
       'origine',
       ['Un parent', 'Les deux ensemble', 'Le plus âgé'],
     ),
     3: q(
-      "Avant tout engagement, à quoi verriez-vous qu'une grande décision a vraiment été prise à deux ?",
+      "À quoi verriez-vous, avant de vous engager, qu'une grande décision a vraiment été prise à deux ?",
       'sens',
       ['On en a parlé', 'Chacun a pesé', 'Personne n’a cédé'],
     ),
@@ -3382,7 +3382,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M8_Q13: {
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous que l'autre sache de votre manière de traverser les années difficiles ?",
+      "Avant de dire oui, qu'aimeriez-vous que l'autre sache de votre manière de traverser les années difficiles ?",
       'besoin',
       ['Ce qui me fait tenir', 'Ce qui me fait douter', 'Ce dont j’ai besoin'],
     ),
@@ -3568,7 +3568,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['La transparence', 'Qu’il ou elle cherche', 'Le partage des charges'],
     ),
     3: q(
-      "Avant tout engagement, que voudriez-vous comprendre de ce que l'argent qui manque réveille chez l'autre ?",
+      "Que voudriez-vous comprendre, avant de vous engager, de ce que l'argent qui manque réveille chez l'autre ?",
       'limite',
       ['Une inquiétude', 'Une gêne', 'Une énergie'],
     ),
@@ -3594,7 +3594,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['L’aide à mes parents', 'Les urgences', 'Les études d’un proche'],
     ),
     3: q(
-      "Avant tout engagement, que voudriez-vous savoir des attentes de la famille de l'autre envers lui ou elle ?",
+      "Avant d'unir vos vies, qu'aimeriez-vous comprendre de ce que la famille de l'autre attend de lui ou d'elle ?",
       'limite',
       ['Un soutien régulier', 'Une aide ponctuelle', 'Aucune attente'],
     ),
@@ -3640,7 +3640,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Travailler', 'Choisir mon rythme', 'Décider à deux'],
     ),
     2: q(
-      "Dans votre famille, que disait-on d'une femme qui faisait passer son travail avant le foyer ?",
+      "Autour de vous, en grandissant, que disait-on d'une femme qui faisait passer son travail avant le foyer ?",
       'origine',
       ['On l’admirait', 'On la jugeait', 'On n’en parlait pas'],
     ),
@@ -3678,12 +3678,12 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M7_Q08: {
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir du temps à soi dont l'autre a besoin chaque semaine ?",
+      "Avant d'unir vos vies, qu'aimeriez-vous savoir du temps à soi dont l'autre a besoin chaque semaine ?",
       'limite',
       ['Une soirée', 'Un moment chaque jour', 'Un week-end de temps en temps'],
     ),
     2: q(
-      'Dans votre famille, à quoi ressemblait un dimanche ordinaire ?',
+      'Enfant, à quoi ressemblait un dimanche ordinaire chez vous ?',
       'origine',
       ['Tous ensemble', 'Chacun de son côté', 'Avec la famille élargie'],
     ),
@@ -3695,7 +3695,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
       ['Le respect des familles', 'La liberté de choisir', 'La parole donnée'],
     ),
     2: q(
-      "Dans votre famille, qu'a-t-on transmis sur le sens de la dot ou du mahr ?",
+      "Qu'a-t-on transmis chez vous, en grandissant, sur le sens de la dot ou du mahr ?",
       'origine',
       ['Un honneur', 'Un engagement', 'Une simple coutume'],
     ),
@@ -3742,12 +3742,12 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M8_Q11: {
     2: q(
-      'Dans votre famille, qui veillait sur ceux qui traversaient une longue épreuve ?',
+      'Dans votre enfance, qui veillait sur ceux qui traversaient une longue épreuve ?',
       'origine',
       ['Un parent', 'Toute la famille', 'Chacun comme il pouvait'],
     ),
     3: q(
-      "Avant tout engagement, qu'aimeriez-vous comprendre de la manière dont l'autre prend soin d'un proche qui va mal ?",
+      "Avant de dire oui, qu'aimeriez-vous comprendre de la manière dont l'autre prend soin d'un proche qui va mal ?",
       'limite',
       ['Sa présence', 'Son aide concrète', 'Sa patience'],
     ),
@@ -3766,7 +3766,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M4_Q15: {
     3: q(
-      'Avant de vous engager, quelle tâche de la maison tiendriez-vous à voir partagée, et pourquoi celle-là ?',
+      'Quelle tâche de la maison tiendriez-vous à voir partagée, avant même de vivre ensemble ?',
       'besoin',
       ['Les repas', 'Le linge', 'Le ménage'],
     ),
@@ -3789,7 +3789,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M8_Q15: {
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir de ce que l'autre attendrait de vous comme parent, si un enfant venait ?",
+      "Si un enfant venait un jour, qu'aimeriez-vous savoir, avant de vous engager, de ce que l'autre attendrait de vous comme parent ?",
       'limite',
       ['De la fermeté', 'De la douceur', 'De la présence'],
     ),
@@ -3802,7 +3802,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   // Foi et pratique (M1_Q17 par l'alias de M1_Q06).
   M1_Q06: {
     2: q(
-      'Dans votre famille, comment se vivait la pratique religieuse au quotidien, ou son absence ?',
+      'Dans la maison de votre enfance, comment se vivait la pratique religieuse, ou son absence ?',
       'origine',
       ['Avec rigueur', 'Avec liberté', 'Discrètement'],
     ),
@@ -3845,14 +3845,14 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M4_Q06: {
     3: q(
-      "Avant de vous engager, que voudriez-vous savoir du projet de l'autre autour d'un logement ?",
+      "Autour d'un logement, que voudriez-vous savoir des projets de l'autre avant de vous engager ?",
       'limite',
       ['Acheter seul(e)', 'Acheter à deux', 'Louer pour l’instant'],
     ),
   },
   M1_Q13: {
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous que l'autre sache de ce que vous tenez à transmettre de votre culture, si des enfants venaient un jour ?",
+      "Avant d'unir vos vies, qu'aimeriez-vous que l'autre sache de ce que vous tenez à transmettre de votre culture, si des enfants venaient un jour ?",
       'besoin',
       ['Une langue', 'Des fêtes', 'Une foi'],
     ),
@@ -3871,19 +3871,19 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M1_Q03: {
     3: q(
-      "Avant de vous engager, que voudriez-vous savoir des traditions de mariage auxquelles tient la famille de l'autre ?",
+      "Avant de dire oui, que voudriez-vous savoir des traditions de mariage auxquelles tient la famille de l'autre ?",
       'limite',
       ['La dot', 'La cérémonie', 'La fête'],
     ),
   },
   M7_Q02: {
     2: q(
-      'Dans votre famille, que disait-on de ceux qui travaillaient sans compter leurs heures ?',
+      "En grandissant, qu'avez-vous entendu dire de ceux qui travaillaient sans compter leurs heures ?",
       'origine',
       ['On les admirait', 'On les plaignait', 'On les imitait'],
     ),
     3: q(
-      "Avant tout engagement, qu'aimeriez-vous que l'autre sache de vos ambitions pour les années à venir ?",
+      "Avant d'unir vos vies, qu'aimeriez-vous que l'autre sache de vos ambitions pour les années à venir ?",
       'besoin',
       ['Un projet précis', 'Une évolution', 'Un équilibre'],
     ),
@@ -3918,7 +3918,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M2_Q22: {
     2: q(
-      "Dans votre famille, que pensait-on de la personne qui s'excusait la première ?",
+      "Dans votre entourage, que pensait-on de la personne qui s'excusait la première ?",
       'origine',
       [
         'Qu’elle était sage',
@@ -3936,7 +3936,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M7_Q05: {
     2: q(
-      'Dans votre famille, comment réagissait-on face à un imprévu ?',
+      'Enfant, comment voyiez-vous les adultes réagir face à un imprévu ?',
       'origine',
       ['Avec calme', 'Avec inquiétude', 'Avec humour'],
     ),
@@ -3955,7 +3955,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M9_Q01: {
     3: q(
-      "Avant de vous engager, qu'aimeriez-vous savoir des décisions que l'autre préfère prendre seul(e) ?",
+      "Avant de dire oui, qu'aimeriez-vous savoir des décisions que l'autre préfère prendre seul(e) ?",
       'limite',
       ['Son travail', 'Ses dépenses', 'Ses amitiés'],
     ),
