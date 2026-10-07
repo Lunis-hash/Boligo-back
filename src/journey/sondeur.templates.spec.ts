@@ -91,7 +91,7 @@ const EXTRA_JARGON = prefix(
 );
 /** Sujets réservés au jour 3 (pudeur graduée). */
 const INTIMATE = new RegExp(
-  `(?<!${L})(?:désir(?! d'enfants)|désiré|intimité)`,
+  `(?<!${L})(?:désir(?! d'enfants)|désiré|intimité|attirance)`,
   'iu',
 );
 
