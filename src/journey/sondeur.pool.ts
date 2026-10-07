@@ -1284,7 +1284,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['De l’inquiétude', 'De la colère', 'Du calme'],
       ),
       q(
-        "Pensez à un désaccord, en famille ou dans une relation passée, qui s'est bien terminé : qu'est-ce qui, selon vous, l'a rendu différent ?",
+        "Pensez à un désaccord, en famille ou entre proches, qui s'est bien terminé : qu'est-ce qui, selon vous, l'a rendu différent ?",
         'exception',
         ['Le ton', 'Le moment', "L'écoute"],
       ),
@@ -1303,7 +1303,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M6_Q11'],
       ),
       q(
-        "En famille ou dans vos relations passées, qu'avez-vous appris à faire d'un désaccord qui revient toujours ?",
+        "En famille ou entre amis, qu'avez-vous appris à faire d'un désaccord qui revient toujours ?",
         'perpetuel',
         ['En rire', "L'accepter", 'En reparler autrement'],
       ),
@@ -2179,7 +2179,7 @@ export const TOPIC_DEEP: Record<
       ['Un délai convenu', 'Un message', 'Un geste'],
     ),
     2: q(
-      "Pensez à une fois, en famille ou dans une relation passée, où un long silence a fini par se dénouer : qu'est-ce qui, selon vous, l'a dénoué ?",
+      "Pensez à une fois, en famille ou entre proches, où un long silence a fini par se dénouer : qu'est-ce qui, selon vous, l'a dénoué ?",
       'exception',
       ['Un geste', 'Une parole', 'Le temps'],
     ),
