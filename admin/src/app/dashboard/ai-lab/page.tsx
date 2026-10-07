@@ -32,7 +32,7 @@ type CoupleResult = {
     advice?: string;
   } | null;
   readingStatus: string;
-  danger?: { expected: boolean; code: string[]; ai: string | null; verdict: "ok" | "manqué" | "faux signal" };
+  danger?: { expected: boolean; code: string[]; classifier?: string[]; ai: string | null; verdict: "ok" | "manqué" | "faux signal" };
   followUp: string | null;
   costEur: number;
   durationMs: number;
@@ -145,7 +145,7 @@ export default function AiLabPage() {
             onChange={(e) => setCouples(Number(e.target.value))}
             disabled={running || starting}
           >
-            {[...new Set([1, 3, 5, 10, scenarios.length || 23])].map((n) => (
+            {[...new Set([1, 3, 5, 10, scenarios.length || 27])].map((n) => (
               <option key={n} value={n}>
                 {n} couple{n > 1 ? "s" : ""} (≈ {euro(n * 1)})
               </option>
@@ -219,6 +219,7 @@ export default function AiLabPage() {
                 <p className={`mt-1 text-sm ${r.danger.verdict === "ok" ? "text-muted-foreground" : "text-red-600"}`}>
                   Sécurité : {r.danger.verdict === "ok" ? "conforme à la référence" : r.danger.verdict}
                   {r.danger.code.length > 0 ? ` · repéré par le code : ${r.danger.code.join(", ")}` : ""}
+                  {(r.danger.classifier ?? []).length > 0 ? ` · repéré par l’IA à l’envoi : ${(r.danger.classifier ?? []).join(", ")}` : ""}
                   {r.danger.ai ? ` · alerte de l’IA : ${r.danger.ai}` : ""}
                 </p>
               )}

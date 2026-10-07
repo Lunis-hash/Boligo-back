@@ -12,7 +12,7 @@ import {
   moderateMessageLocally,
 } from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
-import { chatOpen } from '../journey/chat-access';
+import { CHAT_OPEN_WHERE, chatOpen } from '../journey/chat-access';
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -155,7 +155,9 @@ export class ChatService {
           { userAId: userId },
           { userBId: userId },
         ],
-        result: 'en_cours',
+        // Messagerie ouverte seulement : rien ne circule pendant le Sondeur,
+        // une retenue de sécurité ou après une clôture.
+        AND: [CHAT_OPEN_WHERE],
       },
       select: {
         id: true,
@@ -164,6 +166,44 @@ export class ChatService {
 
     return journeys.map(j => j.id);
   }
+
+  /** Membre d'un parcours dont la messagerie est ouverte (salle WebSocket). */
+  async canJoinJourney(userId: string, journeyId: string): Promise<boolean> {
+    const journey = await this.journeyState(journeyId);
+    return (
+      !!journey &&
+      (journey.userAId === userId || journey.userBId === userId) &&
+      chatOpen(journey)
+    );
+  }
+
+  /**
+   * Étape et issue d'un parcours, relues au plus toutes les 5 secondes (les
+   * événements « en train d'écrire » sont fréquents).
+   */
+  async journeyState(journeyId: string) {
+    const cached = ChatService.states.get(journeyId);
+    if (cached && cached.at > Date.now() - 5_000) return cached.journey;
+    const journey = await this.prisma.journey.findUnique({
+      where: { id: journeyId },
+      select: { userAId: true, userBId: true, currentStep: true, result: true },
+    });
+    if (ChatService.states.size >= 5_000) ChatService.states.clear();
+    ChatService.states.set(journeyId, { at: Date.now(), journey });
+    return journey;
+  }
+  private static states = new Map<
+    string,
+    {
+      at: number;
+      journey: {
+        userAId: string;
+        userBId: string;
+        currentStep: string;
+        result: string;
+      } | null;
+    }
+  >();
 
   async markMessagesAsRead(journeyId: string, userId: string) {
     // Marquer comme lus tous les messages non lus envoyés par l'autre utilisateur

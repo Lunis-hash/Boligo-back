@@ -77,6 +77,16 @@ export class NotificationService {
     return dbNotification;
   }
 
+  // ─── Messagerie ouverte (fin du Sondeur) : push ────────────────────────────
+  async notifyChatOpen(userId: string, partnerName: string) {
+    await this.sendPushNotification(
+      userId,
+      'message',
+      'Messagerie ouverte',
+      `Le Sondeur est terminé : vous pouvez maintenant écrire à ${partnerName}.`,
+    );
+  }
+
   // ─── Vidéo débloquée : push + email ────────────────────────────────────────
   async notifyVideoUnlock(userId: string, partnerName: string) {
     // 1. Push notification

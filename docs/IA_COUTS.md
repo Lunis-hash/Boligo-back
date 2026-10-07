@@ -185,28 +185,43 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       - une limite écrite (« s'il levait la main sur moi, je partirais ») ;
       - un souvenir d'enfance dit comme tel ;
       - un idiome (« ce qui m'a frappé ») ;
-      - un engagement associatif ;
+      - un engagement associatif ou un métier (avocate, infirmier) ;
       - un modèle de couple choisi (« mon mari gère mon salaire, ça me
         convient »).
+
+      Une menace ou un contrôle subis, racontés par la victime (« mon ex
+      fouillait mon téléphone »), comptent comme une confidence de violence
+      subie : la victime n'est jamais traitée comme l'auteur.
     - **Second étage, l'IA, dès l'envoi (parcours payé).** Le relecteur haut de
       gamme lit chaque réponse au moment où elle est envoyée et repère ce que
       le code ne voit pas. Coût : environ 0,15 € par parcours (42 réponses
-      courtes), pris sur l'enveloppe de 3 €. Au-delà de 10 secondes, la
-      réponse est enregistrée et le classement se termine en arrière-plan.
+      courtes), pris sur l'enveloppe de 3 €. Une confidence de violence subie
+      est relue aussi, car la même réponse peut contenir une menace.
       L'IA peut aussi lever une alerte dans la lecture du jour, dans le bilan
       et dans le contrôle de fidélité.
+    - **IA lente ou en panne : fermé par défaut.** Au-delà de 10 secondes, ou
+      si l'IA ne répond pas, la réponse est enregistrée mais cachée à l'autre
+      membre et signalée « classement en attente » ; la messagerie attend.
+      Elle est relue automatiquement, au plus toutes les 10 minutes. Relue
+      sans danger, elle redevient visible et le signalement se clôt seul.
+      Pendant une longue panne, l'équipe peut trancher à la main.
     - **Mesure.** Un corpus de non-régression (plus de 230 phrases, dont des
       phrases saines) fait échouer l'intégration si le repérage par le code
       tombe sous 95 % par catégorie, ou si une phrase saine retient la
-      messagerie. Ces phrases ont servi à écrire les motifs. Seul un corpus de
-      vraies réponses, annoté par des spécialistes, donnera un taux fiable
-      (voir plus bas).
+      messagerie. Ces phrases ont servi à écrire les motifs : ce n'est pas un
+      taux réel. Sur 143 phrases neuves écrites par un auditeur indépendant,
+      le code seul en repère environ 45 %. C'est la relecture de l'IA à
+      l'envoi qui porte la sécurité d'un parcours payé ; le laboratoire IA
+      contient quatre couples dont le danger est invisible pour le code, pour
+      la mesurer. Seul un corpus de vraies réponses, annoté par des
+      spécialistes, donnera un taux fiable (voir plus bas).
     - **Signalement.** Il part dès l'envoi de la réponse, et avant son
       enregistrement : si le signalement échoue, la réponse n'est pas
       enregistrée non plus. Un membre qui s'arrête en route n'y échappe pas.
-      Il y a un signalement par réponse, jamais en double. Une réponse refusée
-      par la modération IA est signalée aussi, avec la catégorie « autre » :
-      elle ne disparaît pas sans trace.
+      Il y a un signalement par réponse, jamais en double, et une seule alerte
+      de l'IA ouverte par membre. Une réponse refusée par la modération IA
+      (insulte, proposition sexuelle, contact) est signalée pour trace, sans
+      retenir la messagerie : elle n'a jamais été montrée.
     - **Ce qui se passe ensuite** :
       - aucune lecture ni question d'approfondissement par l'IA pour la
         journée ;
@@ -215,9 +230,10 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
       - la modération reçoit la ou les catégories et la réponse.
     - **Réponse cachée.** L'autre membre voit « Réponse en cours de
       vérification par l'équipe BOLIGO. » à la place de la réponse. C'est
-      fermé par défaut : le texte reste caché même si le signalement n'a pas
-      pu être écrit, et jusqu'à ce que l'équipe le rejette. Une confidence de
-      violence subie n'est jamais cachée.
+      fermé par défaut : le texte reste caché si le code y voit un danger,
+      même sans signalement écrit, si l'IA n'a pas encore pu le relire, ou si
+      une alerte de l'IA vise ce membre, jusqu'à ce que l'équipe tranche. Une
+      confidence de violence subie n'est jamais cachée.
     - **Messagerie.** Un seul chemin du code l'ouvre, et un test le vérifie.
       Elle attend la décision de l'équipe. Seule exception : une confidence de
       violence subie, sans autre catégorie, ne retient pas la victime ; la
@@ -232,7 +248,9 @@ Elle se termine par des exemples de mauvaises et de bonnes questions.
         minorité, où personne n'est en faute, les deux crédits sont rendus.
         Les deux membres sont prévenus sans que le motif soit donné.
     - **Parcours clos.** Un parcours arrêté (par un membre, l'anti-ghosting ou
-      la modération) ne laisse plus passer aucun message.
+      la modération) ne laisse plus passer aucun message, aucun signal
+      « en train d'écrire » ni aucun appel. Les appels ne sonnent qu'à
+      l'étape vidéo d'un parcours en cours.
     - **Ressources d'aide.** L'auteur de la réponse les reçoit en privé, sans
       commentaire :
       - détresse : le 3114 (France) ;

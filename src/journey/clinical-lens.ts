@@ -8,7 +8,7 @@
 
 /** Points non négociables : la même liste dans toutes les consignes. */
 export const NON_NEGOTIABLE_TOPICS =
-  'foi exigée, conversion, enfants, polygamie, pays de vie, fidélité, intimité avant le mariage, alcool, règles alimentaires, accès au téléphone, ou toute condition posée par écrit';
+  'foi exigée, conversion, enfants, polygamie, pays de vie, fidélité, intimité avant le mariage, alcool, règles alimentaires, ou toute condition posée par écrit';
 
 export const CLINICAL_LENS = `CADRE DU SONDEUR (prioritaire sur tout le reste) :
 - Les deux membres ne se sont encore jamais parlé : ils n'ont aucun passé commun. Ne parle jamais d'un souvenir à deux. Pour une exception ou une question circulaire, appuie-toi sur leur famille ou leurs proches. N'évoque une relation passée que sous la forme « si vous en avez vécu une », et seulement pour ce que chacun en a appris : jamais sa fin (rupture, divorce, veuvage), jamais son récit.
@@ -47,7 +47,7 @@ CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
 - Même réponse des deux côtés : vérifie que les mots veulent dire la même chose ; demande une scène ordinaire où cette réponse se voit.
 - Même réponse qui pose un risque (deux silences, deux réconciliations lentes) : exception tirée de la famille ou des proches, ou signal de réparation.
 - L'un veut parler tout de suite, l'autre s'éloigne : demande à chacun ce qu'il espère que l'autre comprenne à ce moment-là.
-- Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; demande où chacun place sa limite et d'où elle lui vient ; jamais ce qu'il ferait pour se protéger ni où il irait (un plan de mise en sécurité reste confidentiel, et l'autre lira la réponse). Contrôle : téléphone ou localisation surveillés, argent confisqué ou accès refusé à ses propres ressources, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
+- Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; demande où chacun place sa limite et ce qui la rend non négociable pour lui (une valeur, un principe) ; jamais un récit de ce qu'il a vécu ou vu, jamais ce qu'il ferait pour se protéger ni où il irait (un plan de mise en sécurité reste confidentiel, et l'autre lira la réponse). Contrôle : téléphone ou localisation surveillés, argent confisqué ou accès refusé à ses propres ressources, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
 - Rôles, autorité, argent, famille élargie : demande comment chacun vivrait la place qu'il occuperait (décider, suivre, dépendre, être aidé), jamais quel modèle est le bon ; ne présuppose ni l'égalité ni la hiérarchie.
 
 CE QUE TU CHERCHES : pas la faille, mais la question que les deux membres ne se seraient jamais posée eux-mêmes : l'attente implicite, le besoin derrière la position, l'héritage familial, le scénario jamais imaginé, deux réponses identiques qui cachent des sens différents.
@@ -237,10 +237,41 @@ export function hasInterpretation(text: string): boolean {
  * membres) : « cette réponse montre un besoin… », « on sent chez… ».
  */
 const READING_INTERPRETATION =
-  /(?<!\p{L})(?:montre(?:nt)? (?:un|une|que|votre|vos|son|sa|leur)(?!\p{L})|témoigne(?:nt)? d|reflète(?:nt)?|dit beaucoup|disent beaucoup|on sent|probablement|par peur d|se cache|derrière (?:ces|ses|vos|cette|leurs?) (?:mots|réponses?)|blessure)/iu;
+  /(?<!\p{L})(?:montre(?:nt)? (?:un|une|que)(?!\p{L})|montre(?:nt)? (?:votre|vos|son|sa|leur) (?:besoin|peur|manque|blessure|difficult\p{L}*|rejet|fragilit\p{L}*)|témoigne(?:nt)? d|reflète(?:nt)?|dénote\p{L}*|(?:indique|signale|trahit)(?:nt)? (?:un|une) (?:besoin|peur|manque|désir)|dit beaucoup|disent beaucoup|on sent|probablement|par peur d|se cache|derrière (?:ces|ses|vos|cette|leurs?) (?:mots|réponses?)|blessure)/iu;
 
-export function hasReadingInterpretation(text: string): boolean {
-  return hasInterpretation(text) || READING_INTERPRETATION.test(text);
+/**
+ * Interprétation dans une lecture. `written` : ce que les membres ont écrit ;
+ * un mot qu'ils ont employé eux-mêmes (« une vieille blessure ») peut être
+ * rapporté par une phrase qui les cite (`reports`).
+ */
+export function hasReadingInterpretation(
+  text: string,
+  written = '',
+  reports = false,
+): boolean {
+  return [INTERPRETATION, READING_INTERPRETATION].some((re) =>
+    unwrittenMatch(re, text, written, reports),
+  );
+}
+
+/**
+ * Le texte emploie-t-il un mot de `re` que les membres n'ont pas écrit (ou
+ * sans le rapporter comme le leur) ?
+ */
+export function unwrittenMatch(
+  re: RegExp,
+  text: string,
+  written: string,
+  reports: boolean,
+): boolean {
+  const global = new RegExp(
+    re.source,
+    re.flags.includes('g') ? re.flags : `${re.flags}g`,
+  );
+  const mine = written.toLowerCase();
+  return [...text.matchAll(global)].some(
+    (m) => !reports || !mine.includes(m[0].toLowerCase()),
+  );
 }
 
 /** Longueur maximale d'une question de l'IA (la consigne en demande 180). */
@@ -348,10 +379,10 @@ export const VOUVOIEMENT = word('vous|votre|vos');
 
 /** Demandes identifiantes ou chiffrées que la liste INTRUSIVE ne couvre pas. */
 export const INTRUSIVE_MORE =
-  /(?<!\p{L})(?:quelle somme|combien (?:touchez|percevez|gagnez|empochez)|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
+  /(?<!\p{L})(?:quelle somme|combien (?:touchez|percevez|gagnez|empochez)|que gagnez|vos ex(?!\p{L})|premier baiser|fréquence (?:de vos|des) (?:moments|rapports|relations) intimes|(?:où|dans quelle ville)[^?]{0,30}vivent vos parents|pays d['’]origine|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
 /** Violence présentée comme excusable, pardonnable ou réparable. */
 export const VIOLENCE_NORMALIZE =
-  /(?<!\p{L})(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants)\p{L}*[^?]{0,60}(?:excus|justifi|réconcili|pardonn|répar|vivable|tourner la page|passer l['’]éponge)|(?<!\p{L})(?:excus|justifi|réconcili|pardonn|répar)\p{L}*[^?]{0,60}(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants)/iu;
+  /(?<!\p{L})(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants|geste brusque|geste déplacé|bouscul)\p{L}*[^?]{0,60}(?:excus|justifi|réconcili|pardonn|répar|vivable|tourner la page|passer l['’]éponge)|(?<!\p{L})(?:excus|justifi|réconcili|pardonn|répar)\p{L}*[^?]{0,60}(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants|geste brusque|geste déplacé|bouscul)/iu;
 /** Trait de caractère ou difficulté présupposés (« votre jalousie », « avez-vous du mal à »). */
 export const PRESUPPOSED =
   /(?<!\p{L})(?:votre (?:jalousie|possessivité|méfiance|colère|immaturité|égoïsme|besoin de contrôle)|(?:avez|auriez)-vous du mal à)(?!\p{L})/iu;
@@ -373,7 +404,7 @@ export const LENS_EXAMPLES = [
  * limite de l'équipe, relus par des humains, ne passent pas par ce filtre.
  */
 const STAGED_HARM =
-  /(?<!\p{L})(?:gifl\p{L}*|frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
+  /(?<!\p{L})(?:gifl\p{L}*|frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|vous protéger|vous réfugier|où iriez|(?:le )?code de (?:votre|son) téléphone|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
 
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();

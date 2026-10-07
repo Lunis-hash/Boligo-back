@@ -285,7 +285,36 @@ describe('Signaux de danger dans les réponses du Sondeur', () => {
 
   it('nomme la catégorie transmise à la modération', () => {
     expect(
+      dangerCategories('Je fouillerai son téléphone tous les soirs.'),
+    ).toEqual(['controle']);
+    // Contrôle ou menace subis, racontés par la victime : une confidence.
+    expect(
       dangerCategories('Il fouillait mon téléphone tous les soirs.'),
+    ).toEqual(['violence_subie']);
+    expect(
+      dangerCategories(
+        'Mon ancien mari m’a menacée de prendre les enfants si je partais.',
+      ),
+    ).toEqual(['violence_subie']);
+    expect(dangerCategories('Mon mari va me tuer si je le quitte.')).toEqual([
+      'violence_subie',
+    ]);
+    expect(dangerCategories('Si elle me trompe, je la tuerai.')).toEqual([
+      'menace',
+    ]);
+    // Idiomes, métiers, limites : rien.
+    for (const t of [
+      "Ma mère va me tuer si je ne l'appelle pas ce soir.",
+      'Je suis avocate, je défends des femmes victimes de violences conjugales.',
+      "Ça m'a frappé : on a les mêmes valeurs.",
+      'Si ma copine fouille mon téléphone, je la quitte.',
+    ])
+      expect(dangerCategories(t)).toEqual([]);
+    // Mais une exigence de celui qui écrit reste un contrôle.
+    expect(
+      dangerCategories(
+        'Ma femme devra me demander l’autorisation pour sortir.',
+      ),
     ).toEqual(['controle']);
     expect(dangerCategories('Si tu me quittes je te tue.')).toEqual(['menace']);
     expect(dangerCategories('Je ne vois plus de raison de vivre.')).toEqual([

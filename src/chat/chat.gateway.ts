@@ -13,6 +13,7 @@ import { ChatService } from './chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { NotificationService } from '../notifications/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { chatOpen } from '../journey/chat-access';
 
 @WebSocketGateway({
   cors: {
@@ -35,6 +36,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /** Le socket a-t-il rejoint (après contrôle d'appartenance) ce parcours ? */
   private inJourney(client: Socket, journeyId: unknown): journeyId is string {
     return typeof journeyId === 'string' && client.rooms.has(`journey:${journeyId}`);
+  }
+
+  /**
+   * La messagerie est-elle encore ouverte ? Sinon (parcours clos, retenue de
+   * sécurité), le socket quitte la salle.
+   */
+  private async chatOpenFor(
+    client: Socket,
+    journeyId: string,
+  ): Promise<boolean> {
+    const journey = await this.chatService.journeyState(journeyId);
+    if (journey && chatOpen(journey)) return true;
+    client.leave(`journey:${journeyId}`);
+    return false;
   }
 
   /**
@@ -107,8 +122,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = await this.authenticatedUser(client);
     if (!userId) return;
 
-    // Vérifier si l'utilisateur a le droit de rejoindre cette conversation
-    const hasAccess = await this.chatService.canAccessJourney(userId, data.journeyId);
+    // Membre du parcours, et messagerie ouverte (ni pendant le Sondeur, ni
+    // pendant une retenue de sécurité, ni après une clôture).
+    const hasAccess = await this.chatService.canJoinJourney(
+      userId,
+      data.journeyId,
+    );
 
     if (hasAccess) {
       client.join(`journey:${data.journeyId}`);
@@ -215,12 +234,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('typing')
-  handleTyping(
+  async handleTyping(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string; isTyping: boolean },
   ) {
     const userId = client.data.userId;
     if (!this.inJourney(client, data?.journeyId)) return;
+    if (!(await this.chatOpenFor(client, data.journeyId))) return;
 
     // Notifier l'autre utilisateur que quelqu'un est en train d'écrire
     client.to(`journey:${data.journeyId}`).emit('userTyping', {
@@ -239,12 +259,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('callUser')
-  handleCallUser(
+  async handleCallUser(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { journeyId: string; callerName: string },
   ) {
     const callerId = client.data.userId;
     if (!this.inJourney(client, data?.journeyId)) return;
+    // Un appel ne sonne qu'à l'étape vidéo d'un parcours en cours.
+    const journey = await this.chatService.journeyState(data.journeyId);
+    if (journey?.currentStep !== 'video' || journey.result !== 'en_cours')
+      return;
     // Le nom affiché vient du serveur, jamais du client (pas d'appel usurpé).
     client.to(`journey:${data.journeyId}`).emit('incomingCall', {
       journeyId: data.journeyId,

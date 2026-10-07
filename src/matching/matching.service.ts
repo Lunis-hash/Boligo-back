@@ -218,8 +218,12 @@ export class MatchingService {
         const daysSinceChat = (Date.now() - chatStart) / (1000 * 60 * 60 * 24);
 
         if (daysSinceChat >= 3) {
-          await this.prisma.journey.update({
-            where: { id: journey.id },
+          await this.prisma.journey.updateMany({
+            where: {
+              id: journey.id,
+              currentStep: 'chat_libre',
+              result: 'en_cours',
+            },
             data: { currentStep: 'video', stepStartDate: new Date() },
           });
         }

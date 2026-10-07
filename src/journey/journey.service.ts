@@ -27,7 +27,10 @@ import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
 import { farewellText } from './farewell';
-import { JourneyInsightsService } from './journey-insights.service';
+import {
+  JourneyInsightsService,
+  UNCLASSIFIED_SUMMARY,
+} from './journey-insights.service';
 import { CHAT_OPEN_WHERE, chatOpen } from './chat-access';
 import {
   DangerCategory,
@@ -625,16 +628,23 @@ export class JourneyService {
     const codeDanger = dangerCategories(trimmed);
     let aiDanger: DangerCategory[] = [];
     let late: Promise<SondeurModeration> | null = null;
+    // Parcours payé dont la réponse n'a pas pu être relue (IA lente ou en
+    // panne) : fermé par défaut, la réponse reste cachée jusqu'au classement.
+    let unclassified = false;
     if (!codeDanger.length) {
       const local = moderateAnswerLocally(trimmed);
       if (!local.allowed) {
         throw new BadRequestException(local.reason);
       }
-      // Parcours payé : chaque réponse est relue par l'IA à l'envoi, qui
-      // repère aussi un danger que le code ne voit pas (seconde ligne de
-      // défense, sans attendre la fin de la journée de l'autre membre).
+    }
+    // Parcours payé : chaque réponse est relue par l'IA à l'envoi, qui
+    // repère aussi un danger que le code ne voit pas (seconde ligne de
+    // défense, sans attendre la fin de la journée de l'autre membre). Une
+    // confidence de violence subie est relue aussi : la même réponse peut
+    // contenir une menace.
+    if (!holdsSafety(codeDanger)) {
       const paid = await this.aiService.journeyAiEligible(journey.id);
-      if (paid || shouldRunAiModeration(trimmed)) {
+      if (paid || (!codeDanger.length && shouldRunAiModeration(trimmed))) {
         const pending = this.aiService.moderateSondeurAnswer(
           trimmed,
           journey.id,
@@ -652,17 +662,20 @@ export class JourneyService {
         if (aiMod === null) {
           // Relecture lente : la réponse est enregistrée, le classement suit.
           late = pending;
+          unclassified = paid;
+        } else if (aiMod.unavailable) {
+          unclassified = paid;
         } else if (aiMod.danger?.length) {
           aiDanger = aiMod.danger;
-        } else if (!aiMod.allowed) {
-          await this.insights?.reportAnswer(
+        } else if (!aiMod.allowed && !codeDanger.length) {
+          // Jamais montrée à l'autre : signalée sans retenir la messagerie.
+          await this.insights?.reportRefusal(
             journey.id,
             question.day,
             userId,
             question.questionText,
             trimmed,
-            ['autre'],
-            `Réponse refusée par la modération IA (${aiMod.category ?? 'motif non précisé'} : ${aiMod.reason ?? 'sans détail'}). Le membre a pu la reformuler. À vérifier.`,
+            `${aiMod.category ?? 'motif non précisé'} : ${aiMod.reason ?? 'sans détail'}`,
           );
           throw new BadRequestException(
             aiMod.reason || 'Réponse incompatible avec les règles BOLIGO.',
@@ -674,14 +687,15 @@ export class JourneyService {
     // Danger : signalé dès l'envoi, avant d'enregistrer la réponse (si le
     // signalement échoue, la réponse n'est pas enregistrée non plus).
     const danger = [...new Set([...codeDanger, ...aiDanger])];
-    if (danger.length) {
+    if (danger.length || unclassified) {
       await this.insights?.reportAnswer(
         journey.id,
         question.day,
         userId,
         question.questionText,
         trimmed,
-        danger,
+        unclassified ? [...danger, 'autre'] : danger,
+        unclassified ? UNCLASSIFIED_SUMMARY : undefined,
       );
     }
     const response = await this.prisma.harmonyResponse.create({
@@ -694,16 +708,14 @@ export class JourneyService {
     if (late) {
       void late
         .then((m) =>
-          m.danger?.length
-            ? this.insights?.reportAnswer(
-                journey.id,
-                question.day,
-                userId,
-                question.questionText,
-                trimmed,
-                m.danger,
-              )
-            : undefined,
+          this.insights?.resolveClassification(
+            journey.id,
+            question.day,
+            userId,
+            question.questionText,
+            trimmed,
+            m.unavailable ? null : (m.danger ?? []),
+          ),
         )
         .catch((err: Error) =>
           this.logger.error(
@@ -862,11 +874,11 @@ export class JourneyService {
       data: { currentStep: 'chat_libre', stepStartDate: new Date() },
     });
     if (moved.count === 0) return false;
-    await this.notificationService.notifyVideoUnlock(
+    await this.notificationService.notifyChatOpen(
       journey.userAId,
       journey.userB.firstName,
     );
-    await this.notificationService.notifyVideoUnlock(
+    await this.notificationService.notifyChatOpen(
       journey.userBId,
       journey.userA.firstName,
     );

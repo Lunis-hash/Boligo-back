@@ -5,10 +5,10 @@ export class StartLabRunDto {
   @ApiProperty({
     example: 3,
     description:
-      'Nombre de couples types à évaluer (1 à 23, environ 1 € chacun)',
+      'Nombre de couples types à évaluer (1 à 27, environ 1 € chacun)',
   })
   @IsInt()
   @Min(1)
-  @Max(23)
+  @Max(27)
   couples: number;
 }

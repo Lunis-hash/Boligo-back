@@ -1,5 +1,8 @@
 import { THEMES } from '../matching/divergence.engine';
-import { JourneyInsightsService } from './journey-insights.service';
+import {
+  JourneyInsightsService,
+  UNCLASSIFIED_SUMMARY,
+} from './journey-insights.service';
 
 type Response = { id: string; userId: string; responseText: string };
 type Question = {
@@ -30,6 +33,7 @@ const THEME_ORDER = [
 ] as const;
 
 type StoredReport = {
+  id: string;
   reporterId: string;
   reportedId: string;
   reason: string;
@@ -108,11 +112,30 @@ function memoryDb(journeyId: string) {
     },
     interviewIA: { findFirst: jest.fn(() => Promise.resolve(null)) },
     report: {
-      create: jest.fn(({ data }: { data: Omit<StoredReport, 'status'> }) => {
-        const row = { ...data, status: 'en_attente' };
-        reports.push(row);
-        return Promise.resolve(row);
-      }),
+      create: jest.fn(
+        ({ data }: { data: Omit<StoredReport, 'status' | 'id'> }) => {
+          const row = {
+            ...data,
+            id: `r${reports.length + 1}`,
+            status: 'en_attente',
+          };
+          reports.push(row);
+          return Promise.resolve(row);
+        },
+      ),
+      update: jest.fn(
+        ({
+          where,
+          data,
+        }: {
+          where: { id: string };
+          data: Partial<StoredReport>;
+        }) => {
+          const row = reports.find((r) => r.id === where.id);
+          if (row) Object.assign(row, data);
+          return Promise.resolve(row);
+        },
+      ),
       findMany: jest.fn(({ where }: { where: ReportWhere }) =>
         Promise.resolve(
           reports
@@ -281,7 +304,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       {
         theme: 'Argent & dettes',
         text: 'Le partage des dépenses reste à préciser.',
-        quotes: ['réponse détaillée de a', 'réponse détaillée de b'],
+        quotes: ['Réponse détaillée de a', 'Réponse détaillée de b'],
       },
     ]);
 
@@ -537,7 +560,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1, ['a', 'b'], (userId, i) =>
       userId === 'b' && i === 4
-        ? 'Il fouillait mon téléphone tous les soirs.'
+        ? 'Je fouillerai son téléphone tous les soirs.'
         : `Réponse détaillée de ${userId}`,
     );
     await service.refresh(id);
@@ -730,7 +753,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1, ['a', 'b'], (userId, i) =>
       userId === 'b' && i === 0
-        ? 'Il fouillait mon téléphone tous les soirs.'
+        ? 'Je fouillerai son téléphone tous les soirs.'
         : `Réponse détaillée de ${userId}`,
     );
     expect(await service.holdsChat(id)).toBe(true);
@@ -762,6 +785,112 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     const advice = (await service.view(id)).days[0].advice ?? '';
     expect(advice).toMatch(/en a été informée/);
     expect(advice).not.toMatch(/avant l'ouverture/);
+  });
+
+  it('réponse non classée par l’IA : cachée, puis classée après coup (danger, ou signalement clos)', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      moderateSondeurAnswer: jest.fn(() =>
+        Promise.resolve({ allowed: true, danger: [] }),
+      ),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    const subtle = 'Si tu me quittes, je te retrouverai où que tu sois.';
+    await service.reportAnswer(
+      id,
+      1,
+      'b',
+      'Q ?',
+      subtle,
+      ['autre'],
+      UNCLASSIFIED_SUMMARY,
+    );
+    expect((await service.safety(id)).hidden('b', 1, 'Q ?', subtle)).toBe(true);
+    expect((await service.safety(id)).holds).toBe(true);
+    await service.resolveClassification(id, 1, 'b', 'Q ?', subtle, ['menace']);
+    expect(db.reports[0].description).toMatch(/catégories=\[menace\]/);
+    expect(db.reports[0].description).not.toContain(UNCLASSIFIED_SUMMARY);
+    expect((await service.safety(id)).hidden('b', 1, 'Q ?', subtle)).toBe(true);
+    // Une autre réponse, relue sans danger : signalement clos, réponse visible.
+    const calm = 'J’aime les dimanches calmes en famille.';
+    await service.reportAnswer(
+      id,
+      1,
+      'b',
+      'Q2 ?',
+      calm,
+      ['autre'],
+      UNCLASSIFIED_SUMMARY,
+    );
+    await service.resolveClassification(id, 1, 'b', 'Q2 ?', calm, []);
+    expect(db.reports[1].status).toBe('rejete');
+    expect((await service.safety(id)).hidden('b', 1, 'Q2 ?', calm)).toBe(false);
+    // IA toujours indisponible : rien ne bouge (nouvelle tentative plus tard).
+    await service.reportAnswer(
+      id,
+      1,
+      'a',
+      'Q3 ?',
+      subtle,
+      ['autre'],
+      UNCLASSIFIED_SUMMARY,
+    );
+    await service.resolveClassification(id, 1, 'a', 'Q3 ?', subtle, null);
+    expect(db.reports[2].status).toBe('en_attente');
+  });
+
+  it('réponse refusée par la modération : signalée pour trace, sans retenir la messagerie', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const service = new JourneyInsightsService(db.prisma as never, {} as never);
+    await service.reportRefusal(
+      id,
+      1,
+      'b',
+      'Q ?',
+      'Texte grossier',
+      'harassment : Harcèlement',
+    );
+    expect(db.reports).toHaveLength(1);
+    expect(db.reports[0].description).toMatch(/jour 1 · refus [0-9a-f]{10}/);
+    expect((await service.safety(id)).holds).toBe(false);
+  });
+
+  it('alerte de l’IA au bilan : les réponses du membre restent cachées ; une seule alerte ouverte par membre', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: jest.fn(() =>
+        written(JSON.stringify({ alerte: 'menace', membre: 'b' })),
+      ),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1);
+    db.answerDay(2);
+    db.answerDay(3);
+    await service.refresh(id);
+    // Jour 1 : alerte ; jours 2, 3 et bilan : pas de nouvelle alerte ouverte.
+    expect(db.reports).toHaveLength(1);
+    const safety = await service.safety(id);
+    expect(
+      safety.hidden(
+        'b',
+        3,
+        'Jour 3, famille : que feriez-vous ?',
+        'Réponse détaillée de b',
+      ),
+    ).toBe(true);
+    expect(
+      safety.hidden(
+        'a',
+        3,
+        'Jour 3, famille : que feriez-vous ?',
+        'Réponse détaillée de a',
+      ),
+    ).toBe(false);
   });
 
   it('réponse cachée à l’autre : fermé par défaut, rouvert seulement par un rejet', async () => {

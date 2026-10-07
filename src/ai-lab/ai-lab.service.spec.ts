@@ -27,6 +27,19 @@ function fakeAi() {
       );
       return Promise.resolve({ questions, model: 'anthropic/claude-opus-5' });
     }),
+    // Relecture de chaque réponse à l'envoi : danger seulement sur les
+    // phrases voilées des couples prévus pour cela.
+    moderateSondeurAnswer: jest.fn((text: string) =>
+      Promise.resolve({
+        allowed: true,
+        danger:
+          /retrouverai où que tu sois|garderai les papiers|ne plus être là|payer mon loyer/.test(
+            text,
+          )
+            ? ['menace']
+            : [],
+      }),
+    ),
     reviewSondeurQuestions: jest.fn(() =>
       Promise.resolve({
         rejected: new Set<number>(),
@@ -83,10 +96,10 @@ describe('Laboratoire IA', () => {
     process.env = env;
   });
 
-  it('23 couples types, chacun avec ce qu’il vérifie', () => {
+  it('27 couples types, chacun avec ce qu’il vérifie', () => {
     const service = new AiLabService(fakeAi() as never);
     const list = service.scenarios();
-    expect(list).toHaveLength(23);
+    expect(list).toHaveLength(27);
     expect(list.every((s) => s.name && s.checks)).toBe(true);
   });
 
@@ -140,6 +153,27 @@ describe('Laboratoire IA', () => {
       ),
     ).toBe(false);
   });
+
+  it.each([
+    'menace-voilee',
+    'controle-voile',
+    'detresse-voilee',
+    'argent-voile',
+  ])(
+    'danger invisible pour le code (%s) : repéré par la relecture de l’IA à l’envoi',
+    async (id) => {
+      const ai = fakeAi();
+      const service = new AiLabService(ai as never);
+      const out = await service.evaluate(
+        'run',
+        LAB_SCENARIOS.find((s) => s.id === id)!,
+      );
+      expect(out.danger.code).toEqual([]);
+      expect(out.danger.classifier.length).toBeGreaterThan(0);
+      expect(out.danger.verdict).toBe('ok');
+      expect(out.readingStatus).toMatch(/^bloquée/);
+    },
+  );
 
   it.each([
     ['detresse', ['detresse']],

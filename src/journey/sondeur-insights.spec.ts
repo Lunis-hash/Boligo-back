@@ -218,12 +218,13 @@ describe('Suivi du Sondeur — règles pures', () => {
       source: 'ia',
       headline: 'Vous avez parlé d’enfants et d’argent.',
       together: ['Vous parlez tous deux d’avoir des enfants.'],
-      togetherQuotes: [['je veux deux enfants', 'Des enfants oui']],
+      togetherQuotes: [['Je veux deux enfants', 'Des enfants oui']],
       toDiscuss: [
         {
           theme: 'Argent & dettes',
           text: 'Le partage des dépenses reste à préciser.',
-          quotes: ['Moitié-moitié, toujours', 'celui qui invite'],
+          // Extraits tels qu'écrits dans les réponses (majuscule comprise).
+          quotes: ['Moitié-moitié, toujours', 'Celui qui invite'],
         },
       ],
       openers: ['Comment imaginez-vous un budget commun ?'],
@@ -457,6 +458,35 @@ describe('Suivi du Sondeur — règles pures', () => {
     expect(
       agreement(2, 'Tout mettre en commun', 'Tout mettre en commun'),
     ).toEqual([]);
+    // « non négociable » renforce, il ne renverse pas.
+    expect(
+      parseDayReading(
+        JSON.stringify({
+          headline: 'Vous avez parlé de fidélité.',
+          together: [
+            {
+              n: 1,
+              a: 'La fidélité est',
+              b: 'La fidélité, absolument',
+              text: 'Vous évoquez tous deux la fidélité.',
+            },
+          ],
+          toDiscuss: [],
+        }),
+        1,
+        answeredItems(
+          [
+            question('f1', 1, THEMES.famille.emoji, {
+              a: 'La fidélité est non négociable pour moi.',
+              b: 'La fidélité, absolument, dans tous les cas.',
+            }),
+          ],
+          A,
+          B,
+        ),
+        ['Inès', 'Karim'],
+      )?.together,
+    ).toEqual(['Vous évoquez tous deux la fidélité.']);
     expect(agreement(3, 'Je veux deux enfants', 'Des enfants oui')).toEqual([
       'Vous évoquez tous deux ce point.',
     ]);

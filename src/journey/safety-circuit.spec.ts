@@ -79,6 +79,7 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
     reason?: string;
     category?: string;
     danger?: string[];
+    unavailable?: boolean;
   }) => {
     const prisma = {
       harmonyQuestion: {
@@ -110,6 +111,8 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
     };
     const insights = {
       reportAnswer: jest.fn(() => Promise.resolve()),
+      reportRefusal: jest.fn(() => Promise.resolve()),
+      resolveClassification: jest.fn(() => Promise.resolve()),
       refresh: jest.fn(() => Promise.resolve()),
       holdsChat: jest.fn(() => Promise.resolve(true)),
     };
@@ -140,13 +143,14 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
       'Que feriez-vous si… ?',
       text,
       ['menace'],
+      undefined,
     );
     expect(insights.reportAnswer.mock.invocationCallOrder[0]).toBeLessThan(
       prisma.harmonyResponse.create.mock.invocationCallOrder[0],
     );
   });
 
-  it('réponse refusée par la modération IA : signalée (« autre ») avant d’être refusée, jamais perdue', async () => {
+  it('réponse refusée par la modération IA : signalée pour trace (sans retenir la messagerie), jamais perdue', async () => {
     const { service, prisma, insights } = setup({
       allowed: false,
       reason: 'Harcèlement',
@@ -160,8 +164,22 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
         'Les gens comme toi devraient rester à leur place.',
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
-    const [, , , , , categories, summary] = insights.reportAnswer.mock
-      .calls[0] as unknown as [
+    const [, , , , , reason] = insights.reportRefusal.mock
+      .calls[0] as unknown as [string, number, string, string, string, string];
+    expect(reason).toMatch(/Harcèlement/);
+    expect(insights.reportAnswer).not.toHaveBeenCalled();
+    expect(prisma.harmonyResponse.create).not.toHaveBeenCalled();
+  });
+
+  it('IA en panne : la réponse est enregistrée mais cachée, « en attente de classement »', async () => {
+    const { service, insights } = setup({
+      allowed: true,
+      danger: [],
+      unavailable: true,
+    });
+    const text = 'Si tu me quittes, je te retrouverai où que tu sois.';
+    await service.respondToQuestion('q1', 'b', text);
+    const call = insights.reportAnswer.mock.calls[0] as unknown as [
       string,
       number,
       string,
@@ -170,9 +188,70 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
       string[],
       string,
     ];
-    expect(categories).toEqual(['autre']);
-    expect(summary).toMatch(/Harcèlement/);
-    expect(prisma.harmonyResponse.create).not.toHaveBeenCalled();
+    expect(call[5]).toContain('autre');
+    expect(call[6]).toMatch(/Classement de l'IA en attente/);
+  });
+
+  it('IA lente : réponse cachée tout de suite, classement résolu après coup', async () => {
+    jest.useFakeTimers();
+    try {
+      const { service, ai, insights } = setup({ allowed: true });
+      let answer: (m: unknown) => void = () => undefined;
+      ai.moderateSondeurAnswer.mockReturnValueOnce(
+        new Promise((r) => {
+          answer = r;
+        }) as never,
+      );
+      const text = 'Elle saura ce qu’il en coûte de me faire honte.';
+      const sent = service.respondToQuestion('q1', 'b', text);
+      await jest.advanceTimersByTimeAsync(10_001);
+      await sent;
+      const [, , , , , categories] = insights.reportAnswer.mock
+        .calls[0] as unknown as [
+        string,
+        number,
+        string,
+        string,
+        string,
+        string[],
+      ];
+      expect(categories).toEqual(['autre']);
+      answer({ allowed: true, danger: ['menace'] });
+      await jest.advanceTimersByTimeAsync(1);
+      expect(insights.resolveClassification).toHaveBeenCalledWith(
+        'j1',
+        1,
+        'b',
+        'Que feriez-vous si… ?',
+        text,
+        ['menace'],
+      );
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('confidence de violence subie : relue quand même par l’IA (la réponse peut aussi menacer)', async () => {
+    const { service, ai, insights } = setup({
+      allowed: true,
+      danger: ['menace'],
+    });
+    const text =
+      'Mon ex me frappait. Toi, si tu me trompes, tu vas le sentir passer.';
+    await service.respondToQuestion('q1', 'a', text);
+    expect(ai.moderateSondeurAnswer).toHaveBeenCalled();
+    const [, , , , , categories] = insights.reportAnswer.mock
+      .calls[0] as unknown as [
+      string,
+      number,
+      string,
+      string,
+      string,
+      string[],
+    ];
+    expect(categories).toEqual(
+      expect.arrayContaining(['violence_subie', 'menace']),
+    );
   });
 
   it('danger repéré par le code : signalé sans attendre l’IA, jamais refusé', async () => {

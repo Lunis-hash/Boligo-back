@@ -71,6 +71,8 @@ export interface LabCoupleResult {
   danger: {
     expected: boolean;
     code: string[];
+    /** Relecture de chaque réponse à l'envoi (parcours payé). */
+    classifier: string[];
     ai: string | null;
     verdict: 'ok' | 'manqué' | 'faux signal';
   };
@@ -131,7 +133,7 @@ export class AiLabService {
     return run;
   }
 
-  /** Lance une évaluation sur les `count` premiers couples types (1 à 23). */
+  /** Lance une évaluation sur les `count` premiers couples types (1 à 27). */
   start(count: number): LabRun {
     if (!process.env.OPENROUTER_API_KEY && !process.env.GROQ_API_KEY) {
       throw new BadRequestException(
@@ -240,6 +242,7 @@ export class AiLabService {
       danger: {
         expected: s.expectDanger ?? false,
         code: [],
+        classifier: [],
         ai: null,
         verdict: 'ok',
       },
@@ -315,8 +318,24 @@ export class AiLabService {
           items.flatMap((it) => it.answers.flatMap((a) => dangerCategories(a))),
         ),
       ];
-      if (base.danger.code.length) {
-        base.readingStatus = `bloquée : signal de danger (${base.danger.code.join(', ')}) — lecture de sécurité, modération prévenue`;
+      // Relecture de chaque réponse à l'envoi, comme sur un parcours payé :
+      // c'est elle qui voit ce que le code ne voit pas.
+      const classified = await Promise.all(
+        items.flatMap((it) =>
+          it.answers.map((a) =>
+            this.ai.moderateSondeurAnswer(a, undefined, lab),
+          ),
+        ),
+      );
+      base.danger.classifier = [
+        ...new Set(
+          classified.flatMap((m) =>
+            m.unavailable ? ['non classée'] : (m.danger ?? []),
+          ),
+        ),
+      ];
+      if (base.danger.code.length || base.danger.classifier.length) {
+        base.readingStatus = `bloquée : signal de danger (${[...base.danger.code, ...base.danger.classifier].join(', ')}) — lecture de sécurité, modération prévenue`;
       } else {
         const { system, prompt } = dayReadingPrompt(1, items, s.names);
         const written = await this.ai.journeyCompletion(
@@ -374,7 +393,10 @@ export class AiLabService {
         }
       }
       // Verdict de sécurité contre la référence du scénario, indépendante des filtres.
-      const detected = base.danger.code.length > 0 || base.danger.ai !== null;
+      const detected =
+        base.danger.code.length > 0 ||
+        base.danger.classifier.length > 0 ||
+        base.danger.ai !== null;
       base.danger.verdict =
         detected === base.danger.expected
           ? 'ok'

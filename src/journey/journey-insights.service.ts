@@ -135,11 +135,17 @@ export interface SondeurReport {
   day: number;
   /** Empreinte de la réponse signalée ; null pour une alerte de journée. */
   answer: string | null;
+  /** Réponse refusée par la modération : jamais enregistrée ni montrée. */
+  refused: boolean;
   categories: string[];
 }
 
 const REPORT_TAG =
-  /^Signal automatique BOLIGO · Sondeur · parcours ([0-9A-Za-z-]+) · (?:jour (\d)|bilan)(?: · (?:réponse ([0-9a-f]{10})|alerte))?(?: ·|\n|$)/;
+  /^Signal automatique BOLIGO · Sondeur · parcours ([0-9A-Za-z-]+) · (?:jour (\d)|bilan)(?: · (?:(réponse|refus) ([0-9a-f]{10})|alerte))?(?: ·|\n|$)/;
+
+/** Réponse d'un parcours payé que l'IA n'a pas encore pu relire. */
+export const UNCLASSIFIED_SUMMARY =
+  "Classement de l'IA en attente (relecture lente ou indisponible) : réponse cachée à l'autre membre jusqu'à son classement.";
 
 export function parseSondeurReport(r: {
   reportedId: string;
@@ -153,7 +159,8 @@ export function parseSondeurReport(r: {
     authorId: r.reportedId,
     status: r.status as SondeurReport['status'],
     day: m[2] ? Number(m[2]) : REVIEW_DAY,
-    answer: m[3] ?? null,
+    answer: m[4] ?? null,
+    refused: m[3] === 'refus',
     categories: categoriesOf(r.description),
   };
 }
@@ -164,7 +171,12 @@ export function parseSondeurReport(r: {
  * dont le signalement a été rejeté par la modération redevient ordinaire.
  */
 export class SondeurSafety {
-  constructor(readonly reports: SondeurReport[]) {}
+  /** Signalements qui comptent : une réponse refusée n'a jamais été montrée. */
+  readonly reports: SondeurReport[];
+
+  constructor(all: SondeurReport[]) {
+    this.reports = all.filter((r) => !r.refused);
+  }
 
   private forAnswer(authorId: string, question: string, answer: string) {
     const fingerprint = answerFingerprint(question, answer);
@@ -192,13 +204,24 @@ export class SondeurSafety {
     if (report?.status === 'rejete') return false;
     if (holdsSafety(dangerCategories(answer))) return true;
     if (report && holdsCategories(report.categories)) return true;
+    // Alerte de l'IA (une journée ou le bilan) : toutes les réponses du
+    // membre concerné restent cachées jusqu'à la décision de l'équipe.
     return this.reports.some(
       (r) =>
         r.answer === null &&
         r.authorId === authorId &&
-        r.day === day &&
         r.status !== 'rejete' &&
         holdsCategories(r.categories),
+    );
+  }
+
+  /** Alerte de l'IA encore ouverte pour ce membre (journée ou bilan). */
+  openAlert(authorId: string): boolean {
+    return this.reports.some(
+      (r) =>
+        r.answer === null &&
+        r.authorId === authorId &&
+        r.status === 'en_attente',
     );
   }
 
@@ -217,12 +240,9 @@ export class SondeurSafety {
           (m, k) => this.flagged(m, it.question, it.answers[k]).length > 0,
         ),
       ) ||
-      this.reports.some(
-        (r) =>
-          r.answer === null &&
-          r.status !== 'rejete' &&
-          (day === REVIEW_DAY || r.day === day),
-      )
+      // Une alerte de l'IA non rejetée suspend toutes les lectures : l'équipe
+      // tranche d'abord.
+      this.reports.some((r) => r.answer === null && r.status !== 'rejete')
     );
   }
 
@@ -270,6 +290,8 @@ export class JourneyInsightsService {
   private readonly logger = new Logger('Suivi Sondeur');
   private static queues = new Map<string, Promise<void>>();
   private static failures = new Map<string, { count: number; at: number }>();
+  /** Dernière relance des réponses « en attente de classement », par parcours. */
+  private static retries = new Map<string, number>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -299,6 +321,7 @@ export class JourneyInsightsService {
       );
     for (const day of complete)
       await this.handleDanger(journeyId, itemsOf(day), members);
+    await this.retryUnclassified(journeyId, qs, await this.safety(journeyId));
     const safety = await this.safety(journeyId);
     // Lecture de l'IA attendue (parcours payé) : elle peut lever une alerte
     // que le code ne voit pas. La messagerie attend qu'elle soit écrite (ou
@@ -348,6 +371,134 @@ export class JourneyInsightsService {
       [`« ${question} » → ${answer.slice(0, 500)}`],
       `réponse ${answerFingerprint(question, answer)}`,
     );
+  }
+
+  /**
+   * Réponse refusée par la modération IA (insulte, proposition sexuelle,
+   * contact) : jamais enregistrée ni montrée, donc signalée pour trace sans
+   * retenir la messagerie.
+   */
+  async reportRefusal(
+    journeyId: string,
+    day: number,
+    authorId: string,
+    question: string,
+    answer: string,
+    reason: string,
+  ): Promise<void> {
+    await this.fileReport(
+      journeyId,
+      day,
+      authorId,
+      ['autre'],
+      `Réponse refusée par la modération IA (${reason}). Elle n'a pas été enregistrée ; le membre a pu la reformuler. À vérifier.`,
+      [`« ${question} » → ${answer.slice(0, 500)}`],
+      `refus ${answerFingerprint(question, answer)}`,
+      false,
+    );
+  }
+
+  /**
+   * Classement de l'IA arrivé après coup pour une réponse « en attente de
+   * classement » : ses catégories remplacent « autre », ou le signalement est
+   * clos s'il n'y a rien (la réponse redevient visible). null : l'IA est
+   * toujours indisponible, une nouvelle tentative aura lieu plus tard.
+   */
+  async resolveClassification(
+    journeyId: string,
+    day: number,
+    authorId: string,
+    question: string,
+    answer: string,
+    danger: Array<DangerCategory | AlertCategory> | null,
+  ): Promise<void> {
+    if (danger === null) return;
+    const tag = `${sondeurReportPrefix(journeyId)} · jour ${day} · réponse ${answerFingerprint(question, answer)}`;
+    const [report] = await this.prisma.report.findMany({
+      where: { reportedId: authorId, description: { startsWith: tag } },
+      select: { id: true, status: true, description: true },
+    });
+    const description = report?.description ?? '';
+    if (
+      !report ||
+      report.status !== 'en_attente' ||
+      !description.includes(UNCLASSIFIED_SUMMARY)
+    )
+      return;
+    const kept = categoriesOf(description).filter((c) => c !== 'autre');
+    const next = [...new Set([...kept, ...danger])] as Array<
+      DangerCategory | AlertCategory
+    >;
+    if (next.length === 0) {
+      await this.prisma.report.update({
+        where: { id: report.id },
+        data: {
+          status: 'rejete',
+          description: description.replace(
+            UNCLASSIFIED_SUMMARY,
+            "Relue par l'IA après coup : aucun danger. Signalement clos automatiquement.",
+          ),
+        },
+      });
+      return;
+    }
+    const labels = next.map((c) => CATEGORY_LABEL[c]).join(', ');
+    await this.prisma.report.update({
+      where: { id: report.id },
+      data: {
+        description: description
+          .replace(
+            / · catégorie : [^\n]*catégories=\[[^\]]*\]/,
+            ` · catégorie : ${labels} · catégories=[${next.join(',')}]`,
+          )
+          .replace(
+            UNCLASSIFIED_SUMMARY,
+            "Relue par l'IA après coup : une réponse évoque peut-être un danger. À vérifier par la modération.",
+          ),
+      },
+    });
+    await this.sendSupport(journeyId, authorId, next, kept);
+  }
+
+  /** Les réponses encore « en attente de classement » sont relues de nouveau (au plus toutes les 10 minutes). */
+  private async retryUnclassified(
+    journeyId: string,
+    qs: Array<{
+      day: number;
+      questionText: string;
+      responses: Array<{ userId: string; responseText: string }>;
+    }>,
+    safety: SondeurSafety,
+  ): Promise<void> {
+    const pending = safety.reports.filter(
+      (r) =>
+        r.status === 'en_attente' && r.answer && r.categories.includes('autre'),
+    );
+    if (pending.length === 0) return;
+    const last = JourneyInsightsService.retries.get(journeyId) ?? 0;
+    if (Date.now() - last < RETRY_AFTER_MS) return;
+    JourneyInsightsService.retries.set(journeyId, Date.now());
+    for (const q of qs)
+      for (const r of q.responses) {
+        const target = pending.find(
+          (p) =>
+            p.authorId === r.userId &&
+            p.answer === answerFingerprint(q.questionText, r.responseText),
+        );
+        if (!target) continue;
+        const m = await this.ai.moderateSondeurAnswer(
+          r.responseText,
+          journeyId,
+        );
+        await this.resolveClassification(
+          journeyId,
+          q.day,
+          r.userId,
+          q.questionText,
+          r.responseText,
+          m.unavailable ? null : (m.danger ?? []),
+        );
+      }
   }
 
   /** État de sécurité du parcours : réponses signalées, cachées, messagerie retenue. */
@@ -465,7 +616,7 @@ export class JourneyInsightsService {
       journey.userB.firstName,
     ];
     const done = new Set(journey.insights.map((i) => i.day));
-    const safety = await this.safety(journeyId);
+    await this.retryUnclassified(journeyId, qs, await this.safety(journeyId));
 
     for (const day of [1, 2, 3]) {
       if (done.has(day) || this.coolingDown(journeyId, day)) continue;
@@ -480,6 +631,8 @@ export class JourneyInsightsService {
       // est prévenue. Rien n'est enregistré : si la modération rejette le
       // signalement, la lecture sera écrite.
       await this.handleDanger(journeyId, items, members);
+      // État relu à chaque journée : une alerte vient peut-être d'être levée.
+      const safety = await this.safety(journeyId);
       if (safety.dayFlagged(day, items, members)) continue;
       const { system, prompt } = dayReadingPrompt(
         day,
@@ -549,8 +702,10 @@ export class JourneyInsightsService {
       return;
     const all = answeredItems(qs, userAId, userBId);
     // Les réponses signalées l'ont été jour par jour : aucun nouveau
-    // signalement pour le bilan.
-    if (safety.dayFlagged(REVIEW_DAY, all, members)) return;
+    // signalement pour le bilan. L'état est relu : une alerte vient peut-être
+    // d'être levée pendant les journées.
+    const now = await this.safety(journeyId);
+    if (now.dayFlagged(REVIEW_DAY, all, members)) return;
     const analysis = await this.analysisFor(userAId, userBId, names);
     const { system, prompt } = reviewPrompt(all, names, analysis);
     const written = await this.ai.journeyCompletion(
@@ -561,7 +716,7 @@ export class JourneyInsightsService {
     );
     const alert = parseAlert(written?.content ?? null);
     if (alert) {
-      await this.onAlert(journeyId, REVIEW_DAY, alert, all, members, safety);
+      await this.onAlert(journeyId, REVIEW_DAY, alert, all, members, now);
       return;
     }
     const review = written ? parseReview(written.content, all, names) : null;
@@ -582,7 +737,7 @@ export class JourneyInsightsService {
         verdict.alert,
         all,
         members,
-        safety,
+        now,
       );
       return;
     }
@@ -643,6 +798,8 @@ export class JourneyInsightsService {
       return;
     }
     for (const k of targets) {
+      // Une seule alerte ouverte par membre : l'équipe tranche une fois.
+      if (safety.openAlert(members[k])) continue;
       await this.fileReport(
         journeyId,
         day,
@@ -704,11 +861,26 @@ export class JourneyInsightsService {
       `Parcours ${journeyId} : signal de sécurité (${labels}), modération prévenue.`,
     );
     if (!notify) return;
-    // Un message d'aide déjà envoyé dans ce parcours ne l'est pas de nouveau.
-    const sent = new Set(
-      supportMessages(earlier.flatMap((r) => categoriesOf(r.description))),
+    await this.sendSupport(
+      journeyId,
+      authorId,
+      unique,
+      earlier.flatMap((r) => categoriesOf(r.description)),
     );
-    const support = supportMessages(unique).filter((m) => !sent.has(m));
+  }
+
+  /**
+   * Message privé de ressources d'aide à l'auteur ; un message déjà envoyé
+   * dans ce parcours ne l'est pas de nouveau.
+   */
+  private async sendSupport(
+    journeyId: string,
+    authorId: string,
+    categories: string[],
+    alreadySent: string[],
+  ) {
+    const sent = new Set(supportMessages(alreadySent));
+    const support = supportMessages(categories).filter((m) => !sent.has(m));
     if (support.length === 0) return;
     // Écran verrouillé : rien de sensible dans la notification (un agresseur
     // peut la voir) ; le message complet est dans l'app.
