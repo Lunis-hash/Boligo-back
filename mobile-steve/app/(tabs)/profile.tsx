@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/context/auth';
 import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
+import { InterviewService } from '@/services/interview';
 
 /** Coupe au dernier mot complet (jamais au milieu d'un mot). */
 function truncateAtWord(text: string, max: number): string {
@@ -39,6 +40,8 @@ export default function ProfileScreen() {
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showFullAbout, setShowFullAbout] = useState(false);
+  // Accord pour les questions sensibles (religion, vie intime, violences subies).
+  const [sensitiveConsent, setSensitiveConsent] = useState<boolean | null | undefined>(undefined);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -66,6 +69,9 @@ export default function ProfileScreen() {
       setLoading(false);
     }
 
+    InterviewService.getSensitiveConsent()
+      .then((r) => setSensitiveConsent(r.consent))
+      .catch(() => setSensitiveConsent(undefined));
     try {
       const resp = await client.get('/profile/me');
       setProfileData(resp.data);
@@ -85,6 +91,56 @@ export default function ProfileScreen() {
         catch (e) { Alert.alert('Erreur', 'Impossible de vous déconnecter'); }
       }},
     ]);
+  };
+
+  const decideSensitive = async (accepted: boolean) => {
+    try {
+      const out = await InterviewService.setSensitiveConsent(accepted);
+      setSensitiveConsent(accepted);
+      cacheService.invalidate('user_profile_me');
+      if (!accepted) {
+        Alert.alert(
+          'Accord retiré',
+          out.removedAnswers > 0
+            ? `${out.removedAnswers} réponse(s) effacée(s). Votre portrait est recalculé sans elles.`
+            : 'Ces questions ne vous seront plus posées.',
+        );
+        fetchProfile();
+      }
+    } catch (error) {
+      Alert.alert('Erreur', getReadableError(error));
+    }
+  };
+
+  /** Questions sensibles : consulter, donner ou retirer son accord. */
+  const handleSensitive = () => {
+    const withdraw = {
+      text: 'Retirer et effacer',
+      style: 'destructive' as const,
+      onPress: () => decideSensitive(false),
+    };
+    if (sensitiveConsent === true) {
+      Alert.alert(
+        'Retirer votre accord ?',
+        'Vos réponses sur votre religion, votre vie intime et les violences vécues seront effacées, et votre portrait sera recalculé sans elles. Vos compatibilités seront un peu moins précises.',
+        [{ text: 'Annuler', style: 'cancel' }, withdraw],
+      );
+    } else if (sensitiveConsent === false) {
+      Alert.alert(
+        'Questions sensibles',
+        'Vous avez choisi de ne pas répondre aux questions sur votre religion, votre vie intime et les violences vécues. Aucune réponse de ce type n’est enregistrée.',
+      );
+    } else {
+      Alert.alert(
+        'Questions sensibles',
+        'Vos réponses sur votre religion, votre vie intime et les violences vécues servent à calculer vos compatibilités et peuvent apparaître, résumées, sur votre profil. Vous pouvez donner votre accord ou effacer ces réponses.',
+        [
+          { text: 'Plus tard', style: 'cancel' },
+          withdraw,
+          { text: 'J’accepte', onPress: () => decideSensitive(true) },
+        ],
+      );
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -456,6 +512,15 @@ export default function ProfileScreen() {
 
         {/* ═══ INFORMATIONS LÉGALES ═══ */}
         <View style={styles.legalSection}>
+          {sensitiveConsent !== undefined && (
+            <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={handleSensitive} testID="sensitive-consent-row">
+              <Text style={styles.legalRowText}>
+                Questions sensibles (religion, vie intime) :{' '}
+                {sensitiveConsent === true ? 'accord donné' : sensitiveConsent === false ? 'refusées' : 'accord à confirmer'}
+              </Text>
+              <ChevronRight size={18} color={Colors.text.primary40} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={() => router.push('/legal/cgu' as any)} testID="legal-cgu-link">
             <Text style={styles.legalRowText}>Conditions Générales d'Utilisation et de Vente</Text>
             <ChevronRight size={18} color={Colors.text.primary40} />

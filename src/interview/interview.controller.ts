@@ -18,6 +18,7 @@ import {
 import { InterviewService } from './interview.service';
 import { QuestionsService } from './questions.service';
 import { SaveModuleDto } from './dto/save-module.dto';
+import { SensitiveConsentDto } from './dto/sensitive-consent.dto';
 import { parseLanguage } from './questions.en';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -83,5 +84,23 @@ export class InterviewController {
   @Post('save-module')
   async saveModule(@Req() req: any, @Body() dto: SaveModuleDto) {
     return this.interviewService.saveModule(req.user.id, dto);
+  }
+
+  @Get('sensitive-consent')
+  @ApiOperation({
+    summary:
+      'Accord pour les questions sensibles (religion, vie intime, violences subies)',
+  })
+  async getSensitiveConsent(@Req() req: any) {
+    return this.interviewService.getSensitiveConsent(req.user.id);
+  }
+
+  @Post('sensitive-consent')
+  @ApiOperation({
+    summary:
+      'Donner ou retirer cet accord ; un retrait efface les réponses sensibles',
+  })
+  async setSensitiveConsent(@Req() req: any, @Body() dto: SensitiveConsentDto) {
+    return this.interviewService.setSensitiveConsent(req.user.id, dto.accepted);
   }
 }

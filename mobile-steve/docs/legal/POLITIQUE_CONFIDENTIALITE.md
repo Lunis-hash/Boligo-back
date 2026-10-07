@@ -14,7 +14,7 @@ Identité et contact : prénom, nom, adresse e-mail, numéro de téléphone, dat
 
 Entretien et profil : vos réponses aux onze modules du Grand Entretien, la carte mentale générée (synthèse, biographie, valeurs, besoins, lignes rouges, scores), vos réponses au Sondeur.
 
-Certaines réponses peuvent révéler des convictions religieuses ou philosophiques, votre origine culturelle, votre vie sexuelle ou votre état de santé psychologique. Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli à l'inscription, et uniquement pour établir votre compatibilité.
+Certaines réponses peuvent révéler des convictions religieuses ou philosophiques, votre origine culturelle, votre vie sexuelle ou votre état de santé psychologique. Ces données dites « sensibles » ne sont traitées qu'avec votre consentement explicite, recueilli dans l'entretien juste avant les questions sur votre religion, votre vie intime et les violences vécues, et uniquement pour établir votre compatibilité. Ces questions sont facultatives : si vous les refusez, elles ne vous sont plus posées et aucune réponse de ce type n'est enregistrée. Certaines réponses peuvent apparaître, résumées, sur votre profil.
 
 Échanges : messages du chat, réponses comparées, consentements à l'échange de contacts, métadonnées des appels vidéo (date, durée). Le contenu audio et vidéo des appels n'est ni enregistré ni conservé.
 
@@ -28,7 +28,7 @@ Programme partenaires (marques, ambassadeurs commerciaux, créateurs de contenu)
 
 Fournir le service de mise en relation (création du compte, entretien, compatibilité, parcours, messagerie, vidéo) : exécution du contrat.
 
-Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment en supprimant votre compte.
+Traiter les données sensibles issues de l'entretien pour calculer la compatibilité : consentement explicite, que vous pouvez retirer à tout moment depuis votre profil (vos réponses sensibles sont alors effacées et votre portrait recalculé) ou en supprimant votre compte.
 
 Assurer la sécurité, prévenir les fraudes et modérer les contenus : intérêt légitime de BOLIGO et de ses membres.
 

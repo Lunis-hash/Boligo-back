@@ -23,6 +23,14 @@ export interface Question {
   suggested?: string[];
   /** Précision pré-remplie de l'option à préciser (« Allemand »). */
   suggestedOther?: string;
+  /** Donnée sensible (religion, vie intime, violences subies) : accord demandé avant. */
+  sensitive?: boolean;
+}
+
+/** Accord pour les questions sensibles : null s'il n'a pas encore été demandé. */
+export interface SensitiveConsent {
+  consent: boolean | null;
+  decidedAt: string | null;
 }
 
 /** Suffixe de la précision écrite enregistrée avec la réponse (« M0_Q10_AUTRE »). */
@@ -151,6 +159,20 @@ export const InterviewService = {
       }
       throw error;
     }
+  },
+
+  getSensitiveConsent: async (): Promise<SensitiveConsent> => {
+    const response = await client.get<SensitiveConsent>('/interview/sensitive-consent');
+    return response.data;
+  },
+
+  /** Donne ou retire l'accord ; un retrait efface les réponses sensibles déjà données. */
+  setSensitiveConsent: async (accepted: boolean) => {
+    const response = await client.post<SensitiveConsent & { removedAnswers: number }>(
+      '/interview/sensitive-consent',
+      { accepted },
+    );
+    return response.data;
   },
 
   saveModule: async (moduleNumber: number, answers: Record<string, string>, retries = 2): Promise<any> => {

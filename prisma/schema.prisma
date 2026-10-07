@@ -61,6 +61,10 @@ model User {
   resetCodeExpires   DateTime?
   termsAcceptedAt    DateTime? // Date d'acceptation expresse des CGU à l'inscription
   termsVersion       String? // Version des textes légaux acceptée (ex. « 2026-10-02 »)
+  // Accord explicite pour les questions sensibles (religion, vie intime,
+  // violences subies) : null = pas encore demandé, false = refusé.
+  sensitiveConsent   Boolean?
+  sensitiveConsentAt DateTime?
 
   profile           Profile?
   interviews        InterviewIA[]
