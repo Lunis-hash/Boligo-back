@@ -9,7 +9,7 @@ import {
   questionSignature,
   validateSondeurGrid,
 } from './sondeur.generator';
-import { AGREEMENTS } from './sondeur.pool';
+import { AGREEMENTS, agreementProbes } from './sondeur.pool';
 
 describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
   const report = buildDivergenceReport(
@@ -310,20 +310,57 @@ describe('Générateur du Sondeur (3 jours × 7 thèmes)', () => {
       expect(common).toBeLessThan(21);
     });
 
-    it('accord déjà exploré : la seconde relance propre, pas une question générique', () => {
+    it('accord déjà exploré : une autre relance propre, dans l’angle du jour, pas une question générique', () => {
       const agreed = buildDivergenceReport({ M4_Q01: 'A' }, { M4_Q01: 'A' });
-      const { statement, probe, probeVariant } = AGREEMENTS['M4_Q01:A'];
-      expect(probeVariant).toBeDefined();
+      const agreement = AGREEMENTS['M4_Q01:A'];
+      const own = agreementProbes(agreement);
       const first = assembleSondeur({ report: agreed, firstNames: ['A', 'B'] });
-      expect(first.map((q) => q.text)).toContain(`${statement} ${probe!.text}`);
       const second = assembleSondeur({
         report: agreed,
         firstNames: ['A', 'B'],
         history: first.map((q) => q.text),
       });
-      expect(second.map((q) => q.text)).toContain(
-        `${statement} ${probeVariant!.text}`,
+      const served = [first, second].map(
+        (qs) => qs.find((q) => q.source === 'convergence')!,
       );
+      for (const q of served) {
+        const probe = own.find(
+          (t) => q.text === `${agreement.statement} ${t.text}`,
+        );
+        expect(probe?.angle).toBe(q.day);
+      }
+      expect(served[1].text).not.toBe(served[0].text);
+    });
+
+    it('relance d’accord sous l’angle du jour : ce qui est protégé au jour 1, l’origine au jour 2, le quotidien au jour 3', () => {
+      // Même accord, repoussé d'un jour à l'autre par des questions de l'IA
+      // qui prennent le créneau « argent » des jours précédents.
+      const agreed = buildDivergenceReport({ M4_Q01: 'A' }, { M4_Q01: 'A' });
+      const agreement = AGREEMENTS['M4_Q01:A'];
+      const aiTexts = [
+        "Quel souvenir d'argent partagé aimeriez-vous raconter à l'autre ?",
+        'Quelle dépense vous rend fier ou fière, dans une année ordinaire ?',
+      ];
+      for (const day of [1, 2, 3]) {
+        const qs = assembleSondeur({
+          report: agreed,
+          firstNames: ['A', 'B'],
+          aiQuestions: aiTexts.slice(0, day - 1).map((text, i) => ({
+            day: i + 1,
+            theme: 'x',
+            emoji: '💬',
+            text,
+            options: ['A', 'B', 'C'],
+            themeKey: 'argent' as const,
+          })),
+        });
+        const q = qs.find((x) => x.source === 'convergence')!;
+        expect(q.day).toBe(day);
+        const probe = agreementProbes(agreement).find(
+          (t) => q.text === `${agreement.statement} ${t.text}`,
+        );
+        expect(probe?.angle).toBe(day);
+      }
     });
 
     it('approfondit les points d’accord réels, deux fois par jour au plus', () => {

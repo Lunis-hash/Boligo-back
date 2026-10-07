@@ -60,6 +60,7 @@ import {
   THEME_POOL,
   TOPIC_DAYS,
   TOPIC_DEEP,
+  TOPIC_DEEP_FOURTH,
   TOPIC_DEEP_THIRD,
   TOPIC_DEEP_VARIANTS,
   TOPIC_FAMILIES,
@@ -68,7 +69,9 @@ import {
   TopicTemplate,
   agreementFor,
   agreementKey,
+  agreementProbes,
   isNonNegotiable,
+  topicDays,
   topicDeepAll,
   topicKey,
   topicPhrase,
@@ -287,15 +290,35 @@ const staticTemplates = (): Array<{
       ...(t as PoolTemplate),
     })),
   ),
+  ...Object.entries(TOPIC_DEEP_FOURTH).flatMap(([id, days]) =>
+    Object.entries(days).map(([day, t]) => ({
+      where: `TOPIC_DEEP_FOURTH.${id}[${day}]`,
+      ...(t as PoolTemplate),
+    })),
+  ),
 ];
 
 /** Phrase d'accord + question (sans phrase : la question seule). */
 const joinAgreement = (statement: string, text: string) =>
   statement ? `${statement} ${text}` : text;
 
-/** Relances propres d'un accord : la principale, sa variante, la troisième. */
-const ownProbes = (a: Agreement): PoolTemplate[] =>
-  [a.probe, a.probeVariant, a.probeThird].filter((t): t is PoolTemplate => !!t);
+/**
+ * Relances propres d'un accord : la principale, sa variante, la troisième,
+ * puis les supplémentaires.
+ */
+const ownProbes = (a: Agreement): PoolTemplate[] => agreementProbes(a);
+
+/**
+ * Angle du jour d'une relance d'accord, reconnu dans le texte : jour 1, ce
+ * que chacun protège ou la limite de l'accord ; jour 2, d'où vient la
+ * position ; jour 3, comment chacun le vivrait au quotidien, ce qu'il
+ * faudrait savoir avant de s'engager.
+ */
+const DAY_ANGLE_TEXT: Record<number, RegExp> = {
+  1: /protèg|protég|préserv|garder|gardant|garderiez|précieu|essentiel|tenez|tiendriez|ne lâcheriez|ne se (?:discute|négocie|partage)|ne pourr|non négociable|jamais|frontière|limite|jusqu['’]|où (?:commence|s['’]arrête|passe)|s['’]arrêter|à partir de quel|distingu|abîm|malgré tout|hors de question|intact|brûler|geste précis|combien de temps|cess|resterait|perdre|refus|changer d['’]avis/iu,
+  2: /d['’]où vous vien|qui vous a |de qui (?:tenez|avez)|quel exemple|qui,? (?:dans|autour de) (?:votre entourage|vous)|dans votre (?:famille|histoire|entourage)|de votre (?:propre )?enfance|en grandissant|transmis|appris|qu['’]est-ce qui vous a |vous a (?:montré|donné|convaincu)|où vous avez grandi|quel couple, autour|quelle famille, autour/iu,
+  3: /quotidien|ordinaire|une semaine|tous les jours|vie à deux|vie commune|une fois|futur foyer|foyer commun|vie du foyer|sous le même toit|avant (?:de |d['’]|tout |le |la |l['’]|cette )|dès le début|que l['’]autre (?:sache|fasse|entende)|le jour où|le jour d['’]|concrètement|premiers temps|au bout d|au fil d|semaine après semaine|fin du mois|à la maison|chez vous|chez-vous|famille recomposée|nouvelle ville|le lendemain|ce jour-là|années à venir|le moment venu|pendant ce temps|d['’]une rencontre|comment aimeriez-vous|comment imaginez-vous|imagin|vous aiderait|chang|construire|partagée/iu,
+};
 
 /** Questions de limite (sécurité et contrôle), avec leur grille cachée. */
 const limitTemplates = (): Array<{
@@ -433,6 +456,65 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
     }
   });
 
+  it('relances d’accord : chacune sous l’angle d’un jour, et chaque accord en a une pour chacun de ses jours', () => {
+    // Angle déclaré (protège / origine / quotidien) confirmé par le texte.
+    const mislabelled: string[] = [];
+    const missing: string[] = [];
+    for (const [key, a] of Object.entries(AGREEMENTS)) {
+      const probes = ownProbes(a);
+      for (const t of probes)
+        if (t.angle && !DAY_ANGLE_TEXT[t.angle].test(t.text))
+          mislabelled.push(`${key} [${t.angle}] ${t.text}`);
+      const qid = key.split(':')[0];
+      const strict = isNonNegotiable({
+        questionId: qid,
+        label: '',
+        theme: 'famille',
+      });
+      for (const day of topicDays({
+        questionId: qid,
+        label: '',
+        theme: 'famille',
+      }))
+        if (
+          !probes.some(
+            (t) => t.angle === day && !(strict && t.technique === 'limite'),
+          )
+        )
+          missing.push(`${key} J${day}`);
+    }
+    expect(mislabelled).toEqual([]);
+    expect(missing).toEqual([]);
+    // Questions d'accord du jour : toutes sous l'angle du jour.
+    for (const day of [1, 2, 3])
+      for (const t of CONVERGENT[day]) {
+        expect(`${day} ${t.text} ${t.angle}`).toBe(`${day} ${t.text} ${day}`);
+        expect(t.text).toMatch(DAY_ANGLE_TEXT[day]);
+      }
+    // Au jour 2, toujours une origine.
+    const origins = Object.values(AGREEMENTS)
+      .flatMap((a) => ownProbes(a))
+      .filter((t) => t.angle === 2);
+    expect(origins.length).toBeGreaterThan(60);
+    for (const t of origins) expect(t.technique).toBe('origine');
+  });
+
+  it('apostrophes : jamais droites et courbes mêlées dans une même question servie', () => {
+    const mixed = (text: string) => /'/.test(text) && /’/.test(text);
+    const written = [
+      ...staticTemplates().map((t) => t.text),
+      ...renderTopic(TARGETED, 'T').map((t) => t.text),
+      ...renderTopic(SHARED_RISK, 'S').map((t) => t.text),
+      ...limitTemplates().map((t) => t.text),
+      ...Object.values(AGREEMENTS).flatMap((a) =>
+        [...ownProbes(a), ...[1, 2, 3].flatMap((day) => CONVERGENT[day])].map(
+          (t) => joinAgreement(a.statement, t.text),
+        ),
+      ),
+    ];
+    expect(written.filter(mixed)).toEqual([]);
+  });
+
   it('sécurité : aucun gabarit ne demande ce que l’on ferait pour se protéger, où l’on irait, ni un plan de fuite', () => {
     // Questions de limite : version large, sur le texte et la grille cachée.
     const limits = limitTemplates();
@@ -501,6 +583,7 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
       ...Object.entries(TOPIC_DEEP),
       ...Object.entries(TOPIC_DEEP_VARIANTS),
       ...Object.entries(TOPIC_DEEP_THIRD),
+      ...Object.entries(TOPIC_DEEP_FOURTH),
     ])
       for (const [day, t] of Object.entries(days))
         if (day !== '3') expect(`${id} ${t!.text}`).not.toMatch(INTIMATE);
@@ -536,15 +619,19 @@ describe('Gabarits du Sondeur : règles de forme sur toutes les variantes', () =
             })),
           ),
         ),
-        ...[TOPIC_DEEP, TOPIC_DEEP_VARIANTS, TOPIC_DEEP_THIRD].flatMap(
-          (table) =>
-            Object.entries(table).flatMap(([id, days]) =>
-              Object.entries(days).map(([day, t]) => ({
-                where: `${id}[${day}]`,
-                options: t!.options,
-                children: CHILD_SUBJECTS.has(id),
-              })),
-            ),
+        ...[
+          TOPIC_DEEP,
+          TOPIC_DEEP_VARIANTS,
+          TOPIC_DEEP_THIRD,
+          TOPIC_DEEP_FOURTH,
+        ].flatMap((table) =>
+          Object.entries(table).flatMap(([id, days]) =>
+            Object.entries(days).map(([day, t]) => ({
+              where: `${id}[${day}]`,
+              options: t!.options,
+              children: CHILD_SUBJECTS.has(id),
+            })),
+          ),
         ),
         ...[TARGETED, SHARED_RISK, CONVERGENT, SAFETY_TEMPLATES].flatMap(
           (table, n) =>
@@ -995,6 +1082,7 @@ describe('Sécurité, couche IA et résumé pour l’IA', () => {
       TOPIC_DEEP,
       TOPIC_DEEP_VARIANTS,
       TOPIC_DEEP_THIRD,
+      TOPIC_DEEP_FOURTH,
       AGREEMENTS,
       CONVERGENT,
       SAFETY_TEMPLATES,
@@ -1291,14 +1379,21 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
   it('accord de fidélité (V7) : précisé, jamais mis à l’épreuve', () => {
     for (const key of ['A', 'C']) {
       const report = buildDivergenceReport({ M6_Q18: key }, { M6_Q18: key });
-      const { statement, probe } = AGREEMENTS[`M6_Q18:${key}`];
+      const agreement = AGREEMENTS[`M6_Q18:${key}`];
+      const { statement } = agreement;
       const tested = [1, 2].flatMap((day) =>
         CONVERGENT[day]
           .filter((t) => t.technique === 'limite')
           .map((t) => `${statement} ${t.text}`),
       );
       const first = assembleSondeur({ report, firstNames: ['A', 'B'] });
-      expect(first.map((q) => q.text)).toContain(`${statement} ${probe!.text}`);
+      // Une relance propre, écrite pour l'angle du jour où l'accord est posé.
+      const served = first.find((q) => q.text.startsWith(statement))!;
+      const own = agreementProbes(agreement).find(
+        (t) => served.text === `${statement} ${t.text}`,
+      );
+      expect(own?.angle).toBe(served.day);
+      expect(own?.technique).not.toBe('limite');
       // Question propre déjà vue : la question générique n'éprouve pas l'accord.
       for (let i = 0; i < 10; i++) {
         const qs = assembleSondeur({
@@ -1319,7 +1414,12 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
 
 /** Formulations propres (principales, variantes, troisièmes) : le reste est générique. */
 const DEEP_TEXTS = new Set(
-  [TOPIC_DEEP, TOPIC_DEEP_VARIANTS, TOPIC_DEEP_THIRD].flatMap((table) =>
+  [
+    TOPIC_DEEP,
+    TOPIC_DEEP_VARIANTS,
+    TOPIC_DEEP_THIRD,
+    TOPIC_DEEP_FOURTH,
+  ].flatMap((table) =>
     Object.values(table).flatMap((days) =>
       Object.values(days).map((t) => t!.text),
     ),
@@ -1363,7 +1463,12 @@ const COMPROMISE_TEXTS = new Set([
       THEME_POOL[theme][day].filter((t) => t.compromise).map((t) => t.text),
     ),
   ),
-  ...[TOPIC_DEEP, TOPIC_DEEP_VARIANTS, TOPIC_DEEP_THIRD].flatMap((table) =>
+  ...[
+    TOPIC_DEEP,
+    TOPIC_DEEP_VARIANTS,
+    TOPIC_DEEP_THIRD,
+    TOPIC_DEEP_FOURTH,
+  ].flatMap((table) =>
     Object.values(table).flatMap((days) =>
       Object.values(days)
         .filter((t) => t!.compromise)
@@ -2062,6 +2167,34 @@ describe('Simulation réaliste : un membre garde ses réponses et change de part
       expect(divShare).toBeLessThan(pass === 3 ? 3 : 1);
       expect(convShare).toBeLessThan(pass === 3 ? 5 : 1);
     }
+  });
+
+  it('relances d’accord sous l’angle du jour : au moins 70 % chaque jour, à chaque parcours', () => {
+    for (const pass of [1, 2, 3])
+      for (const day of [1, 2, 3]) {
+        let total = 0;
+        let inAngle = 0;
+        for (const { report, questions } of ofPass(pass))
+          for (const q of questions) {
+            if (q.source !== 'convergence' || q.day !== day) continue;
+            const c = report.convergences.find(
+              (x) => x.questionId === q.subject,
+            )!;
+            const a = agreementFor(c);
+            const probe = [...ownProbes(a), ...CONVERGENT[day]].find(
+              (t) => joinAgreement(a.statement, t.text) === q.text,
+            );
+            total++;
+            if (probe?.angle === day && DAY_ANGLE_TEXT[day].test(probe.text))
+              inAngle++;
+          }
+        const share = (100 * inAngle) / total;
+        console.log(
+          `Parcours ${pass}, jour ${day} (réaliste) : relances d'accord dans l'angle du jour ${inAngle}/${total} = ${share.toFixed(1)} %`,
+        );
+        expect(total).toBeGreaterThan(100);
+        expect(share).toBeGreaterThanOrEqual(70);
+      }
   });
 
   it('aucun plan de mise en sécurité, aucune question double, aucun compromis dans un thème non négociable', () => {

@@ -70,7 +70,19 @@ export interface PoolTemplate {
   compromise?: boolean;
   /** Suppose des enfants à venir : jamais servie si l'un n'en veut pas. */
   needsChildren?: boolean;
+  /**
+   * Relance d'accord : angle du jour auquel elle répond (DayAngle). Sans
+   * angle, elle ne sert qu'à défaut d'une relance écrite pour le jour.
+   */
+  angle?: DayAngle;
 }
+
+/**
+ * Angle du jour d'une relance d'accord : 1, ce que chacun protège ou la
+ * limite de l'accord ; 2, d'où vient la position ; 3, comment chacun la
+ * vivrait au quotidien et ce qu'il faudrait savoir avant de s'engager.
+ */
+export type DayAngle = 1 | 2 | 3;
 
 const opts = (a: string, b: string, c: string) => [a, b, c, 'Autre...'];
 
@@ -94,6 +106,36 @@ function q(
     ...(about ? { about } : {}),
     ...(compromise ? { compromise } : {}),
   };
+}
+
+/** Relance d'accord du jour 1 : ce que chacun protège, ou la limite de l'accord. */
+function protectProbe(
+  text: string,
+  technique: Technique,
+  options: [string, string, string],
+): PoolTemplate {
+  return { ...q(text, technique, options), angle: 1 };
+}
+
+/** Relance d'accord du jour 2 : d'où vient la position de chacun. */
+function originProbe(
+  text: string,
+  technique: Technique,
+  options: [string, string, string],
+): PoolTemplate {
+  return { ...q(text, technique, options), angle: 2 };
+}
+
+/**
+ * Relance d'accord du jour 3 : comment chacun le vivrait au quotidien, ce
+ * qu'il faudrait savoir avant de s'engager.
+ */
+function dailyProbe(
+  text: string,
+  technique: Technique,
+  options: [string, string, string],
+): PoolTemplate {
+  return { ...q(text, technique, options), angle: 3 };
 }
 
 // ─── Tournures naturelles des sujets ──────────────────────────────────────────
@@ -4280,6 +4322,167 @@ export const TOPIC_DEEP_THIRD: Record<
 };
 
 /**
+ * Quatrième formulation propre, pour les écarts les plus servis en question
+ * générique du quatrième au sixième parcours d'un même membre (il garde ses
+ * réponses et change de partenaire : mesure sur 320 membres, octobre 2026).
+ * Mêmes règles que les trois premières, sous l'angle du jour : la règle que
+ * chacun tient pour ferme (jour 1), d'où vient sa position (jour 2), ce qu'il
+ * faudrait savoir avant de s'engager ou comment chacun le vivrait au
+ * quotidien (jour 3).
+ */
+export const TOPIC_DEEP_FOURTH: Record<
+  string,
+  Partial<Record<number, PoolTemplate>>
+> = {
+  M0_Q09: {
+    1: q(
+      "Dans une maison partagée, quel espace tiendriez-vous à garder sans fumée, quoi qu'il arrive ?",
+      'limite',
+      ['La chambre', 'Toute la maison', 'La cuisine'],
+    ),
+  },
+  M0_Q12: {
+    1: q(
+      "Quelle règle sur l'alcool resterait ferme pour vous, même lors des fêtes ?",
+      'limite',
+      ['Aucun alcool', 'Avec modération', 'Pas devant les proches'],
+    ),
+    2: q(
+      "Quel exemple, en grandissant, a façonné votre rapport à l'alcool ?",
+      'origine',
+      ['Un parent', 'Un ami', 'Une expérience'],
+    ),
+  },
+  M4_Q10: {
+    1: q(
+      "Lors d'une première sortie, qu'est-ce qui, pour vous, ne se discute pas au moment de payer ?",
+      'limite',
+      ['Qui invite paie', 'Chacun sa part', 'Rien de figé'],
+    ),
+  },
+  M8_Q03: {
+    2: q(
+      'Quelle parole sur le mariage, entendue en grandissant, vous accompagne encore ?',
+      'origine',
+      [
+        'Une parole de mes parents',
+        'Une parole de ma foi',
+        'Une parole d’un proche',
+      ],
+    ),
+  },
+  M8_Q01: {
+    1: q(
+      "Dans l'engagement que vous cherchez, quelle exigence tenez-vous à poser d'emblée ?",
+      'besoin',
+      ['La fidélité', 'La sincérité', 'Un projet commun'],
+    ),
+  },
+  M4_Q04: {
+    2: q(
+      'Quelle femme de votre famille a le plus inspiré votre regard sur le travail et le foyer ?',
+      'origine',
+      ['Ma mère', 'Une grand-mère', 'Une tante'],
+    ),
+  },
+  M5_Q07: {
+    3: q(
+      'Au quotidien, à deux, quel rythme de visites aux familles vous semblerait juste ?',
+      'projection',
+      ['Chaque semaine', 'Chaque mois', 'Aux fêtes'],
+    ),
+  },
+  M3_Q11: {
+    3: q(
+      "Avant tout engagement, à quoi verriez-vous que vous avancez au même rythme que l'autre ?",
+      'limite',
+      [
+        'Des projets évoqués',
+        'Des proches présentés',
+        'Une confiance installée',
+      ],
+    ),
+  },
+  M4_Q11: {
+    1: q(
+      "Face à un manque d'argent, qu'est-ce que vous ne voudriez jamais avoir à cacher à l'autre ?",
+      'limite',
+      ['Une dette', 'Une dépense', 'Mon inquiétude'],
+    ),
+  },
+  M4_Q12: {
+    2: q(
+      "Quel regard sur l'argent et la réussite vous a-t-on transmis en grandissant ?",
+      'origine',
+      ['La réussite compte', 'La droiture compte plus', 'L’argent ne dit rien'],
+    ),
+  },
+  M4_Q01: {
+    2: q(
+      "Qui, autour de vous, vous a montré une façon de gérer l'argent à deux qui vous inspire ?",
+      'origine',
+      ['Mes parents', 'Un couple ami', 'Personne encore'],
+    ),
+  },
+  'M2_Q07:partage': {
+    3: q(
+      'Dans une vie à deux, quel rituel simple pourrait, selon vous, raccourcir une brouille ?',
+      'reparation',
+      ['Un mot le soir', 'Une promenade', 'Un repas'],
+    ),
+  },
+  M0_Q06: {
+    1: q(
+      'Sur la question des enfants, quelle certitude tenez-vous à exprimer dès maintenant ?',
+      'besoin',
+      ['Mon envie', 'Mon refus', 'Mon besoin de temps'],
+    ),
+  },
+  M1_Q02: {
+    2: q(
+      "Qu'avez-vous reçu de votre culture que vous tiendriez à retrouver chez l'autre ?",
+      'origine',
+      ['La langue', 'Les fêtes', 'Les valeurs'],
+    ),
+  },
+  M7_Q07: {
+    3: q(
+      "Avant de vous dire oui, que voudriez-vous connaître des racines qui retiennent l'autre ?",
+      'limite',
+      ['Sa famille', 'Son travail', 'Son histoire'],
+    ),
+  },
+  M8_Q11: {
+    3: q(
+      "Pour une vie à deux, que voudriez-vous savoir de la façon dont l'autre aimerait être soutenu(e) dans l'épreuve ?",
+      'projection',
+      ['Par la présence', 'Par l’aide concrète', 'Par la discrétion'],
+    ),
+  },
+  M1_Q03: {
+    3: q(
+      "Pour une vie à deux, quelle tradition de mariage aimeriez-vous voir respectée par la famille de l'autre ?",
+      'projection',
+      ['La dot', 'La cérémonie', 'La fête'],
+    ),
+  },
+  M8_Q02: {
+    3: q(
+      'Avant tout engagement, comment aimeriez-vous parler à deux du calendrier de vos projets ?',
+      'projection',
+      ['Tôt', 'Au fil des mois', 'Quand la confiance est là'],
+    ),
+  },
+  M7_Q08: {
+    3: q(
+      'Pour une vie à deux, quel moment de la semaine aimeriez-vous protéger pour être ensemble ?',
+      'besoin',
+      ['Le dîner', 'Le week-end', 'Une soirée fixe'],
+    ),
+  },
+};
+
+/**
  * Sujets qui partagent une formulation propre : anciennes clés V6 (entretiens
  * déjà enregistrés) et sujets V7 voisins.
  */
@@ -4322,13 +4525,14 @@ export function topicDeep(
 
 /**
  * Formulations propres au sujet pour ce jour : la principale, la variante,
- * puis la troisième.
+ * la troisième, puis la quatrième.
  */
 export function topicDeepAll(d: TopicSource, day: number): PoolTemplate[] {
   return [
     deepEntry(TOPIC_DEEP, d)?.[day],
     deepEntry(TOPIC_DEEP_VARIANTS, d)?.[day],
     deepEntry(TOPIC_DEEP_THIRD, d)?.[day],
+    deepEntry(TOPIC_DEEP_FOURTH, d)?.[day],
   ].filter((t): t is PoolTemplate => !!t);
 }
 
@@ -4358,45 +4562,98 @@ export interface Agreement {
    * même règle que `probe` et `probeVariant`.
    */
   probeThird?: PoolTemplate;
+  /**
+   * Relances supplémentaires, écrites pour l'angle d'un jour qui manquait
+   * (`angle`) ou pour un membre qui a déjà vu les trois premières : même
+   * règle que `probe`.
+   */
+  extraProbes?: PoolTemplate[];
   /** Suppose des enfants à venir : jamais servi si l'un n'en veut pas. */
   needsChildren?: boolean;
+}
+
+/**
+ * Relances propres d'un accord, dans l'ordre : la principale, la variante, la
+ * troisième, puis les supplémentaires. Chacune porte, quand elle en a un,
+ * l'angle du jour auquel elle répond (1 : ce que chacun protège ou la limite
+ * de l'accord ; 2 : d'où vient la position ; 3 : comment chacun la vivrait au
+ * quotidien, ce qu'il faudrait savoir avant de s'engager).
+ */
+export function agreementProbes(a: Agreement): PoolTemplate[] {
+  return [
+    a.probe,
+    a.probeVariant,
+    a.probeThird,
+    ...(a.extraProbes ?? []),
+  ].filter((t): t is PoolTemplate => !!t);
 }
 
 export const AGREEMENTS: Record<string, Agreement> = {
   'M1_Q06:A': {
     statement: 'Partager la même foi compte pour vous deux.',
-    probe: q(
+    probe: dailyProbe(
       'Concrètement, à quoi verrait-on, dans une semaine ordinaire, que vous partagez la même foi ?',
       'sens',
       ['Des prières', 'Des repas', 'Des fêtes'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans une foi partagée, qu'est-ce qui vous semble le plus important à préserver ?",
+        'besoin',
+        ['La prière à deux', 'La transmission', 'La paix du foyer'],
+      ),
+      originProbe(
+        "Qui vous a transmis l'envie de partager votre foi avec la personne aimée ?",
+        'origine',
+        ['Mes parents', 'Ma communauté', 'Ma propre histoire'],
+      ),
+    ],
   },
   'M1_Q06:D': {
     statement: "Pour vous deux, la foi relève de l'intime.",
-    probe: q(
+    probe: dailyProbe(
       "Qu'aimeriez-vous malgré tout que l'autre sache de votre rapport aux convictions ?",
       'sens',
       ['Mes fêtes', 'Mes doutes', 'Mes valeurs'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que garder la foi dans l'intime vous permet de préserver ?",
+        'besoin',
+        ['Ma liberté', 'La paix du foyer', 'Le respect de chacun'],
+      ),
+      originProbe(
+        'Qui vous a appris que la foi se vit dans le secret du cœur ?',
+        'origine',
+        ['De ma famille', 'De mon histoire', 'D’un choix personnel'],
+      ),
+    ],
   },
   // Fidélité (V7) : un accord se précise, il ne se met pas à l'épreuve.
   'M6_Q18:A': {
     statement: 'Pour vous deux, une infidélité mettrait fin à la relation.',
-    probe: q(
+    probe: protectProbe(
       'Quel geste précis serait déjà, à vos yeux, une infidélité ?',
       'sens',
       ['Un message caché', 'Un rendez-vous', 'Un mensonge'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient cette exigence de fidélité absolue ?",
       'origine',
       ['De ma famille', 'De ma foi', 'De ce que j’ai vu'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'aimeriez-vous que l'autre sache de cette exigence dès le début ?",
       'besoin',
       ['Qu’elle est absolue', 'D’où elle vient', 'Ce qu’elle protège'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce qu'une fidélité sans écart vous permet de garder intact ?",
+        'besoin',
+        ['La confiance', 'Le respect', 'La paix'],
+      ),
+    ],
   },
   'M6_Q18:C': {
     statement:
@@ -4406,7 +4663,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La vérité dite', 'Le temps', 'Des preuves'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "Qu'est-ce qui vous a appris qu'une confiance blessée peut se reconstruire ?",
       'origine',
       ['Ma famille', 'Mon expérience', 'Ma foi'],
@@ -4416,18 +4673,42 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La vérité dite', 'Des actes répétés', 'Du temps'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce qui, dans la confiance, vous paraît le plus précieux à protéger ?",
+        'besoin',
+        ['La parole donnée', 'La transparence', 'Le respect'],
+      ),
+      protectProbe(
+        'Même en réparant la confiance, quelle part de vous tiendriez-vous à protéger ?',
+        'besoin',
+        ['Ma dignité', 'Mon estime de moi', 'Mes valeurs'],
+      ),
+    ],
   },
   'M6_Q10:A': {
     statement: 'La fidélité est absolue pour vous deux.',
-    probe: q(
+    probe: protectProbe(
       'Où commence, pour vous, le tout premier pas de travers ?',
       'sens',
       ['Un regard', 'Un message', 'Un secret'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a transmis l'idée d'une fidélité absolue ?",
+        'origine',
+        ['Mes parents', 'Ma foi', 'Ma propre histoire'],
+      ),
+      dailyProbe(
+        'Au quotidien, à quoi verrait-on que la fidélité compte autant pour vous ?',
+        'projection',
+        ['À ma transparence', 'À mes choix', 'À ma parole'],
+      ),
+    ],
   },
   'M8_Q01:A': {
     statement: 'Vous visez tous les deux le mariage.',
-    probe: q(
+    probe: dailyProbe(
       "Qu'est-ce qui, pour vous, changerait le lendemain du mariage par rapport à la veille ?",
       'sens',
       ['Rien', 'Un engagement devant les miens', 'Une vie commune'],
@@ -4437,11 +4718,28 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Ma foi', 'Un engagement devant les miens', 'Une sécurité'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'Quelle étape avant le mariage vous tient le plus à cœur ?',
       'sens',
       ['La rencontre des familles', 'Les fiançailles', 'La demande'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que le mariage protège, à vos yeux, qu'une vie à deux sans lui ne protégerait pas ?",
+        'besoin',
+        ['Une promesse', 'Une famille', 'Une sécurité'],
+      ),
+      originProbe(
+        'De qui tenez-vous cette envie de mariage, dans votre famille ou ailleurs ?',
+        'origine',
+        ['De mes parents', 'De ma foi', 'D’un couple qui m’inspire'],
+      ),
+      originProbe(
+        "Qu'est-ce qui, dans votre histoire, a fait du mariage un but pour vous ?",
+        'origine',
+        ['Ma famille', 'Ma foi', 'Mes propres choix'],
+      ),
+    ],
   },
   'M8_Q01:B': {
     statement: 'Vous voulez tous les deux une relation sérieuse.',
@@ -4450,24 +4748,58 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un projet', 'Une parole donnée', 'Les proches'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       "Qu'est-ce qu'une relation sérieuse vous demanderait de changer dans votre vie actuelle ?",
       'projection',
       ['Mon emploi du temps', 'Mes priorités', 'Rien de particulier'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'À quoi sauriez-vous, au bout de quelques mois, que la relation prend le bon chemin ?',
       'sens',
       ['Des projets', 'La confiance', 'Les proches présentés'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans un engagement, qu'est-ce que vous tenez avant tout à protéger ?",
+        'besoin',
+        ['Ma sincérité', 'Mon temps', 'Ma confiance'],
+      ),
+      protectProbe(
+        'Quand vous vous engagez sérieusement, quelle exigence tenez-vous pour essentielle ?',
+        'besoin',
+        ['La sincérité', 'La fidélité', 'Le respect'],
+      ),
+      originProbe(
+        "D'où vous vient ce besoin de sérieux plutôt que de légèreté ?",
+        'origine',
+        ['De ma famille', 'De mon histoire', 'De ma foi'],
+      ),
+      originProbe(
+        "Qui, dans votre entourage, vous a montré ce qu'est un engagement sérieux ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Personne encore'],
+      ),
+    ],
   },
   'M8_Q06:A': {
     statement: 'Vous aimez tous les deux vous parler de tout.',
-    probe: q(
+    probe: protectProbe(
       "Qu'est-ce qui, pour vous, reste malgré tout de l'ordre du jardin secret ?",
       'sens',
       ['Mon passé', 'Mes doutes', 'Mes proches'],
     ),
+    extraProbes: [
+      originProbe(
+        'Qui, autour de vous, vous a appris à tout vous dire ?',
+        'origine',
+        ['Un parent', 'Un ami', 'Personne encore'],
+      ),
+      dailyProbe(
+        'Dans une semaine ordinaire, quel moment aimeriez-vous garder pour vous parler de tout ?',
+        'projection',
+        ['Le soir', 'Le repas', 'Un appel'],
+      ),
+    ],
   },
   'M8_Q06:B': {
     statement: "Vous voulez tous les deux parler en profondeur de l'essentiel.",
@@ -4476,6 +4808,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Les émotions',
       'Les valeurs',
     ]),
+    extraProbes: [
+      originProbe(
+        'Qui vous a donné le goût des conversations profondes ?',
+        'origine',
+        ['Un parent', 'Un ami', 'Personne encore'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, quel moment aimeriez-vous réserver aux conversations de fond ?',
+        'projection',
+        ['Le soir', 'Le week-end', 'Une promenade'],
+      ),
+    ],
   },
   'M2_Q07:A': {
     statement: 'Aucun de vous deux ne laisse traîner une dispute.',
@@ -4484,14 +4828,38 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une excuse', 'Un geste', 'Le retour du rire'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée qu'un désaccord se règle sans attendre ?",
+        'origine',
+        ['De ma famille', 'De mon histoire', 'De mon caractère'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous clore un désaccord avant la fin de la journée ?',
+        'projection',
+        ['En se parlant', 'Par un geste', 'Par une excuse'],
+      ),
+    ],
   },
   'M2_Q08:A': {
     statement: "Pour vous deux, l'harmonie passe avant l'ego.",
-    probe: q(
+    probe: protectProbe(
       "Qu'est-ce que vous ne lâcheriez pas, même pour garder la paix ?",
       'limite',
       ['Une valeur', 'Une limite', 'La vérité'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a appris que la paix compte plus que d'avoir raison ?",
+        'origine',
+        ['Un parent', 'Un grand-parent', 'Ma propre expérience'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, quel geste simple montrerait que vous faites passer la paix avant votre fierté ?',
+        'projection',
+        ['Écouter jusqu’au bout', 'Reconnaître un tort', 'Un mot doux'],
+      ),
+    ],
   },
   'M5_Q01:D': {
     statement:
@@ -4501,12 +4869,12 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ["Je l'écoute", "J'en parle à deux", 'Je le laisse de côté'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient cette idée que le foyer décide seul ?",
       'origine',
       ['De ma famille', 'De ce que j’ai vu', 'D’un choix personnel'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'Comment aimeriez-vous garder les vôtres proches, tout en décidant à deux ?',
       'besoin',
       [
@@ -4515,6 +4883,13 @@ export const AGREEMENTS: Record<string, Agreement> = {
         'En leur expliquant nos choix',
       ],
     ),
+    extraProbes: [
+      protectProbe(
+        "Quand vous décidez à deux, qu'est-ce que vous tenez à garder hors de portée des familles ?",
+        'besoin',
+        ['Nos finances', 'Notre intimité', 'Nos projets'],
+      ),
+    ],
   },
   'M5_Q01:B': {
     statement:
@@ -4524,25 +4899,42 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le mariage', 'Les projets de famille', 'Le lieu de vie'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'Comment aimeriez-vous dire non à un parent, sur une décision qui vous revient ?',
       'besoin',
       ['Avec douceur', 'Avec des raisons', 'Avec l’appui de l’autre'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'est-ce qui vous aiderait à garder le dernier mot sans blesser les vôtres ?",
       'besoin',
       ['Le respect', 'L’appui de l’autre', 'Le temps'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que cette liberté de trancher vous permet de préserver ?",
+        'besoin',
+        ['Nos choix', 'Notre intimité', 'Ma liberté'],
+      ),
+      originProbe(
+        'De qui tenez-vous cet équilibre entre respect des parents et liberté de choisir ?',
+        'origine',
+        ['De mes parents', 'D’un aîné', 'De ma propre histoire'],
+      ),
+      originProbe(
+        "Quel exemple vous a convaincu(e) qu'on peut aimer sa famille et décider à deux ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Ma propre histoire'],
+      ),
+    ],
   },
   'M0_Q06:A': {
     statement: 'Vous souhaitez tous les deux des enfants.',
-    probe: q(
+    probe: dailyProbe(
       "Qu'aimeriez-vous avoir construit dans votre vie avant l'arrivée d'un enfant ?",
       'sens',
       ['Un foyer', 'Une stabilité', 'Une complicité à deux'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       "Quand vous imaginez votre vie avec des enfants, qu'est-ce qui vous fait le plus envie ?",
       'projection',
       ['Transmettre', 'Une maison vivante', 'Les voir grandir'],
@@ -4552,10 +4944,32 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'projection',
       ['Le respect', 'La foi', 'La confiance en soi'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans ce souhait, qu'est-ce qui, pour vous, ne se discute pas ?",
+        'besoin',
+        ['Le principe', 'Le moment', 'La façon de les élever'],
+      ),
+      protectProbe(
+        "Qu'est-ce que ce projet d'enfants représente de plus précieux pour vous ?",
+        'besoin',
+        ['Une transmission', 'Une famille à moi', 'Un sens à ma vie'],
+      ),
+      protectProbe(
+        'Quelle valeur tiendriez-vous à préserver coûte que coûte en accueillant un enfant ?',
+        'besoin',
+        ['Le respect', 'La stabilité du foyer', 'Du temps pour nous deux'],
+      ),
+      originProbe(
+        "D'où vous vient ce souhait de fonder une famille ?",
+        'origine',
+        ['De ma famille', 'De ma foi', 'D’un rêve ancien'],
+      ),
+    ],
   },
   'M0_Q06:D': {
     statement: "Aucun de vous deux ne souhaite d'enfants.",
-    probe: q(
+    probe: dailyProbe(
       "Qu'est-ce que ce choix vous permet d'imaginer pour votre vie ?",
       'sens',
       ['Des voyages', 'Un engagement', 'Une liberté'],
@@ -4565,17 +4979,38 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Qu’il est réfléchi', 'Qu’il est définitif', 'Qu’il m’appartient'],
     ),
-    probeThird: q("D'où vous vient la clarté de ce choix ?", 'origine', [
-      'D’une réflexion',
-      'De mon histoire',
-      'De ce que j’ai vu',
-    ]),
+    probeThird: originProbe(
+      "D'où vous vient la clarté de ce choix ?",
+      'origine',
+      ['D’une réflexion', 'De mon histoire', 'De ce que j’ai vu'],
+    ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que ce choix protège de plus important dans la vie que vous imaginez ?",
+        'besoin',
+        ['Ma liberté', 'Mes projets', 'Une vie à deux choisie'],
+      ),
+      protectProbe(
+        "Dans ce choix, qu'est-ce qui vous semble le plus précieux à défendre ?",
+        'besoin',
+        [
+          'Le choix lui-même',
+          'Son caractère définitif',
+          'Le respect de ce choix',
+        ],
+      ),
+      protectProbe(
+        'Quelle liberté, dans ce choix, tenez-vous le plus à garder ?',
+        'besoin',
+        ['Celle de voyager', 'Celle de mes projets', 'Celle de notre temps'],
+      ),
+    ],
   },
   'M1_Q13:A': {
     needsChildren: true,
     statement:
       'Vous voulez tous les deux transmettre langue, traditions et religion.',
-    probe: q(
+    probe: originProbe(
       "Qu'est-ce qui, de votre propre enfance, vous semble le plus précieux à transmettre ?",
       'origine',
       ['Une langue', 'Une fête', 'Une foi'],
@@ -4585,11 +5020,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La langue', 'Les traditions', 'La foi'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Dans une semaine ordinaire, comment cette transmission prendrait-elle place à la maison ?',
+        'projection',
+        ['Par la langue parlée', 'Par les repas', 'Par les fêtes'],
+      ),
+    ],
   },
   'M1_Q13:B': {
     needsChildren: true,
     statement: 'Pour vous deux, des enfants grandiraient entre deux cultures.',
-    probe: q(
+    probe: originProbe(
       'Quelle fête de votre enfance tiendriez-vous à leur faire vivre ?',
       'origine',
       ['Une fête religieuse', 'Une fête familiale', 'Une fête du pays'],
@@ -4599,6 +5041,13 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La langue', 'Les fêtes', 'Les deux familles'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Au quotidien, quelle langue ou quel rituel aimeriez-vous faire vivre à la maison ?',
+        'projection',
+        ['Une langue', 'Un repas', 'Une fête'],
+      ),
+    ],
   },
   'M4_Q07:A': {
     statement: 'La dot ou le mahr compte pour vous deux.',
@@ -4612,6 +5061,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Mon respect', 'Mon sérieux', 'Ma fidélité aux traditions'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que cette tradition vient protéger, pour vous ?",
+        'besoin',
+        ['Le respect des familles', 'La parole donnée', 'Une dignité'],
+      ),
+      originProbe(
+        'Qui vous a transmis le sens de cette tradition ?',
+        'origine',
+        ['Mes parents', 'Un aîné', 'Ma communauté'],
+      ),
+    ],
   },
   'M8_Q03:A': {
     statement: 'Le mariage est pour vous deux un acte religieux.',
@@ -4620,16 +5081,28 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une promesse devant Dieu', 'Une communauté', 'Une durée'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       'Quel exemple, dans votre entourage, a donné au mariage religieux tout son sens pour vous ?',
       'origine',
       ['Un parent', 'Un grand-parent', 'Ma communauté'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'Quelle bénédiction ou quel rite aimeriez-vous voir au cœur de ce jour-là ?',
       'scene',
       ['Une prière', 'La bénédiction des familles', 'Un rite de ma tradition'],
     ),
+    extraProbes: [
+      originProbe(
+        "De qui tenez-vous l'idée que le mariage engage devant Dieu ?",
+        'origine',
+        ['De mes parents', 'De ma communauté', 'De ma foi'],
+      ),
+      dailyProbe(
+        'Une fois mariés, comment aimeriez-vous que la foi accompagne votre vie de tous les jours ?',
+        'projection',
+        ['Par la prière', 'Par les fêtes', 'Par nos choix'],
+      ),
+    ],
   },
   'M8_Q03:C': {
     statement: 'Vous voulez tous les deux un mariage civil et religieux.',
@@ -4643,21 +5116,38 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'scene',
       ['L’engagement civil', 'La bénédiction', 'La fête'],
     ),
-    probeThird: q(
+    probeThird: originProbe(
       'Qui, autour de vous, vous a donné envie de ces deux cérémonies ?',
       'origine',
       ['Ma famille', 'Ma communauté', 'Un couple ami'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Une fois mariés, comment aimeriez-vous que ces deux engagements se retrouvent dans votre vie ?',
+        'projection',
+        ['Par nos choix', 'Par nos fêtes', 'Par notre parole'],
+      ),
+      originProbe(
+        "Qu'est-ce qui, dans votre histoire, donne du sens à ces deux cérémonies ?",
+        'origine',
+        ['De ma famille', 'De ma foi', 'De la loi du pays'],
+      ),
+      dailyProbe(
+        "Avant de vous engager, que voudriez-vous savoir de l'importance que l'autre donne à chaque cérémonie ?",
+        'projection',
+        ['Son sens', 'Sa place dans la fête', 'Le rôle des familles'],
+      ),
+    ],
   },
   'M4_Q11:A': {
     statement:
       "Vous soutiendriez tous les deux l'autre sans compter si l'argent manquait.",
-    probe: q(
+    probe: dailyProbe(
       'Pour vous, soutenir sans compter, à quoi cela ressemblerait-il au quotidien ?',
       'sens',
       ['Prendre les charges', 'Être présent(e)', 'Encourager'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       'Qui, dans votre entourage, incarne pour vous ce soutien sans condition ?',
       'origine',
       ['Un parent', 'Un ami', 'Personne encore'],
@@ -4667,34 +5157,77 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['La confiance', 'Ne pas être jugé(e)', 'Un dialogue ouvert'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Même en donnant beaucoup, qu'est-ce que vous tiendriez à préserver pour vous ?",
+        'besoin',
+        ['Mon épargne', 'Ma dignité', 'Ma liberté'],
+      ),
+      originProbe(
+        "Qu'avez-vous appris, en grandissant, sur la façon d'aider un proche à court d'argent ?",
+        'origine',
+        [
+          'Qu’on aide sans compter',
+          'Qu’on aide avec mesure',
+          'Qu’on n’en parle pas',
+        ],
+      ),
+      dailyProbe(
+        "Le jour où l'autre traverserait un manque d'argent, quel premier geste aimeriez-vous avoir ?",
+        'projection',
+        ['Prendre les charges', 'En parler calmement', 'Rassurer'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, comment aimeriez-vous que ce soutien se vive sans gêne pour celui qui le reçoit ?',
+        'projection',
+        ['Avec discrétion', 'Sans compter', 'Avec des mots simples'],
+      ),
+    ],
   },
   'M4_Q11:B': {
     statement:
       "Vous traverseriez tous les deux un manque d'argent avec un plan.",
-    probe: q(
+    probe: dailyProbe(
       'Concrètement, quelle serait la toute première étape de ce plan, pour vous ?',
       'sens',
       ['Réduire les dépenses', 'Chercher des revenus', 'Faire le point à deux'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       'Qui, autour de vous, vous a montré comment traverser une période difficile à deux ?',
       'origine',
       ['Mes parents', 'Un couple ami', 'Personne encore'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Comment aimeriez-vous vous dire les choses, à deux, si l'argent venait à manquer ?",
       'besoin',
       ['Franchement', 'Avec un point régulier', 'Sans reproche'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans un tel plan, quelle dépense tiendriez-vous à protéger jusqu'au bout ?",
+        'besoin',
+        ['Le logement', 'L’aide aux miens', 'Un projet'],
+      ),
+      originProbe(
+        "D'où vous vient ce réflexe de vous organiser dans les périodes difficiles ?",
+        'origine',
+        ['De mes parents', 'De mon travail', 'D’une période difficile'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous suivre ce plan à deux, semaine après semaine ?',
+        'projection',
+        ['Un point régulier', 'Un tableau partagé', 'Une discussion le soir'],
+      ),
+    ],
   },
   'M4_Q01:A': {
     statement: "Vous voyez tous les deux l'argent du foyer en pot commun.",
-    probe: q(
+    probe: protectProbe(
       'Pour vous, quelle dépense resterait malgré tout personnelle ?',
       'sens',
       ['Un cadeau', 'Un loisir', "L'aide aux miens"],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       "Le jour d'un achat important, que voudrait dire ce pot commun pour vous ?",
       'sens',
       ['Décider à deux', 'Payer ensemble', 'En parler avant'],
@@ -4704,25 +5237,59 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Qu’elle est entière', 'Qu’elle se construit', 'Qu’on avance ensemble'],
     ),
+    extraProbes: [
+      protectProbe("Jusqu'où ce pot commun irait-il, pour vous ?", 'limite', [
+        'Tous les revenus',
+        'Les charges seulement',
+        'Les projets communs',
+      ]),
+      protectProbe(
+        "Qu'est-ce que ce pot commun protège, à vos yeux ?",
+        'besoin',
+        ['La confiance', 'L’égalité', 'La simplicité'],
+      ),
+      originProbe(
+        "Dans la maison où vous avez grandi, comment l'argent se partageait-il ?",
+        'origine',
+        ['Tout en commun', 'Chacun le sien', 'Un parent décidait'],
+      ),
+    ],
   },
   'M4_Q01:C': {
     statement:
       'Vous voyez tous les deux des dépenses séparées et des charges partagées.',
-    probe: q("Pour vous, où s'arrête une charge commune ?", 'sens', [
+    probe: protectProbe("Pour vous, où s'arrête une charge commune ?", 'sens', [
       'Au loyer',
       'Aux courses',
       'Aux sorties',
     ]),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'Quelle dépense du quotidien vous semblerait-il naturel de payer à deux ?',
       'sens',
       ['Les courses', 'Les sorties', 'Les cadeaux aux familles'],
     ),
-    probeThird: q(
+    probeThird: protectProbe(
       "Qu'est-ce que cette façon de faire protège, pour vous ?",
       'besoin',
       ['Ma liberté', 'La paix du couple', 'Une forme d’égalité'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Quelle dépense tenez-vous à garder pour vous seul(e), quoi qu'il arrive ?",
+        'besoin',
+        ['Un loisir', 'Un cadeau', 'L’aide aux miens'],
+      ),
+      originProbe(
+        "D'où vous vient cette façon de faire, entre argent à soi et argent commun ?",
+        'origine',
+        ['De ma famille', 'D’une expérience', 'D’un souci d’égalité'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous répartir les charges communes ?',
+        'projection',
+        ['Moitié-moitié', 'Selon les revenus', 'Par postes'],
+      ),
+    ],
   },
   'M4_Q10:A': {
     statement:
@@ -4732,11 +5299,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le respect', "L'engagement", 'La tradition'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "Qui vous a transmis l'idée que ce geste revient à l'homme ?",
       'origine',
       ['Ma famille', 'Ma culture', 'Ma foi'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que ce geste protège, pour vous, au début d'une rencontre ?",
+        'besoin',
+        ['Le respect', 'Une tradition', 'Une façon d’honorer l’autre'],
+      ),
+    ],
   },
   'M4_Q10:C': {
     statement: "Vous préférez tous les deux partager l'addition.",
@@ -4750,23 +5324,47 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Son indépendance', 'Son respect', 'Son sens de l’égalité'],
     ),
+    extraProbes: [
+      protectProbe(
+        'Quelle part de votre indépendance ce geste vous permet-il de protéger ?',
+        'besoin',
+        ['Ne rien devoir', 'Payer ma part', 'Choisir librement'],
+      ),
+      originProbe(
+        "Dans votre entourage, comment se réglait l'addition entre amis ou en famille ?",
+        'origine',
+        ['Chacun sa part', 'Celui qui invite', 'À tour de rôle'],
+      ),
+      originProbe(
+        "Qui vous a transmis l'idée qu'on paie chacun sa part ?",
+        'origine',
+        ['Mes parents', 'Mes amis', 'Ma propre expérience'],
+      ),
+    ],
   },
   'M4_Q13:A': {
     statement: "Pour vous deux, ce qui est à l'un est à l'autre.",
-    probe: q("Qu'est-ce qui, malgré tout, resterait à vous seul(e) ?", 'sens', [
-      'Un objet',
-      'Un espace',
-      'Un moment',
-    ]),
-    probeVariant: q(
+    probe: protectProbe(
+      "Qu'est-ce qui, malgré tout, resterait à vous seul(e) ?",
+      'sens',
+      ['Un objet', 'Un espace', 'Un moment'],
+    ),
+    probeVariant: originProbe(
       'Dans votre famille, comment se partageaient les affaires de chacun ?',
       'origine',
       ['Tout était à tous', 'Chacun ses affaires', 'Selon les objets'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Sous le même toit, comment imaginez-vous le partage des affaires de chacun ?',
+        'projection',
+        ['Tout en commun', 'Quelques objets à soi', 'Selon les cas'],
+      ),
+    ],
   },
   'M0_Q03:A': {
     statement: 'Vous êtes tous les deux prêts à déménager pour le couple.',
-    probe: q(
+    probe: dailyProbe(
       "Le premier jour de repos dans une nouvelle ville, qu'est-ce qui vous manquerait le plus ?",
       'scene',
       ['Mes proches', 'Mes habitudes', 'Mon quartier'],
@@ -4781,25 +5379,59 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Ma confiance', 'Mon goût du changement', 'Ma foi'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Même prêt(e) à partir, qu'est-ce que vous tiendriez à garder de votre vie d'ici ?",
+        'besoin',
+        ['Mes amitiés', 'Mon travail', 'Des visites aux miens'],
+      ),
+      protectProbe(
+        "Qu'est-ce que vous refuseriez de laisser derrière vous en partant pour l'autre ?",
+        'besoin',
+        ['Le lien avec les miens', 'Mon métier', 'Mes repères'],
+      ),
+      protectProbe(
+        "Qu'est-ce que vous voudriez protéger avant tout en changeant de ville ?",
+        'besoin',
+        ['Mon équilibre', 'Mes liens', 'Mon travail'],
+      ),
+      originProbe(
+        "D'où vous vient cette disposition à partir pour quelqu'un ?",
+        'origine',
+        ['De ma famille', 'De mon goût du changement', 'D’une conviction'],
+      ),
+    ],
   },
   'M0_Q03:D': {
     statement:
       "Vous ne vous voyez ni l'un ni l'autre déménager pour un partenaire.",
-    probe: q(
+    probe: protectProbe(
       "Qu'est-ce que ne pas déménager pour quelqu'un vous permet de protéger ?",
       'besoin',
       ['Mes proches', 'Mon travail', 'Mon histoire'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient l'idée qu'on ne déménage pas pour quelqu'un ?",
       'origine',
       ['De ma famille', 'De mon travail', 'De mon histoire'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'est-ce que ce choix de ne pas suivre quelqu'un vous permet de construire ?",
       'sens',
       ['Une stabilité', 'Des liens', 'Un avenir'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Quel ancrage, dans votre vie d'ici, tenez-vous à préserver avant tout ?",
+        'besoin',
+        ['Mes proches', 'Mon travail', 'Mon histoire'],
+      ),
+      protectProbe(
+        'Quel lien, ici, tenez-vous à ne jamais laisser derrière vous ?',
+        'besoin',
+        ['Mes parents', 'Mes amis', 'Ma communauté'],
+      ),
+    ],
   },
   'M7_Q07:A': {
     statement:
@@ -4809,16 +5441,33 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Mes proches', 'Mon travail', 'Mon histoire'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'Qui, dans votre ville, compte le plus dans votre quotidien ?',
       'besoin',
       ['Ma famille', 'Mes amis', 'Ma communauté'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'aimeriez-vous construire dans cette ville dans les années à venir ?",
       'projection',
       ['Un foyer', 'Un projet', 'Des liens'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Quel lien à cette ville tenez-vous à préserver, quoi qu'il arrive ?",
+        'besoin',
+        ['Mes proches', 'Mon quartier', 'Mon travail'],
+      ),
+      originProbe(
+        "Qu'est-ce qui, dans votre histoire, vous a ancré(e) dans cette ville ?",
+        'origine',
+        ['Ma famille', 'Mon enfance', 'Mon travail'],
+      ),
+      originProbe(
+        "Qui, autour de vous, vous a transmis ce goût d'être enraciné(e) ?",
+        'origine',
+        ['Mes parents', 'Mes grands-parents', 'Ma communauté'],
+      ),
+    ],
   },
   'M7_Q07:C': {
     statement: "Vous envisagez tous les deux une vie à l'étranger.",
@@ -4827,7 +5476,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ["De l'aventure", 'Des opportunités', 'Un nouveau départ'],
     ),
-    probeVariant: q(
+    probeVariant: protectProbe(
       "Qu'aimeriez-vous garder de votre culture, où que vous viviez ?",
       'besoin',
       ['Une langue', 'Des fêtes', 'Des liens'],
@@ -4837,108 +5486,210 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une grande ville', 'Une vie simple', 'Une nouvelle culture'],
     ),
+    extraProbes: [
+      dailyProbe(
+        "Une fois installé(e) à l'étranger, à quoi ressemblerait pour vous une semaine ordinaire ?",
+        'projection',
+        ['Du travail', 'Des découvertes', 'Des liens à créer'],
+      ),
+      originProbe("D'où vous vient cette envie d'ailleurs ?", 'origine', [
+        'D’un voyage',
+        'De ma famille',
+        'De mon travail',
+      ]),
+    ],
   },
   'M2_Q03:A': {
     statement: 'Vous avez tous les deux besoin de vous sentir en sécurité.',
-    probe: q(
+    probe: dailyProbe(
       'Quel petit geste, dans une journée ordinaire, vous donne ce sentiment ?',
       'sens',
       ['Un message', 'Une parole', 'Une présence'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'importance que vous donnez à ce sentiment de sécurité ?",
+        'origine',
+        ['De mon enfance', 'De mon histoire', 'De mon caractère'],
+      ),
+    ],
   },
   'M2_Q03:C': {
     statement:
       'Vous cherchez tous les deux un équilibre entre intimité et liberté.',
-    probe: q(
+    probe: dailyProbe(
       'Où passe la frontière, pour vous, dans une semaine ordinaire ?',
       'sens',
       ['Des soirées à moi', 'Des amis à moi', 'Un projet à moi'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a montré qu'on peut être proche tout en gardant sa liberté ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Ma propre expérience'],
+      ),
+    ],
   },
   'M6_Q01:B': {
     statement: 'Vous prenez tous les deux du recul avant de revenir calmes.',
-    probe: q(
+    probe: protectProbe(
       "Combien de temps dure, selon vous, un recul qui reste rassurant pour l'autre ?",
       'sens',
       ['Quelques minutes', 'Quelques heures', 'Une nuit'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient ce besoin de recul avant de reparler ?",
+        'origine',
+        ['De ma famille', 'De mon caractère', 'D’une expérience'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, comment aimeriez-vous signaler que vous prenez ce recul ?',
+        'projection',
+        ['Par un mot', 'Par un geste', 'Par un message'],
+      ),
+    ],
   },
   'M9_Q03:A': {
     statement: 'Vous dites tous les deux donner sans compter.',
-    probe: q(
+    probe: protectProbe(
       "À quoi sentiriez-vous, malgré tout, que l'équilibre n'y est plus ?",
       'limite',
       ['La fatigue', 'Le manque de merci', "L'agacement"],
     ),
+    extraProbes: [
+      originProbe('Qui vous a appris à donner sans compter ?', 'origine', [
+        'Un parent',
+        'Ma foi',
+        'Ma propre nature',
+      ]),
+      dailyProbe(
+        'Au quotidien, à quoi verrait-on que vous donnez sans attendre en retour ?',
+        'projection',
+        ['À mon temps', 'À mes attentions', 'À mon aide'],
+      ),
+    ],
   },
   'M1_Q09:A': {
     statement: 'Vous respectez tous les deux des interdits alimentaires.',
-    probe: q(
+    probe: dailyProbe(
       "Dans une cuisine partagée, qu'est-ce qui ne pourrait jamais se mélanger, pour vous ?",
       'sens',
       ['Certains aliments', 'Certains ustensiles', 'Rien'],
     ),
+    extraProbes: [
+      originProbe(
+        'De qui tenez-vous les règles que vous suivez à table ?',
+        'origine',
+        ['De ma famille', 'De ma foi', 'D’un choix personnel'],
+      ),
+    ],
   },
   'M1_Q11:A': {
     statement: 'Pour vous deux, une union se vit à deux, sans exception.',
-    probe: q(
+    probe: protectProbe(
       "Qu'est-ce que cette exclusivité protège de plus précieux pour vous ?",
       'besoin',
       ['La confiance', 'La dignité', 'La paix'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient cette conviction qu'une union se vit à deux ?",
       'origine',
       ['De ma foi', 'De ma famille', 'De ce que j’ai vu'],
     ),
+    extraProbes: [
+      protectProbe(
+        'Quelle place tenez-vous à réserver à une seule personne dans votre vie ?',
+        'besoin',
+        ['Mon intimité', 'Ma confiance', 'Mon avenir'],
+      ),
+    ],
   },
   'M8_Q11:A': {
     statement:
       "Pour vous deux, prendre soin de l'autre dans l'épreuve serait une évidence.",
-    probe: q(
+    probe: dailyProbe(
       "Qu'est-ce que prendre soin de l'autre voudrait dire, très concrètement, pour vous ?",
       'sens',
       ['Être présent(e)', 'Organiser l’aide', 'Rester patient(e)'],
     ),
-    probeVariant: q(
-      "Quel exemple de présence fidèle dans l'épreuve vous a le plus marqué(e) ?",
+    probeVariant: originProbe(
+      "Quel exemple de présence fidèle dans l'épreuve vous a le plus inspiré(e) ?",
       'origine',
       ['Un parent', 'Un proche', 'Personne encore'],
     ),
   },
   'M2_Q06:A': {
     statement: 'Vous dites tous les deux clairement quand vous êtes en colère.',
-    probe: q(
+    probe: protectProbe(
       "Pour vous, où passe la frontière entre dire sa colère et la faire porter à l'autre ?",
       'sens',
       ['Le ton', 'Les mots choisis', 'Le moment'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a appris qu'une colère se dit plutôt que de se taire ?",
+        'origine',
+        ['Un parent', 'Ma propre expérience', 'Une amitié'],
+      ),
+    ],
   },
   'M2_Q06:B': {
     statement:
       "Vous prenez tous les deux du recul avant de parler d'une colère.",
-    probe: q(
+    probe: dailyProbe(
       "Pendant ce recul, qu'aimeriez-vous que l'autre sache de ce qui se passe en vous ?",
       'besoin',
       ['Que je reviendrai', 'Que je réfléchis', 'Que je tiens à lui ou à elle'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Qu'est-ce que ce temps de recul vous permet de protéger ?",
+        'besoin',
+        ['Mes mots', 'L’autre', 'Notre calme'],
+      ),
+      originProbe(
+        "D'où vous vient l'habitude de laisser retomber la colère avant d'en parler ?",
+        'origine',
+        ['De ma famille', 'De mon caractère', 'D’une expérience'],
+      ),
+    ],
   },
   'M6_Q01:A': {
     statement: "Vous parlez tous les deux, même quand c'est difficile.",
-    probe: q(
+    probe: protectProbe(
       "Pour vous, qu'est-ce qui distingue une parole franche d'une parole qui blesse ?",
       'sens',
       ['Le ton', 'Le moment', "L'intention"],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient ce courage de parler quand les mots coûtent ?",
+        'origine',
+        ['De ma famille', 'De ma foi', 'D’une expérience'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, comment aimeriez-vous aborder un sujet qui fâche ?',
+        'projection',
+        ['Calmement', 'Au bon moment', 'Sans détour'],
+      ),
+    ],
   },
   'M2_Q07:B': {
     statement:
       "Vous avez tous les deux besoin d'une journée pour digérer une dispute.",
-    probe: q(
+    probe: dailyProbe(
       "Pendant cette journée, qu'aimeriez-vous que l'autre fasse, ou ne fasse pas ?",
       'besoin',
       ['Me laisser du temps', 'Un petit signe', 'Ne pas insister'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient ce besoin de temps pour digérer un désaccord ?",
+        'origine',
+        ['De mon caractère', 'De ma famille', 'D’une expérience'],
+      ),
+    ],
   },
   'M2_Q08:B': {
     statement: 'Vous vous excusez tous les deux quand vous voyez votre erreur.',
@@ -4947,14 +5698,33 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Les mots', 'Les actes qui suivent', 'Le moment'],
     ),
+    extraProbes: [
+      originProbe(
+        'Qui vous a appris à reconnaître une erreur sans perdre la face ?',
+        'origine',
+        ['Un parent', 'Un professeur', 'Ma propre expérience'],
+      ),
+      dailyProbe(
+        "Dans une vie à deux, comment aimeriez-vous qu'une excuse soit dite ?",
+        'projection',
+        ['Avec des mots simples', 'Par un geste', 'Sans attendre'],
+      ),
+    ],
   },
   'M9_Q04:A': {
     statement: 'Vous dites tous les deux une frustration dès que possible.',
-    probe: q(
+    probe: dailyProbe(
       'Concrètement, combien de temps une frustration peut-elle attendre avant d’être dite, pour vous ?',
       'sens',
       ['Quelques minutes', 'Le soir même', 'Un jour ou deux'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée qu'une frustration se dit vite ?",
+        'origine',
+        ['De ma famille', 'D’une expérience', 'De mon caractère'],
+      ),
+    ],
   },
   'M9_Q04:B': {
     statement:
@@ -4964,6 +5734,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le calme', 'Un moment seul à deux', "L'humeur de l'autre"],
     ),
+    extraProbes: [
+      originProbe(
+        'Qui vous a appris à choisir le moment pour dire ce qui vous pèse ?',
+        'origine',
+        ['Un parent', 'Ma propre expérience', 'Une amitié'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, quel moment de la semaine vous semblerait juste pour ces mises au point ?',
+        'projection',
+        ['Le week-end', 'Un soir calme', 'Une promenade'],
+      ),
+    ],
   },
   'M6_Q03:A': {
     statement: 'Pour vous deux, trouver une solution compte plus que gagner.',
@@ -4972,6 +5754,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Mes questions', 'Mon écoute', 'Mes propositions'],
     ),
+    extraProbes: [
+      protectProbe(
+        'Dans un désaccord, quelle valeur resterait à protéger, même en cherchant une solution ?',
+        'besoin',
+        ['La vérité', 'Le respect', 'Ma dignité'],
+      ),
+      originProbe(
+        "D'où vous vient le réflexe de chercher une solution plutôt qu'un gagnant ?",
+        'origine',
+        ['De ma famille', 'De mon travail', 'De mon caractère'],
+      ),
+    ],
   },
   'M6_Q11:A': {
     statement:
@@ -4981,6 +5775,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Le regard',
       'Les actes',
     ]),
+    extraProbes: [
+      originProbe(
+        "Qui vous a appris que se demander pardon fait partie de l'amour ?",
+        'origine',
+        ['Un parent', 'Ma foi', 'Ma propre expérience'],
+      ),
+      dailyProbe(
+        "Au quotidien, qu'est-ce qui rendrait facile, pour vous, de reparler d'un désaccord ?",
+        'projection',
+        ['Un moment calme', 'Un mot doux', 'Du temps'],
+      ),
+    ],
   },
   'M6_Q11:B': {
     statement:
@@ -4990,6 +5796,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un câlin', 'Un repas partagé', 'Un sourire'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient cette préférence pour les gestes plutôt que les mots ?",
+        'origine',
+        ['De ma famille', 'De mon caractère', 'D’une expérience'],
+      ),
+      dailyProbe(
+        'Au quotidien, quel geste tendre aimeriez-vous recevoir après un désaccord ?',
+        'projection',
+        ['Un mot doux', 'Un café préparé', 'Un sourire'],
+      ),
+    ],
   },
   'M6_Q11:C': {
     statement: 'Pour vous deux, chacun prend du recul, puis on tourne la page.',
@@ -4998,11 +5816,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une excuse', 'Ce qui a blessé', 'Rien'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient cette façon de laisser passer les choses ?",
+        'origine',
+        ['De ma famille', 'De mon caractère', 'D’une expérience'],
+      ),
+      dailyProbe(
+        'Au quotidien, combien de temps de recul vous semblerait juste avant de tourner la page ?',
+        'projection',
+        ['Une heure', 'Une soirée', 'Une nuit'],
+      ),
+    ],
   },
   // Deux attentes du premier pas : sans phrase d'accord, la question parle de soi.
   'M6_Q11:D': {
     statement: '',
-    probe: q(
+    probe: dailyProbe(
       "Après une dispute, qu'est-ce qui vous aiderait, vous, à faire le premier pas, même quand vous attendez celui de l'autre ?",
       'reparation',
       [
@@ -5011,19 +5841,38 @@ export const AGREEMENTS: Record<string, Agreement> = {
         'Savoir que je serai accueilli(e)',
       ],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient votre manière de vivre le premier pas après une dispute ?",
+        'origine',
+        ['Qu’il coûte', 'Qu’il apaise', 'Qu’on l’attendait de moi'],
+      ),
+    ],
   },
   'M2_Q01:A': {
     statement:
       'Quand un message reste sans réponse, vous patientez tous les deux sereinement.',
-    probe: q(
+    probe: protectProbe(
       "Pour vous, après combien de temps un silence cesse-t-il d'être anodin ?",
       'limite',
       ['Quelques heures', 'Une journée', 'Plusieurs jours'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient cette patience face aux silences ?",
+        'origine',
+        ['De mon caractère', 'De ma confiance', 'D’une expérience'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, comment aimeriez-vous que chacun donne des nouvelles au fil de la journée ?',
+        'projection',
+        ['Un message', 'Un appel', 'Pas besoin'],
+      ),
+    ],
   },
   'M2_Q02:B': {
     statement: "Vous expliquez tous les deux calmement votre besoin d'espace.",
-    probe: q(
+    probe: dailyProbe(
       "Quand vous expliquez ce besoin, qu'aimeriez-vous que l'autre entende ?",
       'besoin',
       [
@@ -5032,6 +5881,13 @@ export const AGREEMENTS: Record<string, Agreement> = {
         'Que cela ne dure pas',
       ],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a appris qu'on peut demander de l'espace sans blesser ?",
+        'origine',
+        ['Un parent', 'Une amitié', 'Ma propre expérience'],
+      ),
+    ],
   },
   'M9_Q02:B': {
     statement:
@@ -5041,6 +5897,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Du temps donné', 'Une habitude changée', 'Une attention répétée'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a montré qu'un amour grandit à force d'efforts ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Ma foi'],
+      ),
+      dailyProbe(
+        "Dans une semaine ordinaire, quel effort tiendriez-vous à faire pour l'autre ?",
+        'projection',
+        ['Du temps', 'De l’écoute', 'Une attention'],
+      ),
+    ],
   },
   'M9_Q06:B': {
     statement: "Pour vous deux, un sacrifice se fait s'il est réciproque.",
@@ -5049,14 +5917,33 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'À la reconnaissance',
       'Aux actes',
     ]),
+    extraProbes: [
+      protectProbe(
+        'Quel sacrifice, même réciproque, resterait pour vous hors de question ?',
+        'limite',
+        ['Mon travail', 'Mes proches', 'Mes valeurs'],
+      ),
+      originProbe(
+        'Qui vous a appris que les sacrifices se font à deux ?',
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Ma propre expérience'],
+      ),
+    ],
   },
   'M9_Q06:C': {
     statement: 'Pour vous deux, les petits sacrifices oui, les grands non.',
-    probe: q(
+    probe: protectProbe(
       'Où passe, pour vous, la frontière entre un petit et un grand sacrifice ?',
       'sens',
       ['Le travail', 'Le lieu de vie', 'Les proches'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient cette prudence face aux grands sacrifices ?",
+        'origine',
+        ['De ma famille', 'D’une expérience', 'De mon caractère'],
+      ),
+    ],
   },
   'M9_Q01:A': {
     statement:
@@ -5066,6 +5953,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ["L'argent", 'Le lieu de vie', 'Avoir des enfants ou non'],
     ),
+    extraProbes: [
+      originProbe(
+        'Qui vous a montré ce que veut dire décider à deux ?',
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Personne encore'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous prendre ensemble une grande décision ?',
+        'projection',
+        ['En prenant le temps', 'En listant les options', 'En parlant le soir'],
+      ),
+    ],
   },
   'M9_Q01:D': {
     statement: 'Pour vous deux, chacun peut avoir ses domaines de décision.',
@@ -5074,10 +5973,22 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La maison', 'Les sorties', 'Les finances'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Une fois sous le même toit, comment aimeriez-vous partager les domaines de décision ?',
+        'projection',
+        ['Selon nos goûts', 'Selon nos forces', 'Au fil du temps'],
+      ),
+      originProbe(
+        "Qui vous a montré qu'on peut se partager les décisions sans conflit ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Personne encore'],
+      ),
+    ],
   },
   'M8_Q09:A': {
     statement: "Vous abordez tous les deux tôt un désaccord sur l'avenir.",
-    probe: q(
+    probe: dailyProbe(
       "Pour vous, à quel moment d'une rencontre est-il temps d'aborder un point clé ?",
       'sens',
       [
@@ -5091,10 +6002,22 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Ne pas perdre de temps', 'La sincérité', 'Le respect de l’autre'],
     ),
+    extraProbes: [
+      protectProbe(
+        "En parlant tôt de ce qui fâche, qu'est-ce que vous cherchez à préserver ?",
+        'besoin',
+        ['Mon temps', 'La sincérité', 'Le respect de l’autre'],
+      ),
+      dailyProbe(
+        'Avant de vous engager, quel sujet aimeriez-vous avoir mis sur la table ?',
+        'projection',
+        ['Le lieu de vie', 'La famille', 'L’argent'],
+      ),
+    ],
   },
   'M8_Q02:A': {
     statement: "Vous envisagez tous les deux un engagement dans l'année.",
-    probe: q(
+    probe: dailyProbe(
       "Qu'aimeriez-vous avoir découvert de l'autre avant cette échéance ?",
       'besoin',
       ['Sa famille', 'Sa façon de traverser un désaccord', 'Ses projets'],
@@ -5104,42 +6027,84 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Ma foi', 'Mon projet de vie', 'Le sérieux de ma démarche'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Quelle étape tenez-vous à ne pas brûler d'ici cet engagement ?",
+        'besoin',
+        ['Connaître sa famille', 'Parler de nos projets', 'Prendre le temps'],
+      ),
+      dailyProbe(
+        "Au fil de cette année, comment aimeriez-vous découvrir le quotidien de l'autre ?",
+        'projection',
+        [
+          'En se voyant souvent',
+          'En rencontrant les proches',
+          'En partageant des projets',
+        ],
+      ),
+    ],
   },
   'M8_Q02:D': {
     statement:
       "Pour vous deux, l'engagement viendra quand les conditions seront mûres.",
-    probe: q(
+    probe: dailyProbe(
       'Quelles conditions rendraient le moment mûr, très concrètement ?',
       'sens',
       ['Une stabilité', 'Une vraie confiance', "L'accord des familles"],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       'Qui, autour de vous, vous a appris à attendre que les conditions soient réunies ?',
       'origine',
       ['Mes parents', 'Ma foi', 'Mon expérience'],
     ),
+    extraProbes: [
+      protectProbe(
+        "En attendant que le moment soit mûr, qu'est-ce que vous tenez à préserver ?",
+        'besoin',
+        ['Ma liberté', 'Ma sérénité', 'Mes projets'],
+      ),
+    ],
   },
   'M7_Q01:A': {
     statement: "Vous rêvez tous les deux d'une vie stable et établie.",
-    probe: q(
+    probe: dailyProbe(
       'Pour vous, à quoi ressemble la stabilité dans une semaine ordinaire ?',
       'sens',
       ['Des horaires', 'Un foyer', 'Des rituels'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a transmis le besoin d'un foyer stable ?",
+        'origine',
+        ['Mes parents', 'Mon enfance', 'Ma propre histoire'],
+      ),
+    ],
   },
   'M7_Q08:B': {
     statement:
       'Vous imaginez tous les deux les soirées et les week-ends ensemble, avec des moments à soi.',
-    probe: q(
+    probe: dailyProbe(
       'Pour vous, à quoi ressemble un moment à soi, très concrètement ?',
       'sens',
       ['Une soirée seul(e)', 'Une activité', 'Des amis'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'Quel moment à vous, dans une semaine, vous rend plus présent(e) ensuite ?',
       'besoin',
       ['Un sport', 'Une soirée entre amis', 'Un temps seul(e)'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient ce besoin de garder des moments à vous ?",
+        'origine',
+        ['De mon caractère', 'De ma famille', 'De mon rythme'],
+      ),
+      originProbe(
+        "Quel couple, autour de vous, vous a montré l'art de vivre ensemble sans s'effacer ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Personne encore'],
+      ),
+    ],
   },
   'M9_Q07:A': {
     statement: 'Pour vous deux, la tendresse au quotidien est essentielle.',
@@ -5148,7 +6113,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'Au moment choisi',
       'À la douceur',
     ]),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient ce besoin de tendresse au quotidien ?",
       'origine',
       ['De ma famille', 'De ce qui m’a manqué', 'De mon caractère'],
@@ -5158,24 +6123,50 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un mot doux', 'Une main tendue', 'Un câlin'],
     ),
+    extraProbes: [
+      originProbe(
+        'Qui vous a montré la tendresse que vous aimeriez vivre ?',
+        'origine',
+        ['Un parent', 'Un grand-parent', 'Personne encore'],
+      ),
+      dailyProbe(
+        'Dans une journée ordinaire, à quel moment la tendresse compterait-elle le plus pour vous ?',
+        'projection',
+        ['Le matin', 'Le retour du travail', 'Le soir'],
+      ),
+    ],
   },
   'M0_Q08:A': {
     statement:
       "Pour vous deux, le tabac, l'alcool ou d'autres substances n'ont pas leur place chez l'autre.",
-    probe: q(
+    probe: protectProbe(
       "Qu'est-ce qu'un verre ou une cigarette chez l'autre viendrait abîmer, pour vous ?",
       'besoin',
       ['Ma sérénité', 'Le foyer', 'Mes valeurs'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient cette exigence d'une vie sans tabac ni alcool ?",
+        'origine',
+        ['De ma foi', 'De ma famille', 'De ce que j’ai vu'],
+      ),
+    ],
   },
   'M0_Q08:B': {
     statement:
       'Pour vous deux, tabac et alcool restent acceptables avec modération.',
-    probe: q("Où commence l'excès, très concrètement, à vos yeux ?", 'sens', [
-      'Au quotidien',
-      'En soirée',
-      'Devant les proches',
-    ]),
+    probe: protectProbe(
+      "Où commence l'excès, très concrètement, à vos yeux ?",
+      'sens',
+      ['Au quotidien', 'En soirée', 'Devant les proches'],
+    ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a transmis l'idée qu'on peut boire ou fumer avec mesure ?",
+        'origine',
+        ['Ma famille', 'Mes amis', 'Ma propre expérience'],
+      ),
+    ],
   },
   'M6_Q10:B': {
     statement:
@@ -5185,16 +6176,33 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['La vérité dite', 'Le temps', 'Un engagement renouvelé'],
     ),
+    extraProbes: [
+      protectProbe(
+        'Quelle part de la confiance vous semble la plus précieuse à garder intacte ?',
+        'besoin',
+        ['La parole donnée', 'La transparence', 'Le respect'],
+      ),
+      originProbe(
+        "Qui vous a appris qu'une confiance peut se retrouver ?",
+        'origine',
+        ['Mes parents', 'Ma foi', 'Ma propre histoire'],
+      ),
+      dailyProbe(
+        'Dans une vie à deux, quel geste simple entretiendrait la confiance, jour après jour ?',
+        'projection',
+        ['La transparence', 'Les attentions', 'La parole tenue'],
+      ),
+    ],
   },
   'M0_Q06:B': {
     statement:
       'Vous souhaitez tous les deux des enfants, si les conditions sont réunies.',
-    probe: q(
+    probe: dailyProbe(
       "Très concrètement, quelles conditions aimeriez-vous voir réunies avant d'accueillir un enfant ?",
       'sens',
       ['Un foyer stable', 'Une sécurité financière', 'Un couple solide'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient le besoin de réunir certaines conditions avant d'accueillir un enfant ?",
       'origine',
       ['De ma famille', 'De ce que j’ai vu', 'De ma foi'],
@@ -5204,6 +6212,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Le temps', 'Notre complicité', 'Ma foi'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Parmi ces conditions, laquelle vous semble essentielle, quoi qu'il arrive ?",
+        'besoin',
+        ['Un foyer stable', 'Une sécurité financière', 'Un couple solide'],
+      ),
+      protectProbe(
+        "Qu'est-ce que ces conditions viennent protéger, pour vous ?",
+        'besoin',
+        ['L’enfant à venir', 'Le couple', 'Ma tranquillité'],
+      ),
+      protectProbe(
+        'Quelle condition, pour vous, ne pourrait pas être mise de côté ?',
+        'besoin',
+        ['Un logement', 'Un travail stable', 'Une vraie complicité'],
+      ),
+    ],
   },
   'M0_Q06:C': {
     statement: "Vous hésitez tous les deux sur le désir d'enfants.",
@@ -5222,10 +6247,37 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une rencontre', 'Une stabilité', 'Le temps'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans cette hésitation, qu'est-ce que vous cherchez à protéger ?",
+        'besoin',
+        ['Ma liberté', 'Ma sérénité', 'Le bon moment'],
+      ),
+      protectProbe(
+        'Quelle part de votre vie actuelle tenez-vous à garder, quelle que soit votre décision ?',
+        'besoin',
+        ['Mon travail', 'Ma liberté', 'Mes projets'],
+      ),
+      protectProbe(
+        "Qu'est-ce qui vous semble précieux à respecter tant que la question reste ouverte ?",
+        'besoin',
+        ['Mon rythme', 'La sincérité', 'Le temps'],
+      ),
+      originProbe(
+        "D'où vous vient le besoin de prendre votre temps sur ce choix ?",
+        'origine',
+        ['De mon histoire', 'De ma famille', 'De ce que j’ai vu'],
+      ),
+      dailyProbe(
+        'Une fois en couple, à quel rythme aimeriez-vous en reparler ?',
+        'projection',
+        ['Régulièrement', 'Sans pression', 'Quand l’un est prêt'],
+      ),
+    ],
   },
   'M4_Q05:A': {
     statement: 'Pour vous deux, aider sa famille fait partie du quotidien.',
-    probe: q(
+    probe: protectProbe(
       "À quel moment une aide à la famille cesse-t-elle, pour vous, d'être ordinaire ?",
       'limite',
       ['Un montant', 'Une urgence', 'Une fréquence'],
@@ -5235,16 +6287,28 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['De la fierté', 'De la paix', 'Le sentiment d’être utile'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'Comment aimeriez-vous que cette aide se décide, une fois en couple ?',
       'projection',
       ['Seul(e)', 'À deux', 'Selon les cas'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a transmis ce devoir d'aider les vôtres ?",
+        'origine',
+        ['Mes parents', 'Ma culture', 'Ma foi'],
+      ),
+      dailyProbe(
+        'Une fois en couple, comment aimeriez-vous organiser cette aide au fil des mois ?',
+        'projection',
+        ['Un budget dédié', 'Au cas par cas', 'Une décision à deux'],
+      ),
+    ],
   },
   'M4_Q05:B': {
     statement:
       "Pour vous deux, un envoi d'argent à la famille se décide d'abord à deux.",
-    probe: q(
+    probe: protectProbe(
       "À partir de quel moment un envoi mérite-t-il, selon vous, qu'on en parle ensemble ?",
       'sens',
       ['Dès le premier envoi', 'Au-delà d’un montant', 'S’il devient régulier'],
@@ -5254,30 +6318,53 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['En parler avant', 'Un accord des deux', 'La même information'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'est-ce qui vous aiderait à dire non à un proche, quand l'argent du foyer ne le permet pas ?",
       'besoin',
       ['L’appui de l’autre', 'Une règle claire', 'Une autre aide à proposer'],
     ),
+    extraProbes: [
+      originProbe(
+        "De qui tenez-vous cette façon de décider ensemble de l'aide aux siens ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Ma propre expérience'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous en parler avant chaque envoi ?',
+        'projection',
+        [
+          'Un message rapide',
+          'Une vraie discussion',
+          'Une règle posée une fois',
+        ],
+      ),
+    ],
   },
   'M4_Q05:D': {
     statement:
       "Pour vous deux, l'aide à la famille a ses limites, pour préserver le foyer.",
-    probe: q(
+    probe: protectProbe(
       'À quel signe sentiriez-vous que cette limite est atteinte ?',
       'limite',
       ['Un montant', 'Une fréquence', 'Une décision à deux'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'Comment aimeriez-vous expliquer ce choix à vos proches, le jour où vous direz non ?',
       'besoin',
       ['Calmement', 'Avec l’autre à mes côtés', 'Au cas par cas'],
     ),
-    probeThird: q(
+    probeThird: originProbe(
       "D'où vous vient ce souci de préserver d'abord le foyer ?",
       'origine',
       ['De ma famille', 'De ce que j’ai vu', 'D’un choix personnel'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Une fois en couple, comment aimeriez-vous fixer ensemble ces limites ?',
+        'projection',
+        ['Un budget', 'Une règle simple', 'Au cas par cas'],
+      ),
+    ],
   },
   'M4_Q01:B': {
     statement:
@@ -5287,38 +6374,82 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le temps donné au foyer', 'Les dettes', 'Les charges de chacun'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'Pour vous, une contribution juste, à quoi se voit-elle à la fin du mois ?',
       'sens',
       ['Aux factures payées', 'À l’absence de gêne', 'À ce qui reste à chacun'],
     ),
-    probeThird: q(
+    probeThird: originProbe(
       "D'où vous vient l'idée que chacun participe selon ses moyens ?",
       'origine',
       ['De ma famille', 'De ce que j’ai vu', 'D’un sens de la justice'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Pour vous, où s'arrêterait la part de la personne qui gagne le plus ?",
+        'limite',
+        ['Aux charges', 'Aux projets', 'Aux imprévus'],
+      ),
+      protectProbe(
+        "Qu'est-ce que ce partage proportionnel protège, à vos yeux ?",
+        'besoin',
+        ['L’égalité', 'La paix', 'La dignité de chacun'],
+      ),
+      protectProbe(
+        "Quelle dépense, pour vous, resterait à partager à parts égales quoi qu'il arrive ?",
+        'besoin',
+        ['Le loyer', 'Les courses', 'Les loisirs'],
+      ),
+      originProbe(
+        "Qui vous a montré qu'une contribution juste tient compte des moyens de chacun ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Mon sens de la justice'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous calculer la part de chacun ?',
+        'projection',
+        ['Au pourcentage', 'Par postes', 'Simplement'],
+      ),
+    ],
   },
   'M4_Q01:D': {
     statement: "Pour vous deux, l'argent reste une affaire individuelle.",
-    probe: q("Qu'est-ce qui, pour vous, se partagerait malgré tout ?", 'sens', [
-      'Le loyer',
-      'Les projets',
-      'Les imprévus',
-    ]),
-    probeVariant: q(
+    probe: protectProbe(
+      "Qu'est-ce qui, pour vous, se partagerait malgré tout ?",
+      'sens',
+      ['Le loyer', 'Les projets', 'Les imprévus'],
+    ),
+    probeVariant: protectProbe(
       'Que protège, à vos yeux, le fait de garder son argent à soi ?',
       'besoin',
       ['Ma liberté', 'La paix du couple', 'Ma sécurité'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Le jour d'un projet commun, comment aimeriez-vous en parler à deux ?",
       'projection',
       ['Avant toute dépense', 'Au cas par cas', 'Avec un budget dédié'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Jusqu'où cette indépendance financière irait-elle, pour vous ?",
+        'limite',
+        ['Tout séparé', 'Sauf le loyer', 'Sauf les projets'],
+      ),
+      originProbe(
+        "D'où vous vient l'idée que chacun garde la main sur son argent ?",
+        'origine',
+        ['De ma famille', 'D’une expérience', 'D’un besoin d’indépendance'],
+      ),
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous régler les dépenses partagées ?',
+        'projection',
+        ['Chacun son tour', 'Moitié-moitié', 'Au cas par cas'],
+      ),
+    ],
   },
   'M3_Q04:A': {
     statement: "Pour vous deux, l'enfant de l'un devient l'enfant de l'autre.",
-    probe: q(
+    probe: dailyProbe(
       'Dans une famille recomposée, comment imaginez-vous la façon de poser les règles aux enfants ?',
       'sens',
       [
@@ -5337,6 +6468,28 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Mon attention', 'Ma patience', 'Des moments à nous'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée qu'un enfant peut devenir le vôtre sans lien de sang ?",
+        'origine',
+        ['De ma famille', 'De ma foi', 'De ce que j’ai vu'],
+      ),
+      originProbe(
+        "Qui, autour de vous, vous a montré qu'on peut aimer l'enfant d'un autre comme le sien ?",
+        'origine',
+        ['Un beau-parent', 'Un proche', 'Personne encore'],
+      ),
+      originProbe(
+        'Dans votre entourage, comment parlait-on des familles recomposées ?',
+        'origine',
+        ['Avec chaleur', 'Avec méfiance', 'On n’en parlait pas'],
+      ),
+      dailyProbe(
+        'Dans une famille recomposée, à quoi ressemblerait pour vous une journée ordinaire réussie ?',
+        'projection',
+        ['Des repas ensemble', 'Des jeux', 'Du calme'],
+      ),
+    ],
   },
   'M3_Q04:B': {
     statement:
@@ -5356,11 +6509,33 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le temps', 'Le respect du parent', 'La patience'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée que chaque parent garde son rôle ?",
+        'origine',
+        ['De ma famille', 'De ce que j’ai vu', 'D’une conviction'],
+      ),
+      originProbe(
+        'Quel exemple, autour de vous, vous a appris à respecter le rôle de chacun dans une famille ?',
+        'origine',
+        ['Mes parents', 'Un proche', 'Personne encore'],
+      ),
+      originProbe(
+        "Dans votre entourage, qu'avez-vous retenu de la place laissée à chaque parent ?",
+        'origine',
+        ['Qu’elle compte', 'Qu’elle se respecte', 'Qu’elle évolue'],
+      ),
+      dailyProbe(
+        "Au quotidien, quelle place aimeriez-vous prendre auprès de l'enfant de l'autre ?",
+        'projection',
+        ['Une présence', 'Un soutien', 'Une écoute'],
+      ),
+    ],
   },
   'M3_Q04:D': {
     statement:
       'Pour vous deux, une famille recomposée se construit avec le temps.',
-    probe: q(
+    probe: dailyProbe(
       'À quoi verriez-vous, au bout d’un an, que la confiance s’installe ?',
       'sens',
       ['Des confidences', 'Des rires', 'Des moments demandés'],
@@ -5370,48 +6545,84 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Le temps', 'La patience', 'Des moments partagés'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'est-ce qui vous aiderait à être patient(e) pendant ces premiers temps ?",
       'besoin',
       ['Le soutien de l’autre', 'Des petites victoires', 'Du temps pour nous'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée qu'une famille se tisse avec le temps ?",
+        'origine',
+        ['De ma famille', 'De mon expérience', 'De ma foi'],
+      ),
+      originProbe(
+        'Qui vous a appris que la patience fait les liens solides ?',
+        'origine',
+        ['Un parent', 'Un grand-parent', 'Ma propre expérience'],
+      ),
+      originProbe(
+        "Quelle famille, autour de vous, vous a montré qu'on peut devenir proches peu à peu ?",
+        'origine',
+        ['Une famille amie', 'Ma propre famille', 'Personne encore'],
+      ),
+    ],
   },
   'M5_Q03:A': {
     statement:
       'Vous accepteriez tous les deux de vivre un temps avec un parent, avec des règles claires.',
-    probe: q(
+    probe: protectProbe(
       'Pour vous, combien de temps peut durer une cohabitation temporaire ?',
       'sens',
       ['Quelques semaines', 'Quelques mois', 'Le temps nécessaire'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       'À quoi verriez-vous, pendant ce temps-là, que les règles sont respectées ?',
       'sens',
       ['Un espace préservé', 'Une durée tenue', 'Des décisions à deux'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'est-ce qui vous aiderait à dire, le moment venu, que ce temps-là est fini ?",
       'besoin',
       ['Une date fixée', 'Un dialogue', 'Un accord de départ'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a appris qu'on accueille mieux un proche quand le cadre est clair ?",
+        'origine',
+        ['Mes parents', 'Une expérience', 'Ma culture'],
+      ),
+    ],
   },
   'M5_Q03:B': {
     statement: 'Pour vous deux, le foyer appartient au couple.',
-    probe: q(
+    probe: protectProbe(
       "Quand un parent aurait besoin d'aide, quelle forme de soutien resterait possible pour vous ?",
       'sens',
       ['Une aide de loin', 'Des visites', 'Un soutien financier'],
     ),
-    probeVariant: q(
+    probeVariant: protectProbe(
       "Qu'est-ce que ce foyer à deux protège de plus précieux à vos yeux ?",
       'besoin',
       ['Notre intimité', 'Nos décisions', 'Notre calme'],
     ),
-    probeThird: q(
+    probeThird: originProbe(
       "D'où vous vient l'idée que le foyer appartient d'abord au couple ?",
       'origine',
       ['De ma famille', 'De ce que j’ai vu', 'D’un choix personnel'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous recevoir les vôtres chez vous ?',
+        'projection',
+        ['Souvent', 'À des moments choisis', 'Pour les fêtes'],
+      ),
+      dailyProbe(
+        "Avant de partager un foyer, que voudriez-vous convenir avec l'autre des visites de la famille ?",
+        'projection',
+        ['Leur fréquence', 'Leur durée', 'Qui invite'],
+      ),
+    ],
   },
   'M5_Q03:C': {
     statement:
@@ -5421,40 +6632,74 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Des règles claires', 'Un espace à soi', 'Du respect'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       'Dans votre famille, comment se partageait la maison entre les générations ?',
       'origine',
       ['Chacun son espace', 'Tout en commun', 'Selon les âges'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'Quelle place aimeriez-vous donner aux aînés dans la vie du foyer ?',
       'sens',
       ['Une place d’honneur', 'Une place de conseil', 'Une place de soin'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans cette cohabitation, qu'est-ce que vous tiendriez à préserver pour le couple ?",
+        'besoin',
+        ['Une chambre à nous', 'Nos décisions', 'Des moments à deux'],
+      ),
+      originProbe(
+        "Qui vous a transmis l'idée qu'on vit avec les siens quand ils vieillissent ?",
+        'origine',
+        ['Mes parents', 'Ma culture', 'Ma foi'],
+      ),
+      dailyProbe(
+        "Sous le même toit qu'un parent, à quoi ressemblerait une journée réussie pour vous ?",
+        'projection',
+        ['Des repas partagés', 'Un espace à soi', 'Du calme'],
+      ),
+    ],
   },
   'M5_Q01:A': {
     statement:
       "Pour vous deux, aucune décision ne se prend sans l'avis de la famille.",
-    probe: q(
+    probe: dailyProbe(
       'Concrètement, quelles décisions passeraient par la famille ?',
       'sens',
       ['Le mariage', 'Le lieu de vie', 'Les projets de famille'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "Dans votre famille, qui donne l'avis qui compte le plus ?",
       'origine',
       ['Un parent', 'Un aîné', 'Toute la famille'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       'Comment aimeriez-vous que vos deux familles soient associées aux grandes décisions ?',
       'projection',
       ['Consultées ensemble', 'Chacune à son tour', 'Selon les sujets'],
     ),
+    extraProbes: [
+      protectProbe(
+        'Quelle décision, malgré tout, garderiez-vous pour vous deux seulement ?',
+        'limite',
+        ['Notre intimité', 'Nos sorties', 'Nos petites dépenses'],
+      ),
+      originProbe(
+        "D'où vous vient l'habitude de consulter les vôtres ?",
+        'origine',
+        ['De mon éducation', 'De ma culture', 'De ma foi'],
+      ),
+      originProbe(
+        'Qui vous a appris que les grandes décisions se prennent avec les aînés ?',
+        'origine',
+        ['Mes parents', 'Mes grands-parents', 'Ma communauté'],
+      ),
+    ],
   },
   'M5_Q01:C': {
     statement:
       'Vous consultez tous les deux votre famille par respect, sans obligation.',
-    probe: q(
+    probe: protectProbe(
       'Pour vous, où s’arrête un conseil et où commence une pression ?',
       'sens',
       ['Au ton', "À l'insistance", 'Aux conséquences'],
@@ -5469,6 +6714,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un regard', 'Une bénédiction', 'Du recul'],
     ),
+    extraProbes: [
+      originProbe(
+        'Qui vous a appris à écouter les vôtres tout en restant libre ?',
+        'origine',
+        ['Mes parents', 'Un aîné', 'Ma propre expérience'],
+      ),
+      originProbe(
+        "Dans votre famille, comment donnait-on un conseil sans l'imposer ?",
+        'origine',
+        ['Avec douceur', 'Par l’exemple', 'En laissant choisir'],
+      ),
+      dailyProbe(
+        'Une fois en couple, comment aimeriez-vous associer vos familles à un choix important ?',
+        'projection',
+        ['En les informant', 'En leur demandant conseil', 'Au cas par cas'],
+      ),
+    ],
   },
   'M1_Q06:B': {
     statement:
@@ -5478,14 +6740,48 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Aux horaires', 'Aux repas', 'Aux paroles'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Sous le même toit, à quoi verrait-on, très concrètement, que vos pratiques sont respectées ?',
+        'projection',
+        ['Aux horaires', 'Aux repas', 'Aux paroles'],
+      ),
+      protectProbe(
+        'Quelle pratique tenez-vous à voir respectée avant tout ?',
+        'besoin',
+        ['La prière', 'Les fêtes', 'Les repas'],
+      ),
+      originProbe(
+        "De qui tenez-vous l'importance que vous donnez à vos pratiques ?",
+        'origine',
+        ['De mes parents', 'De ma communauté', 'De ma foi'],
+      ),
+    ],
   },
   'M1_Q06:C': {
     statement: "Vous êtes tous les deux ouverts à d'autres croyances.",
-    probe: q(
+    probe: protectProbe(
       "Pour vous, jusqu'où va cette ouverture dans un foyer commun ?",
       'limite',
       ['Les fêtes', 'Les repas', 'Les pratiques'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Dans cette ouverture, qu'est-ce que vous tenez à garder de vos propres convictions ?",
+        'besoin',
+        ['Mes valeurs', 'Mes fêtes', 'Ma pratique'],
+      ),
+      originProbe(
+        'Qui vous a appris à respecter des croyances différentes des vôtres ?',
+        'origine',
+        ['Mes parents', 'Des amis', 'Mes voyages'],
+      ),
+      dailyProbe(
+        "Sous le même toit, à quoi verrait-on que chacun accueille les croyances de l'autre ?",
+        'projection',
+        ['Aux fêtes partagées', 'Aux repas', 'Aux questions posées'],
+      ),
+    ],
   },
   'M0_Q03:B': {
     statement:
@@ -5500,39 +6796,68 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'projection',
       ['Mes habitudes', 'Mes amitiés', 'Mon travail'],
     ),
-    probeThird: q(
+    probeThird: originProbe(
       "D'où vous vient l'idée qu'un départ se prépare d'abord à deux ?",
       'origine',
       ['De ma famille', 'De ce que j’ai vu', 'De mon expérience'],
     ),
+    extraProbes: [
+      dailyProbe(
+        "Dans une nouvelle ville, qu'est-ce qui vous aiderait à vous sentir vite chez vous ?",
+        'projection',
+        ['Des amis', 'Un travail', 'Des habitudes à deux'],
+      ),
+      protectProbe(
+        "Dans un tel départ, qu'est-ce que vous tiendriez à protéger ?",
+        'besoin',
+        ['Mon travail', 'Mes liens', 'Mon équilibre'],
+      ),
+      protectProbe(
+        "Qu'est-ce qui, dans votre vie d'ici, ne pourrait pas être quitté à la légère ?",
+        'besoin',
+        ['Mes proches', 'Mon travail', 'Ma maison'],
+      ),
+      protectProbe(
+        "Quelle garantie, pour vous, rendrait un départ possible sans rien sacrifier d'essentiel ?",
+        'besoin',
+        ['Un engagement clair', 'Un travail sur place', 'Une date fixée'],
+      ),
+    ],
   },
   'M0_Q03:C': {
     statement:
       'Pour vous deux, un déménagement pour le couple dépend de la distance.',
-    probe: q(
+    probe: protectProbe(
       'À partir de quelle distance un départ deviendrait-il un vrai renoncement pour vous ?',
       'sens',
       ['Une autre ville', 'Une autre région', 'Un autre pays'],
     ),
-    probeVariant: q(
+    probeVariant: protectProbe(
       "Qu'est-ce qu'un départ trop lointain vous ferait perdre en premier ?",
       'besoin',
       ['Mes proches', 'Mon travail', 'Mes repères'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "Qu'est-ce qui vous aiderait à garder vos repères après un départ ?",
       'besoin',
       ['Des visites', 'Des appels', 'Des habitudes gardées'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient le besoin de rester à portée des vôtres ?",
+        'origine',
+        ['De ma famille', 'De ma culture', 'De mon histoire'],
+      ),
+    ],
   },
   'M7_Q07:D': {
     statement: 'Vous êtes tous les deux ouverts sur le lieu de vie.',
-    probe: q(
+    probe: dailyProbe(
       "Qu'est-ce qui ferait d'un lieu nouveau un vrai chez-vous ?",
       'sens',
       ['Mes proches', 'Mes habitudes', 'Un projet à deux'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       "Sur quoi aimeriez-vous fonder le choix d'un lieu de vie, le moment venu ?",
       'sens',
       ['Le travail', 'La famille', 'La qualité de vie'],
@@ -5542,6 +6867,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'besoin',
       ['Un travail', 'Une famille', 'Une envie d’ailleurs'],
     ),
+    extraProbes: [
+      protectProbe(
+        "Où que vous soyez, qu'est-ce que vous tiendriez à protéger de votre façon de vivre ?",
+        'besoin',
+        ['Mes habitudes', 'Mes liens', 'Mon rythme'],
+      ),
+      originProbe(
+        "D'où vous vient cette facilité à vous imaginer ailleurs ?",
+        'origine',
+        ['De mes voyages', 'De ma famille', 'De mon caractère'],
+      ),
+      originProbe(
+        "Qui vous a montré qu'on peut se sentir chez soi en plusieurs endroits ?",
+        'origine',
+        ['Ma famille', 'Un ami', 'Mes voyages'],
+      ),
+    ],
   },
   'M4_Q08:A': {
     statement:
@@ -5551,15 +6893,34 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un logement', 'Un mariage', 'Un voyage'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'Au quotidien, comment aimeriez-vous suivre ensemble cette épargne ?',
+        'projection',
+        ['Un point régulier', 'Un compte partagé', 'Un objectif affiché'],
+      ),
+      originProbe(
+        'Qui vous a transmis le goût de mettre de côté pour un projet ?',
+        'origine',
+        ['Mes parents', 'Ma propre expérience', 'Personne'],
+      ),
+    ],
   },
   'M4_Q08:C': {
     statement:
       'Vous voyez tous les deux une épargne commune et une épargne personnelle.',
-    probe: q(
+    probe: dailyProbe(
       "Pour vous, à quoi servirait l'épargne personnelle, très concrètement ?",
       'sens',
       ['Mes proches', 'Ma sécurité', 'Mes projets'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée de garder une épargne à soi ?",
+        'origine',
+        ['De ma famille', 'D’une expérience', 'D’un besoin de sécurité'],
+      ),
+    ],
   },
   'M8_Q03:B': {
     statement:
@@ -5569,7 +6930,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un engagement', 'Une famille', 'Une fierté'],
     ),
-    probeVariant: q(
+    probeVariant: dailyProbe(
       "Quel geste, le jour d'un mariage, porte pour vous tout le sens de l'engagement ?",
       'sens',
       ['L’échange des consentements', 'Les alliances', 'La signature'],
@@ -5579,6 +6940,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Les témoins', 'La promesse', 'La fête'],
     ),
+    extraProbes: [
+      originProbe(
+        "D'où vous vient l'idée que le mariage tient d'abord du symbole ?",
+        'origine',
+        ['De ma famille', 'De mes convictions', 'D’un couple qui m’inspire'],
+      ),
+      originProbe(
+        "Qui, dans votre entourage, vous a donné le goût d'un mariage simple ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Personne encore'],
+      ),
+      dailyProbe(
+        "Dans la vie de tous les jours, qu'est-ce que ce mariage civil viendrait changer pour vous ?",
+        'projection',
+        ['Notre sécurité', 'Notre famille', 'Rien de visible'],
+      ),
+    ],
   },
   'M8_Q03:D': {
     statement: "Pour vous deux, le mariage est un choix, l'amour passe avant.",
@@ -5587,16 +6965,23 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Un logement commun', 'Des projets communs', 'Une parole donnée'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "Qu'est-ce qui, dans votre histoire, a rendu l'amour plus important que le papier ?",
       'origine',
       ['Ma famille', 'Ce que j’ai vu', 'Une conviction'],
     ),
-    probeThird: q(
+    probeThird: dailyProbe(
       "À quoi verrait-on, chez vous, qu'un amour est vraiment engagé ?",
       'sens',
       ['Au temps', 'Aux projets', 'À la parole donnée'],
     ),
+    extraProbes: [
+      originProbe(
+        "Qui vous a appris qu'un amour engagé n'a pas besoin d'un papier ?",
+        'origine',
+        ['Mes parents', 'Un couple ami', 'Ma propre histoire'],
+      ),
+    ],
   },
   'M1_Q13:C': {
     needsChildren: true,
@@ -5607,11 +6992,18 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une langue', 'Des fêtes', 'Des histoires de famille'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "D'où vous vient cette idée de laisser un enfant choisir sa culture ?",
       'origine',
       ['De mon histoire', 'De ma famille', 'D’une conviction'],
     ),
+    extraProbes: [
+      dailyProbe(
+        'À la maison, comment aimeriez-vous faire découvrir vos racines, sans rien imposer ?',
+        'projection',
+        ['Par des récits', 'Par des voyages', 'Par la cuisine'],
+      ),
+    ],
   },
   'M4_Q06:B': {
     statement:
@@ -5621,73 +7013,107 @@ export const AGREEMENTS: Record<string, Agreement> = {
       'sens',
       ['Une sécurité', 'Un ancrage', 'Un avenir'],
     ),
-    probeVariant: q(
+    probeVariant: originProbe(
       "Dans votre famille, que représentait le fait d'avoir sa maison ?",
       'origine',
       ['Une sécurité', 'Une fierté', 'Un héritage'],
     ),
+    extraProbes: [
+      dailyProbe(
+        "Avant d'acheter à deux, qu'aimeriez-vous connaître des priorités de l'autre ?",
+        'projection',
+        ['Le lieu rêvé', 'Son rapport au crédit', 'Ses projets'],
+      ),
+      dailyProbe(
+        "Dans la vie de tous les jours, que changerait pour vous le fait d'être propriétaires à deux ?",
+        'projection',
+        ['Ma sérénité', 'Nos projets', 'Rien de visible'],
+      ),
+    ],
   },
   M8_Q04: {
     statement: "Pour vous deux, les mêmes attentions disent l'amour.",
-    probe: q(
+    probe: dailyProbe(
       'Quelle attention précise, dans une journée ordinaire, vous touche le plus ?',
       'sens',
       ['Un mot tendre', 'Un service rendu', 'Du temps ensemble'],
     ),
+    extraProbes: [
+      originProbe(
+        "De qui avez-vous appris ces attentions qui disent l'amour ?",
+        'origine',
+        ['Mes parents', 'Un grand-parent', 'Mes amis'],
+      ),
+    ],
   },
 };
 
-/** Questions d'accord par jour, ajoutées après la phrase qui nomme l'accord. */
+/**
+ * Questions d'accord par jour, ajoutées après la phrase qui nomme l'accord,
+ * quand ses relances propres ont toutes été vues : chacune sous l'angle du
+ * jour (la limite de l'accord, d'où vient la position, comment chacun la
+ * vivrait au quotidien).
+ */
 export const CONVERGENT: Record<number, PoolTemplate[]> = {
   1: [
-    q(
+    protectProbe(
       "Qu'est-ce qui, malgré tout, pourrait vous faire changer d'avis ?",
       'limite',
       ['Rien', 'Un événement de vie', 'Une discussion sincère'],
     ),
-    q(
+    protectProbe(
       'Sur ce point, dans quelle situation concrète tiendriez-vous le plus à cet accord ?',
       'limite',
       ['Un choix important', 'Une période difficile', 'Le quotidien'],
     ),
-    q(
+    protectProbe(
       "Jusqu'où cette position tient-elle quand la vie se complique ?",
       'limite',
       ['Toujours', 'Presque toujours', 'Elle peut évoluer'],
     ),
   ],
   2: [
-    q('De qui tenez-vous cette façon de voir ?', 'origine', [
+    originProbe('De qui tenez-vous cette façon de voir ?', 'origine', [
       'De ma famille',
       'De ma foi',
       'De mon expérience',
     ]),
-    q(
-      'À quoi un proche verrait-il, dans votre quotidien, que ce point compte pour vous ?',
-      'circulaire',
-      ['À mes choix', 'À mes paroles', 'À mes habitudes'],
+    originProbe(
+      "Qu'est-ce qui, dans votre histoire, a forgé cette position ?",
+      'origine',
+      ['Ma famille', 'Une rencontre', 'Une épreuve'],
     ),
-    q(
-      "Concrètement, qu'est-ce que cet accord changerait dans votre quotidien ?",
-      'sens',
-      ['Une règle', 'Une valeur', 'Une habitude'],
+    originProbe(
+      "Quel exemple, autour de vous, vous a convaincu(e) de l'importance de ce point ?",
+      'origine',
+      ['Un parent', 'Un couple ami', 'Un proche'],
     ),
   ],
   3: [
-    q(
+    dailyProbe(
       "Dans quelle situation de la vie à deux cet accord serait-il le plus mis à l'épreuve ?",
       'limite',
       ['Un désaccord familial', 'Un déménagement', 'Une période difficile'],
     ),
-    q(
+    dailyProbe(
       "Le jour où l'un de vous changerait d'avis, comment aimeriez-vous l'apprendre ?",
       'limite',
       ['Tout de suite', 'Calmement', 'Avec ses raisons'],
     ),
-    q(
+    dailyProbe(
       "Dans quelle décision d'une vie à deux ce point compterait-il le plus pour vous ?",
       'projection',
       ['Le lieu de vie', "L'argent", 'Les projets de famille'],
+    ),
+    dailyProbe(
+      'À quoi un proche verrait-il, dans votre quotidien, que ce point compte pour vous ?',
+      'circulaire',
+      ['À mes choix', 'À mes paroles', 'À mes habitudes'],
+    ),
+    dailyProbe(
+      "Concrètement, qu'est-ce que cet accord changerait dans votre quotidien ?",
+      'sens',
+      ['Une règle', 'Une valeur', 'Une habitude'],
     ),
   ],
 };

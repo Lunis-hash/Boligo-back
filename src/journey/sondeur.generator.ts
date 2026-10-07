@@ -48,6 +48,7 @@ import {
   THEME_POOL,
   agreementFor,
   agreementKey,
+  agreementProbes,
   TopicSource,
   hasNoChildren,
   isAgreementWorthAsking,
@@ -761,10 +762,8 @@ function convergencesFor(
       !(childFree && agreementFor(c).needsChildren) &&
       topicDays({ ...c, label: c.topic ?? c.label }).includes(day),
   );
-  const hasProbe = (c: Convergence) => {
-    const a = agreementFor(c);
-    return !!(a.probe || a.probeVariant);
-  };
+  const hasProbe = (c: Convergence) =>
+    agreementProbes(agreementFor(c)).length > 0;
   return [
     ...eligible.filter(hasProbe),
     ...eligible.filter((c) => !hasProbe(c)),
@@ -772,27 +771,43 @@ function convergencesFor(
 }
 
 /**
- * Formulations d'un accord : la phrase qui le nomme, puis une question (la
- * relance propre, sa variante puis sa troisième relance pour un membre qui les
- * a déjà vues, puis les questions d'accord du jour). Sans phrase (risque
- * partagé non signalé), les relances propres seules. Intimité : les relances
- * propres seules, jamais une question d'accord générique.
+ * Formulations d'un accord : la phrase qui le nomme, puis une question. Les
+ * relances propres écrites pour l'angle du jour passent d'abord (jour 1 : ce
+ * que chacun protège ou la limite de l'accord ; jour 2 : d'où vient la
+ * position ; jour 3 : comment chacun la vivrait au quotidien, ce qu'il
+ * faudrait savoir avant de s'engager), puis les autres relances propres pour
+ * un membre qui a déjà tout vu, puis les questions d'accord du jour. Sans
+ * phrase (risque partagé non signalé), les relances propres seules.
+ * Intimité : les relances propres seules, jamais une question d'accord
+ * générique.
  */
 function convergenceCandidates(
   day: number,
   c: Convergence,
   seed: string | undefined,
   slot: string,
+  used: DayUsage,
 ): PoolTemplate[] {
-  const { statement, probe, probeVariant, probeThird } = agreementFor(c);
+  const agreement = agreementFor(c);
+  const { statement } = agreement;
   // Point non négociable (enfants, fidélité, foi…) : on n'éprouve pas la
   // solidité d'un accord que les deux tiennent pour essentiel, ni par une
   // relance propre ni par une question générique.
   const strict = isNonNegotiable({ ...c, label: c.topic ?? c.label });
   const allowed = (t: PoolTemplate) => !(strict && t.technique === 'limite');
-  const own = [probe, probeVariant, probeThird].filter(
-    (t): t is PoolTemplate => !!t && allowed(t),
-  );
+  const probes = agreementProbes(agreement).filter(allowed);
+  // Dans chaque groupe, une formule d'angle déjà servie deux fois ce jour-là
+  // (« dans votre famille »…) passe en dernier.
+  const own = [
+    ...preferNewOpenings(
+      probes.filter((t) => t.angle === day),
+      used,
+    ),
+    ...preferNewOpenings(
+      probes.filter((t) => t.angle !== day),
+      used,
+    ),
+  ];
   if (!statement) return own;
   const withStatement = (t: PoolTemplate) => ({
     text: `${statement} ${t.text}`,
@@ -968,7 +983,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           // Un accord ne reprend jamais une tournure déjà posée dans ce
           // Sondeur : le créneau prend alors une question du thème.
           const pick = pickFresh(
-            convergenceCandidates(day, c, seed, slot),
+            convergenceCandidates(day, c, seed, slot, usedToday),
             mem,
             false,
           );
