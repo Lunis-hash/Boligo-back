@@ -60,7 +60,11 @@ describe('Violence et mots blessants : limites de sécurité', () => {
   it('une tolérance partagée est un risque, jamais un accord', () => {
     for (const id of ['M6_Q04', 'M6_Q05']) {
       expect(severityOf({ [id]: 'B' }, { [id]: 'B' }, id)).toEqual(['moderee']);
-      expect(severityOf({ [id]: 'C' }, { [id]: 'C' }, id)).toEqual(['majeure']);
+      // V7.1 : deux « ça dépend des circonstances » face à la violence
+      // physique sont une incompatibilité déclarée.
+      expect(severityOf({ [id]: 'C' }, { [id]: 'C' }, id)).toEqual([
+        id === 'M6_Q04' ? 'critique' : 'majeure',
+      ]);
       expect(severityOf({ [id]: 'D' }, { [id]: 'D' }, id)).toEqual(['majeure']);
       const shared = find({ [id]: 'C' }, { [id]: 'C' }, id)[0];
       expect(shared.shared).toBe(true);

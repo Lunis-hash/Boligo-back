@@ -54,7 +54,14 @@ export const MIN_COMPARED_FOR_SCORE = 8;
  * exigeant, timidité) : elles ne sont pas des points de comparaison du moteur,
  * leur gravité compte donc directement dans le module.
  */
-const CROSS_COUNTED = new Set(['M8_Q10', 'M9_Q19', 'M9_Q16', 'M2_Q19']);
+const CROSS_COUNTED = new Set([
+  'M8_Q10',
+  'M9_Q19',
+  'M9_Q16',
+  'M2_Q19',
+  // V7.1 : respect des limites et de la liberté de l'autre (contrôle).
+  'M9_Q24',
+]);
 
 /**
  * Ce que l'un recherche (M10_Q03) face à ce que l'autre apporte (M10_Q09).

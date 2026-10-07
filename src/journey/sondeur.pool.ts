@@ -280,6 +280,9 @@ export const TOPIC_PHRASES: Record<string, string> = {
   M8_Q20: 'la manière de punir un enfant',
   M8_Q18: 'la religion dans laquelle élever des enfants',
   M0_Q15: "les jeux d'argent",
+  // Sujets de sécurité (questions de limite seulement)
+  M6_Q24: 'la limite face à la violence',
+  M9_Q24: 'le respect des limites de chacun',
 };
 
 /**
@@ -370,6 +373,8 @@ export const TOPIC_FAMILIES: string[][] = [
   ['M8_Q03', 'M8_Q16', 'M8_Q19'],
   ['M3_Q05', 'M3_Q13'],
   ['M7_Q07', 'M7_Q36'],
+  ['M6_Q04', 'M6_Q24'],
+  ['M8_Q10:I', 'M9_Q24'],
 ];
 
 /** Le sujet et ses voisins (lui seul s'il n'a pas de famille). */
@@ -543,6 +548,8 @@ export const TOPIC_DAYS: Record<string, number[]> = {
   M8_Q20: [3, 2],
   M8_Q18: [3, 2],
   M0_Q15: [2, 3],
+  M6_Q24: [1, 2, 3],
+  M9_Q24: [1, 2, 3],
 };
 
 const DEFAULT_DAYS: Record<Severity, number[]> = {

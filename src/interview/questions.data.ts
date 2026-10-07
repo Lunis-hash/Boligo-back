@@ -1424,6 +1424,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // V7.1 — nouvelle : la justification de la violence, mesurée à part de
+    // la tolérance (M6_Q04 « ça dépend des circonstances » mêlait les deux).
+    // Lue avec les habitudes et les attitudes de contrôle (`controlRisk`),
+    // jamais citée.
+    id: 'M6_Q24',
+    moduleNumber: 6,
+    scale: 'accord',
+    text: 'Dans un couple, il y a des situations où une gifle peut se comprendre.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
     // V7 — remplace M6_Q10 (« les tentations existent » classé critique face
     // à « absolue » : une réponse honnête devenait une incompatibilité). Des
     // réponses ordonnées, sans jugement moral.
@@ -2097,24 +2108,24 @@ export const QUESTIONS: Question[] = [
       { key: 'D', text: 'Je continue sans vraiment l’écouter' },
     ],
   },
-  // Contrôle de sincérité (désirabilité sociale) : cinq affirmations, dont
-  // trois inversées, mêlées aux habitudes. Elles modulent la confiance
-  // accordée aux échelles, jamais la note. Jamais montrées aux autres membres.
   {
-    id: 'M9_Q08',
+    // V7.1 — avancée avec les autres scénarios (moins de bascules entre les
+    // échelles d'accord et de fréquence).
+    id: 'M9_Q19',
     moduleNumber: 9,
-    scale: 'accord',
-    text: "Il ne m'est jamais arrivé d'être jaloux(se), même un tout petit peu.",
-    options: AGREEMENT_OPTIONS,
+    text: "Face à un(e) partenaire qui boude quand il ou elle n'obtient pas ce qu'il ou elle veut :",
+    options: [
+      {
+        key: 'A',
+        text: 'Ça ne me dérange pas — je cède volontiers pour lui faire plaisir',
+      },
+      { key: 'B', text: 'Je laisse passer, puis on en parle calmement' },
+      { key: 'C', text: "Ça m'agace vite — je ne cède pas" },
+      { key: 'D', text: "C'est rédhibitoire pour moi" },
+    ],
   },
-  {
-    // Sincérité (inversé : ne pas l'admettre signale un portrait idéalisé).
-    id: 'M9_Q20',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Il m'est déjà arrivé de bouder pour une broutille.",
-    options: AGREEMENT_OPTIONS,
-  },
+  // V7.1 — les habitudes (échelle de fréquence) d'un seul tenant, puis les
+  // affirmations d'accord : une seule bascule d'échelle dans le module.
   {
     id: 'M9_Q10',
     moduleNumber: 9,
@@ -2130,35 +2141,11 @@ export const QUESTIONS: Question[] = [
     options: FREQUENCY_OPTIONS,
   },
   {
-    // Sincérité.
-    id: 'M9_Q21',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Je n'ai jamais été de mauvaise humeur avec quelqu'un que j'aime.",
-    options: AGREEMENT_OPTIONS,
-  },
-  {
     id: 'M9_Q12',
     moduleNumber: 9,
     scale: 'frequence',
     text: "Quand une relation ne me convient plus, je préfère disparaître plutôt que m'expliquer.",
     options: FREQUENCY_OPTIONS,
-  },
-  {
-    id: 'M9_Q13',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: 'Je préfère ne pas définir la relation trop tôt, pour garder mes options ouvertes.',
-    options: AGREEMENT_OPTIONS,
-  },
-  {
-    // Sincérité (inversé). Remplace M9_Q09 (« jamais le moindre mensonge »),
-    // qu'un croyant pouvait approuver comme un idéal plutôt qu'une description.
-    id: 'M9_Q22',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Il m'est déjà arrivé de dire « je suis en route » alors que je n'étais pas encore parti(e).",
-    options: AGREEMENT_OPTIONS,
   },
   {
     id: 'M9_Q14',
@@ -2176,20 +2163,13 @@ export const QUESTIONS: Question[] = [
   },
   {
     // V7 — habitude croisée avec le signal d'alerte I de M8_Q10 (« ne pas
-    // respecter un non »), le plus important pour la sécurité.
+    // respecter un non »), le plus important pour la sécurité. V7.1 : la
+    // situation est dite (insister pour quoi ?), même idée.
     id: 'M9_Q24',
     moduleNumber: 9,
     scale: 'frequence',
-    text: "Quand l'autre me dit non, j'insiste pour le faire changer d'avis.",
+    text: "Quand l'autre refuse quelque chose qui le ou la concerne (un geste, une sortie, une dépense), j'insiste jusqu'à ce qu'il ou elle cède.",
     options: FREQUENCY_OPTIONS,
-  },
-  {
-    // Sincérité (inversé).
-    id: 'M9_Q23',
-    moduleNumber: 9,
-    scale: 'accord',
-    text: "Quand je suis fatigué(e), il m'arrive d'être moins patient(e) avec mes proches.",
-    options: AGREEMENT_OPTIONS,
   },
   {
     id: 'M9_Q16',
@@ -2198,11 +2178,46 @@ export const QUESTIONS: Question[] = [
     text: "Quand je n'obtiens pas ce que je veux, je le fais sentir (bouderie, froideur).",
     options: FREQUENCY_OPTIONS,
   },
+  // Contrôle de sincérité (désirabilité sociale) : cinq affirmations, dont
+  // trois inversées, mêlées aux attitudes. Elles modulent la confiance
+  // accordée aux échelles, jamais la note. Jamais montrées aux autres membres.
+  // V7.1 : trois attitudes de contrôle coercitif (surveillance, isolement,
+  // argent), lues avec les habitudes (`controlRisk`), jamais citées.
+  {
+    id: 'M9_Q13',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: 'Je préfère ne pas définir la relation trop tôt, pour garder mes options ouvertes.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    id: 'M9_Q08',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il ne m'est jamais arrivé d'être jaloux(se), même un tout petit peu.",
+    options: AGREEMENT_OPTIONS,
+  },
   {
     id: 'M9_Q17',
     moduleNumber: 9,
     scale: 'accord',
     text: "Dans un couple, j'attends que l'autre devine mes envies sans que j'aie à les dire.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // V7.1 — attitude de contrôle : la surveillance.
+    id: 'M9_Q26',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Dans un couple, chacun devrait pouvoir savoir à tout moment où se trouve l'autre.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité (inversé : ne pas l'admettre signale un portrait idéalisé).
+    id: 'M9_Q20',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il m'est déjà arrivé de bouder pour une broutille.",
     options: AGREEMENT_OPTIONS,
   },
   {
@@ -2213,18 +2228,45 @@ export const QUESTIONS: Question[] = [
     options: AGREEMENT_OPTIONS,
   },
   {
-    id: 'M9_Q19',
+    // V7.1 — attitude de contrôle : l'isolement.
+    id: 'M9_Q27',
     moduleNumber: 9,
-    text: "Face à un(e) partenaire qui boude quand il ou elle n'obtient pas ce qu'il ou elle veut :",
-    options: [
-      {
-        key: 'A',
-        text: 'Ça ne me dérange pas — je cède volontiers pour lui faire plaisir',
-      },
-      { key: 'B', text: 'Je laisse passer, puis on en parle calmement' },
-      { key: 'C', text: "Ça m'agace vite — je ne cède pas" },
-      { key: 'D', text: "C'est rédhibitoire pour moi" },
-    ],
+    scale: 'accord',
+    text: 'Mon ou ma partenaire devrait me demander mon accord avant de sortir avec ses amis.',
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité.
+    id: 'M9_Q21',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Je n'ai jamais été de mauvaise humeur avec quelqu'un que j'aime.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // V7.1 — attitude de contrôle : l'argent.
+    id: 'M9_Q28',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Celui qui gagne le plus devrait décider des dépenses de l'autre.",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité (inversé). Remplace M9_Q09 (« jamais le moindre mensonge »),
+    // qu'un croyant pouvait approuver comme un idéal plutôt qu'une description.
+    id: 'M9_Q22',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Il m'est déjà arrivé de dire « je suis en route » alors que je n'étais pas encore parti(e).",
+    options: AGREEMENT_OPTIONS,
+  },
+  {
+    // Sincérité (inversé).
+    id: 'M9_Q23',
+    moduleNumber: 9,
+    scale: 'accord',
+    text: "Quand je suis fatigué(e), il m'arrive d'être moins patient(e) avec mes proches.",
+    options: AGREEMENT_OPTIONS,
   },
 
   // --- MODULE 10 : ALCHIMIE, VIBE & DÉSIR (CLEF DE VOÛTE) ---
@@ -3535,6 +3577,10 @@ export const V7_CHANGES: Record<
   M9_Q22: 'nouvelle',
   M9_Q24: 'nouvelle',
   M9_Q23: 'nouvelle',
+  M9_Q26: 'nouvelle',
+  M9_Q27: 'nouvelle',
+  M9_Q28: 'nouvelle',
+  M6_Q24: 'nouvelle',
   M10_Q03: 'modifiee',
   M10_Q16: 'nouvelle',
   M10_Q17: 'nouvelle',
@@ -3733,6 +3779,12 @@ export const V71_CHANGES: Record<
   M2_Q10: 'retiree',
   M3_Q07: 'retiree',
   M4_Q06: 'retiree',
+  M6_Q04: 'regle',
+  M6_Q24: 'nouvelle',
+  M9_Q24: 'modifiee',
+  M9_Q26: 'nouvelle',
+  M9_Q27: 'nouvelle',
+  M9_Q28: 'nouvelle',
 };
 
 /** L'entretien contient-il au moins une réponse à une question propre à la V7 ? */

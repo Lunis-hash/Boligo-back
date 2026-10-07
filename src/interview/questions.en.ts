@@ -691,6 +691,9 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
       'I try to ignore it if it’s not recurring',
     ],
   },
+  M6_Q24: {
+    text: 'In a couple, there are situations where a slap can be understood.',
+  },
   M6_Q18: {
     text: 'If your partner cheated on you, it would be:',
     options: [
@@ -1055,7 +1058,16 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   },
   M9_Q15: { text: 'During time together, I check my phone.' },
   M9_Q24: {
-    text: 'When my partner says no, I insist to make them change their mind.',
+    text: 'When my partner refuses something that concerns them (a gesture, an outing, a purchase), I insist until they give in.',
+  },
+  M9_Q26: {
+    text: 'In a couple, each person should be able to know where the other is at all times.',
+  },
+  M9_Q27: {
+    text: 'My partner should ask for my approval before going out with their friends.',
+  },
+  M9_Q28: {
+    text: 'The one who earns more should decide how the other spends money.',
   },
   M9_Q23: {
     text: 'When I’m tired, I am sometimes less patient with those close to me.',

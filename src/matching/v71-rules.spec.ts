@@ -5,13 +5,23 @@
  */
 import { QUESTION_INDEX } from '../interview/questions.data';
 import { QUESTIONS_EN } from '../interview/questions.en';
-import { buildRelationalProfile } from '../psychometrics/psychometrics';
+import {
+  SCALES,
+  buildRelationalProfile,
+  controlRisk,
+} from '../psychometrics/psychometrics';
 import {
   agreementFor,
   agreementKey,
   isDeferredAgreement,
 } from '../journey/sondeur.pool';
 import {
+  SAFETY_QUESTIONS,
+  describeReportForAi,
+  safetyThemesOf,
+} from '../journey/sondeur.generator';
+import {
+  buildCompatibilitySheet,
   buildDivergenceReport,
   Divergence,
   RawAnswers,
@@ -521,5 +531,99 @@ describe('Section 3 — les questions décisives qui manquaient', () => {
     expect(severityOf({ M1_Q03: 'A' }, { M1_Q03: 'D' }, 'M1_Q03')).toEqual([
       'moderee',
     ]);
+  });
+});
+
+describe('B6 — le contrôle coercitif devient visible, sans accuser', () => {
+  /** Le profil de l'audit : téléphone, insistance, transparence totale, amitiés refusées. */
+  const controlling = {
+    M9_Q11: 'E',
+    M9_Q24: 'E',
+    M5_Q08: 'A',
+    M5_Q09: 'D',
+  };
+
+  it('le profil de l’audit est une incompatibilité déclarée, même sans signal d’alerte chez l’autre', () => {
+    const r = report(controlling, { M5_Q08: 'B' });
+    const d = r.divergences.find((x) => x.questionId === 'M9_Q24')!;
+    expect(controlRisk(controlling)).toBe('eleve');
+    expect(d).toMatchObject({
+      severity: 'critique',
+      theme: 'communication',
+      label: 'Respect des limites et de la liberté de l’autre',
+      neutral: true,
+    });
+    expect(r.hardStop).toBe(true);
+    // Jamais une réponse citée, jamais le membre concerné.
+    expect(d.a).toEqual(d.b);
+    expect(d.a.text).not.toMatch(/téléphone|insiste|transparence/i);
+    const sheet = buildCompatibilitySheet(r, 'Awa');
+    expect(sheet.vigilance).toMatch(/sans qu’aucune réponse ne soit citée/);
+    expect(sheet.vigilance).not.toMatch(/Awa a répondu/);
+  });
+
+  it('deux signes de contrôle : à vérifier (majeure) ; un seul : rien', () => {
+    expect(severityOf({ M9_Q26: 'D', M9_Q27: 'E' }, {}, 'M9_Q24')).toEqual([
+      'majeure',
+    ]);
+    expect(find({ M9_Q26: 'D' }, {}, 'M9_Q24')).toHaveLength(0);
+    // Des normes de couple seules ne suffisent jamais.
+    expect(find({ M5_Q08: 'A', M5_Q09: 'D' }, {}, 'M9_Q24')).toHaveLength(0);
+  });
+
+  it('des réponses acquiescentes ne font pas un profil de contrôle', () => {
+    const yes = Object.fromEntries(
+      [
+        ...SCALES.anxiety.items,
+        ...SCALES.avoidance.items,
+        ...SCALES.reappraisal.items,
+      ].map((i) => [i.id, 'E']),
+    );
+    const attitudes = { M9_Q26: 'E', M9_Q27: 'E', M9_Q28: 'E' };
+    expect(controlRisk({ ...yes, ...attitudes })).toBe('aucun');
+    expect(controlRisk(attitudes)).toBe('eleve');
+  });
+
+  it('le Sondeur ne pose que des questions de limite, et le résumé de l’IA ne cite rien', () => {
+    expect(SAFETY_QUESTIONS.has('M9_Q24')).toBe(true);
+    const r = report(controlling, {});
+    expect(safetyThemesOf(r)).toContain('communication');
+    const summary = describeReportForAi(r, ['A', 'B']);
+    expect(summary).toMatch(
+      /Respect des limites et de la liberté de l’autre : LIMITE DE SÉCURITÉ/,
+    );
+    expect(summary).not.toMatch(/Point de vigilance tiré/);
+  });
+
+  it('M9_Q24 dit enfin la situation (insister pour quoi ?)', () => {
+    expect(QUESTION_INDEX.get('M9_Q24')!.text).toMatch(
+      /jusqu'à ce qu'il ou elle cède/,
+    );
+    expect(QUESTIONS_EN.M9_Q24.text).toMatch(/until they give in/);
+  });
+});
+
+describe('M3 — violence physique : tolérance et justification séparées', () => {
+  it('« ça dépend » face à « inacceptable » ou des deux côtés : incompatibilité déclarée ; face à « je ne sais pas » : majeure', () => {
+    expect(severityOf({ M6_Q04: 'B' }, { M6_Q04: 'C' }, 'M6_Q04')).toEqual([
+      'critique',
+    ]);
+    expect(severityOf({ M6_Q04: 'C' }, { M6_Q04: 'C' }, 'M6_Q04')).toEqual([
+      'critique',
+    ]);
+    expect(severityOf({ M6_Q04: 'C' }, { M6_Q04: 'D' }, 'M6_Q04')).toEqual([
+      'majeure',
+    ]);
+  });
+
+  it('« une gifle peut se comprendre » face à une limite : incompatibilité déclarée, jamais citée', () => {
+    const d = find({ M6_Q24: 'D' }, { M6_Q04: 'A' }, 'M6_Q24')[0];
+    expect(d).toMatchObject({ severity: 'critique', neutral: true });
+    expect(SAFETY_QUESTIONS.has('M6_Q24')).toBe(true);
+    expect(find({ M6_Q24: 'C' }, { M6_Q04: 'A' }, 'M6_Q24')).toHaveLength(0);
+    // Ni « tout se discute » ni l'acceptation des désaccords ne l'adoucissent.
+    expect(
+      severityOf({ M6_Q24: 'E', ...calm }, { M6_Q04: 'B', ...calm }, 'M6_Q24'),
+    ).toEqual(['critique']);
   });
 });

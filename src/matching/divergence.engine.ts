@@ -125,6 +125,18 @@ export interface Divergence {
   shared?: boolean;
   /** Sujet déclaré non négociable par l'un des deux (M8_Q12) : gravité relevée. */
   nonNegotiable?: boolean;
+  /**
+   * V7.1 — tendance tirée de l'entretien (contrôle, justification de la
+   * violence) : seul le sujet est affiché, jamais les réponses ni le membre
+   * concerné.
+   */
+  neutral?: boolean;
+  /**
+   * V7.1 — sujet central que l'un des deux n'a pas renseigné (sans accord
+   * pour les données sensibles) : affiché comme tel, jamais comme une
+   * réponse.
+   */
+  undisclosed?: boolean;
 }
 
 export interface Convergence {
@@ -1005,22 +1017,23 @@ export const DIVERGENCE_RULES: Rule[] = [
     },
   },
   {
-    // Limite de sécurité. « Ça dépend des circonstances » face à « limite
-    // absolue » : incompatibilité déclarée. Toute tolérance partagée est un
-    // risque, jamais un accord.
+    // Limite de sécurité. « Ça dépend des circonstances » face à une limite
+    // (absolue, ou « inacceptable ») : incompatibilité déclarée. Toute
+    // tolérance partagée est un risque, jamais un accord ; deux « ça
+    // dépend » : une incompatibilité déclarée (V7.1).
     questionId: 'M6_Q04',
     theme: 'communication',
     label: 'Limite face à la violence physique',
     topic: 'La limite face à la violence physique',
     severity: pairs({
       AC: 'critique',
-      BC: 'majeure',
+      BC: 'critique',
+      CD: 'majeure',
       AD: 'moderee',
-      CD: 'moderee',
       AB: 'mineure',
       BD: 'mineure',
     }),
-    sameRisk: { B: 'moderee', C: 'majeure', D: 'majeure' },
+    sameRisk: { B: 'moderee', C: 'critique', D: 'majeure' },
     convergence: {
       A: 'La violence physique est pour vous deux une limite absolue',
     },
@@ -2338,6 +2351,34 @@ function exTiesRule(a: RawAnswers, b: RawAnswers, c: Collector) {
   else if (comparable) c.agree('M3_Q13', 1);
 }
 
+/**
+ * V7.1 — « une gifle peut se comprendre » (M6_Q24, d'accord ou tout à fait)
+ * face à quelqu'un pour qui la violence est une limite (M6_Q04 A ou B), ou
+ * des deux côtés : une incompatibilité déclarée. Tendance, jamais citée.
+ */
+function slapRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
+  const justifies = (x: RawAnswers) => ['D', 'E'].includes(x.M6_Q24);
+  const refuses = (x: RawAnswers) => ['A', 'B'].includes(x.M6_Q04);
+  const both = justifies(a) && justifies(b);
+  if (!both && !(justifies(a) && refuses(b)) && !(justifies(b) && refuses(a)))
+    return;
+  const view = {
+    key: 'tendance',
+    text: 'Point de vigilance tiré des entretiens',
+  };
+  c.diverge({
+    questionId: 'M6_Q24',
+    theme: 'communication',
+    severity: 'critique',
+    label: 'Limite face à la violence physique',
+    question: 'La place de la violence dans un couple',
+    a: view,
+    b: view,
+    neutral: true,
+    ...(both ? { shared: true } : {}),
+  });
+}
+
 /** Religion des enfants (M8_Q18), pour les accords. */
 const CHILD_FAITH_SAME: Record<string, string> = {
   A: 'Vous élèveriez tous les deux vos enfants dans votre religion commune',
@@ -2468,8 +2509,11 @@ const up: Record<Severity, Severity> = {
   critique: 'critique',
 };
 
-/** Limites de sécurité : jamais adoucies par une déclaration ou une croyance. */
-const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05']);
+/**
+ * Limites de sécurité : jamais adoucies par une déclaration ou une croyance
+ * (V7.1 : justification de la violence, contrôle).
+ */
+const SAFETY_QUESTIONS = new Set(['M6_Q04', 'M6_Q05', 'M6_Q24', 'M9_Q24']);
 
 /**
  * V7.1 — projet de vie et valeurs : jamais adoucis par P2 ni par P9. Ne pas
@@ -2614,6 +2658,7 @@ export function buildDivergenceReport(
   tobaccoRule(a, b, rawA, rawB, c);
   alcoholRule(a, b, c);
   gamblingRule(a, b, c);
+  slapRule(a, b, c);
   availabilityRule(a, b, c);
   for (const rule of LEGACY_RULES) applyRule(rule, a, b, c);
   // V7.1 : une « bonne pratique » partagée n'est affichée que si aucun des
@@ -2727,9 +2772,15 @@ export function buildCompatibilitySheet(
     const declared = top.nonNegotiable
       ? ' Ce sujet est non négociable pour l’un de vous.'
       : '';
-    vigilance = top.shared
-      ? `${intensity} — ${top.label.toLowerCase()} : vous avez répondu tous les deux « ${top.a.text} ».${declared} À aborder franchement pendant le Sondeur.`
-      : `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ».${declared} À aborder franchement pendant le Sondeur.`;
+    // V7.1 : une tendance (contrôle, violence) n'est jamais citée ni
+    // attribuée ; un sujet non renseigné n'est pas une réponse.
+    vigilance = top.neutral
+      ? `${intensity} — ${top.label.toLowerCase()} : un point de vigilance tiré de vos entretiens, sans qu’aucune réponse ne soit citée. Le Sondeur l’aborde par les limites de chacun.`
+      : top.undisclosed
+        ? `${intensity} — ${top.label.toLowerCase()}.${declared} À aborder avec tact pendant le Sondeur.`
+        : top.shared
+          ? `${intensity} — ${top.label.toLowerCase()} : vous avez répondu tous les deux « ${top.a.text} ».${declared} À aborder franchement pendant le Sondeur.`
+          : `${intensity} — ${top.label.toLowerCase()} : vous avez répondu « ${top.a.text} », ${partnerFirstName} a répondu « ${top.b.text} ».${declared} À aborder franchement pendant le Sondeur.`;
   }
 
   return {
@@ -2762,9 +2813,13 @@ export function buildDiscussionTopics(
       id: d.questionId,
       theme: d.theme,
       title: `${THEMES[d.theme].emoji} ${THEMES[d.theme].label} — ${d.label.toLowerCase()}`,
-      prompt: d.shared
-        ? `Vous avez répondu tous les deux « ${d.a.text} ». Le jour où cela arrivera entre vous, qui fera le premier pas, et comment ?`
-        : `Vous : « ${d.a.text} ». ${partnerFirstName} : « ${d.b.text} ». Qu'est-ce qui, pour chacun de vous, rend cette position importante ?`,
+      prompt: d.neutral
+        ? 'Quelles limites, pour chacun de vous, garantissent le respect et la liberté de l’autre dans un couple ?'
+        : d.undisclosed
+          ? `L’un de vous n’a pas renseigné ce sujet dans l’entretien. Quelle place aimeriez-vous lui donner, chacun, dans une vie à deux ?`
+          : d.shared
+            ? `Vous avez répondu tous les deux « ${d.a.text} ». Le jour où cela arrivera entre vous, qui fera le premier pas, et comment ?`
+            : `Vous : « ${d.a.text} ». ${partnerFirstName} : « ${d.b.text} ». Qu'est-ce qui, pour chacun de vous, rend cette position importante ?`,
     });
     if (topics.length >= max) break;
   }
