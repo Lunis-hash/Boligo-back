@@ -2900,11 +2900,9 @@ export const TOPIC_DEEP: Record<
       ['Une langue', 'Des fêtes', 'Des valeurs'],
     ),
     3: q(
-      "Imaginez un enfant qui grandit entre vos deux histoires : qu'aimeriez-vous qu'il ait reçu de la vôtre à dix ans ?",
-      'projection',
+      "Avant tout engagement, que voudriez-vous comprendre de ce que l'autre tient à transmettre de sa culture, si des enfants venaient ?",
+      'limite',
       ['Une langue', 'Des fêtes', 'Une foi'],
-      undefined,
-      true,
     ),
   },
   M1_Q15: {
@@ -3098,12 +3096,22 @@ export const TOPIC_DEEP: Record<
       'origine',
       ['Un déménagement', 'Un nouveau travail', 'Une rencontre'],
     ),
+    3: q(
+      "Avant tout engagement, à quoi sauriez-vous que l'autre traverse bien un imprévu ?",
+      'limite',
+      ['Son calme', 'Sa parole', 'Sa souplesse'],
+    ),
   },
   M7_Q02: {
     2: q(
       "Qu'est-ce que la réussite professionnelle voulait dire pour ceux qui vous ont élevé(e) ?",
       'origine',
       ['La sécurité', 'La fierté', 'Le sacrifice'],
+    ),
+    3: q(
+      "Avant tout engagement, quel équilibre entre travail et vie à deux aimeriez-vous connaître chez l'autre ?",
+      'limite',
+      ['Une priorité au travail', 'Un équilibre', 'Une priorité au foyer'],
     ),
   },
   M6_Q03: {
@@ -3291,6 +3299,54 @@ export const TOPIC_DEEP: Record<
       ['Le courrier', 'Les amitiés', 'Rien'],
     ),
   },
+  M2_Q22: {
+    2: q(
+      "Qui, dans votre entourage, vous a montré qu'on peut reconnaître sa part sans s'abaisser ?",
+      'origine',
+      ['Un parent', 'Un ami', 'Personne encore'],
+    ),
+    3: q(
+      "Après un désaccord, quel premier pas de l'autre vous dirait qu'il ou elle tient à vous ?",
+      'limite',
+      ['Une excuse', 'Un geste', 'Une question'],
+    ),
+  },
+  M8_Q06: {
+    2: q(
+      'Dans votre famille, de quoi ne parlait-on jamais à table ?',
+      'origine',
+      ['Des sentiments', 'De l’argent', 'Des conflits'],
+    ),
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous savoir de la place que l'autre donne aux longues conversations ?",
+      'limite',
+      ['Chaque jour', 'Pour l’essentiel', 'Quand c’est nécessaire'],
+    ),
+  },
+  M2_Q07: {
+    2: q(
+      'Dans la maison où vous avez grandi, combien de temps durait une fâcherie ?',
+      'origine',
+      ['Quelques heures', 'Quelques jours', 'Longtemps'],
+    ),
+    3: q(
+      "Après une dispute, qu'est-ce qui vous ramène à la douceur, et au bout de combien de temps ?",
+      'besoin',
+      ['Un geste', 'Une parole', 'Du temps seul(e)'],
+    ),
+  },
+  M9_Q01: {
+    2: q(
+      'Dans votre famille, qui tranchait quand les avis divergeaient ?',
+      'origine',
+      ['Un parent', 'Les deux ensemble', 'Le plus âgé'],
+    ),
+    3: q(
+      "Avant tout engagement, à quoi verriez-vous qu'une grande décision a vraiment été prise à deux ?",
+      'sens',
+      ['On en a parlé', 'Chacun a pesé', 'Personne n’a cédé'],
+    ),
+  },
 };
 
 /**
@@ -3310,6 +3366,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'Quel couple marié de votre entourage a le plus marqué votre idée du mariage ?',
       'origine',
       ['Mes parents', 'Des grands-parents', 'Un couple ami'],
+    ),
+    3: q(
+      "Avant tout engagement, qu'aimeriez-vous que l'autre sache de la cérémonie qui compte vraiment pour vous ?",
+      'besoin',
+      ['La religieuse', 'La civile', 'La coutumière'],
     ),
   },
   M4_Q13: {
@@ -3332,6 +3393,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'limite',
       ['Ne rien cacher', 'Ne pas séduire ailleurs', 'Tenir parole'],
     ),
+    2: q('Dans votre famille, que disait-on de la fidélité ?', 'origine', [
+      'Qu’elle va de soi',
+      'Qu’elle se construit',
+      'On n’en parlait pas',
+    ]),
   },
   M4_Q01: {
     2: q(
@@ -3351,6 +3417,16 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'origine',
       ['Aux parents', 'Aux aînés', 'À personne'],
     ),
+    1: q(
+      "Qu'est-ce que l'avis de votre famille vous apporte, que vous ne voudriez pas perdre ?",
+      'besoin',
+      ['Un regard extérieur', 'Leur bénédiction', 'De la sécurité'],
+    ),
+    3: q(
+      "Avant tout engagement, que voudriez-vous savoir des décisions sur lesquelles la famille de l'autre attend d'être consultée ?",
+      'limite',
+      ['Le mariage', 'Le lieu de vie', 'Les grandes dépenses'],
+    ),
   },
   M5_Q07: {
     3: q(
@@ -3369,6 +3445,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       "Qu'avez-vous vu, en grandissant, chez ceux qui tenaient tête à leur famille ?",
       'origine',
       ['Du respect', 'Une brouille', 'Une réconciliation'],
+    ),
+    3: q(
+      "Avant de partager un foyer, que voudriez-vous comprendre de la place que l'autre laisse aux siens dans ses choix ?",
+      'limite',
+      ['Une grande place', 'Une place mesurée', 'Aucune place'],
     ),
   },
   M9_Q07: {
@@ -3452,6 +3533,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       "Quand vous pensez à la question des enfants, qu'est-ce qui, pour vous, ne pourra pas se discuter ?",
       'limite',
       ['Avoir des enfants ou non', 'Le moment', 'Leur nombre'],
+    ),
+    3: q(
+      "Avant tout engagement, qu'aimeriez-vous que l'autre sache de ce que les enfants, ou leur absence, représentent pour vous ?",
+      'besoin',
+      ['Un projet de vie', 'Une liberté', 'Une évidence'],
     ),
   },
   M8_Q01: {
@@ -3577,6 +3663,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'besoin',
       ['La confiance', 'La foi', 'L’équilibre familial'],
     ),
+    2: q(
+      'Dans votre entourage, comment parlait-on des unions polygames ?',
+      'origine',
+      ['Avec respect', 'Avec réserve', 'Avec rejet'],
+    ),
   },
   M1_Q02: {
     2: q(
@@ -3590,6 +3681,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       "Avant de vous engager, qu'aimeriez-vous savoir du temps à soi dont l'autre a besoin chaque semaine ?",
       'limite',
       ['Une soirée', 'Un moment chaque jour', 'Un week-end de temps en temps'],
+    ),
+    2: q(
+      'Dans votre famille, à quoi ressemblait un dimanche ordinaire ?',
+      'origine',
+      ['Tous ensemble', 'Chacun de son côté', 'Avec la famille élargie'],
     ),
   },
   M4_Q07: {
@@ -3638,6 +3734,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'besoin',
       ['La transparence', 'Les connaître', 'Du temps'],
     ),
+    2: q(
+      "Dans votre entourage, comment vivait-on les amitiés d'avant, une fois en couple ?",
+      'origine',
+      ['Elles restaient', 'Elles s’effaçaient', 'Elles se partageaient'],
+    ),
   },
   M8_Q11: {
     2: q(
@@ -3680,12 +3781,22 @@ export const TOPIC_DEEP_VARIANTS: Record<
         'Des projets clairs',
       ],
     ),
+    1: q(
+      "Qu'est-ce qui vous ferait sentir que les choses vont trop vite, ou trop lentement ?",
+      'limite',
+      ['Une pression', 'Un flou', 'Un silence'],
+    ),
   },
   M8_Q15: {
     3: q(
       "Avant de vous engager, qu'aimeriez-vous savoir de ce que l'autre attendrait de vous comme parent, si un enfant venait ?",
       'limite',
       ['De la fermeté', 'De la douceur', 'De la présence'],
+    ),
+    2: q(
+      'Dans la famille où vous avez grandi, qui fixait les règles ?',
+      'origine',
+      ['Un parent', 'Plusieurs adultes', 'Un aîné'],
     ),
   },
   // Foi et pratique (M1_Q17 par l'alias de M1_Q06).
@@ -3707,6 +3818,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'besoin',
       ['Quelques semaines', 'Quelques mois', 'Le temps de la confiance'],
     ),
+    1: q(
+      "Pour vous, à quoi reconnaît-on qu'on est prêt(e) à s'engager ?",
+      'sens',
+      ['Le cœur en paix', 'Un projet clair', 'Le temps passé'],
+    ),
   },
   M10_Q15: {
     3: q(
@@ -3720,6 +3836,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'Si votre famille émettait des réserves sur la personne que vous aimez, sur quoi ne transigeriez-vous pas ?',
       'limite',
       ['Mon choix', 'Le respect des miens', 'Le temps de les rassurer'],
+    ),
+    2: q(
+      'À quoi votre famille verrait-elle que vous avez fait un bon choix ?',
+      'origine',
+      ['Le respect', 'La même culture', 'La stabilité'],
     ),
   },
   M4_Q06: {
@@ -3742,6 +3863,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'origine',
       ['De la joie', 'Des soucis', 'De la générosité'],
     ),
+    3: q(
+      "Avant de partager un budget, qu'aimeriez-vous que l'autre sache de vos envies, petites ou grandes ?",
+      'besoin',
+      ['Mes plaisirs', 'Mes projets', 'Mes priorités'],
+    ),
   },
   M1_Q03: {
     3: q(
@@ -3755,6 +3881,11 @@ export const TOPIC_DEEP_VARIANTS: Record<
       'Dans votre famille, que disait-on de ceux qui travaillaient sans compter leurs heures ?',
       'origine',
       ['On les admirait', 'On les plaignait', 'On les imitait'],
+    ),
+    3: q(
+      "Avant tout engagement, qu'aimeriez-vous que l'autre sache de vos ambitions pour les années à venir ?",
+      'besoin',
+      ['Un projet précis', 'Une évolution', 'Un équilibre'],
     ),
   },
   M10_Q16: {
@@ -3783,6 +3914,62 @@ export const TOPIC_DEEP_VARIANTS: Record<
       "Quand une fâcherie s'éternise, quel petit pas aimeriez-vous pouvoir faire, vous, sans attendre l'autre ?",
       'reparation',
       ['Un message', 'Un geste', 'Une proposition de reparler'],
+    ),
+  },
+  M2_Q22: {
+    2: q(
+      "Dans votre famille, que pensait-on de la personne qui s'excusait la première ?",
+      'origine',
+      [
+        'Qu’elle était sage',
+        'Qu’elle était faible',
+        'On n’y prêtait pas attention',
+      ],
+    ),
+  },
+  M8_Q06: {
+    2: q('Avec qui, en grandissant, pouviez-vous parler de tout ?', 'origine', [
+      'Un parent',
+      'Un frère ou une sœur',
+      'Personne',
+    ]),
+  },
+  M7_Q05: {
+    2: q(
+      'Dans votre famille, comment réagissait-on face à un imprévu ?',
+      'origine',
+      ['Avec calme', 'Avec inquiétude', 'Avec humour'],
+    ),
+    3: q(
+      "Si un imprévu bousculait vos plans à deux, qu'est-ce qui vous aiderait à rebondir ?",
+      'besoin',
+      ['Un plan B', 'Du temps', 'De l’humour'],
+    ),
+  },
+  M2_Q07: {
+    3: q(
+      "Quand une dispute vous laisse touché(e), qu'aimeriez-vous que l'autre fasse en attendant ?",
+      'besoin',
+      ['Me laisser du temps', 'Un petit signe', 'Rester proche'],
+    ),
+  },
+  M9_Q01: {
+    3: q(
+      "Avant de vous engager, qu'aimeriez-vous savoir des décisions que l'autre préfère prendre seul(e) ?",
+      'limite',
+      ['Son travail', 'Ses dépenses', 'Ses amitiés'],
+    ),
+  },
+  M8_Q09: {
+    1: q(
+      "Sur un point clé de l'avenir, qu'est-ce que vous ne voudriez surtout pas découvrir trop tard ?",
+      'limite',
+      ['Un désir de famille', 'Un projet de départ', 'Une exigence de foi'],
+    ),
+    3: q(
+      "Avant tout engagement, quel point clé de l'avenir aimeriez-vous avoir abordé à deux ?",
+      'limite',
+      ['Le lieu de vie', 'La foi', 'Avoir des enfants ou non'],
     ),
   },
 };
