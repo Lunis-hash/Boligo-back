@@ -52,7 +52,7 @@ import {
   isNonNegotiable,
   relatedTopics,
   topicDays,
-  topicDeep,
+  topicDeepAll,
   topicKey,
   topicPhrase,
   topicWords,
@@ -386,9 +386,18 @@ export const SAFETY_TEMPLATES: Record<number, PoolTemplate[]> = {
   ],
 };
 
+/**
+ * Formulations propres à l'écart pour ce jour (la principale, puis la
+ * variante) : jamais une formulation de compromis sur un point non négociable.
+ */
+function usableDeep(d: Divergence, day: number): PoolTemplate[] {
+  const strict = isNonNegotiable(d);
+  return topicDeepAll(d, day).filter((t) => !(strict && t.compromise));
+}
+
 /** Une formulation propre au sujet existe-t-elle pour l'un des jours ? */
 function hasTopicDeep(d: Divergence): boolean {
-  return [1, 2, 3].some((day) => !!topicDeep(d, day));
+  return [1, 2, 3].some((day) => usableDeep(d, day).length > 0);
 }
 
 /**
@@ -434,20 +443,22 @@ function topicTemplates(day: number, d: Divergence) {
   return TARGETED[day].filter((t) => !(strict && t.compromise));
 }
 
-/** Formulations d'un jour pour un écart : la formulation propre d'abord. */
+/**
+ * Formulations d'un jour pour un écart : les formulations propres d'abord
+ * (sauf un compromis sur un point non négociable), puis les gabarits ciblés.
+ */
 function divergenceCandidates(
   day: number,
   d: Divergence,
   seed: string | undefined,
   slot: string,
 ): PoolTemplate[] {
-  const deep = topicDeep(d, day);
   const words = topicWords(topicPhrase(d));
   const generic = topicTemplates(day, d).map((t) => ({
     text: t.text(words),
     options: t.options,
   }));
-  return [...(deep ? [deep] : []), ...arrange(generic, seed, `${slot}|div`)];
+  return [...usableDeep(d, day), ...arrange(generic, seed, `${slot}|div`)];
 }
 
 const SEVERITY_RANK: Record<Severity, number> = {
@@ -481,7 +492,8 @@ function planDivergences(report: DivergenceReport): Map<string, Divergence> {
     for (const day of topicDays(d)) {
       const slot = `${day}|${d.theme}`;
       if (plan.has(slot)) continue;
-      if (!topicDeep(d, day) && topicTemplates(day, d).length === 0) continue;
+      if (!usableDeep(d, day).length && topicTemplates(day, d).length === 0)
+        continue;
       plan.set(slot, d);
       for (const k of related) planned.add(k);
       break;
@@ -597,6 +609,11 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   const taken = new Set<string>();
   for (const d of plan.values()) markTaken(taken, d);
   const safetyThemes = new Set(safetyThemesOf(report));
+  // Thèmes qui portent un écart non négociable : aucune question du thème qui
+  // suppose de « vivre avec » la différence.
+  const strictThemes = new Set(
+    report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
+  );
 
   for (let day = 1; day <= SONDEUR_DAYS; day++) {
     const angle = DAY_ANGLES[day];
@@ -683,9 +700,17 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         }
       }
 
-      // 5. Question du thème ; celles qui touchent un sujet déjà abordé passent en dernier.
+      // 5. Question du thème ; celles qui touchent un sujet déjà abordé passent
+      // en dernier. Jamais une formulation de compromis dans un thème qui
+      // porte un écart non négociable.
       if (!question) {
-        const pool = arrange(THEME_POOL[theme][day], seed, `${slot}|gen`);
+        const pool = arrange(
+          THEME_POOL[theme][day].filter(
+            (t) => !(strictThemes.has(theme) && t.compromise),
+          ),
+          seed,
+          `${slot}|gen`,
+        );
         const touches = (t: PoolTemplate) =>
           (t.about ?? []).some((id) => taken.has(id));
         const ordered = [
