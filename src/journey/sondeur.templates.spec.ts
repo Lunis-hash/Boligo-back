@@ -881,6 +881,30 @@ describe('Contrôle, sécurité mineure et accords de fidélité', () => {
     expect(qs.some((q) => q.subject === 'M5_Q08')).toBe(true);
   });
 
+  it('écart critique sans jour libre : posé un autre jour, sans compromis', () => {
+    const critical = (questionId: string): Divergence => ({
+      questionId,
+      theme: 'spiritualite',
+      severity: 'critique',
+      label: questionId,
+      question: 'Question',
+      a: { key: 'A', text: 'Première réponse' },
+      b: { key: 'B', text: 'Seconde réponse' },
+    });
+    const report = buildDivergenceReport({}, {});
+    // La polygamie prend le jour 1, les règles alimentaires le jour 2 : la
+    // religion de chacun (jours 1 et 2) passe au jour 3.
+    report.divergences.push(
+      critical('M1_Q11'),
+      critical('M1_Q19'),
+      critical('M1_Q16'),
+    );
+    const qs = assembleSondeur({ report, firstNames: ['A', 'B'], seed: 'c' });
+    const spi = qs.filter((q) => q.themeKey === 'spiritualite');
+    expect(spi.map((q) => q.subject)).toEqual(['M1_Q11', 'M1_Q19', 'M1_Q16']);
+    expect(compromiseTextsFor(critical('M1_Q16')).has(spi[2].text)).toBe(false);
+  });
+
   it('écart de sécurité mineur (deux refus de la violence) : le thème reste libre', () => {
     const report = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'B' });
     expect(
