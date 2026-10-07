@@ -18,7 +18,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStripe } from '@/services/stripe';
 import { Check, ShieldCheck, Sparkles, ChevronLeft, Tag } from 'lucide-react-native';
 import { useAppContext } from '@/context/AppContext';
-import { PaymentService, PaymentPlan, PromoCheckResult, paymentIntentIdFromClientSecret, selectHarmoniePlan } from '@/services/payment';
+import {
+  EARLY_START_CONSENT_FALLBACK,
+  PaymentService,
+  PaymentPlan,
+  PromoCheckResult,
+  paymentIntentIdFromClientSecret,
+  selectHarmoniePlan,
+} from '@/services/payment';
 import { getReadableError } from '@/services/api';
 import { Typography } from '@/constants/theme';
 import { Brand } from '@/constants/brand';
@@ -66,6 +73,9 @@ export default function PaymentScreen() {
   const [promoCode, setPromoCode] = useState('');
   const [promoResult, setPromoResult] = useState<PromoCheckResult | null>(null);
   const [promoChecking, setPromoChecking] = useState(false);
+  // Demande de commencement avant la fin du délai de rétractation : case
+  // jamais pré-cochée, obligatoire pour payer.
+  const [earlyStart, setEarlyStart] = useState(false);
   const processingRef = useRef(false);
 
   const topPadding = Platform.OS === 'ios' ? insets.top + 4 : insets.top > 0 ? insets.top + 6 : 14;
@@ -147,9 +157,14 @@ export default function PaymentScreen() {
       }
 
       // 2. Paiement Stripe (PaymentSheet native).
+      if (!earlyStart) {
+        Alert.alert('Avant de payer', 'Cochez la demande de commencement du parcours pour continuer.');
+        return;
+      }
       const sheet = await PaymentService.createPaymentIntent(
         selectedPlan.id,
         promoResult?.isValid ? promoCode.trim() : undefined,
+        { earlyStartConsent: true, consentVersion: consent.version },
       );
 
       if (sheet.isMock || Platform.OS === 'web') {
@@ -167,7 +182,14 @@ export default function PaymentScreen() {
         customerId: sheet.customer,
         customerEphemeralKeySecret: sheet.ephemeralKey,
         merchantDisplayName: 'BOLIGO',
-        defaultBillingDetails: { name: 'Client BOLIGO' },
+        // Nom et adresse de facturation relevés sur la feuille de paiement :
+        // ils servent à la facture et à la TVA du pays du membre.
+        defaultBillingDetails: sheet.billingName ? { name: sheet.billingName } : undefined,
+        billingDetailsCollectionConfiguration: {
+          name: 'always',
+          address: sheet.billingAddressRequired ? 'full' : 'automatic',
+          attachDefaultsToPaymentMethod: true,
+        } as never,
       });
       if (initError) {
         Alert.alert('Paiement impossible', initError.message);
@@ -201,8 +223,12 @@ export default function PaymentScreen() {
   };
 
   const amountDisplay = (cents: number) => `${(cents / 100).toFixed(2).replace('.', ',')} €`;
-  const checkoutTotal =
-    promoResult?.isValid && selectedPlan ? amountDisplay(promoResult.finalAmount) : selectedPlan?.priceDisplay ?? '';
+  const withTtc = (price: string) => (!price || price.includes('TTC') ? price : `${price} TTC`);
+  const checkoutTotal = withTtc(
+    promoResult?.isValid && selectedPlan ? amountDisplay(promoResult.finalAmount) : selectedPlan?.priceDisplay ?? '',
+  );
+  const isFreeCode = !!(promoResult?.isValid && promoResult.isFree);
+  const consent = selectedPlan?.earlyStartConsent ?? { ...EARLY_START_CONSENT_FALLBACK, required: true };
 
   // ═════════════════════════════════════════════════════════════════════
   // VUE RÉCAPITULATIF & CONFIRMATION STRIPE
@@ -257,7 +283,7 @@ export default function PaymentScreen() {
                   <View style={{ alignItems: 'flex-end', flex: 1 }}>
                     <Text style={styles.totalAmount}>{checkoutTotal}</Text>
                     <Text style={styles.totalPeriod}>
-                      {selectedPlan.credits} crédit{selectedPlan.credits > 1 ? 's' : ''} · Paiement unique · Sans abonnement
+                      {selectedPlan.credits} crédit{selectedPlan.credits > 1 ? 's' : ''} · TVA comprise · Paiement unique · Sans abonnement
                     </Text>
                   </View>
                 </View>
@@ -299,6 +325,31 @@ export default function PaymentScreen() {
                 ) : null}
               </View>
 
+              {!isFreeCode ? (
+                <View style={styles.consentBox}>
+                  <TouchableOpacity
+                    style={styles.consentRow}
+                    onPress={() => setEarlyStart((v) => !v)}
+                    disabled={isProcessing}
+                    activeOpacity={0.8}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: earlyStart }}
+                    testID="early-start-consent"
+                  >
+                    <View style={[styles.consentCheck, earlyStart && styles.consentCheckOn]}>
+                      {earlyStart ? <Check size={14} color="#FFF" /> : null}
+                    </View>
+                    <Text style={styles.consentText}>{consent.text}</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.consentLegal}>
+                    Vous recevrez cette demande et votre facture par e-mail. Vous pouvez vous rétracter pendant 14 jours depuis votre profil, rubrique « Mes achats et factures ».{' '}
+                    <Text style={styles.consentLink} onPress={() => router.push('/legal/cgu' as never)}>
+                      Conditions générales de vente
+                    </Text>
+                  </Text>
+                </View>
+              ) : null}
+
               <View style={styles.securityBox}>
                 <View style={styles.securityIconCircle}>
                   <ShieldCheck size={28} color={COLORS.nuit} />
@@ -314,15 +365,15 @@ export default function PaymentScreen() {
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={handleConfirmPayment}
-                disabled={isProcessing}
-                style={styles.ctaRegularBtn}
+                disabled={isProcessing || (!isFreeCode && !earlyStart)}
+                style={[styles.ctaRegularBtn, !isFreeCode && !earlyStart && { opacity: 0.5 }]}
                 testID="pay-submit"
               >
                 {isProcessing ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <Text style={styles.ctaRegularText}>
-                    {promoResult?.isValid && promoResult.isFree ? 'Activer mon accès gratuit' : `Payer ${checkoutTotal} avec Stripe`}
+                    {isFreeCode ? 'Activer mon accès gratuit' : `Payer ${checkoutTotal}`}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -840,6 +891,41 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'right',
   },
+  consentBox: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  consentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  consentCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: COLORS.ink3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  consentCheckOn: { backgroundColor: COLORS.red, borderColor: COLORS.red },
+  consentText: {
+    flex: 1,
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: COLORS.ink,
+  },
+  consentLegal: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 11,
+    lineHeight: 16,
+    color: COLORS.ink2,
+    marginTop: 10,
+  },
+  consentLink: { color: COLORS.red, textDecorationLine: 'underline' },
   securityBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',

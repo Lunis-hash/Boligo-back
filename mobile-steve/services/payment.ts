@@ -34,7 +34,21 @@ export interface PaymentPlan {
   guarantee?: string;
   badge?: string;
   promoCodes?: { hint?: string; exampleCodes?: string[] };
+  /** « TVA comprise · paiement unique · sans abonnement » */
+  priceNote?: string;
+  /** Demande de commencement avant la fin du délai de rétractation. */
+  earlyStartConsent?: { version: string; text: string; required: boolean };
+  billingAddressRequired?: boolean;
 }
+
+/**
+ * Texte affiché si le serveur ne le fournit pas (ancienne API) : le même que
+ * celui que le serveur enregistre avec le paiement.
+ */
+export const EARLY_START_CONSENT_FALLBACK = {
+  version: '2026-10-07',
+  text: 'Je demande que mon Parcours Harmonie puisse commencer avant la fin du délai de rétractation de 14 jours. Si je me rétracte après son début, je devrai un montant proportionnel au service déjà fourni ; une fois le parcours entièrement terminé, je ne pourrai plus me rétracter.',
+};
 
 export interface PaymentSheetParams {
   paymentIntent: string;
@@ -46,6 +60,10 @@ export interface PaymentSheetParams {
   discount: number;
   /** Présent uniquement quand Stripe n'est pas configuré côté serveur. */
   isMock?: boolean;
+  /** Adresse de facturation complète demandée sur la feuille de paiement. */
+  billingAddressRequired?: boolean;
+  /** Nom du membre, proposé sur la feuille de paiement. */
+  billingName?: string;
 }
 
 export interface PromoCheckResult {
@@ -71,10 +89,15 @@ export async function getPlans(): Promise<PaymentPlan[]> {
   return res.data?.plans ?? [];
 }
 
-export async function createPaymentIntent(optionId: string, promoCode?: string): Promise<PaymentSheetParams> {
+export async function createPaymentIntent(
+  optionId: string,
+  promoCode?: string,
+  consent?: { earlyStartConsent: boolean; consentVersion: string },
+): Promise<PaymentSheetParams> {
   const res = await client.post<PaymentSheetParams>('/payment/create-payment-intent', {
     optionId,
     ...(promoCode ? { promoCode } : {}),
+    ...(consent ?? {}),
   });
   return res.data;
 }
@@ -121,6 +144,36 @@ export async function spendCredits(amount: number, description: string): Promise
   return res.data?.newBalance ?? 0;
 }
 
+export interface Purchase {
+  paymentRef: string;
+  paidAt: string;
+  amountCents: number;
+  description: string;
+  invoiceNumber?: string;
+  refundedCents: number;
+  withdrawal?: { status: 'recue' | 'remboursee' | 'refusee'; requestedAt: string; refundCents?: number };
+  withdrawalDeadline: string;
+  canWithdraw: boolean;
+}
+
+/** Achats payés par carte, avec facture et rétractation. */
+export async function getPurchases(): Promise<Purchase[]> {
+  const res = await client.get<Purchase[]>('/payment/purchases');
+  return Array.isArray(res.data) ? res.data : [];
+}
+
+/** Lien du PDF de la facture (relu chez Stripe à chaque demande). */
+export async function getInvoiceUrl(paymentRef: string): Promise<string> {
+  const res = await client.get<{ url: string }>(`/payment/invoices/${encodeURIComponent(paymentRef)}`);
+  return res.data.url;
+}
+
+/** « Se rétracter du contrat ici » : un accusé de réception part par e-mail. */
+export async function requestWithdrawal(paymentRef: string): Promise<{ status: string; requestedAt: string }> {
+  const res = await client.post<{ status: string; requestedAt: string }>('/payment/withdrawals', { paymentRef });
+  return res.data;
+}
+
 export const PaymentService = {
   getPlans,
   createPaymentIntent,
@@ -130,6 +183,9 @@ export const PaymentService = {
   applyPromoCode,
   getCreditBalance,
   spendCredits,
+  getPurchases,
+  getInvoiceUrl,
+  requestWithdrawal,
 };
 
 export default PaymentService;

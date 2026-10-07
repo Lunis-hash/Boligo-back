@@ -17,6 +17,7 @@ export const ROLE_DESCRIPTIONS: Record<StaffRole, string> = {
 export type Section =
   | "overview"
   | "finance"
+  | "billing"
   | "users"
   | "matches"
   | "journeys"
@@ -28,7 +29,7 @@ export type Section =
   | "ai-lab";
 
 const ACCESS: Record<StaffRole, Section[]> = {
-  ADMIN: ["overview", "finance", "users", "matches", "journeys", "reports", "moderation", "partners", "promo", "team", "ai-lab"],
+  ADMIN: ["overview", "finance", "billing", "users", "matches", "journeys", "reports", "moderation", "partners", "promo", "team", "ai-lab"],
   MODERATOR: ["overview", "users", "matches", "journeys", "reports", "moderation"],
   MARKETING: ["overview", "partners", "promo"],
 };

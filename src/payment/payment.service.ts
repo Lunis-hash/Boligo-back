@@ -10,6 +10,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreditService } from '../credit/credit.service';
 import { EmailService } from '../common/email.service';
 import Stripe from 'stripe';
+import { InvoiceService } from './invoice.service';
+import {
+  billingConfigIssues,
+  billingFlags,
+  EARLY_START_CONSENT_TEXT,
+  EARLY_START_CONSENT_VERSION,
+} from './billing';
 
 /**
  * Cohérence de la configuration Stripe (jamais de valeur de clé dans les
@@ -56,6 +63,7 @@ export class PaymentService implements OnModuleInit {
     private prisma: PrismaService,
     private creditService: CreditService,
     private emailService: EmailService,
+    private invoiceService: InvoiceService,
   ) {
     const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(stripeSecretKey || 'sk_test_dummy', {
@@ -80,6 +88,7 @@ export class PaymentService implements OnModuleInit {
     )) {
       this.logger.warn(issue);
     }
+    for (const issue of billingConfigIssues()) this.logger.warn(issue);
     try {
       const account = await this.stripe.accounts.retrieveCurrent();
       const name =
@@ -156,7 +165,8 @@ export class PaymentService implements OnModuleInit {
           name: 'Parcours Harmonie',
           price: plan.amount / 100,
           currency: 'EUR',
-          priceDisplay: '15,00 €',
+          priceDisplay: '15,00 € TTC',
+          priceNote: 'TVA comprise · paiement unique · sans abonnement',
           credits: plan.credits,
           description:
             "Une rencontre guid\u00e9e par l'IA BOLIGO \u2014 de A \u00e0 Z",
@@ -185,6 +195,14 @@ export class PaymentService implements OnModuleInit {
           guarantee:
             "Pacte anti-ghosting : cr\u00e9dit rendu si l'autre ne donne plus de nouvelles",
           badge: 'Recommandé',
+          // Demande de commencement avant la fin du délai de rétractation :
+          // l'app affiche ce texte avec une case à cocher.
+          earlyStartConsent: {
+            version: EARLY_START_CONSENT_VERSION,
+            text: EARLY_START_CONSENT_TEXT,
+            required: billingFlags().consentRequired,
+          },
+          billingAddressRequired: billingFlags().addressRequired,
           promoCodes: {
             hint: 'Avez-vous un code promotionnel ?',
             exampleCodes: [], // Pas de codes publics — code saisi par l'utilisateur
@@ -293,9 +311,18 @@ export class PaymentService implements OnModuleInit {
     userId: string,
     optionId: string,
     promoCode?: string,
+    consent?: { earlyStartConsent?: boolean; consentVersion?: string },
   ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new BadRequestException('Utilisateur non trouvé');
+    const flags = billingFlags();
+    const consented = consent?.earlyStartConsent === true;
+    if (flags.consentRequired && !consented) {
+      throw new BadRequestException(
+        'Cochez la demande de commencement du parcours avant la fin du délai de rétractation pour payer.',
+      );
+    }
+    const consentAt = consented ? new Date() : undefined;
 
     const plan = this.getPlanDetails(optionId);
     let finalAmount = plan.amount;
@@ -319,23 +346,9 @@ export class PaymentService implements OnModuleInit {
     }
 
     try {
-      // 1. Trouver ou créer le Customer Stripe
-      let customerId: string;
-      const customers = await this.stripe.customers.list({
-        email: user.email,
-        limit: 1,
-      });
-
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-      } else {
-        const customer = await this.stripe.customers.create({
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          metadata: { userId },
-        });
-        customerId = customer.id;
-      }
+      // 1. Trouver ou créer le client Stripe (par son identifiant enregistré
+      //    quand le registre de facturation est actif, sinon par e-mail).
+      const customerId = await this.customerFor(user, flags.enabled);
 
       // 2. Créer Ephemeral Key
       const ephemeralKey = await this.stripe.ephemeralKeys.create(
@@ -357,7 +370,27 @@ export class PaymentService implements OnModuleInit {
           planName: plan.planName,
           description: plan.description,
           promoCode: promoCode || '',
+          promoCodeId: promoResult?.promoCodeId ?? '',
+          listAmountCents: String(plan.amount),
+          termsVersion: user.termsVersion ?? '',
+          earlyStartConsentAt: consentAt?.toISOString() ?? '',
+          earlyStartConsentVersion: consented
+            ? consent?.consentVersion || EARLY_START_CONSENT_VERSION
+            : '',
         },
+      });
+      await this.invoiceService.recordPending({
+        paymentIntentId: paymentIntent.id,
+        userId,
+        planId: optionId,
+        credits: plan.credits,
+        currency: plan.currency,
+        listAmountCents: plan.amount,
+        totalAmountCents: finalAmount,
+        promoCodeId: promoResult?.promoCodeId,
+        termsVersion: user.termsVersion,
+        consentAt,
+        consentText: consented ? EARLY_START_CONSENT_TEXT : undefined,
       });
 
       return {
@@ -370,6 +403,8 @@ export class PaymentService implements OnModuleInit {
         finalAmount,
         originalAmount: plan.amount,
         discount: promoResult ? plan.amount - finalAmount : 0,
+        billingAddressRequired: flags.addressRequired,
+        billingName: `${user.firstName} ${user.lastName}`.trim(),
       };
     } catch (error: any) {
       this.logger.error('Erreur Stripe createPaymentSheet:', error);
@@ -438,10 +473,41 @@ export class PaymentService implements OnModuleInit {
 
     this.logger.log(`Événement Stripe reçu : ${event.type}`);
 
-    if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      await this.handlePaymentSuccess(paymentIntent);
+    // Un événement déjà traité (Stripe rejoue ceux qu'il croit perdus) est
+    // ignoré ; s'il échoue, il n'est pas marqué et Stripe le renverra.
+    const enabled = billingFlags().enabled;
+    if (enabled && event.id) {
+      const seen = await this.prisma.stripeEvent
+        .findUnique({ where: { id: event.id } })
+        .catch(() => null);
+      if (seen?.processedAt) return { received: true, duplicate: true };
     }
+
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        await this.handlePaymentSuccess(event.data.object);
+        break;
+      case 'charge.refunded':
+        await this.invoiceService.handleRefund(event.data.object);
+        break;
+      case 'charge.dispute.created':
+        await this.invoiceService.handleDispute(event.data.object, true);
+        break;
+      case 'charge.dispute.closed':
+        await this.invoiceService.handleDispute(event.data.object, false);
+        break;
+    }
+
+    if (enabled && event.id)
+      await this.prisma.stripeEvent
+        .upsert({
+          where: { id: event.id },
+          update: { processedAt: new Date() },
+          create: { id: event.id, type: event.type, processedAt: new Date() },
+        })
+        .catch((err: Error) =>
+          this.logger.warn(`Événement ${event.id} non noté : ${err.message}`),
+        );
 
     return { received: true };
   }
@@ -492,12 +558,25 @@ export class PaymentService implements OnModuleInit {
 
     // 1. Ajouter les crédits — une seule fois par paiement, même si le webhook
     //    et la confirmation de l'app arrivent ensemble (verrou dans addCredits).
+    // Le code promo est rattaché à la vente : les commissions des
+    // partenaires comptent aussi les achats payés avec leur code.
+    const promoCodeId =
+      metadata.promoCodeId ||
+      (metadata.promoCode
+        ? (
+            await this.prisma.promoCode.findUnique({
+              where: { code: metadata.promoCode.trim().toUpperCase() },
+              select: { id: true },
+            })
+          )?.id
+        : undefined);
     const added = await this.creditService.addCredits(
       userId,
       credits,
       `${planName} (Stripe: ${paymentRef})`,
       euroAmount,
       paymentRef,
+      promoCodeId || undefined,
     );
     if (added.alreadyCredited) {
       this.logger.log(`Paiement ${paymentRef} déjà crédité — ignoré.`);
@@ -514,7 +593,13 @@ export class PaymentService implements OnModuleInit {
     // 2. Récupérer l'utilisateur pour l'email
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, firstName: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        city: true,
+      },
     });
 
     if (!user) {
@@ -524,60 +609,17 @@ export class PaymentService implements OnModuleInit {
       return true;
     }
 
-    // 3. Tenter de créer une facture Stripe et l'envoyer
-    let invoiceUrl: string | undefined;
-    try {
-      // Trouver le customer Stripe
-      const customers = await this.stripe.customers.list({
-        email: user.email,
-        limit: 1,
+    // 3. Facture (TVA, mentions légales, registre si BILLING_ENABLED) : un
+    //    échec ne bloque ni le crédit ni l'e-mail, la facture est relancée.
+    const invoice = await this.invoiceService
+      .afterSuccess(paymentIntent, user)
+      .catch((err: Error) => {
+        this.logger.warn(`Facture non émise : ${err.message}`);
+        return null;
       });
-      if (customers.data.length > 0) {
-        const customerId = customers.data[0].id;
 
-        // Facture de reçu : la ligne est rattachée à CETTE facture (sinon elle
-        // resterait en attente et serait reportée sur une prochaine facture),
-        // puis la facture est marquée payée hors Stripe — le paiement a déjà eu
-        // lieu via le PaymentIntent, rien n'est réclamé une seconde fois.
-        const invoice = await this.stripe.invoices.create({
-          customer: customerId,
-          auto_advance: false,
-          collection_method: 'send_invoice',
-          days_until_due: 0,
-          metadata: { userId, paymentRef },
-        });
-
-        await this.stripe.invoiceItems.create({
-          customer: customerId,
-          invoice: invoice.id,
-          amount: paymentIntent.amount,
-          currency: paymentIntent.currency,
-          description: planName,
-        });
-
-        const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(
-          invoice.id,
-        );
-        const paidInvoice = await this.stripe.invoices.pay(
-          finalizedInvoice.id,
-          {
-            paid_out_of_band: true,
-          },
-        );
-        invoiceUrl =
-          paidInvoice.invoice_pdf ?? finalizedInvoice.invoice_pdf ?? undefined;
-        this.logger.log(
-          `Facture Stripe créée : ${invoice.id}, PDF: ${invoiceUrl}`,
-        );
-      }
-    } catch (invoiceErr: any) {
-      this.logger.warn(
-        `Impossible de créer la facture Stripe : ${invoiceErr.message}`,
-      );
-      // Non bloquant — l'email part quand même
-    }
-
-    // 4. Envoyer l'email de confirmation avec reçu HTML
+    // 4. Reçu par e-mail (support durable : rappelle aussi la demande de
+    //    commencement anticipé et le droit de rétractation).
     try {
       await this.emailService.sendPaymentConfirmationEmail(
         user.email,
@@ -585,15 +627,61 @@ export class PaymentService implements OnModuleInit {
         euroAmount,
         planName,
         paymentRef,
-        invoiceUrl,
+        invoice?.url,
+        {
+          invoiceNumber: invoice?.number,
+          exclTaxCents: invoice?.exclTaxCents,
+          taxCents: invoice?.taxCents,
+          ratePercent: invoice?.ratePercent,
+          taxMention: invoice?.mention,
+          earlyStartConsentAt: metadata.earlyStartConsentAt || undefined,
+        },
       );
-      this.logger.log(`Email de confirmation envoyé à ${user.email}`);
+      this.logger.log(`Reçu de paiement envoyé (${paymentRef}).`);
     } catch (emailErr: any) {
       this.logger.error(
         `Erreur envoi email de confirmation : ${emailErr.message}`,
       );
     }
     return true;
+  }
+
+  /** Client Stripe du membre : identifiant enregistré, sinon recherche par e-mail. */
+  private async customerFor(
+    user: { id: string; email: string; firstName: string; lastName: string },
+    registry: boolean,
+  ): Promise<string> {
+    if (registry) {
+      const profile = await this.prisma.billingProfile
+        .findUnique({ where: { userId: user.id } })
+        .catch(() => null);
+      if (profile?.stripeCustomerId) return profile.stripeCustomerId;
+    }
+    const customers = await this.stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
+    const id =
+      customers.data[0]?.id ??
+      (
+        await this.stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+          preferred_locales: ['fr'],
+          metadata: { userId: user.id },
+        })
+      ).id;
+    if (registry)
+      await this.prisma.billingProfile
+        .upsert({
+          where: { userId: user.id },
+          update: { stripeCustomerId: id },
+          create: { userId: user.id, stripeCustomerId: id },
+        })
+        .catch((err: Error) =>
+          this.logger.warn(`Client Stripe non enregistré : ${err.message}`),
+        );
+    return id;
   }
 
   // ─── Appliquer un code promo (endpoint dédié) ──────────────────────────────

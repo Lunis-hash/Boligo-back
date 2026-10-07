@@ -22,12 +22,14 @@ const statusVariants: Record<string, "default" | "secondary" | "destructive" | "
   achat: "success",
   consommation: "warning",
   remboursement_justice: "secondary",
+  remboursement_paiement: "destructive",
 };
 
 const typeLabels: Record<string, string> = {
   achat: "Achat",
   consommation: "Consommation",
   remboursement_justice: "Remboursement",
+  remboursement_paiement: "Remboursé en argent",
 };
 
 export function StatusBadge({ status }: { status: string }) {

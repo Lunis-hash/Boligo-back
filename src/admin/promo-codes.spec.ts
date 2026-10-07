@@ -42,6 +42,7 @@ function setup(promos: Promo[]) {
         Promise.resolve([
           {
             promoCodeId: 'p-used',
+            type: 'achat',
             _count: { _all: 2 },
             _sum: { euroAmount: 27 },
           },

@@ -82,6 +82,7 @@ export class CreditService {
     description: string,
     euroAmount?: number,
     paymentRef?: string,
+    promoCodeId?: string,
   ) {
     let alreadyCredited = false;
     const result = await this.prisma.$transaction(async (tx) => {
@@ -111,6 +112,7 @@ export class CreditService {
           description,
           euroAmount,
           paymentRef,
+          promoCodeId,
         },
       });
 

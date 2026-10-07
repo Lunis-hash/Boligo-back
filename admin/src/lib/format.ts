@@ -26,4 +26,5 @@ export const transactionTypeLabels: Record<string, string> = {
   achat: "Achat / abonnement",
   consommation: "Consommation",
   remboursement_justice: "Remboursement justice",
+  remboursement_paiement: "Remboursement en argent",
 };

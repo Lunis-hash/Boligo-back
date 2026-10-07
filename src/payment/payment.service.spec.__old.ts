@@ -65,6 +65,7 @@ describe('PaymentService — webhook Stripe', () => {
       prisma as unknown as PrismaService,
       creditService as unknown as CreditService,
       {} as EmailService,
+      {} as never,
     );
     process.env.NODE_ENV = 'production';
   });

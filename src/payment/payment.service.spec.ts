@@ -29,6 +29,14 @@ function succeededEvent(paymentIntentId = 'pi_test_1') {
   });
 }
 
+/** Facturation simulée : aucun appel à Stripe pendant les tests. */
+const fakeInvoices = () => ({
+  recordPending: jest.fn().mockResolvedValue(undefined),
+  afterSuccess: jest.fn().mockResolvedValue(null),
+  handleRefund: jest.fn().mockResolvedValue(undefined),
+  handleDispute: jest.fn().mockResolvedValue(undefined),
+});
+
 describe('PaymentService — webhook Stripe', () => {
   const originalNodeEnv = process.env.NODE_ENV;
   let env: Record<string, string | undefined>;
@@ -68,6 +76,7 @@ describe('PaymentService — webhook Stripe', () => {
       prisma as unknown as PrismaService,
       creditService as unknown as CreditService,
       {} as EmailService,
+      fakeInvoices() as never,
     );
     process.env.NODE_ENV = 'production';
   });
@@ -87,6 +96,7 @@ describe('PaymentService — webhook Stripe', () => {
       expect.any(String),
       15,
       'pi_test_1',
+      undefined,
     );
   });
 
@@ -143,6 +153,7 @@ describe('PaymentService — webhook Stripe', () => {
       expect.any(String),
       15,
       'pi_test_1',
+      undefined,
     );
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
@@ -180,6 +191,7 @@ describe('PaymentService — confirmation par l’app', () => {
       } as unknown as PrismaService,
       creditService as unknown as CreditService,
       {} as EmailService,
+      fakeInvoices() as never,
     );
     retrieve = jest.fn().mockResolvedValue(paymentIntent());
     (service as unknown as { stripe: unknown }).stripe = {
@@ -203,6 +215,7 @@ describe('PaymentService — confirmation par l’app', () => {
       expect.any(String),
       15,
       'pi_test_42',
+      undefined,
     );
   });
 

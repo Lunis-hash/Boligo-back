@@ -38,6 +38,7 @@ export type MonthLine = {
 
 /** Achats payés avec le code, mois par mois (du plus récent au plus ancien). */
 export function monthlyHistory(
+  /** Achats ; un remboursement (montant négatif) réduit le chiffre du mois. */
   sales: { date: Date; euroAmount: number | null }[],
   commissionRate: number | null | undefined,
   now: Date = new Date(),
@@ -55,7 +56,7 @@ export function monthlyHistory(
   for (const s of sales) {
     const line = lines.get(key(s.date));
     if (!line) continue;
-    line.purchases += 1;
+    if ((s.euroAmount ?? 0) >= 0) line.purchases += 1;
     line.revenue += s.euroAmount ?? 0;
   }
   return [...lines.entries()].map(([month, l]) => {
