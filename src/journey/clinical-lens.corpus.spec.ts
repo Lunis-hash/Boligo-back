@@ -8,6 +8,7 @@ import {
   hasClinicalJargon,
   isIntrusiveQuestion,
   isOpenQuestion,
+  passesFormRules,
 } from './clinical-lens';
 import { readingText } from './sondeur-insights';
 
@@ -214,5 +215,54 @@ describe('Filtres du code sur le corpus du contre-audit', () => {
         'Qu’est-ce qui vous aide à faire le premier pas après une dispute ?',
       ),
     ).toBe(false);
+  });
+});
+
+describe('Second contre-audit : lectures et questions', () => {
+  const ownBelle: [string, string] = [
+    'Je ne suis pas d’accord pour vivre avec ma belle-famille, même au début.',
+    'J’aimerais vivre avec ma belle-famille au début du mariage.',
+  ];
+  it.each([
+    'L’un de vous redoute la trahison, l’autre cherche la paix.',
+    'Vous avez tous les deux peur de l’engagement.',
+    'Inès est plutôt jalouse, Karim plus détaché.',
+    'Karim est immature sur la question de l’argent.',
+    'Inès a raison de vouloir un compte commun.',
+    'Karim ne semble pas prêt à s’engager.',
+    'Votre réponse laisse penser que vous craignez l’abandon.',
+    'Sur la foi, chacun devra mettre de l’eau dans son vin.',
+    'Un équilibre reste à trouver sur la foi.',
+    'Vous vous rejoignez sur l’essentiel.',
+    'Votre entente sur la famille est solide.',
+    'Ces réponses sont rassurantes pour la suite.',
+    'Cet écart mérite toute votre vigilance avant de vous engager.',
+  ])('lecture refusée : « %s »', (text) => {
+    expect(readingText(text, 300, ['Inès', 'Karim'], ownBelle)).toBeNull();
+  });
+  it.each([
+    'Un point commun se dégage : la place de la famille.',
+    'L’un ferme la discussion pour se calmer, l’autre préfère parler.',
+    'L’un pose la conversion comme condition, l’autre écrit qu’il ne changera jamais de religion.',
+  ])('lecture neutre gardée : « %s »', (text) => {
+    expect(readingText(text, 300, ['Inès', 'Karim'], ownBelle)).not.toBeNull();
+  });
+  it.each([
+    ['Quelle somme enverriez-vous chaque mois à vos parents ?', false],
+    ['Dans quel quartier vivez-vous en ce moment ?', false],
+    ['De quel village votre famille est-elle originaire ?', false],
+    ['Comment votre jalousie se manifeste-t-elle au quotidien ?', false],
+    ['Pourquoi avez-vous du mal à faire confiance aux autres ?', false],
+    [
+      'Après une gifle, qu’est-ce qui vous permettrait de vous réconcilier ?',
+      false,
+    ],
+    [
+      'Dans votre famille, comment se passait votre relation avec votre mère ?',
+      true,
+    ],
+    ['Quelle taille de famille aimeriez-vous avoir autour de vous ?', true],
+  ])('grille de forme : « %s » → %s', (text, expected) => {
+    expect(passesFormRules(text)).toBe(expected);
   });
 });

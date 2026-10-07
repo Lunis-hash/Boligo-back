@@ -12,6 +12,7 @@ import {
   moderateAnswerLocally,
   moderateMessageLocally,
   maskProfanityForDisplay,
+  containsContactDetails,
 } from '../moderation/chat-moderation';
 import { shouldRunAiModeration } from '../moderation/ai-moderation.policy';
 import { PrismaService } from '../prisma/prisma.service';
@@ -26,7 +27,11 @@ import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
 import { farewellText } from './farewell';
 import { JourneyInsightsService } from './journey-insights.service';
-import { hasDangerSignal } from './sondeur-insights';
+import {
+  dangerCategories,
+  hasDangerSignal,
+  holdsSafety,
+} from './sondeur-insights';
 
 /** Champs du membre transmis à l'IA du Sondeur : jamais de coordonnées. */
 const MEMBER_CONTEXT_FIELDS = {
@@ -365,6 +370,10 @@ export class JourneyService {
       include: { responses: true },
     });
 
+    // Réponse qui évoque un danger pour l'autre : cachée tant que l'équipe
+    // n'a pas tranché (jamais une confidence de violence subie).
+    const underReview =
+      (await this.insights?.pendingSafetyReview(journeyId)) ?? false;
     return this.pickCanonicalHarmonyQuestions(questions).map((q) => {
       const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
       const storedOptions = Array.isArray(q.options) ? (q.options as string[]) : null;
@@ -380,7 +389,13 @@ export class JourneyService {
         responses: visible.map((r) =>
           r.userId === userId
             ? r
-            : { ...r, responseText: maskProfanityForDisplay(r.responseText) },
+            : {
+                ...r,
+                responseText:
+                  underReview && holdsSafety(dangerCategories(r.responseText))
+                    ? 'Réponse en cours de vérification par l’équipe BOLIGO.'
+                    : maskProfanityForDisplay(r.responseText),
+              },
         ),
         partnerAnswered: q.responses.some((r) => r.userId !== userId),
         emoji: q.emoji ?? bankQ?.emoji ?? '💬',
@@ -572,9 +587,16 @@ export class JourneyService {
 
     const trimmed = text.trim();
     if (!trimmed) throw new BadRequestException('Réponse vide.');
-    if (trimmed.length > 2000) {
+    if (trimmed.length > 500) {
       throw new BadRequestException(
-        'Réponse trop longue (2000 caractères max).',
+        'Réponse trop longue (500 caractères max).',
+      );
+    }
+    // Coordonnées : jamais dans le Sondeur, même dans une réponse qui évoque
+    // un danger (elles s'échangent à l'étape prévue du parcours).
+    if (containsContactDetails(trimmed)) {
+      throw new BadRequestException(
+        'Pas de coordonnées dans le Sondeur : elles s’échangent à l’étape prévue.',
       );
     }
     // Une réponse qui évoque un danger (violence subie ou exercée, menace,
@@ -604,6 +626,20 @@ export class JourneyService {
         responseText: trimmed,
       },
     });
+    // Danger : signalé dès l'envoi, sans attendre la fin de la journée.
+    const danger = dangerCategories(trimmed);
+    if (danger.length) {
+      await this.insights
+        ?.reportAnswer(
+          journey.id,
+          question.day,
+          userId,
+          question.questionText,
+          trimmed,
+          danger,
+        )
+        .catch(() => undefined);
+    }
 
     // Vérifier si toutes les questions sont répondues pour débloquer l'étape suivante
     await this.checkProgression(questionId);

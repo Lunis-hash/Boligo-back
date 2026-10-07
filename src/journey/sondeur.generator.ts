@@ -885,7 +885,7 @@ export function describeReportForAi(
         );
       } else if (!isQuotableDivergence(d)) {
         lines.push(
-          `${head} : tendance tirée de l'entretien, à explorer sans jamais citer les réponses ni un niveau.`,
+          `${head} : tendance tirée de l'entretien, à explorer sans jamais citer les réponses ni un niveau.${marks(d)}`,
         );
       } else if (isDeferredDivergence(d)) {
         lines.push(
@@ -909,7 +909,9 @@ export function describeReportForAi(
           `${head} : même réponse « ${c.answer} » — LIMITE DE SÉCURITÉ : uniquement des questions de limite, jamais de compromis.`,
         );
       } else if (SELF_DISCLOSURE_QUESTIONS.has(c.questionId)) {
-        lines.push(`${head} : même tendance, à explorer sans la citer.`);
+        lines.push(
+          `${head} : même tendance, à explorer sans la citer.${CONTROL_TOPICS.has(c.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance.' : ''}`,
+        );
       } else if (isDeferredAgreement(c)) {
         lines.push(
           `${head} : les deux préfèrent en parler en personne. Ne pas relancer ce sujet.`,

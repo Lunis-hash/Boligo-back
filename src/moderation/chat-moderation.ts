@@ -78,7 +78,18 @@ export function moderateMessageLocally(text: string): LocalModerationResult {
  * une personne qui cite les mots qu'elle a subis ne les adresse à personne.
  */
 const REPORTED_SPEECH =
-  /\b(?:trait\w*|appel\w*|insult\w*|cri\w*|hurl\w*|disai\w*|disait|dit|lan[cç]\w*)\b[^.!?]{0,40}(?:\bde\b|«|"|:)|«[^»]{1,60}»/i;
+  /\b(?:trait\w*|appel\w*|insult\w*|cri\w*|hurl\w*|disai\w*|disait|dit|lan[cç]\w*)\b[^.!?]{0,40}(?:\bde\b|«|"|:)|«[^»]{1,60}»|\b(?:il|elle|on|mon ex|mon (?:mari|copain|ex-mari)|ma (?:femme|copine|ex-femme))\s+(?:me|m['’])\s*(?:trait|appel|insult|cri|hurl|disai|dis|répét|repet|lan[cç])\w*/i;
+
+/**
+ * Coordonnées (téléphone, messagerie, réseau, e-mail) : jamais dans le
+ * Sondeur, elles s'échangent à l'étape prévue du parcours.
+ */
+const CONTACT_DETAILS =
+  /(?:\+|\b00)\d{2,3}[\s.-]?\d[\d\s.-]{6,}\d|\b0\d(?:[\s.-]?\d{2}){4}\b|\b(?:whats?app|wa\.me|telegram|t\.me|snap(?:chat)?|insta(?:gram)?|facebook|messenger)\b|\S+@\S+\.\w{2,}/i;
+
+export function containsContactDetails(text: string): boolean {
+  return CONTACT_DETAILS.test(text);
+}
 
 /**
  * Modération locale d'une réponse au Sondeur : comme un message, sauf qu'un

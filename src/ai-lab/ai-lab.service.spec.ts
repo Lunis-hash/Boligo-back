@@ -83,10 +83,10 @@ describe('Laboratoire IA', () => {
     process.env = env;
   });
 
-  it('18 couples types, chacun avec ce qu’il vérifie', () => {
+  it('23 couples types, chacun avec ce qu’il vérifie', () => {
     const service = new AiLabService(fakeAi() as never);
     const list = service.scenarios();
-    expect(list).toHaveLength(18);
+    expect(list).toHaveLength(23);
     expect(list.every((s) => s.name && s.checks)).toBe(true);
   });
 
@@ -145,9 +145,14 @@ describe('Laboratoire IA', () => {
     ['detresse', ['detresse']],
     ['controle-telephone', ['controle']],
     ['arnaque', ['argent']],
-    ['victime-confidence', ['violence']],
+    ['victime-confidence', ['violence_subie']],
     ['limite-saine', []],
     ['reserve-faux-positif', []],
+    ['mineur', ['mineur']],
+    ['menace-auteur', ['violence_exercee']],
+    ['creole-violence', ['violence_subie']],
+    ['transfert-diaspora', []],
+    ['insulte-citee', ['violence_subie']],
   ])(
     'sécurité jugée contre la référence du scénario : %s',
     async (id, categories) => {

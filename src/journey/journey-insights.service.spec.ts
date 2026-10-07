@@ -98,6 +98,9 @@ function memoryDb(journeyId: string) {
       findFirst: jest.fn(() => Promise.resolve(null)),
       create: jest.fn((args: unknown) => Promise.resolve(args)),
       count: jest.fn(() => Promise.resolve(0)),
+      findMany: jest.fn(() =>
+        Promise.resolve([] as Array<{ description: string }>),
+      ),
     },
   };
   const answerDay = (
@@ -561,6 +564,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       journeyCompletion: writer(),
       journeyCritique: critic(),
       reviewSondeurQuestions: reviewer(),
+      journeyAiEligible: jest.fn(() => Promise.resolve(false)),
     };
     const service = new JourneyInsightsService(db.prisma as never, ai as never);
     db.answerDay(1, ['a', 'b'], (userId, i) =>
@@ -568,9 +572,57 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
         ? 'Il fouillait mon téléphone tous les soirs.'
         : `Réponse détaillée de ${userId}`,
     );
-    db.prisma.report.count.mockResolvedValueOnce(1);
+    db.prisma.report.findMany.mockResolvedValueOnce([
+      { description: `Signal · catégorie : contrôle · catégories=[controle]` },
+    ]);
     expect(await service.holdsChat(id)).toBe(true);
     expect(db.prisma.report.create).toHaveBeenCalledTimes(1);
+    // Une confidence de violence subie seule ne retient pas la messagerie.
+    db.prisma.report.findMany.mockResolvedValueOnce([
+      {
+        description: `Signal · catégorie : violence subie · catégories=[violence_subie]`,
+      },
+    ]);
     expect(await service.holdsChat(id)).toBe(false);
+    expect(await service.holdsChat(id)).toBe(false);
+  });
+
+  it('parcours payé : la messagerie attend la lecture de l’IA (seconde ligne de défense)', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: jest.fn(() => new Promise(() => undefined)),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+      journeyAiEligible: jest.fn(() => Promise.resolve(true)),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1);
+    expect(await service.holdsChat(id)).toBe(true);
+  });
+
+  it('réponse dangereuse : signalée dès l’envoi, avec ses catégories lisibles', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const ai = {
+      journeyCompletion: writer(),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    await service.reportAnswer(
+      id,
+      1,
+      'b',
+      'Question ?',
+      'Envoie-moi 50 000 FCFA par Orange Money.',
+      ['argent'],
+    );
+    const [{ data }] = db.prisma.report.create.mock.calls[0] as unknown as [
+      { data: { reportedId: string; description: string } },
+    ];
+    expect(data.reportedId).toBe('b');
+    expect(data.description).toMatch(/catégories=\[argent\]/);
+    expect(data.description).toMatch(/jour 1 · réponse /);
   });
 });

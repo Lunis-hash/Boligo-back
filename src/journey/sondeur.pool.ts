@@ -3700,7 +3700,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement: "Pour vous deux, on s'engage pour le meilleur et pour le pire.",
   },
   'M2_Q06:A': {
-    statement: 'Vous dites tous les deux votre colère clairement.',
+    statement: 'Vous dites tous les deux clairement quand vous êtes en colère.',
     probe: q(
       "Pour vous, où passe la frontière entre dire sa colère et la faire porter à l'autre ?",
       'sens',

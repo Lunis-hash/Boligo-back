@@ -131,7 +131,7 @@ export class AiLabService {
     return run;
   }
 
-  /** Lance une évaluation sur les `count` premiers couples types (1 à 18). */
+  /** Lance une évaluation sur les `count` premiers couples types (1 à 23). */
   start(count: number): LabRun {
     if (!process.env.OPENROUTER_API_KEY && !process.env.GROQ_API_KEY) {
       throw new BadRequestException(

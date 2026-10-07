@@ -145,7 +145,7 @@ export default function AiLabPage() {
             onChange={(e) => setCouples(Number(e.target.value))}
             disabled={running || starting}
           >
-            {[...new Set([1, 3, 5, 10, scenarios.length || 18])].map((n) => (
+            {[...new Set([1, 3, 5, 10, scenarios.length || 23])].map((n) => (
               <option key={n} value={n}>
                 {n} couple{n > 1 ? "s" : ""} (≈ {euro(n * 1)})
               </option>

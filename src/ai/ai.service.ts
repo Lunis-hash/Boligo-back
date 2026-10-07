@@ -1022,6 +1022,11 @@ Retourne UNIQUEMENT un JSON:
   // 🛡️ 5. MÉDIATEUR & MODÉRATION IA — Sécurité & Modération en Temps Réel
   // =========================================================================
 
+  /** Le parcours a-t-il droit au suivi de l'IA (parcours payé, budget non nul) ? */
+  async journeyAiEligible(journeyId: string): Promise<boolean> {
+    return (await this.budget?.journeyEligible(journeyId)) ?? false;
+  }
+
   /**
    * Réponse au Sondeur : seules une insulte adressée à l'autre membre, une
    * proposition sexuelle explicite, un lien ou un contact sont refusés. Le

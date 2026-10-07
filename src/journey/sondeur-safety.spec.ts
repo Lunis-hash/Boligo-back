@@ -103,6 +103,129 @@ const DANGER_CASES: Case[] = [
   ['Chez moi on corrigeait les devoirs ensemble le soir.', false, ''],
 ];
 
+/** Second corpus du contre-audit : phrases nouvelles (registres africain, SMS, créole, anglais). */
+const DANGER_CASES_2: Case[] = [
+  // ── Vrais positifs attendus : violence
+  ["Mon ancien compagnon m'a étranglée une nuit.", true, 'fr'],
+  ['Il m’a giflée devant ses amis.', true, 'fr'],
+  ['Mon mari me forçait à coucher avec lui.', true, 'fr viol conjugal'],
+  [
+    "Il m'obligeait à avoir des rapports alors que je ne voulais pas.",
+    true,
+    'fr viol conjugal',
+  ],
+  ["J'ai porté plainte contre mon ex pour violences.", true, 'fr'],
+  ["J'ai vécu six mois dans un foyer pour femmes battues.", true, 'fr'],
+  ['Il m’a jetée dans les escaliers.', true, 'fr'],
+  ['Il m’a brûlée avec sa cigarette.', true, 'fr'],
+  ['Mon ex-mari me fouettait avec sa ceinture.', true, 'afrique'],
+  ['mon ex me frapait qd il avait bu', true, 'sms faute'],
+  ['Le gars me bastonnait chaque fois qu’il était soûl.', true, 'camfranglais'],
+  ['He punched me and broke my nose.', true, 'en'],
+  ['He would choke me when he was angry.', true, 'en'],
+  ['I was raped by my ex.', true, 'en'],
+  ['Nonm-la té ka bat mwen chak jou.', true, 'créole martiniquais'],
+  ['Li te konn bat mwen lè l te sou.', true, 'créole haïtien'],
+  [
+    'Si ma femme me manque de respect, je la corrige.',
+    true,
+    'fr auteur conditionnel',
+  ],
+  [
+    'Si elle me répond mal, elle prend une gifle.',
+    true,
+    'fr auteur conditionnel',
+  ],
+  ['S’il me trompe je lui casse la gueule.', true, 'fr auteur conditionnel'],
+  // ── menace
+  ['Il disait qu’il allait me tuer si je partais.', true, 'fr menace subie'],
+  [
+    'Mon ex m’a dit que si je le quittais il me retrouverait partout.',
+    true,
+    'fr menace subie',
+  ],
+  ['He said he would kill me.', true, 'en menace'],
+  // ── contrôle
+  [
+    'Il lisait tous mes messages et je devais lui donner mon code.',
+    true,
+    'fr contrôle',
+  ],
+  ['Ma femme devra me donner ses mots de passe.', true, 'fr contrôle auteur'],
+  ['Je lui interdirai de voir ses copines.', true, 'fr contrôle auteur'],
+  [
+    'Il m’appelait trente fois par jour pour savoir où j’étais.',
+    true,
+    'fr contrôle',
+  ],
+  ['My ex used to check my phone every night.', true, 'en contrôle'],
+  ['Mon mari prenait toute ma paie à la fin du mois.', true, 'fr contrôle éco'],
+  // ── détresse
+  ['Je pense parfois à mettre fin à mes jours.', true, 'fr'],
+  ['Des fois je me dis que tout le monde serait mieux sans moi.', true, 'fr'],
+  ['Je veux m’ôter la vie.', true, 'fr'],
+  ['I don’t want to live anymore.', true, 'en'],
+  ['Mwen pa vle viv ankò.', true, 'créole haïtien'],
+  ['mwen vlé mouri', true, 'créole'],
+  // ── argent / arnaque
+  [
+    'Mon frère est à l’hôpital, il me faut 500 € pour l’opération, tu peux m’aider ?',
+    true,
+    'arnaque',
+  ],
+  ['Fais-moi un dépôt Wave, je te rembourse lundi.', true, 'afrique wave'],
+  [
+    'Tu peux m’envoyer un peu de crédit pour mon téléphone ?',
+    true,
+    'afrique crédit',
+  ],
+  ['Envoi moi 20000f stp', true, 'sms'],
+  ['Tu peux me faire un virement de 300 ?', true, 'fr'],
+  // ── minorité
+  ['Je suis en seconde au lycée Lumière.', true, 'mineur'],
+  ['Je suis née en 2010.', true, 'mineur'],
+  ['jai 16 an', true, 'sms'],
+  ['im 15yo', true, 'en sms'],
+  ['I’m sixteen.', true, 'en'],
+  // ── Faux positifs à éviter : limites saines, idiomes, transferts familiaux
+  ['Jamais je ne laisserai un homme me frapper.', false, 'limite saine'],
+  ['Personne n’a le droit de me frapper.', false, 'limite saine'],
+  ['Le jour où il me frappe, je pars.', false, 'limite saine'],
+  ['Quand on me menace, je coupe les ponts.', false, 'limite saine'],
+  ['Celui qui me menace ne me reverra jamais.', false, 'limite saine'],
+  [
+    'Je trouve malsain de fouiller le téléphone de son conjoint.',
+    false,
+    'limite saine contrôle',
+  ],
+  [
+    'Surveiller le portable de l’autre, c’est déjà ne plus avoir confiance.',
+    false,
+    'limite saine contrôle',
+  ],
+  [
+    'Ma mère envoie de l’argent au pays par Western Union chaque mois.',
+    false,
+    'diaspora transfert',
+  ],
+  ['Je soutiens mes parents par mobile money.', false, 'diaspora transfert'],
+  ['J’ai placé un peu d’épargne en bitcoin.', false, 'épargne'],
+  ['Je suis fatiguée de vivre seule.', false, 'célibat'],
+  ['Je veux mourir vieux à côté de ma femme.', false, 'futur'],
+  ['Si on mange aussi tard, je vais mourir de faim.', false, 'idiome'],
+  ['Je suis au lycée Descartes comme professeure de maths.', false, 'métier'],
+  [
+    'Quand je ramenais une mauvaise note, mon père me chicotait.',
+    false,
+    'éducation (catégorie à part)',
+  ],
+  [
+    'Chez nous, les parents tapaient les enfants désobéissants.',
+    false,
+    'éducation',
+  ],
+];
+
 const RESERVED_CASES: Case[] = [
   ['J’aimerais en parler de vive voix.', true, ''],
   ['Je préfère ne pas y répondre.', true, ''],
@@ -123,10 +246,22 @@ const RESERVED_CASES: Case[] = [
   ['De vive voix, j’aime qu’on commence par rire un peu.', false, ''],
   ['Je ne me vois pas ici toute ma vie, je veux rentrer au pays.', false, ''],
   ['Mes parents ne sont pas ici, ils vivent à Abidjan.', false, ''],
+  ['Ça, je le garde pour quand on se verra.', true, 'contre-audit 2'],
+  ['Je n’ai pas envie de répondre à ça.', true, 'contre-audit 2'],
+  [
+    'J’aime discuter de vive voix des sujets importants.',
+    false,
+    'contre-audit 2',
+  ],
+  ['J’aime parler en face, pas par écrit.', false, 'contre-audit 2'],
 ];
 
 describe('Signaux de danger dans les réponses du Sondeur', () => {
   it.each(DANGER_CASES)('« %s » → %s', (text, expected) => {
+    expect(hasDangerSignal(text)).toBe(expected);
+  });
+
+  it.each(DANGER_CASES_2)('second corpus : « %s » → %s', (text, expected) => {
     expect(hasDangerSignal(text)).toBe(expected);
   });
 
@@ -142,7 +277,18 @@ describe('Signaux de danger dans les réponses du Sondeur', () => {
       dangerCategories('Envoie-moi 50 000 FCFA par Orange Money.'),
     ).toEqual(['argent']);
     expect(dangerCategories('J’ai seize ans.')).toEqual(['mineur']);
-    expect(dangerCategories('Mon ex me frappait.')).toEqual(['violence']);
+    expect(dangerCategories('Mon ex me frappait.')).toEqual(['violence_subie']);
+    expect(dangerCategories('Je l’ai déjà giflée une fois.')).toEqual([
+      'violence_exercee',
+    ]);
+    expect(
+      dangerCategories('Si elle me manque de respect je la gifle.'),
+    ).toEqual(['violence_exercee']);
+    expect(
+      dangerCategories(
+        'Quand je ramenais une mauvaise note, mon père me chicotait.',
+      ),
+    ).toEqual([]);
     expect(
       dangerCategories('S’il venait à lever la main sur moi, je partirais.'),
     ).toEqual([]);

@@ -298,6 +298,76 @@ export const LAB_SCENARIOS: LabScenario[] = [
     },
     expectDanger: false,
   },
+  {
+    id: 'mineur',
+    name: 'Membre mineur',
+    checks:
+      'Âge de moins de 18 ans écrit dans une réponse : signalé, aucune lecture par l’IA.',
+    names: ['Inès', 'Bilal'],
+    dayOne: {
+      projet: [
+        'Je veux finir mes études avant de penser au mariage.',
+        'Je suis en seconde au lycée, mais je cherche déjà quelqu’un de sérieux.',
+      ],
+    },
+    expectDanger: true,
+  },
+  {
+    id: 'menace-auteur',
+    name: 'Violence conditionnelle écrite par l’auteur',
+    checks:
+      '« Si elle me manque de respect je la gifle » (sans virgule) : violence exercée repérée, jamais lue comme une limite.',
+    names: ['Rokia', 'Serge'],
+    dayOne: {
+      communication: [
+        'J’ai besoin qu’on se parle avec respect, même fâchés.',
+        'Si elle me manque de respect je la gifle, c’est comme ça chez nous.',
+      ],
+    },
+    expectDanger: true,
+  },
+  {
+    id: 'creole-violence',
+    name: 'Violence subie écrite en créole',
+    checks:
+      'Créole martiniquais ou haïtien : violence subie repérée ; la victime n’est pas mise en cause.',
+    names: ['Marlène', 'Didier'],
+    dayOne: {
+      famille: [
+        'Nonm-la té ka bat mwen chak jou, jodi-a mwen ka chèché lapè.',
+        'Dans ma famille, on se réunit chaque dimanche autour d’un repas.',
+      ],
+    },
+    expectDanger: true,
+  },
+  {
+    id: 'transfert-diaspora',
+    name: 'Envoi d’argent à la famille (diaspora)',
+    checks:
+      'Envoyer de l’argent au pays par Western Union est un engagement familial, pas une arnaque : aucun signal.',
+    names: ['Adama', 'Claire'],
+    dayOne: {
+      argent: [
+        'Ma mère envoie de l’argent au pays par Western Union chaque mois, je ferai pareil.',
+        'Je préfère qu’on décide ensemble de ce qu’on donne à nos familles.',
+      ],
+    },
+    expectDanger: false,
+  },
+  {
+    id: 'insulte-citee',
+    name: 'Victime qui cite une insulte reçue',
+    checks:
+      'Réponse acceptée malgré le mot grossier cité ; signalement sans mise en cause ; mot masqué chez l’autre.',
+    names: ['Yasmine', 'Loïc'],
+    dayOne: {
+      communication: [
+        'Mon ex m’appelait connasse et me frappait quand il avait bu.',
+        'Je préfère qu’on se pose et qu’on parle calmement.',
+      ],
+    },
+    expectDanger: true,
+  },
 ];
 
 /** Générateur pseudo-aléatoire à graine fixe (reproductible). */

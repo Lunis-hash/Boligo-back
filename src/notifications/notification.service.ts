@@ -25,6 +25,8 @@ export class NotificationService {
     type: 'nouveau_match' | 'message' | 'question_harmonie' | 'rappel_reponse' | 'credit' | 'systeme',
     title: string,
     content: string,
+    /** Texte affiché sur l'écran verrouillé (sinon le contenu). */
+    pushBody: string = content,
   ) {
     console.log(`[PUSH] Notification « ${type} » pour ${userId}`);
     
@@ -56,8 +58,9 @@ export class NotificationService {
           body: JSON.stringify({
             to: user.pushToken,
             title,
-            body: content,
-            data: { type, title, content, notificationId: dbNotification.id },
+            body: pushBody,
+            // Le contenu complet reste dans l'app (jamais dans la notification).
+            data: { type, title, notificationId: dbNotification.id },
             sound: 'default',
           }),
         });

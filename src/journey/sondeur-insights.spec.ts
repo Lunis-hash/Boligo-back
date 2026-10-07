@@ -285,6 +285,37 @@ describe('Suivi du Sondeur — règles pures', () => {
     ]);
   });
 
+  it('un extrait qui retire une négation ne fait jamais un accord', () => {
+    const items = answeredItems(
+      [
+        question('q1', 1, THEMES.famille.emoji, {
+          a: 'Je ne suis pas d’accord pour vivre avec ma belle-famille, même au début.',
+          b: 'J’aimerais vivre avec ma belle-famille au début du mariage.',
+        }),
+      ],
+      A,
+      B,
+    );
+    const parsed = parseDayReading(
+      JSON.stringify({
+        headline: 'Une journée.',
+        together: [
+          {
+            n: 1,
+            a: 'vivre avec ma belle-famille',
+            b: 'vivre avec ma belle-famille',
+            text: 'Vous écrivez tous deux vouloir vivre avec la belle-famille.',
+          },
+        ],
+        toDiscuss: [],
+      }),
+      1,
+      items,
+      ['Inès', 'Karim'],
+    );
+    expect(parsed).toBeNull();
+  });
+
   it('alerte levée par le modèle : la lecture n’est pas publiée', () => {
     const items = answeredItems(
       [
@@ -305,7 +336,19 @@ describe('Suivi du Sondeur — règles pures', () => {
     });
     expect(parseAlert(raw)).toEqual({ category: 'detresse', member: 1 });
     expect(parseAlert(JSON.stringify({ alerte: 'aucune' }))).toBeNull();
-    expect(parseAlert(JSON.stringify({ alerte: 'inventée' }))).toBeNull();
+    // Libellé approximatif : reconnu ; libellé inconnu : prudence (« autre »).
+    expect(
+      parseAlert(JSON.stringify({ alerte: 'Détresse', membre: 'A' })),
+    ).toEqual({ category: 'detresse', member: 0 });
+    expect(parseAlert(JSON.stringify({ alerte: ['violence subie'] }))).toEqual({
+      category: 'violence_subie',
+      member: null,
+    });
+    expect(parseAlert(JSON.stringify({ alerte: 'harcèlement' }))).toEqual({
+      category: 'autre',
+      member: null,
+    });
+    expect(parseAlert(JSON.stringify({ alerte: 'none' }))).toBeNull();
     expect(parseDayReading(raw, 1, items, ['Inès', 'Karim'])).toBeNull();
   });
 

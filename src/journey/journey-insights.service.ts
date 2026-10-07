@@ -1,4 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { AiService } from '../ai/ai.service';
 import {
@@ -8,7 +9,7 @@ import {
 } from '../matching/divergence.engine';
 import { NotificationService } from '../notifications/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { similarQuestions } from './clinical-lens';
+import { COMPROMISE, similarQuestions } from './clinical-lens';
 import { SAFETY_QUESTIONS, describeReportForAi } from './sondeur.generator';
 import {
   AlertCategory,
@@ -51,6 +52,7 @@ const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
   detresse: 'détresse ou idées de mort',
   argent: "demande d'argent",
   mineur: 'âge de moins de 18 ans',
+  autre: 'signal à vérifier',
 };
 
 /**
@@ -58,15 +60,25 @@ const CATEGORY_LABEL: Record<DangerCategory | AlertCategory, string> = {
  * violences : des ressources d'aide, sans rien commenter. Numéros français
  * (gratuits, 24 h/24) ; ailleurs, les urgences du pays.
  */
+const VIOLENCE_SUPPORT =
+  "Vous avez évoqué des violences, une menace ou un contrôle. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.";
 const SUPPORT_MESSAGE: Partial<Record<DangerCategory | AlertCategory, string>> =
   {
     detresse:
       "Vous avez écrit quelque chose qui nous fait penser que vous traversez un moment difficile. Vous n'êtes pas seul(e) : en France, le 3114 répond 24 h/24, gratuitement. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
-    violence_subie:
-      "Vous avez évoqué des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
-    violence:
-      "Une de vos réponses évoque des violences. Si vous en vivez ou en avez vécu, vous pouvez en parler : en France, le 3919 répond gratuitement et anonymement, 24 h/24. Ailleurs, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
+    violence_subie: VIOLENCE_SUPPORT,
+    violence: VIOLENCE_SUPPORT,
+    menace: VIOLENCE_SUPPORT,
+    controle: VIOLENCE_SUPPORT,
+    violence_exercee:
+      "Une de vos réponses évoque des gestes violents. Si vous craignez vos propres réactions, parlez-en à un professionnel de santé ou à une association d'aide ; en cas de danger, appelez les urgences de votre pays. L'équipe BOLIGO reste joignable depuis votre profil.",
   };
+
+/** Catégories d'un signalement, lisibles par le code (« catégories=[a,b] »). */
+function categoriesOf(description: string | null): string[] {
+  const m = /catégories=\[([^\]]*)\]/.exec(description ?? '');
+  return m ? m[1].split(',').filter(Boolean) : [];
+}
 
 /** Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart. */
 const MAX_ATTEMPTS = 3;
@@ -116,14 +128,75 @@ export class JourneyInsightsService {
       );
       await this.handleDanger(journeyId, day, items, [userAId, userBId]);
     }
-    const pending = await this.prisma.report.count({
+    // Lecture de l'IA attendue (parcours payé) : elle peut lever une alerte
+    // que le code ne voit pas. La messagerie attend qu'elle soit écrite (ou
+    // qu'elle ait échoué trois fois) ; la visite suivante la rouvrira.
+    if (await this.ai.journeyAiEligible(journeyId)) {
+      const written = new Set(journey.insights.map((i) => i.day));
+      const awaited = [1, 2, 3]
+        .filter((d) => dayComplete(qs, d, userAId, userBId))
+        .concat(
+          [1, 2, 3].every((d) => dayComplete(qs, d, userAId, userBId))
+            ? [REVIEW_DAY]
+            : [],
+        )
+        .filter((d) => !written.has(d) && !this.gaveUp(journeyId, d));
+      if (awaited.length) {
+        void this.refresh(journeyId);
+        return true;
+      }
+    }
+    const pending = await this.prisma.report.findMany({
       where: {
         status: 'en_attente',
         description: { startsWith: sondeurReportPrefix(journeyId) },
-        NOT: { description: { contains: 'catégorie : violence subie' } },
       },
+      select: { description: true },
     });
-    return pending > 0;
+    // Une confidence de violence subie seule ne retient pas la messagerie.
+    return pending.some((r) => {
+      const categories = categoriesOf(r.description);
+      return (
+        categories.length === 0 ||
+        categories.some((c) => c !== 'violence_subie')
+      );
+    });
+  }
+
+  /**
+   * Réponse qui évoque un danger, signalée dès qu'elle est écrite : un membre
+   * qui n'achève pas sa journée n'échappe pas à la modération.
+   */
+  async reportAnswer(
+    journeyId: string,
+    day: number,
+    authorId: string,
+    question: string,
+    answer: string,
+    categories: DangerCategory[],
+  ): Promise<void> {
+    if (!categories.length) return;
+    await this.fileReport(
+      journeyId,
+      day,
+      authorId,
+      categories,
+      'Une réponse évoque peut-être un danger (signalée dès son envoi). À vérifier par la modération.',
+      [`« ${question} » → ${answer.slice(0, 500)}`],
+      `réponse ${createHash('sha256').update(`${question}|${answer}`).digest('hex').slice(0, 10)}`,
+    );
+  }
+
+  /** Signalements du Sondeur encore en attente de la modération, pour ce parcours. */
+  async pendingSafetyReview(journeyId: string): Promise<boolean> {
+    const pending = await this.prisma.report.findMany({
+      where: {
+        status: 'en_attente',
+        description: { startsWith: sondeurReportPrefix(journeyId) },
+      },
+      select: { description: true },
+    });
+    return pending.length > 0;
   }
 
   /**
@@ -238,7 +311,12 @@ export class JourneyInsightsService {
         await this.save(journeyId, safetyReading(day));
         continue;
       }
-      const { system, prompt } = dayReadingPrompt(day, items, names);
+      const { system, prompt } = dayReadingPrompt(
+        day,
+        items,
+        names,
+        await this.analysisFor(userAId, userBId, names),
+      );
       const written = await this.ai.journeyCompletion(
         journeyId,
         system,
@@ -300,7 +378,11 @@ export class JourneyInsightsService {
       await this.save(journeyId, safetyReading(REVIEW_DAY));
       return;
     }
-    const { system, prompt } = reviewPrompt(all, names);
+    const { system, prompt } = reviewPrompt(
+      all,
+      names,
+      await this.analysisFor(userAId, userBId, names),
+    );
     const written = await this.ai.journeyCompletion(
       journeyId,
       system,
@@ -405,8 +487,10 @@ export class JourneyInsightsService {
     categories: Array<DangerCategory | AlertCategory>,
     summary: string,
     excerpts: string[],
+    /** Précision du signalement (une réponse) : sinon un par journée et par membre. */
+    detail?: string,
   ) {
-    const tag = `${sondeurReportPrefix(journeyId)} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`}`;
+    const tag = `${sondeurReportPrefix(journeyId)} · ${day === REVIEW_DAY ? 'bilan' : `jour ${day}`}${detail ? ` · ${detail}` : ''}`;
     const already = await this.prisma.report.findFirst({
       where: { reportedId: authorId, description: { startsWith: tag } },
       select: { id: true },
@@ -418,7 +502,7 @@ export class JourneyInsightsService {
         reporterId: authorId,
         reportedId: authorId,
         reason: 'autre',
-        description: `${tag} · catégorie : ${labels}\n${summary}\n${excerpts.join('\n')}`,
+        description: `${tag} · catégorie : ${labels} · catégories=[${[...new Set(categories)].join(',')}]\n${summary}\n${excerpts.join('\n')}`,
       },
     });
     this.logger.warn(
@@ -428,12 +512,15 @@ export class JourneyInsightsService {
       .map((c) => SUPPORT_MESSAGE[c])
       .find((m): m is string => !!m);
     if (support) {
+      // Écran verrouillé : rien de sensible dans la notification (un
+      // agresseur peut la voir) ; le message complet est dans l'app.
       await this.notifications
         ?.sendPushNotification(
           authorId,
           'systeme',
-          'BOLIGO est là pour vous',
+          'BOLIGO',
           support,
+          'Un message de l’équipe BOLIGO vous attend dans l’application.',
         )
         .catch(() => undefined);
     }
@@ -512,7 +599,7 @@ export class JourneyInsightsService {
         .map((d) => d.theme),
     );
     const candidates = parseFollowUps(written.content).filter(
-      (c) => !safety.has(c.themeKey),
+      (c) => !safety.has(c.themeKey) && !COMPROMISE.test(c.text),
     );
     if (candidates.length === 0) return null;
     const review = await this.ai.reviewSondeurQuestions(
@@ -639,6 +726,22 @@ export class JourneyInsightsService {
     } catch {
       return null;
     }
+  }
+
+  /** L'IA a échoué trois fois sur cette lecture : on n'attend plus. */
+  private gaveUp(journeyId: string, day: number): boolean {
+    const f = JourneyInsightsService.failures.get(`${journeyId}:${day}`);
+    return !!f && f.count >= MAX_ATTEMPTS;
+  }
+
+  /** Analyse des deux entretiens pour les consignes de lecture (non-négociables, contrôle). */
+  private async analysisFor(
+    userAId: string,
+    userBId: string,
+    names: [string, string],
+  ): Promise<string | undefined> {
+    const report = await this.interviewReport(userAId, userBId);
+    return report ? describeReportForAi(report, names) : undefined;
   }
 
   private coolingDown(journeyId: string, day: number): boolean {

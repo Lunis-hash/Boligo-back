@@ -6,6 +6,10 @@
  * présente jamais l'IA comme psychologue.
  */
 
+/** Points non négociables : la même liste dans toutes les consignes. */
+export const NON_NEGOTIABLE_TOPICS =
+  'foi exigée, conversion, enfants, polygamie, pays de vie, fidélité, intimité avant le mariage, alcool, règles alimentaires, accès au téléphone, ou toute condition posée par écrit';
+
 export const CLINICAL_LENS = `CADRE DU SONDEUR (prioritaire sur tout le reste) :
 - Les deux membres ne se sont encore jamais parlé : ils n'ont aucun passé commun. Ne parle jamais d'un souvenir à deux. Pour une exception ou une question circulaire, appuie-toi sur leur famille ou leurs proches. N'évoque une relation passée que sous la forme « si vous en avez vécu une », et seulement pour ce que chacun en a appris : jamais sa fin (rupture, divorce, veuvage), jamais son récit.
 - La même question est posée aux deux : elle doit avoir un sens pour chacun, quelle que soit sa réponse à l'entretien (jamais « qu'est-ce que fumer vous apporte ? » à quelqu'un qui ne fume pas).
@@ -37,13 +41,13 @@ TECHNIQUES (adaptées à deux personnes qui ne se connaissent pas encore) :
 - scène ordinaire : un moment banal de la vie à deux, jamais une catastrophe.
 
 CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
-- Écart sur un point non négociable (enfants, foi exigée, conversion, polygamie, pays de vie) : jamais de compromis, jamais de terrain d'entente ; demande d'où vient la position ou ce qu'elle protège. Au jour 3, demande ce que chacun aurait besoin de savoir ou de vérifier avant de s'engager, jamais comment vivre avec l'écart.
+- Écart sur un point non négociable (${NON_NEGOTIABLE_TOPICS}) : jamais de compromis, jamais de terrain d'entente ; demande d'où vient la position ou ce qu'elle protège. Au jour 3, demande ce que chacun aurait besoin de savoir ou de vérifier avant de s'engager, jamais comment vivre avec l'écart.
 - Incompatibilité déclarée dans l'analyse : explore d'abord ce point, pour que chacun décide en connaissance de cause.
 - Écart de rythme ou de style (dispute, temps ensemble, parole) : c'est un désaccord durable ; demande comment chacun le vit de l'intérieur, ou ce qui l'apaise.
 - Même réponse des deux côtés : vérifie que les mots veulent dire la même chose ; demande une scène ordinaire où cette réponse se voit.
-- Même réponse qui pose un risque (deux silences, deux réconciliations lentes) : exception tirée du passé, ou signal de réparation.
+- Même réponse qui pose un risque (deux silences, deux réconciliations lentes) : exception tirée de la famille ou des proches, ou signal de réparation.
 - L'un veut parler tout de suite, l'autre s'éloigne : demande à chacun ce qu'il espère que l'autre comprenne à ce moment-là.
-- Violence, insultes, menaces, contrôle, dépendance (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; demande où chacun place sa limite de sécurité et ce qu'il ferait pour se protéger si elle était franchie. Contrôle : téléphone ou localisation surveillés, argent confisqué ou attribué, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
+- Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; demande où chacun place sa limite de sécurité et ce qu'il ferait pour se protéger si elle était franchie. Contrôle : téléphone ou localisation surveillés, argent confisqué ou attribué, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
 - Rôles, autorité, argent, famille élargie : demande comment chacun vivrait la place qu'il occuperait (décider, suivre, dépendre, être aidé), jamais quel modèle est le bon ; ne présuppose ni l'égalité ni la hiérarchie.
 
 CE QUE TU CHERCHES : pas la faille, mais la question que les deux membres ne se seraient jamais posée eux-mêmes : l'attente implicite, le besoin derrière la position, l'héritage familial, le scénario jamais imaginé, deux réponses identiques qui cachent des sens différents.
@@ -80,10 +84,10 @@ EXEMPLES (inspire-toi de l'écart entre les deux, ne les recopie pas) :
 export const READING_LENS = `POUR LIRE LEURS RÉPONSES :
 - Décris, compare, cite ; n'explique pas. Tu peux relever un mot commun, une différence de rythme, une réponse laissée courte.
 - Toute hypothèse sur un besoin ou une émotion prend la forme d'une question qui leur est posée, jamais d'une affirmation.
-- N'attribue jamais à un prénom une émotion, une peur ou un besoin qu'il ou elle n'a pas écrit.
+- N'attribue jamais à l'un d'eux, à eux deux ni à un prénom une émotion, une peur, un besoin ou un trait de caractère qui n'a pas été écrit.
 - Un accord n'existe que si les deux réponses comptent au moins quatre mots et décrivent la même chose concrète. Deux réponses qui emploient le même mot (« respect », « confiance ») vont dans « toDiscuss » comme « même mot, sens à préciser ».
 - Une réponse qui s'en remet à Dieu, à la famille ou à la tradition est une position : décris-la telle quelle, jamais comme une esquive ou une dépendance.
-- Sur un point non négociable (foi exigée, conversion, enfants, polygamie, pays de vie), ne propose jamais de compromis ni de terrain d'entente. Si l'un pose par écrit une condition que l'autre refuse par écrit, place-la en premier dans « toDiscuss » en décrivant les deux positions telles qu'écrites, sans les adoucir.
+- Sur un point non négociable (${NON_NEGOTIABLE_TOPICS}), ne propose jamais de compromis ni de terrain d'entente. Si l'un pose par écrit une condition que l'autre refuse par écrit, place-la en premier dans « toDiscuss » en décrivant les deux positions telles qu'écrites, sans les adoucir.
 - Une réponse « [réservé à la rencontre] » n'est jamais interprétée : signale seulement que ce sujet sera abordé de vive voix.
 - Si une réponse évoque une violence subie ou exercée, une menace, un contrôle, une détresse, une demande d'argent ou un âge de moins de 18 ans : ne la commente pas, n'en fais ni un accord, ni un écart, ni une question, et lève l'alerte prévue.
 - Le titre décrit ce qu'ils ont exploré ; il n'évalue pas leur compatibilité.
@@ -282,7 +286,7 @@ const INTRUSIVE =
  * dans une question comme dans une lecture.
  */
 export const COMPROMISE =
-  /(?<!\p{L})(?:rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|compromis|concessions?|concilier|voie médiane|juste milieu|pas[^?.]{0,30} vers l['’]autre|chacun (?:fait|ferait|pourrait faire) (?:un|des) (?:pas|efforts?)|trouve\p{L}* un chemin|conversion progressive)(?!\p{L})/iu;
+  /(?<!\p{L})(?:rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|compromis|concessions?|concilier (?:vos|leurs|les deux) (?:positions|visions|croyances|religions)|voie médiane|juste milieu|pas[^?.]{0,30} vers l['’]autre|chacun (?:fait|ferait|pourrait faire) (?:un|des) (?:pas|efforts?)|trouve\p{L}* un chemin|conversion progressive|eau dans (?:son|votre|leur) vin|mi-chemin|équilibre (?:à|reste à) trouver|trouver un équilibre|arrangement|accommodement|s['’]adapter l['’]un à l['’]autre|(?:pourra|devra|pourrait|pourrez|devrez) s['’]adapter|lâcher du lest|céder)(?!\p{L})/iu;
 
 export function isIntrusiveQuestion(text: string): boolean {
   return INTRUSIVE.test(text);
@@ -321,11 +325,11 @@ export const MORALE = word(
 export const MORALE_PREFIX = prefix('égoïs|caprice|capricieu');
 /** Passé commun supposé entre deux personnes qui ne se sont jamais parlé. */
 export const SHARED_PAST = prefix(
-  "vous vous êtes|depuis que vous|votre dernière|vos dernières|la dernière fois que vous|votre première dispute|votre relation|votre couple|cette relation|vos disputes|vous vous connaissez|vous avez vécu ensemble|votre partenaire|l'un de vous a répondu",
+  "vous vous êtes|depuis que vous|votre dernière|vos dernières|la dernière fois que vous|votre première dispute|votre relation(?! avec)|votre couple|cette relation|vos disputes(?! avec)|vous vous connaissez|vous avez vécu ensemble|votre partenaire|l'un de vous a répondu",
 );
 /** Corps, apparence, santé : jamais. */
 export const BODY_HEALTH = new RegExp(
-  `(?<!${L})(?:corps|physique|apparence|allure|poids|taille|beauté|beau(?![\\p{L}-])|belle(?![\\p{L}-])|sexy|malad|handicap|santé|médic|médecin|enceinte|grossesse|fertil|stéril|nudité|maigr|silhouette|visage|peau|cheveux|épuis|dépress)`,
+  `(?<!${L})(?:corps|physique|apparence|allure|poids|taille(?! de (?:la )?famille)|beauté|beau(?![\\p{L}-])|belle(?![\\p{L}-])|sexy|malad(?!roit)|handicap|santé|médic|médecin|enceinte|grossesse|fertil|stéril|nudité|maigr|silhouette|visage|peau|cheveux|épuis|dépress)`,
   'iu',
 );
 /** Détail de la vie sexuelle : jamais. */
@@ -341,6 +345,16 @@ export const TUTOIEMENT = word(
   "tu|toi|(?<!(?:le|quel|un|du|au|ce|son|mon|votre|même) )ton|ta|tes|te|t'|t’",
 );
 export const VOUVOIEMENT = word('vous|votre|vos');
+
+/** Demandes identifiantes ou chiffrées que la liste INTRUSIVE ne couvre pas. */
+export const INTRUSIVE_MORE =
+  /(?<!\p{L})(?:quelle somme|combien (?:touchez|percevez|gagnez|empochez)|(?:dans )?quel(?:le)? (?:quartier|village|immeuble|entreprise|société)|votre origine|originaire|\d{2} ans|écart d['’]âge|votre âge)(?!\p{L})/iu;
+/** Violence présentée comme excusable, pardonnable ou réparable. */
+export const VIOLENCE_NORMALIZE =
+  /(?<!\p{L})(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants)\p{L}*[^?]{0,60}(?:excus|justifi|réconcili|pardonn|répar|vivable|tourner la page|passer l['’]éponge)|(?<!\p{L})(?:excus|justifi|réconcili|pardonn|répar)\p{L}*[^?]{0,60}(?:gifl|frapp|coups?(?!\p{L})|violen|insult|menac|mots blessants)/iu;
+/** Trait de caractère ou difficulté présupposés (« votre jalousie », « avez-vous du mal à »). */
+export const PRESUPPOSED =
+  /(?<!\p{L})(?:votre (?:jalousie|possessivité|méfiance|colère|immaturité|égoïsme|besoin de contrôle)|(?:avez|auriez)-vous du mal à)(?!\p{L})/iu;
 
 /** Bonnes questions données en exemple dans la consigne : jamais recopiées. */
 export const LENS_EXAMPLES = [
@@ -386,6 +400,9 @@ export function passesFormRules(text: string): boolean {
     !SEXUAL_DETAIL.test(t) &&
     !PAINFUL_STORY.test(t) &&
     !TUTOIEMENT.test(t) &&
-    VOUVOIEMENT.test(t)
+    VOUVOIEMENT.test(t) &&
+    !INTRUSIVE_MORE.test(t) &&
+    !VIOLENCE_NORMALIZE.test(t) &&
+    !PRESUPPOSED.test(t)
   );
 }
