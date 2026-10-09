@@ -22,6 +22,11 @@ mode test : aucun paiement réel n'a été fait.
 | Comptabilité | Journal des ventes (CSV) : date, numéro, pays, régime et taux de TVA, HT, TVA, TTC, avoirs en négatif | tableau de bord, Facturation |
 | Partenaires | Les ventes payées avec un code partenaire comptent enfin dans les commissions ; un achat remboursé n'en donne plus | toujours |
 
+Sur le site web, le paiement passe par la page Stripe Checkout : même prix,
+même demande de commencement, même crédit (webhook `payment_intent.succeeded`
+ou vérification au retour dans l'app). Adresse de retour : `WEB_APP_URL`
+(par défaut https://boligo-web.onrender.com).
+
 Corrections faites en passant :
 - le faux numéro de TVA et l'adresse écrite en dur ont été retirés du reçu ;
 - l'adresse e-mail du membre n'est plus écrite dans les journaux ;
@@ -178,8 +183,6 @@ Ces points ne se règlent pas dans le code.
 ## 8. Plus tard
 
 - Passer la version de l'API Stripe à une version récente.
-- Paiement Stripe Checkout sur le site web, où le paiement par carte est
-  aujourd'hui indisponible.
 - Prix en devises locales (XOF, XAF, CAD, GBP, USD).
 - Paiement mobile en Afrique (Orange Money, Wave, MTN) : Stripe ne le propose
   pas dans ces pays. Pistes : CinetPay, PayDunya, FedaPay, Flutterwave.

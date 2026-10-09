@@ -14,7 +14,11 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentService } from './payment.service';
 import { WithdrawalService } from './withdrawal.service';
-import { CreatePaymentDto, WithdrawalRequestDto } from './dto/billing.dto';
+import {
+  ConfirmCheckoutDto,
+  CreatePaymentDto,
+  WithdrawalRequestDto,
+} from './dto/billing.dto';
 
 @Controller('payment')
 export class PaymentController {
@@ -71,6 +75,31 @@ export class PaymentController {
       body.promoCode,
       body,
     );
+  }
+
+  // ─── Paiement sur le web : page Stripe Checkout ───────────────────────────
+  @Post('checkout-session')
+  @UseGuards(AuthGuard('jwt'))
+  async checkoutSession(
+    @Request() req: { user: { id: string } },
+    @Body() body: CreatePaymentDto,
+  ) {
+    return this.paymentService.createCheckoutSession(
+      req.user.id,
+      body.optionId || body.packId || 'parcours_harmonie',
+      body.promoCode,
+      body,
+    );
+  }
+
+  @Post('confirm-checkout')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  confirmCheckout(
+    @Request() req: { user: { id: string } },
+    @Body() body: ConfirmCheckoutDto,
+  ) {
+    return this.paymentService.confirmCheckout(req.user.id, body.sessionId);
   }
 
   // ─── Confirmer un paiement après la feuille de paiement (app) ─────────────

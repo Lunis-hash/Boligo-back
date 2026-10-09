@@ -144,6 +144,26 @@ export async function spendCredits(amount: number, description: string): Promise
   return res.data?.newBalance ?? 0;
 }
 
+/** Paiement sur le web : adresse de la page de paiement Stripe (Checkout). */
+export async function createCheckoutSession(
+  optionId: string,
+  promoCode?: string,
+  consent?: { earlyStartConsent: boolean; consentVersion: string },
+): Promise<{ url: string; sessionId: string }> {
+  const res = await client.post<{ url: string; sessionId: string }>('/payment/checkout-session', {
+    optionId,
+    ...(promoCode ? { promoCode } : {}),
+    ...(consent ?? {}),
+  });
+  return res.data;
+}
+
+/** Retour de la page Stripe : le serveur relit la session et crédite une fois. */
+export async function confirmCheckout(sessionId: string): Promise<PaymentConfirmation> {
+  const res = await client.post<PaymentConfirmation>('/payment/confirm-checkout', { sessionId });
+  return res.data;
+}
+
 export interface Purchase {
   paymentRef: string;
   paidAt: string;
@@ -185,6 +205,8 @@ export const PaymentService = {
   spendCredits,
   getPurchases,
   getInvoiceUrl,
+  createCheckoutSession,
+  confirmCheckout,
   requestWithdrawal,
 };
 
