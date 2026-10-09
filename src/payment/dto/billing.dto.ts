@@ -60,3 +60,10 @@ export class WithdrawalDecisionDto {
   @MaxLength(500)
   note?: string;
 }
+
+/** Retour de la page de paiement Stripe (web). */
+export class ConfirmCheckoutDto {
+  @IsString()
+  @Matches(/^cs_[A-Za-z0-9_]+$/)
+  sessionId!: string;
+}

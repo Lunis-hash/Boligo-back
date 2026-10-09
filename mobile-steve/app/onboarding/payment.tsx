@@ -11,7 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,6 +60,13 @@ export default function PaymentScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { credits, refreshCredits } = useAppContext();
+  // Retour de la page de paiement Stripe (web) : ?checkout=success&session_id=…
+  const { checkout, session_id: checkoutSessionId } = useLocalSearchParams<{
+    checkout?: string;
+    session_id?: string;
+  }>();
+  const [webReturn, setWebReturn] = useState<'idle' | 'pending' | 'done' | 'failed'>('idle');
+  const [webReturnMessage, setWebReturnMessage] = useState('');
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const [plans, setPlans] = useState<PaymentPlan[]>([]);
@@ -98,6 +105,38 @@ export default function PaymentScreen() {
   useEffect(() => {
     loadPlans();
   }, [loadPlans]);
+
+  // Retour de Stripe Checkout (web) : le serveur relit la session et crédite.
+  const handledReturn = useRef(false);
+  useEffect(() => {
+    if (handledReturn.current || !checkout) return;
+    handledReturn.current = true;
+    if (checkout === 'cancel') {
+      Alert.alert('Paiement annulé', "Aucun montant n'a été prélevé.");
+      return;
+    }
+    if (checkout !== 'success' || !checkoutSessionId) return;
+    setWebReturn('pending');
+    setWebReturnMessage('Merci de patienter quelques secondes.');
+    (async () => {
+      try {
+        let result = await PaymentService.confirmCheckout(String(checkoutSessionId));
+        // Stripe peut mettre un instant à marquer la session payée.
+        for (let i = 0; i < 5 && !result.credited && !result.alreadyCredited; i++) {
+          await new Promise((r) => setTimeout(r, 1500));
+          result = await PaymentService.confirmCheckout(String(checkoutSessionId));
+        }
+        if (!result.credited && !result.alreadyCredited) throw new Error('Paiement non confirmé par Stripe.');
+        const balance = await refreshCredits();
+        setWebReturn('done');
+        setWebReturnMessage(`Votre paiement a été confirmé par Stripe. Votre solde est de ${balance} crédit${balance > 1 ? 's' : ''}.`);
+        setTimeout(() => router.replace('/(tabs)/discover'), 1800);
+      } catch (e) {
+        setWebReturn('failed');
+        setWebReturnMessage(getReadableError(e, "Le paiement n'a pas pu être vérifié. Si vous avez été débité, le crédit sera ajouté automatiquement dans quelques minutes."));
+      }
+    })();
+  }, [checkout, checkoutSessionId, refreshCredits, router]);
 
   const goBackToApp = () => {
     if (router.canGoBack()) router.back();
@@ -161,18 +200,26 @@ export default function PaymentScreen() {
         Alert.alert('Avant de payer', 'Cochez la demande de commencement du parcours pour continuer.');
         return;
       }
+      // Sur le web : page de paiement sécurisée de Stripe, puis retour ici.
+      if (Platform.OS === 'web') {
+        const session = await PaymentService.createCheckoutSession(
+          selectedPlan.id,
+          promoResult?.isValid ? promoCode.trim() : undefined,
+          { earlyStartConsent: true, consentVersion: consent.version },
+        );
+        window.location.assign(session.url);
+        return;
+      }
       const sheet = await PaymentService.createPaymentIntent(
         selectedPlan.id,
         promoResult?.isValid ? promoCode.trim() : undefined,
         { earlyStartConsent: true, consentVersion: consent.version },
       );
 
-      if (sheet.isMock || Platform.OS === 'web') {
+      if (sheet.isMock) {
         Alert.alert(
           'Paiement indisponible',
-          Platform.OS === 'web'
-            ? "Le paiement par carte n'est disponible que dans l'application mobile."
-            : "Le paiement n'est pas encore activé sur ce serveur (Stripe non configuré). Aucun crédit n'a été ajouté.",
+          "Le paiement n'est pas encore activé sur ce serveur (Stripe non configuré). Aucun crédit n'a été ajouté.",
         );
         return;
       }
@@ -229,6 +276,35 @@ export default function PaymentScreen() {
   );
   const isFreeCode = !!(promoResult?.isValid && promoResult.isFree);
   const consent = selectedPlan?.earlyStartConsent ?? { ...EARLY_START_CONSENT_FALLBACK, required: true };
+
+  // ═════════════════════════════════════════════════════════════════════
+  // RETOUR DE LA PAGE DE PAIEMENT STRIPE (WEB)
+  // ═════════════════════════════════════════════════════════════════════
+  if (webReturn !== 'idle') {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', padding: 24 }]} testID="checkout-return">
+        <StatusBar style="dark" />
+        <View style={styles.successContainer}>
+          {webReturn === 'pending' ? (
+            <ActivityIndicator size="large" color={COLORS.accent} />
+          ) : (
+            <View style={styles.successCircle}>
+              <Sparkles size={56} color={COLORS.accent} />
+            </View>
+          )}
+          <Text style={styles.successTitle}>
+            {webReturn === 'pending' ? 'Vérification du paiement…' : webReturn === 'done' ? 'Paiement confirmé' : 'Paiement non confirmé'}
+          </Text>
+          <Text style={styles.successSubtitle}>{webReturnMessage}</Text>
+          {webReturn === 'failed' ? (
+            <TouchableOpacity style={[styles.ctaRegularBtn, { marginTop: 24, paddingHorizontal: 24 }]} onPress={() => setWebReturn('idle')}>
+              <Text style={styles.ctaRegularText}>Revenir aux formules</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
 
   // ═════════════════════════════════════════════════════════════════════
   // VUE RÉCAPITULATIF & CONFIRMATION STRIPE

@@ -313,37 +313,16 @@ export class PaymentService implements OnModuleInit {
     promoCode?: string,
     consent?: { earlyStartConsent?: boolean; consentVersion?: string },
   ) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new BadRequestException('Utilisateur non trouvé');
-    const flags = billingFlags();
-    const consented = consent?.earlyStartConsent === true;
-    if (flags.consentRequired && !consented) {
-      throw new BadRequestException(
-        'Cochez la demande de commencement du parcours avant la fin du délai de rétractation pour payer.',
-      );
-    }
-    const consentAt = consented ? new Date() : undefined;
-
-    const plan = this.getPlanDetails(optionId);
-    let finalAmount = plan.amount;
-    let promoResult: Awaited<ReturnType<typeof this.resolvePromoCode>> | null =
-      null;
-
-    if (promoCode && promoCode.trim()) {
-      promoResult = await this.resolvePromoCode(promoCode, userId, plan.amount);
-      if (!promoResult.isValid) {
-        throw new BadRequestException(
-          promoResult.message || 'Code promo invalide.',
-        );
-      }
-      finalAmount = promoResult.finalAmount;
-    }
-
-    if (finalAmount <= 0) {
-      throw new BadRequestException(
-        "Le montant est gratuit — utilisez /payment/apply-promo pour activer l'accès gratuit.",
-      );
-    }
+    const {
+      user,
+      flags,
+      plan,
+      finalAmount,
+      promoResult,
+      consented,
+      consentAt,
+      metadata,
+    } = await this.preparePurchase(userId, optionId, promoCode, consent);
 
     try {
       // 1. Trouver ou créer le client Stripe (par son identifiant enregistré
@@ -363,21 +342,7 @@ export class PaymentService implements OnModuleInit {
         customer: customerId,
         description: plan.description,
         receipt_email: user.email,
-        metadata: {
-          userId,
-          optionId,
-          credits: plan.credits.toString(),
-          planName: plan.planName,
-          description: plan.description,
-          promoCode: promoCode || '',
-          promoCodeId: promoResult?.promoCodeId ?? '',
-          listAmountCents: String(plan.amount),
-          termsVersion: user.termsVersion ?? '',
-          earlyStartConsentAt: consentAt?.toISOString() ?? '',
-          earlyStartConsentVersion: consented
-            ? consent?.consentVersion || EARLY_START_CONSENT_VERSION
-            : '',
-        },
+        metadata,
       });
       await this.invoiceService.recordPending({
         paymentIntentId: paymentIntent.id,
@@ -429,6 +394,185 @@ export class PaymentService implements OnModuleInit {
       }
       throw new BadRequestException(`Erreur Stripe : ${error.message}`);
     }
+  }
+
+  /**
+   * Préparation commune d'un achat (feuille de paiement mobile ou page
+   * Stripe Checkout sur le web) : membre, code promo, demande de
+   * commencement anticipé et métadonnées copiées sur le PaymentIntent.
+   */
+  private async preparePurchase(
+    userId: string,
+    optionId: string,
+    promoCode?: string,
+    consent?: { earlyStartConsent?: boolean; consentVersion?: string },
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new BadRequestException('Utilisateur non trouvé');
+    const flags = billingFlags();
+    const consented = consent?.earlyStartConsent === true;
+    if (flags.consentRequired && !consented) {
+      throw new BadRequestException(
+        'Cochez la demande de commencement du parcours avant la fin du délai de rétractation pour payer.',
+      );
+    }
+    const consentAt = consented ? new Date() : undefined;
+
+    const plan = this.getPlanDetails(optionId);
+    let finalAmount = plan.amount;
+    let promoResult: Awaited<ReturnType<typeof this.resolvePromoCode>> | null =
+      null;
+
+    if (promoCode && promoCode.trim()) {
+      promoResult = await this.resolvePromoCode(promoCode, userId, plan.amount);
+      if (!promoResult.isValid) {
+        throw new BadRequestException(
+          promoResult.message || 'Code promo invalide.',
+        );
+      }
+      finalAmount = promoResult.finalAmount;
+    }
+
+    if (finalAmount <= 0) {
+      throw new BadRequestException(
+        "Le montant est gratuit — utilisez /payment/apply-promo pour activer l'accès gratuit.",
+      );
+    }
+
+    const metadata: Record<string, string> = {
+      userId,
+      optionId,
+      credits: plan.credits.toString(),
+      planName: plan.planName,
+      description: plan.description,
+      promoCode: promoCode || '',
+      promoCodeId: promoResult?.promoCodeId ?? '',
+      listAmountCents: String(plan.amount),
+      termsVersion: user.termsVersion ?? '',
+      earlyStartConsentAt: consentAt?.toISOString() ?? '',
+      earlyStartConsentVersion: consented
+        ? consent?.consentVersion || EARLY_START_CONSENT_VERSION
+        : '',
+    };
+    return {
+      user,
+      flags,
+      plan,
+      finalAmount,
+      promoResult,
+      consented,
+      consentAt,
+      metadata,
+    };
+  }
+
+  /** Adresse de l'app web pour le retour de Stripe Checkout. */
+  private webAppUrl(): string {
+    return (
+      this.configService.get<string>('WEB_APP_URL') ||
+      'https://boligo-web.onrender.com'
+    ).replace(/\/+$/, '');
+  }
+
+  /**
+   * Paiement sur le web : page de paiement hébergée par Stripe (Checkout).
+   * Les métadonnées sont copiées sur le PaymentIntent : le webhook
+   * payment_intent.succeeded et la confirmation au retour créditent le
+   * compte par le même circuit que sur mobile.
+   */
+  async createCheckoutSession(
+    userId: string,
+    optionId: string,
+    promoCode?: string,
+    consent?: { earlyStartConsent?: boolean; consentVersion?: string },
+  ) {
+    if (!this.configService.get<string>('STRIPE_SECRET_KEY')) {
+      throw new BadRequestException('Paiement indisponible sur ce serveur.');
+    }
+    const {
+      user,
+      flags,
+      plan,
+      finalAmount,
+      promoResult,
+      consented,
+      consentAt,
+      metadata,
+    } = await this.preparePurchase(userId, optionId, promoCode, consent);
+    const customerId = await this.customerFor(user, flags.enabled);
+    const back = `${this.webAppUrl()}/onboarding/payment`;
+    const session = await this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer: customerId,
+      locale: 'fr',
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: plan.currency,
+            unit_amount: finalAmount,
+            product_data: {
+              name: plan.planName,
+              description: plan.description,
+            },
+          },
+        },
+      ],
+      billing_address_collection: flags.addressRequired ? 'required' : 'auto',
+      customer_update: { address: 'auto', name: 'auto' },
+      payment_intent_data: {
+        description: plan.description,
+        receipt_email: user.email,
+        metadata,
+      },
+      metadata: { userId },
+      success_url: `${back}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${back}?checkout=cancel`,
+    });
+    const piId =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id;
+    if (piId)
+      await this.invoiceService.recordPending({
+        paymentIntentId: piId,
+        userId,
+        planId: optionId,
+        credits: plan.credits,
+        currency: plan.currency,
+        listAmountCents: plan.amount,
+        totalAmountCents: finalAmount,
+        promoCodeId: promoResult?.promoCodeId,
+        termsVersion: user.termsVersion,
+        consentAt,
+        consentText: consented ? EARLY_START_CONSENT_TEXT : undefined,
+      });
+    return { url: session.url, sessionId: session.id, finalAmount };
+  }
+
+  /** Retour de Stripe Checkout : le serveur relit la session et crédite une fois. */
+  async confirmCheckout(userId: string, sessionId: string) {
+    if (
+      typeof sessionId !== 'string' ||
+      !/^cs_[A-Za-z0-9_]+$/.test(sessionId)
+    ) {
+      throw new BadRequestException('Référence de paiement invalide.');
+    }
+    if (!this.configService.get<string>('STRIPE_SECRET_KEY')) {
+      throw new BadRequestException('Paiement indisponible sur ce serveur.');
+    }
+    const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+    if (session.metadata?.userId !== userId) {
+      throw new ForbiddenException('Ce paiement ne vous appartient pas.');
+    }
+    const piId =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id;
+    if (session.payment_status !== 'paid' || !piId) {
+      return { credited: false, status: session.payment_status };
+    }
+    return this.confirmPayment(userId, piId);
   }
 
   // ─── Webhook Stripe ────────────────────────────────────────────────────────
