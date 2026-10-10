@@ -9,7 +9,13 @@ if (typeof (dns as any).setDefaultResultOrder === 'function') {
 const isRealKey = (key?: string) => Boolean(key && !key.includes('placeholder'));
 
 /** Canal d'envoi actif, sans jamais révéler de clé. */
-export function emailDeliveryMode(): 'smtp' | 'sendgrid' | 'brevo' | 'simulation' {
+export function emailDeliveryMode():
+  | 'resend'
+  | 'smtp'
+  | 'sendgrid'
+  | 'brevo'
+  | 'simulation' {
+  if (isRealKey(process.env.RESEND_API_KEY)) return 'resend';
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) return 'smtp';
   if (isRealKey(process.env.SENDGRID_API_KEY)) return 'sendgrid';
   if (isRealKey(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY)) return 'brevo';
@@ -27,7 +33,7 @@ export class EmailService implements OnModuleInit {
     const mode = emailDeliveryMode();
     if (mode === 'simulation') {
       console.warn(
-        "[EMAIL] Mode d'envoi : simulation — aucun e-mail réel n'est envoyé (codes de vérification et de réinitialisation non délivrés). Configurez SMTP_HOST/SMTP_USER/SMTP_PASS ou BREVO_API_KEY.",
+        "[EMAIL] Mode d'envoi : simulation — aucun e-mail réel n'est envoyé (codes de vérification et de réinitialisation non délivrés). Configurez RESEND_API_KEY, SMTP_HOST/SMTP_USER/SMTP_PASS ou BREVO_API_KEY.",
       );
     } else {
       console.log(`[EMAIL] Mode d'envoi : ${mode}`);
@@ -41,7 +47,44 @@ export class EmailService implements OnModuleInit {
     const smtpPort = Number(process.env.SMTP_PORT) || 587;
     const sendgridKey = process.env.SENDGRID_API_KEY;
 
+    // 1. Resend HTTP API (port 443 : passe même quand l'hébergeur bloque le SMTP)
+    const resendKey = process.env.RESEND_API_KEY;
+    if (isRealKey(resendKey)) {
+      console.log(`[EMAIL] Sending real email to ${to} via Resend API...`);
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          signal: AbortSignal.timeout(10_000),
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: process.env.EMAIL_FROM || 'BOLIGO <no-reply@boligo.fr>',
+            to: [to],
+            subject,
+            html,
+            ...(process.env.EMAIL_REPLY_TO
+              ? { reply_to: process.env.EMAIL_REPLY_TO }
+              : {}),
+          }),
+        });
 
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error(
+            `[EMAIL] Resend API error: ${response.status} - ${errText}`,
+          );
+        } else {
+          console.log(
+            `[EMAIL] Email sent successfully via Resend API to ${to}`,
+          );
+          return;
+        }
+      } catch (error) {
+        console.error('[EMAIL] Failed to send email via Resend API:', error);
+      }
+    }
 
     // 2. SMTP / Nodemailer Fallback (Gmail, Brevo, OVH, etc.)
     if ((smtpHost || smtpUser) && smtpPass) {
