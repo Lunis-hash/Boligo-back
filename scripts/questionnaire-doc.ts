@@ -232,7 +232,8 @@ function condition(q: Question, lang: Lang): string | null {
 
 const INTRO: Record<Lang, string> = {
   fr: `
-<h1>BOLIGO — Questionnaire de compatibilité V6.2</h1>
+<h1>BOLIGO — Questionnaire de compatibilité V7.1</h1>
+<p><i>Version en service dans l'application au 11 octobre 2026. Les questions marquées ★ / ✎ / ⚙ ont changé en V7 ; les sections « Ce qui change » ci-dessous retracent les versions précédentes.</i></p>
 <p><b>Grand Entretien — version française.</b> ${QUESTIONS.length} questions en 11 modules (0 à 10). Document généré à partir de l'application : chaque question, chaque option et chaque signal ci-dessous est celui que l'application utilise réellement.</p>
 
 <h2>Ce qui change en V6.2 (5 octobre 2026)</h2>
@@ -305,7 +306,8 @@ const INTRO: Record<Lang, string> = {
 <b>Fréquence</b> : A Jamais · B Rarement · C Parfois · D Souvent · E Très souvent.</p>
 `,
   en: `
-<h1>BOLIGO — Compatibility Questionnaire V6.2</h1>
+<h1>BOLIGO — Compatibility Questionnaire V7.1</h1>
+<p><i>Version live in the app as of 11 October 2026. Questions marked ★ / ✎ / ⚙ changed in V7; the “What changes” sections below record earlier versions.</i></p>
 <p><b>Mental Map Interview — English version.</b> ${QUESTIONS.length} questions in 11 modules (0 to 10). Generated from the app: every question, option and signal below is exactly what the app uses.</p>
 
 <h2>What changes in V6.2 (5 October 2026)</h2>
