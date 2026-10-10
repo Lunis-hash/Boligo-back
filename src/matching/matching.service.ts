@@ -1,3 +1,9 @@
+import {
+  invitationClosedEmail,
+  invitationReceivedEmail,
+  journeyStartedEmail,
+  RenderedEmail,
+} from '../common/email-templates';
 import { Injectable, Optional } from '@nestjs/common';
 import { MatchProposal, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -539,6 +545,7 @@ export class MatchingService {
         'nouveau_match',
         'Nouveau profil compatible',
         "Quelqu'un s'intéresse à votre profil. Découvrez votre compatibilité.",
+        (name) => invitationReceivedEmail(name),
       );
     }
     return outcome;
@@ -558,6 +565,7 @@ export class MatchingService {
         'credit',
         'Invitation sans suite',
         "Votre invitation n'a pas abouti. Votre crédit vous a été rendu : de nouveaux profils vous attendent.",
+        (name) => invitationClosedEmail(name, 'refusee', true),
       );
     }
     return { success: true, message: 'Invitation déclinée' };
@@ -667,6 +675,7 @@ export class MatchingService {
           'credit',
           'Invitation expirée',
           "Votre invitation est restée sans réponse pendant 7 jours. Votre crédit vous a été rendu.",
+          (name) => invitationClosedEmail(name, 'expiree', true),
         );
       }
     }
@@ -677,12 +686,14 @@ export class MatchingService {
     type: 'nouveau_match' | 'credit',
     title: string,
     body: string,
+    email?: (firstName: string) => RenderedEmail,
   ) {
     try {
       await this.notificationService.sendPushNotification(userId, type, title, body);
     } catch (err) {
       console.error('⚠️ [Matching] Notification non envoyée :', (err as Error)?.message);
     }
+    if (email) await this.notificationService.emailUser(userId, email);
   }
 
   // Récupérer les likes reçus (pending matches)
@@ -858,6 +869,7 @@ export class MatchingService {
           'credit',
           'Invitation sans suite',
           "Ce profil vient de commencer un autre parcours. Votre crédit vous a été rendu.",
+          (name) => invitationClosedEmail(name, 'autre_parcours', true),
         );
       }
     }
@@ -873,12 +885,24 @@ export class MatchingService {
         'nouveau_match',
         'Invitation acceptée',
         `${userB?.firstName || 'Votre partenaire'} a accepté votre invitation. Votre Parcours Harmonie commence.`,
+        (name) =>
+          journeyStartedEmail(
+            name,
+            userB?.firstName || 'votre partenaire',
+            'inviteur',
+          ),
       ),
       this.notify(
         match.targetUserId,
         'nouveau_match',
         'Votre parcours commence',
         `Votre Parcours Harmonie avec ${userA?.firstName || 'votre partenaire'} a commencé.`,
+        (name) =>
+          journeyStartedEmail(
+            name,
+            userA?.firstName || 'votre partenaire',
+            'invite',
+          ),
       ),
     ]);
 

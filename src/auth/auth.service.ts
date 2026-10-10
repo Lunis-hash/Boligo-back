@@ -224,6 +224,15 @@ export class AuthService {
       },
     });
 
+    // Bienvenue : jamais bloquant pour l'inscription.
+    this.emailService
+      .sendWelcomeEmail(user.email, user.firstName || '')
+      .catch((e) => {
+        console.error(
+          `[AUTH] E-mail de bienvenue non envoyé : ${(e as Error)?.message}`,
+        );
+      });
+
     return this.signToken(user.id, user.email);
   }
 
