@@ -4,10 +4,17 @@ import { EmailService } from '../common/email.service';
 import { PartnersController } from './partners.controller';
 import { PartnersService } from './partners.service';
 import { RegistryService } from './registry.service';
+import { PartnerTrackingService } from './partner-tracking.service';
 
 @Module({
   imports: [PrismaModule],
   controllers: [PartnersController],
-  providers: [PartnersService, EmailService, RegistryService],
+  providers: [
+    PartnersService,
+    EmailService,
+    RegistryService,
+    PartnerTrackingService,
+  ],
+  exports: [PartnerTrackingService],
 })
 export class PartnersModule {}

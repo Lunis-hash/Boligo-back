@@ -525,6 +525,10 @@ export default function ProfileScreen() {
             <Text style={styles.legalRowText}>Mes achats et factures</Text>
             <ChevronRight size={18} color={Colors.text.primary40} />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={() => router.push('/profile/offres' as any)} testID="offers-link">
+            <Text style={styles.legalRowText}>Offres partenaires</Text>
+            <ChevronRight size={18} color={Colors.text.primary40} />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.legalRow} activeOpacity={0.7} onPress={() => router.push('/legal/cgu' as any)} testID="legal-cgu-link">
             <Text style={styles.legalRowText}>Conditions Générales d'Utilisation et de Vente</Text>
             <ChevronRight size={18} color={Colors.text.primary40} />

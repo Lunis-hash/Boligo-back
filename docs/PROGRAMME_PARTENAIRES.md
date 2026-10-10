@@ -114,7 +114,14 @@ Chaque partenaire accepté a une page privée, en français
 - le nombre de Parcours payés avec son code, le montant encaissé et sa
   commission ;
 - l'historique des douze derniers mois ;
+- son **lien suivi** (`…/?p=CODE`) et le tunnel visites → inscriptions →
+  Parcours payés ;
+- un **kit de messages prêts à publier** avec la mention obligatoire ;
+- pour une marque, les affichages et clics de ses offres ;
 - le rappel des règles de publication (§ 5).
+
+Visibilité, suivi des clics et rentabilité : voir
+[PARTENAIRES_OFFRE.md](PARTENAIRES_OFFRE.md).
 
 **Accès par lien privé, sans mot de passe** :
 
@@ -167,8 +174,10 @@ partenaires et leur durée de conservation :
   - taux appliqué au montant encaissé avec le code ; l'accord précise HT ou
     TTC ;
   - période de paiement ;
-  - pas de commission sur un achat remboursé (le tableau de bord compte les
-    achats payés : un remboursement se déduit à la main) ;
+  - pas de commission sur un achat remboursé (le remboursement est déduit
+    automatiquement du montant et de la commission) ;
+  - pas de commission sur un Parcours offert (code à 100 %) : il est affiché à
+    part et ne compte pas comme une vente ;
   - le partenaire est responsable de ses déclarations fiscales et sociales.
     Pour un partenaire hors de France, faire valider la facturation et la TVA
     par l'expert-comptable.
@@ -261,6 +270,11 @@ Ajouts dans la base BOLIGO (Supabase, projet « Lunis-hash's Project ») :
 - colonnes de vérification d'entreprise (`registrationType`,
   `registrationNumber`, `verificationStatus`, `verificationMethod`,
   `verifiedName`, `verificationNote`, `verifiedAt`, `verifiedBy`).
+
+- lien partenaire et offres des marques
+  (`prisma/sql/2026-10-10_partenaires_visibilite.sql`) : colonnes
+  `referralCodeId` et `referredAt` de `User`, tables `PartnerDailyStat`,
+  `PartnerOffer`, `PartnerOfferStat`, type `OfferPlacement`.
 
 Ces ajouts ne modifient aucune donnée existante. La table est protégée par la
 sécurité par ligne, comme les autres : seule l'API y accède.

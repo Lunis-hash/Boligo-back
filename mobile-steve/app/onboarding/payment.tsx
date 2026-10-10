@@ -27,6 +27,7 @@ import {
   selectHarmoniePlan,
 } from '@/services/payment';
 import { getReadableError } from '@/services/api';
+import { fetchAccountReferral } from '@/services/partnerReferral';
 import { Typography } from '@/constants/theme';
 import { Brand } from '@/constants/brand';
 
@@ -80,6 +81,8 @@ export default function PaymentScreen() {
   const [promoCode, setPromoCode] = useState('');
   const [promoResult, setPromoResult] = useState<PromoCheckResult | null>(null);
   const [promoChecking, setPromoChecking] = useState(false);
+  // Membre arrivé par le lien d'un partenaire : code proposé d'office.
+  const [referral, setReferral] = useState<{ code: string; partnerName?: string } | null>(null);
   // Demande de commencement avant la fin du délai de rétractation : case
   // jamais pré-cochée, obligatoire pour payer.
   const [earlyStart, setEarlyStart] = useState(false);
@@ -105,6 +108,32 @@ export default function PaymentScreen() {
   useEffect(() => {
     loadPlans();
   }, [loadPlans]);
+
+  useEffect(() => {
+    let alive = true;
+    fetchAccountReferral().then((r) => {
+      if (!alive || !r.code) return;
+      setReferral({ code: r.code, partnerName: r.partnerName });
+      setPromoCode((current) => current || r.code!);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Code du partenaire vérifié dès le choix de la formule (sans message s'il ne s'applique pas).
+  useEffect(() => {
+    if (!selectedPlan || !referral || promoResult || promoCode !== referral.code) return;
+    let alive = true;
+    PaymentService.checkPromoCode(referral.code, selectedPlan.id)
+      .then((result) => {
+        if (alive && result.isValid) setPromoResult(result);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [selectedPlan, referral, promoCode, promoResult]);
 
   // Retour de Stripe Checkout (web) : le serveur relit la session et crédite.
   const handledReturn = useRef(false);
@@ -396,6 +425,9 @@ export default function PaymentScreen() {
                     {promoChecking ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.promoBtnText}>Appliquer</Text>}
                   </TouchableOpacity>
                 </View>
+                {referral && promoCode === referral.code && referral.partnerName ? (
+                  <Text style={styles.promoTitle}>Offert grâce à {referral.partnerName}</Text>
+                ) : null}
                 {promoResult?.isValid ? (
                   <Text style={styles.promoOk}>{promoResult.message}</Text>
                 ) : null}

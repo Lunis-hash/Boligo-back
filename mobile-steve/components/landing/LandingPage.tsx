@@ -19,6 +19,7 @@ import { Brand } from '@/constants/brand';
 import { useBrandFonts } from '@/services/brandFonts';
 import { landingFonts, LandingFonts } from './fonts';
 import { Showcase } from './Showcase';
+import { PartnerOfMonthSection, ReferralBanner } from '@/components/partners/PartnerOffers';
 
 type SectionKey = 'parcours' | 'pacte' | 'tarif' | 'questions';
 
@@ -153,6 +154,8 @@ export function LandingPage() {
         contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
+        <ReferralBanner ff={ff} />
+
         {/* En-tête et accroche */}
         <View style={styles.heroWrap}>
           <Blob color={Brand.rose} size={wide ? 860 : 520} style={{ top: wide ? -260 : -160, right: wide ? -220 : -200 }} />
@@ -407,6 +410,14 @@ export function LandingPage() {
             </LinearGradient>
           </View>
         </View>
+
+        {/* Partenaire du mois (affiché seulement quand une offre est publiée) */}
+        <PartnerOfMonthSection
+          ff={ff}
+          wide={wide}
+          style={[container, { paddingBottom: sectionGap }]}
+          title={<Text style={[h2, { textAlign: wide ? 'center' : 'left' }]}>Partenaire du mois</Text>}
+        />
 
         {/* Questions */}
         <View onLayout={mark('questions')} style={[container, { maxWidth: 880, paddingBottom: sectionGap, gap: wide ? 28 : 14 }]}>

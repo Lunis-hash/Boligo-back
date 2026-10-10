@@ -78,15 +78,17 @@ function setup() {
       }),
     },
     creditTransaction: {
-      groupBy: jest.fn(() =>
-        Promise.resolve([
-          {
-            promoCodeId: 'code-1',
-            type: 'achat',
-            _count: { _all: 3 },
-            _sum: { euroAmount: 40.5 },
-          },
-        ]),
+      groupBy: jest.fn((args: { where?: { euroAmount?: number } } = {}) =>
+        args.where?.euroAmount === 0
+          ? Promise.resolve([])
+          : Promise.resolve([
+              {
+                promoCodeId: 'code-1',
+                type: 'achat',
+                _count: { _all: 3 },
+                _sum: { euroAmount: 40.5 },
+              },
+            ]),
       ),
       findMany: jest.fn(() =>
         Promise.resolve([
@@ -118,6 +120,12 @@ function setup() {
       prisma as never,
       email as never,
       registry as never,
+      {
+        linkFunnel: jest.fn(() =>
+          Promise.resolve({ visits: 40, signups: 6, months: [] }),
+        ),
+        offerStats: jest.fn(() => Promise.resolve([])),
+      } as never,
     ),
     prisma,
     email,
@@ -205,6 +213,7 @@ describe('Programme Partenaires : service', () => {
     const detail = await service.get(apps[0].id);
     expect(detail.sales).toEqual({
       purchases: 3,
+      freeActivations: 0,
       revenue: 40.5,
       commission: 6.08,
     });
@@ -250,6 +259,14 @@ describe('Programme Partenaires : service', () => {
       revenue: 40.5,
       commission: 6.08,
     });
+    expect(data.funnel).toMatchObject({
+      visits: 40,
+      signups: 6,
+      purchases: 3,
+      signupRate: 15,
+      purchaseRate: 50,
+    });
+    expect(data.shareLink).toMatch(/\/\?p=AWADIOP/);
     expect(data.months).toHaveLength(12);
     expect(data.months[0]).toMatchObject({ purchases: 2, revenue: 27 });
     const json = JSON.stringify(data);

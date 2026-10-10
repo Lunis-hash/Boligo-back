@@ -17,6 +17,30 @@ export interface PartnerSpaceData {
     expiresAt: string | null;
     uses: number;
   };
+  /** Lien à partager (?p=CODE) : la réduction est appliquée d'office. */
+  shareLink?: string;
+  /** Tunnel : visites du lien → inscriptions → Parcours payés. */
+  funnel?: {
+    visits: number;
+    signups: number;
+    purchases: number;
+    freeActivations: number;
+    signupRate: number;
+    purchaseRate: number;
+    months: { month: string; visits: number; signups: number }[];
+  };
+  /** Offres de la marque montrées dans BOLIGO (annonceurs). */
+  offers?: {
+    id: string;
+    title: string;
+    perk: string;
+    placement: 'OFFRES' | 'PARTENAIRE_DU_MOIS';
+    isActive: boolean;
+    live: boolean;
+    impressions: number;
+    clicks: number;
+    clickRate: number;
+  }[];
   totals: { purchases: number; revenue: number; commission: number };
   months: { month: string; purchases: number; revenue: number; commission: number }[];
   updatedAt: string;
@@ -45,6 +69,26 @@ export interface SpaceText {
   colPurchases: string;
   colRevenue: string;
   colCommission: string;
+  linkTitle: string;
+  linkHint: string;
+  funnelTitle: string;
+  funnelVisits: string;
+  funnelSignups: string;
+  funnelPurchases: string;
+  funnelRate: (r: number) => string;
+  funnelFree: (n: number) => string;
+  funnelEmpty: string;
+  kitTitle: string;
+  kitHint: string;
+  kitPosts: (link: string, discount: string) => string[];
+  offersTitle: string;
+  offersHint: string;
+  offerPlacement: (p: 'OFFRES' | 'PARTENAIRE_DU_MOIS') => string;
+  offerLive: string;
+  offerOff: string;
+  offerImpressions: string;
+  offerClicks: string;
+  offerRate: string;
   rulesTitle: string;
   rules: string[];
   privacy: string;
@@ -64,7 +108,7 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     kicker: 'Espace partenaire',
     hello: (name) => `Bonjour ${name}`,
     intro:
-      'Retrouvez ici l’activité de votre code BOLIGO : les Parcours payés grâce à vous, le montant encaissé et votre commission, mois par mois.',
+      'Retrouvez ici l’activité de votre lien et de votre code BOLIGO : visites, inscriptions, Parcours payés grâce à vous, montant encaissé et commission, mois par mois.',
     codeTitle: 'Votre code personnel',
     codeActive: 'Actif',
     codePaused: 'En pause',
@@ -83,6 +127,31 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     colPurchases: 'Parcours',
     colRevenue: 'Montant',
     colCommission: 'Commission',
+    linkTitle: 'Votre lien à partager',
+    linkHint:
+      'Partagez ce lien plutôt que le code seul : chaque visite est comptée, et la réduction est appliquée automatiquement au paiement de la personne inscrite (jusqu’à 90 jours après son inscription).',
+    funnelTitle: 'De votre lien au Parcours payé',
+    funnelVisits: 'Visites via votre lien',
+    funnelSignups: 'Inscriptions',
+    funnelPurchases: 'Parcours payés',
+    funnelRate: (r) => `${r} % de conversion`,
+    funnelFree: (n) => `${n} Parcours offert${n > 1 ? 's' : ''} avec votre code (non comptés dans les ventes).`,
+    funnelEmpty: 'Les visites apparaîtront ici dès que votre lien sera partagé.',
+    kitTitle: 'Kit prêt à publier',
+    kitHint: 'Copiez, adaptez à votre ton, gardez la mention « Collaboration commerciale ».',
+    kitPosts: (link, discount) => [
+      `Collaboration commerciale avec BOLIGO · Marre du swipe ? BOLIGO fait l’inverse : pas de photos au départ, un vrai entretien, puis des personnes qui partagent vos valeurs. ${discount} sur votre premier parcours avec mon lien : ${link}`,
+      `#CollaborationCommerciale · J’ai découvert une appli de rencontre qui commence par les mots, pas par les photos. Si vous cherchez du sérieux : ${link} (${discount} sur le premier parcours, réservé aux majeurs)`,
+      `Publicité · Story : « Et si on se rencontrait d’abord pour ce qu’on pense ? » → lien en bio : ${link}`,
+    ],
+    offersTitle: 'Vos offres dans BOLIGO',
+    offersHint: 'Affichages et clics comptés chaque jour, sans aucune donnée sur les membres. Les visites arrivent chez vous avec utm_source=boligo.',
+    offerPlacement: (p) => (p === 'PARTENAIRE_DU_MOIS' ? 'Partenaire du mois (accueil)' : 'Page Offres partenaires'),
+    offerLive: 'En ligne',
+    offerOff: 'Hors ligne',
+    offerImpressions: 'Affichages',
+    offerClicks: 'Clics',
+    offerRate: 'Taux de clic',
     rulesTitle: 'Rappels pour vos publications',
     rules: [
       'Indiquez clairement « Collaboration commerciale » ou « Publicité » sur chaque contenu, pendant toute sa durée.',
@@ -107,7 +176,7 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     kicker: 'Partner space',
     hello: (name) => `Hello ${name}`,
     intro:
-      'Follow the activity of your BOLIGO code here: the Journeys paid thanks to you, the amount collected and your commission, month by month.',
+      'Follow the activity of your BOLIGO link and code here: visits, sign-ups, Journeys paid thanks to you, amount collected and commission, month by month.',
     codeTitle: 'Your personal code',
     codeActive: 'Active',
     codePaused: 'Paused',
@@ -126,6 +195,31 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     colPurchases: 'Journeys',
     colRevenue: 'Amount',
     colCommission: 'Commission',
+    linkTitle: 'Your link to share',
+    linkHint:
+      'Share this link rather than the code alone: every visit is counted, and the discount is applied automatically when the person who signed up pays (up to 90 days after sign-up).',
+    funnelTitle: 'From your link to a paid Journey',
+    funnelVisits: 'Visits via your link',
+    funnelSignups: 'Sign-ups',
+    funnelPurchases: 'Paid Journeys',
+    funnelRate: (r) => `${r}% conversion`,
+    funnelFree: (n) => `${n} free Journey${n > 1 ? 's' : ''} with your code (not counted as sales).`,
+    funnelEmpty: 'Visits will show here as soon as your link is shared.',
+    kitTitle: 'Ready-to-post kit',
+    kitHint: 'Copy, adapt to your tone, and keep the #ad / paid partnership label.',
+    kitPosts: (link, discount) => [
+      `#ad Paid partnership with BOLIGO · Tired of swiping? BOLIGO does the opposite: no photos at first, a real interview, then people who share your values. ${discount} on your first Journey with my link: ${link}`,
+      `#ad I found a dating app that starts with words, not photos. If you want something serious: ${link} (${discount} on the first Journey, adults only)`,
+      `#ad Story: “What if we met for what we think first?” → link in bio: ${link}`,
+    ],
+    offersTitle: 'Your offers in BOLIGO',
+    offersHint: 'Views and clicks counted daily, with no data about members. Visits reach you with utm_source=boligo.',
+    offerPlacement: (p) => (p === 'PARTENAIRE_DU_MOIS' ? 'Partner of the month (home page)' : 'Partner offers page'),
+    offerLive: 'Live',
+    offerOff: 'Offline',
+    offerImpressions: 'Views',
+    offerClicks: 'Clicks',
+    offerRate: 'Click rate',
     rulesTitle: 'Reminders for your posts',
     rules: [
       'Clearly label every piece of content as an ad or a paid partnership (for example #ad), for as long as it is online.',

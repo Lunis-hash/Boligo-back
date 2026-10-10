@@ -42,7 +42,7 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
   const ff = useMemo(() => landingFonts(ready), [ready]);
   const [lang, setLang] = useState<PartnerLang>(forcedLang);
   const [state, setState] = useState<State>({ kind: 'loading' });
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const t = SPACE_CONTENT[lang];
   const wide = width >= 1024;
   const tablet = width >= 720;
@@ -74,13 +74,13 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
     void load();
   }, [load]);
 
-  const copyCode = async (code: string) => {
+  const copyText = async (key: string, value: string) => {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(value);
+      setCopied(key);
+      setTimeout(() => setCopied((k) => (k === key ? null : k)), 2000);
     } catch {
-      setCopied(false);
+      setCopied(null);
     }
   };
 
@@ -172,16 +172,67 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                   </View>
                   {Platform.OS === 'web' && (
                     <Pressable
-                      onPress={() => void copyCode(data.code.code)}
+                      onPress={() => void copyText('code', data.code.code)}
                       accessibilityRole="button"
                       style={styles.copy}
                       testID="space-copy"
                     >
-                      <Text style={[styles.copyText, ff.bold]}>{copied ? t.copied : t.copy}</Text>
+                      <Text style={[styles.copyText, ff.bold]}>{copied === 'code' ? t.copied : t.copy}</Text>
                     </Pressable>
                   )}
                 </View>
               </LinearGradient>
+
+              {/* Lien suivi */}
+              {data.shareLink ? (
+                <View style={styles.card} testID="space-link">
+                  <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.linkTitle}</Text>
+                  <View style={styles.linkRow}>
+                    <Text style={[styles.link, ff.semi]} selectable testID="space-link-value">
+                      {data.shareLink}
+                    </Text>
+                    {Platform.OS === 'web' && (
+                      <Pressable
+                        onPress={() => void copyText('link', data.shareLink!)}
+                        accessibilityRole="button"
+                        style={styles.secondary}
+                        testID="space-link-copy"
+                      >
+                        <Text style={[styles.secondaryText, ff.bold]}>{copied === 'link' ? t.copied : t.copy}</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                  <Text style={[styles.muted, ff.text]}>{t.linkHint}</Text>
+                </View>
+              ) : null}
+
+              {/* Tunnel */}
+              {data.funnel ? (
+                <View style={styles.card} testID="space-funnel">
+                  <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.funnelTitle}</Text>
+                  <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 12 }}>
+                    <Step label={t.funnelVisits} value={data.funnel.visits} ff={ff} testID="space-funnel-visits" />
+                    <Step
+                      label={t.funnelSignups}
+                      value={data.funnel.signups}
+                      note={data.funnel.visits ? t.funnelRate(data.funnel.signupRate) : undefined}
+                      ff={ff}
+                      testID="space-funnel-signups"
+                    />
+                    <Step
+                      label={t.funnelPurchases}
+                      value={data.funnel.purchases}
+                      note={data.funnel.signups ? t.funnelRate(data.funnel.purchaseRate) : undefined}
+                      ff={ff}
+                      testID="space-funnel-purchases"
+                    />
+                  </View>
+                  {data.funnel.visits === 0 ? <Text style={[styles.muted, ff.text]}>{t.funnelEmpty}</Text> : null}
+                  {data.funnel.freeActivations > 0 ? (
+                    <Text style={[styles.muted, ff.text]}>{t.funnelFree(data.funnel.freeActivations)}</Text>
+                  ) : null}
+                </View>
+              ) : null}
 
               {/* Chiffres clés */}
               <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 14 }}>
@@ -234,6 +285,60 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                 )}
               </View>
 
+              {/* Offres de la marque */}
+              {data.offers && data.offers.length > 0 ? (
+                <View style={styles.card} testID="space-offers">
+                  <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.offersTitle}</Text>
+                  <Text style={[styles.muted, ff.text]}>{t.offersHint}</Text>
+                  {data.offers.map((o) => (
+                    <View key={o.id} style={styles.offerRow} testID={`space-offer-${o.id}`}>
+                      <View style={{ flex: 1, minWidth: 200, gap: 2 }}>
+                        <Text style={[styles.body, ff.semi, { color: Brand.encre }]}>
+                          {o.perk} · {o.title}
+                        </Text>
+                        <Text style={[styles.muted, ff.text]}>
+                          {t.offerPlacement(o.placement)} · {o.live ? t.offerLive : t.offerOff}
+                        </Text>
+                      </View>
+                      <Text style={[styles.offerStat, ff.text]}>
+                        {t.offerImpressions} <Text style={ff.bold}>{o.impressions}</Text>
+                      </Text>
+                      <Text style={[styles.offerStat, ff.text]}>
+                        {t.offerClicks} <Text style={ff.bold}>{o.clicks}</Text>
+                      </Text>
+                      <Text style={[styles.offerStat, ff.text]}>
+                        {t.offerRate} <Text style={ff.bold}>{o.clickRate} %</Text>
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
+              {/* Kit prêt à publier */}
+              {data.shareLink ? (
+                <View style={styles.card} testID="space-kit">
+                  <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.kitTitle}</Text>
+                  <Text style={[styles.muted, ff.text]}>{t.kitHint}</Text>
+                  {t.kitPosts(data.shareLink, discountLabel(data.code, lang)).map((post, i) => (
+                    <View key={i} style={styles.kitPost}>
+                      <Text style={[styles.body, ff.text, { flex: 1 }]} selectable>
+                        {post}
+                      </Text>
+                      {Platform.OS === 'web' && (
+                        <Pressable
+                          onPress={() => void copyText(`kit${i}`, post)}
+                          accessibilityRole="button"
+                          style={styles.secondary}
+                          testID={`space-kit-copy-${i}`}
+                        >
+                          <Text style={[styles.secondaryText, ff.bold]}>{copied === `kit${i}` ? t.copied : t.copy}</Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
               {/* Règles */}
               <View style={styles.rules}>
                 <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.rulesTitle}</Text>
@@ -283,6 +388,28 @@ function Kpi({
   );
 }
 
+function Step({
+  label,
+  value,
+  note,
+  ff,
+  testID,
+}: {
+  label: string;
+  value: number;
+  note?: string;
+  ff: ReturnType<typeof landingFonts>;
+  testID: string;
+}) {
+  return (
+    <View style={[styles.kpi, { backgroundColor: Brand.fond }]} testID={testID}>
+      <Text style={[styles.kpiLabel, ff.semi]}>{label}</Text>
+      <Text style={[styles.kpiValue, ff.title]}>{value}</Text>
+      {note ? <Text style={[styles.muted, ff.medium, { color: Brand.lavande }]}>{note}</Text> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: Brand.fond },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, paddingBottom: 8 },
@@ -318,5 +445,10 @@ const styles = StyleSheet.create({
   footerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   secondary: { alignSelf: 'flex-start', borderRadius: 999, borderWidth: 1.5, borderColor: Brand.lavande, paddingHorizontal: 18, paddingVertical: 9 },
   secondaryText: { color: Brand.lavande, fontSize: 14 },
+  linkRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 },
+  link: { flexShrink: 1, color: Brand.nuit, fontSize: 16 },
+  offerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 14, paddingVertical: 10, borderTopWidth: 1, borderTopColor: Brand.bordRose },
+  offerStat: { color: Brand.encreDouce, fontSize: 14 },
+  kitPost: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-start', backgroundColor: Brand.fond, borderRadius: 16, padding: 14 },
   contact: { textAlign: 'center', color: Brand.encreDouce, fontSize: 14, marginTop: 8 },
 });

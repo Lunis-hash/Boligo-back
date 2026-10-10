@@ -65,6 +65,11 @@ model User {
   // violences subies) : null = pas encore demandé, false = refusé.
   sensitiveConsent   Boolean?
   sensitiveConsentAt DateTime?
+  /// Inscription arrivée par le lien d'un partenaire (?p=CODE) : sert à
+  /// préremplir son code au paiement et à compter les inscriptions.
+  referralCodeId     String?
+  referralCode       PromoCode?    @relation("UserReferral", fields: [referralCodeId], references: [id], onDelete: SetNull)
+  referredAt         DateTime?
 
   profile           Profile?
   interviews        InterviewIA[]
@@ -414,6 +419,20 @@ model PromoCode {
   transactions  CreditTransaction[]
   payments      Payment[]
   partner       PartnerApplication?
+  referredUsers User[]              @relation("UserReferral")
+  dailyStats    PartnerDailyStat[]
+}
+
+/// Compteurs du lien partenaire, par jour : aucune donnée personnelle.
+model PartnerDailyStat {
+  id          String    @id @default(uuid())
+  promoCodeId String
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  day         DateTime  @db.Date
+  visits      Int       @default(0)
+  signups     Int       @default(0)
+
+  @@unique([promoCodeId, day])
 }
 
 model PromoUsage {
@@ -757,9 +776,53 @@ model PartnerApplication {
   portalLinkSentAt   DateTime?
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
+  offers             PartnerOffer[]
 
   @@index([type, status])
   @@index([email])
+}
+
+enum OfferPlacement {
+  /// Page « Offres partenaires » de l'application.
+  OFFRES
+  /// Encart « Partenaire du mois » : page d'accueil et page Offres.
+  PARTENAIRE_DU_MOIS
+}
+
+/// Offre d'une marque montrée aux membres. Affichages et clics sont comptés
+/// par jour, sans savoir qui a vu ou cliqué.
+model PartnerOffer {
+  id          String             @id @default(uuid())
+  partnerId   String
+  partner     PartnerApplication @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  placement   OfferPlacement     @default(OFFRES)
+  title       String
+  /// Avantage en quelques mots, ex. « -20 % sur le premier dîner ».
+  perk        String
+  description String
+  /// Lien vers le site de la marque (https uniquement).
+  url         String
+  /// Code ou mot à donner à la marque pour profiter de l'avantage.
+  perkCode    String?
+  isActive    Boolean            @default(false)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  stats       PartnerOfferStat[]
+
+  @@index([isActive, placement])
+}
+
+model PartnerOfferStat {
+  id          String       @id @default(uuid())
+  offerId     String
+  offer       PartnerOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  day         DateTime     @db.Date
+  impressions Int          @default(0)
+  clicks      Int          @default(0)
+
+  @@unique([offerId, day])
 }
 
 /// Dépense IA du mois : garde-fou budgétaire (AI_MONTHLY_BUDGET_EUR), en millionièmes d'euro.

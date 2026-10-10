@@ -618,8 +618,266 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
             )}
           </div>
         )}
+        {p.promoCode && (
+          <div className="rounded-xl border border-lilas bg-white p-4 text-sm" data-testid="partner-share-link">
+            <p className="font-semibold text-encre">Lien suivi à partager</p>
+            <p className="mt-1 break-all font-mono text-xs text-nuit">{shareLink(p.promoCode.code)}</p>
+            <p className="mt-1 text-xs text-neutral-500">
+              Visites et inscriptions comptées par jour ; la réduction est appliquée d’office au paiement.
+            </p>
+          </div>
+        )}
+        <PartnerOffers partner={p} />
         {msg && <p className="text-sm text-nuit" data-testid="partner-msg">{msg}</p>}
       </div>
+    </div>
+  );
+}
+
+const WEB_URL = (process.env.NEXT_PUBLIC_WEB_URL || "https://boligo-web.onrender.com").replace(/\/+$/, "");
+
+/** Lien du partenaire : le site lit ?p=CODE et garde le code jusqu'à l'inscription. */
+function shareLink(code: string) {
+  return `${WEB_URL}/?p=${encodeURIComponent(code)}`;
+}
+
+type Placement = "OFFRES" | "PARTENAIRE_DU_MOIS";
+
+interface Offer {
+  id: string;
+  title: string;
+  perk: string;
+  description: string;
+  url: string;
+  perkCode: string | null;
+  placement: Placement;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  stats?: { impressions: number; clicks: number; clickRate: number; live: boolean };
+}
+
+const PLACEMENT_LABELS: Record<Placement, string> = {
+  OFFRES: "Page Offres partenaires",
+  PARTENAIRE_DU_MOIS: "Partenaire du mois (accueil)",
+};
+
+const EMPTY_OFFER = {
+  title: "",
+  perk: "",
+  description: "",
+  url: "https://",
+  perkCode: "",
+  placement: "OFFRES" as Placement,
+  startsAt: "",
+  endsAt: "",
+};
+
+/** Date AAAA-MM-JJ du formulaire → ISO (début ou fin de journée). */
+function dayToIso(day: string, end: boolean): string | null {
+  if (!day) return null;
+  return new Date(`${day}T${end ? "23:59:59" : "00:00:00"}`).toISOString();
+}
+
+/**
+ * Offres d'une marque montrées dans BOLIGO : saisies par l'équipe, publiées
+ * seulement pour un partenaire accepté, avec affichages et clics par jour.
+ */
+function PartnerOffers({ partner: p }: { partner: Partner }) {
+  const [offers, setOffers] = useState<Offer[] | null>(null);
+  const [form, setForm] = useState(EMPTY_OFFER);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      setOffers(await apiFetch<Offer[]>(`/admin/partners/${p.id}/offers`, { token: getToken() }));
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Offres indisponibles.");
+    }
+  }, [p.id]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function create() {
+    setBusy(true);
+    setMsg("");
+    try {
+      await apiFetch(`/admin/partners/${p.id}/offers`, {
+        method: "POST",
+        token: getToken(),
+        body: JSON.stringify({
+          title: form.title,
+          perk: form.perk,
+          description: form.description,
+          url: form.url.trim(),
+          perkCode: form.perkCode || null,
+          placement: form.placement,
+          startsAt: dayToIso(form.startsAt, false),
+          endsAt: dayToIso(form.endsAt, true),
+          isActive: false,
+        }),
+      });
+      setForm(EMPTY_OFFER);
+      setOpen(false);
+      setMsg("Offre enregistrée (hors ligne). Publiez-la quand elle est prête.");
+      await load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Offre non enregistrée.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function patch(offer: Offer, body: Record<string, unknown>, ok: string) {
+    setBusy(true);
+    setMsg("");
+    try {
+      await apiFetch(`/admin/partners/${p.id}/offers/${offer.id}`, {
+        method: "PATCH",
+        token: getToken(),
+        body: JSON.stringify(body),
+      });
+      setMsg(ok);
+      await load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Modification refusée.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const set = (key: keyof typeof EMPTY_OFFER) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  return (
+    <div className="space-y-3 rounded-xl border border-lilas bg-white p-4" data-testid="partner-offers">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-encre">Offres dans BOLIGO</p>
+          <p className="text-xs text-neutral-500">
+            Toujours marquées « Publicité ». Aucune donnée de membre transmise : la marque reçoit les visites avec
+            utm_source=boligo.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => setOpen((v) => !v)} className="rounded-xl" data-testid="offer-new">
+          {open ? "Fermer" : "Nouvelle offre"}
+        </Button>
+      </div>
+
+      {open && (
+        <div className="grid gap-3 rounded-xl bg-fond p-3 sm:grid-cols-2" data-testid="offer-form">
+          <label className="text-sm">
+            <span className="mb-1 block text-neutral-500">Titre (80 car.)</span>
+            <Input className="h-10 rounded-xl bg-white" maxLength={80} value={form.title} onChange={set("title")} />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-neutral-500">Avantage (ex. -20 % sur le dîner)</span>
+            <Input className="h-10 rounded-xl bg-white" maxLength={60} value={form.perk} onChange={set("perk")} />
+          </label>
+          <label className="text-sm sm:col-span-2">
+            <span className="mb-1 block text-neutral-500">Description (400 car.)</span>
+            <textarea
+              className="min-h-[70px] w-full rounded-xl border border-input bg-white p-3 text-sm"
+              maxLength={400}
+              value={form.description}
+              onChange={set("description")}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-neutral-500">Lien de la marque (https)</span>
+            <Input className="h-10 rounded-xl bg-white" maxLength={500} value={form.url} onChange={set("url")} />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-neutral-500">Code de la marque (facultatif)</span>
+            <Input className="h-10 rounded-xl bg-white" maxLength={40} value={form.perkCode} onChange={set("perkCode")} />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-neutral-500">Emplacement</span>
+            <select
+              className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm"
+              value={form.placement}
+              onChange={set("placement")}
+            >
+              {(Object.keys(PLACEMENT_LABELS) as Placement[]).map((k) => (
+                <option key={k} value={k}>
+                  {PLACEMENT_LABELS[k]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex gap-3">
+            <label className="flex-1 text-sm">
+              <span className="mb-1 block text-neutral-500">Début</span>
+              <Input type="date" className="h-10 rounded-xl bg-white" value={form.startsAt} onChange={set("startsAt")} />
+            </label>
+            <label className="flex-1 text-sm">
+              <span className="mb-1 block text-neutral-500">Fin</span>
+              <Input type="date" className="h-10 rounded-xl bg-white" value={form.endsAt} onChange={set("endsAt")} />
+            </label>
+          </div>
+          <div className="sm:col-span-2">
+            <Button
+              onClick={create}
+              disabled={busy || !form.title || !form.perk || !form.description || !form.url.startsWith("https://")}
+              className="rounded-xl bg-gradient-to-r from-framboise to-lavande hover:opacity-90"
+              data-testid="offer-create"
+            >
+              Enregistrer l’offre
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {offers && offers.length === 0 && <p className="text-sm text-neutral-500">Aucune offre pour ce partenaire.</p>}
+      {offers && offers.length > 0 && (
+        <div className="space-y-2">
+          {offers.map((o) => (
+            <div
+              key={o.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3"
+              data-testid={`offer-row-${o.id}`}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-encre">
+                  {o.perk} · {o.title}
+                </p>
+                <p className="text-xs text-neutral-500">
+                  {PLACEMENT_LABELS[o.placement]}
+                  {o.startsAt ? ` · du ${formatDate(o.startsAt)}` : ""}
+                  {o.endsAt ? ` au ${formatDate(o.endsAt)}` : ""}
+                </p>
+                <p className="text-xs text-neutral-600">
+                  {o.stats?.impressions ?? 0} affichage(s) · {o.stats?.clicks ?? 0} clic(s) · {o.stats?.clickRate ?? 0} %
+                </p>
+              </div>
+              <Badge variant={o.stats?.live ? "success" : "outline"}>{o.stats?.live ? "En ligne" : "Hors ligne"}</Badge>
+              <Button
+                variant="outline"
+                disabled={busy || (!o.isActive && p.status !== "ACCEPTE")}
+                onClick={() =>
+                  void patch(o, { isActive: !o.isActive }, o.isActive ? "Offre retirée." : "Offre publiée.")
+                }
+                className="rounded-xl"
+                data-testid={`offer-toggle-${o.id}`}
+              >
+                {o.isActive ? "Retirer" : "Publier"}
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+      {p.status !== "ACCEPTE" && (
+        <p className="text-xs text-framboise">Acceptez d’abord le partenaire pour publier ses offres.</p>
+      )}
+      {msg && (
+        <p className="text-sm text-nuit" data-testid="offer-msg">
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

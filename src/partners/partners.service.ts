@@ -35,9 +35,12 @@ import {
   isPortalToken,
   monthlyHistory,
   newPortalToken,
+  portalBaseUrl,
   portalLink,
 } from './partner-portal.logic';
 import { revenueByCode } from './partner-sales';
+import { PartnerTrackingService } from './partner-tracking.service';
+import { partnerShareLink, rate } from './partner-tracking.logic';
 
 type PartnerRow = { portalTokenHash?: string | null } & Record<string, unknown>;
 
@@ -58,6 +61,7 @@ export class PartnersService {
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
     private readonly registry: RegistryService,
+    private readonly tracking: PartnerTrackingService,
   ) {}
 
   /** Candidature publique : enregistrement, puis e-mails (sans bloquer la réponse). */
@@ -509,6 +513,16 @@ export class PartnersService {
     const revenue =
       Math.round(sales.reduce((sum, s) => sum + (s.euroAmount ?? 0), 0) * 100) /
       100;
+    const paid = sales.filter(
+      (s) => s.type === TransactionType.achat && (s.euroAmount ?? 0) > 0,
+    ).length;
+    const free = sales.filter(
+      (s) => s.type === TransactionType.achat && (s.euroAmount ?? 0) === 0,
+    ).length;
+    const [link, offers] = await Promise.all([
+      this.tracking.linkFunnel(promo.id),
+      this.tracking.offerStats(partner.id),
+    ]);
     return {
       partner: {
         name: partner.name,
@@ -517,6 +531,17 @@ export class PartnersService {
         language: partner.language,
         commissionRate: partner.commissionRate,
       },
+      shareLink: partnerShareLink(portalBaseUrl(), promo.code),
+      funnel: {
+        visits: link.visits,
+        signups: link.signups,
+        purchases: paid,
+        freeActivations: free,
+        signupRate: rate(link.signups, link.visits),
+        purchaseRate: rate(paid, link.signups),
+        months: link.months,
+      },
+      offers,
       code: {
         code: promo.code,
         discountType: promo.discountType,
@@ -526,7 +551,7 @@ export class PartnersService {
         uses: promo.usedCount,
       },
       totals: {
-        purchases: sales.filter((s) => s.type === TransactionType.achat).length,
+        purchases: paid,
         revenue,
         commission: commissionDue(revenue, partner.commissionRate),
       },
