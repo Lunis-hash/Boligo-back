@@ -92,3 +92,31 @@ Supprimer d'éventuels enregistrements MX par défaut de Hostinger sur `@`.
 les CGU, la politique de confidentialité (`mobile-steve/constants/legal.json`,
 `mobile-steve/docs/legal/`) et le site web. L'expéditeur par défaut de l'API
 est `no-reply@boligo.fr`.
+
+## 6. Envoi automatique par Resend (10 octobre 2026)
+
+Test du 10 octobre : l'API n'arrive pas à joindre `smtp.zoho.eu` (délai
+dépassé). Le service Render `Boligo-back` est sur l'offre **gratuite**, qui
+bloque les ports SMTP sortants (25, 465, 587). Zoho reste la **boîte de
+réception** de `contact@boligo.fr` ; les e-mails automatiques (codes,
+reçus, alertes) partent par l'**API Resend** (HTTPS, port 443).
+
+Règle : un compte Resend **propre à BOLIGO**. Le compte Resend qui contient
+`oweke.fr` appartient à OWEKE et n'est jamais utilisé pour BOLIGO.
+
+1. Créer un compte Resend avec une adresse BOLIGO (gratuit : 3 000 e-mails
+   par mois, 100 par jour).
+2. Domains → Add domain → `boligo.fr`, région **eu-west-1** (Irlande).
+3. Hostinger → Zone DNS de `boligo.fr` : ajouter les enregistrements affichés
+   par Resend. Ils sont sur `resend._domainkey` et sur le sous-domaine
+   `send` : ils ne touchent ni aux MX ni au SPF de Zoho sur `@`.
+4. Quand le domaine est « Verified » : API Keys → clé « BOLIGO API »,
+   permission « Sending access », domaine `boligo.fr`.
+5. Render → `Boligo-back` → Environment : `RESEND_API_KEY` = cette clé
+   (collée directement dans Render). `EMAIL_FROM` reste
+   `BOLIGO <no-reply@boligo.fr>`. Option : `EMAIL_REPLY_TO` =
+   `contact@boligo.fr`.
+
+Au redémarrage, les journaux affichent `[EMAIL] Mode d'envoi : resend`.
+Resend passe avant le SMTP quand `RESEND_API_KEY` est présente. Passer le
+service à l'offre payante Starter rendrait aussi le SMTP Zoho utilisable.
