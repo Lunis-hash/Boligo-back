@@ -36,6 +36,7 @@ export type Paginated<T> = {
 export type UserRow = {
   id: string;
   email: string;
+  role?: string;
   firstName: string;
   lastName: string;
   city: string | null;
