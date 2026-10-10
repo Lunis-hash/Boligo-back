@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UpdateUserAdminDto } from './dto/update-user-admin.dto';
+import { BULK_DELETE_MAX } from './dto/delete-user.dto';
 import { NotificationService } from '../notifications/notification.service';
 import { isStaff } from './guards/admin-roles';
 import { AccountDeletionService } from '../account/account-deletion.service';
@@ -103,6 +104,61 @@ export class AdminService {
     await this.accountDeletion.deleteUser(id);
     console.log(`[ADMIN] Compte ${id} supprimé par l'administrateur ${actorId}.`);
     return { deleted: true };
+  }
+
+  /**
+   * Suppression en masse, administrateurs uniquement. Mêmes règles que la
+   * suppression unitaire : jamais son propre compte ni un compte de l'équipe.
+   * Les comptes sont supprimés un par un ; un échec n'arrête pas les autres.
+   */
+  async bulkDeleteUsers(actorId: string, ids: string[], confirm: string) {
+    const unique = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+    if (unique.length === 0 || unique.length > BULK_DELETE_MAX) {
+      throw new BadRequestException(
+        `Sélectionnez entre 1 et ${BULK_DELETE_MAX} comptes.`,
+      );
+    }
+    const expected = `SUPPRIMER ${unique.length}`;
+    if (confirm.trim().toUpperCase() !== expected) {
+      throw new BadRequestException(
+        `Pour confirmer, tapez exactement « ${expected} ».`,
+      );
+    }
+    const found = await this.prisma.user.findMany({
+      where: { id: { in: unique } },
+      select: { id: true, role: true },
+    });
+    const byId = new Map(found.map((u) => [u.id, u]));
+    const deletedIds: string[] = [];
+    const skipped: { id: string; reason: string }[] = [];
+    for (const id of unique) {
+      const user = byId.get(id);
+      if (!user) {
+        skipped.push({ id, reason: 'Compte introuvable' });
+        continue;
+      }
+      if (id === actorId) {
+        skipped.push({ id, reason: 'Votre propre compte' });
+        continue;
+      }
+      if (user.role !== UserRole.USER) {
+        skipped.push({ id, reason: 'Compte de l’équipe' });
+        continue;
+      }
+      try {
+        await this.accountDeletion.deleteUser(id);
+        deletedIds.push(id);
+      } catch (err) {
+        skipped.push({ id, reason: 'Échec de la suppression' });
+        console.error(
+          `[ADMIN] Suppression du compte ${id} impossible : ${(err as Error)?.message}`,
+        );
+      }
+    }
+    console.log(
+      `[ADMIN] Suppression en masse par l'administrateur ${actorId} : ${deletedIds.length} supprimé(s), ${skipped.length} ignoré(s).`,
+    );
+    return { deleted: deletedIds.length, deletedIds, skipped };
   }
 
   /** Au démarrage : premier administrateur désigné par ADMIN_BOOTSTRAP_EMAIL. */

@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   Header,
+  HttpCode,
   Req,
 } from '@nestjs/common';
 import { ReportStatus, UserRole } from '@prisma/client';
@@ -19,7 +20,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { AllowRoles } from './guards/admin-roles';
 import { SetTeamRoleDto } from './dto/set-team-role.dto';
 import { CreatePromoCodeDto, UpdatePromoCodeDto } from './dto/promo-code.dto';
-import { DeleteUserDto } from './dto/delete-user.dto';
+import { BulkDeleteUsersDto, DeleteUserDto } from './dto/delete-user.dto';
 import { AiBudgetService } from '../ai/ai-budget.service';
 import { AiLabService } from '../ai-lab/ai-lab.service';
 import { StartLabRunDto } from '../ai-lab/ai-lab.dto';
@@ -133,6 +134,17 @@ export class AdminController {
     @Req() req: { user: { id: string } },
   ) {
     return this.adminService.deleteUser(req.user.id, id, dto.confirmEmail);
+  }
+
+  /** Suppression en masse (50 comptes au plus) : administrateurs uniquement. */
+  @Post('users/bulk-delete')
+  @UseGuards(AdminGuard)
+  @HttpCode(200)
+  bulkDeleteUsers(
+    @Body() dto: BulkDeleteUsersDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    return this.adminService.bulkDeleteUsers(req.user.id, dto.ids, dto.confirm);
   }
 
   @Get('matches')
