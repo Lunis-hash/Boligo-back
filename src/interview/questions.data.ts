@@ -229,7 +229,7 @@ export const QUESTIONS: Question[] = [
     moduleNumber: 0,
     text: 'Le périmètre géographique de vos rencontres :',
     options: [
-      { key: 'A', text: 'Même ville ou proximité (Local)' },
+      { key: 'A', text: 'Près de chez moi (ma ville et ma région)' },
       { key: 'B', text: 'Même région' },
       { key: 'C', text: 'Tout mon pays (National)' },
       { key: 'D', text: 'International (Sans frontières)' },

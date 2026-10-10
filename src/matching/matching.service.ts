@@ -8,6 +8,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { MatchProposal, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { JourneyService } from '../journey/journey.service';
+import { RegionService } from './region.service';
 import { collectRawAnswers, RawAnswers } from './divergence.engine';
 import { ageFrom, buildMatchView, resolveScore } from './match-view';
 import {
@@ -44,6 +45,7 @@ export class MatchingService {
     private prisma: PrismaService,
     private readonly notificationService: NotificationService,
     @Optional() private readonly journeyService?: JourneyService,
+    @Optional() private readonly regions?: RegionService,
   ) {}
 
   async getDiscoverProfiles(userId: string) {
@@ -144,13 +146,21 @@ export class MatchingService {
     // Filtres du Module 0 appliqués dans les deux sens : chacun doit entrer dans
     // la tranche d'âge et le périmètre de l'autre.
     const answersByUser = await this.answersByUser(matches.map((c) => c.id));
-    const filteredMatches = matches.filter((candidate) =>
-      mutuallyAccepted(viewerSubject, {
+    // Région de chaque ville (Argenteuil et Bezons : Île-de-France).
+    const regionByCity = await this.regionsFor([
+      viewerSubject.city,
+      ...matches.map((c) => filterCity(c)),
+    ]);
+    viewerSubject.region = regionByCity.get(viewerSubject.city ?? '') ?? null;
+    const filteredMatches = matches.filter((candidate) => {
+      const city = filterCity(candidate);
+      return mutuallyAccepted(viewerSubject, {
         age: ageFrom(candidate.birthDate) ?? null,
-        city: filterCity(candidate),
+        city,
+        region: regionByCity.get(city ?? '') ?? null,
         answers: answersByUser.get(candidate.id) ?? {},
-      }),
-    );
+      });
+    });
 
     // Les filtres du Module 0 sont stricts : aucun repli sur des profils hors
     // périmètre. L'app affiche alors son état vide (« aucun profil pour le moment »).
@@ -282,6 +292,18 @@ export class MatchingService {
     };
   }
 
+  /** Régions des villes ; vide si le service est absent (tests) ou en panne. */
+  private async regionsFor(
+    cities: Array<string | null>,
+  ): Promise<Map<string, string | null>> {
+    if (!this.regions) return new Map();
+    try {
+      return await this.regions.regionsOf(cities);
+    } catch {
+      return new Map();
+    }
+  }
+
   /** Les filtres du Module 0 de chacun acceptent-ils l'autre ? */
   private async module0Allows(
     userId: string,
@@ -299,12 +321,15 @@ export class MatchingService {
       }),
       this.answersByUser([userId, targetUserId]),
     ]);
+    const regionByCity = await this.regionsFor(users.map((u) => filterCity(u)));
     const subject = (id: string): FilterSubject | null => {
       const u = users.find((x) => x.id === id);
+      const city = u ? filterCity(u) : null;
       return u
         ? {
             age: ageFrom(u.birthDate) ?? null,
-            city: filterCity(u),
+            city,
+            region: regionByCity.get(city ?? '') ?? null,
             answers: answers.get(id) ?? {},
           }
         : null;

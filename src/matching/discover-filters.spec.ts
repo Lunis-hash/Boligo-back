@@ -82,17 +82,20 @@ describe('Filtres non négociables du Module 0', () => {
     expect(birthDateBounds(null, 'D', now)).toBeUndefined();
   });
 
-  it('pré-filtre la requête sur la ville (local) ou le pays (national)', () => {
-    const contains = (t: string) => ({ contains: t, mode: 'insensitive' });
-    expect(scopeWhere('Paris, France', 'A')).toEqual({
+  it('pré-filtre la requête sur le pays (local, région, national)', () => {
+    const country = {
       OR: [
-        { city: contains('Paris') },
-        { profile: { is: { displayedCity: contains('Paris') } } },
+        { city: { contains: 'France', mode: 'insensitive' } },
+        {
+          profile: {
+            is: { displayedCity: { contains: 'France', mode: 'insensitive' } },
+          },
+        },
       ],
-    });
-    expect(scopeWhere('Lyon, France', 'C')!.OR[0]).toEqual({
-      city: contains('France'),
-    });
+    };
+    expect(scopeWhere('Paris, France', 'A')).toEqual(country);
+    expect(scopeWhere('Paris, France', 'B')).toEqual(country);
+    expect(scopeWhere('Paris, France', 'C')).toEqual(country);
     expect(scopeWhere('Lyon, France', 'D')).toBeUndefined();
     expect(scopeWhere(null, 'A')).toBeUndefined();
   });
@@ -155,9 +158,58 @@ describe('Filtres non négociables du Module 0', () => {
         at('Paris, Île-de-France, France'),
       ),
     ).toBe(false);
-    // « Région, Pays » (inscription) : la région est le premier élément.
+    // « Ville, Pays » sans région retrouvée : le pays fait foi.
     expect(mutuallyAccepted(at('Paris, France'), at('Lyon, France'))).toBe(
-      false,
+      true,
     );
+  });
+
+  it('« Près de chez moi » : même région dans tous les pays', () => {
+    const at = (city: string, region: string | null): FilterSubject => ({
+      age: 39,
+      city,
+      region,
+      answers: { M0_Q02: 'A' },
+    });
+    // Argenteuil et Bezons (saisie « 95870 ») : Île-de-France.
+    expect(
+      mutuallyAccepted(
+        at('Argenteuil, France', 'Île-de-France'),
+        at('95870, France', 'Île-de-France'),
+      ),
+    ).toBe(true);
+    expect(
+      mutuallyAccepted(
+        at('Argenteuil, France', 'Île-de-France'),
+        at('Lyon, France', 'Auvergne-Rhône-Alpes'),
+      ),
+    ).toBe(false);
+    // Abidjan : Cocody et Yopougon dans le même district.
+    expect(
+      mutuallyAccepted(
+        at('Cocody, Côte d’Ivoire', 'Abidjan'),
+        at('Yopougon, Côte d’Ivoire', 'Abidjan'),
+      ),
+    ).toBe(true);
+    expect(
+      mutuallyAccepted(
+        at('Kinshasa, Congo RDC', 'Kinshasa'),
+        at('Lubumbashi, Congo RDC', 'Haut-Katanga'),
+      ),
+    ).toBe(false);
+    // Région introuvable pour l'un : le pays, jamais d'exclusion à tort…
+    expect(
+      mutuallyAccepted(
+        at('Argenteuil, France', 'Île-de-France'),
+        at('Bzns, France', null),
+      ),
+    ).toBe(true);
+    // …mais jamais d'un pays à l'autre.
+    expect(
+      mutuallyAccepted(
+        at('Lille, France', null),
+        at('Bruxelles, Belgique', null),
+      ),
+    ).toBe(false);
   });
 });
