@@ -89,7 +89,14 @@ describe('AuthService', () => {
         AuthService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
-        { provide: EmailService, useValue: { sendVerificationEmail: jest.fn().mockResolvedValue(undefined), sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined) } },
+        {
+          provide: EmailService,
+          useValue: {
+            sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
+            sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+            sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
+          },
+        },
         AccountDeletionService,
       ],
     }).compile();

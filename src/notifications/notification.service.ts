@@ -1,3 +1,4 @@
+import { chatOpenEmail, RenderedEmail } from '../common/email-templates';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../common/email.service';
@@ -22,14 +23,20 @@ export class NotificationService {
 
   async sendPushNotification(
     userId: string,
-    type: 'nouveau_match' | 'message' | 'question_harmonie' | 'rappel_reponse' | 'credit' | 'systeme',
+    type:
+      | 'nouveau_match'
+      | 'message'
+      | 'question_harmonie'
+      | 'rappel_reponse'
+      | 'credit'
+      | 'systeme',
     title: string,
     content: string,
     /** Texte affiché sur l'écran verrouillé (sinon le contenu). */
     pushBody: string = content,
   ) {
     console.log(`[PUSH] Notification « ${type} » pour ${userId}`);
-    
+
     // 1. Enregistrer en base pour l'historique dans l'app
     const dbNotification = await this.prisma.notification.create({
       data: {
@@ -46,14 +53,20 @@ export class NotificationService {
       select: { pushToken: true },
     });
 
-    if (user && user.pushToken && user.pushToken.startsWith('ExponentPushToken')) {
-      console.log(`[PUSH] Sending actual push notification to token ${user.pushToken}`);
+    if (
+      user &&
+      user.pushToken &&
+      user.pushToken.startsWith('ExponentPushToken')
+    ) {
+      console.log(
+        `[PUSH] Sending actual push notification to token ${user.pushToken}`,
+      );
       try {
         const response = await fetch('https://exp.host/--/api/v2/push/send', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
           },
           body: JSON.stringify({
             to: user.pushToken,
@@ -71,13 +84,37 @@ export class NotificationService {
         console.error(`[PUSH] Error sending push via Expo API:`, error);
       }
     } else {
-      console.log(`[PUSH] User ${userId} has no valid pushToken. Skipping actual push.`);
+      console.log(
+        `[PUSH] User ${userId} has no valid pushToken. Skipping actual push.`,
+      );
     }
 
     return dbNotification;
   }
 
-  // ─── Messagerie ouverte (fin du Sondeur) : push ────────────────────────────
+  /**
+   * E-mail d'étape au membre. Jamais bloquant : une panne d'envoi ne doit pas
+   * faire échouer l'action du membre. Aucune adresse dans les journaux.
+   */
+  async emailUser(userId: string, build: (firstName: string) => RenderedEmail) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, firstName: true, accountStatus: true },
+      });
+      if (!user?.email || user.accountStatus === 'suspendu') return;
+      await this.emailService.sendStepEmail(
+        user.email,
+        build(user.firstName || ''),
+      );
+    } catch (err) {
+      console.error(
+        `[NOTIF] E-mail d'étape non envoyé : ${(err as Error)?.message}`,
+      );
+    }
+  }
+
+  // ─── Messagerie ouverte (fin du Sondeur) : push + e-mail ───────────────────
   async notifyChatOpen(userId: string, partnerName: string) {
     await this.sendPushNotification(
       userId,
@@ -85,6 +122,7 @@ export class NotificationService {
       'Messagerie ouverte',
       `Le Sondeur est terminé : vous pouvez maintenant écrire à ${partnerName}.`,
     );
+    await this.emailUser(userId, (name) => chatOpenEmail(name, partnerName));
   }
 
   // ─── Vidéo débloquée : push + email ────────────────────────────────────────
@@ -110,10 +148,11 @@ export class NotificationService {
           user.firstName,
           partnerName,
         );
-        console.log(`[NOTIF] Email vidéo débloquée envoyé à ${user.email}`);
       }
-    } catch (err: any) {
-      console.error(`[NOTIF] Erreur envoi email vidéo débloquée : ${err.message}`);
+    } catch (err) {
+      console.error(
+        `[NOTIF] Erreur envoi email vidéo débloquée : ${(err as Error)?.message}`,
+      );
     }
   }
 
@@ -145,10 +184,11 @@ export class NotificationService {
           compatibilityScore,
           expiresInDays,
         );
-        console.log(`[NOTIF] Email nouveau match envoyé à ${user.email}`);
       }
-    } catch (err: any) {
-      console.error(`[NOTIF] Erreur envoi email nouveau match : ${err.message}`);
+    } catch (err) {
+      console.error(
+        `[NOTIF] Erreur envoi email nouveau match : ${(err as Error)?.message}`,
+      );
     }
   }
 }

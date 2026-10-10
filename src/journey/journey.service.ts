@@ -1,3 +1,4 @@
+import { journeyEndedEmail } from '../common/email-templates';
 import {
   BadRequestException,
   ForbiddenException,
@@ -1127,6 +1128,9 @@ export class JourneyService {
     } catch {
       /* notification facultative */
     }
+    await this.notificationService.emailUser(partnerId, (name) =>
+      journeyEndedEmail(name, leaver.firstName, courtesy || null, !!refunded),
+    );
     return { success: true };
   }
 

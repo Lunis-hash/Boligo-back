@@ -1,5 +1,8 @@
+import { NotificationService } from '../notifications/notification.service';
+import { profileReadyEmail } from '../common/email-templates';
 import {
   Injectable,
+  Optional,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
@@ -33,6 +36,7 @@ export class InterviewService {
   constructor(
     private prisma: PrismaService,
     private aiService: AiService,
+    @Optional() private notifications?: NotificationService,
   ) {}
 
   async getStatus(userId: string) {
@@ -330,6 +334,10 @@ export class InterviewService {
       where: { id: userId },
       data: { accountStatus: 'actif' },
     });
+
+    await this.notifications?.emailUser(userId, (name) =>
+      profileReadyEmail(name),
+    );
 
     // Trigger Mental Map Generation (Vraie IA)
     await this.generateMentalMap(interviewId, userId);
