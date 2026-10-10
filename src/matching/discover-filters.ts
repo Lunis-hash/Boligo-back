@@ -12,6 +12,12 @@ export interface FilterSubject {
   age: number | null;
   /** « Ville, Pays » (onboarding) ou « Ville, Région, Pays ». */
   city: string | null;
+  /**
+   * Région administrative retrouvée à partir de la ville, dans tous les pays
+   * (RegionService). Absente : celle écrite dans « Ville, Région, Pays »,
+   * sinon le pays.
+   */
+  region?: string | null;
   answers: RawAnswers;
 }
 
@@ -58,11 +64,6 @@ export function homeContext(
   };
 }
 
-/** Région : avant-dernier élément de « Ville, Région, Pays », sinon le premier. */
-function regionOf(parts: string[]): string {
-  return parts.length >= 3 ? parts[parts.length - 2] : parts[0];
-}
-
 /**
  * Règle BOLIGO : jamais plus de 5 ans d'écart entre deux membres (même
  * génération, plus jeune, plus âgé), et 10 ans au plus pour qui a répondu
@@ -74,6 +75,32 @@ export const MAX_AGE_GAP_ANY = 10;
 /** Écart d'âge maximal accepté par un membre selon sa réponse à M0_Q01. */
 export function maxAgeGap(agePref: string | undefined): number {
   return agePref === 'D' ? MAX_AGE_GAP_ANY : MAX_AGE_GAP;
+}
+
+/** Région du membre : celle retrouvée pour sa ville, sinon celle écrite dans son adresse. */
+function knownRegion(subject: FilterSubject, parts: string[]): string | null {
+  if (subject.region) return norm(subject.region);
+  return parts.length >= 3 ? parts[parts.length - 2] : null;
+}
+
+/**
+ * Même région ? Règle commune à tous les pays : régions comparées quand
+ * elles sont connues ; sinon le pays, pour qu'une ville mal écrite ou
+ * introuvable n'exclue jamais un membre de sa région.
+ */
+function sameRegion(
+  a: FilterSubject,
+  pa: string[],
+  b: FilterSubject,
+  pb: string[],
+): boolean {
+  if (pa[0].includes(pb[0]) || pb[0].includes(pa[0])) return true;
+  const ra = knownRegion(a, pa);
+  const rb = knownRegion(b, pb);
+  if (ra && rb) return ra === rb;
+  if (pa.length >= 2 && pb.length >= 2)
+    return pa[pa.length - 1] === pb[pb.length - 1];
+  return false;
 }
 
 /** Le candidat entre-t-il dans les critères du Module 0 du membre ? */
@@ -93,9 +120,13 @@ export function acceptsCandidate(
   const c = cityParts(candidate.city);
   if (v.length && c.length) {
     const scope = viewer.answers.M0_Q02;
-    if (scope === 'A' && !(c[0].includes(v[0]) || v[0].includes(c[0])))
+    // « Près de chez moi » et « Même région » : même région, dans tous les
+    // pays (Argenteuil et Bezons : Île-de-France).
+    if (
+      (scope === 'A' || scope === 'B') &&
+      !sameRegion(viewer, v, candidate, c)
+    )
       return false;
-    if (scope === 'B' && regionOf(v) !== regionOf(c)) return false;
     // Pays comparé à l'identique : « Congo » n'est pas « Congo RDC ».
     if (scope === 'C' && v[v.length - 1] !== c[c.length - 1]) return false;
   }
@@ -215,7 +246,7 @@ export function birthDateBounds(
 
 /**
  * Pré-filtre de périmètre pour la requête : sur-ensemble du filtre exact
- * ci-dessus (même jeton de ville ou de pays, sans tenir compte de la casse),
+ * ci-dessus (même pays, sans tenir compte de la casse),
  * pour que la limite de candidats chargés ne retienne pas des profils hors
  * périmètre à la place des bons.
  */
@@ -228,9 +259,9 @@ export function scopeWhere(
     .map((p) => p.trim())
     .filter(Boolean);
   if (!parts.length) return undefined;
-  const token =
-    scope === 'A' ? parts[0] : scope === 'C' ? parts[parts.length - 1] : null;
-  if (!token) return undefined;
+  // Local et région : même pays (la région est vérifiée ensuite, ville par ville).
+  if (scope !== 'A' && scope !== 'B' && scope !== 'C') return undefined;
+  const token = parts[parts.length - 1];
   const contains = { contains: token, mode: 'insensitive' as const };
   return {
     OR: [{ city: contains }, { profile: { is: { displayedCity: contains } } }],

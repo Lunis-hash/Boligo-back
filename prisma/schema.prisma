@@ -837,3 +837,12 @@ model AiSpend {
   journeyCostMicroEur BigInt   @default(0)
   updatedAt           DateTime @updatedAt
 }
+
+/// Région administrative d'une ville (« argenteuil, france » → Île-de-France),
+/// cherchée une seule fois (geo.api.gouv.fr ou OpenStreetMap). Aucune donnée
+/// de membre : seulement des noms de lieux.
+model GeoRegion {
+  key       String   @id
+  region    String?
+  updatedAt DateTime @updatedAt
+}

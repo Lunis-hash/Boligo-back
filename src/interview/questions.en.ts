@@ -46,7 +46,7 @@ export const QUESTIONS_EN: Record<string, QuestionTranslation> = {
   M0_Q02: {
     text: 'The geographic scope of your search:',
     options: [
-      'Same city or nearby (local)',
+      'Near me (my city and region)',
       'Same region',
       'My whole country (national)',
       'International (no borders)',
