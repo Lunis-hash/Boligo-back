@@ -20,10 +20,15 @@ export function isPortalToken(value: unknown): value is string {
  * Adresse de l'Espace partenaire. Le jeton est placé après « # » : le
  * navigateur ne l'envoie jamais au serveur du site ni dans ses journaux.
  */
+/** Adresse publique du site BOLIGO (liens partenaires, Espace partenaire). */
+export function portalBaseUrl(): string {
+  return process.env.PUBLIC_WEB_URL || 'https://boligo-web.onrender.com';
+}
+
 export function portalLink(
   token: string,
   lang: string,
-  base = process.env.PUBLIC_WEB_URL || 'https://boligo-web.onrender.com',
+  base = portalBaseUrl(),
 ): string {
   const path = lang === 'en' ? '/partner-space' : '/espace-partenaire';
   return `${base.replace(/\/+$/, '')}${path}#${token}`;

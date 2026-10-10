@@ -10,6 +10,7 @@ export default function ProfileLayout() {
     >
       <Stack.Screen name="edit" />
       <Stack.Screen name="purchases" />
+      <Stack.Screen name="offres" />
     </Stack>
   );
 }

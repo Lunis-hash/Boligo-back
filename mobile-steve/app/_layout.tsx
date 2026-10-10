@@ -9,6 +9,7 @@ import { addNotificationResponseListener, configureNotificationHandler } from '@
 import { installWebAlert } from '@/services/webAlert';
 import { installWebStyles } from '@/services/webStyles';
 import { warmUpBackend } from '@/services/api';
+import { captureReferralFromLocation } from '@/services/partnerReferral';
 import { useBrandFonts } from '@/services/brandFonts';
 import { DesktopShell } from '@/components/DesktopShell';
 import { WebAlertHost } from '@/components/WebAlertHost';
@@ -32,6 +33,8 @@ function NotificationRouter() {
 function BackendWarmUp() {
   useEffect(() => {
     warmUpBackend();
+    // Lien partenaire (?p=CODE) : gardé jusqu'à l'inscription.
+    captureReferralFromLocation().catch(() => undefined);
   }, []);
   return null;
 }

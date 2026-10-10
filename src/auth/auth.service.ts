@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { PartnerTrackingService } from '../partners/partner-tracking.service';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException, ForbiddenException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -83,6 +84,7 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private accountDeletion: AccountDeletionService,
+    @Optional() private partnerTracking?: PartnerTrackingService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -175,6 +177,11 @@ export class AuthService {
         },
       },
     }).catch(rethrowUniqueViolation);
+
+    // Arrivée par le lien d'un partenaire (?p=CODE) : jamais bloquant.
+    if (dto.referralCode && this.partnerTracking) {
+      await this.partnerTracking.attachReferral(user.id, dto.referralCode);
+    }
 
     // Envoyer l'email OTP de validation de façon asynchrone (sans bloquer la réponse)
     this.emailService.sendVerificationEmail(user.email, verificationCode).catch((e) => {

@@ -38,15 +38,17 @@ function setup(promos: Promo[]) {
       count: jest.fn(() => Promise.resolve(promos.length)),
     },
     creditTransaction: {
-      groupBy: jest.fn(() =>
-        Promise.resolve([
-          {
-            promoCodeId: 'p-used',
-            type: 'achat',
-            _count: { _all: 2 },
-            _sum: { euroAmount: 27 },
-          },
-        ]),
+      groupBy: jest.fn((args: { where?: { euroAmount?: number } } = {}) =>
+        args.where?.euroAmount === 0
+          ? Promise.resolve([])
+          : Promise.resolve([
+              {
+                promoCodeId: 'p-used',
+                type: 'achat',
+                _count: { _all: 2 },
+                _sum: { euroAmount: 27 },
+              },
+            ]),
       ),
     },
   };
@@ -160,7 +162,11 @@ describe('Page Codes promo', () => {
       promo({ id: 'p-new' }),
     ]);
     const res = await service.listPromoCodes({ q: 'code' });
-    expect(res.data[0].sales).toEqual({ purchases: 2, revenue: 27 });
-    expect(res.data[1].sales).toEqual({ purchases: 0, revenue: 0 });
+    expect(res.data[0].sales).toEqual({
+      purchases: 2,
+      freeActivations: 0,
+      revenue: 27,
+    });
+    expect(res.data[1].sales).toMatchObject({ purchases: 0, revenue: 0 });
   });
 });

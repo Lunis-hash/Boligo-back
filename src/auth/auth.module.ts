@@ -7,9 +7,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 import { EmailService } from '../common/email.service';
 import { AccountDeletionService } from '../account/account-deletion.service';
+import { PartnersModule } from '../partners/partners.module';
 
 @Module({
   imports: [
+    PartnersModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,

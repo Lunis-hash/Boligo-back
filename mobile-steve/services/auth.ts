@@ -1,4 +1,5 @@
 import client from './api';
+import { clearStoredReferral, getStoredReferral } from './partnerReferral';
 
 export interface RegisterData {
   email: string;
@@ -18,11 +19,16 @@ export interface RegisterData {
   acceptTerms: true;
   /** Version des textes légaux acceptée (champ « version » de constants/legal.json). */
   termsVersion?: string;
+  /** Code du partenaire dont le lien a été suivi (ajouté automatiquement). */
+  referralCode?: string;
 }
 
 export const AuthService = {
   register: async (data: RegisterData) => {
-    const response = await client.post('/auth/register', data);
+    const referral = data.referralCode ? null : await getStoredReferral();
+    const payload = referral ? { ...data, referralCode: referral.code } : data;
+    const response = await client.post('/auth/register', payload);
+    if (referral) await clearStoredReferral();
     return response.data;
   },
 

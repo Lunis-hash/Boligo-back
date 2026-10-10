@@ -69,6 +69,16 @@ export class RegisterDto {
   })
   acceptTerms: boolean;
 
+  @ApiProperty({
+    example: 'AWA10',
+    required: false,
+    description: 'Code du partenaire dont le lien a été suivi (?p=CODE).',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(40)
+  referralCode?: string;
+
   @ApiProperty({ example: '2026-10-02', required: false, description: 'Version des textes légaux acceptée.' })
   @IsString()
   @IsOptional()
