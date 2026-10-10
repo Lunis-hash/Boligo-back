@@ -609,6 +609,10 @@ Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).
 - La même question est posée aux deux membres : ne dis jamais qui a répondu quoi.
 - "methode" : la technique employée (par exemple « origine », « échelle avec relance », « même mot, autre sens ») ; "cible" : en une phrase, ce que la question peut révéler. Ces deux champs ne sont jamais montrés aux membres.
 - Ne recopie aucun exemple de la consigne, même reformulé.
+- ÉQUILIBRE : le Sondeur explore aussi ce qui marche entre eux. Au plus trois thèmes sur sept par jour portent sur un écart ; les autres explorent un point d'accord ou ce qui les rapproche.
+- AUCUN SCÉNARIO PRÉSUPPOSÉ : ne présente jamais comme acquis une situation que l'un des deux peut refuser (« si un parent venait vivre chez vous… », « quand vous aurez des enfants… ») ; demande d'abord ce que chacun en pense, ou à quelles conditions.
+- AUCUN FAIT INVENTÉ : n'affirme rien sur eux (« vous visez tous les deux… ») qui ne figure pas mot pour mot dans l'analyse.
+- LANGAGE SIMPLE : une seule idée par question, des mots de tous les jours, compréhensibles sans explication, 25 mots au plus.
 ${avoidBlock}${contextBlock}
 QUESTIONS DU GRAND ENTRETIEN (déjà posées : ne les repose pas, même reformulées ; cherche le sens derrière la réponse) :
 ${interviewDigest()}

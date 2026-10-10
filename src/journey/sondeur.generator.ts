@@ -141,7 +141,15 @@ export interface SondeurQuestion extends HarmonyQuestionPayload {
 // ─── Assemblage ────────────────────────────────────────────────────────────────
 
 /** Au plus deux questions d'accord par jour : le Sondeur reste centré sur les écarts. */
-const MAX_CONVERGENCE_PER_DAY = 2;
+const MAX_CONVERGENCE_PER_DAY = 3;
+
+/**
+ * Écarts posés par jour, au plus (hors limites de sécurité) : le Sondeur
+ * explore aussi ce qui marche entre les deux, pas seulement les frictions.
+ * Les plus graves passent en premier ; les autres restent dans la fiche de
+ * compatibilité et dans les lectures.
+ */
+export const MAX_DIVERGENCE_PER_DAY = 3;
 
 /**
  * Écarts mineurs gardés malgré tout : sujets de fond V6.1 (premier rendez-vous,
@@ -689,7 +697,11 @@ function dayFor(
 ): number | undefined {
   const fits = (day: number) => {
     const slot = `${day}|${d.theme}`;
+    const today = [...plan.keys()].filter((k) =>
+      k.startsWith(`${day}|`),
+    ).length;
     return (
+      today < MAX_DIVERGENCE_PER_DAY &&
       !plan.has(slot) &&
       !reserved.has(slot) &&
       (usableDeep(d, day, strictTheme).length > 0 ||
@@ -766,6 +778,8 @@ function planDivergences(
       d.severity !== 'critique' ||
       slot.startsWith('3|') ||
       plan.has(late) ||
+      [...plan.keys()].filter((k) => k.startsWith('3|')).length >=
+        MAX_DIVERGENCE_PER_DAY ||
       reserved.has(late) ||
       usableDeep(d, 3, strictThemes.has(d.theme)).length === 0
     )

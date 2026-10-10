@@ -2725,9 +2725,13 @@ export const TOPIC_DEEP: Record<
   },
   M5_Q03: {
     1: q(
-      "Si un parent venait vivre sous votre toit, qu'est-ce qui resterait, quoi qu'il arrive, à vous deux ?",
+      'Accueillir un jour un parent chez vous : à quelles conditions cela vous semblerait-il acceptable ?',
       'limite',
-      ['Notre chambre', 'Nos décisions', 'Un temps à deux'],
+      [
+        'Jamais : notre foyer d’abord',
+        'Pour un temps, avec des règles',
+        'Seulement si nous sommes d’accord',
+      ],
     ),
     2: q(
       "Dans votre culture, qu'attend-on d'un couple quand un parent ne peut plus vivre seul ?",
