@@ -606,12 +606,12 @@ export default function MatchesScreen() {
             </View>
             {currentDbQ?.followUp ? (
               <Text style={styles.followUpTag} testID="sondeur-follow-up">
-                Question écrite pour vous deux après la lecture de la journée précédente
+                Question ajoutée pour vous deux, après vos réponses d’hier
               </Text>
             ) : null}
             <Text style={styles.questionText}>{currentQ?.question}</Text>
             <Text style={styles.questionHint}>
-              Répondez sincèrement : votre réponse sera montrée à {firstMatch.name} après la sienne, et la lecture commune pourra en citer quelques mots.
+              Répondez librement. {firstMatch.name} verra votre réponse après avoir répondu de son côté. Le résumé du jour pourra en reprendre quelques mots.
             </Text>
           </View>
 
@@ -635,7 +635,7 @@ export default function MatchesScreen() {
               style={{ marginTop: Spacing.sm }}
             >
               <Text style={styles.questionHint}>
-                Sujet trop personnel pour l'écrire ? Vous pouvez répondre : « {VIVE_VOIX} » (touchez pour l'utiliser).
+                Sujet trop personnel ? Touchez ici pour répondre : « {VIVE_VOIX} ».
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -805,9 +805,10 @@ export default function MatchesScreen() {
               <View style={styles.timelineCard}>
                 <Text style={styles.sectionTitle}>Parcours Harmonie — 3 jours</Text>
                 <Text style={styles.privacyNote}>
-                  Certaines questions partent d'un point où vos réponses à l'entretien se rejoignent : l'autre
-                  comprend alors que vous avez répondu pareil sur ce point. Jamais ce que vous seul(e) avez
-                  répondu, et jamais un sujet sensible sans votre accord.
+                  Chaque jour : des questions sur ce qui vous rapproche, et quelques-unes sur les points dont il
+                  vaut mieux parler tôt. Quand une question part d’un point où vous avez répondu pareil, l’autre
+                  saura que vous êtes d’accord là-dessus. Vos réponses personnelles ne sont jamais montrées, et
+                  aucun sujet sensible n’est abordé sans votre accord.
                 </Text>
                 <View style={styles.timeline}>
                   {dayThemes.map((d, i) => (

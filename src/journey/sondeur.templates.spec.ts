@@ -2220,10 +2220,34 @@ describe('Simulation réaliste : un membre garde ses réponses et change de part
       // V7.1 : 11 questions retirées et de nouveaux écarts (sujet non
       // renseigné, respect des limites) laissent un peu moins de place aux
       // accords (≈ 860 pour 300 membres).
-      expect(conv).toBeGreaterThan(800);
-      expect(divShare).toBeLessThan(pass === 3 ? 3 : 1);
+      // Trois écarts par jour au plus : davantage de points d'accord
+      // (≈ 1 100 pour 300 membres), écarts un peu plus serrés sur leurs jours.
+      expect(conv).toBeGreaterThan(1000);
+      expect(divShare).toBeLessThan(pass === 3 ? 3 : pass === 2 ? 1.5 : 1);
       expect(convShare).toBeLessThan(pass === 3 ? 5 : 1);
     }
+  });
+
+  it('équilibre : au plus 3 questions d’écart par jour, le reste sur ce qui marche', () => {
+    let gapsTotal = 0;
+    let total = 0;
+    for (const { questions, where } of passes)
+      for (const day of [1, 2, 3]) {
+        const gaps = questions.filter(
+          (q) =>
+            q.day === day &&
+            q.source === 'divergence' &&
+            q.subject !== 'securite' &&
+            q.subject !== 'controle',
+        ).length;
+        if (gaps > 3) throw new Error(`${where} jour ${day} : ${gaps} écarts`);
+        gapsTotal += gaps;
+        total += questions.filter((q) => q.day === day).length;
+      }
+    const share = (100 * gapsTotal) / total;
+    console.log(`Part des questions sur un écart : ${share.toFixed(1)} %`);
+    // Au moins 4 questions sur 7 portent sur ce qui marche ou un sujet ouvert.
+    expect(share).toBeLessThanOrEqual(100 * (3 / 7));
   });
 
   it('relances d’accord sous l’angle du jour : au moins 70 % chaque jour, à chaque parcours', () => {

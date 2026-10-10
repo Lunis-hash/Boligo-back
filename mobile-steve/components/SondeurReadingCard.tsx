@@ -26,7 +26,7 @@ export function SondeurReadingCard({
           <Sparkles size={14} color="#FFFFFF" />
         </View>
         <View style={styles.headerTexts}>
-          <Text style={styles.kicker}>{review ? 'Bilan Harmonie' : `Lecture du jour ${reading.day}`}</Text>
+          <Text style={styles.kicker}>{review ? 'Bilan Harmonie' : `Résumé du jour ${reading.day}`}</Text>
           <Text style={styles.caption}>{readingCaption(reading)}</Text>
         </View>
       </View>

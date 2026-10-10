@@ -33,7 +33,7 @@ describe('lectures du Sondeur (app)', () => {
   });
 
   it('indique qui a écrit la lecture', () => {
-    expect(readingCaption({ ...day1, source: 'ia', together: [], toDiscuss: [], openers: [] } as never)).toContain('par BOLIGO');
+    expect(readingCaption({ ...day1, source: 'ia', together: [], toDiscuss: [], openers: [] } as never)).toContain('BOLIGO retient');
     expect(readingCaption({ ...day1, source: 'regles', together: [], toDiscuss: [], openers: [] } as never)).toBe('Pistes pour en parler');
   });
 });

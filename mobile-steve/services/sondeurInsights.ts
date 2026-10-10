@@ -95,5 +95,5 @@ export function readingForDay(insights: SondeurInsights, day: number): SondeurRe
 
 /** Signature de la carte : qui a écrit la lecture. */
 export function readingCaption(reading: SondeurReading): string {
-  return reading.source === 'ia' ? 'Lecture de vos réponses par BOLIGO' : 'Pistes pour en parler';
+  return reading.source === 'ia' ? 'Ce que BOLIGO retient de vos réponses' : 'Pistes pour en parler';
 }
