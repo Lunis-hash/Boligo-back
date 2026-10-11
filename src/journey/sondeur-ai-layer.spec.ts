@@ -9,6 +9,8 @@ type Draft = {
   text: string;
   options: string[];
   method?: string;
+  evidence?: string[];
+  claim?: string;
 };
 
 /** Mot inventé propre à un créneau : les questions ne se ressemblent pas. */
@@ -45,12 +47,24 @@ function setup(
     extra?: Draft[];
   } = {},
 ) {
-  const created: Array<{ day: number; questionText: string }> = [];
+  const created: Array<{
+    day: number;
+    questionText: string;
+    meta?: Record<string, unknown>;
+  }> = [];
   const prisma = {
     harmonyQuestion: {
       count: jest.fn(() => Promise.resolve(0)),
       create: jest.fn(
-        ({ data }: { data: { day: number; questionText: string } }) => {
+        ({
+          data,
+        }: {
+          data: {
+            day: number;
+            questionText: string;
+            meta?: Record<string, unknown>;
+          };
+        }) => {
           created.push(data);
           return Promise.resolve(data);
         },
@@ -103,7 +117,10 @@ function setup(
   const ai = {
     generateTargetedHarmonyQuestions: jest.fn(() =>
       Promise.resolve({
+        // V8.2 : chaque proposition cite sa preuve (neutre, du thème).
         questions: all.map((q) => ({
+          evidence: [`N-${q.themeKey}`],
+          claim: 'neutre',
           ...q,
           writer: 'anthropic/claude-opus-5',
         })),
@@ -230,6 +247,80 @@ describe('Sondeur — couche IA des parcours payés', () => {
       ai.reviewSondeurQuestions.mock.calls[0] as unknown as [string, Draft[]]
     )[1];
     expect(sent.some((q) => q.themeKey === 'communication')).toBe(false);
+  });
+});
+
+describe('Sondeur — contrat de preuves (V8.2)', () => {
+  const source = process.env.HARMONY_QUESTIONS_SOURCE;
+  beforeAll(() => {
+    process.env.HARMONY_QUESTIONS_SOURCE = 'ai';
+  });
+  afterAll(() => {
+    process.env.HARMONY_QUESTIONS_SOURCE = source;
+  });
+
+  it('une proposition sans preuve, ou qui affirme un écart non établi, n’est jamais relue ni servie', async () => {
+    const noEvidence: Draft = {
+      ...drafts()[0],
+      text: 'Que signifie zzsans pour vous, au quotidien ?',
+      evidence: [],
+    };
+    const invented: Draft = {
+      ...drafts()[2],
+      text: 'Comment dépasser votre désaccord sur zzinvente au quotidien ?',
+      evidence: [`N-${drafts()[2].themeKey}`],
+      claim: 'ecart',
+    };
+    const fear: Draft = {
+      ...drafts()[4],
+      text: 'Qu’est-ce qui nourrit votre peur de zzpeur ?',
+    };
+    const { run, ai, created } = setup({ extra: [noEvidence, invented, fear] });
+    await run();
+    const sent = (
+      ai.reviewSondeurQuestions.mock.calls as unknown as Array<
+        [string, Draft[]]
+      >
+    ).flatMap(([, qs]) => qs);
+    for (const t of ['zzsans', 'zzinvente', 'zzpeur']) {
+      expect(sent.some((q) => q.text.includes(t))).toBe(false);
+      expect(created.some((q) => q.questionText.includes(t))).toBe(false);
+    }
+  });
+
+  it('l’IA reçoit l’index des preuves, jamais une réponse de membre', async () => {
+    const { run, ai } = setup({ interview: { M6_Q04: 'C' } });
+    await run();
+    const args = ai.generateTargetedHarmonyQuestions.mock
+      .calls[0] as unknown as unknown[];
+    const index = String(args[6]);
+    expect(index).toMatch(/^N-famille · famille · neutre$/m);
+    // Les écarts de sécurité ne figurent pas dans l'index transmis.
+    expect(index).not.toMatch(/communication · écart/);
+    // Aucun texte d'option du Grand Entretien (M6_Q04 C/A) dans l'index.
+    expect(index).not.toMatch(/dépend|limite absolue/i);
+  });
+
+  it('chaque question servie garde sa trace de preuves (identifiants et sujets, jamais une réponse)', async () => {
+    const { run, created } = setup();
+    await run();
+    expect(created).toHaveLength(21);
+    for (const q of created) {
+      const ev = (q.meta as { evidence?: Record<string, unknown> } | undefined)
+        ?.evidence;
+      expect(ev).toBeDefined();
+      expect(Array.isArray(ev!.evidence)).toBe(true);
+      expect(['neutral', 'divergence', 'convergence', 'safety']).toContain(
+        ev!.claim,
+      );
+      expect(JSON.stringify(ev)).not.toMatch(/privateTexts/);
+    }
+    const ai = created.filter((q) => q.questionText.includes('proposition'));
+    expect(ai.length).toBeGreaterThan(0);
+    for (const q of ai)
+      expect(
+        (q.meta as { evidence: { evidence: string[] } }).evidence.evidence[0],
+      ).toMatch(/^N-/);
   });
 });
 

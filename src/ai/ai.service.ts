@@ -156,6 +156,8 @@ export interface ReviewContext {
   couple?: string;
   /** Angle de chaque jour du Sondeur. */
   days?: string;
+  /** V8.2 — index des preuves autorisées (règle 25). */
+  evidence?: string;
 }
 
 /** Verdict du relecteur : questions refusées, meilleures, règles invoquées. */
@@ -199,7 +201,10 @@ export class AiService implements OnModuleInit {
   private readonly groqUnavailable = new Set<string>();
   private readonly moderationCache = new Map<
     string,
-    { result: { allowed: boolean; reason?: string; category?: string }; expiresAt: number }
+    {
+      result: { allowed: boolean; reason?: string; category?: string };
+      expiresAt: number;
+    }
   >();
 
   constructor(
@@ -208,7 +213,11 @@ export class AiService implements OnModuleInit {
   ) {
     const groqApiKey = process.env.GROQ_API_KEY;
     if (groqApiKey) {
-      this.groq = new Groq({ apiKey: groqApiKey, timeout: 20_000, maxRetries: 1 });
+      this.groq = new Groq({
+        apiKey: groqApiKey,
+        timeout: 20_000,
+        maxRetries: 1,
+      });
     }
   }
 
@@ -326,8 +335,10 @@ export class AiService implements OnModuleInit {
             }
           : maxPrice();
         await checkBudget(costFromPrice(price, inputTokens, maxTokens));
-        const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
-        if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+        const messages: Array<{ role: 'system' | 'user'; content: string }> =
+          [];
+        if (systemPrompt)
+          messages.push({ role: 'system', content: systemPrompt });
         messages.push({ role: 'user', content: prompt });
 
         const res = await this.openRouterService.executeAgentPrompt(
@@ -426,7 +437,9 @@ export class AiService implements OnModuleInit {
       if (fallback !== null) return fallback;
     }
 
-    throw new Error('Aucun fournisseur d\'IA disponible (OpenRouter et Groq absents ou en échec).');
+    throw new Error(
+      "Aucun fournisseur d'IA disponible (OpenRouter et Groq absents ou en échec).",
+    );
   }
 
   /**
@@ -572,6 +585,11 @@ ${label}:
     scope?: AiJourneyScope,
     /** Âge, genre et ville des deux membres : moins de contexte, plus d'inventions. */
     coupleContext = '',
+    /**
+     * V8.2 — index des preuves (identifiants opaques, sujets, natures ; jamais
+     * une réponse de membre). Chaque question doit citer ses preuves.
+     */
+    evidenceIndex = '',
   ): Promise<DraftedQuestions | null> {
     const avoidBlock = avoidTexts.length
       ? `\nQUESTIONS DÉJÀ POSÉES À CES MEMBRES DANS LEURS PARCOURS PRÉCÉDENTS (interdiction de les reposer ou de les reformuler) :\n${avoidTexts
@@ -619,9 +637,20 @@ ${interviewDigest()}
 
 ANALYSE DU COUPLE :
 ${reportSummary}
-
+${
+  evidenceIndex
+    ? `
+PREUVES AUTORISÉES (établies par le code ; toute question doit s'y rattacher) :
+${evidenceIndex}
+- "preuves" : un à trois identifiants de cette liste, du thème de la question (« N-<thème> » pour une question neutre).
+- "nature" : « ecart » si la question explore un écart (preuve d'écart obligatoire), « accord » si elle explore un accord (preuve d'accord obligatoire), sinon « neutre ».
+- Une question « neutre » n'affirme ni écart ni accord, et ne suppose aucune émotion, intention, habitude ni aucun passé.
+- Une question sans preuve valide est écartée par le code.
+`
+    : ''
+}
 Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqués LIMITE DE SÉCURITÉ) :
-{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "methode": "...", "cible": "..." }]}
+{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''} }]}
 `;
       const { content, model } = await this.queryAiAgentDetailed(
         'sondeur',
@@ -678,6 +707,8 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
       text: string;
       method?: string;
       target?: string;
+      evidence?: string[];
+      claim?: string;
     }>,
     alreadyAsked: string[] = [],
     writerModel?: string,
@@ -690,7 +721,7 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
     const list = questions
       .map(
         (q, i) =>
-          `${i + 1}. [jour ${q.day} · ${q.themeKey ?? 'thème'}] ${q.text}\n   Méthode : ${q.method || '—'} · Cible : ${q.target || '—'}`,
+          `${i + 1}. [jour ${q.day} · ${q.themeKey ?? 'thème'}] ${q.text}\n   Méthode : ${q.method || '—'} · Cible : ${q.target || '—'}${q.evidence?.length ? ` · Preuves : ${q.evidence.join(', ')} · Nature : ${q.claim ?? '—'}` : ''}`,
       )
       .join('\n');
     const asked = alreadyAsked.length
@@ -708,6 +739,9 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
         ? `CONTEXTE (âge, genre, ville ; ne doit jamais apparaître dans une question) :\n${context.couple}`
         : '',
       context.days ? `ANGLES DES JOURS : ${context.days}` : '',
+      context.evidence
+        ? `PREUVES AUTORISÉES (règle 25) :\n${context.evidence}`
+        : '',
       `QUESTIONS DU GRAND ENTRETIEN (une question de même sens est une répétition) :\n${interviewDigest()}`,
     ]
       .filter(Boolean)
@@ -877,11 +911,19 @@ Retourne UNIQUEMENT ce JSON :
     if (!profileAiEnabled()) {
       return this.fallbackDynamicSynthesis(userContext, allResponses);
     }
-    this.logger.log(`🧠 [SONDEUR IA] Génération de la Carte Mentale 6D pour ${userContext.firstName}`);
+    this.logger.log(
+      `🧠 [SONDEUR IA] Génération de la Carte Mentale 6D pour ${userContext.firstName}`,
+    );
 
     const decoded = decodeUserResponses(allResponses);
     const answersText = decoded
-      .map((m) => `=== ${m.moduleName} ===\n` + m.qna.map((q) => `• ${q.question}\n  Réponse: ${q.answer}`).join('\n'))
+      .map(
+        (m) =>
+          `=== ${m.moduleName} ===\n` +
+          m.qna
+            .map((q) => `• ${q.question}\n  Réponse: ${q.answer}`)
+            .join('\n'),
+      )
       .join('\n\n');
 
     const prompt = `
@@ -953,15 +995,33 @@ Retourne UNIQUEMENT un JSON valide :
       return {
         synthesis: parsed.synthesis?.trim() || fallback.synthesis,
         bio: (!contradiction && aiBio) || fallback.bio,
-        needsList: Array.isArray(parsed.needsList) && parsed.needsList.length > 0 ? parsed.needsList : fallback.needsList,
-        keyValues: Array.isArray(parsed.keyValues) && parsed.keyValues.length > 0 ? parsed.keyValues : fallback.keyValues,
-        redFlags: Array.isArray(parsed.redFlags) && parsed.redFlags.length > 0 ? parsed.redFlags : fallback.redFlags,
-        maturityScore: typeof parsed.maturityScore === 'number' ? parsed.maturityScore : fallback.maturityScore,
-        alchemyScore: typeof parsed.alchemyScore === 'number' ? parsed.alchemyScore : fallback.alchemyScore,
+        needsList:
+          Array.isArray(parsed.needsList) && parsed.needsList.length > 0
+            ? parsed.needsList
+            : fallback.needsList,
+        keyValues:
+          Array.isArray(parsed.keyValues) && parsed.keyValues.length > 0
+            ? parsed.keyValues
+            : fallback.keyValues,
+        redFlags:
+          Array.isArray(parsed.redFlags) && parsed.redFlags.length > 0
+            ? parsed.redFlags
+            : fallback.redFlags,
+        maturityScore:
+          typeof parsed.maturityScore === 'number'
+            ? parsed.maturityScore
+            : fallback.maturityScore,
+        alchemyScore:
+          typeof parsed.alchemyScore === 'number'
+            ? parsed.alchemyScore
+            : fallback.alchemyScore,
         customPillars: parsed.customPillars || fallback.customPillars,
       };
     } catch (error) {
-      this.logger.error('❌ [SONDEUR IA] Erreur génération carte mentale:', error);
+      this.logger.error(
+        '❌ [SONDEUR IA] Erreur génération carte mentale:',
+        error,
+      );
       return this.fallbackDynamicSynthesis(userContext, allResponses);
     }
   }
@@ -971,7 +1031,9 @@ Retourne UNIQUEMENT un JSON valide :
   // =========================================================================
 
   async calculateCompatibilityScore(userAMentalMap: any, userBMentalMap: any) {
-    this.logger.log('💖 [CUPIDON IA] Calcul du score de compatibilité multi-dimensionnel');
+    this.logger.log(
+      '💖 [CUPIDON IA] Calcul du score de compatibilité multi-dimensionnel',
+    );
 
     const prompt = `
 Tu es Cupidon IA, l'Orchestrateur de Compatibilité de BOLIGO.
@@ -1004,10 +1066,20 @@ Retourne UNIQUEMENT un JSON valide :
       this.logger.error('❌ [CUPIDON IA] Erreur calcul compatibilité:', error);
       return {
         globalScore: 82,
-        summary: 'Grande complémentarité sur les valeurs de vie et la vision du couple.',
-        strengths: ['Vision partagée de la famille', 'Communication transparente'],
+        summary:
+          'Grande complémentarité sur les valeurs de vie et la vision du couple.',
+        strengths: [
+          'Vision partagée de la famille',
+          'Communication transparente',
+        ],
         potentialFrictions: ['Gestion du temps libre et rythme de vie'],
-        dimensionScores: { values: 85, lifeGoals: 82, communication: 80, emotionalMaturity: 84, lifestyle: 79 },
+        dimensionScores: {
+          values: 85,
+          lifeGoals: 82,
+          communication: 80,
+          emotionalMaturity: 84,
+          lifestyle: 79,
+        },
       };
     }
   }
@@ -1023,7 +1095,9 @@ Retourne UNIQUEMENT un JSON valide :
     userAMentalMap?: any,
     userBMentalMap?: any,
   ) {
-    this.logger.log(`💬 [COACH CONVERSATION] Suggestion de relance pour ${userFirstName} et ${partnerFirstName}`);
+    this.logger.log(
+      `💬 [COACH CONVERSATION] Suggestion de relance pour ${userFirstName} et ${partnerFirstName}`,
+    );
 
     const historyBlock = lastMessages
       .map((m) => `${m.sender}: "${m.text}"`)
@@ -1054,14 +1128,30 @@ Retourne UNIQUEMENT un JSON:
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
     } catch (error) {
-      this.logger.error('❌ [COACH IA] Erreur suggestions conversation:', error);
+      this.logger.error(
+        '❌ [COACH IA] Erreur suggestions conversation:',
+        error,
+      );
       return {
         suggestions: [
-          { type: 'humor', label: 'Spontané', text: `Dis-moi ${partnerFirstName}, quelle est la chose qui te fait le plus rire au quotidien ?` },
-          { type: 'deep', label: 'Valeurs', text: `J'aimerais beaucoup en savoir plus sur ce qui compte le plus pour toi dans une relation.` },
-          { type: 'action', label: 'Rendez-vous', text: `Ça te dirait qu'on se fasse un appel vidéo cette semaine pour mieux se découvrir ?` },
+          {
+            type: 'humor',
+            label: 'Spontané',
+            text: `Dis-moi ${partnerFirstName}, quelle est la chose qui te fait le plus rire au quotidien ?`,
+          },
+          {
+            type: 'deep',
+            label: 'Valeurs',
+            text: `J'aimerais beaucoup en savoir plus sur ce qui compte le plus pour toi dans une relation.`,
+          },
+          {
+            type: 'action',
+            label: 'Rendez-vous',
+            text: `Ça te dirait qu'on se fasse un appel vidéo cette semaine pour mieux se découvrir ?`,
+          },
         ],
-        coachTip: 'Pose des questions ouvertes pour inviter votre partenaire à se confier plus librement.',
+        coachTip:
+          'Pose des questions ouvertes pour inviter votre partenaire à se confier plus librement.',
       };
     }
   }
@@ -1071,7 +1161,9 @@ Retourne UNIQUEMENT un JSON:
   // =========================================================================
 
   async generateParcoursExercise(userMentalMap: any, stepNumber: number) {
-    this.logger.log(`🌱 [PARCOURS HARMONIE] Génération de l'étape ${stepNumber}`);
+    this.logger.log(
+      `🌱 [PARCOURS HARMONIE] Génération de l'étape ${stepNumber}`,
+    );
 
     const prompt = `
 Tu es le Mentor du Parcours Harmonie.
@@ -1099,8 +1191,10 @@ Retourne UNIQUEMENT un JSON:
         stepTitle: 'Identifier ses besoins non négociables',
         theme: 'Clarté Relationnelle',
         durationMinutes: 5,
-        reflectionPrompt: 'Quelles sont les 3 choses dont tu as absolument besoin pour te sentir en sécurité et aimé(e) dans un couple ?',
-        actionItem: 'Écris ces 3 besoins dans ton carnet personnel et réfléchis à la façon dont tu les exprimes.',
+        reflectionPrompt:
+          'Quelles sont les 3 choses dont tu as absolument besoin pour te sentir en sécurité et aimé(e) dans un couple ?',
+        actionItem:
+          'Écris ces 3 besoins dans ton carnet personnel et réfléchis à la façon dont tu les exprimes.',
       };
     }
   }
@@ -1260,7 +1354,12 @@ Retourne UNIQUEMENT un JSON:
   private fallbackDynamicSynthesis(userContext: any, allResponses: any[]) {
     const portrait = buildPortrait({
       firstName: String(userContext.firstName ?? 'Membre'),
-      gender: userContext.gender === 'F' ? 'F' : userContext.gender === 'H' ? 'H' : null,
+      gender:
+        userContext.gender === 'F'
+          ? 'F'
+          : userContext.gender === 'H'
+            ? 'H'
+            : null,
       age: typeof userContext.age === 'number' ? userContext.age : null,
       city: userContext.city ?? null,
       answers: collectRawAnswers(allResponses),
@@ -1274,11 +1373,17 @@ Retourne UNIQUEMENT un JSON:
       bio: portrait.bio,
       needsList: needs.length > 0 ? needs : ['Une relation sincère et durable'],
       keyValues: values.length > 0 ? values.slice(0, 4) : portrait.threeWords,
-      redFlags: portrait.redFlags.length > 0 ? portrait.redFlags : ['Infidélité ou mensonge répété'],
+      redFlags:
+        portrait.redFlags.length > 0
+          ? portrait.redFlags
+          : ['Infidélité ou mensonge répété'],
       maturityScore: Math.max(0.5, Math.min(0.98, portrait.clarity / 100)),
       alchemyScore: 0.8,
       customPillars: Object.fromEntries(
-        portrait.modules.map((m) => [m.id, { score: m.clarity / 100, comment: m.description }]),
+        portrait.modules.map((m) => [
+          m.id,
+          { score: m.clarity / 100, comment: m.description },
+        ]),
       ),
     };
   }

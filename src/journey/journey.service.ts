@@ -1,3 +1,4 @@
+import { EvidenceTrace, buildEvidence, servedTrace } from './sondeur-evidence';
 import { journeyEndedEmail } from '../common/email-templates';
 import {
   BadRequestException,
@@ -540,6 +541,8 @@ export class JourneyService {
     //    jour par un modèle d'une autre famille. Sans paiement : gabarits.
     let aiQuestions: HarmonyQuestionPayload[] = [];
     let preferAi = false;
+    // V8.2 — index des preuves du couple : chaque question servie en garde la trace.
+    let evidenceIndex = buildEvidence(report);
     if (this.useAiHarmonyQuestions()) {
       const ai = await draftReviewedSondeur(this.aiService, {
         report,
@@ -550,6 +553,7 @@ export class JourneyService {
       });
       aiQuestions = ai.questions;
       preferAi = ai.preferAi;
+      evidenceIndex = ai.evidenceIndex;
     }
 
     // 3. Assemblage : toujours 21 (3 × 7). Questions de l'IA relues en premier ;
@@ -565,12 +569,17 @@ export class JourneyService {
     const sources = questions.reduce<Record<string, number>>((acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }), {});
     console.log(`🧭 [Journey] Sondeur assemblé pour ${journeyId} :`, sources, `(${report.divergences.length} divergences)`);
 
-    await this.persistHarmonyQuestions(journeyId, questions);
+    await this.persistHarmonyQuestions(
+      journeyId,
+      questions.map((q) => ({ ...q, trace: servedTrace(q, evidenceIndex) })),
+    );
   }
 
   private async persistHarmonyQuestions(
     journeyId: string,
-    payloads: Array<HarmonyQuestionPayload & { source?: string }>,
+    payloads: Array<
+      HarmonyQuestionPayload & { source?: string; trace?: EvidenceTrace }
+    >,
   ) {
     const seen = new Set<string>();
     for (const q of payloads) {
@@ -578,15 +587,19 @@ export class JourneyService {
       if (seen.has(key)) continue;
       seen.add(key);
       // Traçabilité (jamais montrée aux membres) : origine, méthode, modèles.
-      const meta = Object.fromEntries(
-        Object.entries({
-          source: q.source,
-          method: q.method,
-          target: q.target,
-          writer: q.writer,
-          reviewer: q.reviewer,
-        }).filter(([, v]) => typeof v === 'string' && v.length > 0),
-      );
+      const meta = {
+        ...Object.fromEntries(
+          Object.entries({
+            source: q.source,
+            method: q.method,
+            target: q.target,
+            writer: q.writer,
+            reviewer: q.reviewer,
+          }).filter(([, v]) => typeof v === 'string' && v.length > 0),
+        ),
+        // Preuves : identifiants et sujets d'entretien, jamais une réponse.
+        ...(q.trace ? { evidence: { ...q.trace } } : {}),
+      };
       await this.prisma.harmonyQuestion.create({
         data: {
           journeyId,

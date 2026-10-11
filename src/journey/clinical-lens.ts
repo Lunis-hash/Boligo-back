@@ -120,7 +120,8 @@ export const CRITIC_RULES = `Refuse une question si :
 21. elle met en scène une violence, une insulte, une menace ou un contrôle, subis ou exercés (« que ressentiriez-vous si… », « si l'on vous… »), présente une permission à demander (sortir, travailler, voir ses proches, dépenser) comme un rôle, demande un seuil personnel (« à partir de quand », « jusqu'où », « combien de… avant que… ») ou ce que l'on ferait pour se protéger, où l'on irait, qui l'on appellerait ;
 22. elle aborde l'intimité ou la sexualité avant le jour 3 ;
 23. elle revient sur un sujet qu'un membre a gardé pour la rencontre (réponse « J'aimerais en parler de vive voix ») ;
-24. elle révèle ce que l'un a répondu à l'entretien, même sans le nommer.`;
+24. elle révèle ce que l'un a répondu à l'entretien, même sans le nommer ;
+25. ses preuves ne la justifient pas : elle affirme un écart ou un accord sans preuve de cette nature, s'appuie sur une preuve d'un autre thème, ou prête à l'un des deux une peur, une intention, une habitude, un comportement ou un passé qu'aucune preuve n'établit.`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur

@@ -18,6 +18,13 @@ import {
   safetyThemesOf,
 } from './sondeur.generator';
 import { isNonNegotiable } from './sondeur.pool';
+import {
+  EvidenceItem,
+  buildEvidence,
+  describeEvidenceForAi,
+  parseClaim,
+  validate,
+} from './sondeur-evidence';
 
 export interface SondeurAiResult {
   /** Questions acceptées par le relecteur, la meilleure de chaque créneau d'abord. */
@@ -38,7 +45,14 @@ export interface SondeurAiResult {
     unreviewedDays: number[];
     /** Thèmes réservés aux questions de limite (sécurité). */
     safetyThemes: Theme[];
+    /** V8.2 — écartées par le contrat de preuves, avec les contrôles en échec. */
+    evidenceRejected: Array<{
+      question: HarmonyQuestionPayload;
+      reasons: string[];
+    }>;
   };
+  /** V8.2 — index des preuves du couple (traçabilité des questions servies). */
+  evidenceIndex: EvidenceItem[];
 }
 
 export async function draftReviewedSondeur(
@@ -57,6 +71,10 @@ export async function draftReviewedSondeur(
   // Thème qui porte un écart de sécurité : toujours une question de limite
   // écrite et vérifiée à l'avance, jamais une question de l'IA.
   const safetyThemes = safetyThemesOf(report);
+  // V8.2 — le code établit les faits ; l'IA cite ses preuves (identifiants
+  // opaques, jamais une réponse de membre).
+  const evidenceIndex = buildEvidence(report);
+  const evidenceBlock = describeEvidenceForAi(evidenceIndex);
   const drafted = await ai.generateTargetedHarmonyQuestions(
     analysis,
     THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
@@ -68,6 +86,7 @@ export async function draftReviewedSondeur(
     history,
     scope,
     couple,
+    evidenceBlock,
   );
   // Clé de thème renvoyée « Famille » ou « famille » : la même.
   const all = (drafted?.questions ?? []).map((q) => ({
@@ -77,6 +96,7 @@ export async function draftReviewedSondeur(
       .toLowerCase(),
   }));
   const formRejected: HarmonyQuestionPayload[] = [];
+  const evidenceRejected: SondeurAiResult['trace']['evidenceRejected'] = [];
   // Thèmes qui portent un point non négociable : aucun compromis.
   const strict = new Set(
     report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
@@ -92,9 +112,32 @@ export async function draftReviewedSondeur(
       formRejected.push(q);
       return false;
     }
-    if (isWellFormedQuestion(q.text)) return true;
-    formRejected.push(q);
-    return false;
+    if (!isWellFormedQuestion(q.text)) {
+      formRejected.push(q);
+      return false;
+    }
+    // Contrat de preuves : preuves connues, du thème, de la bonne nature ;
+    // aucun écart ou accord non établi, aucune émotion, intention, habitude
+    // ou passé présupposés, aucune reprise d'une réponse.
+    const claim = parseClaim(q.claim);
+    const verdict = claim
+      ? validate(
+          {
+            day: q.day,
+            themeKey: q.themeKey as Theme,
+            text: q.text,
+            evidence: q.evidence ?? [],
+            claim,
+          },
+          evidenceIndex,
+          { safetyThemes },
+        )
+      : { ok: false, reasons: ['P4 nature absente ou inconnue'] };
+    if (!verdict.ok) {
+      evidenceRejected.push({ question: q, reasons: verdict.reasons });
+      return false;
+    }
+    return true;
   });
 
   // Relecture jour par jour, par un modèle d'une autre famille que le
@@ -114,7 +157,7 @@ export async function draftReviewedSondeur(
         ofDay,
         history,
         ofDay[0].writer ?? drafted?.model,
-        { analysis, couple, days },
+        { analysis, couple, days, evidence: evidenceBlock },
         scope.lab,
       );
       // Jamais de question de l'IA servie sans relecture complète.
@@ -147,6 +190,8 @@ export async function draftReviewedSondeur(
       refused,
       unreviewedDays: unreviewedDays.sort(),
       safetyThemes,
+      evidenceRejected,
     },
+    evidenceIndex,
   };
 }
