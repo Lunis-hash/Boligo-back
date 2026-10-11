@@ -1,0 +1,829 @@
+{
+ "M0_Q02": {
+  "fr": {
+   "text": "Le périmètre géographique de vos rencontres :",
+   "options": [
+    "A. Près de chez moi (ma ville et ma région)",
+    "B. Même région",
+    "C. Tout mon pays (National)",
+    "D. International (Sans frontières)"
+   ]
+  },
+  "en": {
+   "text": "The geographic scope of your search:",
+   "options": [
+    "A. Near me (my city and region)",
+    "B. Same region",
+    "C. My whole country (national)",
+    "D. International (no borders)"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q03": {
+  "fr": {
+   "text": "Êtes-vous prêt(e) à déménager pour votre partenaire ?",
+   "options": [
+    "A. Oui, sans condition",
+    "B. Oui, si le projet de vie est solide",
+    "C. Cela dépend de la distance",
+    "D. Non, je reste où je suis"
+   ]
+  },
+  "en": {
+   "text": "Are you willing to relocate for your partner?",
+   "options": [
+    "A. Yes, unconditionally",
+    "B. Yes, if the life plan is solid",
+    "C. It depends on the distance",
+    "D. No, I’m staying where I am"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q10": {
+  "fr": {
+   "text": "Dans quelles langues êtes-vous à l'aise pour vivre une relation au quotidien ? (plusieurs réponses possibles)",
+   "options": [
+    "A. Français",
+    "B. Anglais — English",
+    "C. Arabe — العربية",
+    "D. Lingala",
+    "E. Kiswahili",
+    "F. Wolof",
+    "G. Portugais — Português",
+    "H. Espagnol — Español",
+    "J. Créole — Kreyòl",
+    "I. Une autre langue (précisez)"
+   ],
+   "multi": true
+  },
+  "en": {
+   "text": "Which languages are you comfortable living a relationship in, day to day? (several answers possible)",
+   "options": [
+    "A. French — Français",
+    "B. English",
+    "C. Arabic — العربية",
+    "D. Lingala",
+    "E. Kiswahili",
+    "F. Wolof",
+    "G. Portuguese — Português",
+    "H. Spanish — Español",
+    "J. Creole — Kreyòl",
+    "I. Another language (please specify)"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q04": {
+  "fr": {
+   "text": "Votre situation actuelle :",
+   "options": [
+    "A. Célibataire",
+    "B. Séparé(e) / divorcé(e)",
+    "C. Veuf / Veuve",
+    "D. En transition : séparation ou divorce pas encore terminé"
+   ]
+  },
+  "en": {
+   "text": "Your current situation:",
+   "options": [
+    "A. Single",
+    "B. Separated / divorced",
+    "C. Widowed",
+    "D. In transition: separation or divorce not yet finalised"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q06": {
+  "fr": {
+   "text": "Souhaitez-vous avoir des enfants (ou d'autres enfants) à l'avenir ?",
+   "options": [
+    "A. Oui, absolument",
+    "B. Oui, si les conditions sont réunies",
+    "C. Je ne suis pas certain(e)",
+    "D. Non, c'est définitif"
+   ]
+  },
+  "en": {
+   "text": "Do you want to have children (or more children) in the future?",
+   "options": [
+    "A. Yes, absolutely",
+    "B. Yes, if the conditions are right",
+    "C. I’m not sure",
+    "D. No, that’s final"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q14": {
+  "fr": {
+   "text": "Un(e) partenaire qui a déjà des enfants :",
+   "options": [
+    "A. Cela me convient tout à fait",
+    "B. Cela me convient, s'ils ne vivent pas avec nous à plein temps",
+    "C. Je préférerais l'éviter",
+    "D. Je ne pourrais pas l'accepter"
+   ]
+  },
+  "en": {
+   "text": "A partner who already has children:",
+   "options": [
+    "A. That suits me completely",
+    "B. That suits me, as long as they don’t live with us full-time",
+    "C. I’d rather avoid it",
+    "D. I couldn’t accept it"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q09": {
+  "fr": {
+   "text": "Vous-même, fumez-vous ?",
+   "options": [
+    "A. Non, jamais",
+    "B. Occasionnellement",
+    "C. Oui, régulièrement"
+   ]
+  },
+  "en": {
+   "text": "Do you smoke?",
+   "options": [
+    "A. No, never",
+    "B. Occasionally",
+    "C. Yes, regularly"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q11": {
+  "fr": {
+   "text": "Le tabac chez votre partenaire :",
+   "options": [
+    "A. Je ne pourrais pas vivre avec",
+    "B. Acceptable s'il reste occasionnel",
+    "C. Sans importance pour moi"
+   ]
+  },
+  "en": {
+   "text": "Tobacco in a partner:",
+   "options": [
+    "A. I couldn’t live with it",
+    "B. Acceptable if it stays occasional",
+    "C. Doesn’t matter to me"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q12": {
+  "fr": {
+   "text": "Vous-même, buvez-vous de l'alcool ?",
+   "options": [
+    "A. Jamais",
+    "B. Seulement lors d'occasions (fêtes, repas)",
+    "C. Chaque semaine",
+    "D. Presque tous les jours"
+   ]
+  },
+  "en": {
+   "text": "Do you drink alcohol yourself?",
+   "options": [
+    "A. Never",
+    "B. Only on occasions (celebrations, meals)",
+    "C. Every week",
+    "D. Almost every day"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q13": {
+  "fr": {
+   "text": "L'alcool chez votre partenaire :",
+   "options": [
+    "A. Je ne pourrais pas vivre avec, même occasionnel",
+    "B. Acceptable s'il reste occasionnel",
+    "C. Sans importance pour moi"
+   ]
+  },
+  "en": {
+   "text": "Alcohol in a partner:",
+   "options": [
+    "A. I couldn’t live with it, even occasionally",
+    "B. Acceptable if it stays occasional",
+    "C. Doesn’t matter to me"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q15": {
+  "fr": {
+   "text": "Vous-même, les jeux d'argent (paris sportifs, casino, loterie) :",
+   "options": [
+    "A. Jamais",
+    "B. Rarement, pour le plaisir",
+    "C. Chaque semaine",
+    "D. Presque tous les jours"
+   ]
+  },
+  "en": {
+   "text": "Yourself, gambling (sports betting, casino, lottery):",
+   "options": [
+    "A. Never",
+    "B. Rarely, for fun",
+    "C. Every week",
+    "D. Almost every day"
+   ]
+  },
+  "cond": null
+ },
+ "M0_Q16": {
+  "fr": {
+   "text": "Les jeux d'argent (paris sportifs, casino, loterie) chez votre partenaire :",
+   "options": [
+    "A. Je ne pourrais pas l'accepter, même rarement",
+    "B. Acceptables s'ils restent rares et sans enjeu",
+    "C. Sans importance pour moi"
+   ]
+  },
+  "en": {
+   "text": "Gambling (sports betting, casino, lottery) in a partner:",
+   "options": [
+    "A. I couldn’t accept it, even rarely",
+    "B. Acceptable if it stays rare and low-stakes",
+    "C. Doesn’t matter to me"
+   ]
+  },
+  "cond": null
+ },
+ "M1_Q16": {
+  "fr": {
+   "text": "Votre religion ou conviction :",
+   "options": [
+    "A. Chrétienne : catholique",
+    "B. Chrétienne : protestante ou évangélique",
+    "C. Chrétienne : une autre Église",
+    "D. Musulmane",
+    "E. Juive",
+    "F. Bouddhiste",
+    "K. Hindoue",
+    "G. Une religion traditionnelle ou des ancêtres",
+    "H. Une spiritualité personnelle, sans religion",
+    "I. Sans religion",
+    "J. Une autre religion"
+   ]
+  },
+  "en": {
+   "text": "Your religion or belief:",
+   "options": [
+    "A. Christian: Catholic",
+    "B. Christian: Protestant or Evangelical",
+    "C. Christian: another Church",
+    "D. Muslim",
+    "E. Jewish",
+    "F. Buddhist",
+    "K. Hindu",
+    "G. A traditional or ancestral religion",
+    "H. A personal spirituality, without religion",
+    "I. No religion",
+    "J. Another religion"
+   ]
+  },
+  "cond": null
+ },
+ "M1_Q17": {
+  "fr": {
+   "text": "Votre pratique religieuse (prière, office, jeûne…) :",
+   "options": [
+    "A. Chaque jour",
+    "B. Chaque semaine",
+    "C. Surtout lors des fêtes religieuses et des grandes occasions",
+    "D. Rarement ou jamais"
+   ]
+  },
+  "en": {
+   "text": "Your religious practice (prayer, services, fasting…):",
+   "options": [
+    "A. Every day",
+    "B. Every week",
+    "C. Mostly for religious holidays and major occasions",
+    "D. Rarely or never"
+   ]
+  },
+  "cond": null
+ },
+ "M1_Q18": {
+  "fr": {
+   "text": "Si la personne que vous aimez n'avait pas votre religion ou vos convictions :",
+   "options": [
+    "A. Ce ne serait pas possible : je cherche quelqu'un qui les partage",
+    "B. J'en ferais une condition : qu'elle adopte les miennes avant le mariage",
+    "C. Je le souhaiterais, sans en faire une condition",
+    "D. Chacun garderait les siennes, dans le respect de l'autre",
+    "E. Je pourrais moi-même adopter les siennes"
+   ]
+  },
+  "en": {
+   "text": "If the person you love did not share your religion or beliefs:",
+   "options": [
+    "A. It wouldn’t be possible: I’m looking for someone who shares them",
+    "B. It would be a condition: they would have to adopt mine before marriage",
+    "C. I would wish for it, without making it a condition",
+    "D. We would each keep our own, respecting the other’s",
+    "E. I could adopt theirs myself"
+   ]
+  },
+  "cond": null
+ },
+ "M1_Q19": {
+  "fr": {
+   "text": "Vos habitudes alimentaires (règles religieuses ou convictions) :",
+   "options": [
+    "A. Je mange halal, strictement",
+    "B. Je mange casher, strictement",
+    "C. Je suis végétarien(ne) ou végan(e)",
+    "D. Une autre règle stricte (religieuse ou personnelle)",
+    "E. Quelques règles, que j'adapte selon le contexte",
+    "F. Aucune règle : je mange de tout"
+   ]
+  },
+  "en": {
+   "text": "Your eating habits (religious rules or convictions):",
+   "options": [
+    "A. I eat halal, strictly",
+    "B. I eat kosher, strictly",
+    "C. I’m vegetarian or vegan",
+    "D. Another strict rule (religious or personal)",
+    "E. A few rules, which I adapt to the context",
+    "F. No rules: I eat everything"
+   ]
+  },
+  "cond": null
+ },
+ "M1_Q20": {
+  "fr": {
+   "text": "Pour votre propre couple, la polygamie (plusieurs épouses pour un même mari) :",
+   "options": [
+    "A. Exclue, sans discussion possible",
+    "B. Exclue, mais j'accepte d'en parler",
+    "C. Envisageable si chacun y consent, dans un cadre religieux ou coutumier",
+    "D. Je n'ai pas encore de position arrêtée"
+   ]
+  },
+  "en": {
+   "text": "For your own relationship, polygamy (one husband with several wives):",
+   "options": [
+    "A. Ruled out, not open to discussion",
+    "B. Ruled out, but I’m willing to talk about it",
+    "C. Conceivable if everyone consents, within a religious or customary framework",
+    "D. I don’t have a settled position yet"
+   ]
+  },
+  "cond": null
+ },
+ "M3_Q12": {
+  "fr": {
+   "text": "Dans la maison où vous avez grandi, les désaccords entre adultes se réglaient le plus souvent :",
+   "options": [
+    "A. En discutant, parfois vivement, puis en se réconciliant",
+    "B. Par des cris ou des disputes qui revenaient souvent",
+    "C. Par le silence : on ne parlait pas des problèmes",
+    "D. Une seule personne décidait, les autres suivaient",
+    "E. Je n'ai pas grandi auprès de deux adultes en couple"
+   ]
+  },
+  "en": {
+   "text": "In the home where you grew up, disagreements between adults were most often settled:",
+   "options": [
+    "A. By talking, sometimes heatedly, then making up",
+    "B. With shouting or arguments that kept coming back",
+    "C. With silence: problems were not talked about",
+    "D. One person decided, the others followed",
+    "E. I didn’t grow up with two adults in a couple"
+   ]
+  },
+  "cond": null
+ },
+ "M4_Q16": {
+  "fr": {
+   "text": "Aider financièrement votre famille (parents, frères et sœurs…) une fois en couple :",
+   "options": [
+    "A. Un devoir régulier : ma famille compte sur moi, cela ne se discute pas",
+    "B. Une aide régulière, dont le montant se décide à deux",
+    "C. Une aide ponctuelle, en cas de vrai besoin",
+    "D. L'argent du foyer ne doit pas servir à la famille élargie"
+   ]
+  },
+  "en": {
+   "text": "Supporting your family financially (parents, brothers and sisters…) once you are a couple:",
+   "options": [
+    "A. A regular duty: my family counts on me, it’s not up for discussion",
+    "B. Regular help, with the amount decided together",
+    "C. Occasional help, when there is a real need",
+    "D. The household’s money should not go to the extended family"
+   ]
+  },
+  "cond": null
+ },
+ "M4_Q17": {
+  "fr": {
+   "text": "La dot pour votre mariage :",
+   "options": [
+    "A. Indispensable : mon mariage ne se fera pas sans elle",
+    "B. Importante, sous une forme symbolique ou modernisée",
+    "C. Absente de ma culture, mais je la respecterais dans celle de mon/ma partenaire",
+    "D. Je n'y adhère pas, même si mon/ma partenaire y tient"
+   ]
+  },
+  "en": {
+   "text": "The bride price for your marriage:",
+   "options": [
+    "A. Essential: my marriage won’t happen without it",
+    "B. Important, in a symbolic or modernised form",
+    "C. Not part of my culture, but I would respect it in my partner’s",
+    "D. I don’t adhere to it, even if my partner cares about it"
+   ]
+  },
+  "cond": null
+ },
+ "M8_Q16": {
+  "fr": {
+   "text": "Pour vous, un mariage n'est accompli qu'avec : (plusieurs réponses possibles)",
+   "options": [
+    "A. Le mariage civil",
+    "B. Le mariage religieux",
+    "C. Le mariage coutumier (dot, présentation des familles)",
+    "D. Aucune cérémonie n'est indispensable pour moi"
+   ],
+   "multi": true
+  },
+  "en": {
+   "text": "For you, a marriage is only complete with: (several answers possible)",
+   "options": [
+    "A. A civil marriage",
+    "B. A religious marriage",
+    "C. A customary marriage (bride price, meeting of the families)",
+    "D. No ceremony is essential to me"
+   ]
+  },
+  "cond": null
+ },
+ "M8_Q19": {
+  "fr": {
+   "text": "Vivre ensemble avant le mariage :",
+   "options": [
+    "A. Exclu pour moi",
+    "B. Seulement après les fiançailles",
+    "C. Possible quand la relation est solide",
+    "D. Souhaitable, pour bien se connaître"
+   ]
+  },
+  "en": {
+   "text": "Living together before marriage:",
+   "options": [
+    "A. Ruled out for me",
+    "B. Only after an engagement",
+    "C. Possible once the relationship is solid",
+    "D. Desirable, to really get to know each other"
+   ]
+  },
+  "cond": null
+ },
+ "M6_Q19": {
+  "fr": {
+   "text": "Pour vous, lesquels de ces comportements de votre partenaire seraient déjà une infidélité ? (plusieurs réponses possibles)",
+   "options": [
+    "A. Échanger des messages de séduction avec quelqu'un d'autre",
+    "B. Garder un profil actif sur une application de rencontre",
+    "C. Confier à quelqu'un d'autre ce qu'il ou elle ne me dit pas",
+    "D. Revoir un(e) ex sans me le dire",
+    "E. Embrasser quelqu'un d'autre",
+    "F. Regarder des contenus pour adultes",
+    "G. Aucun de ceux-là : seule une relation physique compte"
+   ],
+   "multi": true
+  },
+  "en": {
+   "text": "In your view, which of these behaviours by your partner would already be unfaithful? (several answers possible)",
+   "options": [
+    "A. Exchanging flirtatious messages with someone else",
+    "B. Keeping an active profile on a dating app",
+    "C. Confiding in someone else what they don’t tell me",
+    "D. Seeing an ex without telling me",
+    "E. Kissing someone else",
+    "F. Watching adult content",
+    "G. None of these: only a physical relationship counts"
+   ]
+  },
+  "cond": null
+ },
+ "M8_Q12": {
+  "fr": {
+   "text": "Parmi ces sujets, lesquels sont pour vous non négociables, au point qu’un désaccord vous ferait renoncer à la relation ? (3 au plus)",
+   "options": [
+    "A. Avoir des enfants, ou non",
+    "B. La religion et sa pratique",
+    "C. La fidélité",
+    "D. La façon de gérer l'argent",
+    "E. Le lieu de vie",
+    "F. La place de la famille dans le couple",
+    "G. L'intimité avant le mariage",
+    "H. La polygamie",
+    "I. Le tabac ou l'alcool",
+    "J. Les rôles de l'homme et de la femme dans le foyer",
+    "K. Aucun : pour moi, tout se discute"
+   ],
+   "max": 3,
+   "multi": true
+  },
+  "en": {
+   "text": "Which of these topics are non-negotiable for you, to the point that a disagreement would make you give up the relationship? (3 at most)",
+   "options": [
+    "A. Having children, or not",
+    "B. Religion and its practice",
+    "C. Fidelity",
+    "D. How money is managed",
+    "E. Where we live",
+    "F. The place of family in the couple",
+    "G. Physical intimacy before marriage",
+    "H. Polygamy",
+    "I. Tobacco or alcohol",
+    "J. The roles of men and women in the home",
+    "K. None: for me, everything can be discussed"
+   ]
+  },
+  "cond": null
+ },
+ "M8_Q18": {
+  "fr": {
+   "text": "Dans quelle religion élèveriez-vous vos enfants ?",
+   "options": [
+    "A. Dans ma religion, c'est indispensable",
+    "B. Dans celle de l'un de nous, choisie à deux",
+    "C. Dans nos deux traditions ; ils choisiront plus tard",
+    "D. Sans éducation religieuse"
+   ]
+  },
+  "en": {
+   "text": "In which religion would you raise your children?",
+   "options": [
+    "A. In my religion — it’s essential",
+    "B. In one of ours, chosen together",
+    "C. In both our traditions; they’ll choose later",
+    "D. Without a religious upbringing"
+   ]
+  },
+  "cond": null
+ },
+ "M6_Q05": {
+  "fr": {
+   "text": "Les insultes ou les mots blessants lors d'une dispute :",
+   "options": [
+    "A. Limite absolue pour moi — inacceptable",
+    "B. Grave, mais je peux pardonner une première fois",
+    "C. Difficile, mais ça peut arriver dans un couple",
+    "D. J'essaie de passer outre si ce n'est pas récurrent"
+   ]
+  },
+  "en": {
+   "text": "Insults or hurtful words during an argument:",
+   "options": [
+    "A. An absolute limit for me — unacceptable",
+    "B. Serious, but I can forgive a first time",
+    "C. Hard, but it can happen in a couple",
+    "D. I try to ignore it if it’s not recurring"
+   ]
+  },
+  "cond": null
+ },
+ "M9_Q16": {
+  "fr": {
+   "text": "Quand je n'obtiens pas ce que je veux, je le fais sentir (bouderie, froideur).",
+   "options": [
+    "A. Jamais",
+    "B. Rarement",
+    "C. Parfois",
+    "D. Souvent",
+    "E. Très souvent"
+   ]
+  },
+  "en": {
+   "text": "When I don’t get what I want, I let it show (sulking, coldness).",
+   "options": [
+    "A. Never",
+    "B. Rarely",
+    "C. Sometimes",
+    "D. Often",
+    "E. Very often"
+   ]
+  },
+  "cond": null
+ },
+ "M9_Q24": {
+  "fr": {
+   "text": "Quand l'autre refuse quelque chose qui le ou la concerne (un geste, une sortie, une dépense), j'insiste jusqu'à ce qu'il ou elle cède.",
+   "options": [
+    "A. Jamais",
+    "B. Rarement",
+    "C. Parfois",
+    "D. Souvent",
+    "E. Très souvent"
+   ]
+  },
+  "en": {
+   "text": "When my partner refuses something that concerns them (a gesture, an outing, a purchase), I insist until they give in.",
+   "options": [
+    "A. Never",
+    "B. Rarely",
+    "C. Sometimes",
+    "D. Often",
+    "E. Very often"
+   ]
+  },
+  "cond": null
+ },
+ "M5_Q08": {
+  "fr": {
+   "text": "L'accès au téléphone et aux messages de votre partenaire :",
+   "options": [
+    "A. Transparence totale — chacun a accès à tout",
+    "B. Chacun garde son téléphone pour lui",
+    "C. Accès possible seulement en cas de doute sérieux",
+    "D. Je ne me suis jamais posé la question"
+   ]
+  },
+  "en": {
+   "text": "Access to your partner’s phone and messages:",
+   "options": [
+    "A. Total transparency — each has access to everything",
+    "B. Each keeps their phone to themselves",
+    "C. Access only in case of serious doubt",
+    "D. I’ve never thought about it"
+   ]
+  },
+  "cond": null
+ },
+ "M10_Q17": {
+  "fr": {
+   "text": "L'intimité physique avant le mariage :",
+   "options": [
+    "A. Exclue pour moi : j'attends le mariage",
+    "B. Je préfère attendre un engagement sérieux (fiançailles, projet officiel)",
+    "C. Possible quand la relation est solide, sans attendre un engagement officiel",
+    "D. Je préfère en parler directement avec la personne"
+   ]
+  },
+  "en": {
+   "text": "Physical intimacy before marriage:",
+   "options": [
+    "A. Ruled out for me: I’m waiting for marriage",
+    "B. I’d rather wait for a serious commitment (engagement, official plans)",
+    "C. Possible once the relationship is solid, without waiting for an official commitment",
+    "D. I’d rather talk about it directly with the person"
+   ]
+  },
+  "cond": null
+ },
+ "M10_Q19": {
+  "fr": {
+   "text": "Quand votre partenaire propose un moment d'intimité et que vous n'en avez pas envie :",
+   "options": [
+    "A. Je le dis simplement, et nous trouvons un autre moment de tendresse",
+    "B. J’accepte quand même, pour ne pas le ou la décevoir",
+    "C. Je refuse, mais je me sens coupable",
+    "D. Je refuse sans difficulté"
+   ]
+  },
+  "en": {
+   "text": "When your partner suggests intimacy and you don’t feel like it:",
+   "options": [
+    "A. I say so simply, and we find another tender moment",
+    "B. I go along with it anyway, so as not to disappoint them",
+    "C. I refuse, but I feel guilty",
+    "D. I refuse without difficulty"
+   ]
+  },
+  "cond": null
+ },
+ "M8_Q10": {
+  "fr": {
+   "text": "Parmi ces signaux, lesquels vous feraient fuir rapidement ? (3 au plus)",
+   "options": [
+    "A. Des déclarations d'amour très rapides et envahissantes",
+    "B. Une jalousie qui contrôle : téléphone fouillé, localisation exigée",
+    "C. Disparaître des jours sans explication, puis revenir comme si de rien n’était",
+    "D. Rester flou sur ses intentions : « on verra », sans engagement",
+    "E. Dire du mal de tous ses ex",
+    "F. Mal parler aux serveurs, aux inconnus ou à sa famille",
+    "G. Compter sur l'argent de l'autre pour vivre",
+    "H. Ne jamais reconnaître ses torts",
+    "I. Ne pas respecter un « non » ou une limite",
+    "J. Avoir les yeux rivés sur son téléphone pendant les moments à deux"
+   ],
+   "max": 3,
+   "multi": true
+  },
+  "en": {
+   "text": "Which of these signs would make you run quickly? (3 at most)",
+   "options": [
+    "A. Very fast, overwhelming declarations of love",
+    "B. Controlling jealousy: phone searched, location demanded",
+    "C. Disappearing for days without explanation, then coming back as if nothing happened",
+    "D. Staying vague about intentions: “we’ll see”, no commitment",
+    "E. Badmouthing all their exes",
+    "F. Being rude to waiters, strangers or their family",
+    "G. Relying on the other person’s money to live",
+    "H. Never admitting they were wrong",
+    "I. Not respecting a “no” or a boundary",
+    "J. Eyes glued to their phone during time together"
+   ]
+  },
+  "cond": null
+ },
+ "M6_Q24": {
+  "fr": {
+   "text": "Dans un couple, il y a des situations où une gifle peut se comprendre.",
+   "options": [
+    "A. Pas du tout d'accord",
+    "B. Plutôt pas d'accord",
+    "C. Ni d'accord ni pas d'accord",
+    "D. Plutôt d'accord",
+    "E. Tout à fait d'accord"
+   ]
+  },
+  "en": {
+   "text": "In a couple, there are situations where a slap can be understood.",
+   "options": [
+    "A. Strongly disagree",
+    "B. Somewhat disagree",
+    "C. Neither agree nor disagree",
+    "D. Somewhat agree",
+    "E. Strongly agree"
+   ]
+  },
+  "cond": null
+ },
+ "M3_Q04": {
+  "fr": {
+   "text": "Dans une famille recomposée, la place du beau-parent auprès des enfants de l'autre :",
+   "options": [
+    "A. Un parent à part entière, sans distinction entre les enfants",
+    "B. Une place affectueuse, chaque parent gardant son rôle auprès de ses enfants",
+    "C. Une présence bienveillante, sans autorité parentale directe",
+    "D. Une place qui se construit avec le temps et la confiance"
+   ]
+  },
+  "en": {
+   "text": "In a blended family, the step-parent’s place with the other’s children:",
+   "options": [
+    "A. A full parent, with no difference between the children",
+    "B. An affectionate place, each parent keeping their role with their own children",
+    "C. A caring presence, without direct parental authority",
+    "D. A place built over time and through trust"
+   ]
+  },
+  "cond": null
+ },
+ "M8_Q20": {
+  "fr": {
+   "text": "Une tape ou une fessée pour éduquer un enfant :",
+   "options": [
+    "A. Cela fait partie d'une bonne éducation",
+    "B. Acceptable de façon exceptionnelle",
+    "C. Je préfère l'éviter",
+    "D. Jamais : c'est une violence"
+   ]
+  },
+  "en": {
+   "text": "A smack or spanking to discipline a child:",
+   "options": [
+    "A. It’s part of a good upbringing",
+    "B. Acceptable in exceptional cases",
+    "C. I’d rather avoid it",
+    "D. Never: it’s a form of violence"
+   ]
+  },
+  "cond": null
+ },
+ "M6_Q04": {
+  "fr": {
+   "text": "La violence physique dans une relation :",
+   "options": [
+    "A. Rupture immédiate — limite absolue, non négociable",
+    "B. Inacceptable, mais je tenterais d'abord une discussion",
+    "C. Ça dépend des circonstances",
+    "D. Je ne sais pas comment je réagirais"
+   ]
+  },
+  "en": {
+   "text": "Physical violence in a relationship:",
+   "options": [
+    "A. Immediate break-up — an absolute, non-negotiable limit",
+    "B. Unacceptable, but I would first try to talk it through",
+    "C. It depends on the circumstances",
+    "D. I don’t know how I would react"
+   ]
+  },
+  "cond": null
+ }
+}
