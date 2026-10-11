@@ -178,3 +178,19 @@ describe('V8.2 — sécurité séparée de la compatibilité', () => {
     expect(report(v82({}), { M0_Q01: 'A' }).questionnaire).toBeUndefined();
   });
 });
+
+describe('V8.2 — mise à l’abri de sécurité (indépendante du score)', () => {
+  it('limite absolue face à « ça dépend » : mise à l’abri, jamais une incompatibilité ni une pénalité', () => {
+    const r = report({ M6_Q04: 'A' }, { M6_Q04: 'C' });
+    expect(r.safetyHold).toBe(true);
+    expect(r.hardStop).toBe(false);
+    expect(r.penalty).toBe(0);
+  });
+
+  it('réponse isolée et modérée : aucune mise à l’abri', () => {
+    expect(
+      report({ M6_Q04: 'A' }, { M6_Q04: 'B', M9_Q24: 'C' }).safetyHold,
+    ).toBe(false);
+    expect(report({ M6_Q04: 'A' }, { M6_Q04: 'A' }).safetyHold).toBe(false);
+  });
+});

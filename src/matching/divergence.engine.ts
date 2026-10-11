@@ -185,6 +185,14 @@ export interface DivergenceReport {
   comparisons?: Comparison[];
   /** V8.2 — les deux entretiens sont en V8.2 (questions neutres B servies). */
   questionnaire?: '8.2';
+  /**
+   * V8.2 — mise à l'abri de sécurité : une limite de sécurité déclarée par
+   * l'un (violence, insultes) face à une tolérance déclarée par l'autre, ou
+   * un contrôle élevé. Les deux profils ne se sont pas proposés et ne peuvent
+   * pas s'inviter, comme avant la séparation ; ce n'est ni un score, ni une
+   * « incompatibilité », ni un diagnostic, et rien n'est montré aux membres.
+   */
+  safetyHold?: boolean;
 }
 
 /**
@@ -2985,6 +2993,7 @@ export function buildDivergenceReport(
     penalty,
     hardStop,
     safetyAlerts,
+    safetyHold: safetyAlerts.some((d) => d.severity === 'critique'),
     ...(bothV82 ? { questionnaire: '8.2' as const } : {}),
     comparedQuestions: c.compared + native.compared,
     comparisons: [

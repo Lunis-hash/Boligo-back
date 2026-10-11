@@ -198,6 +198,9 @@ export function buildMatchView(viewer: ViewerInput, candidate: CandidateInput) {
     },
     discussionTopics,
     hardStop: report.hardStop,
+    // Mise à l'abri de sécurité : jamais renvoyée telle quelle au membre
+    // (retirée avant la réponse de l'API), elle écarte le profil.
+    safetyHold: !!report.safetyHold,
     slogan: portrait.bio,
     aiAnalysis: portrait.analysis,
     positivePoints,
@@ -210,4 +213,13 @@ export function buildMatchView(viewer: ViewerInput, candidate: CandidateInput) {
     modulesTotal: MODULES.length,
     _score: resolved.score,
   };
+}
+
+/** Vue renvoyée à un membre : jamais l'indicateur de mise à l'abri de sécurité. */
+export function withoutSafetyHold<T extends { safetyHold?: boolean }>(
+  view: T,
+): Omit<T, 'safetyHold'> {
+  const copy: Partial<T> = { ...view };
+  delete copy.safetyHold;
+  return copy as Omit<T, 'safetyHold'>;
 }
