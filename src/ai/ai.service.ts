@@ -649,8 +649,13 @@ ${evidenceIndex}
 `
     : ''
 }
+VERSION ANGLAISE (obligatoire) : chaque question est aussi posée à des membres anglophones.
+- "text_en" : la même question écrite directement en anglais naturel et chaleureux, comme l'écrirait un coach anglophone (jamais une traduction mot à mot) ; même sens, même technique, mêmes règles (aucun présupposé, une seule idée, 180 caractères au plus, se termine par « ? »).
+- "options_en" : les mêmes pistes de lecture, courtes, en anglais.
+- Une question sans version anglaise fidèle est écartée par le code.
+
 Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqués LIMITE DE SÉCURITÉ) :
-{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''} }]}
+{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''}, "options": ["...", "...", "..."], "text_en": "...", "options_en": ["...", "...", "..."] }]}
 `;
       const { content, model } = await this.queryAiAgentDetailed(
         'sondeur',
@@ -709,6 +714,7 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
       target?: string;
       evidence?: string[];
       claim?: string;
+      textEn?: string;
     }>,
     alreadyAsked: string[] = [],
     writerModel?: string,
@@ -721,7 +727,7 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
     const list = questions
       .map(
         (q, i) =>
-          `${i + 1}. [jour ${q.day} · ${q.themeKey ?? 'thème'}] ${q.text}\n   Méthode : ${q.method || '—'} · Cible : ${q.target || '—'}${q.evidence?.length ? ` · Preuves : ${q.evidence.join(', ')} · Nature : ${q.claim ?? '—'}` : ''}`,
+          `${i + 1}. [jour ${q.day} · ${q.themeKey ?? 'thème'}] ${q.text}\n   Méthode : ${q.method || '—'} · Cible : ${q.target || '—'}${q.evidence?.length ? ` · Preuves : ${q.evidence.join(', ')} · Nature : ${q.claim ?? '—'}` : ''}${q.textEn ? `\n   EN : ${q.textEn}` : ''}`,
       )
       .join('\n');
     const asked = alreadyAsked.length

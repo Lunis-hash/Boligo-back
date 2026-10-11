@@ -1,3 +1,4 @@
+import { OTHER_EN, OTHER_FR } from './sondeur.i18n';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { Prisma } from '@prisma/client';
@@ -1183,6 +1184,9 @@ export class JourneyInsightsService {
     });
     const ofDay = all.filter((q) => q.day === day);
     if (ofDay.some((q) => q.responses.length > 0 || q.followUp)) return null;
+    // Sondeur bilingue : sans version anglaise fidèle, la question bilingue
+    // d'origine reste (les deux membres voient toujours la même question).
+    if (!proposal.textEn) return null;
     // Ni redite exacte, ni question de même sens déjà posée dans ce Sondeur.
     const key = (t: string) => t.toLowerCase().replace(/\s+/g, ' ').trim();
     if (
@@ -1202,6 +1206,8 @@ export class JourneyInsightsService {
       data: {
         questionText: proposal.text,
         options: proposal.options,
+        questionTextEn: proposal.textEn,
+        optionsEn: proposal.options.map((o) => (o === OTHER_FR ? OTHER_EN : o)),
         followUp: true,
         // Traçabilité (jamais montrée aux membres).
         meta: Object.fromEntries(

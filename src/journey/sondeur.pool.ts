@@ -79,6 +79,11 @@ export interface PoolTemplate {
   /** Suppose des enfants à venir : jamais servie si l'un n'en veut pas. */
   needsChildren?: boolean;
   /**
+   * Version anglaise déjà composée (gabarit à trous, accord + relance) ; sinon
+   * celle du texte fixe (sondeur.en.generated.ts).
+   */
+  en?: string;
+  /**
    * V8.2 — question neutre de la stratégie B : servie seulement quand les
    * deux entretiens sont en V8.2 (la V7.1 garde son Sondeur inchangé).
    */
@@ -340,6 +345,13 @@ export function topicKey(d: TopicSource): string {
 /** Entrée d'une table propre au sujet : variante d'abord, question ensuite. */
 function lookup<T>(table: Record<string, T>, d: TopicSource): T | undefined {
   return table[topicKey(d)] ?? table[d.questionId];
+}
+
+/** Clé de la tournure d'un sujet (celle de TOPIC_PHRASES, ou « theme:<thème> »). */
+export function topicPhraseKey(d: TopicSource): string {
+  if (TOPIC_PHRASES[topicKey(d)] !== undefined) return topicKey(d);
+  if (TOPIC_PHRASES[d.questionId] !== undefined) return d.questionId;
+  return `theme:${d.theme}`;
 }
 
 export function topicPhrase(d: TopicSource): string {

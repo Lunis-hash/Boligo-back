@@ -121,7 +121,8 @@ export const CRITIC_RULES = `Refuse une question si :
 22. elle aborde l'intimité ou la sexualité avant le jour 3 ;
 23. elle revient sur un sujet qu'un membre a gardé pour la rencontre (réponse « J'aimerais en parler de vive voix ») ;
 24. elle révèle ce que l'un a répondu à l'entretien, même sans le nommer ;
-25. ses preuves ne la justifient pas : elle affirme un écart ou un accord sans preuve de cette nature, s'appuie sur une preuve d'un autre thème, ou prête à l'un des deux une peur, une intention, une habitude, un comportement ou un passé qu'aucune preuve n'établit.`;
+25. ses preuves ne la justifient pas : elle affirme un écart ou un accord sans preuve de cette nature, s'appuie sur une preuve d'un autre thème, ou prête à l'un des deux une peur, une intention, une habitude, un comportement ou un passé qu'aucune preuve n'établit ;
+26. sa version anglaise (« EN ») ne dit pas exactement la même chose, sonne comme une traduction mot à mot, ou enfreint l'une des règles ci-dessus.`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur

@@ -118,9 +118,12 @@ function setup(
     generateTargetedHarmonyQuestions: jest.fn(() =>
       Promise.resolve({
         // V8.2 : chaque proposition cite sa preuve (neutre, du thème).
+        // Sondeur bilingue : chaque proposition porte sa version anglaise.
         questions: all.map((q) => ({
           evidence: [`N-${q.themeKey}`],
           claim: 'neutre',
+          textEn: `What does ${q.text.replace(/^Que veut dire | pour vous.*$/g, '')} mean to you?`,
+          optionsEn: ['Other...'],
           ...q,
           writer: 'anthropic/claude-opus-5',
         })),

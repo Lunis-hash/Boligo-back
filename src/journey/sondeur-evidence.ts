@@ -7,6 +7,9 @@
  * (règles de forme `isWellFormedQuestion`, relecteur d'une autre famille avec
  * ses 24 règles) sans les remplacer.
  */
+import { QUESTION_INDEX } from '../interview/questions.data';
+import { QUESTIONS_EN } from '../interview/questions.en';
+import { V82_EN, V82_INDEX } from '../interview/questions.v82';
 import {
   DivergenceReport,
   THEME_LIST,
@@ -57,7 +60,13 @@ export function buildEvidence(report: DivergenceReport): EvidenceItem[] {
       subjects: [d.questionId],
       topic: d.label,
       severity: d.severity,
-      privateTexts: hidden ? [] : [d.a.text, d.b.text],
+      privateTexts: hidden
+        ? []
+        : [
+            d.a.text,
+            d.b.text,
+            ...answerTextsEn(d.questionId, [d.a.key, d.b.key]),
+          ],
     });
   }
   for (const c of report.convergences)
@@ -67,7 +76,7 @@ export function buildEvidence(report: DivergenceReport): EvidenceItem[] {
       kind: 'convergence',
       subjects: [c.questionId],
       topic: c.topic ?? c.label,
-      privateTexts: [c.answer],
+      privateTexts: [c.answer, ...convergenceTextEn(c.questionId, c.answer)],
     });
   for (const t of THEME_LIST)
     out.push({
@@ -635,4 +644,121 @@ export function servedTrace(
     // Question de limite : sujet de sécurité, aucune réponse citée.
     return { claim: 'safety', evidence: [], subjects: [subject], topics: [] };
   return traceOf([`N-${theme}`], index, 'neutral');
+}
+
+// ─── Version anglaise (Sondeur bilingue) ───────────────────────────────────
+
+/** Texte anglais d'une réponse d'entretien (pour repérer sa reprise dans une question). */
+function answerTextsEn(questionId: string, keys: string[]): string[] {
+  const out: string[] = [];
+  for (const key of keys) {
+    const v82 = V82_EN[questionId]?.options[key];
+    if (v82) {
+      out.push(v82);
+      continue;
+    }
+    const q = QUESTION_INDEX.get(questionId);
+    const i = q?.options.findIndex((o) => o.key === key) ?? -1;
+    const en = i >= 0 ? QUESTIONS_EN[questionId]?.options?.[i] : undefined;
+    if (en) out.push(en);
+  }
+  return out;
+}
+
+function convergenceTextEn(questionId: string, answer: string): string[] {
+  const q = V82_INDEX.get(questionId) ?? QUESTION_INDEX.get(questionId);
+  const key = q?.options.find((o) => o.text === answer)?.key;
+  return key ? answerTextsEn(questionId, [key]) : [];
+}
+
+const WE = (s: string) => new RegExp(`(?<![a-z])(?:${s})(?![a-z])`, 'i');
+/** Désaccord affirmé (anglais). */
+const DIFF_CLAIM_EN = WE(
+  [
+    'your (?:disagreement|differences?|difference of opinion|conflict)',
+    "you (?:don't|do not|never) (?:see eye to eye|agree|share the same)",
+    'you(?: two)? (?:disagree|differ|see things differently|have different views)',
+    'one of you [^?]{0,60}(?:while|whereas|but) the other',
+  ].join('|'),
+);
+/** Accord affirmé (anglais). */
+const AGREE_CLAIM_EN = WE(
+  [
+    'you both',
+    'both of you',
+    'you share',
+    'your shared',
+    'your common',
+    'you (?:agree|are on the same page)',
+    "you're both",
+  ].join('|'),
+);
+/** État intérieur, comportement ou passé attribués (anglais). */
+const ATTRIBUTION_EN = WE(
+  [
+    'your (?:fears?|anxiety|anxieties|worries|worry|jealousy|distrust|mistrust|insecurit(?:y|ies)|resentment|anger|hurt|wounds?|trauma|doubts?|hesitations?|reluctance|reservations|regrets?|intentions?|struggles?)',
+    "(?:since|as|now that|because) you(?:'re| are| have| feel| fear| want| plan)",
+    "why (?:do|did|are|don't|won't) you",
+    'your (?:ex|former partner|last relationship|divorce|separation|break-?up|past relationships?)',
+    'you (?:have|have been|were) (?:hurt|cheated on|betrayed|left)',
+    'when you (?:argue|fight|disagree)',
+    'your (?:arguments|fights|quarrels)',
+    'what (?:scares|frightens|worries|bothers|hurts) you',
+  ].join('|'),
+);
+/** Habitude présupposée (anglais). */
+const HABIT_EN = WE(
+  '(?:whenever|every time) you|do you (?:still|always|usually)|you (?:always|usually|keep|tend to)|once again|any more|anymore|these days',
+);
+/** Réponse individuelle révélée (anglais). */
+const WHO_ANSWERED_EN = WE(
+  [
+    'one of you (?:thinks|believes|wants|said|says|answered|answer|prefers|refuses|feels|would rather|chose|picked)',
+    '(?:did|does|would) one of you',
+    'which (?:one )?of you (?:said|answered|chose|picked|thinks|wants)',
+    'your partner (?:said|says|answered|chose|picked|thinks|believes|wants|prefers|refuses)',
+  ].join('|'),
+);
+/** Reste de français dans un texte anglais (mots fréquents, accents). */
+const FRENCH_RESIDUE =
+  /(?:\b(?:vous|votre|vos|est-ce|qu'|l'autre|avec|pour|dans|quel(?:le)?s?|comment)\b|[àâçéèêëîïôûùœ])/i;
+
+/**
+ * Contrôles de la version anglaise d'une question de l'IA : forme, accord ou
+ * désaccord affirmés sans preuve, attribution, habitude, réponse révélée,
+ * reprise d'une réponse (dans sa version anglaise), reste de français.
+ */
+export function validateEn(
+  textEn: string | undefined,
+  q: EvidencedQuestion,
+  index: EvidenceItem[],
+): Verdict {
+  const reasons: string[] = [];
+  const t = (textEn ?? '').trim();
+  if (!t) return { ok: false, reasons: ['EN1 version anglaise absente'] };
+  if (!t.endsWith('?') || (t.match(/\?/g) ?? []).length !== 1)
+    reasons.push('EN2 une seule question, terminée par « ? »');
+  if (t.length > 180) reasons.push('EN2 plus de 180 caractères');
+  if (FRENCH_RESIDUE.test(t)) reasons.push('EN3 reste de français');
+  const byId = new Map(index.map((e) => [e.id, e]));
+  const kinds = new Set(
+    q.evidence.map((id) => byId.get(id)?.kind).filter(Boolean),
+  );
+  if (DIFF_CLAIM_EN.test(t) && !kinds.has('divergence'))
+    reasons.push('EN4 affirme un désaccord non établi');
+  if (AGREE_CLAIM_EN.test(t))
+    reasons.push('EN4 affirme un accord (réservé aux gabarits)');
+  if (ATTRIBUTION_EN.test(t))
+    reasons.push(
+      'EN5 attribue une peur, une intention, un comportement ou un passé',
+    );
+  if (HABIT_EN.test(t)) reasons.push('EN5 habitude présupposée');
+  if (WHO_ANSWERED_EN.test(t))
+    reasons.push('EN6 révèle la réponse de l’un des deux');
+  const low = t.toLowerCase();
+  for (const id of q.evidence)
+    for (const p of byId.get(id)?.privateTexts ?? [])
+      if (p && p.length >= 12 && low.includes(p.toLowerCase()))
+        reasons.push('EN7 reprend la réponse d’un membre');
+  return { ok: reasons.length === 0, reasons: [...new Set(reasons)] };
 }

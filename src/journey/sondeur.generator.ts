@@ -25,6 +25,14 @@
  * quelques millièmes d'euro par parcours avec.
  */
 import {
+  OTHER_EN,
+  enOptions,
+  enText,
+  enTopicTemplate,
+  enTopicWords,
+  joinEn,
+} from './sondeur.i18n';
+import {
   Convergence,
   Divergence,
   DivergenceReport,
@@ -64,6 +72,7 @@ import {
   topicDeepAll,
   topicKey,
   topicPhrase,
+  topicPhraseKey,
   topicWords,
 } from './sondeur.pool';
 
@@ -661,10 +670,15 @@ function divergenceCandidates(
   used: DayUsage,
 ): PoolTemplate[] {
   const words = topicWords(topicPhrase(d));
-  const generic = topicTemplates(day, d, strictTheme).map((t) => ({
-    text: t.text(words),
-    options: t.options,
-  }));
+  const wordsEn = enTopicWords(topicPhraseKey(d));
+  const generic = topicTemplates(day, d, strictTheme).map((t) => {
+    const en = enTopicTemplate(t.text);
+    return {
+      text: t.text(words),
+      options: t.options,
+      ...(en && wordsEn ? { en: en(wordsEn) } : {}),
+    };
+  });
   return [
     ...preferNewOpenings(usableDeep(d, day, strictTheme), used),
     ...preferNewOpenings(arrange(generic, seed, `${slot}|div`), used),
@@ -866,9 +880,11 @@ function convergenceCandidates(
     ),
   ];
   if (!statement) return own;
+  const statementEn = enText(statement);
   const withStatement = (t: PoolTemplate) => ({
     text: `${statement} ${t.text}`,
     options: t.options,
+    en: joinEn(statementEn, t.en ?? enText(t.text)),
   });
   const generic = c.theme === 'intimite' ? [] : CONVERGENT[day].filter(allowed);
   return [
@@ -971,6 +987,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         question = {
           ...base,
           text: limit.text,
+          textEn: enText(limit.text),
           options: ensureAutreOption(limit.options),
           source: 'divergence',
           subject: 'controle',
@@ -984,6 +1001,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         question = {
           ...base,
           text: pick.text,
+          textEn: enText(pick.text),
           options: ensureAutreOption(pick.options),
           source: 'divergence',
           subject: 'securite',
@@ -1021,6 +1039,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           question = {
             ...base,
             text: pick.text,
+            textEn: pick.en ?? enText(pick.text),
             options: ensureAutreOption(pick.options),
             source: 'divergence',
             subject: topicKey(divergence),
@@ -1051,6 +1070,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           question = {
             ...base,
             text: pick.text,
+            textEn: pick.en ?? enText(pick.text),
             options: ensureAutreOption(pick.options),
             source: 'convergence',
             subject: c.questionId,
@@ -1091,6 +1111,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         question = {
           ...base,
           text: tpl.text,
+          textEn: tpl.en ?? enText(tpl.text),
           options: ensureAutreOption(tpl.options),
           source: 'gabarit',
         };
@@ -1112,6 +1133,20 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   if (hasNoReligiousPractice(report))
     for (const question of result)
       question.options = neutralOptions(question.options);
+
+  // Options anglaises : celles de l'IA, sinon celles des gabarits (toutes ou
+  // aucune). Une question sans version anglaise complète reste en français.
+  for (const question of result) {
+    const optionsEn =
+      question.source === 'ia' && question.optionsEn?.length
+        ? ensureOtherOption(question.optionsEn)
+        : enOptions(question.options);
+    if (question.textEn && optionsEn) question.optionsEn = optionsEn;
+    else {
+      delete question.textEn;
+      delete question.optionsEn;
+    }
+  }
 
   return result;
 }
@@ -1339,4 +1374,13 @@ export function validateSondeurGrid(
     if (themes.size !== THEME_LIST.length) return false;
   }
   return true;
+}
+
+/** Grille anglaise : toujours « Other... » en dernier, comme « Autre... ». */
+function ensureOtherOption(options: string[]): string[] {
+  const kept = options
+    .map((o) => String(o).trim())
+    .filter((o) => o && !/^other/i.test(o))
+    .slice(0, 4);
+  return [...kept, OTHER_EN];
 }

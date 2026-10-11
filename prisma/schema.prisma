@@ -258,6 +258,10 @@ model HarmonyQuestion {
   emoji        String?
   questionText String            @db.Text
   options      Json? // QCM options (dont "Autre...")
+  /// Version anglaise de la question et de ses options (Sondeur bilingue) ;
+  /// absente pour une question antérieure : le français est servi.
+  questionTextEn String?         @db.Text
+  optionsEn      Json?
   sentAt       DateTime          @default(now())
   /// Question d'approfondissement écrite par l'IA après la lecture de la journée précédente.
   followUp     Boolean           @default(false)

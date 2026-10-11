@@ -23,6 +23,9 @@ export interface HarmonyQuestionPayload {
    */
   evidence?: string[];
   claim?: string;
+  /** Sondeur bilingue : la même question et ses options en anglais. */
+  textEn?: string;
+  optionsEn?: string[];
 }
 
 const DEFAULT_OPTIONS = [
@@ -92,6 +95,15 @@ export function normalizeAiQuestions(
           .slice(0, 4)
       : [];
     const claim = field(o.nature ?? o.claim).slice(0, 20);
+    // Sondeur bilingue : la même question en anglais naturel, et ses options.
+    const textEn = field(o.text_en ?? o.textEn).slice(0, 300);
+    const optionsEn = Array.isArray(o.options_en ?? o.optionsEn)
+      ? ((o.options_en ?? o.optionsEn) as unknown[])
+          .filter((x): x is string => typeof x === 'string')
+          .map((x) => x.trim())
+          .filter(Boolean)
+          .slice(0, 5)
+      : [];
     result.push({
       day,
       theme,
@@ -103,6 +115,8 @@ export function normalizeAiQuestions(
       ...(target ? { target } : {}),
       ...(evidence.length ? { evidence } : {}),
       ...(claim ? { claim } : {}),
+      ...(textEn ? { textEn } : {}),
+      ...(optionsEn.length ? { optionsEn } : {}),
     });
   }
 

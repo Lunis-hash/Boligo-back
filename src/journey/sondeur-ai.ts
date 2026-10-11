@@ -24,6 +24,7 @@ import {
   describeEvidenceForAi,
   parseClaim,
   validate,
+  validateEn,
 } from './sondeur-evidence';
 
 export interface SondeurAiResult {
@@ -133,6 +134,22 @@ export async function draftReviewedSondeur(
           { safetyThemes },
         )
       : { ok: false, reasons: ['P4 nature absente ou inconnue'] };
+    // Sondeur bilingue : la version anglaise passe les mêmes contrôles.
+    if (verdict.ok && claim) {
+      const en = validateEn(
+        q.textEn,
+        {
+          day: q.day,
+          themeKey: q.themeKey as Theme,
+          text: q.text,
+          evidence: q.evidence ?? [],
+          claim,
+        },
+        evidenceIndex,
+      );
+      if (!en.ok) verdict.reasons.push(...en.reasons);
+      verdict.ok = en.ok;
+    }
     if (!verdict.ok) {
       evidenceRejected.push({ question: q, reasons: verdict.reasons });
       return false;

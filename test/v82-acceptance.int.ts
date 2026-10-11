@@ -68,7 +68,8 @@ const ai: any = {
         const w = `zz${(n++).toString(36)}q`;
         const base = { day, theme: 'Recette', themeKey, emoji: '💬', options: ['Autre...'] };
         questions.push(
-          { ...base, text: `Que veut dire ${w} pour vous, proposition valide ?`, preuves: [`N-${themeKey}`], nature: 'neutre' },
+          { ...base, text: `Que veut dire ${w} pour vous, proposition valide ?`, textEn: `What does ${w} mean to you?`, optionsEn: ['Other...'], preuves: [`N-${themeKey}`], nature: 'neutre' },
+          { ...base, text: `Que veut dire ${w}e pour vous, anglais absent ?`, preuves: [`N-${themeKey}`], nature: 'neutre' },
           { ...base, text: `Que veut dire ${w}x pour vous, sans preuve ?`, nature: 'neutre' },
           { ...base, text: `Comment dépasser votre désaccord sur ${w}y au quotidien ?`, preuves: [`N-${themeKey}`], nature: 'ecart' },
         );
@@ -391,9 +392,13 @@ async function main() {
     const list: any[] = await journeys.getDailyQuestions(journeyId, A2.id);
     const all = await prisma.harmonyQuestion.findMany({
       where: { journeyId },
-      select: { questionText: true, meta: true },
+      select: { questionText: true, questionTextEn: true, optionsEn: true, meta: true },
     });
     assert.strictEqual(all.length, 21);
+    // Bilingue : chaque question servie a sa version anglaise ; une proposition
+    // de l'IA sans anglais n'est jamais servie.
+    for (const q of all) assert.ok(q.questionTextEn && Array.isArray(q.optionsEn), `anglais manquant : ${q.questionText}`);
+    assert.ok(!all.some((q) => q.questionText.includes('anglais absent')));
     for (const q of all) {
       const ev = (q.meta as any)?.evidence;
       assert.ok(ev && Array.isArray(ev.evidence), `trace manquante : ${q.questionText}`);
@@ -405,6 +410,15 @@ async function main() {
     // L'API des membres ne renvoie jamais meta (méthode, modèles, preuves).
     assert.ok(list.length > 0);
     for (const q of list) assert.ok(!('meta' in q), 'meta exposé aux membres');
+    // Couple mixte : B lit en anglais, A en français ; mêmes questions, même ordre,
+    // aucune trace de la langue ni des réponses de l'autre.
+    const listEn: any[] = await journeys.getDailyQuestions(journeyId, B2.id, 'en');
+    assert.deepStrictEqual(listEn.map((q) => q.id), list.map((q) => q.id));
+    for (const q of listEn) {
+      assert.strictEqual(q.language, 'en');
+      assert.ok(!/[àâçéèêîôûù]|\bvous\b/i.test(q.questionText), `français servi en anglais : ${q.questionText}`);
+    }
+    for (const q of list) assert.strictEqual(q.language, 'fr');
   });
 
   await check('confidentialité : l’index de preuves transmis à l’IA ne contient aucune réponse', async () => {

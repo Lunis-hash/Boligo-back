@@ -208,6 +208,8 @@ const followUps = (themeKey = 'argent') =>
       {
         themeKey,
         text: FOLLOW_UP_TEXT,
+        text_en:
+          'What would a shared budget have to protect for you to feel at ease?',
         methode: 'besoin caché',
         cible: 'ce que l’argent commun représente',
       },

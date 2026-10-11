@@ -63,6 +63,8 @@ export interface FollowUpProposal {
   /** Technique et cible (jamais montrées aux membres), pour le relecteur. */
   method?: string;
   target?: string;
+  /** Sondeur bilingue : la même question en anglais (obligatoire pour être posée). */
+  textEn?: string;
 }
 
 export interface AnsweredItem {
@@ -767,9 +769,10 @@ Propose DEUX questions d'approfondissement pour la journée ${day + 1} (${next.l
 - Ne reprends aucune de ces questions déjà posées, même avec d'autres mots :
 ${asked.map((t) => `  - ${t}`).join('\n')}
 Clés de thème : ${THEME_KEYS}.
+- "text_en" : la même question écrite directement en anglais naturel (jamais mot à mot), même sens, mêmes règles ; une question sans version anglaise fidèle n'est pas posée.
 
 Retourne UNIQUEMENT ce JSON :
-{"questions": [{"themeKey": "argent", "text": "...?", "methode": "...", "cible": "..."}]}`;
+{"questions": [{"themeKey": "argent", "text": "...?", "text_en": "...?", "methode": "...", "cible": "..."}]}`;
   return { system: FOLLOW_UP_SYSTEM, prompt };
 }
 
@@ -1291,16 +1294,32 @@ export function parseFollowUps(raw: string): FollowUpProposal[] {
     if (!themeKey || !text || !isWellFormedQuestion(text)) continue;
     const method = typeof q.methode === 'string' ? q.methode.slice(0, 160) : '';
     const target = typeof q.cible === 'string' ? q.cible.slice(0, 200) : '';
+    const textEn = cleanText(q.text_en, MAX_QUESTION_LENGTH);
     out.push({
       themeKey,
       text,
       options: ensureAutreOption([]),
       ...(method ? { method } : {}),
       ...(target ? { target } : {}),
+      ...(textEn && isWellFormedEnglishQuestion(textEn) ? { textEn } : {}),
     });
     if (out.length === 2) break;
   }
   return out;
+}
+
+/** Forme minimale d'une question anglaise : une seule question, sans reste de français. */
+export function isWellFormedEnglishQuestion(text: string): boolean {
+  const t = text.trim();
+  return (
+    t.length >= 12 &&
+    t.length <= 180 &&
+    t.endsWith('?') &&
+    (t.match(/\?/g) ?? []).length === 1 &&
+    !/(?:\b(?:vous|votre|vos|est-ce|avec|pour|dans|quelle?s?|comment)\b|[àâçéèêëîïôûùœ«»])/i.test(
+      t,
+    )
+  );
 }
 
 function asThemeKey(value: unknown): Theme | null {

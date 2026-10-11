@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { parseSondeurLanguage } from './sondeur.i18n';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  Query,
+} from '@nestjs/common';
 import { JourneyService } from './journey.service';
 import { VideoCallService } from '../video/video-call.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -17,8 +28,17 @@ export class JourneyController {
   }
 
   @Get(':id/questions')
-  async getDailyQuestions(@Param('id') id: string, @Request() req) {
-    return this.journeyService.getDailyQuestions(id, req.user.id);
+  async getDailyQuestions(
+    @Param('id') id: string,
+    @Request() req,
+    @Query('lang') lang?: string,
+  ) {
+    // Sondeur bilingue : chaque membre reçoit la question dans sa langue.
+    return this.journeyService.getDailyQuestions(
+      id,
+      req.user.id,
+      parseSondeurLanguage(lang),
+    );
   }
 
   @Get(':id/insights')
@@ -79,7 +99,11 @@ export class JourneyController {
   }
 
   @Post(':id/leave')
-  async leave(@Param('id') id: string, @Body() body: { farewell?: string }, @Request() req) {
+  async leave(
+    @Param('id') id: string,
+    @Body() body: { farewell?: string },
+    @Request() req,
+  ) {
     return this.journeyService.leaveJourney(id, req.user.id, body?.farewell);
   }
 
@@ -99,10 +123,7 @@ export class JourneyController {
   }
 
   @Get(':id/contact-exchange')
-  async getContactExchange(
-    @Param('id') id: string,
-    @Request() req,
-  ) {
+  async getContactExchange(@Param('id') id: string, @Request() req) {
     return this.journeyService.getContactExchange(id, req.user.id);
   }
 
