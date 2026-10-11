@@ -18,6 +18,7 @@ import {
   FREE_TEXT_SUFFIX,
   askIfMet,
   questionDisplayText,
+  ageRangeAnswer,
 } from '@/services/interview';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
@@ -65,6 +66,10 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     savingSub: 'Mise à jour de votre fiche BOLIGO',
     saved: 'Merci, vos réponses sont enregistrées. Passons au module suivant.',
     validate: 'Valider',
+    ageMin: 'Âge minimum',
+    ageMax: 'Âge maximum',
+    ageHint: 'De 18 à 99 ans.',
+    ageUnit: 'ans',
     severalAnswers: 'Plusieurs réponses possibles',
     maxAnswers: '{n} réponses au plus',
     suggested: 'Pré-coché selon votre pays : modifiez librement.',
@@ -95,6 +100,10 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     savingSub: 'Updating your BOLIGO profile',
     saved: 'Thank you, your answers are saved. Let’s move on to the next module.',
     validate: 'Confirm',
+    ageMin: 'Minimum age',
+    ageMax: 'Maximum age',
+    ageHint: 'From 18 to 99.',
+    ageUnit: 'years old',
     severalAnswers: 'Several answers possible',
     maxAnswers: '{n} answers at most',
     suggested: 'Pre-selected for your country: change it freely.',
@@ -130,6 +139,8 @@ interface Message {
   suggested?: boolean;
   /** Demande d'accord avant les questions sensibles. */
   consent?: boolean;
+  /** V8.2 — plage d'âges à saisir (curseurs). */
+  ageRange?: boolean;
 }
 
 export default function DynamicInterviewScreen() {
@@ -149,6 +160,8 @@ export default function DynamicInterviewScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [ageMin, setAgeMin] = useState('');
+  const [ageMax, setAgeMax] = useState('');
   const [isAnswering, setIsAnswering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   // Choix multiple en cours (langues, signaux d'alerte) : clés cochées avant « Valider ».
@@ -323,7 +336,9 @@ export default function DynamicInterviewScreen() {
     // Langues : celles du pays de résidence sont cochées d'office.
     setPicked(initialPicked(q));
     setOtherText(q.suggestedOther ?? '');
-    addAIMessage(questionDisplayText(q), q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length);
+    setAgeMin('');
+    setAgeMax('');
+    addAIMessage(questionDisplayText(q), q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length, q.input === 'ageRange');
   };
 
   const addAIMessage = (
@@ -333,6 +348,7 @@ export default function DynamicInterviewScreen() {
     multiple?: boolean,
     maxChoices?: number,
     suggested?: boolean,
+    ageRange?: boolean,
   ) => {
     const newMessage: Message = {
       id: Math.random().toString(36).substring(7),
@@ -343,6 +359,7 @@ export default function DynamicInterviewScreen() {
       multiple,
       maxChoices,
       suggested,
+      ageRange,
     };
     setMessages((prev) => [...prev, newMessage]);
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
@@ -401,6 +418,13 @@ export default function DynamicInterviewScreen() {
   // « Une autre langue » cochée : la langue doit être écrite avant de valider.
   const needsOtherText = !!currentFree && picked.includes(currentFree.key);
   const canConfirm = picked.length > 0 && (!needsOtherText || isValidFreeText(otherText));
+
+  const ageAnswer = ageRangeAnswer(ageMin, ageMax);
+  const confirmAge = () => {
+    if (!ageAnswer) return;
+    const [lo, hi] = ageAnswer.split('-');
+    handleAnswer(ageAnswer, `${lo} – ${hi} ${t.ageUnit}`);
+  };
 
   const confirmPicked = () => {
     const currentQ = questions[currentQuestionIndex];
@@ -649,6 +673,44 @@ export default function DynamicInterviewScreen() {
                     style={styles.otherInput}
                   />
                 )}
+                {message.ageRange && (
+                  <View style={styles.ageRow}>
+                    <TextInput
+                      testID="interview-age-min"
+                      value={ageMin}
+                      onChangeText={(v) => setAgeMin(v.replace(/\D/g, '').slice(0, 2))}
+                      placeholder={t.ageMin}
+                      placeholderTextColor={Colors.text.inactive}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                      style={[styles.otherInput, styles.ageInput]}
+                    />
+                    <Text style={styles.ageDash}>–</Text>
+                    <TextInput
+                      testID="interview-age-max"
+                      value={ageMax}
+                      onChangeText={(v) => setAgeMax(v.replace(/\D/g, '').slice(0, 2))}
+                      placeholder={t.ageMax}
+                      placeholderTextColor={Colors.text.inactive}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                      style={[styles.otherInput, styles.ageInput]}
+                    />
+                  </View>
+                )}
+                {message.ageRange && <Text style={styles.multipleHint}>{t.ageHint}</Text>}
+                {message.ageRange && (
+                  <TouchableOpacity
+                    testID="interview-age-validate"
+                    onPress={confirmAge}
+                    disabled={!ageAnswer || isAnswering}
+                    accessibilityRole="button"
+                    style={[styles.validateBtn, (!ageAnswer || isAnswering) && styles.validateBtnDisabled]}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.validateBtnText}>{t.validate}</Text>
+                  </TouchableOpacity>
+                )}
                 {message.multiple && (
                   <TouchableOpacity
                     testID="interview-validate"
@@ -684,6 +746,19 @@ export default function DynamicInterviewScreen() {
 }
 
 const styles = StyleSheet.create({
+  ageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ageInput: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  ageDash: {
+    fontSize: 18,
+    color: '#6B7280',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8F9FC',

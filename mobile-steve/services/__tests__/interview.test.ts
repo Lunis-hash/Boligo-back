@@ -156,3 +156,14 @@ describe('askIfMet : questions de suite du même module', () => {
     expect(askIfMet(base, {})).toBe(true);
   });
 });
+
+describe('V8.2 — plage d’âges (curseurs)', () => {
+  const { ageRangeAnswer } = require('../interview');
+  it('« 25 » et « 40 » → « 25-40 », mêmes bornes que le serveur', () => {
+    expect(ageRangeAnswer('25', '40')).toBe('25-40');
+    expect(ageRangeAnswer('17', '40')).toBeNull();
+    expect(ageRangeAnswer('40', '25')).toBeNull();
+    expect(ageRangeAnswer('', '40')).toBeNull();
+    expect(ageRangeAnswer('25', '100')).toBeNull();
+  });
+});

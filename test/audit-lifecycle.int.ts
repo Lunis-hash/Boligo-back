@@ -34,6 +34,9 @@ const notif: any = {
   },
   notifyVideoUnlock: async () => undefined,
   notifyChatOpen: async () => undefined,
+  // Aucun e-mail réel en recette.
+  emailUser: async () => undefined,
+  notifyNewMatch: async () => undefined,
 };
 const gateway: any = { broadcastIncomingCall: () => undefined, broadcastNewMessage: () => undefined };
 const matching = new MatchingService(prisma, notif);

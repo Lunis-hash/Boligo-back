@@ -21,6 +21,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:int": "ts-node -P tsconfig.json --transpile-only test/audit-lifecycle.int.ts",
+    "test:int:v82": "ts-node -P tsconfig.json --transpile-only test/v82-acceptance.int.ts",
     "seed:admin": "ts-node prisma/seed-admin.ts",
     "seed:demo": "ts-node prisma/seed-demo-profiles.ts",
     "seed:promo": "ts-node prisma/seed-promo-codes.ts"

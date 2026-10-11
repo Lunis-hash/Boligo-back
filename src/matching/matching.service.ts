@@ -119,7 +119,12 @@ export class MatchingService {
       city: filterCity(currentUser),
       answers: viewerAnswers,
     };
-    const birthDate = birthDateBounds(viewerSubject.age, viewerAnswers.M0_Q01);
+    const birthDate = birthDateBounds(
+      viewerSubject.age,
+      viewerAnswers.M0_Q01,
+      new Date(),
+      viewerAnswers.V82_M0_02,
+    );
     const scope = scopeWhere(viewerSubject.city, viewerAnswers.M0_Q02);
 
     const matches = await this.prisma.user.findMany({
