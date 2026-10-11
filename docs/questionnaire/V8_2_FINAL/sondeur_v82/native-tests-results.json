@@ -1,0 +1,72 @@
+[
+ {
+  "name": "11 règles couvrent exactement les 13 sujets V7 de la stratégie A",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Chaque règle lit une question V8.2 existante",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Codes cités par les règles existants dans la question V8.2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Aucune règle native ne produit d’incompatibilité (« critique ») : elles nourrissent la découverte, pas l’exclusion",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Symétrie de toutes les paires de réponses",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "« Je ne sais pas » ou « ne pas répondre » : ni écart ni accord",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Réponse absente : rien",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Réponses identiques : jamais un écart ; accord seulement sur les codes prévus",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Règle croisée N3 : amitié avec un ex face à « revoir un ex sans me le dire », sujet seul (aucune réponse montrée)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Échelle N10 : écart seulement à 3 points ou plus (moderee), 2 points (mineure)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Trois gabarits (jours 1, 2, 3) par règle",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Une phrase d’accord pour chaque accord prévu",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Tous les gabarits (81) passent les règles de forme EN SERVICE",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "Options : trois pistes puis « Autre... »",
+  "ok": true,
+  "detail": ""
+ }
+]

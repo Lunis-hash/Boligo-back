@@ -1,0 +1,67 @@
+{
+ "corpus initial": {
+  "rejected": "34/34",
+  "accepted": "17/17",
+  "misses": [],
+  "falseRejects": []
+ },
+ "indépendant 1 (réglage)": {
+  "rejected": "40/40",
+  "accepted": "20/20",
+  "misses": [],
+  "falseRejects": []
+ },
+ "indépendant 2 (réglage)": {
+  "rejected": "50/50",
+  "accepted": "22/25",
+  "misses": [],
+  "falseRejects": [
+   "P8 règles de forme existantes | Selon vous, quelle place la famille élargie devrait-elle occuper dans le quotidien d'un foyer ?",
+   "P13 possessif non autorisé (« votre hospitalité ») | Quels critères pèseraient dans votre décision si un parent sollicitait votre hospitalité ?",
+   "P8 règles de forme existantes | Qu'est-ce qui fait qu'un logement devient véritablement un chez-soi ?"
+  ]
+ },
+ "indépendant 3 (jamais vu, mesure finale)": {
+  "rejected": "55/60",
+  "accepted": "28/30",
+  "misses": [
+   "presupposed_emotion | Qu'est-ce qui rend la présence d'un ancien partenaire si difficile à vivre pour vous ?",
+   "presupposed_emotion | Pourquoi l'idée de vivre à la campagne vous rend-elle si enthousiastes ?",
+   "presupposed_habit | Quelle importance accordez-vous à ce tableau d'objectifs que vous mettez à jour chaque mois ?",
+   "private_answer_leak | Qu'est-ce qui rend l'accueil spontané d'un proche, sans échéance, si naturel pour l'un d'entre vous ?",
+   "private_answer_leak | Si un hébergement familial devait durer, quelles conditions rassureraient celui de vous deux qui ne le souhaite pas ?"
+  ],
+  "falseRejects": [
+   "P13 possessif non autorisé (« vos aînés ») | Quelle importance accordez-vous aux traditions transmises par vos aînés ?",
+   "P11 habitude présupposée | Selon vous, quelle place un ancien partenaire peut-il occuper dans la vie de quelqu'un qui s'engage à nouveau ?"
+  ]
+ },
+ "gabarits de thème en service, lus comme des questions de l’IA": {
+  "total": 169,
+  "rejected": 32,
+  "reasons": {
+   "P14 fait de vie présupposé": 15,
+   "P8 règles de forme existantes": 4,
+   "P11 habitude présupposée": 4,
+   "P10 émotion présupposée": 1,
+   "P13 possessif non autorisé": 7,
+   "P12 passé présupposé": 4,
+   "P5 affirme un désaccord non établi": 1,
+   "P5 affirme un désaccord mais déclare une autre nature": 1
+  },
+  "examples": [
+   "P14 fait de vie présupposé (verbe « avez ») | Qu'est-ce que l'argent apaise en vous, quand vous en avez assez ?",
+   "P8 règles de forme existantes, P14 fait de vie présupposé (verbe « ressentez ») | Quand quelqu'un paie l'addition pour vous, qu'est-ce que vous ressentez ?",
+   "P11 habitude présupposée | Quelle phrase sur l'argent entendiez-vous souvent quand vous étiez enfant ?",
+   "P10 émotion présupposée | Imaginez qu'un matin, parler d'argent à deux ne vous pèse plus du tout : quel serait le premier petit signe de ce changement ?",
+   "P11 habitude présupposée | Quand vous pensez à vos vieux jours, quelle place imaginez-vous pour la foi ou les convictions ?",
+   "P13 possessif non autorisé (« votre pudeur ») | Dans une relation naissante, quel geste vous montrerait que l'autre prend votre pudeur au sérieux ?",
+   "P12 passé présupposé | Comment un proche décrirait-il ce dont vous avez besoin pour vous sentir en confiance dans une relation ?",
+   "P14 fait de vie présupposé (verbe « comptez »), P12 passé présupposé | Qu'est-ce qui, au début d'une relation, vous fait sentir que vous comptez vraiment ?",
+   "P14 fait de vie présupposé (verbe « prenez ») | Comment vos proches décriraient-ils la façon dont vous prenez soin de ceux que vous aimez ?",
+   "P8 règles de forme existantes | Comment un proche qui vous a vu(e) en colère décrirait-il votre façon de vous calmer ?",
+   "P13 possessif non autorisé (« votre jardin ») | Autour du téléphone, quel geste de l'autre vous ferait sentir respecté(e) dans votre jardin secret ?",
+   "P14 fait de vie présupposé (verbe « ressentez ») | Imaginez qu'après une dispute, l'autre ne vous parle plus pendant deux jours : que ressentez-vous au deuxième soir ?"
+  ]
+ }
+}

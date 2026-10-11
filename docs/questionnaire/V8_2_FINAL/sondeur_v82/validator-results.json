@@ -1,0 +1,832 @@
+{
+ "reject": [
+  {
+   "category": "peur inventée",
+   "themeKey": "famille",
+   "text": "Comment apaiser votre peur de perdre votre place si un proche venait vivre chez vous ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P10 émotion présupposée",
+     "P13 possessif non autorisé (« votre peur »)"
+    ]
+   }
+  },
+  {
+   "category": "peur inventée",
+   "themeKey": "intimite",
+   "text": "Qu’est-ce qui nourrit vos craintes face aux amitiés de l’autre ?",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P10 émotion présupposée",
+     "P13 possessif non autorisé (« vos craintes »)"
+    ]
+   }
+  },
+  {
+   "category": "peur inventée",
+   "themeKey": "argent",
+   "text": "Puisque vous craignez le manque d’argent, comment aimeriez-vous vous rassurer à deux ?",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "convergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P14 fait de vie présupposé (verbe « craignez »)"
+    ]
+   }
+  },
+  {
+   "category": "peur inventée",
+   "themeKey": "projet",
+   "text": "Vous redoutez l’engagement. Qu’est-ce qui vous aiderait à franchir ce pas ?",
+   "evidence": [
+    "N-projet"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 état intérieur affirmé avant la question",
+     "P14 fait de vie présupposé (verbe « redoutez »)"
+    ]
+   }
+  },
+  {
+   "category": "peur inventée",
+   "themeKey": "famille",
+   "text": "D’où vient votre angoisse quand votre famille donne son avis ?",
+   "evidence": [
+    "N-famille"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P10 émotion présupposée",
+     "P13 possessif non autorisé (« votre angoisse »)"
+    ]
+   }
+  },
+  {
+   "category": "peur inventée",
+   "themeKey": "lieu",
+   "text": "Pourquoi avez-vous peur de quitter votre ville ?",
+   "evidence": [
+    "N-lieu"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P14 fait de vie présupposé (verbe « avez »)"
+    ]
+   }
+  },
+  {
+   "category": "intention inventée",
+   "themeKey": "famille",
+   "text": "Vous voulez accueillir vos parents un jour. Comment préparer votre foyer à cela ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 état intérieur affirmé avant la question",
+     "P14 fait de vie présupposé (verbe « voulez »)"
+    ]
+   }
+  },
+  {
+   "category": "intention inventée",
+   "themeKey": "projet",
+   "text": "Comme vous souhaitez vous marier rapidement, quelle étape viendrait en premier ?",
+   "evidence": [
+    "N-projet"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé"
+    ]
+   }
+  },
+  {
+   "category": "intention inventée",
+   "themeKey": "argent",
+   "text": "Quelle est votre intention réelle quand vous proposez de partager les dépenses ?",
+   "evidence": [
+    "N-argent"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P14 fait de vie présupposé (verbe « proposez »)",
+     "P11 habitude présupposée",
+     "P13 possessif non autorisé (« votre intention »)"
+    ]
+   }
+  },
+  {
+   "category": "intention inventée",
+   "themeKey": "lieu",
+   "text": "Maintenant que vous comptez partir à l’étranger, qu’emporteriez-vous en premier ?",
+   "evidence": [
+    "N-lieu"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P14 fait de vie présupposé (verbe « comptez »)",
+     "P12 passé présupposé"
+    ]
+   }
+  },
+  {
+   "category": "comportement inventé",
+   "themeKey": "communication",
+   "text": "Quand vous vous disputez, qu’est-ce qui vous aide à revenir l’un vers l’autre ?",
+   "evidence": [
+    "N-communication"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P14 fait de vie présupposé (verbe « disputez »)"
+    ]
+   }
+  },
+  {
+   "category": "comportement inventé",
+   "themeKey": "communication",
+   "text": "Lors de vos disputes, quel mot apaise le plus la tension ?",
+   "evidence": [
+    "N-communication"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P8 règles de forme existantes",
+     "P13 possessif non autorisé (« vos disputes »)"
+    ]
+   }
+  },
+  {
+   "category": "comportement inventé",
+   "themeKey": "intimite",
+   "text": "Comment expliquez-vous votre jalousie face aux amis de l’autre ?",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P8 règles de forme existantes",
+     "P14 fait de vie présupposé (verbe « expliquez »)",
+     "P10 émotion présupposée",
+     "P13 possessif non autorisé (« votre jalousie »)"
+    ]
+   }
+  },
+  {
+   "category": "comportement inventé",
+   "themeKey": "famille",
+   "text": "Vous qui cédez toujours à votre mère, comment poseriez-vous une limite ?",
+   "evidence": [
+    "N-famille"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P13 possessif non autorisé (« votre mère »)"
+    ]
+   }
+  },
+  {
+   "category": "passé inventé",
+   "themeKey": "intimite",
+   "text": "Que vous a appris votre dernière relation sur la confiance ?",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P8 règles de forme existantes",
+     "P13 possessif non autorisé (« votre dernière »)"
+    ]
+   }
+  },
+  {
+   "category": "passé inventé",
+   "themeKey": "intimite",
+   "text": "Après avoir été trompé par le passé, qu’est-ce qui vous rassure aujourd’hui ?",
+   "evidence": [
+    "N-intimite"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé"
+    ]
+   }
+  },
+  {
+   "category": "passé inventé",
+   "themeKey": "famille",
+   "text": "Qu’avez-vous retenu de votre divorce pour votre prochain foyer ?",
+   "evidence": [
+    "N-famille"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P8 règles de forme existantes",
+     "P14 fait de vie présupposé (verbe « avez »)",
+     "P13 possessif non autorisé (« votre divorce »)"
+    ]
+   }
+  },
+  {
+   "category": "passé inventé",
+   "themeKey": "intimite",
+   "text": "Comment votre ex vous a-t-il ou elle appris à poser des limites ?",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P8 règles de forme existantes",
+     "P13 possessif non autorisé (« votre ex »)"
+    ]
+   }
+  },
+  {
+   "category": "passé inventé",
+   "themeKey": "projet",
+   "text": "Depuis que vous avez vécu seul(e), qu’est-ce qui a changé dans vos attentes ?",
+   "evidence": [
+    "N-projet"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P6 attribue une peur, une intention, un comportement ou un passé",
+     "P8 règles de forme existantes",
+     "P14 fait de vie présupposé (verbe « avez »)",
+     "P12 passé présupposé"
+    ]
+   }
+  },
+  {
+   "category": "désaccord inventé",
+   "themeKey": "argent",
+   "text": "Comment dépasser votre désaccord sur la façon de gérer les économies ?",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "convergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P5 affirme un désaccord non établi",
+     "P5 affirme un désaccord mais déclare une autre nature",
+     "P13 possessif non autorisé (« votre désaccord »)"
+    ]
+   }
+  },
+  {
+   "category": "désaccord inventé",
+   "themeKey": "projet",
+   "text": "Vous ne voyez pas les choses de la même façon sur le mariage : qu’est-ce qui compte le plus pour vous ?",
+   "evidence": [
+    "N-projet"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P5 affirme un désaccord non établi",
+     "P5 affirme un désaccord mais déclare une autre nature"
+    ]
+   }
+  },
+  {
+   "category": "désaccord inventé",
+   "themeKey": "spiritualite",
+   "text": "Vos visions diffèrent sur la religion des enfants : comment en parleriez-vous ?",
+   "evidence": [
+    "N-spiritualite"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P4 écart déclaré sans preuve d’écart",
+     "P5 affirme un désaccord non établi",
+     "P13 possessif non autorisé (« Vos visions »)"
+    ]
+   }
+  },
+  {
+   "category": "désaccord inventé",
+   "themeKey": "lieu",
+   "text": "L’un de vous veut partir, l’autre rester : comment imaginez-vous la suite ?",
+   "evidence": [
+    "N-lieu"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P5 affirme un désaccord non établi",
+     "P5 affirme un désaccord mais déclare une autre nature",
+     "P7 révèle la réponse de l’un des deux"
+    ]
+   }
+  },
+  {
+   "category": "accord inventé",
+   "themeKey": "famille",
+   "text": "Vous partagez la même vision de la famille : qu’aimeriez-vous transmettre en premier ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P5 affirme un accord non établi",
+     "P14 fait de vie présupposé (verbe « partagez »)"
+    ]
+   }
+  },
+  {
+   "category": "accord inventé",
+   "themeKey": "spiritualite",
+   "text": "Vous vous rejoignez sur la foi : comment la vivriez-vous au quotidien ?",
+   "evidence": [
+    "N-spiritualite"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P5 affirme un accord non établi",
+     "P14 fait de vie présupposé (verbe « rejoignez »)"
+    ]
+   }
+  },
+  {
+   "category": "accord inventé",
+   "themeKey": "lieu",
+   "text": "Vous êtes tous les deux d’accord pour rester ici : qu’est-ce qui vous y attache ?",
+   "evidence": [
+    "N-lieu"
+   ],
+   "claim": "convergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P4 accord déclaré sans preuve d’accord",
+     "P5 affirme un accord non établi",
+     "P5 phrase d’accord sans preuve d’accord",
+     "P9 phrase d’accord réservée aux gabarits écrits par l’équipe",
+     "P9 état partagé affirmé"
+    ]
+   }
+  },
+  {
+   "category": "divulgation",
+   "themeKey": "famille",
+   "text": "Que voulez-vous dire par « je ne souhaite pas de cohabitation prolongée » ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P7 reprend la réponse d’un membre",
+     "P8 règles de forme existantes",
+     "P14 fait de vie présupposé (verbe « voulez »)"
+    ]
+   }
+  },
+  {
+   "category": "divulgation",
+   "themeKey": "famille",
+   "text": "Comment vivriez-vous le fait d’accueillir quelqu’un naturellement, même sans date de fin ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P7 reprend la réponse d’un membre"
+    ]
+   }
+  },
+  {
+   "category": "divulgation",
+   "themeKey": "argent",
+   "text": "Comment établiriez-vous ensemble un plan et des limites tenables ?",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "convergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P7 reprend la réponse d’un membre"
+    ]
+   }
+  },
+  {
+   "category": "preuve absente",
+   "themeKey": "famille",
+   "text": "Quelle place aimeriez-vous donner aux fêtes de famille dans votre année ?",
+   "evidence": [],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P1 aucune preuve"
+    ]
+   }
+  },
+  {
+   "category": "preuve inconnue",
+   "themeKey": "famille",
+   "text": "Quelle place aimeriez-vous donner aux fêtes de famille dans votre année ?",
+   "evidence": [
+    "E99"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P1 preuve inconnue"
+    ]
+   }
+  },
+  {
+   "category": "autre thème",
+   "themeKey": "projet",
+   "text": "Quelle place aimeriez-vous donner aux fêtes de famille dans votre année ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P2 preuve d’un autre thème"
+    ]
+   }
+  },
+  {
+   "category": "sécurité",
+   "themeKey": "communication",
+   "text": "Comment réagiriez-vous si une dispute devenait très tendue entre vous ?",
+   "evidence": [
+    "E4"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P3 thème de sécurité réservé aux questions de limite",
+     "P4 écart déclaré sans preuve d’écart"
+    ]
+   }
+  },
+  {
+   "category": "nature incohérente",
+   "themeKey": "argent",
+   "text": "Quel geste vous ferait sentir soutenu(e) pendant une période difficile ?",
+   "evidence": [
+    "N-argent"
+   ],
+   "claim": "convergence",
+   "day": 2,
+   "verdict": {
+    "ok": false,
+    "reasons": [
+     "P4 accord déclaré sans preuve d’accord"
+    ]
+   }
+  }
+ ],
+ "accept": [
+  {
+   "category": "neutre sur écart",
+   "themeKey": "famille",
+   "text": "Quelle place aimeriez-vous donner aux fêtes de famille dans votre année ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "neutral",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "famille",
+   "text": "Quelle place aimeriez-vous donner aux fêtes de famille dans votre année ?",
+   "evidence": [
+    "N-famille"
+   ],
+   "claim": "neutral",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "argent",
+   "text": "Quel petit plaisir aimeriez-vous garder, même avec un budget serré ?",
+   "evidence": [
+    "N-argent"
+   ],
+   "claim": "neutral",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "projet",
+   "text": "Comment aimeriez-vous fêter une étape importante de votre vie de couple ?",
+   "evidence": [
+    "N-projet"
+   ],
+   "claim": "neutral",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "lieu",
+   "text": "Quel lieu vous fait sentir chez vous, et pourquoi ?",
+   "evidence": [
+    "N-lieu"
+   ],
+   "claim": "neutral",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "communication",
+   "text": "Comment aimeriez-vous qu’on vous annonce une nouvelle difficile ?",
+   "evidence": [
+    "N-communication"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "spiritualite",
+   "text": "Qu’est-ce qui vous donne de la paix intérieure dans une semaine chargée ?",
+   "evidence": [
+    "N-spiritualite"
+   ],
+   "claim": "neutral",
+   "day": 2,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "intimite",
+   "text": "Quel geste de tendresse vous touche le plus au quotidien ?",
+   "evidence": [
+    "N-intimite"
+   ],
+   "claim": "neutral",
+   "day": 3,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "écart",
+   "themeKey": "famille",
+   "text": "À quelles conditions l’accueil d’un proche vous semblerait-il possible dans votre foyer ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "écart",
+   "themeKey": "famille",
+   "text": "Dans votre famille, que signifiait accueillir un proche chez soi pendant longtemps ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "écart",
+   "themeKey": "famille",
+   "text": "Comment aimeriez-vous décider à deux de la porte que votre foyer ouvre aux familles ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 3,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "écart",
+   "themeKey": "intimite",
+   "text": "Qu’est-ce qui vous aiderait à vous sentir en confiance face aux liens que l’autre garde avec son passé ?",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "day": 3,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "écart",
+   "themeKey": "intimite",
+   "text": "Comment aimeriez-vous parler, à deux, des personnes qui ont compté avant la rencontre ?",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "day": 3,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "accord",
+   "themeKey": "argent",
+   "text": "Quel geste de l’autre vous rassurerait le plus pendant une période financière difficile ?",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "convergence",
+   "day": 2,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "accord",
+   "themeKey": "argent",
+   "text": "Quels repères aimeriez-vous fixer à deux pour traverser une période de manque d’argent ?",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "convergence",
+   "day": 3,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "écart",
+   "themeKey": "famille",
+   "text": "Qu’est-ce qui vous ferait sentir respecté(e) si vos envies d’accueil n’étaient pas les mêmes ?",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "day": 2,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  },
+  {
+   "category": "neutre",
+   "themeKey": "projet",
+   "text": "Quelle habitude de couple aimeriez-vous créer dès la première année ?",
+   "evidence": [
+    "N-projet"
+   ],
+   "claim": "neutral",
+   "day": 1,
+   "verdict": {
+    "ok": true,
+    "reasons": []
+   }
+  }
+ ]
+}

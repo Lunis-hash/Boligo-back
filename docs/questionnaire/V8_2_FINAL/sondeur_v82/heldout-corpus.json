@@ -1,0 +1,73 @@
+{
+  "reject": [
+    {"category": "invented_fear", "themeKey": "famille", "text": "Comment apaisez-vous la crainte que vous ressentez tous deux face au regard de vos familles ?", "evidence": ["N-famille"], "claim": "neutral", "day": 2},
+    {"category": "invented_fear", "themeKey": "argent", "text": "Comment gérez-vous cette angoisse de manquer qui vous accompagne depuis longtemps ?", "evidence": ["N-argent"], "claim": "neutral", "day": 3},
+    {"category": "invented_fear", "themeKey": "intimite", "text": "Votre peur de voir un ex revenir dans la vie de l'autre se manifeste-t-elle au quotidien ?", "evidence": ["E3"], "claim": "neutral", "day": 5},
+    {"category": "invented_fear", "themeKey": "lieu", "text": "Qu'est-ce qui nourrit votre appréhension à l'idée de quitter la ville où vous avez grandi ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 7},
+    {"category": "invented_fear", "themeKey": "projet", "text": "Pourquoi l'idée de vous engager sur le long terme vous effraie-t-elle encore autant ?", "evidence": ["N-projet"], "claim": "neutral", "day": 9},
+
+    {"category": "invented_intention", "themeKey": "projet", "text": "Puisque vous prévoyez de vous installer ensemble d'ici un an, quelle pièce imaginez-vous aménager en premier ?", "evidence": ["N-projet"], "claim": "neutral", "day": 1},
+    {"category": "invented_intention", "themeKey": "lieu", "text": "Dans quel quartier comptez-vous chercher votre futur logement lors de votre déménagement ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 4},
+    {"category": "invented_intention", "themeKey": "famille", "text": "Lorsque vous hébergerez la mère de l'un de vous, comment répartirez-vous l'espace ?", "evidence": ["E1"], "claim": "neutral", "day": 6},
+    {"category": "invented_intention", "themeKey": "argent", "text": "Comment allez-vous alimenter le compte commun que vous envisagez d'ouvrir prochainement ?", "evidence": ["E2"], "claim": "neutral", "day": 8},
+    {"category": "invented_intention", "themeKey": "spiritualite", "text": "Quelle cérémonie religieuse souhaitez-vous organiser pour votre futur mariage ?", "evidence": ["N-spiritualite"], "claim": "neutral", "day": 11},
+
+    {"category": "invented_behaviour", "themeKey": "communication", "text": "Pourquoi vous arrive-t-il si souvent d'éviter les discussions délicates le soir ?", "evidence": ["N-communication"], "claim": "neutral", "day": 2},
+    {"category": "invented_behaviour", "themeKey": "argent", "text": "Depuis que vous tenez un tableau mensuel de vos dépenses, qu'avez-vous découvert l'un sur l'autre ?", "evidence": ["N-argent"], "claim": "neutral", "day": 5},
+    {"category": "invented_behaviour", "themeKey": "spiritualite", "text": "Qu'est-ce que votre moment de prière du dimanche apporte à chacun de vous ?", "evidence": ["N-spiritualite"], "claim": "neutral", "day": 6},
+    {"category": "invented_behaviour", "themeKey": "famille", "text": "Comment se déroulent les déjeuners hebdomadaires chez vos parents respectifs ?", "evidence": ["N-famille"], "claim": "neutral", "day": 10},
+    {"category": "invented_behaviour", "themeKey": "intimite", "text": "Que ressentez-vous lorsque vous parcourez les messages de l'autre en son absence ?", "evidence": ["N-intimite"], "claim": "neutral", "day": 12},
+
+    {"category": "invented_past", "themeKey": "intimite", "text": "Comment votre précédent divorce influence-t-il votre regard sur la place d'un ex ?", "evidence": ["E3"], "claim": "neutral", "day": 3},
+    {"category": "invented_past", "themeKey": "famille", "text": "En quoi la séparation de vos parents durant votre enfance pèse-t-elle encore aujourd'hui ?", "evidence": ["N-famille"], "claim": "neutral", "day": 4},
+    {"category": "invented_past", "themeKey": "lieu", "text": "Qu'avez-vous gardé de vos années vécues à l'étranger avant votre rencontre ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 8},
+    {"category": "invented_past", "themeKey": "argent", "text": "Comment la faillite que vous avez traversée a-t-elle changé votre manière d'épargner ?", "evidence": ["N-argent"], "claim": "neutral", "day": 9},
+    {"category": "invented_past", "themeKey": "spiritualite", "text": "Depuis que vous avez pris vos distances avec la religion de votre enfance, qu'est-ce qui vous guide ?", "evidence": ["N-spiritualite"], "claim": "neutral", "day": 13},
+
+    {"category": "false_divergence", "themeKey": "argent", "text": "Comment conciliez-vous vos visions opposées sur la façon de mettre de côté ?", "evidence": ["N-argent"], "claim": "neutral", "day": 2},
+    {"category": "false_divergence", "themeKey": "projet", "text": "Puisque vous n'imaginez pas le même nombre d'enfants, comment envisagez-vous la suite ?", "evidence": ["N-projet"], "claim": "neutral", "day": 5},
+    {"category": "false_divergence", "themeKey": "spiritualite", "text": "Comment vivez-vous au quotidien le fait que vos croyances soient si éloignées ?", "evidence": ["N-spiritualite"], "claim": "divergence", "day": 7},
+    {"category": "false_divergence", "themeKey": "lieu", "text": "L'un de vous rêve de campagne, l'autre de grande ville : quel terrain d'entente imaginez-vous ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 10},
+    {"category": "false_divergence", "themeKey": "argent", "text": "Malgré vos désaccords sur le soutien à apporter en cas de perte d'emploi, quel compromis vous semble possible ?", "evidence": ["E2"], "claim": "divergence", "day": 14},
+
+    {"category": "false_convergence", "themeKey": "famille", "text": "Vous partagez la même vision de l'accueil d'un proche : comment aimeriez-vous l'organiser concrètement ?", "evidence": ["E1"], "claim": "convergence", "day": 3},
+    {"category": "false_convergence", "themeKey": "spiritualite", "text": "Puisque vous partagez la même foi, quelle place lui accordez-vous dans vos journées ?", "evidence": ["N-spiritualite"], "claim": "neutral", "day": 4},
+    {"category": "false_convergence", "themeKey": "lieu", "text": "Vous rêvez tous deux de vivre au bord de la mer : quelle région vous attire le plus ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 6},
+    {"category": "false_convergence", "themeKey": "intimite", "text": "Vous voyez la place des ex de la même manière ; qu'est-ce qui rend cette entente si évidente ?", "evidence": ["E3"], "claim": "neutral", "day": 11},
+    {"category": "false_convergence", "themeKey": "famille", "text": "Comme vous tenez tous deux à rester proches de vos familles, comment le vivez-vous au quotidien ?", "evidence": ["N-famille"], "claim": "neutral", "day": 12},
+
+    {"category": "private_answer_leak", "themeKey": "famille", "text": "Si l'un de vous accueillerait naturellement un proche, même sans date de fin, comment l'autre le vit-il ?", "evidence": ["E1"], "claim": "neutral", "day": 2},
+    {"category": "private_answer_leak", "themeKey": "famille", "text": "Pourquoi une cohabitation prolongée avec un proche vous semble-t-elle difficile à envisager ?", "evidence": ["E1"], "claim": "neutral", "day": 5},
+    {"category": "private_answer_leak", "themeKey": "argent", "text": "Quelles limites tenables fixeriez-vous dans le plan bâti ensemble si l'un de vous perdait son emploi ?", "evidence": ["E2"], "claim": "neutral", "day": 7},
+    {"category": "private_answer_leak", "themeKey": "argent", "text": "Puisque vous construiriez un plan commun face à une perte d'emploi, par quelle étape commenceriez-vous ?", "evidence": ["E2"], "claim": "convergence", "day": 9},
+    {"category": "private_answer_leak", "themeKey": "famille", "text": "Comment un accueil sans échéance s'accorde-t-il avec le souhait d'éviter une cohabitation qui dure ?", "evidence": ["E1"], "claim": "divergence", "day": 13},
+
+    {"category": "structural_no_evidence", "themeKey": "famille", "text": "Quelle tradition familiale aimeriez-vous transmettre un jour ?", "evidence": [], "claim": "neutral", "day": 1},
+    {"category": "structural_unknown_evidence", "themeKey": "projet", "text": "Quel projet personnel vous tient le plus à cœur en ce moment ?", "evidence": ["E9"], "claim": "neutral", "day": 4},
+    {"category": "structural_wrong_theme", "themeKey": "argent", "text": "Quelle importance accordez-vous à la sécurité matérielle dans vos choix de vie ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 6},
+    {"category": "structural_safety_evidence", "themeKey": "communication", "text": "Comment exprimez-vous ce que vous ressentez lorsqu'une discussion devient tendue ?", "evidence": ["E4"], "claim": "neutral", "day": 8},
+    {"category": "structural_wrong_theme", "themeKey": "spiritualite", "text": "Quelle place accordez-vous au silence et à la méditation dans votre vie ?", "evidence": ["E3"], "claim": "neutral", "day": 10}
+  ],
+  "accept": [
+    {"category": "neutral", "themeKey": "famille", "text": "Quelle place souhaiteriez-vous que vos familles respectives occupent dans votre quotidien ?", "evidence": ["N-famille"], "claim": "neutral", "day": 1},
+    {"category": "neutral", "themeKey": "famille", "text": "Quelles valeurs familiales vous semblent importantes à préserver ?", "evidence": ["N-famille"], "claim": "neutral", "day": 3},
+    {"category": "explore_divergence", "themeKey": "famille", "text": "Selon vous, qu'est-ce qui rend l'accueil d'un proche à la maison plus ou moins facile à vivre ?", "evidence": ["E1"], "claim": "neutral", "day": 2},
+    {"category": "explore_divergence", "themeKey": "famille", "text": "Si un proche avait besoin d'être hébergé, comment aimeriez-vous en discuter ensemble ?", "evidence": ["E1"], "claim": "neutral", "day": 9},
+    {"category": "neutral", "themeKey": "argent", "text": "Que représente pour vous la sécurité financière ?", "evidence": ["N-argent"], "claim": "neutral", "day": 4},
+    {"category": "neutral", "themeKey": "argent", "text": "Comment aimeriez-vous aborder à deux les décisions d'achats importants ?", "evidence": ["N-argent"], "claim": "neutral", "day": 11},
+    {"category": "explore_convergence", "themeKey": "argent", "text": "Si l'un de vous traversait une période sans emploi, de quoi auriez-vous besoin de la part de l'autre ?", "evidence": ["E2"], "claim": "neutral", "day": 5},
+    {"category": "explore_convergence", "themeKey": "argent", "text": "Selon vous, comment soutenir au mieux quelqu'un qui traverse une période professionnelle difficile ?", "evidence": ["E2"], "claim": "neutral", "day": 12},
+    {"category": "neutral", "themeKey": "spiritualite", "text": "Qu'est-ce qui donne du sens à vos journées ?", "evidence": ["N-spiritualite"], "claim": "neutral", "day": 3},
+    {"category": "neutral", "themeKey": "spiritualite", "text": "Quelle place la spiritualité ou vos valeurs personnelles occupent-elles dans votre vie aujourd'hui ?", "evidence": ["N-spiritualite"], "claim": "neutral", "day": 8},
+    {"category": "neutral", "themeKey": "intimite", "text": "Qu'est-ce qui vous aide à vous sentir proche de quelqu'un ?", "evidence": ["N-intimite"], "claim": "neutral", "day": 6},
+    {"category": "explore_divergence", "themeKey": "intimite", "text": "Comment percevez-vous la place qu'un ancien partenaire peut garder dans la vie d'une personne ?", "evidence": ["E3"], "claim": "neutral", "day": 7},
+    {"category": "explore_divergence", "themeKey": "intimite", "text": "Qu'est-ce qui vous semblerait important pour aborder sereinement le sujet des ex ?", "evidence": ["E3"], "claim": "neutral", "day": 13},
+    {"category": "neutral", "themeKey": "projet", "text": "Quel projet aimeriez-vous voir aboutir dans les cinq prochaines années ?", "evidence": ["N-projet"], "claim": "neutral", "day": 2},
+    {"category": "neutral", "themeKey": "projet", "text": "Comment imaginez-vous l'équilibre entre projets personnels et projets partagés ?", "evidence": ["N-projet"], "claim": "neutral", "day": 10},
+    {"category": "neutral", "themeKey": "lieu", "text": "Dans quel type d'environnement vous sentez-vous le plus à l'aise au quotidien ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 4},
+    {"category": "neutral", "themeKey": "lieu", "text": "Qu'est-ce qui fait qu'un lieu devient un vrai chez-soi pour vous ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 9},
+    {"category": "neutral", "themeKey": "lieu", "text": "Qu'aimeriez-vous trouver près de chez vous pour vous sentir bien ?", "evidence": ["N-lieu"], "claim": "neutral", "day": 14},
+    {"category": "neutral", "themeKey": "communication", "text": "Comment préférez-vous aborder un sujet qui vous tient à cœur ?", "evidence": ["N-communication"], "claim": "neutral", "day": 5},
+    {"category": "neutral", "themeKey": "communication", "text": "Qu'est-ce qui vous aide à vous sentir écouté lors d'une conversation ?", "evidence": ["N-communication"], "claim": "neutral", "day": 11}
+  ]
+}
