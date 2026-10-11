@@ -69,15 +69,16 @@ export function ModuleIcon({ module, size = 20, color = Brand.framboise }: IconP
 /** Thème d'une journée du Sondeur, d'après son intitulé. */
 export function ThemeIcon({ theme, size = 18, color = Brand.lavande }: IconProps & { theme?: string | null }) {
   const t = (theme ?? '').toLowerCase();
-  const Icon: IconComponent = t.includes('rouge')
+  // Libellés français ou anglais (Sondeur servi dans la langue du membre).
+  const Icon: IconComponent = t.includes('rouge') || t.includes('red line')
     ? ShieldAlert
-    : t.includes('valeur')
+    : t.includes('valeur') || t.includes('value')
       ? Scale
       : t.includes('futur') || t.includes('avenir')
         ? Compass
         : t.includes('intim') || t.includes('amour')
           ? Heart
-          : t.includes('argent') || t.includes('financ')
+          : t.includes('argent') || t.includes('financ') || t.includes('money')
             ? Wallet
             : t.includes('famil')
               ? Users

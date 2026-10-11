@@ -55,10 +55,82 @@ export function getSondeurDayStatus(day: number, answeredDays: number[], state: 
 }
 
 /** Libellé affiché sous une journée verrouillée. */
-export function getSondeurLockedLabel(day: number, state: SondeurDayState): string {
+export function getSondeurLockedLabel(
+  day: number,
+  state: SondeurDayState,
+  lang: SondeurLanguage = 'fr',
+): string {
+  const t = SONDEUR_TEXT[lang];
   if (day > state.calendarDay) {
     const wait = day - state.calendarDay;
-    return wait === 1 ? 'Disponible demain' : `Disponible dans ${wait} jours`;
+    return wait === 1 ? t.lockedTomorrow : t.lockedIn(wait);
   }
-  return 'Disponible après le jour précédent';
+  return t.lockedAfterPrevious;
 }
+
+/**
+ * Langue du Sondeur : celle de l'interface du membre (la même que pour le
+ * Grand Entretien). Chaque membre d'un couple lit les mêmes questions dans sa
+ * langue ; rien n'indique à l'autre la langue choisie.
+ */
+export type SondeurLanguage = 'fr' | 'en';
+
+export const SONDEUR_TEXT = {
+  fr: {
+    dayThemes: ['Lignes rouges', 'Valeurs profondes', 'Futur & Sacrifices'],
+    day: 'Jour',
+    question: 'Question',
+    loading: 'Chargement des questions…',
+    retry: 'Réessayer',
+    followUp: 'Question ajoutée pour vous deux, après vos réponses d’hier',
+    hint: (name: string) =>
+      `Répondez librement. ${name} verra votre réponse après avoir répondu de son côté. Le résumé du jour pourra en reprendre quelques mots.`,
+    placeholder: 'Écrivez votre réponse ici...',
+    inPerson: "J'aimerais en parler de vive voix.",
+    inPersonHint: (answer: string) => `Sujet trop personnel ? Touchez ici pour répondre : « ${answer} ».`,
+    sending: 'Analyse en cours…',
+    submit: 'Valider la réponse',
+    unavailableTitle: 'Questions indisponibles',
+    unavailableBody: 'Les questions du Sondeur ne sont pas encore prêtes. Réessayez dans un instant.',
+    notSavedTitle: 'Réponse non enregistrée',
+    notSavedBody: 'Vérifiez votre connexion et réessayez.',
+    todayTitle: 'Question du jour',
+    nextDay: (n: number) =>
+      `Vos 7 questions du jour sont faites. La prochaine série s'ouvre ${n <= 1 ? 'demain' : `dans ${n} jours`}.`,
+    questionCount: (n: number) => `${n} question${n > 1 ? 's' : ''}`,
+    dayDone: 'Réponses comparées',
+    dayActive: 'En cours · 7 questions',
+    lockedTomorrow: 'Disponible demain',
+    lockedIn: (n: number) => `Disponible dans ${n} jours`,
+    lockedAfterPrevious: 'Disponible après le jour précédent',
+  },
+  en: {
+    dayThemes: ['Red lines', 'Core values', 'Future & sacrifices'],
+    day: 'Day',
+    question: 'Question',
+    loading: 'Loading questions…',
+    retry: 'Try again',
+    followUp: 'Question added for both of you, after yesterday’s answers',
+    hint: (name: string) =>
+      `Answer in your own words. ${name} will see your answer once they’ve answered too. Today’s summary may quote a few words of it.`,
+    placeholder: 'Write your answer here...',
+    // Reconnue par le serveur comme un sujet gardé pour la rencontre.
+    inPerson: "I'd rather talk about it in person.",
+    inPersonHint: (answer: string) => `Too personal? Tap here to answer: “${answer}”`,
+    sending: 'Sending…',
+    submit: 'Submit answer',
+    unavailableTitle: 'Questions unavailable',
+    unavailableBody: 'The questions aren’t ready yet. Please try again in a moment.',
+    notSavedTitle: 'Answer not saved',
+    notSavedBody: 'Check your connection and try again.',
+    todayTitle: "Today's questions",
+    nextDay: (n: number) =>
+      `You've answered today's 7 questions. The next set opens ${n <= 1 ? 'tomorrow' : `in ${n} days`}.`,
+    questionCount: (n: number) => `${n} question${n === 1 ? '' : 's'}`,
+    dayDone: 'Answers compared',
+    dayActive: 'In progress · 7 questions',
+    lockedTomorrow: 'Available tomorrow',
+    lockedIn: (n: number) => `Available in ${n} days`,
+    lockedAfterPrevious: 'Available after the previous day',
+  },
+} as const;
