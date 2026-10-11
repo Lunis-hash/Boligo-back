@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -8,6 +8,7 @@ import { StripeProvider } from '@/services/stripe';
 import { addNotificationResponseListener, configureNotificationHandler } from '@/services/notifications';
 import { installWebAlert } from '@/services/webAlert';
 import { installWebStyles } from '@/services/webStyles';
+import { installWebDocument, setWebTitle } from '@/services/webDocument';
 import { warmUpBackend } from '@/services/api';
 import { captureReferralFromLocation } from '@/services/partnerReferral';
 import { useBrandFonts } from '@/services/brandFonts';
@@ -16,6 +17,7 @@ import { WebAlertHost } from '@/components/WebAlertHost';
 
 installWebAlert();
 installWebStyles();
+installWebDocument();
 // L'écran de démarrage reste affiché jusqu'au chargement des polices.
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -26,6 +28,15 @@ function NotificationRouter() {
     configureNotificationHandler();
     return addNotificationResponseListener((route) => router.push(route as any));
   }, [router]);
+  return null;
+}
+
+/** Titre de l'onglet propre à chaque écran (web uniquement). */
+function WebDocumentTitle() {
+  const pathname = usePathname();
+  useEffect(() => {
+    setWebTitle(pathname);
+  }, [pathname]);
   return null;
 }
 
@@ -71,6 +82,7 @@ export default function RootLayout() {
           <AppProvider>
           <NotificationRouter />
           <BackendWarmUp />
+          <WebDocumentTitle />
           <DesktopShell>
           <Stack
             screenOptions={{
