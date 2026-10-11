@@ -248,8 +248,26 @@ export default function DynamicInterviewScreen() {
       setQuestions(data);
       const current = data[currentQuestionIndex];
       if (!current) return;
-      // Demande d'accord en attente : la question n'est pas encore affichée.
-      if (current.sensitive && consentRef.current !== true) return;
+      // Demande d'accord en attente : la question n'est pas encore affichée,
+      // mais la demande elle-même passe dans la nouvelle langue.
+      if (current.sensitive && consentRef.current !== true) {
+        const ui = UI[next];
+        setMessages((prev) =>
+          prev.map((m, i) =>
+            i === prev.length - 1 && m.consent
+              ? {
+                  ...m,
+                  text: ui.consentText,
+                  options: [
+                    { key: 'yes', text: ui.consentYes },
+                    { key: 'no', text: ui.consentNo },
+                  ],
+                }
+              : m,
+          ),
+        );
+        return;
+      }
       setPicked(initialPicked(current));
       setOtherText(current.suggestedOther ?? '');
       // La question en attente est réécrite dans la nouvelle langue (pas de doublon).

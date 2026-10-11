@@ -17,6 +17,7 @@ import { MatchingService } from '../src/matching/matching.service';
 import { JourneyService } from '../src/journey/journey.service';
 import { CreditService } from '../src/credit/credit.service';
 import { GhostingService } from '../src/journey/ghosting.service';
+import { AuthService } from '../src/auth/auth.service';
 import {
   buildDivergenceReport,
   collectRawAnswers,
@@ -196,6 +197,29 @@ async function main() {
 
   // ─── V8.2 ──────────────────────────────────────────────────────────────────
   process.env.INTERVIEW_VERSION = '8.2';
+
+  // Trouvé dans le navigateur : un membre V7.1 ayant TERMINÉ son entretien
+  // recevait des questions V8.2 et ne pouvait plus enregistrer (blocage au
+  // dernier module) dès que la configuration passait en V8.2.
+  await check('entretien V7.1 terminé : configuration en V8.2, aucune question V8.2 servie, sauvegarde sans erreur', async () => {
+    const done = await prisma.interviewIA.findFirstOrThrow({ where: { status: 'termine', OR: [{ questionnaireVersion: null }, { questionnaireVersion: '7.1' }], user: { email: { startsWith: tag } } }, orderBy: { startDate: 'asc' } });
+    for (let m = 0; m <= 10; m++) {
+      const ids = (await questions.getQuestionsForUser(done.userId, m, 'fr')).map((q) => q.id);
+      assert.ok(!ids.some((id) => V82_ONLY_IDS.has(id)), `module ${m} : ${ids.join(',')}`);
+    }
+    const r: any = await interview.saveModule(done.userId, { moduleNumber: 10, moduleName: 'M10', answers: { M10_Q02: 'A' } } as any);
+    assert.strictEqual(r.alreadyCompleted, true);
+  });
+
+  await check('inscription : l’entretien créé avec le périmètre reçoit la version configurée (V8.2)', async () => {
+    const auth = new AuthService(prisma, { sign: () => 'jwt' } as any, { sendVerificationEmail: async () => undefined, sendEmail: async () => undefined } as any, {} as any);
+    await auth.register({ email: `${tag}.reg@boligo-test.fr`, password: 'Password12!', firstName: 'Reg', lastName: 'Recette', birthDate: '1990-01-01', gender: 'F', city: 'Paris, France', telephone: `+3361${Date.now() % 1e8}`, meetingScope: 'national', acceptTerms: true } as any);
+    const u = await prisma.user.findFirstOrThrow({ where: { email: `${tag}.reg@boligo-test.fr` } });
+    const itv = await prisma.interviewIA.findFirstOrThrow({ where: { userId: u.id }, include: { responses: true } });
+    assert.strictEqual(itv.questionnaireVersion, '8.2');
+    const ids = (await questions.getQuestionsForUser(u.id, 0, 'fr')).map((q) => q.id);
+    assert.ok(ids.includes('V82_M0_01') && !ids.includes('M0_Q01'));
+  });
 
   await check('INTERVIEW_VERSION=8.2 : questions V8.2, curseurs d’âge, anglais', async () => {
     const E = await member('F', 29);

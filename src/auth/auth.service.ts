@@ -8,7 +8,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EmailService } from '../common/email.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { createHash, randomInt, timingSafeEqual } from 'crypto';
+import { createHash, randomInt, randomUUID, timingSafeEqual } from 'crypto';
+import { configuredInterviewVersion } from '../interview/questions.v82';
 import { meetingScopeAnswer } from '../interview/meeting-scope';
 import { AccountDeletionService } from '../account/account-deletion.service';
 
@@ -136,8 +137,12 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 12);
     const verificationCode = randomInt(1000, 10000).toString();
 
+    // Identifiant connu avant la création : la version du Grand Entretien
+    // (activation progressive par membre) est fixée dès l'inscription.
+    const userId = randomUUID();
     const user = await this.prisma.user.create({
       data: {
+        id: userId,
         email,
         passwordHash: hashedPassword,
         firstName: dto.firstName,
@@ -160,6 +165,9 @@ export class AuthService {
           create: {
             status: 'en_cours',
             version: 1,
+            // Sans version, l'entretien serait lu en V7.1 quelle que soit la
+            // configuration (il ne contient que le périmètre de rencontre).
+            questionnaireVersion: configuredInterviewVersion(userId),
             ...(dto.meetingScope
               ? {
                   responses: {

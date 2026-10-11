@@ -397,6 +397,16 @@ export class JourneyService {
       userId,
     );
 
+    // Classements restés en attente (IA en panne à l'envoi) : repris en
+    // arrière-plan dès que l'IA répond, sans bloquer l'affichage.
+    void this.insights
+      ?.retryPendingClassifications(journeyId)
+      .catch((err: Error) =>
+        this.logger.warn(
+          `Parcours ${journeyId} : reprise des classements (${err.message})`,
+        ),
+      );
+
     // Préparation en cours (IA lente) : on attend un peu, puis l'app réessaie.
     // Jamais de liste à moitié écrite : tant que la préparation tourne, rien.
     let waitTimer: NodeJS.Timeout | undefined;

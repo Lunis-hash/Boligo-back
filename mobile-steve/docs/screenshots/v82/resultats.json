@@ -1,0 +1,187 @@
+[
+  {
+    "step": "Comptes de recette créés (OTP de test)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Connexion → Grand Entretien module 0 (entretien vierge)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Entretien créé et verrouillé en V8.2",
+    "ok": true,
+    "detail": "8.2"
+  },
+  {
+    "step": "Questions V8.2 servies à A",
+    "ok": true,
+    "detail": "110 questions, 3 conditionnelles"
+  },
+  {
+    "step": "Plage d’âge : 45-30 refusée, 28-38 acceptée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Plage d’âge : 45-30 refusée, 28-38 acceptée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Grand Entretien : bascule en anglais au milieu d’un module",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Reprise après interruption : retour au module en cours",
+    "ok": true,
+    "detail": "http://localhost:8081/interview/3?moduleNumber=3"
+  },
+  {
+    "step": "Grand Entretien terminé dans le navigateur (115 réponses)",
+    "ok": true,
+    "detail": "http://localhost:8081/interview/generation"
+  },
+  {
+    "step": "Plage d’âge saisie dans le navigateur",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Accord pour les questions sensibles demandé avant la première",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Accord enregistré côté serveur",
+    "ok": true,
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-11T23:36:25.870Z\"}"
+  },
+  {
+    "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
+    "ok": true,
+    "detail": "2 posées, 1 écartées"
+  },
+  {
+    "step": "Plage d’âge enregistrée « 28-38 »",
+    "ok": true,
+    "detail": "[\"V82_M0_01\",\"28-38\"]"
+  },
+  {
+    "step": "Bilan affiché sans « undefined » ni texte vide",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "B : entretien V8.2 terminé en anglais, sans questions sensibles",
+    "ok": true,
+    "detail": "{\"done\":true}"
+  },
+  {
+    "step": "Découverte : B proposée à A",
+    "ok": true,
+    "detail": "79 %"
+  },
+  {
+    "step": "Découverte : aucune donnée interne exposée (safetyHold, réponses brutes, consentement)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Invitation envoyée depuis le navigateur, reçue par B",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "B accepte → parcours Harmonie créé",
+    "ok": true,
+    "detail": "Match accepté avec succès"
+  },
+  {
+    "step": "Sondeur : 21 questions, mêmes questions pour les deux membres",
+    "ok": true,
+    "detail": "21/21"
+  },
+  {
+    "step": "Sondeur : B lit chaque question en anglais",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 1 : réponses de A invisibles pour B avant ses propres réponses",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 1 : réponse de A visible pour B après sa propre réponse",
+    "ok": true,
+    "detail": "Je tiens beaucoup à ma famille du Mali."
+  },
+  {
+    "step": "Jour 1 : réponses anodines, aucun signalement de modération",
+    "ok": true,
+    "detail": "0 signalement(s)"
+  },
+  {
+    "step": "Jour 1 terminé → jour 2 fermé jusqu’au lendemain",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 2 : réponses de A invisibles pour B avant ses propres réponses",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 2 : réponse de A visible pour B après sa propre réponse",
+    "ok": true,
+    "detail": "Réponse 2-1 : je privilégie le dialogue."
+  },
+  {
+    "step": "Jour 2 terminé → jour 3 fermé jusqu’au lendemain",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 3 : réponses de A invisibles pour B avant ses propres réponses",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 3 : réponse de A visible pour B après sa propre réponse",
+    "ok": true,
+    "detail": "Réponse 3-1 : je privilégie le dialogue."
+  },
+  {
+    "step": "Sondeur : 21 réponses envoyées depuis le navigateur",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Progression côté serveur = 21/21",
+    "ok": true,
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":21,\"totalQuestions\":21,\"partnerName\":\"Nadia\",\"journeyId\":\"1d49a5a3-e670-4ccf-9f3f-8163b2781d6e\"}"
+  },
+  {
+    "step": "Parcours ouvert au dialogue après les 3 jours",
+    "ok": false,
+    "detail": "phase_harmonie"
+  },
+  {
+    "step": "B (interface anglaise) : libellés du Sondeur en anglais",
+    "ok": true,
+    "detail": "Day 1"
+  },
+  {
+    "step": "Aucune erreur JavaScript pendant le parcours",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Dialogues d’erreur inattendus",
+    "ok": true,
+    "detail": ""
+  }
+]

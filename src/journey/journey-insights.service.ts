@@ -588,6 +588,21 @@ export class JourneyInsightsService {
   }
 
   /** Les réponses encore « en attente de classement » sont relues de nouveau (au plus toutes les 10 minutes). */
+  /**
+   * Reprise des classements en attente (IA en panne à l'envoi), aussi
+   * pendant le Sondeur : une réponse anodine n'attend pas la fin des trois
+   * jours pour être montrée. Rien ne change tant que l'IA ne répond pas.
+   */
+  async retryPendingClassifications(journeyId: string): Promise<void> {
+    const journey = await this.load(journeyId);
+    if (!journey) return;
+    await this.retryUnclassified(
+      journeyId,
+      journey.harmonyQuestions,
+      await this.safety(journeyId),
+    );
+  }
+
   private async retryUnclassified(
     journeyId: string,
     qs: Array<{

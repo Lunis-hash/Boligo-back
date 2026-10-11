@@ -305,18 +305,27 @@ export class InterviewService {
     return { success: true, allModulesCompleted };
   }
 
-  /** Entretien en cours : ses réponses et sa version enregistrée (null s'il n'y en a pas). */
+  /** Entretien en cours (ou dernier terminé) : ses réponses et sa version enregistrée (null s'il n'y en a pas). */
   private async currentInterview(userId: string): Promise<{
     answers: Record<string, string>;
     questionnaireVersion: string | null;
   } | null> {
-    const interview = await this.prisma.interviewIA.findFirst({
-      where: { userId, status: 'en_cours' },
-      select: {
-        questionnaireVersion: true,
-        responses: { select: { rawResponses: true } },
-      },
-    });
+    // Entretien en cours, sinon le dernier terminé : sa version reste celle de
+    // référence (un membre V7.1 ne reçoit jamais de questions V8.2 après coup).
+    const select = {
+      questionnaireVersion: true,
+      responses: { select: { rawResponses: true } },
+    } as const;
+    const interview =
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'en_cours' },
+        select,
+      })) ??
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'termine' },
+        orderBy: { startDate: 'desc' },
+        select,
+      }));
     return interview
       ? {
           answers: collectRawAnswers(interview.responses),

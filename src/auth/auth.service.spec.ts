@@ -156,6 +156,31 @@ describe('AuthService', () => {
       // Depuis la vérification par OTP, l'inscription ne renvoie plus de jeton.
       expect(result).toEqual(expect.objectContaining({ success: true, email: 'new@example.com' }));
     });
+
+    it('fixe la version du Grand Entretien dès l’inscription (V8.2 si configurée, sinon V7.1)', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      const dto = {
+        email: 'v82@example.com', password: 'password', firstName: 'Ana', lastName: 'B',
+        birthDate: '1990-01-01', gender: Gender.F, city: 'Paris', telephone: '456', acceptTerms: true,
+      };
+      const saved = { ...process.env };
+      try {
+        for (const [env, expected] of [['8.2', '8.2'], [undefined, '7.1']] as const) {
+          if (env) process.env.INTERVIEW_VERSION = env;
+          else delete process.env.INTERVIEW_VERSION;
+          delete process.env.INTERVIEW_V82_PERCENT;
+          mockPrismaService.user.create.mockClear();
+          mockPrismaService.user.create.mockResolvedValue({ id: 'x', email: dto.email });
+          await service.register(dto);
+          const data = mockPrismaService.user.create.mock.calls[0][0].data;
+          expect(data.interviews.create.questionnaireVersion).toBe(expected);
+          expect(typeof data.id).toBe('string');
+        }
+      } finally {
+        process.env = saved;
+      }
+    });
   });
 
   describe('register — CGU, âge et doublons', () => {

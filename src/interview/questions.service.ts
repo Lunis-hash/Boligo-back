@@ -128,10 +128,18 @@ export class QuestionsService {
     if (!user) return [];
 
     // Récupérer toutes les réponses précédentes pour gérer les dépendances (dependsOn)
-    const interview = await this.prisma.interviewIA.findFirst({
-      where: { userId, status: 'en_cours' },
-      include: { responses: true },
-    });
+    // Entretien en cours, sinon le dernier terminé (même version, mêmes
+    // réponses : rien n'est resservi d'une autre version après la fin).
+    const interview =
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'en_cours' },
+        include: { responses: true },
+      })) ??
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'termine' },
+        orderBy: { startDate: 'desc' },
+        include: { responses: true },
+      }));
 
     const allRawResponses: Record<string, string> = {};
     if (interview) {
