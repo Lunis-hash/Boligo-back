@@ -173,6 +173,11 @@ export interface DivergenceReport {
   themes: ThemeSummary[];
   penalty: number;
   hardStop: boolean;
+  /**
+   * V8.2 — alertes de sécurité (violence, insultes, non-respect d'un refus),
+   * séparées de la compatibilité : jamais d'exclusion ni de pénalité.
+   */
+  safetyAlerts?: Divergence[];
   comparedQuestions: number;
   /** Un point par question comparée (règles et règles croisées). */
   comparisons?: Comparison[];
@@ -448,13 +453,13 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'famille',
     label: "Désir d'enfants",
     topic: "Le désir d'enfants",
-    // V7.1 : « oui, si les conditions sont réunies » face à « non, c'est
-    // définitif » est le non-négociable le plus robuste de la recherche sur
-    // les critères de rupture : une incompatibilité déclarée, comme « oui,
-    // absolument ». « Je ne suis pas certain(e) » face à « non » : majeure.
+    // V8.2 : seule « oui, absolument » face à « non, c'est définitif » est une
+    // incompatibilité déclarée (deux positions fermes). « Oui, si les
+    // conditions sont réunies » face à « non » reste un écart majeur à
+    // discuter ; « je ne suis pas certain(e) » face à « non » aussi.
     severity: pairs({
       AD: 'critique',
-      BD: 'critique',
+      BD: 'majeure',
       CD: 'majeure',
       AC: 'moderee',
       BC: 'mineure',
@@ -775,8 +780,11 @@ export const DIVERGENCE_RULES: Rule[] = [
     theme: 'argent',
     label: 'Aide financière à la famille',
     topic: "L'aide financière à la famille",
+    // V8.2 : « devoir non discutable » face à « l'argent du foyer ne doit pas
+    // servir à la famille » reste un écart majeur à discuter (budget
+    // personnel, montant décidé à deux), jamais une exclusion.
     severity: pairs({
-      AD: 'critique',
+      AD: 'majeure',
       AC: 'majeure',
       BD: 'majeure',
       CD: 'moderee',
@@ -843,16 +851,18 @@ export const DIVERGENCE_RULES: Rule[] = [
   // sont des règles croisées, lues en V7 comme en V6)
   {
     // V7.1 — remplace M1_Q11 (cérémonies : règle croisée `marriageRule`).
-    // Exclue (avec ou sans discussion) face à « envisageable » : une
-    // incompatibilité déclarée ; « pas de position arrêtée » face à
-    // « exclue sans discussion » : majeure.
+    // V8.2 : aucune option n'exprime une exigence de polygamie (« envisageable
+    // si chacun y consent » est une ouverture) : jamais une exclusion.
+    // « Exclue sans discussion » face à « envisageable » : écart majeur à
+    // aborder en priorité ; « exclue, mais j'accepte d'en parler » face à
+    // « envisageable » : modéré.
     questionId: 'M1_Q20',
     theme: 'spiritualite',
     label: 'Polygamie',
     topic: 'La polygamie',
     severity: pairs({
-      AC: 'critique',
-      BC: 'critique',
+      AC: 'majeure',
+      BC: 'moderee',
       AD: 'majeure',
       BD: 'moderee',
       CD: 'moderee',
@@ -1841,7 +1851,9 @@ function homeRule(
   const attached = [staysHome(a), staysHome(b)].filter(Boolean).length;
   let severity: Severity | null = null;
   if (distance === 'pays') {
-    if (firm === 2) severity = 'critique';
+    // V8.2 : le lieu de vie n'est jamais une incompatibilité ; seul le
+    // périmètre de recherche filtre la distance.
+    if (firm === 2) severity = 'majeure';
     else if (attached > 0) severity = 'majeure';
     // Deux « cela dépend de la distance », et la distance est un pays.
     else if (a.M0_Q03 === 'C' && b.M0_Q03 === 'C') severity = 'moderee';
@@ -1923,6 +1935,8 @@ function cultureRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
   });
 }
 
+const SOFT_FAITHS = new Set(['traditionnel', 'spirituel', 'autre']);
+
 const strictFaith = (r: FaithRequirement | null) =>
   r === 'exclusive' || r === 'conversion';
 
@@ -1998,7 +2012,12 @@ function faithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     });
 
   if (fa.family !== fb.family || distinctFaiths(fa, fb)) {
-    religionDivergence(faithGap(ra, rb));
+    // V8.2 : une religion traditionnelle (souvent vécue avec une autre), une
+    // spiritualité personnelle ou « une autre religion » sont trop imprécises
+    // pour fonder une exclusion : écart majeur au plus.
+    const gap = faithGap(ra, rb);
+    const soft = [fa.family, fb.family].some((f) => SOFT_FAITHS.has(f));
+    religionDivergence(gap === 'critique' && soft ? 'majeure' : gap);
     return;
   }
   if (fa.family === 'autre') {
@@ -2524,7 +2543,10 @@ function childFaithRule(a: RawAnswers, b: RawAnswers, c: Collector): void {
     severity = ka === 'A' && differ === true ? 'critique' : null;
   } else {
     const pair = [ka, kb].sort().join('');
-    if (pair === 'AD') severity = 'critique';
+    // V8.2 : « sans éducation religieuse » est une intention, pas un refus
+    // explicite : écart majeur. Deux exigences opposées (A/A, religions
+    // différentes) restent une incompatibilité.
+    if (pair === 'AD') severity = 'majeure';
     else if (pair === 'AB' || pair === 'AC')
       severity =
         differ === true ? 'majeure' : differ === false ? 'mineure' : 'moderee';
@@ -2908,12 +2930,18 @@ export function buildDivergenceReport(
       x.theme.localeCompare(y.theme),
   );
 
-  const rawPenalty = divergences.reduce(
+  // V8.2 : les alertes de sécurité (violence, insultes, non-respect d'un
+  // refus) restent dans le rapport pour le Sondeur et la modération, mais ne
+  // comptent jamais dans la compatibilité amoureuse : ni exclusion, ni
+  // pénalité, ni plafond de score.
+  const compatibility = divergences.filter((d) => !isSafetyDivergence(d));
+  const safetyAlerts = divergences.filter(isSafetyDivergence);
+  const rawPenalty = compatibility.reduce(
     (sum, d) => sum + SEVERITY_PENALTY[d.severity],
     0,
   );
   const penalty = Math.min(MAX_PENALTY, Math.round(rawPenalty * 100) / 100);
-  const hardStop = divergences.some((d) => d.severity === 'critique');
+  const hardStop = compatibility.some((d) => d.severity === 'critique');
   const convergences = c.convergences;
 
   const themes: ThemeSummary[] = THEME_LIST.map((theme) => {
@@ -2945,9 +2973,25 @@ export function buildDivergenceReport(
     themes,
     penalty,
     hardStop,
+    safetyAlerts,
     comparedQuestions: c.compared,
     comparisons: c.comparisons(),
   };
+}
+
+/**
+ * Questions de sécurité : jamais un critère de compatibilité. Elles servent
+ * aux questions de limite du Sondeur, aux alertes et à la modération.
+ */
+export const SAFETY_QUESTION_IDS = new Set([
+  'M6_Q04',
+  'M6_Q05',
+  'M6_Q24',
+  'M9_Q24',
+]);
+
+export function isSafetyDivergence(d: { questionId: string }): boolean {
+  return SAFETY_QUESTION_IDS.has(d.questionId);
 }
 
 export interface CompatibilitySheet {
@@ -2991,8 +3035,10 @@ export function buildCompatibilitySheet(
   const top = report.divergences[0];
   let vigilance: string | null = null;
   if (top) {
-    const intensity =
-      top.severity === 'critique'
+    // V8.2 : une alerte de sécurité n'est jamais une « incompatibilité ».
+    const intensity = isSafetyDivergence(top)
+      ? 'Point de sécurité'
+      : top.severity === 'critique'
         ? 'Incompatibilité déclarée'
         : top.severity === 'majeure'
           ? 'Divergence majeure'

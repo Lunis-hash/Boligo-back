@@ -50,12 +50,12 @@ const themeStatus = (a: RawAnswers, b: RawAnswers, theme: string) =>
 const calm = { M8_Q12: 'K', M8_Q14: 'A' };
 
 describe('B1 — P2 et P9 n’effacent plus les vrais non-négociables', () => {
-  it('désir d’enfants « oui si » face à « non, définitif », avec K et A des deux côtés : incompatibilité déclarée', () => {
+  it('V8.2 — désir d’enfants « oui si » face à « non, définitif », avec K et A des deux côtés : écart majeur, pas une exclusion', () => {
     const a = { ...calm, M0_Q06: 'B' };
     const b = { ...calm, M0_Q06: 'D' };
     const r = report(a, b);
-    expect(severityOf(a, b, 'M0_Q06')).toEqual(['critique']);
-    expect(r.hardStop).toBe(true);
+    expect(severityOf(a, b, 'M0_Q06')).toEqual(['majeure']);
+    expect(r.hardStop).toBe(false);
     expect(themeStatus(a, b, 'famille')).toBe('divergence');
   });
 
@@ -117,12 +117,12 @@ describe('B1 — P2 et P9 n’effacent plus les vrais non-négociables', () => {
 });
 
 describe('B2 — désir d’enfants : le non-négociable le plus robuste', () => {
-  it('« oui » ou « oui si » face à « non, définitif » : critique ; « pas certain(e) » face à « non » : majeure', () => {
+  it('V8.2 — « oui, absolument » face à « non, définitif » : critique ; « oui si » ou « pas certain(e) » face à « non » : majeure', () => {
     expect(severityOf({ M0_Q06: 'A' }, { M0_Q06: 'D' }, 'M0_Q06')).toEqual([
       'critique',
     ]);
     expect(severityOf({ M0_Q06: 'B' }, { M0_Q06: 'D' }, 'M0_Q06')).toEqual([
-      'critique',
+      'majeure',
     ]);
     expect(severityOf({ M0_Q06: 'C' }, { M0_Q06: 'D' }, 'M0_Q06')).toEqual([
       'majeure',
@@ -260,15 +260,16 @@ describe('m9 — personne ne fait le premier pas', () => {
 });
 
 describe('B3 — polygamie : son propre couple, sans réponse refuge', () => {
-  it('exclue (même ouverte à la discussion) face à « envisageable » : incompatibilité déclarée, même avec K', () => {
-    for (const key of ['A', 'B'])
-      expect(
-        severityOf(
-          { ...calm, M1_Q20: key },
-          { ...calm, M1_Q20: 'C' },
-          'M1_Q20',
-        ),
-      ).toEqual(['critique']);
+  it('V8.2 — polygamie : « envisageable » n’est pas une exigence, donc jamais une exclusion (A/C majeure, B/C modérée)', () => {
+    expect(
+      severityOf({ ...calm, M1_Q20: 'A' }, { ...calm, M1_Q20: 'C' }, 'M1_Q20'),
+    ).toEqual(['majeure']);
+    expect(
+      severityOf({ ...calm, M1_Q20: 'B' }, { ...calm, M1_Q20: 'C' }, 'M1_Q20'),
+    ).toEqual(['moderee']);
+    expect(
+      report({ ...calm, M1_Q20: 'A' }, { ...calm, M1_Q20: 'C' }).hardStop,
+    ).toBe(false);
     expect(severityOf({ M1_Q20: 'A' }, { M1_Q20: 'D' }, 'M1_Q20')).toEqual([
       'majeure',
     ]);
@@ -280,7 +281,7 @@ describe('B3 — polygamie : son propre couple, sans réponse refuge', () => {
   it('un entretien V7 (M1_Q11) est lu dans les termes de la V7.1', () => {
     expect(
       severityOf({ M1_Q11: 'B', ...calm }, { M1_Q20: 'C' }, 'M1_Q20'),
-    ).toEqual(['critique']);
+    ).toEqual(['moderee']);
     expect(
       QUESTION_INDEX.get('M1_Q20')!.options.map((o) => o.text),
     ).not.toContain('Je préfère en parler en personne');
@@ -292,7 +293,9 @@ describe('B5 — aide à la famille et dot : posées à tous, enfin comparées',
     const africa = { M1_Q01: 'A', M4_Q16: 'A', M4_Q17: 'A' };
     const europe = { M1_Q01: 'C', M4_Q16: 'D', M4_Q17: 'D' };
     const r = report(africa, europe);
-    expect(severityOf(africa, europe, 'M4_Q16')).toEqual(['critique']);
+    // V8.2 : l'aide familiale reste un écart majeur à discuter ; la dot
+    // (exigence face à refus explicite) reste une incompatibilité déclarée.
+    expect(severityOf(africa, europe, 'M4_Q16')).toEqual(['majeure']);
     expect(severityOf(africa, europe, 'M4_Q17')).toEqual(['critique']);
     expect(r.hardStop).toBe(true);
     for (const id of ['M4_Q16', 'M4_Q17'])
@@ -485,8 +488,9 @@ describe('Section 3 — les questions décisives qui manquaient', () => {
     const muslim = { M1_Q16: 'D', M8_Q18: 'A' };
     const catholic = { M1_Q16: 'A', M8_Q18: 'A' };
     expect(severityOf(muslim, catholic, 'M8_Q18')).toEqual(['critique']);
+    // V8.2 : « sans éducation religieuse » est une intention, pas un refus explicite.
     expect(severityOf(muslim, { M1_Q16: 'D', M8_Q18: 'D' }, 'M8_Q18')).toEqual([
-      'critique',
+      'majeure',
     ]);
     expect(severityOf(muslim, { M1_Q16: 'A', M8_Q18: 'B' }, 'M8_Q18')).toEqual([
       'majeure',
@@ -554,7 +558,7 @@ describe('B6 — le contrôle coercitif devient visible, sans accuser', () => {
     M5_Q09: 'D',
   };
 
-  it('le profil de l’audit est une incompatibilité déclarée, même sans signal d’alerte chez l’autre', () => {
+  it('V8.2 — le profil de l’audit est une alerte de sécurité, séparée de la compatibilité', () => {
     const r = report(controlling, { M5_Q08: 'B' });
     const d = r.divergences.find((x) => x.questionId === 'M9_Q24')!;
     expect(controlRisk(controlling)).toBe('eleve');
@@ -564,7 +568,9 @@ describe('B6 — le contrôle coercitif devient visible, sans accuser', () => {
       label: 'Respect des limites et de la liberté de l’autre',
       neutral: true,
     });
-    expect(r.hardStop).toBe(true);
+    // Alerte de sécurité : jamais une exclusion de compatibilité.
+    expect(r.hardStop).toBe(false);
+    expect(r.safetyAlerts!.map((x) => x.questionId)).toContain('M9_Q24');
     // Jamais une réponse citée, jamais le membre concerné.
     expect(d.a).toEqual(d.b);
     expect(d.a.text).not.toMatch(/téléphone|insiste|transparence/i);
@@ -657,15 +663,15 @@ describe('B4 — lieu de vie : « je reste » se lit avec la ville et le pays', 
     r.divergences.filter((d) => d.questionId === 'M0_Q03');
   const stays = { M0_Q03: 'D', M7_Q07: 'A' };
 
-  it('deux « je reste où je suis » dans deux pays : incompatibilité déclarée, plus aucun accord', () => {
+  it('V8.2 — deux « je reste où je suis » dans deux pays : écart majeur (le périmètre filtre la distance), plus aucun accord', () => {
     const r = at(stays, stays, paris, dakar);
     expect(home(r)).toHaveLength(1);
     expect(home(r)[0]).toMatchObject({
-      severity: 'critique',
+      severity: 'majeure',
       theme: 'lieu',
       label: 'Chacun attaché à son pays',
     });
-    expect(r.hardStop).toBe(true);
+    expect(r.hardStop).toBe(false);
     // Ni accord affiché ni accord du Sondeur sur « rester où l'on est ».
     expect(
       r.convergences.filter((c) => ['M0_Q03', 'M7_Q07'].includes(c.questionId)),
@@ -728,17 +734,22 @@ describe('B4 — lieu de vie : « je reste » se lit avec la ville et le pays', 
   });
 
   it('la fiche de compatibilité passe le lieu de chacun au moteur', () => {
-    const r = resolveScore(
+    const apart = resolveScore(
       { answers: stays, mentalMap: null, ...paris },
       { answers: stays, mentalMap: null, ...dakar },
     );
-    expect(r.report.hardStop).toBe(true);
-    expect(
-      resolveScore(
-        { answers: stays, mentalMap: null, ...paris },
-        { answers: stays, mentalMap: null, ...paris },
-      ).report.hardStop,
-    ).toBe(false);
+    const together = resolveScore(
+      { answers: stays, mentalMap: null, ...paris },
+      { answers: stays, mentalMap: null, ...paris },
+    );
+    // Le lieu de chacun arrive bien au moteur : écart majeur seulement à distance.
+    const sev = (x: typeof apart) =>
+      x.report.divergences
+        .filter((d) => d.theme === 'lieu')
+        .map((d) => d.severity);
+    expect(sev(apart)).toContain('majeure');
+    expect(sev(together)).not.toContain('majeure');
+    expect(apart.report.hardStop).toBe(false);
   });
 
   it('lit « Ville, Pays » sans accents ni casse ; un seul élément ne donne pas de pays', () => {

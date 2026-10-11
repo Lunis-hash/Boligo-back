@@ -24,6 +24,7 @@ import {
   RawAnswers,
   SEVERITY_SIMILARITY,
   Severity,
+  isSafetyDivergence,
 } from '../matching/divergence.engine';
 import { psychometricSimilarities } from '../psychometrics/psychometrics';
 import { MODULES, ModuleInfo } from './portrait.phrases';
@@ -130,6 +131,8 @@ function rawVerdict(
   worst: Divergence | undefined,
 ): string {
   const point = worst ? worst.label.toLowerCase() : null;
+  if (worst && isSafetyDivergence(worst))
+    return `Point de sécurité à aborder : ${point}`;
   if (worst?.severity === 'critique')
     return `Incompatibilité déclarée : ${point}`;
   if (value >= 80) return `Alignement fort sur ${info.focus}`;
@@ -269,8 +272,9 @@ export function capForDivergences(
   raw: number,
   report: DivergenceReport,
 ): number {
+  // Les alertes de sécurité ne plafonnent pas la compatibilité (V8.2).
   const critical = report.divergences.filter(
-    (d) => d.severity === 'critique',
+    (d) => d.severity === 'critique' && !isSafetyDivergence(d),
   ).length;
   if (report.hardStop || critical > 0) {
     return (
@@ -279,7 +283,7 @@ export function capForDivergences(
     );
   }
   const major = report.divergences.filter(
-    (d) => d.severity === 'majeure',
+    (d) => d.severity === 'majeure' && !isSafetyDivergence(d),
   ).length;
   return Math.min(raw, MAJOR_CAPS[Math.min(major, MAJOR_CAPS.length - 1)]);
 }

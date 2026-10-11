@@ -32,6 +32,7 @@ import {
   THEMES,
   THEME_LIST,
   Theme,
+  SAFETY_QUESTION_IDS,
 } from '../matching/divergence.engine';
 import { QUESTION_INDEX } from '../interview/questions.data';
 import {
@@ -319,12 +320,7 @@ function pickFresh(
  * V7.1 : justification de la violence (M6_Q24) et contrôle coercitif
  * (M9_Q24, tendance tirée de l'entretien).
  */
-export const SAFETY_QUESTIONS = new Set([
-  'M6_Q04',
-  'M6_Q05',
-  'M6_Q24',
-  'M9_Q24',
-]);
+export const SAFETY_QUESTIONS = SAFETY_QUESTION_IDS;
 
 /**
  * Auto-évaluations (aveux, fréquences sur soi) : la réponse d'un membre n'est

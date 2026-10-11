@@ -40,10 +40,11 @@ describe('Règles V6 (questions rétablies de la V5)', () => {
     ).toBe('moderee');
   });
 
-  it('violence physique : « rupture immédiate » face à « ça dépend » est une incompatibilité déclarée', () => {
+  it('V8.2 — violence physique : « rupture immédiate » face à « ça dépend » reste critique pour le Sondeur, mais en alerte de sécurité', () => {
     const r = buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'C' });
     expect(r.divergences[0].severity).toBe('critique');
-    expect(r.hardStop).toBe(true);
+    expect(r.hardStop).toBe(false);
+    expect(r.safetyAlerts).toHaveLength(1);
     expect(
       buildDivergenceReport({ M6_Q04: 'A' }, { M6_Q04: 'A' }).convergences[0]
         .label,
