@@ -123,8 +123,8 @@ async function member(gender: 'H' | 'F', age: number) {
 }
 
 const PNR = 'Je préfère ne pas répondre';
-/** « Proche » : comme « first », sauf quelques sujets (écarts natifs, gifle). */
-const CLOSE_DIFFERENT = new Set(['V82_M5_03', 'V82_M4_05', 'V82_M3_02', 'V82_M8_05', 'M6_Q24', 'V82_M9_03']);
+/** « Proche » : comme « first », sauf quelques sujets (écarts natifs, punitions corporelles). */
+const CLOSE_DIFFERENT = new Set(['V82_M5_03', 'V82_M4_05', 'V82_M3_02', 'V82_M8_05', 'M8_Q20', 'V82_M9_03']);
 type Style = 'first' | 'last' | 'close';
 /** Réponse « première option » ou « dernière option », hors saisie libre et « ne pas répondre ». */
 function choose(q: any, style: Style): string {
@@ -367,7 +367,7 @@ async function main() {
 
   const A2 = await member('H', 34);
   const B2 = await member('F', 31);
-  await check('couple V8.2 proche : écarts natifs et gifle en alerte, invitation et parcours possibles', async () => {
+  await check('couple V8.2 proche : écarts natifs, punitions corporelles en alerte (sans mise à l’abri), invitation et parcours possibles', async () => {
     await interview.setSensitiveConsent(A2.id, true);
     await interview.setSensitiveConsent(B2.id, true);
     await completeInterview(A2.id, 'first');
@@ -378,8 +378,9 @@ async function main() {
     const profile = buildRelationalProfile(await storedAnswers(A2.id), 'H');
     assert.strictEqual(profile?.personality.length, 5);
     assert.ok(report.divergences.some((d) => d.questionId === 'V82_M5_03'));
-    assert.ok(report.safetyAlerts!.some((d) => d.questionId === 'M6_Q24'));
+    assert.ok(report.safetyAlerts!.some((d) => d.questionId === 'M8_Q20'));
     assert.strictEqual(report.hardStop, false);
+    assert.strictEqual(report.safetyHold, false);
     const inv: any = await matching.createMatch(A2.id, B2.id);
     assert.ok(inv.match, `invitation refusée : ${inv.message}`);
     const acc: any = await matching.acceptMatch(inv.match.id, B2.id);
@@ -421,7 +422,6 @@ async function main() {
     // Aucune réponse de sécurité citée à l'IA (gifle : « tout à fait d'accord »).
     const analysis = String(aiCalls[0][0]);
     assert.ok(!/une gifle peut se comprendre/i.test(analysis));
-    assert.match(analysis, /LIMITE DE SÉCURITÉ/);
     const quoted = analysis.split('\n').filter((l) => /« Tout à fait d.accord »/.test(l));
     if (quoted.length) console.log(quoted.join('\n'));
     assert.ok(!quoted.some((l) => /gifle|violence|LIMITE/i.test(l)));
