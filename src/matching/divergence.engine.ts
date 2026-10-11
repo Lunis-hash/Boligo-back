@@ -27,6 +27,8 @@
  * Inspiration : lignes rouges et besoins fondamentaux (Gottman), styles
  * d'attachement (Bowlby), valeurs (Schwartz) et projet de vie partagés.
  */
+import { v82EngineView, v82NativeReport } from './v82-native.rules';
+import { isV82Answers } from '../interview/questions.v82';
 import {
   QUESTION_INDEX,
   answerKeys,
@@ -181,6 +183,8 @@ export interface DivergenceReport {
   comparedQuestions: number;
   /** Un point par question comparée (règles et règles croisées). */
   comparisons?: Comparison[];
+  /** V8.2 — les deux entretiens sont en V8.2 (questions neutres B servies). */
+  questionnaire?: '8.2';
 }
 
 /**
@@ -2877,6 +2881,12 @@ export function buildDivergenceReport(
   rawB: RawAnswers,
   ctx?: ReportContext,
 ): DivergenceReport {
+  // V8.2 : questions natives lues avec leurs propres codes ; questions V7
+  // reprises lues par le moteur (sans réponse inventée).
+  const native = v82NativeReport(rawA, rawB);
+  const bothV82 = isV82Answers(rawA) && isV82Answers(rawB);
+  rawA = v82EngineView(rawA);
+  rawB = v82EngineView(rawB);
   // Réponses V6 lues dans les termes de la V7 quand le sens est le même.
   const a = upgradeAnswers(rawA);
   const b = upgradeAnswers(rawB);
@@ -2922,6 +2932,7 @@ export function buildDivergenceReport(
     ...psychometricDivergences(a, b, c.divergences),
     // V7.1 : sujets centraux renseignés d'un seul côté.
     ...undisclosedDivergences(a, b, rawA, rawB),
+    ...native.divergences,
   ];
 
   divergences.sort(
@@ -2942,7 +2953,7 @@ export function buildDivergenceReport(
   );
   const penalty = Math.min(MAX_PENALTY, Math.round(rawPenalty * 100) / 100);
   const hardStop = compatibility.some((d) => d.severity === 'critique');
-  const convergences = c.convergences;
+  const convergences = [...c.convergences, ...native.convergences];
 
   const themes: ThemeSummary[] = THEME_LIST.map((theme) => {
     const divs = divergences.filter((d) => d.theme === theme);
@@ -2974,8 +2985,19 @@ export function buildDivergenceReport(
     penalty,
     hardStop,
     safetyAlerts,
-    comparedQuestions: c.compared,
-    comparisons: c.comparisons(),
+    ...(bothV82 ? { questionnaire: '8.2' as const } : {}),
+    comparedQuestions: c.compared + native.compared,
+    comparisons: [
+      ...c.comparisons(),
+      ...native.points.map((p) => ({
+        questionId: p.questionId,
+        value: p.severity
+          ? SEVERITY_SIMILARITY[p.severity]
+          : p.same
+            ? 1
+            : COMPATIBLE_DIFFERENT,
+      })),
+    ],
   };
 }
 
@@ -2990,8 +3012,18 @@ export const SAFETY_QUESTION_IDS = new Set([
   'M9_Q24',
 ]);
 
+/**
+ * V8.2 — punitions corporelles (M8_Q20) : une question de protection de
+ * l'enfant, jamais un score ni une exclusion. Hors du jeu de limites du
+ * Sondeur (ses codes n'ont pas le même sens que ceux de M6_Q04).
+ */
+const CHILD_PROTECTION_QUESTION_IDS = new Set(['M8_Q20']);
+
 export function isSafetyDivergence(d: { questionId: string }): boolean {
-  return SAFETY_QUESTION_IDS.has(d.questionId);
+  return (
+    SAFETY_QUESTION_IDS.has(d.questionId) ||
+    CHILD_PROTECTION_QUESTION_IDS.has(d.questionId)
+  );
 }
 
 export interface CompatibilitySheet {

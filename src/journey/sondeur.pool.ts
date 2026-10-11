@@ -28,6 +28,14 @@
  * Les options ne sont jamais affichées (réponse libre de 500 caractères) :
  * elles restent une grille de lecture cachée, courte et neutre.
  */
+import { V82_INDEX } from '../interview/questions.v82';
+import {
+  V82_AGREEMENTS,
+  V82_NEUTRAL,
+  V82_TOPIC_DAYS,
+  V82_TOPIC_DEEP,
+  V82_TOPIC_PHRASES,
+} from './sondeur.v82';
 import { QUESTION_INDEX } from '../interview/questions.data';
 import type {
   Convergence,
@@ -70,6 +78,11 @@ export interface PoolTemplate {
   compromise?: boolean;
   /** Suppose des enfants à venir : jamais servie si l'un n'en veut pas. */
   needsChildren?: boolean;
+  /**
+   * V8.2 — question neutre de la stratégie B : servie seulement quand les
+   * deux entretiens sont en V8.2 (la V7.1 garde son Sondeur inchangé).
+   */
+  v82Only?: boolean;
   /**
    * Relance d'accord : angle du jour auquel elle répond (DayAngle). Sans
    * angle, elle ne sert qu'à défaut d'une relance écrite pour le jour.
@@ -1966,11 +1979,7 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
       (w) =>
         `À propos ${w.de}, qu'est-ce qui, pour vous, restera ferme quoi qu'il arrive ?`,
       'limite',
-      [
-        'Une valeur',
-        'Une condition de vie',
-        'Une condition familiale',
-      ],
+      ['Une valeur', 'Une condition de vie', 'Une condition familiale'],
     ),
   ],
   2: [
@@ -7345,9 +7354,9 @@ export const CONVERGENT: Record<number, PoolTemplate[]> = {
  * entretiens anciens garde sa phrase et ses relances propres.
  */
 export function agreementKey(c: Convergence): string | undefined {
-  return QUESTION_INDEX.get(c.questionId)?.options.find(
-    (o) => o.text === c.answer,
-  )?.key;
+  // V8.2 : une question propre à la V8.2 se lit avec ses propres options.
+  const q = QUESTION_INDEX.get(c.questionId) ?? V82_INDEX.get(c.questionId);
+  return q?.options.find((o) => o.text === c.answer)?.key;
 }
 
 /**
@@ -7440,3 +7449,15 @@ export const SUBJECT_FRAGMENTS: string[] = [
   ...Object.values(THEME_FALLBACK_PHRASES),
   ...Object.values(AGREEMENTS).map((a) => a.statement),
 ];
+
+// ─── V8.2 — données natives et questions neutres (stratégies A et B) ──────────
+Object.assign(TOPIC_PHRASES, V82_TOPIC_PHRASES);
+Object.assign(TOPIC_DAYS, V82_TOPIC_DAYS);
+Object.assign(TOPIC_DEEP, V82_TOPIC_DEEP);
+for (const [key, a] of Object.entries(V82_AGREEMENTS)) AGREEMENTS[key] = a;
+for (const n of V82_NEUTRAL)
+  THEME_POOL[n.theme][n.day].push({
+    ...n.tpl,
+    about: [n.replaces],
+    v82Only: true,
+  });

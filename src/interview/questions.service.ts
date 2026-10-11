@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  QUESTIONS,
-  Question,
-  QuestionDependency,
-  dependencyMet,
-} from './questions.data';
+import { Question, QuestionDependency, dependencyMet } from './questions.data';
 import { InterviewLanguage, localizeQuestion } from './questions.en';
 import { languageChoices } from './country-languages';
 import { isSensitiveQuestion } from './sensitive-questions';
+import {
+  interviewVersionOf,
+  localizeV82Question,
+  questionnaire,
+} from './questions.v82';
 
 /** Question applicable à ce membre, hors dépendances (âge, genre, accord). */
 function applicable(
@@ -43,7 +43,8 @@ export function pendingQuestions(
   /** Le membre a refusé les questions sensibles : elles ne sont plus posées. */
   skipSensitive = false,
 ): Question[] {
-  return QUESTIONS.filter(
+  // V8.2 : la version de l'entretien vient de ses réponses (ou de INTERVIEW_VERSION).
+  return questionnaire(interviewVersionOf(answers)).filter(
     (q) =>
       applicable(q, moduleNumber, answers, age, gender, skipSensitive) &&
       // Dépendances (dependsOn) : l'une au moins doit être remplie.
@@ -76,7 +77,7 @@ export function moduleQuestions(
 ): ModuleQuestion[] {
   const out: ModuleQuestion[] = [];
   const askable = new Set<string>();
-  for (const q of QUESTIONS) {
+  for (const q of questionnaire(interviewVersionOf(answers))) {
     if (!applicable(q, moduleNumber, answers, age, gender, skipSensitive))
       continue;
     if (dependencyMet(q.rules, answers)) {
@@ -139,6 +140,7 @@ export class QuestionsService {
     // Filtrage dynamique, puis langue d'affichage (les clés de réponse ne changent pas).
     // Une question sensible est signalée : l'app demande l'accord avant de la poser.
     // Les questions de suite du même module arrivent avec leur condition (askIf).
+    const version = interviewVersionOf(allRawResponses);
     return moduleQuestions(
       moduleNumber,
       allRawResponses,
@@ -147,7 +149,13 @@ export class QuestionsService {
       user.sensitiveConsent === false,
     )
       .map((q) => ({
-        ...withSuggestion(localizeQuestion(q, lang), user.city, lang),
+        ...withSuggestion(
+          version === '8.2'
+            ? localizeV82Question(q, lang)
+            : localizeQuestion(q, lang),
+          user.city,
+          lang,
+        ),
         ...(q.askIf ? { askIf: q.askIf } : {}),
       }))
       .map((q) => (isSensitiveQuestion(q.id) ? { ...q, sensitive: true } : q));

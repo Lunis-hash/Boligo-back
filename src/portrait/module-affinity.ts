@@ -17,6 +17,7 @@
  * Une incompatibilité déclarée ramène le score sous 55 % (« Incompatibilité
  * déclarée ») tout en gardant l'ordre entre deux profils incompatibles.
  */
+import { V82_INDEX } from '../interview/questions.v82';
 import { QUESTION_INDEX } from '../interview/questions.data';
 import {
   Divergence,
@@ -77,7 +78,9 @@ const SEEK_MATCHES_BRING: Record<string, string[]> = {
 
 /** Module de chaque question, V7 et V6 (une divergence V6 reste rangée dans son module). */
 const MODULE_OF = new Map(
-  [...QUESTION_INDEX.values()].map((q) => [q.id, q.moduleNumber]),
+  [...QUESTION_INDEX.values(), ...V82_INDEX.values()]
+    .filter((q) => !QUESTION_INDEX.has(q.id) || QUESTION_INDEX.get(q.id) === q)
+    .map((q) => [q.id, q.moduleNumber]),
 );
 
 export interface ModuleAffinity {

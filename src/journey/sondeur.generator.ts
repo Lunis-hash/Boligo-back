@@ -1067,7 +1067,8 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           THEME_POOL[theme][day].filter(
             (t) =>
               !(strictThemes.has(theme) && t.compromise) &&
-              !(childFree && t.needsChildren),
+              !(childFree && t.needsChildren) &&
+              !(t.v82Only && report.questionnaire !== '8.2'),
           ),
           seed,
           `${slot}|gen`,

@@ -20,7 +20,6 @@ import { ageFromBirthDate, pendingQuestions } from './questions.service';
 import { isSensitiveQuestion, withoutSensitive } from './sensitive-questions';
 import {
   FREE_TEXT_SUFFIX,
-  QUESTIONS,
   answerKeys,
   cleanFreeText,
   isValidAnswer,
@@ -29,7 +28,12 @@ import {
   withoutSensitiveOptionAnswers,
 } from './questions.data';
 
-const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
+import {
+  ageRangesConsistent,
+  interviewVersionOf,
+  isValidRangeAnswer,
+  questionOf,
+} from './questions.v82';
 
 @Injectable()
 export class InterviewService {
@@ -133,6 +137,10 @@ export class InterviewService {
     // d'un autre module ou une option inexistante fausserait le matching.
     const answers: Record<string, string> = {};
     const freeTexts: Array<[string, unknown]> = [];
+    // V8.2 : un entretien commencé garde sa version (celle de ses réponses).
+    const previous = await this.currentAnswers(userId);
+    const version = interviewVersionOf(previous);
+    const QUESTION_BY_ID = { get: (id: string) => questionOf(version, id) };
     for (const [questionId, value] of Object.entries(dto.answers ?? {})) {
       if (questionId.endsWith(FREE_TEXT_SUFFIX)) {
         freeTexts.push([questionId, value]);
@@ -143,7 +151,7 @@ export class InterviewService {
       if (
         !q ||
         q.moduleNumber !== dto.moduleNumber ||
-        !isValidAnswer(q, value)
+        !(q.input ? isValidRangeAnswer(q, value) : isValidAnswer(q, value))
       ) {
         throw new BadRequestException(
           `Réponse invalide pour la question ${questionId.slice(0, 20)}.`,
@@ -155,7 +163,15 @@ export class InterviewService {
           `Réponse contradictoire pour la question ${questionId.slice(0, 20)} : « aucun » ne se combine pas avec une autre réponse.`,
         );
       }
-      answers[questionId] = normalizeAnswer(q, value as string);
+      answers[questionId] = q.input
+        ? (value as string).trim()
+        : normalizeAnswer(q, value as string);
+    }
+    // V8.2 : la plage d'âges acceptée englobe la tranche idéale.
+    if (!ageRangesConsistent({ ...previous, ...answers })) {
+      throw new BadRequestException(
+        'Les âges acceptés doivent englober votre tranche d’âge idéale.',
+      );
     }
     // Précision écrite (« une autre langue : bambara ») : gardée seulement si
     // l'option à préciser est cochée dans la même réponse.
@@ -265,6 +281,17 @@ export class InterviewService {
     }
 
     return { success: true, allModulesCompleted };
+  }
+
+  /** Réponses de l'entretien en cours (vide s'il n'y en a pas). */
+  private async currentAnswers(
+    userId: string,
+  ): Promise<Record<string, string>> {
+    const interview = await this.prisma.interviewIA.findFirst({
+      where: { userId, status: 'en_cours' },
+      select: { responses: { select: { rawResponses: true } } },
+    });
+    return interview ? collectRawAnswers(interview.responses) : {};
   }
 
   /** Accord du membre pour les questions sensibles : null s'il n'a pas encore été demandé. */

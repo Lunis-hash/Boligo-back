@@ -3979,6 +3979,13 @@ export const SENSITIVE_QUESTIONS: Record<string, SensitiveEntry> = {
   M6_Q07: { category: 'vie_sexuelle', reach: 'direct' },
   M6_Q10: { category: 'vie_sexuelle', reach: 'indirect' },
   M3_Q08: { category: 'violences_subies', reach: 'direct' },
+  // V8.2 (questions propres à la V8.2 ; mêmes catégories que les questions
+  // V7 reprises, déjà présentes ci-dessus).
+  V82_M1_01: { category: 'origine_ethnique', reach: 'direct' },
+  V82_M1_02: { category: 'convictions_religieuses', reach: 'direct' },
+  V82_M4_08: { category: 'convictions_religieuses', reach: 'direct' },
+  V82_M8_03: { category: 'vie_sexuelle', reach: 'direct' },
+  V82_M10_04: { category: 'vie_sexuelle', reach: 'direct' },
 };
 
 /** Catégories d'une question sensible (toutes, la principale en premier). */
