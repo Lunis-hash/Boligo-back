@@ -11,6 +11,7 @@
 import * as assert from 'assert';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { InterviewService } from '../src/interview/interview.service';
+import { ProfileService } from '../src/profile/profile.service';
 import { QuestionsService } from '../src/interview/questions.service';
 import { MatchingService } from '../src/matching/matching.service';
 import { JourneyService } from '../src/journey/journey.service';
@@ -94,6 +95,7 @@ const credit = new CreditService(prisma);
 const ghosting = new GhostingService(prisma, notif, credit);
 const interview = new InterviewService(prisma, ai, notif);
 const questions = new QuestionsService(prisma);
+const profiles = new ProfileService(prisma);
 const matching = new MatchingService(prisma, notif);
 const journeys = new JourneyService(prisma, ai, notif, gateway, credit, ghosting);
 
@@ -233,6 +235,96 @@ async function main() {
 
   const A = await member('H', 32);
   const B = await member('F', 30);
+  // ─── Versionnement durable ─────────────────────────────────────────────────
+  const versionOf = async (userId: string) =>
+    (await prisma.interviewIA.findFirst({ where: { userId }, orderBy: { startDate: 'desc' } }))?.questionnaireVersion;
+  const qIds = async (userId: string, m: number) =>
+    (await questions.getQuestionsForUser(userId, m, 'fr')).map((q) => q.id);
+
+  await check('version : entretien vierge V8.2 reste V8.2 quand la configuration repasse en V7.1', async () => {
+    process.env.INTERVIEW_VERSION = '8.2';
+    const U = await member('F', 28);
+    await interview.getStatus(U.id);
+    assert.strictEqual(await versionOf(U.id), '8.2');
+    delete process.env.INTERVIEW_VERSION;
+    const ids = await qIds(U.id, 0);
+    assert.ok(ids.includes('V82_M0_03') && !ids.includes('M0_Q01'));
+    process.env.INTERVIEW_VERSION = '8.2';
+  });
+
+  await check('version : identifiants communs seulement (périmètre d’inscription) → la version enregistrée décide', async () => {
+    delete process.env.INTERVIEW_VERSION;
+    const U = await member('H', 36);
+    // Inscription : le périmètre M0_Q02 crée l'entretien (profile.service).
+    await prisma.interviewIA.create({
+      data: { userId: U.id, status: 'en_cours', questionnaireVersion: '7.1', responses: { create: { moduleNumber: 0, moduleName: 'M0', rawResponses: { M0_Q02: 'A' } } } },
+    });
+    process.env.INTERVIEW_VERSION = '8.2';
+    const ids = await qIds(U.id, 0);
+    assert.ok(ids.includes('M0_Q01') && !ids.some((id) => V82_ONLY_IDS.has(id)));
+  });
+
+  await check('version : entretien antérieur au versionnement (aucune version) → V7.1, même avec INTERVIEW_VERSION=8.2', async () => {
+    process.env.INTERVIEW_VERSION = '8.2';
+    const U = await member('F', 35);
+    await prisma.interviewIA.create({
+      data: { userId: U.id, status: 'en_cours', responses: { create: { moduleNumber: 0, moduleName: 'M0', rawResponses: { M0_Q02: 'A' } } } },
+    });
+    assert.strictEqual(await versionOf(U.id), null);
+    const ids = await qIds(U.id, 0);
+    assert.ok(ids.includes('M0_Q01') && !ids.some((id) => V82_ONLY_IDS.has(id)));
+    await interview.saveModule(U.id, { moduleNumber: 0, moduleName: 'M0', answers: { M0_Q01: 'A' } } as any);
+    await assert.rejects(interview.saveModule(U.id, { moduleNumber: 0, moduleName: 'M0', answers: { V82_M0_03: 'A' } } as any));
+    assert.strictEqual(await versionOf(U.id), null, 'donnée existante inchangée');
+  });
+
+  await check('version : entretien V8.2 interrompu, configuration changée, reprise et fin en V8.2', async () => {
+    process.env.INTERVIEW_VERSION = '8.2';
+    const U = await member('H', 31);
+    await interview.getStatus(U.id);
+    await interview.saveModule(U.id, { moduleNumber: 0, moduleName: 'M0', answers: { V82_M0_03: 'A', V82_M0_01: '27-35', V82_M0_02: '24-45' } } as any);
+    delete process.env.INTERVIEW_VERSION; // retour arrière de la configuration
+    const status: any = await completeInterview(U.id, 'first');
+    assert.strictEqual(status.isCompleted, true);
+    const a = await storedAnswers(U.id);
+    assert.ok(a.V82_M8_06 && !a.M0_Q01, 'terminé dans sa version d’origine');
+    assert.strictEqual(await versionOf(U.id), '8.2');
+    process.env.INTERVIEW_VERSION = '8.2';
+  });
+
+  await check('version : entretien créé à l’inscription (périmètre) reçoit la version configurée, puis ne bouge plus', async () => {
+    process.env.INTERVIEW_VERSION = '8.2';
+    const U = await member('F', 27);
+    await profiles.updateProfile(U.id, { meetingScope: 'national' } as any);
+    assert.strictEqual(await versionOf(U.id), '8.2');
+    delete process.env.INTERVIEW_VERSION;
+    assert.ok((await qIds(U.id, 0)).includes('V82_M0_03'));
+    process.env.INTERVIEW_VERSION = '8.2';
+  });
+
+  await check('version : immuable en base (déclencheur), même par une écriture directe', async () => {
+    const U = await member('F', 30);
+    await interview.getStatus(U.id);
+    const itv = await prisma.interviewIA.findFirstOrThrow({ where: { userId: U.id } });
+    await assert.rejects(prisma.interviewIA.update({ where: { id: itv.id }, data: { questionnaireVersion: '7.1' } }), /immuable/);
+    await assert.rejects(prisma.interviewIA.update({ where: { id: itv.id }, data: { questionnaireVersion: '9.9' } }));
+    assert.strictEqual(await versionOf(U.id), '8.2');
+  });
+
+  await check('version : activation progressive à 100 % puis retour à 0 %', async () => {
+    delete process.env.INTERVIEW_VERSION;
+    process.env.INTERVIEW_V82_PERCENT = '100';
+    const U = await member('H', 29);
+    await interview.getStatus(U.id);
+    process.env.INTERVIEW_V82_PERCENT = '0';
+    const W = await member('H', 29);
+    await interview.getStatus(W.id);
+    delete process.env.INTERVIEW_V82_PERCENT;
+    assert.strictEqual(await versionOf(U.id), '8.2');
+    assert.strictEqual(await versionOf(W.id), '7.1');
+    process.env.INTERVIEW_VERSION = '8.2';
+  });
+
   await check('deux Grands Entretiens V8.2 complets ; sans accord, aucune réponse sensible enregistrée', async () => {
     await interview.setSensitiveConsent(A.id, true);
     await interview.setSensitiveConsent(B.id, false);

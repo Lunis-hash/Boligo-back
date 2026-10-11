@@ -173,30 +173,51 @@ export const V82_ONLY_IDS: ReadonlySet<string> = new Set(
   V82_QUESTIONS.filter((q) => !QUESTION_INDEX.has(q.id)).map((q) => q.id),
 );
 
-/** Identifiants de la V7.1 qui ne sont plus posés en V8.2. */
-const V71_ONLY_IDS: ReadonlySet<string> = new Set(
-  QUESTIONS.filter((q) => !V82_INDEX.has(q.id)).map((q) => q.id),
-);
-
-/** Version configurée pour un nouvel entretien (« 7.1 » sauf choix explicite). */
+/**
+ * Version attribuée à un NOUVEL entretien (jamais à un entretien existant) :
+ * - `INTERVIEW_VERSION=8.2` : tous les nouveaux entretiens en V8.2 ;
+ * - sinon `INTERVIEW_V82_PERCENT=N` (0 à 100) : activation progressive,
+ *   stable pour un même membre (hachage de son identifiant) ;
+ * - sinon V7.1. Revenir en arrière : retirer ces variables ; les entretiens
+ *   déjà commencés en V8.2 gardent leur version.
+ */
 export function configuredInterviewVersion(
-  value: string | undefined = process.env.INTERVIEW_VERSION,
+  userId?: string,
+  env: NodeJS.ProcessEnv = process.env,
 ): InterviewVersion {
-  return value?.trim() === '8.2' ? '8.2' : '7.1';
+  if (env.INTERVIEW_VERSION?.trim() === '8.2') return '8.2';
+  const percent = Number(env.INTERVIEW_V82_PERCENT ?? 0);
+  if (!userId || !Number.isFinite(percent) || percent <= 0) return '7.1';
+  if (percent >= 100) return '8.2';
+  return rolloutBucket(userId) < percent ? '8.2' : '7.1';
+}
+
+/** Rang 0–99 stable d'un membre (FNV-1a de son identifiant). */
+export function rolloutBucket(userId: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < userId.length; i++) {
+    h ^= userId.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0) % 100;
 }
 
 /**
- * Version d'un entretien : celle de ses réponses quand elles en désignent une,
- * sinon la version configurée (entretien vierge ou seulement le périmètre).
+ * Version d'un entretien EXISTANT : celle enregistrée à sa création. Un
+ * entretien antérieur au versionnement (aucune version) est lu en V7.1 ; la
+ * configuration n'est jamais consultée, pour qu'un entretien commencé ne
+ * change jamais de questionnaire.
  */
 export function interviewVersionOf(
   answers: Record<string, unknown>,
-  configured: InterviewVersion = configuredInterviewVersion(),
+  stored?: string | null,
 ): InterviewVersion {
-  const ids = Object.keys(answers).filter((k) => answers[k] !== undefined);
-  if (ids.some((id) => V82_ONLY_IDS.has(id))) return '8.2';
-  if (ids.some((id) => V71_ONLY_IDS.has(id))) return '7.1';
-  return configured;
+  if (stored === '8.2' || stored === '7.1') return stored;
+  // Filet : aucun entretien V8.2 n'existe sans version enregistrée ; si des
+  // réponses propres à la V8.2 sont présentes, on ne les sert pas en V7.1.
+  return Object.keys(answers).some((id) => V82_ONLY_IDS.has(id))
+    ? '8.2'
+    : '7.1';
 }
 
 export function isV82Answers(answers: Record<string, unknown>): boolean {

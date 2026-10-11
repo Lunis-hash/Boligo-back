@@ -29,7 +29,9 @@ import {
 } from './questions.data';
 
 import {
+  InterviewVersion,
   ageRangesConsistent,
+  configuredInterviewVersion,
   interviewVersionOf,
   isValidRangeAnswer,
   questionOf,
@@ -79,6 +81,7 @@ export class InterviewService {
     const completedModules = await this.completedModules(
       userId,
       interview.responses,
+      interview.questionnaireVersion,
     );
     const firstPending = [...Array(11).keys()].find(
       (m) => !completedModules.includes(m),
@@ -96,6 +99,7 @@ export class InterviewService {
   private async completedModules(
     userId: string,
     responses: Array<{ moduleNumber: number; rawResponses: unknown }>,
+    storedVersion: string | null,
   ): Promise<number[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -110,12 +114,25 @@ export class InterviewService {
     return [...Array(11).keys()].filter(
       (m) =>
         saved.has(m) &&
-        pendingQuestions(m, answers, age, user?.gender, skipSensitive)
-          .length === 0,
+        pendingQuestions(
+          m,
+          answers,
+          age,
+          user?.gender,
+          skipSensitive,
+          interviewVersionOf(answers, storedVersion),
+        ).length === 0,
     );
   }
 
-  async startInterview(userId: string) {
+  /**
+   * Entretien en cours, ou nouvel entretien. Sa version est fixée ici, une
+   * fois pour toutes (V8.2 : immuable, garanti aussi par la base).
+   */
+  async startInterview(
+    userId: string,
+    version: InterviewVersion = configuredInterviewVersion(userId),
+  ) {
     const existing = await this.prisma.interviewIA.findFirst({
       where: { userId, status: 'en_cours' },
     });
@@ -128,6 +145,7 @@ export class InterviewService {
       data: {
         userId,
         status: 'en_cours',
+        questionnaireVersion: version,
       },
     });
   }
@@ -137,9 +155,13 @@ export class InterviewService {
     // d'un autre module ou une option inexistante fausserait le matching.
     const answers: Record<string, string> = {};
     const freeTexts: Array<[string, unknown]> = [];
-    // V8.2 : un entretien commencé garde sa version (celle de ses réponses).
-    const previous = await this.currentAnswers(userId);
-    const version = interviewVersionOf(previous);
+    // V8.2 : un entretien commencé garde la version enregistrée à sa
+    // création ; un nouvel entretien reçoit la version configurée.
+    const current = await this.currentInterview(userId);
+    const previous = current?.answers ?? {};
+    const version = current
+      ? interviewVersionOf(previous, current.questionnaireVersion)
+      : configuredInterviewVersion(userId);
     const QUESTION_BY_ID = { get: (id: string) => questionOf(version, id) };
     for (const [questionId, value] of Object.entries(dto.answers ?? {})) {
       if (questionId.endsWith(FREE_TEXT_SUFFIX)) {
@@ -237,7 +259,7 @@ export class InterviewService {
           alreadyCompleted: true,
         };
       }
-      interview = await this.startInterview(userId);
+      interview = await this.startInterview(userId, version);
     }
 
     // Save or update module response
@@ -274,7 +296,7 @@ export class InterviewService {
       select: { moduleNumber: true, rawResponses: true },
     });
     const allModulesCompleted =
-      (await this.completedModules(userId, responses)).length === 11;
+      (await this.completedModules(userId, responses, version)).length === 11;
 
     if (allModulesCompleted) {
       await this.completeInterview(interview.id, userId);
@@ -283,15 +305,24 @@ export class InterviewService {
     return { success: true, allModulesCompleted };
   }
 
-  /** Réponses de l'entretien en cours (vide s'il n'y en a pas). */
-  private async currentAnswers(
-    userId: string,
-  ): Promise<Record<string, string>> {
+  /** Entretien en cours : ses réponses et sa version enregistrée (null s'il n'y en a pas). */
+  private async currentInterview(userId: string): Promise<{
+    answers: Record<string, string>;
+    questionnaireVersion: string | null;
+  } | null> {
     const interview = await this.prisma.interviewIA.findFirst({
       where: { userId, status: 'en_cours' },
-      select: { responses: { select: { rawResponses: true } } },
+      select: {
+        questionnaireVersion: true,
+        responses: { select: { rawResponses: true } },
+      },
     });
-    return interview ? collectRawAnswers(interview.responses) : {};
+    return interview
+      ? {
+          answers: collectRawAnswers(interview.responses),
+          questionnaireVersion: interview.questionnaireVersion ?? null,
+        }
+      : null;
   }
 
   /** Accord du membre pour les questions sensibles : null s'il n'a pas encore été demandé. */

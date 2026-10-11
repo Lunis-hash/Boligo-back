@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   QUESTION_INDEX,
-  QUESTIONS,
   dependencyMet,
   isValidAnswer,
   mixesExclusive,
@@ -111,36 +110,72 @@ describe('Grand Entretien V8.2 — contenu', () => {
 });
 
 describe('Grand Entretien V8.2 — version servie', () => {
-  const env = process.env.INTERVIEW_VERSION;
-  afterEach(() => {
-    process.env.INTERVIEW_VERSION = env;
+  it('nouvel entretien : V7.1 par défaut, V8.2 seulement sur configuration explicite', () => {
+    expect(configuredInterviewVersion('u1', {})).toBe('7.1');
+    expect(configuredInterviewVersion('u1', { INTERVIEW_VERSION: '' })).toBe(
+      '7.1',
+    );
+    expect(configuredInterviewVersion('u1', { INTERVIEW_VERSION: '8' })).toBe(
+      '7.1',
+    );
+    expect(configuredInterviewVersion('u1', { INTERVIEW_VERSION: '8.2' })).toBe(
+      '8.2',
+    );
+    const ids = pendingQuestions(0, {}, 30, 'F', false, '7.1').map((q) => q.id);
+    expect(ids).toContain('M0_Q01');
+    for (const id of ids) expect(V82_ONLY_IDS.has(id)).toBe(false);
   });
 
-  it('la V7.1 reste la version par défaut (production inchangée)', () => {
-    expect(configuredInterviewVersion(undefined)).toBe('7.1');
-    expect(configuredInterviewVersion('')).toBe('7.1');
-    expect(configuredInterviewVersion('8')).toBe('7.1');
-    expect(configuredInterviewVersion('8.2')).toBe('8.2');
-    delete process.env.INTERVIEW_VERSION;
-    const ids = pendingQuestions(0, {}, 30, 'F').map((q) => q.id);
-    expect(ids).toContain('M0_Q01');
-    for (const id of ids) {
-      expect(QUESTIONS.some((q) => q.id === id)).toBe(true);
-      expect(V82_ONLY_IDS.has(id)).toBe(false);
+  it('activation progressive : stable par membre, proportionnelle au pourcentage', () => {
+    const env = { INTERVIEW_V82_PERCENT: '20' };
+    const users = Array.from({ length: 2000 }, (_, i) => `membre-${i}`);
+    const v82 = users.filter(
+      (u) => configuredInterviewVersion(u, env) === '8.2',
+    );
+    expect(v82.length / users.length).toBeGreaterThan(0.15);
+    expect(v82.length / users.length).toBeLessThan(0.25);
+    // Même membre, même réponse ; le pourcentage croissant n'en retire aucun.
+    for (const u of v82.slice(0, 50)) {
+      expect(configuredInterviewVersion(u, env)).toBe('8.2');
+      expect(
+        configuredInterviewVersion(u, { INTERVIEW_V82_PERCENT: '50' }),
+      ).toBe('8.2');
+    }
+    expect(
+      configuredInterviewVersion('x', { INTERVIEW_V82_PERCENT: '0' }),
+    ).toBe('7.1');
+    expect(
+      configuredInterviewVersion('x', { INTERVIEW_V82_PERCENT: '100' }),
+    ).toBe('8.2');
+    expect(
+      configuredInterviewVersion(undefined, { INTERVIEW_V82_PERCENT: '100' }),
+    ).toBe('7.1');
+  });
+
+  it('entretien existant : sa version enregistrée, jamais la configuration', () => {
+    const env = process.env.INTERVIEW_VERSION;
+    process.env.INTERVIEW_VERSION = '8.2';
+    try {
+      // Vierge ou seulement des identifiants communs : la version enregistrée décide.
+      expect(interviewVersionOf({}, '7.1')).toBe('7.1');
+      expect(interviewVersionOf({ M0_Q02: 'A', M0_Q06: 'A' }, '7.1')).toBe(
+        '7.1',
+      );
+      expect(interviewVersionOf({ M0_Q02: 'A' }, '8.2')).toBe('8.2');
+      // Entretien antérieur au versionnement : V7.1, même si INTERVIEW_VERSION=8.2.
+      expect(interviewVersionOf({}, null)).toBe('7.1');
+      expect(interviewVersionOf({ M0_Q02: 'A' }, undefined)).toBe('7.1');
+      // Valeur inconnue : jamais une version inventée.
+      expect(interviewVersionOf({}, '9')).toBe('7.1');
+    } finally {
+      process.env.INTERVIEW_VERSION = env;
     }
   });
 
-  it('un entretien commencé garde sa version, quelle que soit la configuration', () => {
-    expect(interviewVersionOf({ M0_Q01: 'A' }, '8.2')).toBe('7.1');
-    expect(interviewVersionOf({ V82_M0_03: 'A' }, '7.1')).toBe('8.2');
-    // Seul le périmètre (rempli à l'inscription) : la configuration décide.
-    expect(interviewVersionOf({ M0_Q02: 'A' }, '8.2')).toBe('8.2');
-    expect(interviewVersionOf({ M0_Q02: 'A' }, '7.1')).toBe('7.1');
-  });
-
-  it('INTERVIEW_VERSION=8.2 : un nouvel entretien reçoit les questions V8.2', () => {
-    process.env.INTERVIEW_VERSION = '8.2';
-    const ids = pendingQuestions(0, { M0_Q02: 'A' }, 30, 'F').map((q) => q.id);
+  it('entretien V8.2 : questions V8.2', () => {
+    const ids = pendingQuestions(0, { M0_Q02: 'A' }, 30, 'F', false, '8.2').map(
+      (q) => q.id,
+    );
     expect(ids).toContain('V82_M0_01');
     expect(ids).toContain('V82_M0_03');
     expect(ids).not.toContain('M0_Q01');
@@ -171,7 +206,7 @@ describe('Grand Entretien V8.2 — version servie', () => {
   });
 
   it('question de suite du même module : servie avec sa condition (askIf)', () => {
-    const qs = moduleQuestions(3, { V82_M0_03: 'A' }, 30, 'F');
+    const qs = moduleQuestions(3, { V82_M0_03: 'A' }, 30, 'F', false, '8.2');
     const ex = qs.find((q) => q.id === 'V82_M3_02');
     expect(ex?.askIf).toEqual([
       { questionId: 'V82_M3_01', values: ['B', 'C', 'D'] },
@@ -247,6 +282,7 @@ describe('Grand Entretien V8.2 — données sensibles (art. 9) et sécurité', (
         30,
         'F',
         true,
+        '8.2',
       ).map((q) => q.id),
     );
     for (const id of SENSITIVE) expect(asked).not.toContain(id);

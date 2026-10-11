@@ -127,6 +127,10 @@ model InterviewIA {
   endDate   DateTime?
   status    InterviewStatus  @default(en_cours)
   version   Int              @default(1)
+  /// Version du Grand Entretien (« 7.1 », « 8.2 »), fixée à la création et
+  /// jamais modifiée (déclencheur SQL). Absente : entretien antérieur au
+  /// versionnement, lu en V7.1.
+  questionnaireVersion String?
   responses ModuleResponse[]
   mentalMap MentalMap?
 

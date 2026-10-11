@@ -5,6 +5,8 @@ import { InterviewLanguage, localizeQuestion } from './questions.en';
 import { languageChoices } from './country-languages';
 import { isSensitiveQuestion } from './sensitive-questions';
 import {
+  InterviewVersion,
+  configuredInterviewVersion,
   interviewVersionOf,
   localizeV82Question,
   questionnaire,
@@ -42,9 +44,10 @@ export function pendingQuestions(
   gender: string | null | undefined,
   /** Le membre a refusé les questions sensibles : elles ne sont plus posées. */
   skipSensitive = false,
+  /** Version enregistrée de l'entretien (V8.2 : immuable). */
+  version: InterviewVersion = interviewVersionOf(answers),
 ): Question[] {
-  // V8.2 : la version de l'entretien vient de ses réponses (ou de INTERVIEW_VERSION).
-  return questionnaire(interviewVersionOf(answers)).filter(
+  return questionnaire(version).filter(
     (q) =>
       applicable(q, moduleNumber, answers, age, gender, skipSensitive) &&
       // Dépendances (dependsOn) : l'une au moins doit être remplie.
@@ -74,10 +77,11 @@ export function moduleQuestions(
   age: number,
   gender: string | null | undefined,
   skipSensitive = false,
+  version: InterviewVersion = interviewVersionOf(answers),
 ): ModuleQuestion[] {
   const out: ModuleQuestion[] = [];
   const askable = new Set<string>();
-  for (const q of questionnaire(interviewVersionOf(answers))) {
+  for (const q of questionnaire(version)) {
     if (!applicable(q, moduleNumber, answers, age, gender, skipSensitive))
       continue;
     if (dependencyMet(q.rules, answers)) {
@@ -140,13 +144,18 @@ export class QuestionsService {
     // Filtrage dynamique, puis langue d'affichage (les clés de réponse ne changent pas).
     // Une question sensible est signalée : l'app demande l'accord avant de la poser.
     // Les questions de suite du même module arrivent avec leur condition (askIf).
-    const version = interviewVersionOf(allRawResponses);
+    // Version enregistrée de l'entretien ; sans entretien, celle qu'en
+    // recevrait un nouveau (aperçu, rien n'est créé ici).
+    const version = interview
+      ? interviewVersionOf(allRawResponses, interview.questionnaireVersion)
+      : configuredInterviewVersion(userId);
     return moduleQuestions(
       moduleNumber,
       allRawResponses,
       ageFromBirthDate(user.birthDate),
       user.gender,
       user.sensitiveConsent === false,
+      version,
     )
       .map((q) => ({
         ...withSuggestion(
