@@ -8,7 +8,7 @@
  * (config/sondeur-models.json). Rien n'est qualifié si les seuils ne sont pas
  * atteints.
  *
- *   OPENROUTER_API_KEY=... BENCH_MAX_EUR=40 npx ts-node --skipProject --transpile-only \
+ *   OPENROUTER_API_KEY=... (ou OPENROUTER_AUTH=proxy) BENCH_MAX_EUR=20 npx ts-node --skipProject --transpile-only \
  *     -O '{"module":"commonjs","esModuleInterop":true}' scripts/sondeur-benchmark.ts all [--qualify]
  *
  * Étapes : catalog | screen | final | critic | cost | select | all.
@@ -17,7 +17,11 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { AiService } from '../src/ai/ai.service';
-import { OpenRouterService } from '../src/ai/openrouter.service';
+import {
+  OpenRouterService,
+  openRouterAuthAvailable,
+  openRouterAuthHeaders,
+} from '../src/ai/openrouter.service';
 import { OpenRouterRole } from '../src/ai/openrouter.config';
 import { modelFamily } from '../src/ai/groq-model';
 import {
@@ -49,7 +53,7 @@ const step = process.argv[2] ?? 'all';
 const QUALIFY = process.argv.includes('--qualify');
 const RUN = process.env.BENCH_RUN ?? new Date().toISOString().slice(0, 10);
 const OUT = join(__dirname, '..', 'docs', 'sondeur-benchmark', RUN);
-const MAX_EUR = Number(process.env.BENCH_MAX_EUR ?? 40);
+const MAX_EUR = Number(process.env.BENCH_MAX_EUR ?? 20);
 const SCREEN_CASES = Number(process.env.BENCH_SCREEN_CASES ?? 6);
 const FINAL_CASES = Number(process.env.BENCH_FINAL_CASES ?? 40);
 const FINALISTS = Number(process.env.BENCH_FINALISTS ?? 4);
@@ -108,9 +112,7 @@ async function orGet(path: string): Promise<unknown> {
   const base =
     process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
   const res = await fetch(`${base}${path}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY ?? ''}`,
-    },
+    headers: openRouterAuthHeaders(),
     signal: AbortSignal.timeout(20_000),
   });
   if (!res.ok) throw new Error(`OpenRouter ${path} : HTTP ${res.status}`);
@@ -750,9 +752,9 @@ function eligible(s: ModelSummary[]) {
 
 // ─── Étapes ──────────────────────────────────────────────────────────────────
 async function main() {
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!openRouterAuthAvailable()) {
     console.error(
-      'OPENROUTER_API_KEY absente : aucun appel lancé, aucun résultat inventé.',
+      'OPENROUTER_API_KEY absente (ni OPENROUTER_AUTH=proxy) : aucun appel lancé, aucun résultat inventé.',
     );
     process.exit(2);
   }

@@ -29,6 +29,22 @@ const CATALOG_TTL_MS = 6 * 60 * 60 * 1000;
 const api = () =>
   process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
 
+/**
+ * Authentification OpenRouter : clé dans OPENROUTER_API_KEY, ou secret réseau
+ * (OPENROUTER_AUTH=proxy) ajouté par le proxy sortant. Dans ce second cas,
+ * aucun en-tête n'est envoyé : le proxy pose lui-même Authorization.
+ */
+export function openRouterAuthAvailable(): boolean {
+  return (
+    !!process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_AUTH === 'proxy'
+  );
+}
+
+export function openRouterAuthHeaders(): Record<string, string> {
+  const key = process.env.OPENROUTER_API_KEY;
+  return key ? { Authorization: `Bearer ${key}` } : {};
+}
+
 export interface OpenRouterChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -104,10 +120,6 @@ export class OpenRouterService {
   private catalog: { at: number; prices: Map<string, ModelPrice> } | null =
     null;
 
-  private get apiKey(): string | undefined {
-    return process.env.OPENROUTER_API_KEY || undefined;
-  }
-
   /**
    * Modèles ouverts au compte et leur prix réel (dollars par million de
    * jetons). null si la liste est injoignable : le prix plafond reste alors
@@ -120,7 +132,7 @@ export class OpenRouterService {
     try {
       const res = await fetch(`${api()}/models`, {
         signal: AbortSignal.timeout(10_000),
-        headers: this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {},
+        headers: openRouterAuthHeaders(),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = (await res.json()) as {
@@ -202,7 +214,7 @@ export class OpenRouterService {
     messages: OpenRouterChatMessage[],
     options: OpenRouterCallOptions = {},
   ): Promise<OpenRouterResponse> {
-    if (!this.apiKey) {
+    if (!openRouterAuthAvailable()) {
       throw new Error(`[OpenRouter] Clé API absente pour l'agent ${agentName}`);
     }
     const defaults = AGENT_DEFAULTS[agentName];
@@ -229,7 +241,7 @@ export class OpenRouterService {
           // Un modèle qui ne répond pas ne doit pas bloquer la requête du membre.
           signal: AbortSignal.timeout(Math.min(perCall, left)),
           headers: {
-            Authorization: `Bearer ${this.apiKey}`,
+            ...openRouterAuthHeaders(),
             'HTTP-Referer':
               process.env.APP_URL || 'https://boligo-web.onrender.com',
             'X-Title': 'BOLIGO',

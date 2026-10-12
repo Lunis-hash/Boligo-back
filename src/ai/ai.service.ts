@@ -3,7 +3,12 @@ import { createHash } from 'crypto';
 import { firstJsonArray, firstJsonObject } from './json-extract';
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import Groq from 'groq-sdk';
-import { ModelPrice, OpenRouterService, maxPrice } from './openrouter.service';
+import {
+  ModelPrice,
+  OpenRouterService,
+  maxPrice,
+  openRouterAuthAvailable,
+} from './openrouter.service';
 import { AiBudgetService } from './ai-budget.service';
 import {
   costFromPrice,
@@ -314,8 +319,7 @@ export class AiService implements OnModuleInit {
       content: string;
       model: string;
     } | null> => {
-      if (!this.openRouterService || !process.env.OPENROUTER_API_KEY)
-        return null;
+      if (!this.openRouterService || !openRouterAuthAvailable()) return null;
       try {
         // Estimation au prix réel du modèle le plus cher envisagé (ou au prix plafond).
         const candidates = await this.openRouterService.candidates(
@@ -423,7 +427,12 @@ export class AiService implements OnModuleInit {
               `⚠️ [Groq] Modèle « ${model} » indisponible, choix d'un autre modèle.`,
             );
             this.groqUnavailable.add(model);
-            this.groqModels = { default: null, quality: null, critic: null, escalation: null };
+            this.groqModels = {
+              default: null,
+              quality: null,
+              critic: null,
+              escalation: null,
+            };
             continue;
           }
           throw error;
@@ -451,8 +460,7 @@ export class AiService implements OnModuleInit {
         const out = await viaGroq();
         if (out !== null) return out;
       } catch (error) {
-        if (!this.openRouterService || !process.env.OPENROUTER_API_KEY)
-          throw error;
+        if (!this.openRouterService || !openRouterAuthAvailable()) throw error;
         this.logger.warn(
           `⚠️ [Groq] Échec agent ${agentName} : ${(error as Error).message}. Secours OpenRouter...`,
         );

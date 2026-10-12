@@ -1,4 +1,8 @@
-import { OpenRouterService, maxPrice } from './openrouter.service';
+import {
+  OpenRouterService,
+  maxPrice,
+  openRouterAuthHeaders,
+} from './openrouter.service';
 
 /** Catalogue OpenRouter simulé : prix en dollars par jeton, comme l'API. */
 const CATALOG = {
@@ -73,6 +77,7 @@ describe('OpenRouterService', () => {
 
   beforeEach(() => {
     process.env.OPENROUTER_API_KEY = 'cle-de-test';
+    delete process.env.OPENROUTER_AUTH;
     delete process.env.OPENROUTER_QUALITY_MODEL;
     delete process.env.OPENROUTER_CRITIC_MODEL;
     delete process.env.OPENROUTER_MAX_PRICE_PROMPT;
@@ -220,5 +225,33 @@ describe('OpenRouterService', () => {
       service.executeAgentPrompt('coach', [{ role: 'user', content: 'x' }]),
     ).rejects.toThrow(/Clé API absente/);
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('secret réseau (OPENROUTER_AUTH=proxy) : appel sans en-tête Authorization', async () => {
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.OPENROUTER_AUTH = 'proxy';
+    const fetchFn = mockFetch(() => ({
+      ok: true,
+      body: { choices: [{ message: { content: 'ok' } }] },
+    }));
+    const res = await service.executeAgentPrompt(
+      'coach',
+      [{ role: 'user', content: 'x' }],
+      { role: 'quality' },
+    );
+    expect(res.content).toBe('ok');
+    const calls = fetchFn.mock.calls as unknown as Array<
+      [string, { headers?: Record<string, string> } | undefined]
+    >;
+    expect(calls.length).toBeGreaterThan(0);
+    for (const [, init] of calls) {
+      expect(init?.headers ?? {}).not.toHaveProperty('Authorization');
+    }
+    expect(openRouterAuthHeaders()).toEqual({});
+
+    process.env.OPENROUTER_API_KEY = 'cle-de-test';
+    expect(openRouterAuthHeaders()).toEqual({
+      Authorization: 'Bearer cle-de-test',
+    });
   });
 });
