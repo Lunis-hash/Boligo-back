@@ -1,0 +1,695 @@
+[
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 18,
+    "passedGate": 3,
+    "formRejected": 14,
+    "evidenceRejected": 7,
+    "criticRejected": 6,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "escalatedDays": 2,
+    "keptByWriter": {
+      "anthropic/claude-sonnet-5.5": 1,
+      "z-ai/glm-5.3-flash": 2
+    },
+    "refused": [
+      {
+        "text": "Combien de jours par semaine des enfants de l'autre pourraient vivre chez vous sans que ce soit trop ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Suppose que seul l'autre a des enfants ; ne vaut pas pour les deux positions."
+      },
+      {
+        "text": "Dans dix ans sans enfant, qu'est-ce qui vous manquerait le plus — ou rien du tout ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 19,
+        "reason": "Reprend presque mot pour mot l'exemple de la consigne (dix ans sans enfant)."
+      },
+      {
+        "text": "Si la position de l'autre sur les enfants ne changeait jamais, pourriez-vous vous engager quand même ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 19,
+        "reason": "Reformule l'exemple « si vos positions ne bougeaient jamais, resteriez-vous ensemble ? »"
+      },
+      {
+        "text": "Dans dix ans, avec ou sans enfant selon votre position actuelle, qu'est-ce qui vous manquerait le plus ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 19,
+        "reason": "Reformule l'exemple « dans dix ans sans enfant, qu'est-ce qui vous manquerait »"
+      },
+      {
+        "text": "Si l'un de vous restait sans enfant toute sa vie, ou en avait contre son doute, pourriez-vous l'accepter vraiment ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 5,
+        "reason": "Oppose deux alternatives (sans enfant ou enfant malgré le doute)"
+      },
+      {
+        "text": "Dans dix ans, avec ou sans enfant, qu'est-ce qui vous manquerait le plus ou vous pèserait le plus ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 5,
+        "reason": "Deux hypothèses opposées et deux idées mêlées (manquer ou peser)."
+      }
+    ],
+    "reasons": {
+      "P21": 3,
+      "P17": 2,
+      "P7": 1,
+      "P14": 1
+    },
+    "leaks": 0,
+    "costMicro": 144777,
+    "latencyMs": 29857,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👨‍👩‍👧",
+        "text": "Jusqu'à combien de jours par semaine des enfants à la maison resteraient-ils pour vous vivables ?",
+        "options": [
+          "Quelques jours",
+          "La plupart de la semaine",
+          "Tous les jours",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "jusqu'où",
+        "target": "Connaître la limite concrète de présence d'enfants au foyer pour chacun",
+        "gap": "A accepte les enfants de l'autre s'ils ne vivent pas à plein temps ; B les aurait avec lui la plupart du temps",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "Up to how many days a week with children at home would feel truly livable for you?",
+        "optionsEn": [
+          "A few days",
+          "Most of the week",
+          "Every day"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "z-ai/glm-5.3-flash"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👨‍👩‍👧",
+        "text": "Sur sept jours, combien de jours avec des enfants à la maison pourriez-vous réellement vivre, année après année ?",
+        "options": [
+          "Deux jours ou moins",
+          "Trois à quatre jours",
+          "Cinq jours ou plus",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "chiffre",
+        "target": "Obtenir un chiffre concret de chaque côté pour mesurer l'écart réel de rythme de vie.",
+        "gap": "Accueillir les enfants de l'autre : A seulement à temps partiel, B la plupart du temps chez lui.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "Out of seven days, how many with children at home could you genuinely live with, year after year?",
+        "optionsEn": [
+          "Two days or fewer",
+          "Three to four days",
+          "Five days or more"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👶",
+        "text": "Avant de vous engager, que faudrait-il savoir de sûr chez l'autre sur les enfants, sans rien espérer de plus ?",
+        "options": [
+          "Une réponse ferme",
+          "Un délai clair",
+          "Rien, je verrai sur le chemin",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "confrontation",
+        "target": "Faire nommer ce que chacun a besoin de savoir avant de s'engager, sans compter sur un changement.",
+        "gap": "Désir d'enfants : A n'est pas certain(e), B en veut absolument. Point non négociable.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "Before committing, what would you need to know for sure about the other on children, expecting nothing more?",
+        "optionsEn": [
+          "A firm answer",
+          "A clear timeline",
+          "Nothing, I'd see along the way"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "criticRejected": 0,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "escalatedDays": 0,
+    "keptByWriter": {},
+    "refused": [],
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 101721,
+    "latencyMs": 21239,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "criticRejected": 0,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "escalatedDays": 0,
+    "keptByWriter": {},
+    "refused": [],
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 105854,
+    "latencyMs": 19774,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 18,
+    "passedGate": 3,
+    "formRejected": 14,
+    "evidenceRejected": 8,
+    "criticRejected": 10,
+    "unreviewedDays": 0,
+    "duplicates": 1,
+    "escalatedDays": 3,
+    "keptByWriter": {
+      "anthropic/claude-sonnet-5.5": 3
+    },
+    "refused": [
+      {
+        "text": "Qu'est-ce que vous ne pourriez pas accepter dans la façon dont chacun de vous voit le déménagement pour le couple ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 3,
+        "reason": "Reste générale : aucune hypothèse concrète ni situation précise sur le déménagement."
+      },
+      {
+        "text": "Si vos positions sur la ville ne changeaient jamais, qu'est-ce qui vous ferait renoncer à la relation ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 12,
+        "reason": "Point non négociable : demande ce qui ferait renoncer, sans confronter à la réalité de l'autre."
+      },
+      {
+        "text": "Si la place de l'alcool dans votre vie ne changeait jamais, pourriez-vous vivre avec celle de l'autre pendant des années ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 11,
+        "reason": "L'alcool relève de la dépendance, réservée aux questions de limite de BOLIGO."
+      },
+      {
+        "text": "Dans dix ans, si aucun de vous deux n'a déménagé, à quoi ressemblerait votre quotidien à deux ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 3,
+        "reason": "Question ouverte et théorique, ne confronte pas à une limite réelle."
+      },
+      {
+        "text": "Qu'est-ce qui, dans un déménagement pour l'autre, vous serait vraiment impossible à accepter ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Suppose que l'un déménage pour l'autre, ce qui ne vaut pas pour les deux."
+      },
+      {
+        "text": "Si la façon de boire de l'un de vous ne changeait jamais, pourriez-vous le vivre au quotidien pendant des années ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 11,
+        "reason": "Porte sur la façon de boire, proche de la dépendance."
+      },
+      {
+        "text": "Si vos positions sur le lieu de vie ne changeaient jamais, resteriez-vous ensemble ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 19,
+        "reason": "Reprend presque mot pour mot l'exemple des enfants en remplaçant le sujet."
+      },
+      {
+        "text": "Si l'un de vous ne quittait jamais sa ville, pourriez-vous réellement bâtir votre vie là, pendant des années ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 19,
+        "reason": "Reprend l'exemple lieu de vie de la consigne, même reformulé"
+      },
+      {
+        "text": "Combien de fois par semaine l'alcool à la maison deviendrait-il, pour vous, trop présent dans votre vie à deux ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 11,
+        "reason": "Alcool : sujet réservé aux questions de limite de BOLIGO"
+      },
+      {
+        "text": "Quelle raison pourrait vous faire quitter votre ville, et quelle raison ne le pourrait jamais ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 5,
+        "reason": "Deux questions en une : raison de partir et raison de rester."
+      }
+    ],
+    "reasons": {
+      "P7": 5,
+      "P13": 3,
+      "P17": 1,
+      "P19": 1
+    },
+    "leaks": 0,
+    "costMicro": 208123,
+    "latencyMs": 41433,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "🧭",
+        "text": "Chez vous, combien de verres d'alcool par semaine vous sembleraient trop, au quotidien, dans la vie d'un couple ?",
+        "options": [
+          "Aucun verre régulier",
+          "Quelques verres par semaine",
+          "Je n'ai pas de limite précise",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "chiffre",
+        "target": "Obtenir un seuil concret de consommation hebdomadaire que chacun peut vivre",
+        "gap": "A accepte l'alcool s'il reste occasionnel, B en consomme chaque semaine",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "In a couple's daily life, how many alcoholic drinks a week would feel like too many to you?",
+        "optionsEn": [
+          "No regular drinks",
+          "A few drinks a week",
+          "I have no set limit"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "z-ai/glm-5.3-flash"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "📍",
+        "text": "Si l'un de vous ne déménageait jamais, pourriez-vous construire votre vie là où il est, pour de bon ?",
+        "options": [
+          "Oui, sans réserve",
+          "Oui, à certaines conditions",
+          "Non, ce serait trop difficile",
+          "Autre..."
+        ],
+        "themeKey": "lieu",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut vivre durablement avec l'immobilité de l'un, sans compromis possible",
+        "gap": "A déménagerait si le projet de vie est solide, B reste où il est",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If one of you never moved, could you build your life together, for good, in the place where that person lives?",
+        "optionsEn": [
+          "Yes, without reservation",
+          "Yes, under certain conditions",
+          "No, it would be too hard"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "z-ai/glm-5.3-flash"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🧭",
+        "text": "Combien de fois par mois l'alcool à la maison ou en sortie serait-il, pour vous, le maximum acceptable dans un couple ?",
+        "options": [
+          "Presque jamais",
+          "Quelques fois par mois",
+          "Chaque semaine sans problème",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "chiffre",
+        "target": "Obtenir une fréquence concrète que chacun pourrait réellement vivre",
+        "gap": "A accepte l'alcool s'il reste occasionnel, B en consomme chaque semaine",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "How many times a month would be the most you could accept alcohol at home or when going out as a couple?",
+        "optionsEn": [
+          "Almost never",
+          "A few times a month",
+          "Every week is fine"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "z-ai/glm-5.3-flash"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 18,
+    "passedGate": 3,
+    "formRejected": 10,
+    "evidenceRejected": 11,
+    "criticRejected": 6,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "escalatedDays": 2,
+    "keptByWriter": {
+      "anthropic/claude-sonnet-5.5": 2,
+      "z-ai/glm-5.3-flash": 1
+    },
+    "refused": [
+      {
+        "text": "Si l'un de vous restait sans emploi pendant deux ans, pourriez-vous vivre cette situation sans en vouloir à l'autre ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Suppose que l'autre soit le soutien ; l'hypothèse ne vise pas symétriquement chaque position, et la question est floue sur l'écart."
+      },
+      {
+        "text": "Si la place du tabac dans votre vie à deux ne changeait jamais, pourriez-vous la vivre au quotidien pendant des années ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 5,
+        "reason": "Formulation abstraite et floue ; ne cite ni tabac fumé, ni positions réelles, et mélange plusieurs idées."
+      },
+      {
+        "text": "Si l'un de vous restait sans emploi un an, accepteriez-vous de le soutenir tout ce temps ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Hypothèse 'l'un de vous' ok, mais oui/non fermé, et ne confronte pas les positions."
+      },
+      {
+        "text": "Chaque mois sans emploi de l'autre, jusqu'à combien de mois seriez-vous prêt(e) à porter seul(e) le budget ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Dit « de l'autre » et « votre partenaire » : hypothèse non symétrique, formulation bancale."
+      },
+      {
+        "text": "Sur le tabac, qu'est-ce que vous ne pourriez absolument pas accepter chez l'autre, même en l'aimant ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 5,
+        "reason": "Formulation alambiquée, 'ce que vous ne pourriez accepter' vague, sans situation concrète."
+      },
+      {
+        "text": "Quelle place du tabac dans votre quotidien à deux serait, pour chacun de vous, impossible à accepter ?",
+        "writer": "anthropic/claude-sonnet-5.5",
+        "rule": 5,
+        "reason": "Tournure alambiquée ; « pour chacun de vous » incohérent dans une question posée à chacun"
+      }
+    ],
+    "reasons": {
+      "P17": 10,
+      "P14": 1,
+      "P21": 2,
+      "P11": 1
+    },
+    "leaks": 0,
+    "costMicro": 169879,
+    "latencyMs": 32849,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "💶",
+        "text": "Si l'un de vous perdait son emploi, pendant combien de mois pourriez-vous porter seul(e) les dépenses du couple ?",
+        "options": [
+          "Quelques mois",
+          "Une année ou plus",
+          "Je ne saurais pas dire",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "method": "chiffre",
+        "target": "Savoir la durée réelle de soutien que chacun peut accepter de donner ou de recevoir",
+        "gap": "A propose un plan commun avec des limites tenables, B ne pourrait pas envisager une dépendance financière prolongée",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If one of you lost a job, for how many months could you realistically cover the couple's expenses on your own?",
+        "optionsEn": [
+          "A few months",
+          "A year or more",
+          "I couldn't say"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "z-ai/glm-5.3-flash"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "💶",
+        "text": "Si l'un de vous perdait son emploi, jusqu'où et combien de temps pourriez-vous réellement le soutenir financièrement ?",
+        "options": [
+          "Vous pouvez détailler une durée ou une condition.",
+          "Une réponse honnête vaut mieux qu'une belle promesse.",
+          "« J'aimerais en parler de vive voix » est possible.",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "method": "jusqu'où",
+        "target": "La durée et l'ampleur de soutien que chacun peut réellement offrir.",
+        "gap": "A veut un plan commun avec des limites, B refuse une dépendance financière prolongée.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If one of you lost their job, how far and how long could you really support them financially?",
+        "optionsEn": [
+          "You can give a length of time or a condition.",
+          "An honest answer beats a pretty promise.",
+          "« I'd rather talk about this in person » is possible."
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "🚬",
+        "text": "Si le tabac au quotidien ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "options": [
+          "Oui, sans difficulté",
+          "Oui, mais avec des limites",
+          "Non",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut vivre durablement avec un tabac régulier chez l'un des deux",
+        "gap": "A accepte un tabac occasionnel ; B fume régulièrement",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If daily smoking never changed for one of you, could you live with it for years?",
+        "optionsEn": [
+          "Yes, easily",
+          "Yes, with limits",
+          "No"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "z-ai/glm-5.3-flash"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 18,
+    "passedGate": 4,
+    "formRejected": 6,
+    "evidenceRejected": 1,
+    "criticRejected": 6,
+    "unreviewedDays": 0,
+    "duplicates": 1,
+    "escalatedDays": 0,
+    "keptByWriter": {
+      "z-ai/glm-5.3-flash": 4
+    },
+    "refused": [
+      {
+        "text": "Si les enfants de l'un de vous vivaient chez vous la moitié du temps, pourriez-vous réellement le vivre au quotidien ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Hypothèse sur les enfants de l'un seulement, pas symétrique."
+      },
+      {
+        "text": "Si l'un de vous gardait chaque semaine un moment à soi, avec quoi pourriez-vous vivre, et qu'est-ce qui serait trop ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 5,
+        "reason": "Mélange deux idées : ce qu'on tolère et ce qui serait trop."
+      },
+      {
+        "text": "Si ce besoin de temps à soi ne changeait jamais entre vous, pourriez-vous le vivre pendant des années ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 8,
+        "reason": "« Ce besoin... entre vous » suppose un échange antérieur entre eux."
+      },
+      {
+        "text": "Si votre besoin de temps à deux ou à soi ne changeait jamais, pourriez-vous le vivre pendant des années ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 5,
+        "reason": "Mélange temps à deux et temps à soi : deux idées, formulation alambiquée."
+      },
+      {
+        "text": "Si l'un de vous gardait chaque semaine un moment à soi, pourriez-vous vivre avec cela pendant des années ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 17,
+        "reason": "Hypothèse « si l'un de vous » ne vaut que pour celui qui n'en veut pas."
+      },
+      {
+        "text": "Si cela ne changeait jamais, avec quoi pourriez-vous vivre : tout partager, ou accepter un temps à soi régulier ?",
+        "writer": "z-ai/glm-5.3-flash",
+        "rule": 5,
+        "reason": "Oppose deux alternatives (« tout partager, ou accepter un temps à soi »)."
+      }
+    ],
+    "reasons": {
+      "P21": 1
+    },
+    "leaks": 0,
+    "costMicro": 76969,
+    "latencyMs": 47660,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "🎯",
+        "text": "Dans une semaine à deux, combien de soirées seul(e) vous semblent nécessaires ?",
+        "options": [
+          "Aucune",
+          "Une par semaine",
+          "Deux ou plus",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "chiffre",
+        "target": "Chiffrer le besoin réel de temps à soi de chacun",
+        "gap": "A n'est pas du tout d'accord avec du temps à soi, B plutôt d'accord",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "In a typical week together, how many evenings to yourself do you feel you need?",
+        "optionsEn": [
+          "None",
+          "One a week",
+          "Two or more"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "👨‍👩‍👧",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter dans le quotidien avec les enfants de l'autre, même en les aimant ?",
+        "options": [
+          "Une présence permanente",
+          "Le rôle de beau-parent",
+          "Rien, je m'adapterais",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "confrontation",
+        "target": "Les limites réelles de chacun face à la vie quotidienne avec les enfants de l'autre.",
+        "gap": "A préférerait éviter d'accueillir les enfants de l'autre, B envisage une résidence alternée.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "What could you never accept in daily life with your partner's children, even while loving them?",
+        "optionsEn": [
+          "A constant presence",
+          "The stepparent role",
+          "Nothing, I'd adapt"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🧭",
+        "text": "Combien de soirées ou de moments à soi par semaine vous sembleraient acceptables dans un couple ?",
+        "options": [
+          "Aucun, tout partager",
+          "Une soirée",
+          "Plusieurs par semaine",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "chiffre",
+        "target": "Le besoin réel de temps à soi de chacun, chiffré.",
+        "gap": "A refuse le temps à soi dans le couple, B y est plutôt favorable.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "How many evenings or moments to yourself per week would feel acceptable in a relationship?",
+        "optionsEn": [
+          "None, share everything",
+          "One evening",
+          "Several a week"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👨‍👩‍👧",
+        "text": "Combien de jours par semaine avec les enfants de l'autre vous sembleraient encore vivables au quotidien ?",
+        "options": [
+          "Aucun",
+          "Un ou deux jours",
+          "Trois jours ou plus",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "chiffre",
+        "target": "Chiffrer le seuil acceptable de présence des enfants de l'autre",
+        "gap": "Accueillir les enfants de l'autre : A préfère l'éviter, B envisage une résidence alternée",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "How many days a week with your partner's children would still feel manageable for you day to day?",
+        "optionsEn": [
+          "None",
+          "One or two days",
+          "Three days or more"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      }
+    ]
+  }
+]
