@@ -329,9 +329,16 @@ export class SondeurSafety {
 /** Catégories traitées en priorité, 24 h/24 : l'équipe reçoit une alerte. */
 const URGENT_CATEGORIES = ['detresse', 'mineur', 'menace', 'violence_exercee'];
 
-/** Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart. */
+/**
+ * Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart.
+ * INSIGHTS_RETRY_AFTER_MS raccourcit seulement l'écart (recette locale) : la
+ * règle, trois essais avant d'ouvrir le dialogue, ne change pas.
+ */
 const MAX_ATTEMPTS = 3;
-const RETRY_AFTER_MS = 10 * 60 * 1000;
+const RETRY_AFTER_MS =
+  Number(process.env.INSIGHTS_RETRY_AFTER_MS) > 0
+    ? Number(process.env.INSIGHTS_RETRY_AFTER_MS)
+    : 10 * 60 * 1000;
 
 export interface SondeurInsightsView {
   days: SondeurReading[];
@@ -1111,6 +1118,9 @@ export class JourneyInsightsService {
     // Journée suivante déjà commencée : la question ne pourrait plus changer.
     if (asked.some((q) => q.day === day + 1 && q.responses.length > 0))
       return null;
+    // Relance adaptative : seulement si la lecture laisse un écart à éclaircir
+    // (point « à explorer ») ; un écart compris des deux ne se relance pas.
+    if (reading.toDiscuss.length === 0) return null;
     const askedTexts = asked.map((q) => q.questionText);
     // Les écarts et les non-négociables des entretiens guident la question.
     const report = await this.interviewReport(...members);

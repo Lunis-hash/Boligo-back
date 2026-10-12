@@ -338,6 +338,28 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     expect(ai.journeyCompletion).toHaveBeenCalledTimes(2);
   });
 
+  it('ADAPTIVE_FOLLOWUP : écart compris (rien à éclaircir) → aucune relance', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const understood = JSON.stringify({
+      ...JSON.parse(dayAnswer()),
+      toDiscuss: [],
+    });
+    const ai = {
+      journeyCompletion: jest.fn(() => written(understood)),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1, ['a', 'b']);
+    await service.refresh(id);
+    // La lecture est écrite, mais aucun appel pour une relance.
+    expect(db.insights).toHaveLength(1);
+    expect(ai.journeyCompletion).toHaveBeenCalledTimes(1);
+    expect(ai.reviewSondeurQuestions).not.toHaveBeenCalled();
+    expect(db.questions.some((q) => q.followUp)).toBe(false);
+  });
+
   it('ne change pas une journée déjà commencée par un membre', async () => {
     const id = newJourneyId();
     const db = memoryDb(id);
