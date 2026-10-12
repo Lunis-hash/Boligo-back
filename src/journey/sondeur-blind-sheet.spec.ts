@@ -73,6 +73,15 @@ describe('fiche à l’aveugle du banc Sondeur', () => {
     expect(new Set(lines.map((l) => l.caseId))).toEqual(new Set(['C1', 'C2']));
   });
 
+  it('écarts seulement, plafond par modèle réglable', () => {
+    const all = ['m/a', 'm/b'].flatMap((m) => runs(m, 12));
+    const lines = pick(all, cases, 20, 42, 10, true);
+    // C2 (aucun écart) est exclu ; 10 au plus par modèle.
+    expect(lines).toHaveLength(20);
+    expect(lines.every((l) => l.caseId === 'C1')).toBe(true);
+    expect(lines.every((l) => l.gap.startsWith("Désir d'enfants"))).toBe(true);
+  });
+
   it('résumé du contrôle : rejets, raisons, coût et latence par modèle', () => {
     const [s] = controlSummary(runs('m/a', 3));
     expect(s).toMatchObject({

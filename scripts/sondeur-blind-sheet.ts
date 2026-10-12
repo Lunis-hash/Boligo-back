@@ -84,6 +84,10 @@ export function pick(
   cases: Map<string, Case>,
   total = 30,
   seed = 42,
+  /** Questions au plus par modèle (5 au moins quand il y en a assez). */
+  maxPer = 7,
+  /** Écarts seulement : une question dont aucune preuve n'est un écart est ignorée. */
+  gapsOnly = false,
 ): Array<SheetLine & { model: string; caseId: string; evidence: string[] }> {
   const r = rng(seed);
   // Seuls les modèles qui ont produit des questions figurent sur la fiche.
@@ -95,7 +99,17 @@ export function pick(
     // Tour par couple : une question de chaque couple avant la deuxième.
     const byCase = runs
       .filter((x) => x.model === m && !x.error)
-      .map((x) => x.questions.map((q) => ({ q, caseId: x.caseId })));
+      .map((x) =>
+        x.questions
+          .filter(
+            (q) =>
+              !gapsOnly ||
+              (cases.get(x.caseId)?.gaps ?? []).some(
+                (g) => g.kind === 'divergence' && q.evidence?.includes(g.id),
+              ),
+          )
+          .map((q) => ({ q, caseId: x.caseId })),
+      );
     const list: Array<{ q: Question; caseId: string }> = [];
     for (let i = 0; byCase.some((l) => l[i]); i++)
       for (const l of byCase) if (l[i]) list.push(l[i]);
@@ -103,15 +117,15 @@ export function pick(
   }
   const per = Math.max(
     5,
-    Math.min(7, Math.floor(total / Math.max(1, models.length))),
+    Math.min(maxPer, Math.floor(total / Math.max(1, models.length))),
   );
   const chosen: Array<{ model: string; q: Question; caseId: string }> = [];
   for (const m of models)
     for (const x of (pool.get(m) ?? []).slice(0, per))
       chosen.push({ model: m, ...x });
-  // Complète jusqu'au total sans dépasser 7 par modèle.
+  // Complète jusqu'au total sans dépasser le plafond par modèle.
   for (const m of models)
-    for (const x of (pool.get(m) ?? []).slice(per, 7))
+    for (const x of (pool.get(m) ?? []).slice(per, maxPer))
       if (chosen.length < total) chosen.push({ model: m, ...x });
   const lines = chosen.slice(0, total);
   for (let i = lines.length - 1; i > 0; i--) {
@@ -180,6 +194,9 @@ if (require.main === module) {
   }
   const run = names.join(' + ');
   const total = Number(process.argv[3] ?? 30);
+  // BLIND_MAX_PER (questions par modèle) et BLIND_GAPS_ONLY=1 (écarts seuls).
+  const maxPer = Number(process.env.BLIND_MAX_PER ?? 7);
+  const gapsOnly = process.env.BLIND_GAPS_ONLY === '1';
   const base = join(__dirname, '..', 'docs', 'sondeur-benchmark');
   const dir = join(base, names[0]);
   const runs: Run[] = [];
@@ -194,7 +211,7 @@ if (require.main === module) {
     ) as Case[])
       cases.set(c.id, c);
   }
-  const lines = pick(runs, cases, total);
+  const lines = pick(runs, cases, total, 42, maxPer, gapsOnly);
   const md = [
     `# Fiche à l'aveugle — Sondeur (essai ${run})`,
     '',
