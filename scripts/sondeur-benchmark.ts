@@ -60,6 +60,10 @@ const FINAL_CASES = Number(process.env.BENCH_FINAL_CASES ?? 40);
 const FINALISTS = Number(process.env.BENCH_FINALISTS ?? 4);
 // Essai réduit : corpus ciblé par sujets, sans juges IA (contrôle humain).
 const TOPICS = (process.env.BENCH_TOPICS ?? '').split(',').filter(Boolean);
+// Couples tenus à l'écart (graines disjointes), jamais vus pendant le réglage.
+const HELDOUT = (process.env.BENCH_HELDOUT_TOPICS ?? '')
+  .split(',')
+  .filter(Boolean);
 const NO_JUDGES = process.env.BENCH_NO_JUDGES === '1';
 // Relecteurs imposés (liste) : le premier d'une autre famille que le
 // rédacteur relit. BENCH_ESCALATION : modèle qui réécrit un jour rejeté.
@@ -956,7 +960,9 @@ function eligible(s: ModelSummary[]) {
 async function main() {
   // Aperçu du corpus ciblé, sans aucun appel réseau.
   if (step === 'corpus') {
-    const cases = TOPICS.length ? topicCorpus(TOPICS) : corpus(SCREEN_CASES, 1);
+    const cases = TOPICS.length
+      ? [...topicCorpus(TOPICS), ...topicCorpus(HELDOUT, 70_000)]
+      : corpus(SCREEN_CASES, 1);
     for (const c of cases)
       console.log(
         `${c.id} ${c.scenario} [${c.topics.join(', ')}] : ${gapsOf(c)
@@ -991,7 +997,8 @@ async function main() {
     (e) => !e.free && (only.length === 0 || only.includes(e.id)),
   );
   const judges = (process.env.BENCH_JUDGES ?? '').split(',').filter(Boolean);
-  if (judges.length < 2) {
+  // BENCH_JUDGES donné : ces juges seulement (un juge d'une troisième famille suffit).
+  if (judges.length === 0) {
     // Deux juges haut de gamme de familles différentes (les plus chers du catalogue retenu).
     const byFam = new Map<string, CatalogEntry>();
     for (const e of [...paid].sort((a, b) => b.priceOut - a.priceOut))
@@ -1000,7 +1007,9 @@ async function main() {
   }
 
   if (step === 'screen' || step === 'all') {
-    const cases = TOPICS.length ? topicCorpus(TOPICS) : corpus(SCREEN_CASES, 1);
+    const cases = TOPICS.length
+      ? [...topicCorpus(TOPICS), ...topicCorpus(HELDOUT, 70_000)]
+      : corpus(SCREEN_CASES, 1);
     save(
       'corpus-screen.json',
       cases.map(({ a, b, ...c }) => ({ ...c, gaps: gapsOf({ a, b, ...c }) })),
