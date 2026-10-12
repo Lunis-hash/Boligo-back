@@ -36,7 +36,6 @@ TECHNIQUES (adaptées à deux personnes qui ne se connaissent pas encore) :
 - échelle avec relance : « De 0 à 10, … ? Qu'est-ce qui vous fait choisir ce chiffre ? »
 - exception : « Pensez à une fois, dans votre famille ou entre proches, où… s'est bien passé. Qu'est-ce qui était différent ? »
 - projection positive : « Imaginez un jour ordinaire, dans trois ans, où ce sujet se passe bien pour vous : à quel petit signe le verriez-vous ? » (jamais une difficulté que personne n'a exprimée)
-- besoin caché : « Qu'est-ce que votre façon de… vous permet de protéger ? »
 - même mot, autre sens : « Que veut dire, très concrètement, … pour vous ? »
 - scène ordinaire : un moment banal de la vie à deux, jamais une catastrophe.
 
@@ -44,7 +43,7 @@ CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
 - Écart sur un point non négociable (${NON_NEGOTIABLE_TOPICS}) : jamais de compromis, jamais de terrain d'entente ; demande d'où vient la position ou ce qu'elle protège. Au jour 3, demande ce que chacun aurait besoin de savoir ou de vérifier avant de s'engager, jamais comment vivre avec l'écart.
 - Incompatibilité déclarée dans l'analyse : explore d'abord ce point, pour que chacun décide en connaissance de cause.
 - Écart de rythme ou de style (dispute, temps ensemble, parole) : c'est un désaccord durable ; demande comment chacun le vit de l'intérieur, ou ce qui l'apaise.
-- Même réponse des deux côtés : vérifie que les mots veulent dire la même chose ; demande une scène ordinaire où cette réponse se voit.
+- Même réponse des deux côtés : ne la redemande jamais ; va au concret qu'elle laisse ouvert (combien, quand, qui fait quoi, jusqu'où).
 - Même réponse qui pose un risque (deux silences, deux réconciliations lentes) : exception tirée de la famille ou des proches, ou signal de réparation.
 - L'un veut parler tout de suite, l'autre s'éloigne : demande à chacun ce qu'il espère que l'autre comprenne à ce moment-là.
 - Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; ces thèmes sont couverts par les questions de limite écrites par BOLIGO : n'écris jamais de question qui met en scène la violence, les insultes, les menaces ou le contrôle. Sur un sujet voisin, demande une valeur ou une règle de respect partagée, jamais un seuil personnel (« à partir de quand… »), un récit de ce que chacun a vécu ou vu, ni ce qu'il ferait pour se protéger ou où il irait (un plan de mise en sécurité reste confidentiel, et l'autre lira la réponse). Contrôle : téléphone ou localisation surveillés, argent confisqué ou accès refusé à ses propres ressources, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
@@ -52,6 +51,13 @@ CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
 - La neutralité culturelle s'arrête au contrôle : demander la permission pour sortir, travailler, voir ses proches ou disposer de son argent n'est jamais un rôle ni un modèle à choisir ; ce sujet relève des questions de limite de BOLIGO, tu n'écris pas de question dessus.
 
 CE QUE TU CHERCHES : pas la faille, mais la question que les deux membres ne se seraient jamais posée eux-mêmes : l'attente implicite, le besoin derrière la position, l'héritage familial, le scénario jamais imaginé, deux réponses identiques qui cachent des sens différents.
+
+FRANCHISE (prioritaire sur le style) :
+- Une question claire, directe, un peu piquante : celle qu'ils n'oseraient pas poser eux-mêmes au début et qu'il vaut mieux poser maintenant.
+- Chacun répond, puis lit la réponse de l'autre : la question doit appeler une réponse nette, pas une réflexion abstraite.
+- Jamais de tournure alambiquée : pas de « qu'est-ce que votre position vous permet de protéger », « dans ce souhait », « qu'est-ce qui, pour vous, », « dans quelle mesure », « que signifie pour vous ».
+- Ne redemande jamais ce que l'entretien a déjà établi : va au cran suivant.
+- 20 mots au plus.
 
 FORME ET PUDEUR :
 - 180 caractères au plus, une seule question (la relance d'une échelle est admise).
@@ -481,9 +487,15 @@ const NN_QUESTION_TOPIC =
 const ARRANGE =
   /(?<!\p{L})(?:concili\p{L}*|intermédiaire|acceptable|lâcher|raisonnables?|céder|renoncer|sacrifier|assouplir|compromis|mi-chemin|terrain d['’]entente|formule|entre parenthèses|mettre de côté|mettre en pause)(?!\p{L})/iu;
 
+/** Tournures alambiquées refusées dans une question de l'IA (franchise). */
+export const HEDGED =
+  /(?:vous permet(?:tent)? de (?:protéger|préserver)|dans ce souhait|qu['’]est-ce qui,? pour vous,|dans quelle mesure|que signifie pour vous|qu['’]évoque pour vous)/iu;
+
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
   return (
+    !HEDGED.test(t) &&
+    t.split(/\s+/).length <= 22 &&
     passesFormRules(t) &&
     !STAGED_HARM.test(t) &&
     !SAFETY_TOPIC.test(

@@ -43,6 +43,7 @@ import {
   SAFETY_QUESTION_IDS,
 } from '../matching/divergence.engine';
 import { QUESTION_INDEX } from '../interview/questions.data';
+import { isSensitiveQuestion } from '../interview/sensitive-questions';
 import {
   HarmonyQuestionPayload,
   ensureAutreOption,
@@ -1326,6 +1327,12 @@ export function describeReportForAi(
         lines.push(
           `${head} : l'un préfère en parler en personne. Ne pas relancer ce sujet.`,
         );
+      } else if (isSensitiveQuestion(d.questionId)) {
+        // Donnée sensible (religion, vie intime) : jamais transmise à l'IA ;
+        // le sujet et la gravité de l'écart suffisent à écrire la question.
+        lines.push(
+          `${head} : écart sur un sujet sensible (réponses non transmises) — à explorer sans supposer la position de chacun.${marks(d)}`,
+        );
       } else {
         lines.push(
           `${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »${marks(d)}`,
@@ -1350,6 +1357,10 @@ export function describeReportForAi(
       } else if (isDeferredAgreement(c)) {
         lines.push(
           `${head} : les deux préfèrent en parler en personne. Ne pas relancer ce sujet.`,
+        );
+      } else if (isSensitiveQuestion(c.questionId)) {
+        lines.push(
+          `${head} : même réponse des deux sur un sujet sensible (réponse non transmise).`,
         );
       } else {
         lines.push(

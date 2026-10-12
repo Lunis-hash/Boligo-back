@@ -1153,7 +1153,30 @@ export const EN_TEXT: Record<string, string> = {
  "Dans un couple, quelle liberté de chacun reste intacte pour vous, même quand l'autre s'inquiète ?": "In a relationship, what personal freedom stays intact for you, even when the other person is worried?",
  "Quel principe vous fait dire qu'aimer ne donne aucun droit de regard sur le téléphone ou les sorties de l'autre ?": "What principle tells you that loving someone gives no right to check their phone or their outings?",
  "Le mariage est pour vous deux un acte religieux. Quelle bénédiction ou quel rite aimeriez-vous voir au cœur de ce jour-là ?": "For you both, marriage is a religious act. Which blessing or rite would you want at the heart of that day?",
- "Vous souhaitez tous les deux un foyer qui partage les mêmes traditions. Au quotidien, quelle tradition partagée aimeriez-vous faire vivre en premier dans votre foyer ?": "You both want a home that shares the same traditions. Day to day, which shared tradition would you most like to bring to life first in your home?"
+ "Vous souhaitez tous les deux un foyer qui partage les mêmes traditions. Au quotidien, quelle tradition partagée aimeriez-vous faire vivre en premier dans votre foyer ?": "You both want a home that shares the same traditions. Day to day, which shared tradition would you most like to bring to life first in your home?",
+ "Qu'est-ce qui ne se négociera jamais pour vous avec votre famille ?": "What will you never negotiate with your family?",
+ "Après des années ensemble, qu'est-ce qui vous garde l'envie de vous retrouver ?": "After years together, what keeps you wanting to be together?",
+ "Pensez à une dispute en famille qui s'est bien finie : qu'est-ce qui a tout changé ?": "Think of a family argument that ended well: what changed everything?",
+ "Pensez à un long silence dans votre famille : qu'est-ce qui l'a fait cesser ?": "Think of a long silence in your family: what ended it?",
+ "La polygamie : qu'est-ce qui serait impossible pour vous ?": "Polygamy: what would be impossible for you?",
+ "Déménager pour quelqu'un : quelle condition est non négociable pour vous ?": "Moving for someone: which condition is non-negotiable for you?",
+ "Dot ou mahr : qu'est-ce qui n'est pas négociable pour vous ?": "Dowry or mahr: what is non-negotiable for you?",
+ "Les enfants : qu'est-ce qui n'est pas négociable pour vous ?": "Children: what is non-negotiable for you?",
+ "Après une brouille, quel geste vous ramène vraiment au calme ?": "After a falling-out, what gesture really calms you down?",
+ "Combien de temps de recul après une dispute reste acceptable pour vous ?": "How long a break after an argument is acceptable to you?",
+ "Qu'est-ce qui sépare la tendresse de l'amitié pour vous ?": "What separates tenderness from friendship, for you?",
+ "Qu'est-ce qui est impardonnable pour vous dans un couple ?": "What is unforgivable for you in a relationship?",
+ "Envoyer de l'argent à sa famille : qu'est-ce qui ne se décide jamais seul, pour vous ?": "Sending money to family: what should never be decided alone, for you?",
+ "Au premier rendez-vous, qui doit payer selon vous ?": "On a first date, who should pay, in your view?",
+ "Qu'est-ce qui reste, selon vous, l'affaire du parent seul, même après des années ?": "What stays the parent's call alone, in your view, even after years?",
+ "Qu'est-ce qui reste interdit, selon vous, à un beau-parent avec l'enfant de l'autre ?": "What is off-limits, in your view, for a step-parent with the other's child?",
+ "Comment un beau-parent se fait-il accepter par les enfants, selon vous ?": "How does a step-parent get accepted by the children, in your view?",
+ "Qu'est-ce qui construit la confiance dans une famille recomposée, selon vous ?": "What builds trust in a blended family, in your view?",
+ "Au quotidien, à quoi verrez-vous que des efforts pour réparer le couple marchent ?": "Day to day, how will you know that efforts to repair the relationship are working?",
+ "Jusqu'à combien d'enfants êtes-vous prêt(e) à aller ?": "Up to how many children would you be ready to have?",
+ "Une dette cachée par l'autre : qu'est-ce que cela abîmerait pour vous ?": "A debt your partner kept hidden: what would that damage for you?",
+ "Un ex encore présent dans la vie de l'autre : où est la limite pour vous ?": "An ex still in your partner's life: where is the line for you?",
+ "Avec un ex encore présent, de quoi auriez-vous besoin pour être en confiance ?": "With an ex still around, what would you need to feel secure?"
 };
 
 export const EN_OPTION: Record<string, string> = {
@@ -3260,7 +3283,6 @@ export const EN_TOPIC: Array<[string, (w: EnTopicWords) => string]> = [
  ["(w) => `À propos ${w.de}, qu'auriez-vous besoin de comprendre de l'autre avant d'aller plus loin ?`", (w) => `When it comes to ${w.phrase}, what would you need to understand about your partner before going further?`],
  ["(w) => `À propos ${w.de}, qu'auriez-vous besoin d'entendre de l'autre pour en parler sans vous braquer ?`", (w) => `When it comes to ${w.phrase}, what would you need to hear from your partner to talk about it without getting defensive?`],
  ["(w) => `À propos ${w.de}, à quel moment une discussion deviendrait-elle trop lourde pour vous ?`", (w) => `When it comes to ${w.phrase}, at what point would a conversation become too heavy for you?`],
- ["(w) => `À propos ${w.de}, qu'est-ce qui, pour vous, restera ferme quoi qu'il arrive ?`", (w) => `When it comes to ${w.phrase}, what will stay firm for you, whatever happens?`],
  ["(w) => `Quel moment de votre vie a forgé votre regard sur ${w.phrase} ?`", (w) => `What moment in your life shaped the way you see ${w.phrase}?`],
  ["(w) => `Dans la famille où vous avez grandi, que disait-on ${w.de} ?`", (w) => `In the family you grew up in, what was said about ${w.phrase}?`],
  ["(w) => `À propos ${w.de}, qu'aimeriez-vous que l'autre comprenne de votre histoire ?`", (w) => `When it comes to ${w.phrase}, what would you like your partner to understand about your story?`],
@@ -3285,4 +3307,5 @@ export const EN_TOPIC: Array<[string, (w: EnTopicWords) => string]> = [
  ["(w) => `À propos ${w.de}, quel signal discret aimeriez-vous convenir à deux pour dire que vous êtes prêt(e) à reparler ?`", (w) => `When it comes to ${w.phrase}, what quiet signal would you like to agree on to say you are ready to talk again?`],
  ["(w) => `À propos ${w.de}, le jour où une dispute s'installerait, qu'est-ce qui vous aiderait, vous, à faire le premier pas ?`", (w) => `When it comes to ${w.phrase}, if an argument ever settled in, what would help you to take the first step?`],
  ["(w) => `À propos ${w.de}, quelle règle simple aimeriez-vous poser dès le début pour garder le dialogue ouvert ?`", (w) => `When it comes to ${w.phrase}, what simple rule would you like to set from the start to keep the conversation open?`],
+ ["(w) => `À propos ${w.de}, sur quoi ne céderez-vous jamais ?`", (w) => `When it comes to ${w.phrase}, what will you never give up on?`],
 ];

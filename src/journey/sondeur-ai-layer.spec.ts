@@ -1,3 +1,7 @@
+import { buildDivergenceReport } from '../matching/divergence.engine';
+import { QUESTION_INDEX } from '../interview/questions.data';
+import { isSensitiveQuestion } from '../interview/sensitive-questions';
+import { describeReportForAi } from './sondeur.generator';
 import { THEME_LIST } from '../matching/divergence.engine';
 import { JourneyService, describeCoupleContext } from './journey.service';
 
@@ -184,8 +188,10 @@ describe('Sondeur — couche IA des parcours payés', () => {
     const args = ai.generateTargetedHarmonyQuestions.mock
       .calls[0] as unknown as unknown[];
     expect(args[4]).toEqual({ journeyId: 'j1', paidOnly: true });
-    expect(args[5]).toMatch(/- Inès : femme, \d+ ans, vit à Lyon/);
-    expect(args[5]).toMatch(/- Karim : homme, \d+ ans$/);
+    // Minimisation : tranche d'âge, jamais la ville ni l'âge exact.
+    expect(args[5]).toMatch(/- Inès : femme, \d+-\d+ ans/);
+    expect(args[5]).toMatch(/- Karim : homme, \d+-\d+ ans/);
+    expect(args[5]).not.toMatch(/Lyon/);
   });
 
   it('la meilleure proposition relue passe devant les gabarits', async () => {
@@ -328,7 +334,7 @@ describe('Sondeur — contrat de preuves (V8.2)', () => {
 });
 
 describe('Contexte du couple transmis à l’IA', () => {
-  it('âge révolu, genre et ville ; rien quand rien n’est connu', () => {
+  it('tranche d’âge et genre, jamais la ville ; rien quand rien n’est connu', () => {
     const now = new Date('2026-10-06');
     expect(
       describeCoupleContext(
@@ -343,6 +349,54 @@ describe('Contexte du couple transmis à l’IA', () => {
         ],
         now,
       ),
-    ).toBe('- Inès : femme, 29 ans, vit à Lyon');
+    ).toBe('- Inès : femme, 25-29 ans');
+  });
+
+  it('lieux de vie : distance relative, jamais le nom d’une ville', () => {
+    const m = (city: string | null) => ({
+      firstName: 'X',
+      birthDate: null,
+      gender: 'F',
+      city,
+    });
+    expect(
+      describeCoupleContext([
+        m('Paris, Île-de-France, France'),
+        m('Paris, Île-de-France, France'),
+      ]),
+    ).toMatch(/Lieux de vie : même ville$/);
+    expect(
+      describeCoupleContext([m('Lyon, France'), m('Paris, France')]),
+    ).toMatch(/même pays, villes différentes$/);
+    expect(
+      describeCoupleContext([m('Dakar, Sénégal'), m('Paris, France')]),
+    ).toMatch(/pays différents$/);
+    expect(
+      describeCoupleContext([m('Dakar, Sénégal'), m('Paris, France')]),
+    ).not.toMatch(/Dakar|Paris|Sénégal|France/);
+  });
+});
+
+describe('Analyse du couple transmise à l’IA : minimisation', () => {
+  it('jamais le texte d’une réponse sensible (religion, vie intime), même en accord', () => {
+    const ids = ['M10_Q17', 'M1_Q16', 'M1_Q17'].filter((id) =>
+      QUESTION_INDEX.get(id),
+    );
+    expect(ids.every((id) => isSensitiveQuestion(id))).toBe(true);
+    for (const [ka, kb] of [
+      ['A', 'C'],
+      ['A', 'A'],
+    ]) {
+      const summary = describeReportForAi(
+        buildDivergenceReport(
+          Object.fromEntries(ids.map((id) => [id, ka])),
+          Object.fromEntries(ids.map((id) => [id, kb])),
+        ),
+        ['Inès', 'Karim'],
+      );
+      for (const id of ids)
+        for (const o of QUESTION_INDEX.get(id)!.options)
+          expect(summary).not.toContain(`« ${o.text}`);
+    }
   });
 });

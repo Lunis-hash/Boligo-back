@@ -736,7 +736,8 @@ export function validateEn(
   const reasons: string[] = [];
   const t = (textEn ?? '').trim();
   if (!t) return { ok: false, reasons: ['EN1 version anglaise absente'] };
-  if (!t.endsWith('?') || (t.match(/\?/g) ?? []).length !== 1)
+  // Échelle avec relance (« From 0 to 10…? Why…? ») : deux « ? » admis, comme en français.
+  if (!t.endsWith('?') || (t.match(/\?/g) ?? []).length > 2)
     reasons.push('EN2 une seule question, terminée par « ? »');
   if (t.length > 180) reasons.push('EN2 plus de 180 caractères');
   if (FRENCH_RESIDUE.test(t)) reasons.push('EN3 reste de français');

@@ -1,0 +1,325 @@
+{
+  "metrics": {
+    "couple": "c4-mixte",
+    "drafted": 36,
+    "accepted": 23,
+    "formRejected": 4,
+    "evidenceRejected": 9,
+    "reasons": {
+      "P14": 4,
+      "P11": 1,
+      "P13": 3,
+      "EN2": 2
+    },
+    "leaks": [],
+    "englishMissing": 0,
+    "outputChars": 27187,
+    "inputChars": 99048,
+    "refusedByReviewer": 0
+  },
+  "accepted": [
+    {
+      "day": 1,
+      "theme": "spiritualite",
+      "text": "Qu'est-ce que la place que vous donnez à la foi dans un couple vous permet de protéger ?",
+      "textEn": "What does the place you give faith in a relationship help you protect?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "famille",
+      "text": "Qu'est-ce que votre position sur le fait d'avoir des enfants vous permet de protéger dans votre vie ?",
+      "textEn": "What does your stance on having children allow you to protect in your life?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "famille",
+      "text": "Que veut dire, très concrètement, « fonder une famille » pour vous ?",
+      "textEn": "What does \"starting a family\" mean to you, in very concrete terms?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "lieu",
+      "text": "Dans votre vie actuelle, qu'est-ce qui compte assez pour peser dans votre choix de rester ou de partir ?",
+      "textEn": "In your life today, what matters enough to weigh on your choice to stay or to leave?",
+      "evidence": [
+        "E7"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "argent",
+      "text": "Que veut dire, très concrètement, « se faire plaisir » avec de l'argent pour vous ?",
+      "textEn": "What does \"treating yourself\" with money mean to you, in very concrete terms?",
+      "evidence": [
+        "E28"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "intimite",
+      "text": "Que veut dire, très concrètement, le mot « pudeur » pour vous ?",
+      "textEn": "What does the word \"modesty\" mean to you, in very concrete terms?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 1,
+      "theme": "projet",
+      "text": "Imaginez un jour ordinaire, dans trois ans, où votre vie vous ressemble vraiment : à quel petit signe le verriez-vous ?",
+      "textEn": "Picture an ordinary day three years from now when your life truly feels like yours: what small sign would tell you?",
+      "evidence": [
+        "N-projet"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "spiritualite",
+      "text": "Dans votre famille, comment la foi, ou son absence, se transmettait-elle au quotidien ?",
+      "textEn": "In your family, how was faith, or its absence, passed on in everyday life?",
+      "evidence": [
+        "E2",
+        "E3"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "famille",
+      "text": "Dans votre famille, quelle place donnait-on au fait d'avoir des enfants dans une vie réussie ?",
+      "textEn": "In your family, how much did having children count in what a fulfilling life looked like?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "famille",
+      "text": "Comment un proche qui vous connaît bien expliquerait-il d'où vient votre position sur les enfants ?",
+      "textEn": "How would someone who knows you well explain where your stance on children comes from?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "argent",
+      "text": "Dans votre famille, comment savait-on qui devait aider qui, et pourquoi ?",
+      "textEn": "In your family, how did people know who was meant to help whom, and why?",
+      "evidence": [
+        "E9"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "argent",
+      "text": "Que veut dire, très concrètement, « aider sa famille » pour vous ?",
+      "textEn": "What does \"helping your family\" mean to you, in very concrete terms?",
+      "evidence": [
+        "E9"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "intimite",
+      "text": "Que veut dire, très concrètement, le mot « désir » dans un couple pour vous ?",
+      "textEn": "What does the word \"desire\" in a relationship mean to you, in very concrete terms?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "intimite",
+      "text": "Qui ou quoi a le plus façonné votre idée de la tendresse dans un couple ?",
+      "textEn": "Who or what has most shaped your idea of affection in a relationship?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "projet",
+      "text": "Comment un proche qui vous connaît bien décrirait-il ce qui vous fait avancer dans la vie ?",
+      "textEn": "How would someone who knows you well describe what keeps you moving forward in life?",
+      "evidence": [
+        "N-projet"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "spiritualite",
+      "text": "Avant de vous engager, qu'auriez-vous besoin de savoir sur la place que l'autre donnerait à la foi dans un foyer commun ?",
+      "textEn": "Before committing, what would you need to know about the place the other person would give faith in a shared home?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "spiritualite",
+      "text": "Sur la transmission des convictions, quelle conversation aimeriez-vous avoir avec quelqu'un avant tout engagement ?",
+      "textEn": "When it comes to passing on beliefs, what conversation would you want to have with someone before any commitment?",
+      "evidence": [
+        "E3"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "famille",
+      "text": "Avant de vous engager, qu'auriez-vous besoin de savoir sur la façon dont l'autre voit la question des enfants ?",
+      "textEn": "Before committing, what would you need to know about how the other person sees the question of children?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "lieu",
+      "text": "Avant tout engagement, qu'auriez-vous besoin de savoir sur le lieu de vie que l'autre imagine pour les années à venir ?",
+      "textEn": "Before any commitment, what would you need to know about where the other person pictures living in the years ahead?",
+      "evidence": [
+        "E7"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "argent",
+      "text": "Imaginez un samedi ordinaire à deux : à quoi ressemblerait, pour vous, une envie du moment bien vécue ensemble ?",
+      "textEn": "Picture an ordinary Saturday together: what would giving in to a spur-of-the-moment wish look like, for you, done well as a pair?",
+      "evidence": [
+        "E28"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 3,
+      "theme": "intimite",
+      "text": "Comment aimeriez-vous qu'on vous dise non à un geste tendre, pour que ce refus reste doux ?",
+      "textEn": "How would you like someone to say no to an affectionate gesture, so the no still feels gentle?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "intimite",
+      "text": "Que veut dire, très concrètement, « respecter un non » pour vous ?",
+      "textEn": "What does \"respecting a no\" mean to you, in very concrete terms?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "projet",
+      "text": "Imaginez un dimanche ordinaire, dans cinq ans : quel petit détail vous dirait que votre vie va dans la bonne direction ?",
+      "textEn": "Picture an ordinary Sunday five years from now: what small detail would tell you your life is heading the right way?",
+      "evidence": [
+        "N-projet"
+      ],
+      "claim": "neutre"
+    }
+  ],
+  "rejected": [
+    {
+      "text": "Comment un proche qui vous connaît bien expliquerait-il la place que vous voulez donner à la religion dans votre futur foyer ?",
+      "textEn": "How would someone close to you explain the place you want religion to have in your future home?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « voulez »)"
+      ]
+    },
+    {
+      "text": "De 0 à 10, à quel point vous sentez-vous chez vous là où vous vivez aujourd'hui ? Qu'est-ce qui vous fait choisir ce chiffre ?",
+      "textEn": "From 0 to 10, how much do you feel at home where you live today? What makes you pick that number?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « chez »)"
+      ]
+    },
+    {
+      "text": "Quand vous dépensez pour une envie du moment, qu'est-ce que cela vous apporte, au-delà de l'achat lui-même ?",
+      "textEn": "When you spend on something you feel like in the moment, what does it give you beyond the purchase itself?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « dépensez »)",
+        "P11 habitude présupposée"
+      ]
+    },
+    {
+      "text": "De 0 à 10, à quel point votre vision de la foi dans un couple vous vient-elle de votre famille ? Qu'est-ce qui vous fait choisir ce chiffre ?",
+      "textEn": "From 0 to 10, how much does your view of faith in a relationship come from your family? What makes you pick that number?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre vision »)"
+      ]
+    },
+    {
+      "text": "De 0 à 10, quelle importance a la proximité de vos proches dans le choix d'un lieu de vie ? Qu'est-ce qui vous fait choisir ce chiffre ?",
+      "textEn": "From 0 to 10, how important is being close to your loved ones when choosing where to live? What makes you pick that number?",
+      "reasons": [
+        "EN2 une seule question, terminée par « ? »"
+      ]
+    },
+    {
+      "text": "Quelle valeur, transmise ou choisie, aimeriez-vous voir au cœur de votre projet de vie ?",
+      "textEn": "Which value, inherited or chosen, would you like to see at the heart of your life plans?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre projet »)"
+      ]
+    },
+    {
+      "text": "De 0 à 10, à quel point votre position sur les enfants est-elle déjà claire pour vous ? Qu'est-ce qui vous fait choisir ce chiffre ?",
+      "textEn": "From 0 to 10, how clear is your position on children to you right now? What makes you pick that number?",
+      "reasons": [
+        "EN2 une seule question, terminée par « ? »"
+      ]
+    },
+    {
+      "text": "Imaginez un jour ordinaire, dans trois ans, où vous vous sentez pleinement bien là où vous vivez : à quel petit signe le verriez-vous ?",
+      "textEn": "Picture an ordinary day three years from now when you feel truly good where you live: what small sign would tell you?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « vivez »)"
+      ]
+    },
+    {
+      "text": "Avant de vous engager, quelle question aimeriez-vous qu'on vous pose sur votre projet de vie ?",
+      "textEn": "Before committing, what question would you like to be asked about your life plans?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre projet »)"
+      ]
+    }
+  ],
+  "formRejected": [
+    "De 0 à 10, quelle place la tendresse sans paroles devrait-elle avoir dans un couple ? Qu'est-ce qui vous fait choisir ce chiffre ?",
+    "Dans une vie à deux, qu'est-ce qui devrait rester à vous, quoi qu'il arrive ?",
+    "Que veut dire, très concrètement, « se sentir chez soi » pour vous ?",
+    "Que voudrait dire, très concrètement, « profiter de la vie » à deux pour vous ?"
+  ]
+}

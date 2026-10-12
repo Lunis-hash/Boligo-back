@@ -802,7 +802,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['M1_Q15'],
       ),
       q(
-        "Envers votre famille, qu'est-ce qui, pour vous, ne se discutera jamais ?",
+        "Qu'est-ce qui ne se négociera jamais pour vous avec votre famille ?",
         'limite',
         [
           'Le respect des aînés',
@@ -1359,11 +1359,11 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         'circulaire',
         ['Avec attention', 'Avec des actes', 'Avec discrétion'],
       ),
-      q(
-        "Qu'est-ce qui, pour vous, distingue la tendresse de l'amitié ?",
-        'sens',
-        ['Les gestes', "L'exclusivité", 'Le désir'],
-      ),
+      q("Qu'est-ce qui sépare la tendresse de l'amitié pour vous ?", 'sens', [
+        'Les gestes',
+        "L'exclusivité",
+        'Le désir',
+      ]),
     ],
     3: [
       q(
@@ -1391,7 +1391,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['Un besoin de douceur', 'Un besoin de temps', 'Un besoin de mots'],
       ),
       q(
-        "Dans une vie à deux bien installée, qu'est-ce qui, pour vous, garde vivant le désir de se retrouver ?",
+        "Après des années ensemble, qu'est-ce qui vous garde l'envie de vous retrouver ?",
         'sens',
         ['La surprise', 'La complicité', 'Le temps à deux'],
       ),
@@ -1505,7 +1505,7 @@ export const THEME_POOL: Record<Theme, Record<number, PoolTemplate[]>> = {
         ['De l’inquiétude', 'De la colère', 'Du calme'],
       ),
       q(
-        "Pensez à un désaccord, en famille ou entre proches, qui s'est bien terminé : qu'est-ce qui, selon vous, l'a rendu différent ?",
+        "Pensez à une dispute en famille qui s'est bien finie : qu'est-ce qui a tout changé ?",
         'exception',
         ['Le ton', 'Le moment', "L'écoute"],
       ),
@@ -1987,12 +1987,11 @@ export const TARGETED: Record<number, TopicTemplate[]> = {
         'Quand on y revient sans cesse',
       ],
     ),
-    tt(
-      (w) =>
-        `À propos ${w.de}, qu'est-ce qui, pour vous, restera ferme quoi qu'il arrive ?`,
-      'limite',
-      ['Une valeur', 'Une condition de vie', 'Une condition familiale'],
-    ),
+    tt((w) => `À propos ${w.de}, sur quoi ne céderez-vous jamais ?`, 'limite', [
+      'Une valeur',
+      'Une condition de vie',
+      'Une condition familiale',
+    ]),
   ],
   2: [
     tt(
@@ -2434,7 +2433,7 @@ export const TOPIC_DEEP: Record<
       ['Un délai convenu', 'Un message', 'Un geste'],
     ),
     2: q(
-      "Pensez à une fois, en famille ou entre proches, où un long silence a fini par se dénouer : qu'est-ce qui, selon vous, l'a dénoué ?",
+      "Pensez à un long silence dans votre famille : qu'est-ce qui l'a fait cesser ?",
       'exception',
       ['Un geste', 'Une parole', 'Le temps'],
     ),
@@ -2587,11 +2586,11 @@ export const TOPIC_DEEP: Record<
     ),
   },
   M1_Q11: {
-    1: q(
-      "Quand vous pensez à la polygamie, qu'est-ce qui, pour vous, ne se discute pas ?",
-      'sens',
-      ["L'exclusivité", 'Le consentement', 'La transparence'],
-    ),
+    1: q("La polygamie : qu'est-ce qui serait impossible pour vous ?", 'sens', [
+      "L'exclusivité",
+      'Le consentement',
+      'La transparence',
+    ]),
     2: q(
       'De qui ou de quoi tenez-vous votre position sur la polygamie ?',
       'origine',
@@ -2710,7 +2709,7 @@ export const TOPIC_DEEP: Record<
   },
   M0_Q03: {
     1: q(
-      "Quand vous pensez à déménager pour quelqu'un, qu'est-ce qui, pour vous, ne se discute pas ?",
+      "Déménager pour quelqu'un : quelle condition est non négociable pour vous ?",
       'limite',
       ['Rester près des miens', 'Garder mon travail', 'Mes repères'],
     ),
@@ -2854,7 +2853,7 @@ export const TOPIC_DEEP: Record<
   },
   M4_Q07: {
     1: q(
-      "À propos de la dot ou du mahr, qu'est-ce qui, pour vous, ne peut pas être négocié ?",
+      "Dot ou mahr : qu'est-ce qui n'est pas négociable pour vous ?",
       'limite',
       ['Son principe', 'Son sens', 'Rien'],
     ),
@@ -3785,7 +3784,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M0_Q06: {
     1: q(
-      "Quand vous pensez à la question des enfants, qu'est-ce qui, pour vous, ne pourra pas se discuter ?",
+      "Les enfants : qu'est-ce qui n'est pas négociable pour vous ?",
       'limite',
       ['Avoir des enfants ou non', 'Le moment', 'Leur nombre'],
     ),
@@ -4164,7 +4163,7 @@ export const TOPIC_DEEP_VARIANTS: Record<
   },
   M4_Q09: {
     1: q(
-      "Sur les dettes ou les crédits, qu'est-ce qui, pour vous, ne pourrait pas rester un secret dans un couple ?",
+      "Une dette cachée par l'autre : qu'est-ce que cela abîmerait pour vous ?",
       'limite',
       ['Leur existence', 'Leur poids sur le foyer', 'Leur origine'],
     ),
@@ -4582,11 +4581,11 @@ export const TOPIC_DEEP_FOURTH: Record<
     ),
   },
   M4_Q10: {
-    1: q(
-      "Lors d'une première sortie, qu'est-ce qui, pour vous, ne se discute pas au moment de payer ?",
-      'limite',
-      ['Qui invite paie', 'Chacun sa part', 'Rien de figé'],
-    ),
+    1: q('Au premier rendez-vous, qui doit payer selon vous ?', 'limite', [
+      'Qui invite paie',
+      'Chacun sa part',
+      'Rien de figé',
+    ]),
   },
   M8_Q03: {
     2: q(
@@ -4654,7 +4653,7 @@ export const TOPIC_DEEP_FOURTH: Record<
   },
   'M2_Q07:partage': {
     3: q(
-      'Dans une vie à deux, quel rituel simple pourrait, selon vous, raccourcir une brouille ?',
+      'Après une brouille, quel geste vous ramène vraiment au calme ?',
       'reparation',
       ['Un mot le soir', 'Une promenade', 'Un repas'],
     ),
@@ -5188,7 +5187,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     ),
     extraProbes: [
       protectProbe(
-        "Dans ce souhait, qu'est-ce qui, pour vous, ne se discute pas ?",
+        "Jusqu'à combien d'enfants êtes-vous prêt(e) à aller ?",
         'besoin',
         ['Le principe', 'Le moment', 'La façon de les élever'],
       ),
@@ -5775,7 +5774,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
   'M6_Q01:B': {
     statement: 'Vous prenez tous les deux du recul avant de revenir calmes.',
     probe: protectProbe(
-      "Combien de temps dure, selon vous, un recul qui reste rassurant pour l'autre ?",
+      'Combien de temps de recul après une dispute reste acceptable pour vous ?',
       'sens',
       ['Quelques minutes', 'Quelques heures', 'Une nuit'],
     ),
@@ -6551,7 +6550,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement:
       "Pour vous deux, un envoi d'argent à la famille se décide d'abord en couple.",
     probe: protectProbe(
-      "À partir de quel moment un envoi mérite-t-il, selon vous, qu'on en parle ensemble ?",
+      "Envoyer de l'argent à sa famille : qu'est-ce qui ne se décide jamais seul, pour vous ?",
       'sens',
       ['Dès le premier envoi', 'Au-delà d’un montant', 'S’il devient régulier'],
     ),
@@ -6737,17 +6736,17 @@ export const AGREEMENTS: Record<string, Agreement> = {
     statement:
       'Pour vous deux, les rôles parentaux restent définis dans une famille recomposée.',
     probe: q(
-      "Qu'est-ce qui reviendrait toujours au parent, selon vous, même avec le temps ?",
+      "Qu'est-ce qui reste, selon vous, l'affaire du parent seul, même après des années ?",
       'sens',
       ['Les règles', "L'autorité", 'Les grandes décisions'],
     ),
     probeVariant: q(
-      'À quoi se voit, selon vous, une place affectueuse qui ne prend le rôle de personne ?',
+      "Qu'est-ce qui reste interdit, selon vous, à un beau-parent avec l'enfant de l'autre ?",
       'sens',
       ['Une écoute', 'Des attentions', 'De la discrétion'],
     ),
     probeThird: q(
-      "Qu'est-ce qui, selon vous, aide un beau-parent à trouver sa juste place ?",
+      'Comment un beau-parent se fait-il accepter par les enfants, selon vous ?',
       'sens',
       ['Le temps', 'Le respect du parent', 'La patience'],
     ),
@@ -6783,7 +6782,7 @@ export const AGREEMENTS: Record<string, Agreement> = {
       ['Des confidences', 'Des rires', 'Des moments demandés'],
     ),
     probeVariant: q(
-      "Qu'est-ce qui, selon vous, fait grandir la confiance entre des personnes qui deviennent une famille ?",
+      "Qu'est-ce qui construit la confiance dans une famille recomposée, selon vous ?",
       'sens',
       ['Le temps', 'La patience', 'Des moments partagés'],
     ),

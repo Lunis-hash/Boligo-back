@@ -107,12 +107,15 @@ describe('Regard clinique du Sondeur', () => {
   it('contrôle de forme : question ouverte, courte, sans citation ni interprétation', () => {
     for (const ok of [
       'Dans votre famille, comment savait-on qu’une dispute était terminée ?',
-      "Qu'est-ce que votre façon de gérer l'argent vous permet de protéger ?",
+      "Avec l'argent, sur quoi ne céderez-vous jamais ?",
       'De 0 à 10, à quel point tenez-vous à vivre près des vôtres ? Pourquoi pas un point de moins ?',
     ]) {
       expect(isWellFormedQuestion(ok)).toBe(true);
     }
     for (const bad of [
+      // Franchise : tournures alambiquées et questions trop longues refusées.
+      "Qu'est-ce que votre façon de gérer l'argent vous permet de protéger ?",
+      "Dans ce souhait, qu'est-ce qui, pour vous, ne se discute pas ?",
       'Est-ce une ligne rouge pour vous ?',
       'Accepteriez-vous de déménager pour l’autre ?',
       'Vous avez répondu « jamais » : pourquoi ?',

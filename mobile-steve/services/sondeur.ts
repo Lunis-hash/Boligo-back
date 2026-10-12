@@ -94,6 +94,9 @@ export const SONDEUR_TEXT = {
     unavailableBody: 'Les questions du Sondeur ne sont pas encore prêtes. Réessayez dans un instant.',
     notSavedTitle: 'Réponse non enregistrée',
     notSavedBody: 'Vérifiez votre connexion et réessayez.',
+    journeyTitle: 'Parcours Harmonie — 3 jours',
+    journeyIntro:
+      'Des questions franches sur ce qu’il vaut mieux se dire maintenant. Chacun répond de son côté, puis voit la réponse de l’autre.',
     todayTitle: 'Question du jour',
     nextDay: (n: number) =>
       `Vos 7 questions du jour sont faites. La prochaine série s'ouvre ${n <= 1 ? 'demain' : `dans ${n} jours`}.`,
@@ -123,6 +126,9 @@ export const SONDEUR_TEXT = {
     unavailableBody: 'The questions aren’t ready yet. Please try again in a moment.',
     notSavedTitle: 'Answer not saved',
     notSavedBody: 'Check your connection and try again.',
+    journeyTitle: 'Harmony journey — 3 days',
+    journeyIntro:
+      'Straight questions on what’s better said now. You each answer on your own, then see the other’s answer.',
     todayTitle: "Today's questions",
     nextDay: (n: number) =>
       `You've answered today's 7 questions. The next set opens ${n <= 1 ? 'tomorrow' : `in ${n} days`}.`,

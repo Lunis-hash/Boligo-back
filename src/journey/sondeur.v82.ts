@@ -98,12 +98,12 @@ export const V82_TOPIC_DEEP: Record<string, Record<number, PoolTemplate>> = {
   },
   V82_M3_02: {
     1: t(
-      'Qu’est-ce qui, pour vous, distingue un lien apaisé avec un ancien partenaire d’un lien qui prend trop de place ?',
+      "Un ex encore présent dans la vie de l'autre : où est la limite pour vous ?",
       'sens',
       ['La transparence', 'La fréquence', 'Les sentiments'],
     ),
     2: t(
-      'De quoi auriez-vous besoin pour vous sentir en confiance si un ancien partenaire faisait encore partie de la vie de l’un de vous ?',
+      'Avec un ex encore présent, de quoi auriez-vous besoin pour être en confiance ?',
       'besoin',
       ['En parler simplement', 'Le connaître', 'Du temps'],
     ),
@@ -777,7 +777,7 @@ export const V82_AGREEMENTS: Record<string, Agreement> = {
     statement: 'Pour vous deux, la séparation resterait un dernier recours.',
     probe: {
       ...t(
-        'Comment imaginez-vous reconnaître que des efforts pour réparer portent leurs fruits ?',
+        'Au quotidien, à quoi verrez-vous que des efforts pour réparer le couple marchent ?',
         'projection',
         [
           'Des disputes plus calmes',
@@ -816,7 +816,7 @@ export const V82_NEUTRAL: Array<{
     day: 3,
     replaces: 'M6_Q18',
     tpl: t(
-      'Que signifie pour vous le pardon dans un couple qui traverse une épreuve ?',
+      "Qu'est-ce qui est impardonnable pour vous dans un couple ?",
       'sens',
       ['Un nouveau départ', 'Un long chemin', 'Une décision'],
     ),

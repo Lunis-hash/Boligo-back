@@ -802,13 +802,8 @@ export default function MatchesScreen() {
 
               {/* ── Timeline 3 jours ────────────────────────────────── */}
               <View style={styles.timelineCard}>
-                <Text style={styles.sectionTitle}>Parcours Harmonie — 3 jours</Text>
-                <Text style={styles.privacyNote}>
-                  Chaque jour : des questions sur ce qui vous rapproche, et quelques-unes sur les points dont il
-                  vaut mieux parler tôt. Quand une question part d’un point où vous avez répondu pareil, l’autre
-                  saura que vous êtes d’accord là-dessus. Vos réponses personnelles ne sont jamais montrées, et
-                  aucun sujet sensible n’est abordé sans votre accord.
-                </Text>
+                <Text style={styles.sectionTitle}>{t.journeyTitle}</Text>
+                <Text style={styles.privacyNote}>{t.journeyIntro}</Text>
                 <View style={styles.timeline}>
                   {dayThemes.map((d, i) => (
                     <DayStep

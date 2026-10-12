@@ -1,0 +1,364 @@
+{
+  "metrics": {
+    "couple": "c1-fr",
+    "drafted": 36,
+    "accepted": 29,
+    "formRejected": 0,
+    "evidenceRejected": 7,
+    "reasons": {
+      "P14": 2,
+      "P13": 3,
+      "EN2": 1,
+      "P12": 1
+    },
+    "leaks": [],
+    "englishMissing": 0,
+    "outputChars": 27140,
+    "inputChars": 97545,
+    "refusedByReviewer": 0
+  },
+  "accepted": [
+    {
+      "day": 1,
+      "theme": "projet",
+      "text": "Qu'est-ce que votre position sur l'alcool, chez vous comme chez un futur conjoint, vous permet de protéger au quotidien ?",
+      "textEn": "What does your stance on alcohol, for yourself and for a future partner, help you protect in everyday life?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "projet",
+      "text": "Comment un proche qui vous connaît bien expliquerait-il l'importance que vous accordez à votre position sur l'alcool ?",
+      "textEn": "How would someone close to you explain why your stance on alcohol matters so much to you?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "spiritualite",
+      "text": "Dans votre vie de tous les jours, qu'est-ce que la place que vous donnez, ou non, à la foi vous permet de préserver ?",
+      "textEn": "In your daily life, what does the place you give, or don't give, to faith allow you to preserve?",
+      "evidence": [
+        "E5"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "spiritualite",
+      "text": "Que veut dire, très concrètement, « partager sa foi » pour vous dans un couple ?",
+      "textEn": "What does sharing one's faith mean to you, very concretely, within a couple?",
+      "evidence": [
+        "E5"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "argent",
+      "text": "Concrètement, à quel moment une dette personnelle devient-elle pour vous l'affaire du couple ?",
+      "textEn": "In practical terms, when does a personal debt become the couple's business for you?",
+      "evidence": [
+        "E35"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "argent",
+      "text": "Selon vous, qu'est-ce que le fait de garder ses dettes pour soi permet de protéger dans un couple ?",
+      "textEn": "In your view, what does keeping one's debts to oneself help protect in a relationship?",
+      "evidence": [
+        "E35"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "intimite",
+      "text": "Que veut dire, très concrètement, « la pudeur » pour vous dans un couple ?",
+      "textEn": "What does modesty mean to you, very concretely, in a relationship?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 1,
+      "theme": "lieu",
+      "text": "Qu'est-ce qu'un lieu de vie doit absolument vous offrir pour que vous vous y sentiez chez vous ?",
+      "textEn": "What must a place absolutely offer you for it to feel like home?",
+      "evidence": [
+        "N-lieu"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "projet",
+      "text": "D'où vous vient votre position sur l'alcool, pour vous-même comme pour un futur conjoint ?",
+      "textEn": "Where does your stance on alcohol come from, both for yourself and for a future partner?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "projet",
+      "text": "Quelle valeur, transmise par vos proches, se trouve derrière votre position sur l'alcool ?",
+      "textEn": "What value, passed down by the people close to you, lies behind your stance on alcohol?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "famille",
+      "text": "Dans votre famille, comment parlait-on du fait d'avoir des enfants, ou de ne pas en avoir ?",
+      "textEn": "In your family, how did people talk about having children, or not having them?",
+      "evidence": [
+        "E3"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "spiritualite",
+      "text": "Dans votre famille, qu'est-ce qui faisait qu'un mariage était vraiment reconnu ?",
+      "textEn": "In your family, what made a marriage truly recognised?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "spiritualite",
+      "text": "Qui, ou quoi, vous a transmis la place que vous donnez aujourd'hui à la foi dans votre vie ?",
+      "textEn": "Who or what passed on to you the place faith holds in your life today?",
+      "evidence": [
+        "E5"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "argent",
+      "text": "Dans votre famille, comment parlait-on, ou non, des dettes et des crédits ?",
+      "textEn": "In your family, how were debts and loans talked about, if at all?",
+      "evidence": [
+        "E35"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 2,
+      "theme": "argent",
+      "text": "Dans votre famille, à quoi voyait-on que l'argent était bien géré ?",
+      "textEn": "In your family, how could you tell that money was being handled well?",
+      "evidence": [
+        "N-argent"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "intimite",
+      "text": "Dans votre famille, comment la tendresse entre adultes se montrait-elle, ou restait-elle discrète ?",
+      "textEn": "In your family, how was affection between adults shown, or kept quiet?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "intimite",
+      "text": "D'où vous vient l'idée que vous vous faites aujourd'hui de la fidélité ?",
+      "textEn": "Where does your current idea of faithfulness come from?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "lieu",
+      "text": "Dans votre famille, que voulait dire, très concrètement, être « chez soi » ?",
+      "textEn": "In your family, what did being at home mean, very concretely?",
+      "evidence": [
+        "N-lieu"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "projet",
+      "text": "Avant de vous engager, que voudriez-vous savoir de la façon dont l'autre vit l'alcool au quotidien ?",
+      "textEn": "Before making a commitment, what would you want to know about how the other person lives with alcohol day to day?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "projet",
+      "text": "Qu'aimeriez-vous que l'autre comprenne de votre position sur l'alcool avant toute décision d'engagement ?",
+      "textEn": "What would you like the other person to understand about your stance on alcohol before any decision to commit?",
+      "evidence": [
+        "E2"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "famille",
+      "text": "Avant de vous engager, qu'auriez-vous besoin d'entendre clairement de l'autre au sujet des enfants ?",
+      "textEn": "Before committing, what would you need to hear clearly from the other person about children?",
+      "evidence": [
+        "E3"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "famille",
+      "text": "Quelle question sur les enfants poseriez-vous à l'autre avant de prendre une décision sur votre avenir ?",
+      "textEn": "What question about children would you ask the other person before deciding anything about your future?",
+      "evidence": [
+        "E3"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "spiritualite",
+      "text": "Avant de vous engager, que voudriez-vous savoir de la place que la foi tient dans le quotidien de l'autre ?",
+      "textEn": "Before committing, what would you want to know about the place faith holds in the other person's daily life?",
+      "evidence": [
+        "E5"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "spiritualite",
+      "text": "Avant un engagement, qu'auriez-vous besoin de savoir sur la cérémonie de mariage qui compte le plus pour l'autre ?",
+      "textEn": "Before committing, what would you need to know about the wedding ceremony that matters most to the other person?",
+      "evidence": [
+        "E6"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "argent",
+      "text": "Au quotidien, à quel signe sauriez-vous qu'une dette personnelle commence à toucher la vie du couple ?",
+      "textEn": "In everyday life, what sign would tell you that a personal debt is starting to affect life as a couple?",
+      "evidence": [
+        "E35"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 3,
+      "theme": "argent",
+      "text": "Imaginez un jour ordinaire, dans trois ans, où l'argent se passe bien pour vous en couple : à quel petit signe le verriez-vous ?",
+      "textEn": "Picture an ordinary day three years from now when money feels good in your relationship: what small sign would show it?",
+      "evidence": [
+        "N-argent"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "intimite",
+      "text": "Selon vous, comment dire oui ou non à un geste tendre pour que l'autre se sente respecté(e) ?",
+      "textEn": "In your view, how can someone say yes or no to an affectionate gesture so the other person feels respected?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "intimite",
+      "text": "Comment aimeriez-vous que l'on vous dise non, avec douceur, à un moment de tendresse ?",
+      "textEn": "How would you like to be told no, gently, when you offer a moment of affection?",
+      "evidence": [
+        "N-intimite"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 3,
+      "theme": "lieu",
+      "text": "Avant de vous engager, que voudriez-vous savoir de la façon dont l'autre imagine son lieu de vie ?",
+      "textEn": "Before committing, what would you want to know about how the other person pictures where they will live?",
+      "evidence": [
+        "N-lieu"
+      ],
+      "claim": "neutre"
+    }
+  ],
+  "rejected": [
+    {
+      "text": "Qu'est-ce que votre choix au sujet des enfants protège de plus précieux dans la vie que vous voulez construire ?",
+      "textEn": "What is the most precious thing your choice about children protects in the life you want to build?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « voulez »)"
+      ]
+    },
+    {
+      "text": "De 0 à 10, quelle place votre position sur les enfants tient-elle dans votre projet de couple ? Pourquoi ce chiffre ?",
+      "textEn": "From 0 to 10, how central is your position on children to your idea of a life together? What makes you pick that number?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre projet »)"
+      ]
+    },
+    {
+      "text": "De 0 à 10, quelle importance a pour vous un jardin secret en couple ? Pourquoi ce chiffre ?",
+      "textEn": "From 0 to 10, how important is it for you to keep a private inner space in a relationship? What makes you pick that number?",
+      "reasons": [
+        "EN2 une seule question, terminée par « ? »"
+      ]
+    },
+    {
+      "text": "De 0 à 10, à quel point l'endroit où vous vivez fait-il partie de vous ? Pourquoi ce chiffre ?",
+      "textEn": "From 0 to 10, how much is the place where you live part of who you are? What makes you pick that number?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « vivez »)"
+      ]
+    },
+    {
+      "text": "Qu'est-ce qui a forgé, au fil de votre vie, votre certitude sur la question des enfants ?",
+      "textEn": "What has shaped, over the course of your life, your certainty about having children?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre certitude »)"
+      ]
+    },
+    {
+      "text": "Comment un proche qui vous connaît bien décrirait-il ce dont vous avez besoin pour vous sentir bien quelque part ?",
+      "textEn": "How would someone who knows you well describe what you need to feel good somewhere?",
+      "reasons": [
+        "P12 passé présupposé"
+      ]
+    },
+    {
+      "text": "Imaginez un jour ordinaire, dans trois ans : qu'est-ce qui, dans votre lieu de vie, vous ferait vous sentir bien ?",
+      "textEn": "Picture an ordinary day three years from now: what about the place you live would make you feel good?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre lieu »)"
+      ]
+    }
+  ],
+  "formRejected": []
+}

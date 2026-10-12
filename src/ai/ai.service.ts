@@ -622,7 +622,7 @@ Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).
 - Thème marqué LIMITE DE SÉCURITÉ : n'écris aucune question ; BOLIGO y pose une question de limite écrite à l'avance.
 - Thème marqué POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d'entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s'engager.
 - Ligne « à explorer sans jamais citer » : n'en reprends ni les réponses ni le niveau.
-- Thème sans écart : explore le sens d'une réponse commune (même mot, autre sens ?) ou ce que la position protège, à la profondeur du jour.
+- Thème sans écart : ne repose pas la réponse commune ; va au concret qu'elle laisse ouvert (combien, quand, qui fait quoi, jusqu'où).
 - Chaque question fait découvrir quelque chose que les deux membres ne se seraient pas demandé eux-mêmes ; elle respecte « FORME ET PUDEUR ».
 - La même question est posée aux deux membres : ne dis jamais qui a répondu quoi.
 - "methode" : la technique employée (par exemple « origine », « échelle avec relance », « même mot, autre sens ») ; "cible" : en une phrase, ce que la question peut révéler. Ces deux champs ne sont jamais montrés aux membres.
@@ -630,7 +630,7 @@ Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).
 - ÉQUILIBRE : le Sondeur explore aussi ce qui marche entre eux. Au plus trois thèmes sur sept par jour portent sur un écart ; les autres explorent un point d'accord ou ce qui les rapproche.
 - AUCUN SCÉNARIO PRÉSUPPOSÉ : ne présente jamais comme acquis une situation que l'un des deux peut refuser (« si un parent venait vivre chez vous… », « quand vous aurez des enfants… ») ; demande d'abord ce que chacun en pense, ou à quelles conditions.
 - AUCUN FAIT INVENTÉ : n'affirme rien sur eux (« vous visez tous les deux… ») qui ne figure pas mot pour mot dans l'analyse.
-- LANGAGE SIMPLE : une seule idée par question, des mots de tous les jours, compréhensibles sans explication, 25 mots au plus.
+- LANGAGE SIMPLE ET FRANC : une seule idée par question, des mots de tous les jours, une question directe, 20 mots au plus.
 ${avoidBlock}${contextBlock}
 QUESTIONS DU GRAND ENTRETIEN (déjà posées : ne les repose pas, même reformulées ; cherche le sens derrière la réponse) :
 ${interviewDigest()}

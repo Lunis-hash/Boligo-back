@@ -117,7 +117,7 @@ describe('Sondeur bilingue — contrôles de fidélité (validateEn)', () => {
 
   it.each([
     [undefined, 'EN1'],
-    ['How do you see family? And money?', 'EN2'],
+    ['How do you see family? And money? And kids?', 'EN2'],
     ['Quelle place pour vos proches ?', 'EN3'],
     ['What makes you two disagree about family?', 'EN4'],
     ['Since you both agree on family, what comes next?', 'EN4'],

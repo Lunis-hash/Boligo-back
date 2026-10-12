@@ -54,48 +54,8 @@ const MEMBER_CONTEXT_FIELDS = {
   city: true,
 } as const;
 
-/**
- * Âge, genre et ville des deux membres, pour que l'IA ne suppose pas un fait
- * de leur vie qu'elle ignore (sans contact, sans photo, sans identifiant).
- */
-export function describeCoupleContext(
-  members: Array<{
-    firstName: string;
-    birthDate: Date | null;
-    gender: string | null;
-    city: string | null;
-  }>,
-  now = new Date(),
-): string {
-  const genders: Record<string, string> = { H: 'homme', F: 'femme' };
-  return members
-    .map((m) => {
-      const parts: string[] = [];
-      if (m.gender && genders[m.gender]) parts.push(genders[m.gender]);
-      if (m.birthDate) {
-        const b = new Date(m.birthDate);
-        let age = now.getFullYear() - b.getFullYear();
-        if (
-          now.getMonth() < b.getMonth() ||
-          (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())
-        )
-          age--;
-        if (age >= 18 && age < 120) parts.push(`${age} ans`);
-      }
-      const city = m.city
-        ?.replace(/[\n\r«»‹›"]/g, ' ')
-        .trim()
-        .slice(0, 60);
-      if (city) parts.push(`vit à ${city}`);
-      const name = m.firstName
-        .replace(/[\n\r«»‹›"]/g, ' ')
-        .trim()
-        .slice(0, 40);
-      return parts.length ? `- ${name} : ${parts.join(', ')}` : '';
-    })
-    .filter(Boolean)
-    .join('\n');
-}
+export { describeCoupleContext } from './couple-context';
+import { describeCoupleContext } from './couple-context';
 
 /** Texte neutre à la place des réponses d'une journée en attente de l'équipe. */
 export const HELD_ANSWER_TEXT = 'Réponse disponible plus tard.';
