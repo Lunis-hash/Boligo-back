@@ -1,0 +1,162 @@
+[
+  {
+    "n": 1,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 2,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50395",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 3,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50395",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 4,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50000",
+    "evidence": [
+      "E3"
+    ]
+  },
+  {
+    "n": 5,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 6,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 7,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 8,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 9,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 10,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 11,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 12,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 13,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 14,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 15,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50786",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 16,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 17,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 18,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 19,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 20,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50000",
+    "evidence": [
+      "E3"
+    ]
+  }
+]

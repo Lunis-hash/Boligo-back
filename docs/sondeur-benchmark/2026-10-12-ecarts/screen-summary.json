@@ -1,0 +1,30 @@
+[
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "family": "anthropic",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.25,
+    "costPerCaseEur": 0.09937,
+    "latencyP50": 10966,
+    "errors": 0
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "family": "z-ai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.35526315789473684,
+    "costPerCaseEur": 0.0021648000000000006,
+    "latencyP50": 11878,
+    "errors": 0
+  }
+]
