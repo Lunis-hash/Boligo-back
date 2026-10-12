@@ -1,0 +1,420 @@
+[
+  {
+    "id": "H101730",
+    "seed": 101730,
+    "scenario": "aucun_ecart",
+    "lang": "fr",
+    "topics": []
+  },
+  {
+    "id": "H100885",
+    "seed": 100885,
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "topics": [
+      "famille",
+      "communication",
+      "culture"
+    ]
+  },
+  {
+    "id": "H100070",
+    "seed": 100070,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "enfants"
+    ]
+  },
+  {
+    "id": "H100010",
+    "seed": 100010,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "religion",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100023",
+    "seed": 100023,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": []
+  },
+  {
+    "id": "H100000",
+    "seed": 100000,
+    "scenario": "securite",
+    "lang": "en",
+    "topics": [
+      "enfants",
+      "argent",
+      "famille",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H102120",
+    "seed": 102120,
+    "scenario": "aucun_ecart",
+    "lang": "en",
+    "topics": []
+  },
+  {
+    "id": "H102500",
+    "seed": 102500,
+    "scenario": "petit_ecart",
+    "lang": "en",
+    "topics": [
+      "argent"
+    ]
+  },
+  {
+    "id": "H100377",
+    "seed": 100377,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "argent",
+      "famille"
+    ]
+  },
+  {
+    "id": "H100065",
+    "seed": 100065,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100045",
+    "seed": 100045,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "religion",
+      "argent",
+      "intimité"
+    ]
+  },
+  {
+    "id": "H100001",
+    "seed": 100001,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "famille"
+    ]
+  },
+  {
+    "id": "H102951",
+    "seed": 102951,
+    "scenario": "aucun_ecart",
+    "lang": "fr",
+    "topics": []
+  },
+  {
+    "id": "H100411",
+    "seed": 100411,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "argent"
+    ]
+  },
+  {
+    "id": "H100103",
+    "seed": 100103,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "argent",
+      "famille",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100056",
+    "seed": 100056,
+    "scenario": "donnees_insuffisantes",
+    "lang": "en",
+    "topics": [
+      "argent"
+    ]
+  },
+  {
+    "id": "H100002",
+    "seed": 100002,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "mariage",
+      "famille",
+      "intimité",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100586",
+    "seed": 100586,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "argent"
+    ]
+  },
+  {
+    "id": "H100143",
+    "seed": 100143,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "lieu de vie",
+      "famille",
+      "rôles",
+      "intimité",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100067",
+    "seed": 100067,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "mariage",
+      "famille",
+      "intimité",
+      "communication",
+      "culture"
+    ]
+  },
+  {
+    "id": "H100003",
+    "seed": 100003,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "lieu de vie",
+      "temps de couple",
+      "famille",
+      "fidélité",
+      "communication",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H101445",
+    "seed": 101445,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "argent"
+    ]
+  },
+  {
+    "id": "H100148",
+    "seed": 100148,
+    "scenario": "non_negociable",
+    "lang": "en",
+    "topics": [
+      "enfants",
+      "mariage",
+      "lieu de vie",
+      "argent",
+      "famille"
+    ]
+  },
+  {
+    "id": "H100100",
+    "seed": 100100,
+    "scenario": "donnees_insuffisantes",
+    "lang": "en",
+    "topics": [
+      "religion"
+    ]
+  },
+  {
+    "id": "H100004",
+    "seed": 100004,
+    "scenario": "securite",
+    "lang": "en",
+    "topics": [
+      "enfants",
+      "mariage",
+      "famille",
+      "rôles",
+      "fidélité",
+      "communication",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H101492",
+    "seed": 101492,
+    "scenario": "ecart_important",
+    "lang": "en",
+    "topics": [
+      "lieu de vie",
+      "famille",
+      "rôles"
+    ]
+  },
+  {
+    "id": "H100157",
+    "seed": 100157,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "argent",
+      "famille",
+      "rôles",
+      "fidélité",
+      "communication",
+      "culture"
+    ]
+  },
+  {
+    "id": "H100155",
+    "seed": 100155,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "mariage",
+      "famille",
+      "intimité",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100005",
+    "seed": 100005,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "argent",
+      "communication"
+    ]
+  },
+  {
+    "id": "H102065",
+    "seed": 102065,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "famille",
+      "communication",
+      "culture"
+    ]
+  },
+  {
+    "id": "H100231",
+    "seed": 100231,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "religion",
+      "famille",
+      "rôles",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100166",
+    "seed": 100166,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "mariage",
+      "intimité"
+    ]
+  },
+  {
+    "id": "H100006",
+    "seed": 100006,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "argent",
+      "communication",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H102132",
+    "seed": 102132,
+    "scenario": "ecart_important",
+    "lang": "en",
+    "topics": [
+      "argent"
+    ]
+  },
+  {
+    "id": "H100256",
+    "seed": 100256,
+    "scenario": "non_negociable",
+    "lang": "en",
+    "topics": [
+      "mariage",
+      "argent",
+      "famille",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100177",
+    "seed": 100177,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "mariage",
+      "intimité"
+    ]
+  },
+  {
+    "id": "H100007",
+    "seed": 100007,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "argent",
+      "famille",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  }
+]

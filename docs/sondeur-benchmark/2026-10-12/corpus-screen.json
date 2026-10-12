@@ -1,0 +1,59 @@
+[
+  {
+    "id": "S245",
+    "seed": 245,
+    "scenario": "aucun_ecart",
+    "lang": "fr",
+    "topics": []
+  },
+  {
+    "id": "S57",
+    "seed": 57,
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "topics": [
+      "famille"
+    ]
+  },
+  {
+    "id": "S460",
+    "seed": 460,
+    "scenario": "ecart_important",
+    "lang": "en",
+    "topics": [
+      "enfants"
+    ]
+  },
+  {
+    "id": "S16",
+    "seed": 16,
+    "scenario": "non_negociable",
+    "lang": "en",
+    "topics": [
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "S11",
+    "seed": 11,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "religion",
+      "argent",
+      "intimité",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "S1",
+    "seed": 1,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "mode de vie"
+    ]
+  }
+]

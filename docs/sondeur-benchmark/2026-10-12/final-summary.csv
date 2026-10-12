@@ -1,0 +1,5 @@
+model,quality,quality_fr,quality_en,hard_fail_rate,leaks,gate_pass,cost_case_eur,latency_p50
+openai/gpt-6.1-sol-pro,0,0,0,1,0,0,0,214
+openai/gpt-6.1-sol-pro:batch,0,0,0,1,0,0,0,186
+openai/gpt-6.1-sol,0,0,0,1,0,0,0,204
+openai/gpt-6.1-sol:batch,0,0,0,1,0,0,0,199

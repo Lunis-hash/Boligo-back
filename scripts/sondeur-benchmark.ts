@@ -125,6 +125,8 @@ async function catalog(): Promise<CatalogEntry[]> {
   for (const m of body.data ?? []) {
     const id = String(m.id);
     if (!WANTED.some((r) => r.test(id))) continue;
+    // Variantes « :batch » : refusées par chat/completions (HTTP 404).
+    if (/:batch$/.test(id)) continue;
     const params: string[] = m.supported_parameters ?? [];
     const e: CatalogEntry = {
       id,

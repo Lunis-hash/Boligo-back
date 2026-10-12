@@ -1,0 +1,58 @@
+[
+  {
+    "model": "openai/gpt-6.1-sol-pro",
+    "family": "openai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 214,
+    "errors": 0
+  },
+  {
+    "model": "openai/gpt-6.1-sol-pro:batch",
+    "family": "openai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 186,
+    "errors": 0
+  },
+  {
+    "model": "openai/gpt-6.1-sol",
+    "family": "openai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 204,
+    "errors": 0
+  },
+  {
+    "model": "openai/gpt-6.1-sol:batch",
+    "family": "openai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 199,
+    "errors": 0
+  }
+]

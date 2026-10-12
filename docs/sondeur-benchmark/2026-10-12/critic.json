@@ -1,0 +1,786 @@
+[
+  {
+    "critic": "anthropic/claude-sonnet-5.5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-5.5:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.3-prime",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.8-max-prime",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-5.5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-5.5:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.8-omni-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.3-flashx",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~deepseek/deepseek-pro-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~deepseek/deepseek-flash-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4.1-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4.1-flash:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.8-max-0902",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~z-ai/glm-flash-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.8-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.3-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.3-flash:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4-flash-vision-exp",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~z-ai/glm-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.3",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.3:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.8-27b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.8-2.4t-a95b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4-pro-0813",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~deepseek/deepseek-v4-flash-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4-flash-0731",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.7-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-5:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k3",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k3:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-5:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.2",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k2.7-code",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.7-plus",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.8",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.8:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.7-max",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~moonshotai/kimi-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~anthropic/claude-sonnet-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-plus-20260420",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.6-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.6-35b-a3b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.6-27b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4-pro",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v4-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "~anthropic/claude-opus-latest",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k2.6",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.7",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.7:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5.1",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.6-plus",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5v-turbo",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5-turbo",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-9b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-35b-a3b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-27b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-122b-a10b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-flash-02-23",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-4.6",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-4.6:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-plus-02-15",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3.5-397b-a17b",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.6",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.6:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k2.5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.7-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.7",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.6v",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v3.2",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.5:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k2-thinking",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.6",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-4.5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-4.5:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v3.2-exp",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3-vl-235b-a22b-instruct",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-v3.1-terminus",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3-coder-flash",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k2-0905",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-chat-v3.1",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.5v",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.1",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-opus-4.1:batch",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.5",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "z-ai/glm-4.5-air",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3-235b-a22b-thinking-2507",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen3-235b-a22b-2507",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "moonshotai/kimi-k2",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-r1-0528",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-4",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-chat-v3-0324",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "qwen/qwen-plus",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-r1",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "deepseek/deepseek-chat",
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  }
+]
