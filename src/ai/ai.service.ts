@@ -649,7 +649,7 @@ Les trois jours (${days}) sont préparés séparément : reste à la profondeur 
 
 ÉTAPE 1 — ANALYSE (jamais montrée aux membres) : pour chaque écart réel de l'analyse, en une ligne, les deux positions et ce qu'il faudrait confronter à la réalité.
 
-ÉTAPE 2 — QUESTIONS : uniquement pour les thèmes qui portent un ÉCART RÉEL (preuve de nature « écart »), DEUX propositions par thème. Un relecteur indépendant gardera la meilleure.
+ÉTAPE 2 — QUESTIONS : uniquement pour les thèmes qui portent un ÉCART RÉEL (preuve de nature « écart »), TROIS propositions par écart, chacune sous un angle différent (chiffre, jusqu'où, si cela ne changeait jamais). Un relecteur indépendant gardera la meilleure.
 Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).join(' ; ')}.
 - Thème sans écart réel (accord, sujet neutre) : n'écris AUCUNE question ; BOLIGO y pose ses propres questions.
 - Thème marqué LIMITE DE SÉCURITÉ : n'écris aucune question.
@@ -684,7 +684,7 @@ VERSION ANGLAISE (obligatoire) : chaque question est aussi posée à des membres
 - "options_en" : les mêmes pistes de lecture, courtes, en anglais.
 - Une question sans version anglaise fidèle est écartée par le code.
 
-Retourne UNIQUEMENT ce JSON (deux questions par thème portant un écart réel ; aucune pour les autres) :
+Retourne UNIQUEMENT ce JSON (trois questions par écart réel ; aucune pour les autres) :
 {"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "ecart": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''}, "options": ["...", "...", "..."], "text_en": "...", "options_en": ["...", "...", "..."] }]}
 `;
       const { content, model } = await this.queryAiAgentDetailed(
@@ -701,7 +701,7 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème portant un écart réel ;
       const questions = (
         normalizeAiQuestions(
           extractQuestionList(content),
-          themeGrid.length * 2,
+          themeGrid.length * 3,
           // Écarts seuls : un jour peut n'en porter qu'un (deux propositions).
           1,
         ) ?? []

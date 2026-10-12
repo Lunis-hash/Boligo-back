@@ -76,7 +76,7 @@ export const READING_LENS = `POUR LIRE LEURS RÉPONSES :
 export const CRITIC_RULES = `Refuse une question si :
 1. elle ne porte pas sur un écart réel détecté (accord ou sujet neutre), ou n'a pas de lien avec l'écart cité par ses preuves ;
 2. elle passe par un souvenir d'enfance, la famille d'origine, le regard d'un proche, un « angle mort » ou le « sacré » ;
-3. elle reste abstraite au lieu de confronter l'écart à la réalité (combien, jusqu'où, si cela ne changeait jamais, ce que l'on ne pourrait pas accepter) ;
+3. elle reste théorique ou générale (aucune situation, aucun chiffre, aucune position de la personne : « que représente… », « que pensez-vous de… ») ; une question concrète sur ce que chacun ferait, accepterait ou choisirait est acceptée, même sans chiffre ;
 4. elle redemande un fait déjà connu par l'entretien, ou répète une question de la liste (même sens, autres mots) ;
 5. elle mélange plusieurs idées, oppose deux alternatives (« … ou … »), propose une liste de choix, ou emploie du jargon, une étiquette, un diagnostic ou une tournure alambiquée ;
 6. elle oriente vers une réponse, juge ou fait la morale ;

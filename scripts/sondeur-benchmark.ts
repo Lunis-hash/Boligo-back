@@ -61,8 +61,10 @@ const FINALISTS = Number(process.env.BENCH_FINALISTS ?? 4);
 // Essai réduit : corpus ciblé par sujets, sans juges IA (contrôle humain).
 const TOPICS = (process.env.BENCH_TOPICS ?? '').split(',').filter(Boolean);
 const NO_JUDGES = process.env.BENCH_NO_JUDGES === '1';
-// Relecteur imposé pour l'essai du rédacteur (d'une autre famille).
-const CRITIC = process.env.BENCH_CRITIC ?? '';
+// Relecteurs imposés (liste) : le premier d'une autre famille que le
+// rédacteur relit. BENCH_ESCALATION : modèle qui réécrit un jour rejeté.
+const CRITICS = (process.env.BENCH_CRITIC ?? '').split(',').filter(Boolean);
+const ESCALATION = process.env.BENCH_ESCALATION ?? '';
 // Plafond de couples par modèle (« modèle=n,… ») : un modèle cher sur moins de cas.
 const CASES_PER_MODEL: Record<string, number> = Object.fromEntries(
   (process.env.BENCH_CASES_PER_MODEL ?? '')
@@ -499,11 +501,14 @@ class ForcedOpenRouter extends OpenRouterService {
   ) {
     super();
   }
-  async candidates(role: OpenRouterRole): Promise<string[]> {
+  async candidates(role: OpenRouterRole, avoid?: string): Promise<string[]> {
     // Charge les prix réels : sans eux, l'estimation avant appel prend le
     // prix plafond et l'enveloppe refuse à tort les appels longs.
     await this.catalogPrices();
-    return this.forced[role] ?? [];
+    // Comme en production : jamais un relecteur de la famille du rédacteur.
+    return (this.forced[role] ?? []).filter(
+      (m) => !avoid || modelFamily(m) !== modelFamily(avoid),
+    );
   }
 }
 
@@ -519,6 +524,14 @@ interface WriterRun {
   criticRejected?: number;
   unreviewedDays?: number;
   duplicates?: number;
+  escalatedDays?: number;
+  keptByWriter?: Record<string, number>;
+  refused?: Array<{
+    text?: string;
+    writer?: string;
+    rule: number | null;
+    reason?: string;
+  }>;
   reasons: Record<string, number>;
   leaks: number;
   costMicro: number;
@@ -551,13 +564,13 @@ async function runWriter(model: string, c: BenchCase): Promise<WriterRun> {
   const ai = new AiService(
     new ForcedOpenRouter({
       quality: [model],
-      escalation: [],
-      ...(CRITIC ? { critic: [CRITIC] } : {}),
+      escalation: ESCALATION ? [ESCALATION] : [],
+      ...(CRITICS.length ? { critic: CRITICS } : {}),
     }),
   );
   // Rédacteur seul par défaut : la relecture est mesurée à part (étape
   // critic). BENCH_CRITIC : relecture réelle par ce modèle (autre famille).
-  if (!CRITIC)
+  if (!CRITICS.length)
     (
       ai as unknown as { reviewSondeurQuestions: unknown }
     ).reviewSondeurQuestions = async () => ({
@@ -601,6 +614,21 @@ async function runWriter(model: string, c: BenchCase): Promise<WriterRun> {
       criticRejected: r.trace.refused.length,
       unreviewedDays: r.trace.unreviewedDays.length,
       duplicates: r.trace.duplicates.length,
+      escalatedDays: r.trace.escalatedDays.length,
+      keptByWriter: r.questions.reduce<Record<string, number>>(
+        (acc, q) => ({
+          ...acc,
+          [q.writer ?? model]: (acc[q.writer ?? model] ?? 0) + 1,
+        }),
+        {},
+      ),
+      // Motifs du relecteur, pour vérifier qu'il ne rejette pas les bonnes questions.
+      refused: r.trace.refused.map((x) => ({
+        text: x.question?.text,
+        writer: x.question?.writer,
+        rule: x.rule,
+        reason: x.reason,
+      })),
       reasons,
       leaks,
       costMicro: spentMicro - before,

@@ -263,8 +263,8 @@ describe('AiService — modèle Groq retiré', () => {
         { journeyId: 'j5' },
       );
       expect(out?.model).toBe('openai/gpt-oss-120b');
-      // Deux propositions par thème et par jour, au plus.
-      expect(out?.questions).toHaveLength(2);
+      // Trois propositions par écart et par jour, au plus.
+      expect(out?.questions).toHaveLength(3);
       const create = (g.client.chat.completions.create as jest.Mock).mock
         .calls as Array<[{ messages: Array<{ content: string }> }]>;
       const [system, user] = create[0][0].messages;
@@ -272,7 +272,7 @@ describe('AiService — modèle Groq retiré', () => {
       expect(system.content).toContain('aucun diagnostic');
       expect(system.content).toContain('si cela ne changeait jamais');
       expect(user.content).toContain('ÉTAPE 1');
-      expect(user.content).toContain('DEUX propositions');
+      expect(user.content).toContain('TROIS propositions par écart');
       expect(user.content).toContain('"methode"');
     });
 
