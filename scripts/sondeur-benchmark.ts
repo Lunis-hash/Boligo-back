@@ -1574,7 +1574,11 @@ async function gateEval() {
     critic[writer] = {};
     const ai = new AiService(new ForcedOpenRouter({ critic: CRITICS }));
     const groups = new Map<string, typeof gate>();
-    for (const g of gate.filter((x) => x.gateOk)) {
+    // BENCH_EVAL_SPLIT : relecteur seulement sur ce lot (mise au point d'abord).
+    const only = process.env.BENCH_EVAL_SPLIT;
+    for (const g of gate.filter(
+      (x) => x.gateOk && (!only || x.split === only),
+    )) {
       const k = `${g.caseId}|${g.day}`;
       groups.set(k, [...(groups.get(k) ?? []), g]);
     }

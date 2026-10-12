@@ -76,21 +76,21 @@ export const READING_LENS = `POUR LIRE LEURS RÉPONSES :
 export const CRITIC_RULES = `Refuse une question si :
 1. elle ne porte pas sur un écart réel détecté (accord ou sujet neutre), ou n'a pas de lien avec l'écart cité par ses preuves ;
 2. elle passe par un souvenir d'enfance, la famille d'origine, le regard d'un proche, un « angle mort » ou le « sacré » ;
-3. elle reste théorique ou générale (aucune situation, aucun chiffre, aucune position de la personne : « que représente… », « que pensez-vous de… ») ; une question concrète sur ce que chacun ferait, accepterait ou choisirait est acceptée, même sans chiffre ;
-4. elle redemande un fait déjà connu par l'entretien, ou répète une question de la liste (même sens, autres mots) ;
+3. elle est purement théorique, sans lien avec la vie de la personne (« que représente l'amour pour vous ? », « que pensez-vous de l'argent ? ») ; toute question sur ce que chacun ferait, accepterait, choisirait, supporterait, ou sur ce que l'autre aurait besoin de savoir, est concrète et acceptée, même sans chiffre ;
+4. elle redemande telle quelle une réponse de l'entretien (« voulez-vous des enfants ? »), ou répète une question de la liste (même sens, autres mots) ; aller au cran suivant (combien, jusqu'où, à quelles conditions, pendant combien de temps) n'est pas une répétition ;
 5. elle mélange plusieurs idées, oppose deux alternatives (« … ou … »), propose une liste de choix, ou emploie du jargon, une étiquette, un diagnostic ou une tournure alambiquée ;
 6. elle oriente vers une réponse, juge ou fait la morale ;
 7. elle contient une faute, oublie le vouvoiement, cite les réponses entre guillemets ou dit qui a répondu quoi ;
 8. elle suppose un passé commun aux deux membres, ou un fait de leur vie absent de l'analyse (invention) ;
 9. elle demande un revenu, une épargne personnelle, un employeur, un lieu précis, des papiers, l'ethnie, la tribu ou la caste (une somme ronde posée en hypothèse est admise) ;
 10. elle porte sur le corps, l'apparence, la santé, ou demande le récit d'un événement douloureux ou un détail de la vie sexuelle ;
-11. elle aborde la violence, les insultes, les menaces, le contrôle ou une dépendance (réservés aux questions de limite de BOLIGO) ;
+11. elle met en scène la violence, les insultes, les menaces ou le contrôle, ou traite une dépendance avérée comme un comportement à aménager (réservés aux questions de limite de BOLIGO) ; une question sur l'alcool, le tabac ou le jeu comme habitude de vie (fréquence acceptable, ce que l'on pourrait vivre) est admise ;
 12. elle invite à un compromis ou à un terrain d'entente sur un point non négociable ;
 13. elle aborde l'intimité ou la sexualité avant le jour 3, ou revient sur un sujet qu'un membre a gardé pour la rencontre ;
 14. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
 15. elle dépasse 180 caractères ;
 16. elle présente un modèle culturel, religieux ou familial comme allant de soi, dépassé ou problématique ;
-17. elle ne vaut pas pour chacun des deux membres, quelle que soit sa position (hypothèse qui ne vise que l'un : « si votre partenaire ne voulait jamais d'enfant »), ou retourne une hypothèse (« si votre partenaire gardait…, qu'est-ce que vous ne pourriez pas accepter ? ») ;
+17. elle suppose qu'un membre précis tient une position (« si votre partenaire ne voulait jamais d'enfant ») ou retourne une hypothèse (« si votre partenaire gardait…, qu'est-ce que vous ne pourriez pas accepter ? ») ; une question à laquelle chacun peut répondre depuis sa propre position (« pourriez-vous… », « jusqu'où iriez-vous… », « si l'un de vous… », « si vos positions ne bougeaient pas… ») est réciproque ;
 18. elle porte sur un risque partagé (mêmes réponses) ou sur un sujet proche de la violence (élever la voix, cris, menace) ;
 19. elle reprend, même reformulé, un exemple de la consigne ;
 20. sa version anglaise (« EN ») ne dit pas exactement la même chose, sonne comme une traduction mot à mot, ou enfreint l'une des règles ci-dessus.`;
@@ -320,6 +320,12 @@ export function isIntrusiveQuestion(text: string): boolean {
 export function neutralizeHypotheticalSum(text: string): string {
   const AMOUNT =
     /(?<!\p{L})sur (?:\d[\d\s\u202f.]*)\s?(?:€|euros?)(?!\p{L})/giu;
+  // Au conditionnel (« combien mettriez-vous de côté… »), une répartition
+  // envisagée, pas le montant de son épargne actuelle.
+  text = text.replace(
+    /(?<!\p{L})combien (?=(?:mett|épargn|dépens|vers|envoy)\p{L}*riez(?!\p{L}))/giu,
+    'quelle part ',
+  );
   if (!AMOUNT.test(text)) return text;
   return text
     .replace(AMOUNT, 'sur une somme donnée')
@@ -370,8 +376,18 @@ const ULTIMATUM_HARD = prefix(
  * ou non : la réponse libre de 500 caractères laisse la place de nuancer.
  */
 export function isRealityCheck(text: string): boolean {
-  return /^si\s[^?]{8,},\s*(?:pourriez|resteriez|accepteriez|seriez|vivriez|supporteriez|garderiez|continueriez)-vous(?!\p{L})[^?]*\?$/iu.test(
-    text.trim(),
+  const t = text.trim();
+  // « Si…, pourriez-vous / resteriez-vous / cela vous irait-il… ? »
+  if (
+    /^si\s[^?]{8,},\s*[^?]*(?<!\p{L})\p{L}+-(?:t-)?(?:vous|il|elle|ce)(?!\p{L})[^?]*\?$/iu.test(
+      t,
+    )
+  )
+    return true;
+  // Question fermée portant sur une durée ou une quantité concrète
+  // (« Pourriez-vous attendre encore trois ans… ? ») : réalité, pas façade.
+  return /(?<!\p{L})(?:\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|dix|vingt)\s+(?:ans?|mois|semaines?|jours?|nuits?|soirs?|soirées?|heures?|km|€|euros?)(?!\p{L})/iu.test(
+    t,
   );
 }
 
@@ -405,7 +421,7 @@ export const ONE_SIDED =
  * qu'est-ce que vous ne pourriez pas accepter ? »).
  */
 export const REVERSED_HYPOTHESIS =
-  /^si\s[^?]+,\s*qu['’]est-ce que vous ne pourriez pas accepter/iu;
+  /^si\s[^?]+,\s*qu['’]est-ce que vous (?:ne pourriez pas (?:accepter|supporter|tolérer)|ne supporteriez pas|n['’]accepteriez pas|ne toléreriez pas)/iu;
 
 /** Morale ou « bonne réponse » suggérée. */
 export const MORALE = word(
@@ -514,6 +530,14 @@ const NN_ARRANGEMENT =
  */
 const SAFETY_TOPIC =
   /(?<!\p{L})(?:gifl\p{L}*|claques?|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|ne plus voir vos|(?:connaître )?votre code|vérifi\p{L}* où vous|où vous êtes|décid\p{L}* seul\p{L}* de vos|vos sorties|votre passeport|jet\p{L}* vos affaires|punitions?|punir|hausser la voix|lever le ton|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
+/**
+ * Prémisse affirmée avant la question (« Puisque l'un de vous a déjà deux
+ * enfants… », « Comme l'alcool est quotidien pour l'un de vous… ») : un fait
+ * présenté comme acquis, souvent la réponse de l'un des deux.
+ */
+export const ASSERTED_PREMISE =
+  /^(?:puisque|comme|vu que|étant donné que|sachant que|maintenant que|alors que)(?!\p{L})|(?<!\p{L})(?:pour|chez) l['’]un (?:de vous|d['’]entre vous)(?!\p{L})/iu;
+
 /** Deux interrogatifs coordonnés (« jusqu'où et combien de temps ») : deux idées. */
 export const TWO_INTERROGATIVES =
   /(?<!\p{L})(?:jusqu['’]où|combien|comment|quand|pourquoi|où|quel(?:le)?s?|à quel point)(?:\s+[^\s?,]+){0,2}?\s+et\s+(?:jusqu['’]où|combien|comment|quand|pourquoi|où|quel(?:le)?s?|à quel point)(?!\p{L})/iu;
@@ -540,9 +564,22 @@ export function isWellFormedQuestion(text: string): boolean {
   // Confrontation à la réalité : une somme ronde posée en hypothèse n'est pas
   // une demande de revenu ; « Si votre partenaire… » parle d'un futur
   // conjoint, pas d'un passé commun.
-  const forForm = neutralizeHypotheticalSum(t).replace(
+  let forForm = neutralizeHypotheticalSum(t).replace(
     /^si votre partenaire(?!\p{L})/iu,
     'Si la personne choisie',
+  );
+  // En hypothèse, « votre couple » ou « cette relation » parlent du couple
+  // à venir, pas d'un passé commun.
+  if (/^si\s/iu.test(t))
+    forForm = forForm.replace(
+      /(?<!\p{L})(?:votre couple|cette relation)(?!\p{L})/giu,
+      'le couple',
+    );
+  // « Que devrait savoir l'autre… » : une attente, pas une morale (« vous
+  // devriez » reste refusé).
+  forForm = forForm.replace(
+    /(?<!\p{L})devrai(?:t|ent)(?!\p{L})/giu,
+    'pourrait',
   );
   return (
     !HEDGED.test(t) &&
@@ -552,7 +589,9 @@ export function isWellFormedQuestion(text: string): boolean {
     !SAFETY_TOPIC.test(
       t.replace(/frontière entre[^?]{0,40}?(?:surveill\p{L}*)/iu, 'frontière'),
     ) &&
-    !THRESHOLD.test(t) &&
+    // « Jusqu'où… » est une confrontation à la réalité ; le seuil de
+    // tolérance reste refusé dès qu'il touche la sécurité.
+    !(THRESHOLD.test(t) && (SAFETY_TOPIC.test(t) || STAGED_HARM.test(t))) &&
     !(NN_QUESTION_TOPIC.test(t) && ARRANGE.test(t)) &&
     !NN_ARRANGEMENT.test(t) &&
     !LENS_EXAMPLES.some((e) => similarQuestions(e, t) || e === t)
@@ -611,7 +650,14 @@ export function gapQuestionIssues(text: string): string[] {
   if (REVERSED_HYPOTHESIS.test(t)) r.push('P21 hypothèse retournée');
   if (/^(?:chez vous|dans votre famille)(?!\p{L})/iu.test(t))
     r.push('P23 commence par « Chez vous » ou « Dans votre famille »');
-  if (TWO_INTERROGATIVES.test(t))
+  if (ASSERTED_PREMISE.test(t))
+    r.push('P25 prémisse affirmée (fait ou réponse présentés comme acquis)');
+  if (
+    TWO_INTERROGATIVES.test(t) ||
+    /,\s*et\s+(?:à\s+|de\s+|en\s+)?(?:quel(?:le)?s?|comment|combien|quand|pourquoi|où)(?!\p{L})/iu.test(
+      t,
+    )
+  )
     r.push('P24 deux interrogatifs coordonnés (une seule idée)');
   if (ELEVATED_VOICE.test(t))
     r.push('P22 sujet voisin de la violence (questions de limite)');

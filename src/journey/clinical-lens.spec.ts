@@ -83,7 +83,7 @@ describe('Regard clinique du Sondeur', () => {
     expect(CLINICAL_LENS).toMatch(/ne recopie jamais un exemple mot pour mot/);
     expect(CLINICAL_LENS).toMatch(/RÉCIPROCITÉ/);
     expect(CLINICAL_LENS).toMatch(/CONTRE-EXEMPLES/);
-    expect(CRITIC_RULES).toMatch(/ne vaut pas pour chacun des deux membres/);
+    expect(CRITIC_RULES).toMatch(/suppose qu'un membre précis tient une position/);
     expect(CLINICAL_LENS).toMatch(/POINTS NON NÉGOCIABLES/);
     expect(CRITIC_RULES).toMatch(/15\. /);
     expect(CRITIC_RULES).toMatch(/passé commun/);

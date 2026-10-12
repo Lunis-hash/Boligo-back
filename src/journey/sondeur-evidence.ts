@@ -359,8 +359,9 @@ function possessiveIssue(text: string, theme: string): string | null {
   )) {
     const n = m[1].toLowerCase();
     if (POSSESSIVE_OK.has(n)) continue;
-    // « Si votre partenaire… » : un futur conjoint en hypothèse, pas un passé commun.
-    if (n === 'partenaire' && /^si\s/iu.test(text.trim())) continue;
+    // En hypothèse (« Si vous perdiez votre emploi… », « Si votre
+    // partenaire… ») : une situation envisagée, pas un fait présupposé.
+    if (/^si\s/iu.test(text.trim())) continue;
     if (OWN_SPIRIT.has(n) && (theme === 'spiritualite' || theme === 'famille'))
       continue;
     return m[0];
@@ -474,9 +475,9 @@ export function aiOnlyIssues(text: string, theme: string): string[] {
  */
 const THEME_WORDS: Record<string, RegExp> = {
   famille:
-    /(?<!\p{L})(?:enfant|beau|belle|parent|famil|visite|aîné|dot|mariage|foyer|chez vous|vivaient|habit)/iu,
+    /(?<!\p{L})(?:enfant|garde|beau|belle|parent|famil|visite|aîné|dot|mariage|foyer|chez vous|vivaient|habit)/iu,
   argent:
-    /(?<!\p{L})(?:argent|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ)/iu,
+    /(?<!\p{L})(?:argent|jeu|mise|pari|casino|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ)/iu,
   spiritualite:
     /(?<!\p{L})(?:foi|relig|pri|croy|culte|église|mosquée|spiritu|convers|enfant)/iu,
   intimite:
@@ -484,8 +485,8 @@ const THEME_WORDS: Record<string, RegExp> = {
   communication:
     /(?<!\p{L})(?:disput|désaccord|tension|pause|parler|silence|calm|colère|écout|réconcil)/iu,
   projet:
-    /(?<!\p{L})(?:travail|carrière|emploi|soir|heure|semaine|temps|week|rentr|ambition|tâche|rôle|enfant|projet|année)/iu,
-  lieu: /(?<!\p{L})(?:pays|ville|déménag|vivre|habiter|lieu|rester|partir|loin|kilomètre)/iu,
+    /(?<!\p{L})(?:travail|carrière|emploi|profession|soir|heure|semaine|temps|week|rentr|ambition|tâche|rôle|enfant|projet|année)/iu,
+  lieu: /(?<!\p{L})(?:pays|ville|déménag|vivre|habiter|lieu|rester|partir|loin|kilomètre|km|emploi|mutation)/iu,
 };
 
 const deaccent = (x: string) =>
