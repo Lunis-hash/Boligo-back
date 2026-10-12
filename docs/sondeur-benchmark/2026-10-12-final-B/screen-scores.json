@@ -1,0 +1,158 @@
+[
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "lang": "fr",
+    "text": "Si vos positions sur les enfants ne changeaient jamais, pourriez-vous l'accepter pendant des années ?",
+    "textEn": "If your positions on having children never changed, could you live with that for years?",
+    "quality": 0.875,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "lang": "fr",
+    "text": "Sur une semaine, combien de jours des enfants pourraient-ils vivre chez vous, sans que ce soit trop pour vous ?",
+    "textEn": "In a typical week, how many days could children live in your home before it became too much for you?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "lang": "fr",
+    "text": "Dans dix ans, quelle réalité sur les enfants vous serait la plus difficile à vivre ?",
+    "textEn": "Ten years from now, which situation about children would be hardest for you to live with?",
+    "quality": 0.8333333333333334,
+    "qualityFr": 0.6666666666666666,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "lang": "fr",
+    "text": "Dans votre vie de couple, combien de fois par semaine l'alcool à la maison ou en sortie vous semblerait trop ?",
+    "textEn": "In your life as a couple, how many times a week would alcohol, at home or out, feel like too much?",
+    "quality": 0.9166666666666666,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Si l'un de vous deux perdait son emploi, combien de temps pourriez-vous le soutenir financièrement ?",
+    "textEn": "If one of you lost their job, how long could you realistically support them financially?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Si la place du tabac dans votre vie à deux ne changeait jamais, pourriez-vous la vivre au quotidien, pendant des années ?",
+    "textEn": "If tobacco's place in your life together never changed, could you live with it daily, for years?",
+    "quality": 0.9166666666666666,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "lang": "fr",
+    "text": "Si vos besoins de temps à soi ne changeaient jamais, pourriez-vous vivre ainsi pendant des années ?",
+    "textEn": "If your needs for time to yourselves never changed, could you live like that for years?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "lang": "fr",
+    "text": "Jusqu'à combien de jours par semaine pourriez-vous accueillir chez vous des enfants qui ne sont pas les vôtres ?",
+    "textEn": "Up to how many days a week could you welcome children into your home who are not your own?",
+    "quality": 0.875,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "lang": "fr",
+    "text": "Combien de soirées ou de journées par semaine à vous, sans l'autre, vous sembleraient normales dans un couple ?",
+    "textEn": "How many evenings or days a week to yourself, without the other, would feel normal to you in a couple?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "lang": "fr",
+    "text": "Si des enfants vivaient chez vous une semaine sur deux, pourriez-vous le vivre au quotidien, année après année ?",
+    "textEn": "If children lived in your home every other week, could you really live with that day to day, year after year?",
+    "quality": 0.9166666666666666,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Au quotidien, qu'est-ce que vous ne pourriez pas accepter dans la place de l'alcool chez l'autre ?",
+    "textEn": "In daily life, what could you not accept about the place of alcohol in your partner's habits?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Combien de soirs par semaine avec de l'alcool à la maison pourriez-vous réellement accepter, année après année ?",
+    "textEn": "How many evenings a week with alcohol at home could you truly accept, year after year?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Si l'une de vos familles ne vous donnait jamais son accord, pourriez-vous vous marier quand même ?",
+    "textEn": "If one of your families never gave its approval, could you still go ahead and marry?",
+    "quality": 0.8333333333333334,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 1,
+    "hard": [
+      "known_fact_repetition"
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Sur dix décisions de couple où votre famille serait contre, combien prendriez-vous malgré son avis ?",
+    "textEn": "Out of ten couple decisions your family opposed, how many would you still make despite their opinion?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  }
+]

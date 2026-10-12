@@ -1,0 +1,202 @@
+[
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "lang": "fr",
+    "text": "Si des enfants vivaient chez vous six jours sur sept, qu'est-ce qui vous serait le plus difficile à accepter au quotidien ?",
+    "textEn": "If children lived with you six days out of seven, what would be the hardest thing for you to accept in daily life?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "lang": "fr",
+    "text": "Si vos positions sur les enfants ne changeaient jamais, que feriez-vous concrètement ?",
+    "textEn": "If your positions on having children never changed, what would you realistically do?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "lang": "fr",
+    "text": "Avant de vous engager, que voudriez-vous savoir de l'autre sur les enfants, pour décider en toute honnêteté ?",
+    "textEn": "Before committing, what would you need to know about the other's wishes on children to decide honestly?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50602",
+    "lang": "fr",
+    "text": "Si l'un de vous ne quittait jamais sa ville, pourriez-vous construire votre vie à deux là-bas, pendant des années ?",
+    "textEn": "If one of you never left your city, could you really build a life together there for years?",
+    "quality": 0.875,
+    "qualityFr": 1,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50602",
+    "lang": "fr",
+    "text": "Quelle distance de votre ville actuelle pourriez-vous accepter pour votre vie de couple, et au-delà de laquelle ce serait trop ?",
+    "textEn": "How far from your current city could you accept living as a couple, and beyond what distance would it be too much?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Si l'un de vous perdait son emploi, pendant combien de mois pourriez-vous porter seuls les dépenses du couple ?",
+    "textEn": "If one of you lost their job, for how many months could you realistically cover the couple's expenses on your own?",
+    "quality": 0.9166666666666666,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Jusqu'où le tabac pourrait-il entrer dans votre vie à deux : à la maison, en voiture, devant des enfants ?",
+    "textEn": "How far could smoking enter your life together: at home, in the car, around children?",
+    "quality": 0.9166666666666666,
+    "qualityFr": 0.6666666666666666,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Si la place du tabac dans votre vie à deux ne changeait jamais, pourriez-vous vivre ainsi pendant des années ?",
+    "textEn": "If the place of tobacco in your life together never changed, could you live with that for years?",
+    "quality": 0.9166666666666666,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Dans votre vie de couple, quelle place du tabac au quotidien vous semblerait trop grande pour vous engager ?",
+    "textEn": "In your life as a couple, how much tobacco in daily life would be too much for you to commit?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 0.75,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Sur le tabac, qu'est-ce que vous ne pourriez pas accepter dans votre quotidien à deux, même si l'autre ne change pas ?",
+    "textEn": "On tobacco, what could you not accept in your daily life together, even if the other never changed?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50603",
+    "lang": "fr",
+    "text": "Quelle fréquence de tabac, chez vous ou chez l'autre, serait pour vous la limite à ne pas dépasser dans la durée ?",
+    "textEn": "How often would smoking, by you or by the other, be the most you could accept over the long term?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50643",
+    "lang": "fr",
+    "text": "Si vos besoins de temps à soi ne changeaient jamais, pourriez-vous les vivre au quotidien pendant des années ?",
+    "textEn": "If your needs for time to yourselves never changed, could you live with that every day for years?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50643",
+    "lang": "fr",
+    "text": "Si vos positions sur l'accueil d'enfants de l'autre ne changeaient jamais, pourriez-vous construire une vie de couple sereine ?",
+    "textEn": "If your views on welcoming each other's children never changed, could you build a peaceful life together?",
+    "quality": 0.7916666666666666,
+    "qualityFr": 0.6666666666666666,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans la place de l'alcool au quotidien, même avec beaucoup d'amour ?",
+    "textEn": "What could you not accept about everyday alcohol in your home, even with a lot of love?",
+    "quality": 0.8333333333333334,
+    "qualityFr": 0.8333333333333334,
+    "qualityEn": 0.5,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Si l'un de vous ne pouvait avancer sans l'accord de sa famille, et l'autre si, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If one of you could not move forward without family approval, and the other could, could you live with that for years?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": [
+      "answer_leak"
+    ]
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Si la place de l'alcool dans votre vie ne changeait jamais, pourriez-vous vous engager ensemble ?",
+    "textEn": "If the place of alcohol in your life never changed, could you commit to each other?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Quand la famille dit non et que le couple dit oui, quelle décision seriez-vous réellement prêt(e) à assumer ?",
+    "textEn": "When your family says no and your couple says yes, what decision would you truly be ready to stand behind?",
+    "quality": 0.9583333333333334,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T70131",
+    "lang": "fr",
+    "text": "Combien de soirées par semaine avec de l'alcool à la maison pourriez-vous accepter, année après année ?",
+    "textEn": "How many evenings a week with alcohol at home could you accept, year after year?",
+    "quality": 1,
+    "qualityFr": 1,
+    "qualityEn": 1,
+    "hard": []
+  }
+]

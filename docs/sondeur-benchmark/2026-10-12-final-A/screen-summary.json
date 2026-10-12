@@ -1,0 +1,16 @@
+[
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "family": "anthropic",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.16666666666666666,
+    "costPerCaseEur": 0.12355437500000001,
+    "latencyP50": 20968,
+    "errors": 0
+  }
+]

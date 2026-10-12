@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-10-12T22:00:00Z",
+  "run": "2026-10-12-final",
+  "writer": ["z-ai/glm-5.3-flash"],
+  "critic": ["anthropic/claude-sonnet-5.5", "z-ai/glm-5.3-flash"],
+  "escalation": ["anthropic/claude-sonnet-5.5"],
+  "fallback": ["anthropic/claude-sonnet-5.5"],
+  "escalateAboveRejectRate": 0.5
+}
