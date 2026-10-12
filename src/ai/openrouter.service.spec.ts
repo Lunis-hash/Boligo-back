@@ -4,6 +4,7 @@ import {
   maxPrice,
   openRouterAccountError,
   openRouterAuthHeaders,
+  reasoningFor,
   resetOpenRouterAccountError,
 } from './openrouter.service';
 
@@ -240,6 +241,25 @@ describe('OpenRouterService', () => {
       expect(openRouterAccountError()).toBeNull();
     },
   );
+
+  it('réflexion bornée pour les familles du banc (sinon réponse vide par troncature)', () => {
+    for (const m of [
+      'anthropic/claude-sonnet-5.5',
+      'deepseek/deepseek-v4.1-flash',
+      '~deepseek/deepseek-flash-latest',
+      'qwen/qwen3.8-flash',
+      'z-ai/glm-5.3-flash',
+      'moonshotai/kimi-k2.6',
+      'openai/gpt-6.1-sol',
+    ])
+      expect(reasoningFor(m, 'quality')).toEqual({
+        reasoning: { effort: 'low', exclude: true },
+      });
+    expect(reasoningFor('anthropic/claude-sonnet-5.5', 'critic')).toEqual({
+      reasoning: { effort: 'medium', exclude: true },
+    });
+    expect(reasoningFor('mistralai/mistral-large')).toEqual({});
+  });
 
   it('sans clé : aucun appel', async () => {
     delete process.env.OPENROUTER_API_KEY;

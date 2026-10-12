@@ -58,6 +58,16 @@ const MAX_EUR = Number(process.env.BENCH_MAX_EUR ?? 20);
 const SCREEN_CASES = Number(process.env.BENCH_SCREEN_CASES ?? 6);
 const FINAL_CASES = Number(process.env.BENCH_FINAL_CASES ?? 40);
 const FINALISTS = Number(process.env.BENCH_FINALISTS ?? 4);
+// Essai réduit : corpus ciblé par sujets, sans juges IA (contrôle humain).
+const TOPICS = (process.env.BENCH_TOPICS ?? '').split(',').filter(Boolean);
+const NO_JUDGES = process.env.BENCH_NO_JUDGES === '1';
+// Plafond de couples par modèle (« modèle=n,… ») : un modèle cher sur moins de cas.
+const CASES_PER_MODEL: Record<string, number> = Object.fromEntries(
+  (process.env.BENCH_CASES_PER_MODEL ?? '')
+    .split(',')
+    .filter((x) => x.includes('='))
+    .map((x) => [x.split('=')[0], Number(x.split('=')[1])]),
+);
 mkdirSync(OUT, { recursive: true });
 const save = (name: string, data: unknown) =>
   writeFileSync(join(OUT, name), JSON.stringify(data, null, 2));
@@ -71,6 +81,28 @@ let spentMicro = Number(
   load<{ spentMicro: number }>('budget.json')?.spentMicro ?? 0,
 );
 const cap = Math.round(MAX_EUR * 1_000_000);
+// Dépense réelle du compte depuis le début de l'essai (dollars comptés comme
+// euros, donc par excès) : les appels facturés sans réponse exploitable
+// (réponse vide, JSON illisible) n'échappent pas au plafond.
+let usageStart = load<{ usageStart?: number }>('budget.json')?.usageStart;
+let realMicro = 0;
+async function refreshRealSpend(): Promise<void> {
+  try {
+    const k = (await orGet('/key')) as { data?: { usage?: number } };
+    const usage = Number(k.data?.usage);
+    if (!Number.isFinite(usage)) return;
+    if (usageStart === undefined) usageStart = usage;
+    realMicro = Math.round((usage - usageStart) * 1e6);
+    save('budget.json', { spentMicro, realMicro, usageStart, capMicro: cap });
+  } catch {
+    // Compteur injoignable : l'estimation par appel reste la limite.
+  }
+}
+/** Vrai si l'essai doit s'arrêter (dépense réelle relue avant chaque appel). */
+async function stop(): Promise<boolean> {
+  await refreshRealSpend();
+  return overBudget();
+}
 // Crédit épuisé ou authentification refusée : arrêt net, aucun résultat
 // fabriqué à partir d'appels qui n'ont pas eu lieu.
 const haltOnAccountError = () => {
@@ -85,16 +117,16 @@ const haltOnAccountError = () => {
 const lab = {
   allow: (estimate: number) => {
     haltOnAccountError();
-    return spentMicro + estimate <= cap;
+    return Math.max(spentMicro, realMicro) + estimate <= cap;
   },
   add: (cost: number) => {
     spentMicro += cost;
-    save('budget.json', { spentMicro, capMicro: cap });
+    save('budget.json', { spentMicro, realMicro, usageStart, capMicro: cap });
   },
 };
 const overBudget = () => {
   haltOnAccountError();
-  return spentMicro >= cap;
+  return Math.max(spentMicro, realMicro) >= cap;
 };
 
 // ─── 1. Catalogue réel ───────────────────────────────────────────────────────
@@ -351,6 +383,111 @@ function corpus(n: number, seedBase: number): BenchCase[] {
     if (!added) break;
   }
   return out;
+}
+
+/** Écart typique visé par sujet dans l'essai réduit (sinon motif du sujet). */
+const TOPIC_FOCUS: Record<string, RegExp> = {
+  enfants: /Désir d'enfants/,
+  // V8.2 : pas de question d'ambition ni de temps passé ensemble ; écarts voisins.
+  carrière: /Ambition professionnelle|perd son emploi|partage des tâches/,
+  'temps de couple': /Temps passé ensemble|temps à soi dans le couple/,
+  'lieu de vie': /Déménager|Lieu de vie|pays/i,
+};
+
+/**
+ * Corpus ciblé (essai réduit) : un couple FR par sujet demandé. Les deux
+ * membres partent des mêmes réponses ; seules une ou deux réponses liées au
+ * sujet diffèrent, pour que l'écart soit net et lisible. « aucun_ecart » et
+ * « securite » désignent les scénarios du même nom. Graines disjointes.
+ */
+function topicCorpus(topics: string[], seedBase = 50_000): BenchCase[] {
+  const out: BenchCase[] = [];
+  const push = (
+    s: number,
+    topic: string,
+    a: Record<string, string>,
+    b: Record<string, string>,
+  ) => {
+    const rep = buildDivergenceReport(a, b);
+    const labels = rep.divergences.map((d) => d.label).join(' ');
+    out.push({
+      id: `T${s}`,
+      seed: s,
+      scenario: classify(rep, false),
+      lang: 'fr',
+      a,
+      b,
+      topics: [
+        topic,
+        ...TOPIC_PATTERNS.filter(([t, x]) => t !== topic && x.test(labels)).map(
+          ([t]) => t,
+        ),
+      ],
+    });
+  };
+  for (const topic of topics) {
+    const re =
+      TOPIC_FOCUS[topic] ?? TOPIC_PATTERNS.find(([t]) => t === topic)?.[1];
+    let found = false;
+    for (let s = seedBase; s < seedBase + 3_000 && !found; s++) {
+      if (out.some((c) => c.seed === s)) continue;
+      const r = rng(s);
+      const a = member(r);
+      const base = buildDivergenceReport(a, { ...a });
+      const sc0 = classify(base, false);
+      if (topic === 'aucun_ecart' || topic === 'securite') {
+        if (sc0 === topic) {
+          push(s, topic, a, { ...a });
+          found = true;
+        }
+        continue;
+      }
+      if (sc0 === 'securite' || base.divergences.length > 1) continue;
+      const tries = QS.flatMap((q) =>
+        q.options
+          .filter((o) => !o.freeText && o.key !== a[q.id] && a[q.id])
+          .map((o) => [q.id, o.key] as const),
+      );
+      for (const [qid, key] of tries) {
+        if (found) break;
+        const b = { ...a, [qid]: key };
+        const rep = buildDivergenceReport(a, b);
+        if (classify(rep, false) === 'securite') continue;
+        const hit = rep.divergences.some(
+          (d) =>
+            d.questionId === qid &&
+            !d.neutral &&
+            !d.undisclosed &&
+            !!re &&
+            re.test(d.label) &&
+            ['moderee', 'majeure', 'critique'].includes(d.severity),
+        );
+        if (hit && rep.divergences.length <= base.divergences.length + 2) {
+          push(s, topic, a, b);
+          found = true;
+        }
+      }
+    }
+    if (!found)
+      console.error(`Aucun couple trouvé pour le sujet « ${topic} ».`);
+  }
+  return out;
+}
+
+/** Écarts montrables d'un couple, par identifiant de preuve (fiche à l'aveugle). */
+function gapsOf(c: BenchCase) {
+  const rep = buildDivergenceReport(c.a, c.b);
+  const byQ = new Map(rep.divergences.map((d) => [d.questionId, d]));
+  return buildEvidence(rep).map((e) => {
+    const d = byQ.get(e.subjects[0]);
+    return {
+      id: e.id,
+      kind: e.kind,
+      topic: e.topic,
+      a: d && !d.neutral && !d.undisclosed ? d.a.text : null,
+      b: d && !d.neutral && !d.undisclosed ? d.b.text : null,
+    };
+  });
 }
 
 // ─── 3. Rédacteur imposé, même chemin que la production ──────────────────────
@@ -657,7 +794,7 @@ async function runCritic(critic: string, writerModel: string) {
     valid = 0;
   const before = spentMicro;
   for (let i = 0; i < items.length; i += 14) {
-    if (overBudget()) break;
+    if (await stop()) break;
     const chunk = items.slice(i, i + 14);
     const gateOk = chunk.map((x) => validate(x.q, INDEX).ok);
     const toReview = chunk.filter((_, k) => gateOk[k]);
@@ -772,6 +909,19 @@ function eligible(s: ModelSummary[]) {
 
 // ─── Étapes ──────────────────────────────────────────────────────────────────
 async function main() {
+  // Aperçu du corpus ciblé, sans aucun appel réseau.
+  if (step === 'corpus') {
+    const cases = TOPICS.length ? topicCorpus(TOPICS) : corpus(SCREEN_CASES, 1);
+    for (const c of cases)
+      console.log(
+        `${c.id} ${c.scenario} [${c.topics.join(', ')}] : ${gapsOf(c)
+          .filter((g) => g.a)
+          .map((g) => `${g.topic} (A « ${g.a} » / B « ${g.b} »)`)
+          .slice(0, 3)
+          .join(' ; ')}`,
+      );
+    return;
+  }
   if (!openRouterAuthAvailable()) {
     console.error(
       'OPENROUTER_API_KEY absente (ni OPENROUTER_AUTH=proxy) : aucun appel lancé, aucun résultat inventé.',
@@ -783,7 +933,18 @@ async function main() {
       ? await catalog()
       : load<CatalogEntry[]>('catalog.json')!;
   if (step === 'catalog') return;
-  const paid = cat.filter((e) => !e.free);
+  // Essai réduit : BENCH_MODELS limite les rédacteurs (payants uniquement).
+  const only = (process.env.BENCH_MODELS ?? '').split(',').filter(Boolean);
+  const unknown = only.filter((m) => !cat.some((e) => e.id === m && !e.free));
+  if (unknown.length) {
+    console.error(
+      `Modèles absents du catalogue payant : ${unknown.join(', ')}`,
+    );
+    process.exit(2);
+  }
+  const paid = cat.filter(
+    (e) => !e.free && (only.length === 0 || only.includes(e.id)),
+  );
   const judges = (process.env.BENCH_JUDGES ?? '').split(',').filter(Boolean);
   if (judges.length < 2) {
     // Deux juges haut de gamme de familles différentes (les plus chers du catalogue retenu).
@@ -794,20 +955,26 @@ async function main() {
   }
 
   if (step === 'screen' || step === 'all') {
-    const cases = corpus(SCREEN_CASES, 1);
+    const cases = TOPICS.length ? topicCorpus(TOPICS) : corpus(SCREEN_CASES, 1);
     save(
       'corpus-screen.json',
-      cases.map(({ a, b, ...c }) => c),
+      cases.map(({ a, b, ...c }) => ({ ...c, gaps: gapsOf({ a, b, ...c }) })),
     );
     const runs: WriterRun[] = [];
     for (const m of paid)
       for (const c of cases) {
-        if (overBudget()) break;
+        if (await stop()) break;
+        if (
+          runs.filter((x) => x.model === m.id).length >=
+          (CASES_PER_MODEL[m.id] ?? Infinity)
+        )
+          break;
         runs.push(await runWriter(m.id, c));
+        save('screen-runs.json', runs);
       }
     const scored: Scored[] = [];
-    for (const c of cases) {
-      if (overBudget()) break;
+    for (const c of NO_JUDGES ? [] : cases) {
+      if (await stop()) break;
       scored.push(
         ...(await judgeCase(
           c,
@@ -847,12 +1014,12 @@ async function main() {
     const runs: WriterRun[] = [];
     for (const m of finalists)
       for (const c of cases) {
-        if (overBudget()) break;
+        if (await stop()) break;
         runs.push(await runWriter(m, c));
       }
     const scored: Scored[] = [];
     for (const c of cases) {
-      if (overBudget()) break;
+      if (await stop()) break;
       scored.push(
         ...(await judgeCase(
           c,
@@ -913,7 +1080,7 @@ async function main() {
       .map((e) => e.id);
     const results = [];
     for (const c of critics) {
-      if (overBudget()) break;
+      if (await stop()) break;
       results.push(await runCritic(c, writer));
     }
     save('critic.json', results);

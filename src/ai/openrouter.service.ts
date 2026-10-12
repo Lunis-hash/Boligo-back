@@ -126,12 +126,16 @@ export function maxPrice(): ModelPrice {
 /**
  * Modèles « à raisonnement » : réflexion bornée pour ne pas tronquer le JSON ;
  * le relecteur réfléchit davantage (il juge chaque question sur 20 règles).
+ * Sans cette borne, certains modèles (Claude Sonnet 5.5, DeepSeek) consomment
+ * tout max_tokens en réflexion et rendent une réponse vide (fin : length).
  */
-function reasoningFor(
+export function reasoningFor(
   model: string,
   role: OpenRouterRole = 'default',
 ): Record<string, unknown> {
-  return /^openai\/(gpt-5|o\d|gpt-oss)/.test(model)
+  return /^(openai\/(gpt-5|gpt-6|o\d|gpt-oss)|anthropic\/|~?deepseek\/|qwen\/|z-ai\/|moonshotai\/)/.test(
+    model,
+  )
     ? {
         reasoning: {
           effort: role === 'critic' ? 'medium' : 'low',
@@ -306,11 +310,17 @@ export class OpenRouterService {
         }
 
         const data = (await response.json()) as {
-          choices?: Array<{ message?: { content?: string } }>;
+          choices?: Array<{
+            message?: { content?: string };
+            finish_reason?: string;
+          }>;
           usage?: OpenRouterResponse['usage'];
         };
         const content = data.choices?.[0]?.message?.content ?? '';
-        if (!content) throw new Error('Réponse vide retournée par le modèle');
+        if (!content)
+          throw new Error(
+            `Réponse vide retournée par le modèle (fin : ${data.choices?.[0]?.finish_reason ?? 'inconnue'}, jetons : ${data.usage?.completion_tokens ?? '?'})`,
+          );
 
         return { content, modelUsed: model, usage: data.usage };
       } catch (error) {
