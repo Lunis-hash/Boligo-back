@@ -13,6 +13,8 @@ const gaps = [
     b: 'Quatre enfants',
   },
   { id: 'E2', kind: 'safety', topic: 'Violence', a: null, b: null },
+  { id: 'E3', kind: 'convergence', topic: 'Lieu de vie', a: null, b: null },
+  { id: 'E4', kind: 'neutral', topic: 'Tendresse', a: null, b: null },
 ];
 const cases = new Map([
   ['C1', { id: 'C1', scenario: 'ecart_important', topics: ['enfants'], gaps }],
@@ -46,6 +48,12 @@ describe('fiche à l’aveugle du banc Sondeur', () => {
       'Signal de sécurité (Violence)',
     );
     expect(gapLine(cases.get('C2')!, [])).toBe('Aucun écart détecté');
+    expect(gapLine(cases.get('C1')!, ['E3'])).toBe(
+      'Accord : Lieu de vie (mêmes réponses)',
+    );
+    expect(gapLine(cases.get('C1')!, ['E4'])).toBe(
+      'Sujet ouvert, ni écart ni accord établi : Tendresse',
+    );
   });
 
   it('30 questions, 5 à 7 par modèle, numérotées, couples variés', () => {

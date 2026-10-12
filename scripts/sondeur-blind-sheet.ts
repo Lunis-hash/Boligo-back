@@ -71,6 +71,9 @@ export function gapLine(c: Case, evidence: string[] = []): string {
     return 'Aucun écart détecté';
   const g = cited[0] ?? c.gaps[0];
   if (g.kind === 'safety') return `Signal de sécurité (${g.topic})`;
+  if (g.kind === 'convergence') return `Accord : ${g.topic} (mêmes réponses)`;
+  if (g.kind === 'neutral')
+    return `Sujet ouvert, ni écart ni accord établi : ${g.topic}`;
   if (!g.a || !g.b) return `${g.topic} (sujet seulement)`;
   return `${g.topic} : A « ${short(g.a)} », B « ${short(g.b)} »`;
 }
@@ -200,7 +203,7 @@ if (require.main === module) {
     '',
     ...lines.map(
       (l) =>
-        `${l.n}. [${l.subject}] Écart : ${l.gap}\n   Question : ${l.question}\n   Note : __ /5`,
+        `${l.n}. [${l.subject}] Constat du moteur : ${l.gap}\n   Question : ${l.question}\n   Note : __ /5`,
     ),
     '',
   ].join('\n');

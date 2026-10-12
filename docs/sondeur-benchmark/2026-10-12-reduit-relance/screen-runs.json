@@ -1,0 +1,385 @@
+[
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 10256,
+    "latencyMs": 93785,
+    "questions": []
+  },
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 14,
+    "passedGate": 9,
+    "formRejected": 2,
+    "evidenceRejected": 3,
+    "reasons": {
+      "P14": 3,
+      "P6": 1
+    },
+    "leaks": 0,
+    "costMicro": 14944,
+    "latencyMs": 97824,
+    "questions": [
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "👨‍👩‍👧",
+        "text": "Dans votre famille, qui décidait vraiment, et quelle place cela laissait-il aux autres ?",
+        "options": [
+          "héritage familial de la décision",
+          "loyauté envers les parents",
+          "place laissée à chacun",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "origine",
+        "target": "D'où vient la position selon laquelle les décisions d'un couple ne concernent que lui.",
+        "evidence": [
+          "E5"
+        ],
+        "claim": "accord",
+        "textEn": "In your family, who really made the decisions, and what place did that leave for everyone else?",
+        "optionsEn": [
+          "family legacy of deciding",
+          "loyalty to parents",
+          "the place left to others"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "👨‍👩‍👧",
+        "text": "Comment un proche qui vous connaît bien décrirait-il la place que votre famille a dans vos choix ?",
+        "options": [
+          "modèle reproduit",
+          "modèle pris à contre-pied",
+          "poids réel de la famille",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "question circulaire par un proche",
+        "target": "Le modèle familial que chacun croit reproduire ou refuse, vu de l'extérieur.",
+        "evidence": [
+          "E6",
+          "E5"
+        ],
+        "claim": "accord",
+        "textEn": "How would someone close to you describe the place your family has in the choices you make?",
+        "optionsEn": [
+          "a model repeated",
+          "a model reversed",
+          "the real weight of family"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "💰",
+        "text": "Dans la maison où vous avez grandi, comment parlait-on de l'argent mis de côté ?",
+        "options": [
+          "l'épargne comme sécurité",
+          "l'épargne jamais évoquée",
+          "l'argent sujet tabou",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "method": "origine",
+        "target": "L'héritage familial derrière l'écart entre épargner presque tout et dépenser selon l'envie.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "In the home where you grew up, how was money set aside talked about?",
+        "optionsEn": [
+          "saving as safety",
+          "saving never mentioned",
+          "money as a taboo"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🕊️",
+        "text": "Comment un proche décrirait-il ce qui est sacré pour vous ?",
+        "options": [
+          "ce qui est sacré",
+          "ce qui ne se discute pas",
+          "ce qui se voit de l'extérieur",
+          "Autre..."
+        ],
+        "themeKey": "spiritualite",
+        "method": "question circulaire par un proche",
+        "target": "La valeur non négociable que chacun porte, dite avec les mots d'un proche.",
+        "evidence": [
+          "E19"
+        ],
+        "claim": "accord",
+        "textEn": "How would someone close to you describe what is sacred to you?",
+        "optionsEn": [
+          "what is sacred",
+          "what is never up for debate",
+          "what others can see"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "💗",
+        "text": "Être tendre au quotidien, pour vous, cela se voit à quoi concrètement ?",
+        "options": [
+          "paroles",
+          "gestes",
+          "présence silencieuse",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "method": "même mot, autre sens",
+        "target": "Deux accords sur la tendresse qui peuvent cacher des gestes très différents.",
+        "evidence": [
+          "E13"
+        ],
+        "claim": "accord",
+        "textEn": "Being tender day to day — what does that actually look like for you?",
+        "optionsEn": [
+          "words",
+          "gestures",
+          "quiet presence"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "💬",
+        "text": "Chez vous, qui s'excusait en premier après une tension, et qu'est-ce que cela vous a appris ?",
+        "options": [
+          "réparation rapide",
+          "réparation tardive",
+          "personne ne réparait",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "method": "origine",
+        "target": "D'où vient la manière de réparer après un désaccord, et le besoin de pause.",
+        "evidence": [
+          "E24"
+        ],
+        "claim": "accord",
+        "textEn": "In your family, who apologized first after tension, and what did that teach you?",
+        "optionsEn": [
+          "repair came fast",
+          "repair came late",
+          "nobody repaired"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "💬",
+        "text": "Pensez à une fois où une tension s'est apaisée vite avec un proche. Qu'est-ce qui avait aidé ?",
+        "options": [
+          "temps laissé",
+          "paroles simples",
+          "geste concret",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "method": "exception",
+        "target": "Les conditions concrètes dans lesquelles chacun se calme, à partir d'un cas réel.",
+        "evidence": [
+          "E24"
+        ],
+        "claim": "accord",
+        "textEn": "Think of a time when tension with someone close eased quickly. What helped?",
+        "optionsEn": [
+          "time given",
+          "simple words",
+          "a concrete gesture"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🎯",
+        "text": "Chez vous, à quoi reconnaissait-on qu'un couple devenait sérieux ?",
+        "options": [
+          "engagement visible",
+          "engagement discret",
+          "étapes obligatoires",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "origine",
+        "target": "Le modèle familial de l'engagement derrière l'accord sur la vie commune.",
+        "evidence": [
+          "E18"
+        ],
+        "claim": "accord",
+        "textEn": "In your family, what showed that a couple was getting serious?",
+        "optionsEn": [
+          "visible commitment",
+          "quiet commitment",
+          "set steps"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🏙️",
+        "text": "Qu'est-ce qui vous attache vraiment à votre ville ?",
+        "options": [
+          "proches sur place",
+          "travail et habitudes",
+          "sentiment d'appartenance",
+          "Autre..."
+        ],
+        "themeKey": "lieu",
+        "method": "origine",
+        "target": "Ce à quoi chacun tient localement, derrière l'accord sur la mobilité.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "accord",
+        "textEn": "What really keeps you attached to your city?",
+        "optionsEn": [
+          "people nearby",
+          "work and routine",
+          "a sense of belonging"
+        ],
+        "writer": "deepseek/deepseek-v4.1-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 15958,
+    "latencyMs": 92904,
+    "questions": []
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 129011,
+    "questions": []
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 122068,
+    "questions": []
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 116719,
+    "questions": []
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 85929,
+    "questions": []
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 119680,
+    "questions": []
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 180488,
+    "questions": []
+  }
+]

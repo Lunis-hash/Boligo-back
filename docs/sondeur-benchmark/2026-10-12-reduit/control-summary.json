@@ -1,0 +1,130 @@
+[
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "run": "2026-10-12-reduit",
+    "cases": 3,
+    "errors": 0,
+    "drafted": 124,
+    "passed": 66,
+    "formRejected": 35,
+    "evidenceRejected": 23,
+    "reasons": {
+      "P7": 4,
+      "P13": 6,
+      "P14": 11,
+      "P10": 1,
+      "EN4": 1,
+      "P2": 1,
+      "P6": 2,
+      "P11": 1
+    },
+    "costEur": 0.580237,
+    "latencyP50s": 26.731
+  },
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "run": "2026-10-12-reduit",
+    "cases": 10,
+    "errors": 0,
+    "drafted": 0,
+    "passed": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "costEur": 0.011161,
+    "latencyP50s": 48.205
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "run": "2026-10-12-reduit",
+    "cases": 10,
+    "errors": 0,
+    "drafted": 0,
+    "passed": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "costEur": 0,
+    "latencyP50s": 75.033
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "run": "2026-10-12-reduit",
+    "cases": 10,
+    "errors": 0,
+    "drafted": 362,
+    "passed": 214,
+    "formRejected": 68,
+    "evidenceRejected": 78,
+    "reasons": {
+      "P7": 5,
+      "P14": 42,
+      "P11": 10,
+      "P13": 27,
+      "P2": 7,
+      "EN5": 1,
+      "P12": 7,
+      "P9": 11,
+      "EN4": 2,
+      "P6": 2,
+      "P10": 1
+    },
+    "costEur": 0.021722,
+    "latencyP50s": 49.056
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "run": "2026-10-12-reduit",
+    "cases": 10,
+    "errors": 0,
+    "drafted": 0,
+    "passed": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "costEur": 0,
+    "latencyP50s": 0.003
+  },
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "run": "2026-10-12-reduit-relance",
+    "cases": 3,
+    "errors": 0,
+    "drafted": 14,
+    "passed": 9,
+    "formRejected": 2,
+    "evidenceRejected": 3,
+    "reasons": {
+      "P14": 3,
+      "P6": 1
+    },
+    "costEur": 0.041158,
+    "latencyP50s": 93.785
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "run": "2026-10-12-reduit-relance",
+    "cases": 3,
+    "errors": 0,
+    "drafted": 0,
+    "passed": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "costEur": 0,
+    "latencyP50s": 122.068
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "run": "2026-10-12-reduit-relance",
+    "cases": 3,
+    "errors": 0,
+    "drafted": 0,
+    "passed": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "costEur": 0,
+    "latencyP50s": 119.68
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "family": "deepseek",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.6428571428571429,
+    "costPerCaseEur": 0.013719333333333333,
+    "latencyP50": 93785,
+    "errors": 0
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "family": "qwen",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 122068,
+    "errors": 0
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "family": "moonshotai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 119680,
+    "errors": 0
+  }
+]
