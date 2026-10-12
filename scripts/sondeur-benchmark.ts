@@ -30,9 +30,15 @@ import {
   DivergenceReport,
 } from '../src/matching/divergence.engine';
 import { V82_QUESTIONS } from '../src/interview/questions.v82';
-import { draftReviewedSondeur } from '../src/journey/sondeur-ai';
+import {
+  draftReviewedSondeur,
+  gateSondeurQuestion,
+} from '../src/journey/sondeur-ai';
 import { describeCoupleContext } from '../src/journey/couple-context';
-import { describeReportForAi } from '../src/journey/sondeur.generator';
+import {
+  describeReportForAi,
+  safetyThemesOf,
+} from '../src/journey/sondeur.generator';
 import { isNonNegotiable } from '../src/journey/sondeur.pool';
 import {
   EvidencedQuestion,
@@ -1065,6 +1071,12 @@ async function main() {
     );
   }
 
+  // Mesure du contrôle (seul, puis suivi du relecteur réel) sur corpus étiqueté.
+  if (step === 'gate-eval') {
+    await gateEval();
+    return;
+  }
+
   // Jugement à l'aveugle d'un essai déjà rédigé (mêmes couples, mêmes juges).
   if (step === 'judge') {
     const runs = load<WriterRun[]>('screen-runs.json') ?? [];
@@ -1478,3 +1490,178 @@ if (require.main === module)
     console.error(e);
     process.exit(1);
   });
+
+// ─── Corpus étiqueté : contrôle seul, puis contrôle + relecteur réel ─────────
+interface LabeledItem {
+  id: string;
+  split: 'dev' | 'final';
+  lang: 'fr' | 'en';
+  caseId: string;
+  day: number;
+  themeKey: string;
+  evidence: string[];
+  claim: string;
+  text: string;
+  textEn?: string;
+  label: 'valid' | 'faulty';
+  category: string;
+}
+
+async function gateEval() {
+  const file = process.env.BENCH_CORPUS;
+  if (!file) throw new Error('BENCH_CORPUS manquant');
+  const { items } = JSON.parse(readFileSync(file, 'utf8')) as {
+    items: LabeledItem[];
+  };
+  const cases = new Map(
+    [...topicCorpus(TOPICS), ...topicCorpus(HELDOUT, 70_000)].map((c) => [
+      c.id,
+      c,
+    ]),
+  );
+  const missing = [...new Set(items.map((i) => i.caseId))].filter(
+    (id) => !cases.has(id),
+  );
+  if (missing.length)
+    throw new Error(`Couples introuvables : ${missing.join(', ')}`);
+  const ctxOf = new Map(
+    [...cases.values()].map((c) => {
+      const { report, couple } = coupleOf(c);
+      return [
+        c.id,
+        {
+          report,
+          couple,
+          evidenceIndex: buildEvidence(report),
+          safetyThemes: safetyThemesOf(report),
+          strict: new Set(
+            report.divergences
+              .filter((d) => isNonNegotiable(d))
+              .map((d) => d.theme),
+          ),
+        },
+      ];
+    }),
+  );
+  // 1. Contrôle déterministe seul.
+  const gate = items.map((it) => {
+    const ctx = ctxOf.get(it.caseId)!;
+    const v = gateSondeurQuestion(
+      {
+        day: it.day,
+        theme: it.themeKey,
+        themeKey: it.themeKey,
+        emoji: '💬',
+        text: it.text,
+        textEn: it.textEn,
+        options: ['Autre...'],
+        evidence: it.evidence,
+        claim: it.claim === 'divergence' ? 'ecart' : it.claim,
+      } as HarmonyQuestionPayload,
+      ctx,
+    );
+    return { ...it, gateOk: v.ok, gateReasons: v.reasons };
+  });
+  // 2. Relecteur réel sur ce que le contrôle laisse passer, dans les deux sens.
+  const writers = (process.env.BENCH_EVAL_WRITERS ?? '')
+    .split(',')
+    .filter(Boolean);
+  const critic: Record<
+    string,
+    Record<string, { ok: boolean; rule?: number | null }>
+  > = {};
+  for (const writer of writers) {
+    critic[writer] = {};
+    const ai = new AiService(new ForcedOpenRouter({ critic: CRITICS }));
+    const groups = new Map<string, typeof gate>();
+    for (const g of gate.filter((x) => x.gateOk)) {
+      const k = `${g.caseId}|${g.day}`;
+      groups.set(k, [...(groups.get(k) ?? []), g]);
+    }
+    for (const [k, qs] of groups) {
+      if (await stop()) break;
+      const ctx = ctxOf.get(qs[0].caseId)!;
+      const before = spentMicro;
+      const review = await ai.reviewSondeurQuestions(
+        `eval-${k}`,
+        qs.map((q) => ({
+          day: q.day,
+          themeKey: q.themeKey,
+          text: q.text,
+          evidence: q.evidence,
+          claim: q.claim === 'divergence' ? 'ecart' : q.claim,
+          textEn: q.textEn,
+        })),
+        [],
+        writer,
+        {
+          analysis: describeReportForAi(ctx.report, ['Membre A', 'Membre B']),
+          couple: ctx.couple,
+          days: `jour ${qs[0].day}`,
+          evidence: describeEvidenceForAi(ctx.evidenceIndex),
+        },
+        lab,
+      );
+      void before;
+      qs.forEach((q, i) => {
+        critic[writer][q.id] = review
+          ? {
+              ok: !review.rejected.has(i),
+              rule: review.refusals.find((r) => r.n === i)?.rule ?? null,
+            }
+          : { ok: false, rule: null };
+      });
+      save('gate-eval-critic.json', critic);
+    }
+  }
+  const rate = (xs: boolean[]) =>
+    xs.length ? xs.filter(Boolean).length / xs.length : NaN;
+  const measure = (split: 'dev' | 'final', writer?: string) => {
+    const xs = gate.filter((g) => g.split === split);
+    const passes = (g: (typeof gate)[number]) =>
+      g.gateOk && (!writer || critic[writer]?.[g.id]?.ok === true);
+    const faulty = xs.filter((g) => g.label === 'faulty');
+    const valid = xs.filter((g) => g.label === 'valid');
+    const byCat: Record<string, { n: number; rejected: number }> = {};
+    for (const f of faulty) {
+      const c = (byCat[f.category] ??= { n: 0, rejected: 0 });
+      c.n++;
+      if (!passes(f)) c.rejected++;
+    }
+    return {
+      split,
+      chain: writer
+        ? `contrôle + relecteur (rédacteur ${writer})`
+        : 'contrôle seul',
+      faulty: faulty.length,
+      valid: valid.length,
+      faultyRejectionRate: rate(faulty.map((f) => !passes(f))),
+      validAcceptanceRate: rate(valid.map((v) => passes(v))),
+      leaksAccepted: faulty.filter(
+        (f) => f.category === 'answer_leak' && passes(f),
+      ).length,
+      byCategory: byCat,
+      faultyAccepted: faulty
+        .filter((f) => passes(f))
+        .map((f) => ({ id: f.id, category: f.category, text: f.text })),
+      validRejected: valid
+        .filter((v) => !passes(v))
+        .map((v) => ({
+          id: v.id,
+          text: v.text,
+          gate: v.gateReasons,
+          critic: writer ? critic[writer]?.[v.id] : undefined,
+        })),
+    };
+  };
+  const results = (['dev', 'final'] as const).flatMap((sp) => [
+    measure(sp),
+    ...writers.map((w) => measure(sp, w)),
+  ]);
+  save('gate-eval-items.json', gate);
+  save('gate-eval.json', results);
+  for (const r of results)
+    console.log(
+      `${r.split} | ${r.chain} : fautives rejetées ${(r.faultyRejectionRate * 100).toFixed(1)} % (${r.faulty}), valides acceptées ${(r.validAcceptanceRate * 100).toFixed(1)} % (${r.valid}), fuites acceptées ${r.leaksAccepted}`,
+    );
+}

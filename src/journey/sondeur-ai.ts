@@ -113,58 +113,11 @@ export async function draftReviewedSondeur(
   );
   // Contrôle de forme par le code avant la relecture.
   const gate = (q: HarmonyQuestionPayload) => {
-    if (
-      !THEME_LIST.includes(q.themeKey as Theme) ||
-      safetyThemes.includes(q.themeKey as Theme)
-    )
-      return false;
-    if (strict.has(q.themeKey as Theme) && COMPROMISE.test(q.text)) {
-      formRejected.push(q);
-      return false;
-    }
-    if (!isWellFormedQuestion(q.text)) {
-      formRejected.push(q);
-      return false;
-    }
-    // Contrat de preuves : preuves connues, du thème, de la bonne nature ;
-    // aucun écart ou accord non établi, aucune émotion, intention, habitude
-    // ou passé présupposés, aucune reprise d'une réponse.
-    const claim = parseClaim(q.claim);
-    const verdict = claim
-      ? validate(
-          {
-            day: q.day,
-            themeKey: q.themeKey as Theme,
-            text: q.text,
-            evidence: q.evidence ?? [],
-            claim,
-          },
-          evidenceIndex,
-          // Rédacteur du Sondeur : écarts réels seulement, sans détour.
-          { safetyThemes, gapOnly: true },
-        )
-      : { ok: false, reasons: ['P4 nature absente ou inconnue'] };
-    // Sondeur bilingue : la version anglaise passe les mêmes contrôles.
-    if (verdict.ok && claim) {
-      const en = validateEn(
-        q.textEn,
-        {
-          day: q.day,
-          themeKey: q.themeKey as Theme,
-          text: q.text,
-          evidence: q.evidence ?? [],
-          claim,
-        },
-        evidenceIndex,
-      );
-      if (!en.ok) verdict.reasons.push(...en.reasons);
-      verdict.ok = en.ok;
-    }
-    if (!verdict.ok) {
-      evidenceRejected.push({ question: q, reasons: verdict.reasons });
-      return false;
-    }
-    return true;
+    const v = gateSondeurQuestion(q, { evidenceIndex, safetyThemes, strict });
+    if (v.stage === 'form') formRejected.push(q);
+    if (v.stage === 'evidence')
+      evidenceRejected.push({ question: q, reasons: v.reasons });
+    return v.ok;
   };
   const normalize = (qs: HarmonyQuestionPayload[] | undefined) =>
     (qs ?? []).map((q) => ({
@@ -318,4 +271,69 @@ export function sameGapSameAngle(
   if (!ea || ea !== eb) return false;
   const x = angleOf(a.text);
   return !!x && x === angleOf(b.text);
+}
+
+/**
+ * Contrôle déterministe d'une proposition du rédacteur, avant la relecture
+ * (exporté pour la mesure du banc d'essai sur corpus étiqueté) : thème hors
+ * sécurité, aucun compromis sur un non-négociable, forme, contrat de preuves
+ * (écarts réels seulement) et version anglaise.
+ */
+export function gateSondeurQuestion(
+  q: HarmonyQuestionPayload,
+  ctx: {
+    evidenceIndex: EvidenceItem[];
+    safetyThemes: Theme[];
+    strict: Set<Theme>;
+  },
+): {
+  ok: boolean;
+  stage: 'theme' | 'form' | 'evidence' | null;
+  reasons: string[];
+} {
+  const theme = q.themeKey as Theme;
+  if (!THEME_LIST.includes(theme) || ctx.safetyThemes.includes(theme))
+    return {
+      ok: false,
+      stage: 'theme',
+      reasons: ['thème hors grille ou de sécurité'],
+    };
+  if (ctx.strict.has(theme) && COMPROMISE.test(q.text))
+    return {
+      ok: false,
+      stage: 'form',
+      reasons: ['compromis sur un non-négociable'],
+    };
+  if (!isWellFormedQuestion(q.text))
+    return { ok: false, stage: 'form', reasons: ['P8 forme'] };
+  // Contrat de preuves : preuves connues, du thème, de la bonne nature ;
+  // aucun écart ou accord non établi, aucune émotion, intention, habitude
+  // ou passé présupposés, aucune reprise d'une réponse.
+  const claim = parseClaim(q.claim);
+  if (!claim)
+    return {
+      ok: false,
+      stage: 'evidence',
+      reasons: ['P4 nature absente ou inconnue'],
+    };
+  const contract = {
+    day: q.day,
+    themeKey: theme,
+    text: q.text,
+    evidence: q.evidence ?? [],
+    claim,
+  };
+  // Rédacteur du Sondeur : écarts réels seulement, sans détour.
+  const verdict = validate(contract, ctx.evidenceIndex, {
+    safetyThemes: ctx.safetyThemes,
+    gapOnly: true,
+  });
+  // Sondeur bilingue : la version anglaise passe les mêmes contrôles.
+  if (verdict.ok) {
+    const en = validateEn(q.textEn, contract, ctx.evidenceIndex);
+    if (!en.ok) return { ok: false, stage: 'evidence', reasons: en.reasons };
+  }
+  return verdict.ok
+    ? { ok: true, stage: null, reasons: [] }
+    : { ok: false, stage: 'evidence', reasons: verdict.reasons };
 }
