@@ -293,7 +293,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       number,
       number,
     ];
-    expect(followUpCall[1]).toContain('CHOIX DE LA TECHNIQUE SELON LE SIGNAL');
+    expect(followUpCall[1]).toContain('ÉCART RÉEL');
     expect(followUpCall[2]).toContain(
       '- Argent & dettes : Le partage des dépenses reste à préciser.',
     );

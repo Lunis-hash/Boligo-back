@@ -49,6 +49,11 @@ function setup(
     /** Questions refusées par le relecteur ; null : relecture impossible. */
     reject?: ((q: Draft) => boolean) | null;
     extra?: Draft[];
+    /**
+     * Écart réel sur l'épargne (M4_Q14 A/C) : seul cas où l'IA écrit. Les
+     * autres thèmes n'ont que des propositions neutres, écartées par le code.
+     */
+    gap?: boolean;
   } = {},
 ) {
   const created: Array<{
@@ -102,14 +107,20 @@ function setup(
     interviewIA: {
       findFirst: jest.fn(({ where }: { where: { userId: string } }) =>
         Promise.resolve(
-          options.interview
+          options.interview || options.gap
             ? {
                 responses: [
                   {
                     rawResponses:
                       where.userId === 'a'
-                        ? { M6_Q04: 'A' }
-                        : { M6_Q04: options.interview.M6_Q04 },
+                        ? {
+                            M6_Q04: 'A',
+                            ...(options.gap ? { M4_Q14: 'A' } : {}),
+                          }
+                        : {
+                            M6_Q04: options.interview?.M6_Q04 ?? 'A',
+                            ...(options.gap ? { M4_Q14: 'C' } : {}),
+                          },
                   },
                 ],
               }
@@ -120,21 +131,44 @@ function setup(
   };
   const all = [...drafts(), ...(options.extra ?? [])];
   const ai = {
-    generateTargetedHarmonyQuestions: jest.fn(() =>
-      Promise.resolve({
-        // V8.2 : chaque proposition cite sa preuve (neutre, du thème).
+    generateTargetedHarmonyQuestions: jest.fn((...args: unknown[]) => {
+      // Preuve de l'écart d'épargne dans l'index transmis (« E3 · argent · écart … »).
+      const gapId = /^(E\d+) · argent · écart/m.exec(String(args[6]))?.[1];
+      return Promise.resolve({
+        // V8.2 : chaque proposition cite sa preuve (neutre, du thème), sauf
+        // sur l'écart réel où elle confronte l'écart à la réalité.
         // Sondeur bilingue : chaque proposition porte sa version anglaise.
-        questions: all.map((q) => ({
-          evidence: [`N-${q.themeKey}`],
-          claim: 'neutre',
-          textEn: `What does ${q.text.replace(/^Que veut dire | pour vous.*$/g, '')} mean to you?`,
-          optionsEn: ['Other...'],
-          ...q,
-          writer: 'anthropic/claude-opus-5',
-        })),
+        questions: [
+          ...all.map((q) => ({
+            evidence: [`N-${q.themeKey}`],
+            claim: 'neutre',
+            textEn: `What does ${q.text.replace(/^Que veut dire | pour vous.*$/g, '')} mean to you?`,
+            optionsEn: ['Other...'],
+            ...q,
+            writer: 'anthropic/claude-opus-5',
+          })),
+          ...(gapId
+            ? [1, 2, 3].flatMap((day) =>
+                ['A', 'B'].map((variant) => ({
+                  day,
+                  theme: 'Lignes rouges',
+                  themeKey: 'argent',
+                  emoji: '💬',
+                  text: `Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous dans l'épargne ${word(200 + day)}, proposition ${variant} ?`,
+                  options: ['Autre...'],
+                  method: 'chiffre',
+                  evidence: [gapId],
+                  claim: 'ecart',
+                  textEn: `Out of 1,000 left at the end of the month, how much would you put into ${word(200 + day)} savings, option ${variant}?`,
+                  optionsEn: ['Other...'],
+                  writer: 'anthropic/claude-opus-5',
+                })),
+              )
+            : []),
+        ],
         model: 'anthropic/claude-opus-5',
-      }),
-    ),
+      });
+    }),
     reviewSondeurQuestions: jest.fn((_j: string, questions: Draft[]) =>
       Promise.resolve(
         options.reject === null
@@ -195,14 +229,28 @@ describe('Sondeur — couche IA des parcours payés', () => {
     expect(args[5]).not.toMatch(/Lyon/);
   });
 
-  it('la meilleure proposition relue passe devant les gabarits', async () => {
+  it('sans écart réel : aucune proposition de l’IA servie, gabarits seuls', async () => {
     const { run, created } = setup();
     await run();
     // Sondeur adaptatif : couple sans écart → 3 questions par jour.
     expect(created).toHaveLength(9);
-    expect(created.every((q) => q.questionText.includes('proposition B'))).toBe(
+    expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
+      false,
+    );
+  });
+
+  it('écart réel : la meilleure proposition relue passe devant les gabarits', async () => {
+    const { run, created } = setup({ gap: true });
+    await run();
+    const fromAi = created.filter((q) =>
+      q.questionText.includes('proposition'),
+    );
+    expect(fromAi.length).toBeGreaterThan(0);
+    // Seules les questions sur l'écart d'épargne, et la proposition préférée.
+    expect(fromAi.every((q) => q.questionText.includes('proposition B'))).toBe(
       true,
     );
+    expect(fromAi.every((q) => q.questionText.includes('épargne'))).toBe(true);
   });
 
   it('contrôle de forme par le code : une question fermée n’est jamais envoyée au relecteur', async () => {
@@ -210,7 +258,7 @@ describe('Sondeur — couche IA des parcours payés', () => {
       ...drafts()[0],
       text: 'Accepteriez-vous de vivre loin de votre famille ?',
     };
-    const { run, ai } = setup({ extra: [closed] });
+    const { run, ai } = setup({ extra: [closed], gap: true });
     await run();
     const calls = ai.reviewSondeurQuestions.mock.calls as unknown as Array<
       [string, Draft[], string[], string]
@@ -223,13 +271,15 @@ describe('Sondeur — couche IA des parcours payés', () => {
     expect(
       calls.every(([, , , writer]) => writer === 'anthropic/claude-opus-5'),
     ).toBe(true);
+    // Seules les deux propositions sur l'écart réel, chaque jour, sont relues.
     const sent = calls.flatMap(([, qs]) => qs);
-    expect(sent).toHaveLength(42);
+    expect(sent).toHaveLength(6);
+    expect(sent.every((q) => q.themeKey === 'argent')).toBe(true);
     expect(sent.some((q) => q.text.startsWith('Accepteriez'))).toBe(false);
   });
 
   it('relecture impossible : aucune question de l’IA servie', async () => {
-    const { run, created } = setup({ reject: null });
+    const { run, created } = setup({ reject: null, gap: true });
     await run();
     // Sondeur adaptatif : couple sans écart → 3 questions par jour.
     expect(created).toHaveLength(9);
@@ -242,22 +292,20 @@ describe('Sondeur — couche IA des parcours payés', () => {
     // Le relecteur refuse les deux propositions de 8 créneaux sur 21 : tout
     // le jour 1 et le premier thème du jour 2.
     const { run, created } = setup({
-      reject: (q) =>
-        q.day === 1 || (q.day === 2 && q.themeKey === THEME_LIST[0]),
+      reject: (q) => q.day === 1,
+      gap: true,
     });
     await run();
-    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
-    expect(created).toHaveLength(9);
     // Jour 1 refusé en entier : gabarits ; jours 2 et 3 : questions relues.
     const fromAi = created.filter((q) =>
       q.questionText.includes('proposition'),
     );
     expect(fromAi.some((q) => q.day === 1)).toBe(false);
-    expect(fromAi).toHaveLength(6);
+    expect(fromAi.length).toBeGreaterThan(0);
   });
 
   it('thème de sécurité (violence) : jamais une question de l’IA, toujours une question de limite', async () => {
-    const { run, ai } = setup({ interview: { M6_Q04: 'C' } });
+    const { run, ai } = setup({ interview: { M6_Q04: 'C' }, gap: true });
     await run();
     const sent = (
       ai.reviewSondeurQuestions.mock.calls[0] as unknown as [string, Draft[]]
@@ -318,10 +366,8 @@ describe('Sondeur — contrat de preuves (V8.2)', () => {
   });
 
   it('chaque question servie garde sa trace de preuves (identifiants et sujets, jamais une réponse)', async () => {
-    const { run, created } = setup();
+    const { run, created } = setup({ gap: true });
     await run();
-    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
-    expect(created).toHaveLength(9);
     for (const q of created) {
       const ev = (q.meta as { evidence?: Record<string, unknown> } | undefined)
         ?.evidence;
@@ -337,7 +383,7 @@ describe('Sondeur — contrat de preuves (V8.2)', () => {
     for (const q of ai)
       expect(
         (q.meta as { evidence: { evidence: string[] } }).evidence.evidence[0],
-      ).toMatch(/^N-/);
+      ).toMatch(/^E\d+$/);
   });
 });
 

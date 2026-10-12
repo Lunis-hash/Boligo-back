@@ -647,25 +647,23 @@ ${label}:
 Tu prépares les questions du JOUR ${angle.day} du Sondeur de ce couple : ${angle.label}, c'est-à-dire ${angle.intent}.
 Les trois jours (${days}) sont préparés séparément : reste à la profondeur de ce jour.
 
-ÉTAPE 1 — ANALYSE (jamais montrée aux membres) : 2 à 4 hypothèses courtes, chacune rattachée à une ligne précise de l'analyse ci-dessous. Ce sont des pistes à explorer par une question, jamais des vérités.
+ÉTAPE 1 — ANALYSE (jamais montrée aux membres) : pour chaque écart réel de l'analyse, en une ligne, les deux positions et ce qu'il faudrait confronter à la réalité.
 
-ÉTAPE 2 — QUESTIONS : pour chacun des ${themeGrid.length} thèmes, sauf ceux marqués LIMITE DE SÉCURITÉ, DEUX propositions bâties avec deux techniques différentes. Un relecteur indépendant gardera la meilleure.
+ÉTAPE 2 — QUESTIONS : uniquement pour les thèmes qui portent un ÉCART RÉEL (preuve de nature « écart »), DEUX propositions par thème. Un relecteur indépendant gardera la meilleure.
 Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).join(' ; ')}.
-- Thème qui porte un écart : explore-le en appliquant « CHOIX DE LA TECHNIQUE SELON LE SIGNAL ».
-- Thème marqué LIMITE DE SÉCURITÉ : n'écris aucune question ; BOLIGO y pose une question de limite écrite à l'avance.
-- Thème marqué POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d'entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s'engager.
-- Ligne « à explorer sans jamais citer » : n'en reprends ni les réponses ni le niveau.
-- Thème sans écart : ne repose pas la réponse commune ; va au concret qu'elle laisse ouvert (combien, quand, qui fait quoi, jusqu'où).
-- Chaque question fait découvrir quelque chose que les deux membres ne se seraient pas demandé eux-mêmes ; elle respecte « FORME ET PUDEUR ».
-- La même question est posée aux deux membres : ne dis jamais qui a répondu quoi.
-- "methode" : la technique employée (par exemple « origine », « échelle avec relance », « même mot, autre sens ») ; "cible" : en une phrase, ce que la question peut révéler. Ces deux champs ne sont jamais montrés aux membres.
-- Ne recopie aucun exemple de la consigne, même reformulé.
-- ÉQUILIBRE : le Sondeur explore aussi ce qui marche entre eux. Au plus trois thèmes sur sept par jour portent sur un écart ; les autres explorent un point d'accord ou ce qui les rapproche.
-- AUCUN SCÉNARIO PRÉSUPPOSÉ : ne présente jamais comme acquis une situation que l'un des deux peut refuser (« si un parent venait vivre chez vous… », « quand vous aurez des enfants… ») ; demande d'abord ce que chacun en pense, ou à quelles conditions.
-- AUCUN FAIT INVENTÉ : n'affirme rien sur eux (« vous visez tous les deux… ») qui ne figure pas mot pour mot dans l'analyse.
-- LANGAGE SIMPLE ET FRANC : une seule idée par question, des mots de tous les jours, une question directe, 20 mots au plus.
+- Thème sans écart réel (accord, sujet neutre) : n'écris AUCUNE question ; BOLIGO y pose ses propres questions.
+- Thème marqué LIMITE DE SÉCURITÉ : n'écris aucune question.
+- Thème marqué POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d'entente ; confronte chacun à « si cela ne changeait jamais ».
+- Ligne « à explorer sans jamais citer » ou sujet sensible : n'en reprends ni les réponses ni le niveau.
+- "ecart" : l'écart détecté en une ligne (DETECTED_GAP), tel que l'analyse le donne (« A veut 2 enfants, B en veut 4 ») ; jamais montré aux membres.
+- La question confronte cet écart à la réalité (combien, jusqu'où, pourriez-vous réellement, si cela ne changeait jamais, avec quoi pourriez-vous vivre, qu'est-ce que vous ne pourriez pas accepter).
+- Une idée par question, aussi courte que naturelle, des mots de tous les jours, vouvoiement, 20 mots au plus.
+- Jamais de souvenir d'enfance, de famille d'origine, de « proche qui vous connaît », d'« angle mort » ni de « sacré ».
+- Ne redemande jamais un fait déjà connu ; ne dis jamais qui a répondu quoi.
+- "methode" : « confrontation », « chiffre », « jusqu'où » ou « si cela ne changeait jamais » ; "cible" : ce que la réponse permettra de savoir. Jamais montrés aux membres.
+- AUCUN FAIT INVENTÉ : n'affirme rien sur eux qui ne figure pas dans l'analyse.
 ${avoidBlock}${contextBlock}
-QUESTIONS DU GRAND ENTRETIEN (déjà posées : ne les repose pas, même reformulées ; cherche le sens derrière la réponse) :
+QUESTIONS DU GRAND ENTRETIEN (déjà posées : ne les repose pas, même reformulées) :
 ${interviewDigest()}
 
 ANALYSE DU COUPLE :
@@ -675,10 +673,9 @@ ${
     ? `
 PREUVES AUTORISÉES (établies par le code ; toute question doit s'y rattacher) :
 ${evidenceIndex}
-- "preuves" : un à trois identifiants de cette liste, du thème de la question (« N-<thème> » pour une question neutre).
-- "nature" : « ecart » si la question explore un écart (preuve d'écart obligatoire), « accord » si elle explore un accord (preuve d'accord obligatoire), sinon « neutre ».
-- Une question « neutre » n'affirme ni écart ni accord, et ne suppose aucune émotion, intention, habitude ni aucun passé.
-- Une question sans preuve valide est écartée par le code.
+- "preuves" : un à trois identifiants d'ÉCART de cette liste, du thème de la question.
+- "nature" : toujours « ecart ». Une question sur un accord ou un sujet neutre est écartée par le code.
+- Une question sans lien avec l'écart cité, ou sans preuve d'écart valide, est écartée par le code.
 `
     : ''
 }
@@ -687,8 +684,8 @@ VERSION ANGLAISE (obligatoire) : chaque question est aussi posée à des membres
 - "options_en" : les mêmes pistes de lecture, courtes, en anglais.
 - Une question sans version anglaise fidèle est écartée par le code.
 
-Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqués LIMITE DE SÉCURITÉ) :
-{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''}, "options": ["...", "...", "..."], "text_en": "...", "options_en": ["...", "...", "..."] }]}
+Retourne UNIQUEMENT ce JSON (deux questions par thème portant un écart réel ; aucune pour les autres) :
+{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "ecart": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''}, "options": ["...", "...", "..."], "text_en": "...", "options_en": ["...", "...", "..."] }]}
 `;
       const { content, model } = await this.queryAiAgentDetailed(
         'sondeur',
@@ -705,6 +702,8 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
         normalizeAiQuestions(
           extractQuestionList(content),
           themeGrid.length * 2,
+          // Écarts seuls : un jour peut n'en porter qu'un (deux propositions).
+          1,
         ) ?? []
       )
         .filter((q) => q.day === angle.day)
@@ -781,7 +780,7 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
         : '',
       context.days ? `ANGLES DES JOURS : ${context.days}` : '',
       context.evidence
-        ? `PREUVES AUTORISÉES (règle 25) :\n${context.evidence}`
+        ? `PREUVES AUTORISÉES (règle 1) :\n${context.evidence}`
         : '',
       `QUESTIONS DU GRAND ENTRETIEN (une question de même sens est une répétition) :\n${interviewDigest()}`,
     ]

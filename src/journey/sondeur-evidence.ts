@@ -16,7 +16,11 @@ import {
   Theme,
   isSafetyDivergence,
 } from '../matching/divergence.engine';
-import { isWellFormedQuestion, passesFormRules } from './clinical-lens';
+import {
+  ORIGIN_DETOUR,
+  isWellFormedQuestion,
+  passesFormRules,
+} from './clinical-lens';
 
 export type EvidenceKind = 'divergence' | 'convergence' | 'neutral' | 'safety';
 
@@ -349,6 +353,8 @@ function possessiveIssue(text: string, theme: string): string | null {
   )) {
     const n = m[1].toLowerCase();
     if (POSSESSIVE_OK.has(n)) continue;
+    // « Si votre partenaire… » : un futur conjoint en hypothèse, pas un passé commun.
+    if (n === 'partenaire' && /^si\s/iu.test(text.trim())) continue;
     if (OWN_SPIRIT.has(n) && (theme === 'spiritualite' || theme === 'famille'))
       continue;
     return m[0];
@@ -456,6 +462,56 @@ export function aiOnlyIssues(text: string, theme: string): string[] {
   return r;
 }
 
+/**
+ * Mots qui rattachent une question à l'écart d'un thème, en plus des mots du
+ * sujet de la preuve (« Désir d'enfants » → « enfant »).
+ */
+const THEME_WORDS: Record<string, RegExp> = {
+  famille:
+    /(?<!\p{L})(?:enfant|beau|belle|parent|famil|visite|aîné|dot|mariage|foyer|chez vous|vivaient|habit)/iu,
+  argent:
+    /(?<!\p{L})(?:argent|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ)/iu,
+  spiritualite:
+    /(?<!\p{L})(?:foi|relig|pri|croy|culte|église|mosquée|spiritu|convers|enfant)/iu,
+  intimite:
+    /(?<!\p{L})(?:intim|désir|tendresse|mariage|attirance|pudeur|fidél)/iu,
+  communication:
+    /(?<!\p{L})(?:disput|désaccord|tension|pause|parler|silence|calm|colère|écout|réconcil)/iu,
+  projet:
+    /(?<!\p{L})(?:travail|carrière|emploi|soir|heure|semaine|temps|week|rentr|ambition|tâche|rôle|enfant|projet|année)/iu,
+  lieu: /(?<!\p{L})(?:pays|ville|déménag|vivre|habiter|lieu|rester|partir|loin|kilomètre)/iu,
+};
+
+const deaccent = (x: string) =>
+  x.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+
+/**
+ * La question parle-t-elle de l'écart cité ? Un mot de son sujet (5 lettres
+ * au moins, racine de 5 lettres) ou un mot du thème doit y figurer.
+ */
+export function relatesToGap(text: string, gaps: EvidenceItem[]): boolean {
+  const t = deaccent(text);
+  return gaps.some((g) => {
+    const stems = deaccent(g.topic)
+      .split(/[^\p{L}]+/u)
+      .filter((w) => w.length >= 5 && !GAP_STOPWORDS.has(w))
+      .map((w) => w.slice(0, 5));
+    return (
+      stems.some((st) => t.includes(st)) || !!THEME_WORDS[g.theme]?.test(text)
+    );
+  });
+}
+const GAP_STOPWORDS = new Set([
+  'quand',
+  'autre',
+  'entre',
+  'place',
+  'choisir',
+  'faire',
+  'avant',
+  'apres',
+]);
+
 export interface Verdict {
   ok: boolean;
   reasons: string[];
@@ -468,7 +524,15 @@ export interface Verdict {
 export function validate(
   q: EvidencedQuestion,
   index: EvidenceItem[],
-  opts: { safetyThemes?: Theme[]; deterministic?: boolean } = {},
+  opts: {
+    safetyThemes?: Theme[];
+    deterministic?: boolean;
+    /**
+     * Rédacteur du Sondeur : une question de l'IA porte uniquement sur un
+     * écart réel, sans détour par l'enfance, la famille d'origine ou un proche.
+     */
+    gapOnly?: boolean;
+  } = {},
 ): Verdict {
   const reasons: string[] = [];
   const byId = new Map(index.map((e) => [e.id, e]));
@@ -531,6 +595,22 @@ export function validate(
   )
     reasons.push('P8 règles de forme existantes');
   if (!opts.deterministic) reasons.push(...aiOnlyIssues(q.text, q.themeKey));
+  if (opts.gapOnly && !opts.deterministic) {
+    if (ORIGIN_DETOUR.test(q.text))
+      reasons.push(
+        'P15 détour par l’enfance, la famille d’origine ou un proche',
+      );
+    // Accords et sujets neutres restent aux gabarits écrits par l'équipe.
+    if (q.claim !== 'divergence' || !kinds.has('divergence'))
+      reasons.push('P16 question de l’IA hors écart (accord ou neutre)');
+    else if (
+      !relatesToGap(
+        q.text,
+        known.filter((e) => e.kind === 'divergence'),
+      )
+    )
+      reasons.push('P17 sans lien avec l’écart cité');
+  }
   return { ok: reasons.length === 0, reasons: [...new Set(reasons)] };
 }
 

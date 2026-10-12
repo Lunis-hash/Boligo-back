@@ -13,6 +13,8 @@ export interface HarmonyQuestionPayload {
   method?: string;
   /** Ce que la question cherche à révéler (jamais montré aux membres). */
   target?: string;
+  /** Écart détecté auquel répond une question de l'IA (jamais montré). */
+  gap?: string;
   /** Modèle d'IA qui l'a rédigée, puis celui qui l'a relue (traçabilité). */
   writer?: string;
   reviewer?: string;
@@ -63,6 +65,8 @@ export function normalizeAiQuestions(
   raw: unknown,
   /** Nombre maximal de questions gardées (2 candidates par créneau possibles). */
   max = 21,
+  /** Nombre minimal de questions valables (Sondeur : écarts seuls, parfois 2). */
+  min = 4,
 ): HarmonyQuestionPayload[] | null {
   if (!Array.isArray(raw) || raw.length === 0) return null;
 
@@ -86,6 +90,8 @@ export function normalizeAiQuestions(
     const field = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
     const method = field(o.methode ?? o.method).slice(0, 160);
     const target = field(o.cible ?? o.target).slice(0, 200);
+    // Écart détecté auquel la question répond (DETECTED_GAP), jamais montré.
+    const gap = field(o.ecart ?? o.gap).slice(0, 200);
     const rawEvidence = o.preuves ?? o.evidence;
     const evidence = Array.isArray(rawEvidence)
       ? rawEvidence
@@ -113,6 +119,7 @@ export function normalizeAiQuestions(
       ...(themeKey ? { themeKey } : {}),
       ...(method ? { method } : {}),
       ...(target ? { target } : {}),
+      ...(gap ? { gap } : {}),
       ...(evidence.length ? { evidence } : {}),
       ...(claim ? { claim } : {}),
       ...(textEn ? { textEn } : {}),
@@ -120,7 +127,7 @@ export function normalizeAiQuestions(
     });
   }
 
-  if (result.length < 4) return null;
+  if (result.length < min) return null;
 
   const seen = new Set<string>();
   const unique: HarmonyQuestionPayload[] = [];

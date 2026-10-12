@@ -134,7 +134,8 @@ export async function draftReviewedSondeur(
             claim,
           },
           evidenceIndex,
-          { safetyThemes },
+          // Rédacteur du Sondeur : écarts réels seulement, sans détour.
+          { safetyThemes, gapOnly: true },
         )
       : { ok: false, reasons: ['P4 nature absente ou inconnue'] };
     // Sondeur bilingue : la version anglaise passe les mêmes contrôles.

@@ -89,18 +89,20 @@ export const DAY_ANGLES: Record<
   1: {
     label: 'Lignes rouges',
     emoji: '🚩',
-    intent: 'ce que chacun protège',
+    intent:
+      'la position réelle de chacun sur ses écarts (combien, quoi, quand)',
   },
   2: {
     label: 'Valeurs profondes',
     emoji: '⚖️',
-    intent: "d'où viennent vos positions",
+    intent:
+      "jusqu'où chacun pourrait réellement aller, et ce qu'il ne pourrait pas accepter",
   },
   3: {
     label: 'Futur & intimité',
     emoji: '🔮',
     intent:
-      "ce qu'il faudrait savoir avant de s'engager, et comment chacun le vivrait au quotidien",
+      "si l'écart ne changeait jamais : pourriez-vous le vivre au quotidien, pendant des années",
   },
 };
 

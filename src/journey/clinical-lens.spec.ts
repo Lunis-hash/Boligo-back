@@ -10,23 +10,20 @@ import {
 } from './clinical-lens';
 
 describe('Regard clinique du Sondeur', () => {
-  it('donne à l’IA plusieurs écoles, des techniques de questionnement et la neutralité', () => {
-    for (const school of [
-      'Attachement',
-      'Gottman',
-      'Sue Johnson',
-      'psychanalytique',
-      'systémique',
-      'schémas',
-      'solutions',
-      'Esther Perel',
-    ]) {
-      expect(CLINICAL_LENS).toContain(school);
-    }
-    expect(CLINICAL_LENS).toMatch(/question circulaire/);
-    expect(CLINICAL_LENS).toMatch(/ne se seraient jamais posée/);
-    expect(CLINICAL_LENS).toMatch(/aucun diagnostic/);
-    expect(CRITIC_RULES).toMatch(/banale/);
+  it('consigne : écarts réels seulement, confrontation à la réalité, sans détour par l’enfance ni un proche', () => {
+    expect(CLINICAL_LENS).toMatch(/que sur un ÉCART RÉEL/);
+    expect(CLINICAL_LENS).toMatch(/DETECTED_GAP/);
+    expect(CLINICAL_LENS).toMatch(/Accord ou sujet neutre : aucune question/);
+    expect(CLINICAL_LENS).toMatch(/si cela ne changeait jamais/);
+    expect(CLINICAL_LENS).toMatch(
+      /Jusqu'à combien d'enfants pourriez-vous réellement aller \?/,
+    );
+    expect(CLINICAL_LENS).toMatch(/aucun passé commun/);
+    // Plus aucune incitation au détour : seulement des interdits.
+    expect(CLINICAL_LENS).not.toMatch(/question circulaire|technique.*origine/);
+    expect(CLINICAL_LENS).toMatch(/jamais de souvenir d'enfance/);
+    expect(CRITIC_RULES).toMatch(/1\. elle ne porte pas sur un écart réel/);
+    expect(CRITIC_RULES).toMatch(/famille d'origine, le regard d'un proche/);
     expect(CRITIC_RULES).toMatch(/répète/);
   });
 
@@ -77,17 +74,39 @@ describe('Regard clinique du Sondeur', () => {
     expect(similarQuestions('Et vous ?', 'Et vous ?')).toBe(false);
   });
 
-  it('cadre adapté à deux inconnus, technique choisie selon le signal, exemples contrastés', () => {
+  it('cadre adapté à deux inconnus, écart détecté puis question', () => {
     expect(CLINICAL_LENS).toMatch(/jamais parlé/);
-    expect(CLINICAL_LENS).toMatch(/CHOIX DE LA TECHNIQUE SELON LE SIGNAL/);
     expect(CLINICAL_LENS).toMatch(/180 caractères/);
-    expect(CLINICAL_LENS).toMatch(/Mauvais : .* Bon : /);
-    expect(CLINICAL_LENS).toMatch(/un proche qui vous connaît bien/);
-    expect(CRITIC_RULES).toMatch(/14\. /);
-    expect(CRITIC_RULES).toMatch(/oui ou par non/);
+    expect(CLINICAL_LENS).toMatch(/EXEMPLES \(écart détecté → question\)/);
+    expect(CLINICAL_LENS).toMatch(/POINTS NON NÉGOCIABLES/);
+    expect(CRITIC_RULES).toMatch(/15\. /);
     expect(CRITIC_RULES).toMatch(/passé commun/);
     expect(READING_LENS).toMatch(/Décris, compare, cite/);
     expect(READING_LENS).toMatch(/même mot/);
+  });
+
+  it('confrontation à la réalité : admise pour l’IA, sans ouvrir l’ultimatum ni l’intrusion', () => {
+    for (const ok of [
+      "Jusqu'à combien d'enfants pourriez-vous réellement aller ?",
+      "Si votre partenaire restait sur son chiffre, pourriez-vous l'accepter ?",
+      "Si votre partenaire ne voulait finalement jamais d'enfant, resteriez-vous ?",
+      "Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous dans l'épargne commune ?",
+      'Si ses enfants vivaient chez vous 5 jours sur 7, pourriez-vous le vivre au quotidien ?',
+      'Si votre partenaire rentrait après 21 h plusieurs soirs par semaine, pourriez-vous vivre ainsi pendant des années ?',
+    ])
+      expect([ok, isWellFormedQuestion(ok)]).toEqual([ok, true]);
+    for (const bad of [
+      // Fermée sans hypothèse concrète : toujours refusée.
+      'Accepteriez-vous de déménager pour l’autre ?',
+      // Ultimatum de rupture, même en hypothèse.
+      'Si votre partenaire refusait, le quitteriez-vous ?',
+      // Montant réel, pas une somme posée en hypothèse.
+      'Combien épargnez-vous chaque mois ?',
+      'Quel est votre salaire, en euros ?',
+      // « Votre partenaire » hors hypothèse : ils ne se connaissent pas.
+      'Comment votre partenaire décrirait-il votre façon de dépenser ?',
+    ])
+      expect([bad, isWellFormedQuestion(bad)]).toEqual([bad, false]);
   });
 
   it('repère une interprétation présentée comme un fait', () => {

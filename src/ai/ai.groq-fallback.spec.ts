@@ -268,9 +268,9 @@ describe('AiService — modèle Groq retiré', () => {
       const create = (g.client.chat.completions.create as jest.Mock).mock
         .calls as Array<[{ messages: Array<{ content: string }> }]>;
       const [system, user] = create[0][0].messages;
-      expect(system.content).toContain('Gottman');
+      expect(system.content).toContain('ÉCART RÉEL');
       expect(system.content).toContain('aucun diagnostic');
-      expect(system.content).toContain('CHOIX DE LA TECHNIQUE SELON LE SIGNAL');
+      expect(system.content).toContain('si cela ne changeait jamais');
       expect(user.content).toContain('ÉTAPE 1');
       expect(user.content).toContain('DEUX propositions');
       expect(user.content).toContain('"methode"');

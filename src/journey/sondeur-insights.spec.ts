@@ -125,7 +125,7 @@ describe('Suivi du Sondeur — règles pures', () => {
       [{ theme: 'Argent & dettes', text: 'Qui paie reste à préciser.' }],
       ['Question q1 ?'],
     );
-    expect(system).toMatch(/CHOIX DE LA TECHNIQUE SELON LE SIGNAL/);
+    expect(system).toMatch(/ÉCART RÉEL/);
     expect(prompt).toContain('journée 2');
     expect(prompt).toContain('- Argent & dettes : Qui paie reste à préciser.');
     expect(prompt).toContain('  - Question q1 ?');
