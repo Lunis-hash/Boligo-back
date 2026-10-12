@@ -57,6 +57,7 @@ function setup(
     meta?: Record<string, unknown>;
   }> = [];
   const prisma = {
+    $transaction: jest.fn((ops: Array<Promise<unknown>>) => Promise.all(ops)),
     harmonyQuestion: {
       count: jest.fn(() => Promise.resolve(0)),
       create: jest.fn(
@@ -197,7 +198,8 @@ describe('Sondeur — couche IA des parcours payés', () => {
   it('la meilleure proposition relue passe devant les gabarits', async () => {
     const { run, created } = setup();
     await run();
-    expect(created).toHaveLength(21);
+    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
+    expect(created).toHaveLength(9);
     expect(created.every((q) => q.questionText.includes('proposition B'))).toBe(
       true,
     );
@@ -229,7 +231,8 @@ describe('Sondeur — couche IA des parcours payés', () => {
   it('relecture impossible : aucune question de l’IA servie', async () => {
     const { run, created } = setup({ reject: null });
     await run();
-    expect(created).toHaveLength(21);
+    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
+    expect(created).toHaveLength(9);
     expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
       false,
     );
@@ -243,10 +246,14 @@ describe('Sondeur — couche IA des parcours payés', () => {
         q.day === 1 || (q.day === 2 && q.themeKey === THEME_LIST[0]),
     });
     await run();
-    expect(created).toHaveLength(21);
-    expect(
-      created.filter((q) => q.questionText.includes('proposition')),
-    ).toHaveLength(13);
+    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
+    expect(created).toHaveLength(9);
+    // Jour 1 refusé en entier : gabarits ; jours 2 et 3 : questions relues.
+    const fromAi = created.filter((q) =>
+      q.questionText.includes('proposition'),
+    );
+    expect(fromAi.some((q) => q.day === 1)).toBe(false);
+    expect(fromAi).toHaveLength(6);
   });
 
   it('thème de sécurité (violence) : jamais une question de l’IA, toujours une question de limite', async () => {
@@ -313,7 +320,8 @@ describe('Sondeur — contrat de preuves (V8.2)', () => {
   it('chaque question servie garde sa trace de preuves (identifiants et sujets, jamais une réponse)', async () => {
     const { run, created } = setup();
     await run();
-    expect(created).toHaveLength(21);
+    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
+    expect(created).toHaveLength(9);
     for (const q of created) {
       const ev = (q.meta as { evidence?: Record<string, unknown> } | undefined)
         ?.evidence;

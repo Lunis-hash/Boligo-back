@@ -185,7 +185,7 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
     day: REVIEW_DAY,
     source: 'regles',
     headline:
-      'Sondeur terminé : vous avez répondu tous les deux aux 21 questions.',
+      'Sondeur terminé : vous avez répondu tous les deux à toutes les questions.',
     together: [],
     toDiscuss,
     openers: [...REVIEW_OPENERS],

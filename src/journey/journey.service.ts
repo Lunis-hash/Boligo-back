@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { SondeurLanguage, localizeStoredQuestion } from './sondeur.i18n';
 import { EvidenceTrace, buildEvidence, servedTrace } from './sondeur-evidence';
 import { journeyEndedEmail } from '../common/email-templates';
@@ -30,6 +31,7 @@ import {
 import { homeContext } from '../matching/discover-filters';
 import { AiSondeurQuestion, assembleSondeur } from './sondeur.generator';
 import { draftReviewedSondeur } from './sondeur-ai';
+import { adaptiveSelection } from './sondeur-adaptive';
 import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
@@ -60,6 +62,9 @@ import { describeCoupleContext } from './couple-context';
 
 /** Texte neutre à la place des réponses d'une journée en attente de l'équipe. */
 export const HELD_ANSWER_TEXT = 'Réponse disponible plus tard.';
+
+/** Questions servies au plus (grille complète et approfondissements). */
+const MAX_SONDEUR_QUESTIONS = 30;
 
 @Injectable()
 export class JourneyService {
@@ -223,7 +228,11 @@ export class JourneyService {
   }
   private readonly logger = new Logger('Parcours');
 
-  /** Génère les 21 questions (3 jours × 7) une seule fois par parcours — IA par défaut. */
+  /**
+   * Génère les questions du Sondeur une seule fois par parcours (nombre
+   * adaptatif, enregistrées en une transaction : un parcours qui a des
+   * questions est complet). Jamais d'effacement : des réponses peuvent exister.
+   */
   async ensureHarmonyQuestions(journeyId: string) {
     const journey = await this.prisma.journey.findUnique({
       where: { id: journeyId },
@@ -232,8 +241,13 @@ export class JourneyService {
     if (!journey) throw new NotFoundException('Parcours non trouvé');
 
     const count = journey.harmonyQuestions.length;
-    if (count >= 21) {
-      if (count > 21) {
+    if (count > 0) {
+      const keys = new Set(
+        journey.harmonyQuestions.map(
+          (q) => `${q.day}:${this.normalizeQuestionKey(q.questionText)}`,
+        ),
+      );
+      if (keys.size < count) {
         try {
           await this.trimDuplicateHarmonyQuestions(journeyId);
         } catch (err) {
@@ -259,9 +273,6 @@ export class JourneyService {
     JourneyService.harmonyGenLocks.set(journeyId, lock);
 
     try {
-      if (count > 0 && count < 21) {
-        await this.clearHarmonyQuestionsForJourney(journeyId);
-      }
       await this.generateHarmonyQuestions(journeyId);
     } finally {
       JourneyService.harmonyGenLocks.delete(journeyId);
@@ -269,21 +280,7 @@ export class JourneyService {
     }
   }
 
-  /** Supprime réponses puis questions d'un parcours (ordre FK). */
-  private async clearHarmonyQuestionsForJourney(journeyId: string) {
-    const ids = await this.prisma.harmonyQuestion.findMany({
-      where: { journeyId },
-      select: { id: true },
-    });
-    const questionIds = ids.map((q) => q.id);
-    if (questionIds.length === 0) return;
-    await this.prisma.harmonyResponse.deleteMany({
-      where: { questionId: { in: questionIds } },
-    });
-    await this.prisma.harmonyQuestion.deleteMany({ where: { journeyId } });
-  }
-
-  /** Garde 21 questions canoniques ; supprime les doublons (réponses liées d'abord). */
+  /** Supprime les doublons (même jour, même texte), réponses liées d'abord. */
   private async trimDuplicateHarmonyQuestions(journeyId: string) {
     const all = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
@@ -297,7 +294,7 @@ export class JourneyService {
 
     for (const q of all) {
       const key = `${q.day}:${this.normalizeQuestionKey(q.questionText)}`;
-      if (!seenKeys.has(key) && keepIds.size < 21) {
+      if (!seenKeys.has(key)) {
         seenKeys.add(key);
         keepIds.add(q.id);
       } else {
@@ -326,7 +323,7 @@ export class JourneyService {
     const seen = new Set<string>();
     for (const q of questions) {
       const key = `${q.day}:${this.normalizeQuestionKey(q.questionText)}`;
-      if (seen.has(key) || keep.length >= 21) continue;
+      if (seen.has(key) || keep.length >= MAX_SONDEUR_QUESTIONS) continue;
       seen.add(key);
       keep.push(q);
     }
@@ -602,9 +599,10 @@ export class JourneyService {
       evidenceIndex = ai.evidenceIndex;
     }
 
-    // 3. Assemblage : toujours 21 (3 × 7). Questions de l'IA relues en premier ;
-    //    sinon divergence réelle → IA conforme → gabarit du thème.
-    const questions = assembleSondeur({
+    // 3. Assemblage (grille 3 × 7), puis sélection adaptative : seules les
+    //    questions qui apportent une information sont gardées (écarts réels,
+    //    limites de sécurité, accords à rendre concrets), 3 par jour au moins.
+    const grid = assembleSondeur({
       report,
       firstNames,
       aiQuestions: aiQuestions as AiSondeurQuestion[],
@@ -612,6 +610,7 @@ export class JourneyService {
       seed: journeyId,
       preferAi,
     });
+    const questions = adaptiveSelection(grid, report);
     const sources = questions.reduce<Record<string, number>>(
       (acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }),
       {},
@@ -635,6 +634,7 @@ export class JourneyService {
     >,
   ) {
     const seen = new Set<string>();
+    const rows: Prisma.HarmonyQuestionUncheckedCreateInput[] = [];
     for (const q of payloads) {
       const key = this.normalizeQuestionKey(q.text);
       if (seen.has(key)) continue;
@@ -653,23 +653,31 @@ export class JourneyService {
         // Preuves : identifiants et sujets d'entretien, jamais une réponse.
         ...(q.trace ? { evidence: { ...q.trace } } : {}),
       };
-      await this.prisma.harmonyQuestion.create({
-        data: {
-          journeyId,
-          day: q.day,
-          theme: q.theme,
-          emoji: q.emoji,
-          questionText: q.text,
-          options: q.options,
-          // Sondeur bilingue : la même question en anglais (servie aux
-          // membres dont l'interface est en anglais).
-          ...(q.textEn && q.optionsEn
-            ? { questionTextEn: q.textEn, optionsEn: q.optionsEn }
-            : {}),
-          ...(Object.keys(meta).length ? { meta } : {}),
-        },
+      rows.push({
+        journeyId,
+        day: q.day,
+        theme: q.theme,
+        emoji: q.emoji,
+        questionText: q.text,
+        options: q.options,
+        // Sondeur bilingue : la même question en anglais (servie aux
+        // membres dont l'interface est en anglais).
+        ...(q.textEn && q.optionsEn
+          ? { questionTextEn: q.textEn, optionsEn: q.optionsEn }
+          : {}),
+        ...(Object.keys(meta).length ? { meta } : {}),
       });
     }
+    // Une seule transaction : jamais un Sondeur à moitié enregistré.
+    // sentAt croissant : l'ordre des questions est celui de la sélection.
+    const base = Date.now();
+    await this.prisma.$transaction(
+      rows.map((data, i) =>
+        this.prisma.harmonyQuestion.create({
+          data: { ...data, sentAt: new Date(base + i) },
+        }),
+      ),
+    );
     console.log(
       `✅ [Journey] ${payloads.length} questions Sondeur enregistrées pour ${journeyId}`,
     );

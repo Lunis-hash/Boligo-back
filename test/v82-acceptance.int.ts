@@ -414,13 +414,14 @@ async function main() {
     journeyId = acc.journey.id;
   });
 
-  await check('Sondeur V8.2 : 21 questions, preuves tracées, questions sans preuve jamais servies', async () => {
+  await check('Sondeur V8.2 adaptatif (9 à 21 questions), preuves tracées, questions sans preuve jamais servies', async () => {
     const list: any[] = await journeys.getDailyQuestions(journeyId, A2.id);
     const all = await prisma.harmonyQuestion.findMany({
       where: { journeyId },
       select: { questionText: true, questionTextEn: true, optionsEn: true, meta: true },
     });
-    assert.strictEqual(all.length, 21);
+    // Sondeur adaptatif : 3 questions par jour au moins, 21 au plus.
+    assert.ok(all.length >= 9 && all.length <= 21, `${all.length} questions`);
     // Bilingue : chaque question servie a sa version anglaise ; une proposition
     // de l'IA sans anglais n'est jamais servie.
     for (const q of all) assert.ok(q.questionTextEn && Array.isArray(q.optionsEn), `anglais manquant : ${q.questionText}`);

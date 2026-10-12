@@ -57,7 +57,7 @@
   {
     "step": "Accord enregistré côté serveur",
     "ok": true,
-    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-12T09:17:17.447Z\"}"
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-12T09:35:19.604Z\"}"
   },
   {
     "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
@@ -100,9 +100,9 @@
     "detail": "Match accepté avec succès"
   },
   {
-    "step": "Sondeur : 21 questions, mêmes questions pour les deux membres",
+    "step": "Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres",
     "ok": true,
-    "detail": "21/21"
+    "detail": "9/9"
   },
   {
     "step": "Sondeur : B lit chaque question en anglais",
@@ -155,14 +155,14 @@
     "detail": ""
   },
   {
-    "step": "Sondeur : 21 réponses envoyées depuis le navigateur",
+    "step": "Sondeur : 9 réponses envoyées depuis le navigateur (toutes les questions)",
     "ok": true,
     "detail": ""
   },
   {
-    "step": "Progression côté serveur = 21/21",
+    "step": "Progression côté serveur = 9/9",
     "ok": true,
-    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":21,\"totalQuestions\":21,\"partnerName\":\"Nadia\",\"journeyId\":\"cf8df265-714e-4b47-8a58-d692e97ecec5\"}"
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":9,\"totalQuestions\":9,\"partnerName\":\"Nadia\",\"journeyId\":\"88e5946a-093e-4801-a9a2-08fdee4077a1\"}"
   },
   {
     "step": "Parcours ouvert au dialogue après les 3 jours",

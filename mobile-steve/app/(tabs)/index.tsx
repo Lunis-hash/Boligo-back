@@ -51,6 +51,7 @@ function DayStep({
   onPressActive,
   lockedLabel,
   lang = 'fr',
+  count,
 }: {
   day: number;
   status: 'done' | 'active' | 'locked';
@@ -59,6 +60,8 @@ function DayStep({
   onPressActive?: () => void;
   lockedLabel?: string;
   lang?: SondeurLanguage;
+  /** Nombre de questions du jour (Sondeur adaptatif). */
+  count?: number;
 }) {
   const t = SONDEUR_TEXT[lang];
   const content = (
@@ -122,7 +125,7 @@ function DayStep({
           </Text>
         </View>
         {status === 'done' && <Text style={styles.dayDoneLabel}>{t.dayDone}</Text>}
-        {status === 'active' && <Text style={styles.dayActiveLabel}>{t.dayActive}</Text>}
+        {status === 'active' && <Text style={styles.dayActiveLabel}>{t.dayActive(count ?? 0)}</Text>}
         {status === 'locked' && <Text style={styles.dayLockedLabel}>{lockedLabel ?? t.lockedAfterPrevious}</Text>}
       </View>
     </View>
@@ -855,6 +858,7 @@ export default function MatchesScreen() {
                       onPressActive={openQuestionFlow}
                       lockedLabel={getSondeurLockedLabel(d.day, dayState, lang)}
                       lang={lang}
+                      count={dbQuestions.filter((q: any) => q.day === d.day).length}
                     />
                   ))}
                 </View>

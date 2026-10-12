@@ -295,7 +295,7 @@ function watchAppDialogs(pg, sink) {
     // ── 5. Sondeur sur 3 jours (A dans le navigateur en FR, B par l'API en EN)
     const qa = (await api('GET', `/journey/${journeyId}/questions?lang=fr`, { token: A.token })).data || [];
     const qb = (await api('GET', `/journey/${journeyId}/questions?lang=en`, { token: B.token })).data || [];
-    record('Sondeur : 21 questions, mêmes questions pour les deux membres', qa.length === 21 && qb.length === 21 &&
+    record('Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres', qa.length >= 9 && qa.length <= 21 && qb.length === qa.length &&
       qa.map((q) => q.id).join() === qb.map((q) => q.id).join(), `${qa.length}/${qb.length}`);
     const frInEn = qb.filter((q) => /[àâçéèêîôûù]|\bvous\b/i.test(q.questionText));
     record('Sondeur : B lit chaque question en anglais', frInEn.length === 0 && qb.every((q) => q.language === 'en'), frInEn.slice(0, 2).map((q) => q.questionText).join(' | '));
@@ -313,7 +313,8 @@ function watchAppDialogs(pg, sink) {
       await page.getByText('Question du jour').first().click();
       await sleep(1000);
       if (day === 1) await shot('10-sondeur-question');
-      for (let q = 0; q < 7; q++) {
+      const perDay = qa.filter((x) => x.day === day).length;
+      for (let q = 0; q < perDay; q++) {
         const txt = day === 1 && q === 0 ? secret : `Réponse ${day}-${q + 1} : je privilégie le dialogue.`;
         // On ne passe aucune question : pas de bouton, et le serveur refuse.
         if (await page.getByTestId('sondeur-vive-voix').isVisible().catch(() => false)) checks.noSkip = false;
@@ -344,7 +345,7 @@ function watchAppDialogs(pg, sink) {
         await page.getByTestId('sondeur-next').click();
         await sleep(800);
         // Quitter puis revenir : reprise exacte à la question non répondue.
-        if (day === 1 && q === 2) {
+        if (day === 1 && perDay > 1 && q === perDay - 2) {
           const expected = ((await api('GET', `/journey/${journeyId}/questions`, { token: A.token })).data || []).find((x) => x.turn === 'current');
           await page.locator('text=←').first().click().catch(() => {});
           await sleep(800);
@@ -385,9 +386,9 @@ function watchAppDialogs(pg, sink) {
     record('BOTH_ANSWERS_REVEALED_BEFORE_NEXT : attente puis révélation à chaque question', checks.revealBeforeNext);
     record('CAN_EXIT : retour à l’accueil au milieu de la journée', checks.exit);
     record('RESUME_SAME_QUESTION : reprise exacte après rechargement', checks.resume);
-    record('Sondeur : 21 réponses envoyées depuis le navigateur', sent === 21);
+    record(`Sondeur : ${sent} réponses envoyées depuis le navigateur (toutes les questions)`, sent === qa.length);
     const progress = await api('GET', '/journey/sondeur-progress', { token: A.token });
-    record('Progression côté serveur = 21/21', progress.data?.answeredCount === 21, JSON.stringify(progress.data));
+    record(`Progression côté serveur = ${qa.length}/${qa.length}`, progress.data?.answeredCount === qa.length && progress.data?.totalQuestions === qa.length, JSON.stringify(progress.data));
     await page.reload({ waitUntil: 'networkidle' });
     await sleep(3000);
     await page.getByText('Matchs', { exact: true }).first().click().catch(() => {});
