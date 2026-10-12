@@ -695,7 +695,9 @@ Retourne UNIQUEMENT ce JSON (deux questions par thème, sauf les thèmes marqué
         prompt,
         systemPrompt,
         // Analyse + 14 questions courtes : environ 2 500 jetons de réponse.
-        4500,
+        // SONDEUR_MAX_TOKENS : marge pour les modèles dont la réflexion ne se
+        // borne pas (banc d'essai).
+        Number(process.env.SONDEUR_MAX_TOKENS) || 4500,
         0.6,
         scope,
       );
