@@ -262,7 +262,10 @@ export async function draftReviewedSondeur(
   for (const q of reviewed.flat()) {
     if (
       questions.some(
-        (k) => key(k.text) === key(q.text) || similarQuestions(k.text, q.text),
+        (k) =>
+          key(k.text) === key(q.text) ||
+          similarQuestions(k.text, q.text) ||
+          sameGapSameAngle(k, q),
       )
     )
       duplicates.push(q);
@@ -285,4 +288,34 @@ export async function draftReviewedSondeur(
     },
     evidenceIndex,
   };
+}
+
+/** Tournure d'attaque d'une question : « combien », « si… », « jusqu'où »… */
+function angleOf(text: string): string {
+  const t = text
+    .toLowerCase()
+    .replace(/jusqu['’]à combien/g, 'combien')
+    .replace(/^[^,?]{0,40},\s*/, (lead) => (/^si\s/.test(lead) ? lead : ''));
+  const m =
+    /^si\s/.exec(t) ??
+    /(?<!\p{L})(combien|jusqu['’]où|qu['’]est-ce|quel(?:le)?s?|comment)(?!\p{L})/u.exec(
+      t,
+    );
+  return m ? (m[1] ?? m[0]).trim() : '';
+}
+
+/**
+ * Pour un même couple, seuil plus strict : deux questions sur le même écart
+ * (mêmes preuves) avec la même tournure (« combien… » et « jusqu'à
+ * combien… ») sont des quasi-doublons, même si leurs mots diffèrent.
+ */
+export function sameGapSameAngle(
+  a: Pick<HarmonyQuestionPayload, 'text' | 'evidence'>,
+  b: Pick<HarmonyQuestionPayload, 'text' | 'evidence'>,
+): boolean {
+  const ea = [...(a.evidence ?? [])].sort().join(',');
+  const eb = [...(b.evidence ?? [])].sort().join(',');
+  if (!ea || ea !== eb) return false;
+  const x = angleOf(a.text);
+  return !!x && x === angleOf(b.text);
 }

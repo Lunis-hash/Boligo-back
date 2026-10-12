@@ -1,5 +1,5 @@
 import { buildDivergenceReport } from '../matching/divergence.engine';
-import { draftReviewedSondeur } from './sondeur-ai';
+import { draftReviewedSondeur, sameGapSameAngle } from './sondeur-ai';
 import { buildEvidence } from './sondeur-evidence';
 
 /** Couple avec un écart réel sur l'épargne (M4_Q14 A/C). */
@@ -29,7 +29,7 @@ describe('Sondeur — doublons dans un même parcours', () => {
     const close =
       "Sur 3 000 € gagnés à deux, combien mettriez-vous dans l'épargne commune ?";
     const other =
-      'Sur 3 000 € gagnés à deux, combien garderiez-vous pour les loisirs ?';
+      "Si l'un de vous dépensait presque tout en loisirs chaque mois, pourriez-vous l'accepter ?";
     const ai = {
       generateTargetedHarmonyQuestions: jest.fn(() =>
         Promise.resolve({
@@ -61,5 +61,35 @@ describe('Sondeur — doublons dans un même parcours', () => {
     });
     expect(r.questions.map((q) => q.text)).toEqual([same, other]);
     expect(r.trace.duplicates.map((q) => q.text)).toEqual([same, close]);
+  });
+
+  it('même couple, même écart, même tournure : quasi-doublon (seuil plus strict)', () => {
+    const q = (text: string, evidence = ['E1']) => ({ text, evidence });
+    expect(
+      sameGapSameAngle(
+        q(
+          'Sur sept jours, combien de jours avec des enfants à la maison pourriez-vous vivre ?',
+        ),
+        q(
+          "Jusqu'à combien de jours par semaine des enfants à la maison resteraient-ils vivables ?",
+        ),
+      ),
+    ).toBe(true);
+    // Autre tournure sur le même écart : gardée.
+    expect(
+      sameGapSameAngle(
+        q('Combien de soirées seul(e) par semaine vous semblent nécessaires ?'),
+        q(
+          "Si l'un de vous gardait chaque semaine un moment à soi, pourriez-vous vivre ainsi ?",
+        ),
+      ),
+    ).toBe(false);
+    // Autre écart : gardée.
+    expect(
+      sameGapSameAngle(
+        q('Combien de soirées seul(e) par semaine vous semblent nécessaires ?'),
+        q('Combien de verres par semaine vous sembleraient trop ?', ['E2']),
+      ),
+    ).toBe(false);
   });
 });

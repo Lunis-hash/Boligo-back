@@ -89,6 +89,16 @@ describe('Sondeur — l’IA n’écrit que sur un écart réel', () => {
       "Si l'un de vous élevait la voix pour une dépense, pourriez-vous l'accepter ?",
       'P22',
     ],
+    [
+      'Chez vous, combien d’épargne par mois vous semblerait suffisante ?',
+      'P23',
+    ],
+    ['Dans votre famille, combien mettait-on de côté chaque mois ?', 'P23'],
+    [
+      'Si l’un de vous perdait son emploi, jusqu’où et combien de temps puiseriez-vous dans l’épargne ?',
+      'P24',
+    ],
+    ['Combien et comment mettriez-vous de côté chaque mois ?', 'P24'],
   ])('règles du rédacteur : %s → %s', (t, code) => {
     expect(ask(t).reasons.join(' ')).toContain(code);
   });

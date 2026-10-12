@@ -514,6 +514,10 @@ const NN_ARRANGEMENT =
  */
 const SAFETY_TOPIC =
   /(?<!\p{L})(?:gifl\p{L}*|claques?|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|ne plus voir vos|(?:connaître )?votre code|vérifi\p{L}* où vous|où vous êtes|décid\p{L}* seul\p{L}* de vos|vos sorties|votre passeport|jet\p{L}* vos affaires|punitions?|punir|hausser la voix|lever le ton|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
+/** Deux interrogatifs coordonnés (« jusqu'où et combien de temps ») : deux idées. */
+export const TWO_INTERROGATIVES =
+  /(?<!\p{L})(?:jusqu['’]où|combien|comment|quand|pourquoi|où|quel(?:le)?s?|à quel point)(?:\s+[^\s?,]+){0,2}?\s+et\s+(?:jusqu['’]où|combien|comment|quand|pourquoi|où|quel(?:le)?s?|à quel point)(?!\p{L})/iu;
+
 /** Sujet voisin de la violence verbale : relève des questions de limite. */
 export const ELEVATED_VOICE =
   /(?<!\p{L})(?:élev\p{L}* la voix|monte(?:r|nt)? le ton|cri(?:s|ait|aient|erait)?|menaç\p{L}*)(?!\p{L})/iu;
@@ -605,6 +609,10 @@ export function gapQuestionIssues(text: string): string[] {
     r.push('P19 deux alternatives opposées ou liste de choix');
   if (ONE_SIDED.test(t)) r.push('P20 hypothèse qui ne vise que l’un des deux');
   if (REVERSED_HYPOTHESIS.test(t)) r.push('P21 hypothèse retournée');
+  if (/^(?:chez vous|dans votre famille)(?!\p{L})/iu.test(t))
+    r.push('P23 commence par « Chez vous » ou « Dans votre famille »');
+  if (TWO_INTERROGATIVES.test(t))
+    r.push('P24 deux interrogatifs coordonnés (une seule idée)');
   if (ELEVATED_VOICE.test(t))
     r.push('P22 sujet voisin de la violence (questions de limite)');
   return r;
