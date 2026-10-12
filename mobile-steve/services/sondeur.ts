@@ -86,8 +86,10 @@ export const SONDEUR_TEXT = {
     hint: (name: string) =>
       `Répondez librement. ${name} verra votre réponse après avoir répondu de son côté. Le résumé du jour pourra en reprendre quelques mots.`,
     placeholder: 'Écrivez votre réponse ici...',
-    inPerson: "J'aimerais en parler de vive voix.",
-    inPersonHint: (answer: string) => `Sujet trop personnel ? Touchez ici pour répondre : « ${answer} ».`,
+    yourAnswer: 'Votre réponse',
+    partnerAnswer: (name: string) => `La réponse de ${name}`,
+    waitingFor: (name: string) => `En attente de la réponse de ${name}…`,
+    next: 'Question suivante',
     sending: 'Analyse en cours…',
     submit: 'Valider la réponse',
     unavailableTitle: 'Questions indisponibles',
@@ -117,9 +119,10 @@ export const SONDEUR_TEXT = {
     hint: (name: string) =>
       `Answer in your own words. ${name} will see your answer once they’ve answered too. Today’s summary may quote a few words of it.`,
     placeholder: 'Write your answer here...',
-    // Reconnue par le serveur comme un sujet gardé pour la rencontre.
-    inPerson: "I'd rather talk about it in person.",
-    inPersonHint: (answer: string) => `Too personal? Tap here to answer: “${answer}”`,
+    yourAnswer: 'Your answer',
+    partnerAnswer: (name: string) => `${name}'s answer`,
+    waitingFor: (name: string) => `Waiting for ${name}'s answer…`,
+    next: 'Next question',
     sending: 'Sending…',
     submit: 'Submit answer',
     unavailableTitle: 'Questions unavailable',

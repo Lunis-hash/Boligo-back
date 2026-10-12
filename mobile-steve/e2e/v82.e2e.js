@@ -101,7 +101,12 @@ function watchAppDialogs(pg, sink) {
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] }).catch(() =>
     chromium.launch({ args: ['--no-sandbox'] }));
-  const ctx = await browser.newContext({ viewport: { width: 420, height: 900 }, locale: 'fr-FR' });
+  const ctx = await browser.newContext({
+    viewport: { width: 420, height: 900 },
+    locale: 'fr-FR',
+    // E2E_VIDEO=1 : vidéo de démonstration du parcours (dossier docs/screenshots/v82/video).
+    ...(process.env.E2E_VIDEO ? { recordVideo: { dir: path.join(SHOTS, 'video'), size: { width: 420, height: 900 } } } : {}),
+  });
   const page = await ctx.newPage();
   const dialogs = [];
   const pageErrors = [];
@@ -302,30 +307,59 @@ function watchAppDialogs(pg, sink) {
     await shot('09-sondeur-accueil');
     let sent = 0;
     const secret = 'Je tiens beaucoup à ma famille du Mali.';
+    const checks = { noSkip: true, noAdvance: true, noPeek: true, revealBeforeNext: true, resume: false, exit: false };
+    const bCurrent = async () => ((await api('GET', `/journey/${journeyId}/questions?lang=en`, { token: B.token })).data || []).find((q) => q.turn === 'current');
     for (let day = 1; day <= 3; day++) {
       await page.getByText('Question du jour').first().click();
       await sleep(1000);
       if (day === 1) await shot('10-sondeur-question');
       for (let q = 0; q < 7; q++) {
         const txt = day === 1 && q === 0 ? secret : `Réponse ${day}-${q + 1} : je privilégie le dialogue.`;
+        // On ne passe aucune question : pas de bouton, et le serveur refuse.
+        if (await page.getByTestId('sondeur-vive-voix').isVisible().catch(() => false)) checks.noSkip = false;
         await page.getByPlaceholder('Écrivez votre réponse ici...').fill(txt);
         await page.getByText('Valider la réponse').click();
         sent++;
-        await sleep(900);
+        await page.getByTestId('sondeur-waiting').waitFor({ timeout: 15000 }).catch(() => { checks.revealBeforeNext = false; });
+        if (day === 1 && q === 0) {
+          await shot('10b-sondeur-attente');
+          const all = (await api('GET', `/journey/${journeyId}/questions`, { token: A.token })).data || [];
+          const nextQ = all[1];
+          const ahead = await api('POST', '/journey/respond', { token: A.token, body: { questionId: nextQ.id, text: 'Réponse prise d’avance.' } });
+          if (ahead.status < 400) checks.noAdvance = false;
+        }
+        // B ne voit pas la réponse de A avant d'avoir répondu.
+        const bq = await bCurrent();
+        if (!bq || (bq.responses || []).some((r) => r.userId === A.userId)) checks.noPeek = false;
+        if (day === 1 && q === 0) {
+          const skip = await api('POST', '/journey/respond', { token: B.token, body: { questionId: bq.id, text: "I'd rather talk about it in person." } });
+          if (skip.status < 400) checks.noSkip = false;
+        }
+        await api('POST', '/journey/respond', { token: B.token, body: { questionId: bq.id, text: `Answer ${day}-${q + 1}: I value honest talks.` } });
+        // Révélation des deux réponses avant la question suivante.
+        const revealed = await page.getByTestId('sondeur-reveal').waitFor({ timeout: 20000 }).then(() => true).catch(() => false);
+        const partnerTxt = revealed ? await page.getByTestId('sondeur-partner-answer').innerText() : '';
+        if (!revealed || !/Answer/.test(partnerTxt)) checks.revealBeforeNext = false;
+        if (day === 1 && q === 0) await shot('10c-sondeur-revelation');
+        await page.getByTestId('sondeur-next').click();
+        await sleep(800);
+        // Quitter puis revenir : reprise exacte à la question non répondue.
+        if (day === 1 && q === 2) {
+          const expected = ((await api('GET', `/journey/${journeyId}/questions`, { token: A.token })).data || []).find((x) => x.turn === 'current');
+          await page.locator('text=←').first().click().catch(() => {});
+          await sleep(800);
+          checks.exit = await page.getByText('Question du jour').first().isVisible().catch(() => false);
+          await page.reload({ waitUntil: 'networkidle' });
+          await sleep(2500);
+          await page.getByText('Matchs', { exact: true }).first().click().catch(() => {});
+          await sleep(2000);
+          await page.getByText('Question du jour').first().click();
+          await sleep(1200);
+          const shown = await page.locator('body').innerText();
+          checks.resume = !!expected && shown.includes(expected.questionText.slice(0, 40));
+        }
       }
       await sleep(1500);
-      // Confidentialité : B ne voit pas la réponse de A tant qu'il n'a pas répondu.
-      const bView = (await api('GET', `/journey/${journeyId}/questions?lang=en`, { token: B.token })).data || [];
-      const dayB = bView.filter((q) => q.day === day);
-      const leaked = dayB.some((q) => (q.responses || []).some((r) => r.userId === A.userId));
-      record(`Jour ${day} : réponses de A invisibles pour B avant ses propres réponses`, !leaked && dayB.every((q) => q.partnerAnswered));
-      for (const q of dayB) {
-        await api('POST', '/journey/respond', { token: B.token, body: { questionId: q.id, text: `Answer ${day}: I value honest talks.` } });
-      }
-      const after = (await api('GET', `/journey/${journeyId}/questions?lang=en`, { token: B.token })).data || [];
-      const first = after.find((q) => q.day === day);
-      const seen = (first?.responses || []).find((r) => r.userId === A.userId);
-      record(`Jour ${day} : réponse de A visible pour B après sa propre réponse`, !!seen && seen.responseText !== 'Réponse disponible plus tard.', seen ? seen.responseText.slice(0, 40) : '');
       if (day === 1) {
         const reports = Number(sql(`SELECT count(*) FROM "Report" WHERE description LIKE '%${journeyId}%'`));
         record('Jour 1 : réponses anodines, aucun signalement de modération', reports === 0, `${reports} signalement(s)`);
@@ -345,6 +379,12 @@ function watchAppDialogs(pg, sink) {
         await sleep(2500);
       }
     }
+    record('CANNOT_SKIP : aucune option pour passer, refus du serveur', checks.noSkip);
+    record('CANNOT_ADVANCE_WITHOUT_ANSWER : pas d’avance sans la réponse de l’autre', checks.noAdvance);
+    record('CANNOT_SEE_PARTNER_BEFORE_OWN_ANSWER', checks.noPeek);
+    record('BOTH_ANSWERS_REVEALED_BEFORE_NEXT : attente puis révélation à chaque question', checks.revealBeforeNext);
+    record('CAN_EXIT : retour à l’accueil au milieu de la journée', checks.exit);
+    record('RESUME_SAME_QUESTION : reprise exacte après rechargement', checks.resume);
     record('Sondeur : 21 réponses envoyées depuis le navigateur', sent === 21);
     const progress = await api('GET', '/journey/sondeur-progress', { token: A.token });
     record('Progression côté serveur = 21/21', progress.data?.answeredCount === 21, JSON.stringify(progress.data));

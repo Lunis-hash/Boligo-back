@@ -57,7 +57,7 @@
   {
     "step": "Accord enregistré côté serveur",
     "ok": true,
-    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-11T23:36:25.870Z\"}"
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-12T09:17:17.447Z\"}"
   },
   {
     "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
@@ -110,16 +110,6 @@
     "detail": ""
   },
   {
-    "step": "Jour 1 : réponses de A invisibles pour B avant ses propres réponses",
-    "ok": true,
-    "detail": ""
-  },
-  {
-    "step": "Jour 1 : réponse de A visible pour B après sa propre réponse",
-    "ok": true,
-    "detail": "Je tiens beaucoup à ma famille du Mali."
-  },
-  {
     "step": "Jour 1 : réponses anodines, aucun signalement de modération",
     "ok": true,
     "detail": "0 signalement(s)"
@@ -130,29 +120,39 @@
     "detail": ""
   },
   {
-    "step": "Jour 2 : réponses de A invisibles pour B avant ses propres réponses",
-    "ok": true,
-    "detail": ""
-  },
-  {
-    "step": "Jour 2 : réponse de A visible pour B après sa propre réponse",
-    "ok": true,
-    "detail": "Réponse 2-1 : je privilégie le dialogue."
-  },
-  {
     "step": "Jour 2 terminé → jour 3 fermé jusqu’au lendemain",
     "ok": true,
     "detail": ""
   },
   {
-    "step": "Jour 3 : réponses de A invisibles pour B avant ses propres réponses",
+    "step": "CANNOT_SKIP : aucune option pour passer, refus du serveur",
     "ok": true,
     "detail": ""
   },
   {
-    "step": "Jour 3 : réponse de A visible pour B après sa propre réponse",
+    "step": "CANNOT_ADVANCE_WITHOUT_ANSWER : pas d’avance sans la réponse de l’autre",
     "ok": true,
-    "detail": "Réponse 3-1 : je privilégie le dialogue."
+    "detail": ""
+  },
+  {
+    "step": "CANNOT_SEE_PARTNER_BEFORE_OWN_ANSWER",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "BOTH_ANSWERS_REVEALED_BEFORE_NEXT : attente puis révélation à chaque question",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "CAN_EXIT : retour à l’accueil au milieu de la journée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "RESUME_SAME_QUESTION : reprise exacte après rechargement",
+    "ok": true,
+    "detail": ""
   },
   {
     "step": "Sondeur : 21 réponses envoyées depuis le navigateur",
@@ -162,7 +162,7 @@
   {
     "step": "Progression côté serveur = 21/21",
     "ok": true,
-    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":21,\"totalQuestions\":21,\"partnerName\":\"Nadia\",\"journeyId\":\"1d49a5a3-e670-4ccf-9f3f-8163b2781d6e\"}"
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":21,\"totalQuestions\":21,\"partnerName\":\"Nadia\",\"journeyId\":\"cf8df265-714e-4b47-8a58-d692e97ecec5\"}"
   },
   {
     "step": "Parcours ouvert au dialogue après les 3 jours",

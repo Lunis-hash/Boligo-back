@@ -44,10 +44,10 @@ describe('Sondeur : 7 questions par jour pendant 3 jours', () => {
 });
 
 describe('Sondeur bilingue (libellés)', () => {
-  it('mêmes clés en français et en anglais, réponse « de vive voix » reconnue par le serveur', () => {
+  it('mêmes clés en français et en anglais ; aucune option pour passer une question', () => {
     const { SONDEUR_TEXT } = require('../sondeur');
     expect(Object.keys(SONDEUR_TEXT.en).sort()).toEqual(Object.keys(SONDEUR_TEXT.fr).sort());
-    expect(SONDEUR_TEXT.en.inPerson).toBe("I'd rather talk about it in person.");
+    expect('inPerson' in SONDEUR_TEXT.fr).toBe(false);
   });
 
   it('libellé d’une journée verrouillée dans la langue du membre', () => {

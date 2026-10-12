@@ -85,6 +85,8 @@ const ai: any = {
       model: 'recette/redacteur',
     };
   },
+  moderateSondeurAnswer: async () => ({ allowed: true, danger: [] }),
+  journeyAiEligible: async () => true,
   reviewSondeurQuestions: async () => ({
     rejected: new Set(),
     preferred: new Set(),
@@ -443,6 +445,29 @@ async function main() {
       assert.ok(!/[àâçéèêîôûù]|\bvous\b/i.test(q.questionText), `français servi en anglais : ${q.questionText}`);
     }
     for (const q of list) assert.strictEqual(q.language, 'fr');
+  });
+
+  await check('réciprocité : une question à la fois, aucune question passée, révélation avant la suivante', async () => {
+    const qs: any[] = await journeys.getDailyQuestions(journeyId, A2.id);
+    const [q1, q2] = qs;
+    assert.strictEqual(q1.turn, 'current');
+    assert.strictEqual(q2.turn, 'locked');
+    // On ne passe pas une question.
+    await assert.rejects(journeys.respondToQuestion(q1.id, A2.id, "J'aimerais en parler de vive voix."), /pas passer une question/);
+    await journeys.respondToQuestion(q1.id, A2.id, 'Deux enfants, pas plus, et pas avant trois ans.');
+    // A ne peut pas prendre d'avance tant que B n'a pas répondu.
+    await assert.rejects(journeys.respondToQuestion(q2.id, A2.id, 'Réponse prise d’avance.'), /question précédente/);
+    const forB: any[] = await journeys.getDailyQuestions(journeyId, B2.id);
+    assert.strictEqual(forB[0].turn, 'current');
+    assert.ok(!forB[0].responses.some((r: any) => r.userId === A2.id), 'réponse de A visible avant celle de B');
+    const forA: any[] = await journeys.getDailyQuestions(journeyId, A2.id);
+    assert.strictEqual(forA[0].turn, 'waiting');
+    await journeys.respondToQuestion(q1.id, B2.id, 'Quatre enfants, c’est mon rêve depuis toujours.');
+    const after: any[] = await journeys.getDailyQuestions(journeyId, A2.id);
+    assert.strictEqual(after[0].turn, 'revealed');
+    assert.strictEqual(after[0].responses.length, 2, 'les deux réponses révélées');
+    assert.strictEqual(after[1].turn, 'current');
+    await journeys.respondToQuestion(q2.id, A2.id, 'Réponse à la deuxième question.');
   });
 
   await check('confidentialité : l’index de preuves transmis à l’IA ne contient aucune réponse', async () => {

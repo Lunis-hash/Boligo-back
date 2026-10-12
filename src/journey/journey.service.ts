@@ -43,6 +43,7 @@ import {
   DangerCategory,
   dangerCategories,
   holdsSafety,
+  isReservedAnswer,
 } from './sondeur-insights';
 
 /** Champs du membre transmis à l'IA du Sondeur : jamais de coordonnées. */
@@ -332,6 +333,38 @@ export class JourneyService {
     return keep;
   }
 
+  /** Questions du parcours dans l'ordre où elles se posent, avec qui a répondu. */
+  private async orderedQuestions(journeyId: string) {
+    const all = await this.prisma.harmonyQuestion.findMany({
+      where: { journeyId },
+      orderBy: [{ day: 'asc' }, { sentAt: 'asc' }],
+      include: { responses: { select: { userId: true } } },
+    });
+    return this.pickCanonicalHarmonyQuestions(all);
+  }
+
+  /**
+   * Tour de réponse : refuse une question tant que la précédente n'a pas reçu
+   * les deux réponses. Personne ne prend d'avance ; chacun découvre la
+   * réponse de l'autre avant de passer à la suite.
+   */
+  private async assertTurn(
+    journey: { id: string; userAId: string; userBId: string },
+    questionId: string,
+  ) {
+    const ordered = await this.orderedQuestions(journey.id);
+    const index = ordered.findIndex((q) => q.id === questionId);
+    if (index <= 0) return;
+    const previous = ordered[index - 1];
+    const answered = (id: string) =>
+      previous.responses.some((r) => r.userId === id);
+    if (!answered(journey.userAId) || !answered(journey.userBId)) {
+      throw new BadRequestException(
+        'Les deux réponses à la question précédente sont attendues avant de passer à celle-ci.',
+      );
+    }
+  }
+
   /** Vérifie que l'utilisateur fait partie du parcours (404 si absent, 403 sinon). */
   private requireMember<T extends { userAId: string; userBId: string }>(
     journey: T | null,
@@ -410,8 +443,14 @@ export class JourneyService {
           .map((r) => `${r.userId}:${q.day}`),
       ),
     );
-    return this.pickCanonicalHarmonyQuestions(questions)
-      .map((q) => {
+    // Tour de réponse : la première question sans les deux réponses est la
+    // question en cours ; les suivantes restent fermées jusqu'à la révélation.
+    const canonical = this.pickCanonicalHarmonyQuestions(questions);
+    const firstOpen = canonical.findIndex(
+      (q) => new Set(q.responses.map((r) => r.userId)).size < 2,
+    );
+    return canonical
+      .map((q, index) => {
         const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
         const storedOptions = Array.isArray(q.options)
           ? (q.options as string[])
@@ -436,6 +475,16 @@ export class JourneyService {
                 },
           ),
           partnerAnswered: q.responses.some((r) => r.userId !== userId),
+          // revealed : les deux ont répondu ; waiting : ma réponse attend celle
+          // de l'autre ; current : à moi de répondre ; locked : pas encore.
+          turn:
+            firstOpen === -1 || index < firstOpen
+              ? 'revealed'
+              : index > firstOpen
+                ? 'locked'
+                : answered
+                  ? 'waiting'
+                  : 'current',
           emoji: q.emoji ?? bankQ?.emoji ?? '💬',
           options: storedOptions ?? bankQ?.options ?? null,
         };
@@ -662,8 +711,18 @@ export class JourneyService {
       );
     }
 
+    // Réciprocité : une question à la fois. La précédente doit avoir reçu
+    // les deux réponses (et donc avoir été révélée aux deux) avant la suivante.
+    await this.assertTurn(journey, questionId);
+
     const trimmed = text.trim();
     if (!trimmed) throw new BadRequestException('Réponse vide.');
+    // On ne passe aucune question : on peut quitter le parcours, pas esquiver.
+    if (isReservedAnswer(trimmed)) {
+      throw new BadRequestException(
+        'Le Sondeur attend votre réponse à cette question. Vous pouvez quitter le parcours, mais pas passer une question.',
+      );
+    }
     if (trimmed.length > 500) {
       throw new BadRequestException(
         'Réponse trop longue (500 caractères max).',

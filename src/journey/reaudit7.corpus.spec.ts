@@ -326,6 +326,7 @@ describe('Septième contre-audit : circuit à l’envoi', () => {
   const setup = (moderation: Record<string, unknown>, paid = true) => {
     const prisma = {
       harmonyQuestion: {
+        findMany: jest.fn(() => Promise.resolve([])),
         findUnique: jest.fn(() =>
           Promise.resolve({
             id: 'q1',
