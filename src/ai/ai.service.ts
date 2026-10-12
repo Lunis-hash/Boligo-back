@@ -708,6 +708,10 @@ Retourne UNIQUEMENT ce JSON (trois questions par écart réel ; aucune pour les 
       )
         .filter((q) => q.day === angle.day)
         .map((q) => ({ ...q, writer: model }));
+      if (!questions.length)
+        this.logger.warn(
+          `⚠️ [SONDEUR IA] Jour ${angle.day} : aucune question exploitable (${model}, ${content.length} caractères, fin : « ${content.slice(-80).replace(/\s+/g, ' ')} »).`,
+        );
       return { questions, model };
     };
 

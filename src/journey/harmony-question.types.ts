@@ -138,7 +138,9 @@ export function normalizeAiQuestions(
     unique.push(q);
   }
 
-  if (unique.length < 4) return null;
+  // Même seuil que pour les questions lues : un jour qui ne porte qu'un écart
+  // (trois propositions) n'est pas rejeté en bloc.
+  if (unique.length < min) return null;
   return unique.slice(0, max);
 }
 

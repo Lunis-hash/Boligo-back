@@ -11,7 +11,7 @@
  *   OPENROUTER_API_KEY=... (ou OPENROUTER_AUTH=proxy NODE_USE_ENV_PROXY=1) BENCH_MAX_EUR=20 npx ts-node --skipProject --transpile-only \
  *     -O '{"module":"commonjs","esModuleInterop":true}' scripts/sondeur-benchmark.ts all [--qualify]
  *
- * Étapes : catalog | screen | final | critic | cost | select | all.
+ * Étapes : catalog | screen | judge | final | critic | cost | select | all (corpus : aperçu sans réseau).
  * Aucune base de données n'est utilisée ; aucune donnée réelle de membre.
  */
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
@@ -724,7 +724,13 @@ async function judge(
   prompt: string,
 ): Promise<Judgement[] | null> {
   const or = new ForcedOpenRouter({ critic: [judgeModel] });
-  const est = Math.ceil((prompt.length / 3) * 20 + 4000 * 80);
+  // Estimation au prix réel du juge (catalogue du jour), sinon prix élevé.
+  const p = load<CatalogEntry[]>('catalog.json')?.find(
+    (e) => e.id === judgeModel,
+  );
+  const est = Math.ceil(
+    (prompt.length / 3) * (p?.priceIn ?? 20) + 4000 * (p?.priceOut ?? 80),
+  );
   if (!lab.allow(est)) return null;
   try {
     const res = await or.executeAgentPrompt(
@@ -963,6 +969,12 @@ async function main() {
     const cases = TOPICS.length
       ? [...topicCorpus(TOPICS), ...topicCorpus(HELDOUT, 70_000)]
       : corpus(SCREEN_CASES, 1);
+    if (process.env.BENCH_SHOW)
+      for (const c of cases.filter((x) => x.id === process.env.BENCH_SHOW)) {
+        const { report } = coupleOf(c);
+        console.log(describeReportForAi(report, ['Membre A', 'Membre B']));
+        console.log(describeEvidenceForAi(buildEvidence(report)));
+      }
     for (const c of cases)
       console.log(
         `${c.id} ${c.scenario} [${c.topics.join(', ')}] : ${gapsOf(c)
@@ -1051,6 +1063,31 @@ async function main() {
         eur: s.costPerCaseEur.toFixed(4),
       })),
     );
+  }
+
+  // Jugement à l'aveugle d'un essai déjà rédigé (mêmes couples, mêmes juges).
+  if (step === 'judge') {
+    const runs = load<WriterRun[]>('screen-runs.json') ?? [];
+    const cases = [
+      ...topicCorpus(TOPICS),
+      ...topicCorpus(HELDOUT, 70_000),
+    ].filter((c) => runs.some((r) => r.caseId === c.id));
+    const scored: Scored[] = [];
+    for (const c of cases) {
+      if (await stop()) break;
+      scored.push(
+        ...(await judgeCase(
+          c,
+          runs.filter((r) => r.caseId === c.id),
+          judges,
+        )),
+      );
+      save('screen-scores.json', scored);
+    }
+    console.log(
+      `Jugées : ${scored.length} questions, ${cases.length} couples.`,
+    );
+    return;
   }
 
   if (step === 'final' || step === 'all') {
