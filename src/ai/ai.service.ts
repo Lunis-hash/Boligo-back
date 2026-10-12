@@ -1,3 +1,4 @@
+import { qualification, recordTrace } from './sondeur-router';
 import { createHash } from 'crypto';
 import { firstJsonArray, firstJsonObject } from './json-extract';
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
@@ -40,7 +41,7 @@ const GROQ_MODEL_TTL_MS = 6 * 60 * 60 * 1000;
  * 'default' : modèle économique ; 'quality' : rédaction pour les parcours
  * payés ; 'critic' : relecture indépendante, d'une autre famille de modèle.
  */
-type ModelTier = 'default' | 'quality' | 'critic';
+type ModelTier = 'default' | 'quality' | 'critic' | 'escalation';
 
 /**
  * Texte d'un membre cité dans une consigne de modération : entre ‹ › (jamais
@@ -134,7 +135,7 @@ export interface AiJourneyScope {
   journeyId: string;
   paidOnly?: boolean;
   /** Relecture : modèle d'une autre famille que `avoidModel` (le rédacteur). */
-  role?: 'critic';
+  role?: 'critic' | 'escalation';
   avoidModel?: string;
   /** Laboratoire (administrateur) : mêmes modèles qu'un parcours payé, budget propre. */
   lab?: AiLabBudget;
@@ -196,7 +197,7 @@ export class AiService implements OnModuleInit {
   private groqModels: Record<
     ModelTier,
     { id: string; resolvedAt: number } | null
-  > = { default: null, quality: null, critic: null };
+  > = { default: null, quality: null, critic: null, escalation: null };
   /** Modèles qui ont répondu « introuvable » : écartés jusqu'au prochain redémarrage. */
   private readonly groqUnavailable = new Set<string>();
   private readonly moderationCache = new Map<
@@ -275,11 +276,7 @@ export class AiService implements OnModuleInit {
     if (scope?.paidOnly && !paid) {
       throw new Error('Parcours sans paiement : suivi rédigé sans IA.');
     }
-    const tier: ModelTier = !paid
-      ? 'default'
-      : scope?.role === 'critic'
-        ? 'critic'
-        : 'quality';
+    const tier: ModelTier = !paid ? 'default' : (scope?.role ?? 'quality');
     const record = (
       model: string,
       input: number,
@@ -341,6 +338,7 @@ export class AiService implements OnModuleInit {
           messages.push({ role: 'system', content: systemPrompt });
         messages.push({ role: 'user', content: prompt });
 
+        const started = Date.now();
         const res = await this.openRouterService.executeAgentPrompt(
           agentName,
           messages,
@@ -353,6 +351,25 @@ export class AiService implements OnModuleInit {
           },
         );
         const usage = res.usage ?? {};
+        // Trace du routeur (rôles du Sondeur) : modèle, coût, latence.
+        if (tier !== 'default') {
+          const inTok = usage.prompt_tokens ?? inputTokens;
+          const outTok =
+            usage.completion_tokens ?? estimateTokens(res.content ?? '');
+          recordTrace({
+            role: tier === 'quality' ? 'writer' : tier,
+            model: res.modelUsed,
+            qualified: !!qualification(),
+            latencyMs: Date.now() - started,
+            inputTokens: inTok,
+            outputTokens: outTok,
+            costMicroEur:
+              typeof usage.cost === 'number'
+                ? usdToMicroEur(usage.cost)
+                : costMicroEur(res.modelUsed, inTok, outTok),
+            ok: true,
+          });
+        }
         void record(
           res.modelUsed,
           usage.prompt_tokens ?? inputTokens,
@@ -406,7 +423,7 @@ export class AiService implements OnModuleInit {
               `⚠️ [Groq] Modèle « ${model} » indisponible, choix d'un autre modèle.`,
             );
             this.groqUnavailable.add(model);
-            this.groqModels = { default: null, quality: null, critic: null };
+            this.groqModels = { default: null, quality: null, critic: null, escalation: null };
             continue;
           }
           throw error;
@@ -419,6 +436,13 @@ export class AiService implements OnModuleInit {
       // Parcours payé : le meilleur rédacteur (OpenRouter) d'abord, Groq en secours.
       const first = await viaOpenRouter();
       if (first !== null) return first;
+      // Modèles qualifiés par le banc d'essai : jamais de repli sur un modèle
+      // non mesuré ; l'appelant passe à sa version déterministe.
+      if (qualification()) {
+        throw new Error(
+          'Aucun modèle qualifié disponible : gabarits déterministes.',
+        );
+      }
       const out = await viaGroq();
       if (out !== null) return out;
     } else {
@@ -546,6 +570,7 @@ export class AiService implements OnModuleInit {
       default: '',
       quality: ' (parcours payés)',
       critic: ' (relecture)',
+      escalation: ' (escalade)',
     };
     if (this.groqModels[tier]?.id !== id)
       this.logger.log(`🧠 [Groq] Modèle retenu${label[tier]} : ${id}`);

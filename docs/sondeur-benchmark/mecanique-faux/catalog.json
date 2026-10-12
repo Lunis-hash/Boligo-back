@@ -1,0 +1,56 @@
+[
+  {
+    "id": "fakeqwen/qwen-flash",
+    "family": "qwen",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.39999999999999997,
+    "context": 128000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Faux",
+        "zdr": true,
+        "latency": 900,
+        "uptime": 99.9
+      }
+    ]
+  },
+  {
+    "id": "fakeglm/glm-flash",
+    "family": "fakeglm",
+    "priceIn": 0.19999999999999998,
+    "priceOut": 0.7999999999999999,
+    "context": 128000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Faux",
+        "zdr": true,
+        "latency": 900,
+        "uptime": 99.9
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-faux",
+    "family": "anthropic",
+    "priceIn": 3,
+    "priceOut": 15,
+    "context": 128000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Faux",
+        "zdr": true,
+        "latency": 900,
+        "uptime": 99.9
+      }
+    ]
+  }
+]

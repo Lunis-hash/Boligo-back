@@ -8,6 +8,19 @@ import {
   OpenRouterRole,
 } from './openrouter.config';
 import { modelFamily, parseModelList } from './groq-model';
+import {
+  SondeurRole,
+  modelsFor,
+  qualification,
+  restrictToQualified,
+} from './sondeur-router';
+
+/** Rôle du Sondeur porté par chaque rôle OpenRouter (hors usages courants). */
+const SONDEUR_ROLE: Partial<Record<OpenRouterRole, SondeurRole>> = {
+  quality: 'writer',
+  critic: 'critic',
+  escalation: 'escalation',
+};
 
 const OPENROUTER_TIMEOUT_MS = 20_000;
 /** La liste des modèles et leurs prix sont relus toutes les six heures. */
@@ -143,10 +156,20 @@ export class OpenRouterService {
    * plafond quand le catalogue est connu.
    */
   async candidates(role: OpenRouterRole, avoid?: string): Promise<string[]> {
-    const wanted = [
-      ...parseModelList(process.env[OPENROUTER_MODEL_ENV[role]]),
-      ...OPENROUTER_PREFERENCES[role],
-    ];
+    // Rôles du Sondeur : modèles qualifiés par le banc d'essai (routeur) ;
+    // une variable d'environnement ne peut choisir qu'un modèle qualifié.
+    const sondeurRole = SONDEUR_ROLE[role];
+    const env = parseModelList(process.env[OPENROUTER_MODEL_ENV[role]]);
+    const wanted = sondeurRole
+      ? [
+          ...restrictToQualified(env, sondeurRole),
+          ...modelsFor(sondeurRole, { avoid }).models,
+          // Rédacteur indisponible : secours qualifié (jamais un modèle non mesuré).
+          ...(sondeurRole === 'writer' && qualification()
+            ? modelsFor('fallback', { avoid }).models
+            : []),
+        ]
+      : [...env, ...OPENROUTER_PREFERENCES[role]];
     const cap = maxPrice();
     const catalog = await this.catalogPrices();
     const out: string[] = [];

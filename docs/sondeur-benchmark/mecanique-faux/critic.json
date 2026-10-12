@@ -1,0 +1,18 @@
+[
+  {
+    "critic": "fakeglm/glm-flash",
+    "faultyRejectionRate": 0.9666666666666667,
+    "validAcceptanceRate": 0.9333333333333333,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  },
+  {
+    "critic": "anthropic/claude-sonnet-faux",
+    "faultyRejectionRate": 0.9666666666666667,
+    "validAcceptanceRate": 0.9333333333333333,
+    "faulty": 150,
+    "valid": 75,
+    "costEur": 0
+  }
+]

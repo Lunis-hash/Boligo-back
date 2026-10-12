@@ -1,0 +1,2306 @@
+[
+  {
+    "model": "fakeqwen/qwen-flash",
+    "caseId": "H100070",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 21,
+    "passedGate": 12,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 13,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeqwen/qwen-flash",
+    "caseId": "H100010",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 21,
+    "passedGate": 12,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 11,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeqwen/qwen-flash",
+    "caseId": "H100023",
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "drafted": 21,
+    "passedGate": 12,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 12,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeqwen/qwen-flash",
+    "caseId": "H100000",
+    "scenario": "securite",
+    "lang": "en",
+    "drafted": 21,
+    "passedGate": 9,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 12,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeqwen/qwen-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeglm/glm-flash",
+    "caseId": "H100070",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 21,
+    "passedGate": 12,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 11,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeglm/glm-flash",
+    "caseId": "H100010",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 21,
+    "passedGate": 12,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 11,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeglm/glm-flash",
+    "caseId": "H100023",
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "drafted": 21,
+    "passedGate": 12,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 10,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec une dispute, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "evidence": [
+          "N-communication"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (4)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "fakeglm/glm-flash",
+    "caseId": "H100000",
+    "scenario": "securite",
+    "lang": "en",
+    "drafted": 21,
+    "passedGate": 9,
+    "formRejected": 3,
+    "evidenceRejected": 6,
+    "reasons": {
+      "P13": 6
+    },
+    "leaks": 0,
+    "costMicro": 0,
+    "latencyMs": 11,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec votre famille, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "evidence": [
+          "N-famille"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (0)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec l'argent, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "evidence": [
+          "N-argent"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (1)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "x",
+        "emoji": "💬",
+        "text": "Avec la tendresse, sur quoi ne céderez-vous jamais ?",
+        "options": [
+          "A",
+          "B",
+          "Autre..."
+        ],
+        "themeKey": "intimite",
+        "evidence": [
+          "N-intimite"
+        ],
+        "claim": "neutre",
+        "textEn": "When it comes to this, what will you never give up on (3)?",
+        "optionsEn": [
+          "A",
+          "B",
+          "Other..."
+        ],
+        "writer": "fakeglm/glm-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  }
+]

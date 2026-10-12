@@ -1,0 +1,44 @@
+[
+  {
+    "model": "fakeqwen/qwen-flash",
+    "family": "qwen",
+    "questions": 36,
+    "quality": 0.5,
+    "qualityFr": 0.5,
+    "qualityEn": 0.5,
+    "hardFailRate": 0,
+    "leaks": 0,
+    "gatePassRate": 0.5714285714285714,
+    "costPerCaseEur": 0,
+    "latencyP50": 26,
+    "errors": 0
+  },
+  {
+    "model": "fakeglm/glm-flash",
+    "family": "fakeglm",
+    "questions": 36,
+    "quality": 0.5,
+    "qualityFr": 0.5,
+    "qualityEn": 0.5,
+    "hardFailRate": 0,
+    "leaks": 0,
+    "gatePassRate": 0.5714285714285714,
+    "costPerCaseEur": 0,
+    "latencyP50": 12,
+    "errors": 0
+  },
+  {
+    "model": "anthropic/claude-sonnet-faux",
+    "family": "anthropic",
+    "questions": 36,
+    "quality": 0.5,
+    "qualityFr": 0.5,
+    "qualityEn": 0.5,
+    "hardFailRate": 0,
+    "leaks": 0,
+    "gatePassRate": 0.5714285714285714,
+    "costPerCaseEur": 0,
+    "latencyP50": 11,
+    "errors": 0
+  }
+]

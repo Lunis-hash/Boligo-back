@@ -1,0 +1,22 @@
+{
+  "run": "mecanique-faux",
+  "writer": "fakeglm/glm-flash",
+  "critic": null,
+  "escalation": "fakeqwen/qwen-flash",
+  "fallback": "fakeqwen/qwen-flash",
+  "frWinner": "fakeqwen/qwen-flash",
+  "enWinner": "fakeqwen/qwen-flash",
+  "floor": {
+    "quality": 0.4,
+    "hardFailRate": 0.02,
+    "leaks": 0,
+    "equivalence": 0.03
+  },
+  "qualified": false,
+  "reason": "aucun relecteur ≥ 99 % / ≥ 90 %",
+  "spentEur": 0,
+  "costP50": 0.012659,
+  "costP90": 0.012659,
+  "costP99": 0.012659,
+  "escalationRate": 0.25
+}

@@ -4,7 +4,7 @@
  * peuvent passer par des fournisseurs qui conservent ou réutilisent les données.
  */
 
-export type OpenRouterRole = 'default' | 'quality' | 'critic';
+export type OpenRouterRole = 'default' | 'quality' | 'critic' | 'escalation';
 
 /**
  * Préférences par rôle : on retient le premier modèle ouvert au compte et sous
@@ -31,12 +31,15 @@ export const OPENROUTER_PREFERENCES: Record<OpenRouterRole, string[]> = {
     'google/gemini-2.5-pro',
   ],
   default: ['openai/gpt-oss-120b', 'meta-llama/llama-3.3-70b-instruct'],
+  // Escalade (mode provisoire, sans banc d'essai) : le rédacteur haut de gamme.
+  escalation: ['anthropic/claude-opus-5.5', 'anthropic/claude-opus-5'],
 };
 
 export const OPENROUTER_MODEL_ENV: Record<OpenRouterRole, string> = {
   quality: 'OPENROUTER_QUALITY_MODEL',
   critic: 'OPENROUTER_CRITIC_MODEL',
   default: 'OPENROUTER_MODEL',
+  escalation: 'OPENROUTER_ESCALATION_MODEL',
 };
 
 /**

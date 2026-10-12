@@ -18,6 +18,7 @@ import {
   safetyThemesOf,
 } from './sondeur.generator';
 import { isNonNegotiable } from './sondeur.pool';
+import { shouldEscalate } from '../ai/sondeur-router';
 import {
   EvidenceItem,
   buildEvidence,
@@ -44,6 +45,8 @@ export interface SondeurAiResult {
     }>;
     /** Jours dont la relecture a échoué (aucune question de l'IA servie). */
     unreviewedDays: number[];
+    /** Jours réécrits par le modèle d'escalade (relecture trop sévère). */
+    escalatedDays: number[];
     /** Thèmes réservés aux questions de limite (sécurité). */
     safetyThemes: Theme[];
     /** V8.2 — écartées par le contrat de preuves, avec les contrôles en échec. */
@@ -103,7 +106,7 @@ export async function draftReviewedSondeur(
     report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
   );
   // Contrôle de forme par le code avant la relecture.
-  const inGrid = all.filter((q) => {
+  const gate = (q: HarmonyQuestionPayload) => {
     if (
       !THEME_LIST.includes(q.themeKey as Theme) ||
       safetyThemes.includes(q.themeKey as Theme)
@@ -155,7 +158,15 @@ export async function draftReviewedSondeur(
       return false;
     }
     return true;
-  });
+  };
+  const normalize = (qs: HarmonyQuestionPayload[] | undefined) =>
+    (qs ?? []).map((q) => ({
+      ...q,
+      themeKey: String(q.themeKey ?? '')
+        .trim()
+        .toLowerCase(),
+    }));
+  const inGrid = all.filter(gate);
 
   // Relecture jour par jour, par un modèle d'une autre famille que le
   // rédacteur de ce jour : seules les questions explicitement acceptées sont
@@ -165,34 +176,74 @@ export async function draftReviewedSondeur(
     .join(' ; ');
   const refused: SondeurAiResult['trace']['refused'] = [];
   const unreviewedDays: number[] = [];
+  const escalatedDays: number[] = [];
+  const reviewDay = async (day: number, ofDay: HarmonyQuestionPayload[]) => {
+    if (ofDay.length === 0) return [];
+    const review = await ai.reviewSondeurQuestions(
+      scope.journeyId,
+      ofDay,
+      history,
+      ofDay[0].writer ?? drafted?.model,
+      { analysis, couple, days, evidence: evidenceBlock },
+      scope.lab,
+    );
+    // Jamais de question de l'IA servie sans relecture complète.
+    if (!review) {
+      unreviewedDays.push(day);
+      return [];
+    }
+    for (const r of review.refusals)
+      refused.push({ question: ofDay[r.n], rule: r.rule, reason: r.reason });
+    return ofDay
+      .map((q, i) => ({ q, i }))
+      .filter(({ i }) => !review.rejected.has(i))
+      .sort(
+        (x, y) =>
+          Number(review.preferred.has(y.i)) - Number(review.preferred.has(x.i)),
+      )
+      .map(({ q }) => ({ ...q, reviewer: review.model }));
+  };
   const reviewed = await Promise.all(
     [1, 2, 3].map(async (day) => {
       const ofDay = inGrid.filter((q) => q.day === day);
-      if (ofDay.length === 0) return [];
-      const review = await ai.reviewSondeurQuestions(
-        scope.journeyId,
-        ofDay,
-        history,
-        ofDay[0].writer ?? drafted?.model,
-        { analysis, couple, days, evidence: evidenceBlock },
-        scope.lab,
-      );
-      // Jamais de question de l'IA servie sans relecture complète.
-      if (!review) {
-        unreviewedDays.push(day);
-        return [];
+      const kept = await reviewDay(day, ofDay);
+      // Escalade : la relecture a rejeté trop de questions de ce jour (ou
+      // aucune n'a été proposée) ; le modèle haut de gamme réécrit ce jour,
+      // une seule fois, puis passe les mêmes contrôles et la même relecture.
+      if (
+        !unreviewedDays.includes(day) &&
+        shouldEscalate({
+          proposed: Math.max(ofDay.length, 1),
+          accepted: kept.length,
+        })
+      ) {
+        const redraft = await ai
+          .generateTargetedHarmonyQuestions(
+            analysis,
+            THEME_LIST.map((key) => ({ key, label: THEMES[key].label })),
+            [
+              {
+                day,
+                label: DAY_ANGLES[day].label,
+                intent: DAY_ANGLES[day].intent,
+              },
+            ],
+            history,
+            { ...scope, role: 'escalation' },
+            couple,
+            evidenceBlock,
+          )
+          .catch(() => null);
+        const better = normalize(redraft?.questions).filter(
+          (q) => q.day === day && gate(q),
+        );
+        if (better.length) {
+          escalatedDays.push(day);
+          const second = await reviewDay(day, better);
+          if (second.length > kept.length) return second;
+        }
       }
-      for (const r of review.refusals)
-        refused.push({ question: ofDay[r.n], rule: r.rule, reason: r.reason });
-      return ofDay
-        .map((q, i) => ({ q, i }))
-        .filter(({ i }) => !review.rejected.has(i))
-        .sort(
-          (x, y) =>
-            Number(review.preferred.has(y.i)) -
-            Number(review.preferred.has(x.i)),
-        )
-        .map(({ q }) => ({ ...q, reviewer: review.model }));
+      return kept;
     }),
   );
   const questions = reviewed.flat();
@@ -206,6 +257,7 @@ export async function draftReviewedSondeur(
       formRejected,
       refused,
       unreviewedDays: unreviewedDays.sort(),
+      escalatedDays: escalatedDays.sort(),
       safetyThemes,
       evidenceRejected,
     },
