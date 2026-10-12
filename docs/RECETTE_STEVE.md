@@ -1,15 +1,37 @@
-# BOLIGO — guide de recette pour Steve (préproduction)
+# BOLIGO — guide de recette pour Steve (site en ligne, nouvelle version)
 
-Ce guide sert à vérifier l'application à la main, **en préproduction uniquement**.
-Vous n'avez besoin d'aucune connaissance technique. Comptez **3 jours** pour le
-parcours complet : le Sondeur ouvre une nouvelle journée toutes les 24 heures.
-Pour aller plus vite, la personne technique peut avancer le parcours d'un jour
-dans la base de préproduction.
+Ce guide sert à vérifier l'application à la main, **sur le site en ligne**
+(`https://boligo-web.onrender.com` pour l'app, `https://boligo-admin.onrender.com`
+pour le tableau de bord), **une fois la nouvelle version déployée** par l'équipe
+technique. Vous n'avez besoin d'aucune connaissance technique. Comptez **3 jours**
+pour le parcours complet : le Sondeur ouvre une nouvelle journée toutes les 24 h.
 
-> **Avant de commencer, lisez la partie « Où tester » (en bas).** Aujourd'hui,
-> le dépôt ne contient **aucun environnement de préproduction**. Les adresses
-> `boligo-web.onrender.com` et `boligo-admin.onrender.com` utilisent l'API et la
-> base de **production**. **N'y faites pas cette recette.**
+> **Règles de la recette sur le site en ligne**
+> - Utilisez **uniquement vos comptes de test** (deux adresses e-mail que vous
+>   contrôlez, par exemple deux alias `+recette-a` / `+recette-b` de votre boîte).
+>   Ne touchez à aucun autre profil. Vos anciens profils de test « zaz » et
+>   « steve » sont supprimés par vous-même.
+> - Le code de vérification arrive **par e-mail** (sur le site en ligne, le code
+>   `1234` n'est pas accepté).
+> - Paiement : utilisez la carte de test **seulement si** l'équipe confirme que
+>   Stripe est en **mode test** sur le site en ligne ; sinon, demandez un **code
+>   promo** de recette (créé dans le tableau de bord) au lieu de payer.
+
+## 0. Ce que vous pouvez tester, et quand
+
+| Élément | Avant le déploiement (site actuel) | Après le déploiement de la nouvelle version |
+|---|---|---|
+| Inscription, connexion, découverte, invitation, chat, signalement, tableau de bord | Oui | Oui |
+| Grand Entretien **V8.2** (tranche d'âge, accord pour les questions sensibles, bascule FR/EN) | Non (branche seulement) | Oui |
+| Sondeur **réciproque** (une question à la fois, révélation des deux réponses, impossible de sauter, reprise exacte) | Non (branche seulement) | Oui |
+| Sondeur **adaptatif** (9 à 17 questions selon les écarts réels) et questions IA **uniquement sur les écarts** | Non (branche seulement) | Oui |
+| **Relance** ciblée le lendemain, seulement si un écart reste à éclaircir | Non (branche seulement) | Oui |
+| Sondeur **bilingue** (le membre anglophone voit les questions en anglais) | Non (branche seulement) | Oui |
+
+**Pour voir dès maintenant ce qui n'est que sur la branche** : captures du parcours
+dans `mobile-steve/docs/screenshots/v82/` (01 à 13) et vidéo
+`mobile-steve/docs/screenshots/v82/demo-parcours-sondeur.mp4` ; exemples de
+questions du Sondeur dans `docs/sondeur-benchmark/2026-10-12-final/README.md`.
 
 ---
 
@@ -18,26 +40,28 @@ dans la base de préproduction.
 | Élément | Détail |
 |---|---|
 | Deux navigateurs | Par exemple Chrome pour le membre A et Firefox (ou une fenêtre privée) pour le membre B. Les deux comptes doivent rester connectés en même temps. |
-| Adresse de l'app de préproduction | Donnée par la personne technique (voir « Où tester »). |
-| Adresse du tableau de bord de préproduction | Idem. |
-| Code de vérification (OTP) | En préproduction, le serveur fonctionne avec `OTP_DEBUG=true`. Le code **`1234`** est alors toujours accepté. |
-| Carte de paiement de test | Voir la section 3. Aucun argent réel n'est prélevé. |
+| Deux adresses e-mail | Que vous lisez (le code de vérification y arrive). |
+| Adresse de l'app | `https://boligo-web.onrender.com` |
+| Adresse du tableau de bord | `https://boligo-admin.onrender.com` (compte administrateur existant de l'équipe). |
+| Paiement | Carte de test (section 3) **si Stripe est en mode test**, sinon code promo de recette. |
 
 ---
 
-## 2. Comptes de test (fictifs)
+## 2. Comptes de test
 
-Ces adresses sont fictives (`example.com` ne reçoit aucun e-mail). Le code `1234` remplace l'e-mail de vérification.
+Utilisez deux adresses e-mail **à vous** (le code de vérification y arrive), par
+exemple `votre.adresse+recette-a@…` et `votre.adresse+recette-b@…`.
 
 | Rôle | E-mail | Prénom | Je suis | Date de naissance | Ville |
 |---|---|---|---|---|---|
-| Membre A | `steve.recette.a@example.com` | Steve | Homme | 12/04/1990 | Paris |
-| Membre B | `steve.recette.b@example.com` | Nadia | Femme | 15/09/1992 | Paris |
-| Admin | `steve.recette.admin@example.com` | Admin | (au choix) | 01/01/1985 | Paris |
+| Membre A | votre adresse `+recette-a` | Steve | Homme | 12/04/1990 | Paris |
+| Membre B | votre adresse `+recette-b` | Nadia | Femme | 15/09/1992 | Paris |
+| Admin | compte administrateur existant de l'équipe | — | — | — | — |
 
-- Choisissez vous-même un mot de passe d'au moins 8 caractères avec une majuscule et un chiffre, par exemple. Ne le notez pas dans ce document.
+- Choisissez un mot de passe d'au moins 8 caractères avec une majuscule et un chiffre. Ne le notez pas dans ce document.
 - **Important pour la Découverte** : A et B doivent être de sexes opposés. Au premier module du Grand Entretien, chacun doit choisir une **tranche d'âge qui inclut l'âge de l'autre** (par exemple 28 à 40). Sinon, ils ne se verront pas.
-- **Compte admin** : créez-le dans l'app comme un membre (avec le code `1234`). La personne technique place ensuite son adresse dans la variable `ADMIN_BOOTSTRAP_EMAIL` du serveur de préproduction. Le compte devient administrateur à la première connexion au tableau de bord. Cette variable ne fonctionne que tant qu'il n'existe aucun administrateur.
+- **Ne touchez à aucun autre profil** du site en ligne.
+- Dans les étapes ci-dessous, « le code `1234` » se lit « le code reçu par e-mail ».
 
 ---
 
@@ -67,9 +91,9 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 
 ### Étape 1 — Inscription et code de vérification (A, puis B)
 **Ce que vous faites :**
-1. Ouvrez l'app de préproduction et cliquez « Créer un compte ».
+1. Ouvrez l'app (`https://boligo-web.onrender.com`) et cliquez « Créer un compte ».
 2. Remplissez les 4 étapes : prénom, métier, « Je suis », date de naissance, ville, e-mail, mot de passe, acceptation des conditions.
-3. Sur l'écran « Validez votre e-mail », tapez `1234`, puis « Valider mon compte ».
+3. Sur l'écran « Validez votre e-mail », tapez le code reçu par e-mail, puis « Valider mon compte ».
 
 **Ce que vous devez voir :**
 - « Étape 1 sur 4 » jusqu'à « Étape 4 sur 4 ».
@@ -144,7 +168,7 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 - Après avoir quitté puis être revenu, vous reprenez **exactement à la question non répondue**.
 - Jour terminé : un message indique que la journée suivante ouvre **demain** (`11-sondeur-jour-ferme.png`).
 - **B lit les questions en anglais** si son interface est en anglais. Ce sont les mêmes questions que A (`13-b-anglais.png`).
-- **Relance / question d'approfondissement** : uniquement si l'IA est branchée en préproduction (clé OpenRouter). Après un jour terminé, un **résumé du jour** apparaît. Une question du jour suivant peut être remplacée par une question qui revient sur un écart entre vos réponses. Sans IA, aucune relance : c'est normal.
+- **Relance / question d'approfondissement** : uniquement si un écart reste à éclaircir après la lecture du jour (l'IA est branchée sur le site en ligne). Après un jour terminé, un **résumé du jour** apparaît. Une question du jour suivant peut être remplacée par une question qui revient sur un écart entre vos réponses. Sans IA, aucune relance : c'est normal.
 - Fin du jour 3 : le Sondeur est terminé (`12-sondeur-termine.png`).
 
 ### Étape 7 — Ouverture du chat
@@ -177,7 +201,7 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 
 ### Étape 10 — Tableau de bord admin
 **Ce que vous faites :**
-1. Ouvrez l'adresse du tableau de bord de préproduction, puis la page `/login`.
+1. Ouvrez `https://boligo-admin.onrender.com`, puis la page `/login`.
 2. Connectez-vous avec `steve.recette.admin@example.com` et votre mot de passe.
 3. Visitez : Vue d'ensemble, Membres, Rencontres, Parcours, **Signalements**, **Modération** (messages bloqués), Finances, Codes promo, Équipe.
 
@@ -194,7 +218,7 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 
 ## 5. Check-list finale
 
-- [ ] Inscription A et B, code `1234` accepté, mauvais code refusé
+- [ ] Inscription A et B, code reçu par e-mail accepté, mauvais code refusé
 - [ ] Grand Entretien terminé (A en français avec accord, B avec refus des questions sensibles)
 - [ ] Tranche d'âge invalide refusée, reprise au bon module après reconnexion
 - [ ] Bascule français / anglais sans perte de réponses
@@ -227,151 +251,14 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 
 ## 7. Où tester
 
-### Ce qui existe vraiment dans le dépôt
-
-| Nom | Adresse | Vers quelle API / base | Source dans le code |
-|---|---|---|---|
-| API `Boligo-back` (**production**) | `https://boligo-back.onrender.com/api` | Base Supabase de production (projet partagé avec des schémas OWEKE) | `mobile-steve/services/api.ts`, `mobile-steve/docs/DEPLOIEMENT.md` §3.1, `docs/BOLIGO_MOTEUR_COMPATIBILITE.md` |
-| App web `boligo-web` | `https://boligo-web.onrender.com` | API de **production** | `render.yaml` (branche `main`, `EXPO_PUBLIC_API_URL` = API de production) |
-| Tableau de bord `boligo-admin` | `https://boligo-admin.onrender.com` | API de **production** | `render.yaml`, `admin/README.md`, `src/common/cors.ts` |
-| Builds mobiles EAS (`development`, `preview`, `production`) | — | Les trois profils pointent vers l'API de **production** | `mobile-steve/eas.json` |
-| Projet Supabase `oweke-staging` | — | Ce n'est **pas** BOLIGO (projet OWEKE) | `docs/BOLIGO_MOTEUR_COMPATIBILITE.md` |
-
-**Conclusion : il n'existe aucun environnement de préproduction BOLIGO.** Aucun fichier `render.yaml`, aucune configuration `.github/workflows` (le dossier n'existe pas), aucun profil EAS ni aucun fichier `.env` ne déclare d'adresse de préproduction ou de staging.
-
-La seule recette « préprod » qui a eu lieu (`docs/RECETTE_V82_PREPROD.md`) a été faite sur un **serveur et une base locaux**, dans le conteneur de développement. Le script `mobile-steve/e2e/v82.e2e.js` refuse d'ailleurs toute adresse autre que `localhost`.
-
-> **Ne faites pas cette recette sur `boligo-web.onrender.com`.** La production utilise la version d'entretien 7.1 par défaut, n'a pas `OTP_DEBUG`, et vos comptes de test pollueraient les vrais membres.
-
-### Ce qu'il faut créer pour une préproduction (à faire par la personne technique — rien n'a été créé)
-
-Il faut **trois services Render séparés** et **une base séparée**, qui ne partagent rien avec la production.
-
-**1. Base de données séparée**
-- Option recommandée : un **nouveau projet Supabase** `boligo-staging`, distinct du projet de production. Récupérez l'URL du pooler (`DATABASE_URL`) et l'URL directe (`DIRECT_URL`).
-- Autre option : une base **Render Postgres payante**. Les bases gratuites de Render expirent au bout de 30 jours (`mobile-steve/docs/DEPLOIEMENT.md`).
-- Création du schéma (le dépôt utilise `prisma db push`, pas de migrations versionnées) :
-
-```bash
-# Sur un poste de développeur, avec l'URL de la base de PRÉPROD uniquement :
-DATABASE_URL="<url-preprod>" DIRECT_URL="<url-directe-preprod>" npx prisma db push
-# Puis, si l'équipe technique le juge utile, les scripts additifs de prisma/sql/
-# (dont 2026-10-12_version_entretien.sql et 2026-10-12_sondeur_bilingue.sql) :
-psql "<url-directe-preprod>" -f prisma/sql/2026-10-12_version_entretien.sql
-psql "<url-directe-preprod>" -f prisma/sql/2026-10-12_sondeur_bilingue.sql
-```
-
-**2. Variables de l'API de préproduction** (service `boligo-back-staging`)
-
-| Variable | Valeur de préproduction |
-|---|---|
-| `DATABASE_URL`, `DIRECT_URL` | Base de **préproduction** uniquement |
-| `JWT_SECRET` | Nouvelle valeur aléatoire, **différente** de la production |
-| `NODE_ENV` | `production` |
-| `OTP_DEBUG` | `true` (code `1234` accepté — **jamais en production**) |
-| `INTERVIEW_VERSION` | `8.2` |
-| `STRIPE_SECRET_KEY` | `sk_test_…` (compte Stripe BOLIGO, **mode test**) |
-| `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_…` du même compte |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_…` d'un **nouveau** webhook de test vers `https://boligo-back-staging.onrender.com/api/payment/webhook` (événement `payment_intent.succeeded`) |
-| `WEB_APP_URL` | `https://boligo-web-staging.onrender.com` (retour de la page de paiement Stripe, sinon le membre revient en production) |
-| `PUBLIC_WEB_URL` | idem |
-| `ADMIN_ALLOWED_ORIGINS` | `https://boligo-admin-staging.onrender.com` |
-| `ADMIN_BOOTSTRAP_EMAIL` | `steve.recette.admin@example.com` |
-| `GHOSTING_MONITOR` | `observe` (par défaut) |
-| `VIDEO_TEST_UNLOCK` | `true` (facultatif, pour tester l'appel vidéo plus tôt) |
-| `OPENROUTER_API_KEY` / `GROQ_API_KEY` | Facultatif : nécessaire pour les résumés, la question d'approfondissement et le bilan Harmonie |
-| `AI_JOURNEY_BUDGET_EUR`, `AI_JOURNEY_MONTHLY_CAP_EUR`, `AI_MONTHLY_BUDGET_EUR` | Petits plafonds, par exemple 1 / 10 / 5 |
-| E-mails (`RESEND_API_KEY`, SMTP…) | **Laisser vides** : mode simulation, aucun e-mail réel envoyé |
-| `SAFETY_ALERT_EMAILS`, `BILLING_ALERT_EMAILS` | Vides, ou une adresse de l'équipe |
-
-**3. Exemple de `render.yaml` de préproduction** (à mettre dans un fichier séparé, par exemple `render.staging.yaml`, ou à saisir à la main dans le tableau de bord Render ; **non créé**) :
-
-```yaml
-# PRÉPROD BOLIGO — aucun lien avec la production.
-services:
-  # API NestJS de préproduction, construite depuis la branche de recette.
-  - type: web
-    name: boligo-back-staging
-    runtime: node
-    branch: claude/magical-keller-kw9t2c   # branche à recetter
-    buildCommand: npm ci && npx prisma generate && npm run build
-    startCommand: node --max-old-space-size=512 dist/main.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: OTP_DEBUG            # code 1234 accepté : JAMAIS en production
-        value: "true"
-      - key: INTERVIEW_VERSION
-        value: "8.2"
-      - key: WEB_APP_URL
-        value: https://boligo-web-staging.onrender.com
-      - key: PUBLIC_WEB_URL
-        value: https://boligo-web-staging.onrender.com
-      - key: ADMIN_ALLOWED_ORIGINS
-        value: https://boligo-admin-staging.onrender.com
-      - key: ADMIN_BOOTSTRAP_EMAIL
-        value: steve.recette.admin@example.com
-      - key: JWT_SECRET
-        generateValue: true       # valeur aléatoire propre à la préprod
-      # Secrets saisis à la main dans le tableau de bord (jamais dans le dépôt) :
-      - key: DATABASE_URL         # base de PRÉPROD
-        sync: false
-      - key: DIRECT_URL
-        sync: false
-      - key: STRIPE_SECRET_KEY    # sk_test_… uniquement
-        sync: false
-      - key: EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY   # pk_test_…
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: OPENROUTER_API_KEY   # facultatif
-        sync: false
-
-  # App web (export Expo) pointant vers l'API de préproduction.
-  - type: web
-    name: boligo-web-staging
-    runtime: static
-    branch: claude/magical-keller-kw9t2c
-    rootDir: mobile-steve
-    buildCommand: npm ci && npx expo export --platform web && cp dist/index.html dist/404.html
-    staticPublishPath: dist
-    envVars:
-      - key: EXPO_PUBLIC_API_URL
-        value: https://boligo-back-staging.onrender.com/api
-      - key: NODE_VERSION
-        value: "22"
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-
-  # Tableau de bord de préproduction.
-  - type: web
-    name: boligo-admin-staging
-    runtime: static
-    branch: claude/magical-keller-kw9t2c
-    rootDir: admin
-    buildCommand: npm ci && npm run build
-    staticPublishPath: out
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        value: https://boligo-back-staging.onrender.com/api
-      - key: NODE_VERSION
-        value: "22"
-    headers:
-      - path: /*
-        name: X-Robots-Tag
-        value: noindex, nofollow
-      # La politique de contenu du render.yaml de production n'autorise que
-      # boligo-back.onrender.com : ici, il faut autoriser l'API de préproduction.
-      - path: /*
-        name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://boligo-back-staging.onrender.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
-```
-
-**4. Après la création :**
-- Créez le compte admin dans l'app de préproduction (code `1234`), puis connectez-vous au tableau de bord de préproduction.
-- Pour la recette sur téléphone : faites un build EAS avec `EXPO_PUBLIC_API_URL=https://boligo-back-staging.onrender.com/api`. Par exemple, ajoutez un profil `staging` dans `eas.json`, ou lancez `npx expo start` avec un `.env` qui pointe vers la préproduction.
-- Pour avancer le Sondeur d'un jour, **uniquement sur la base de préproduction** (c'est ce que fait la recette automatisée) :
-  `UPDATE "Journey" SET "stepStartDate" = "stepStartDate" - interval '1 day' WHERE id = '<id du parcours>';`
-- Gardez en tête : l'offre gratuite de Render est partagée avec les services `oweke-server*` (750 heures par mois). Une préproduction gratuite qui reste allumée en consomme une partie.
+- **Sur le site en ligne**, après le déploiement de la nouvelle version par l'équipe
+  technique : `https://boligo-web.onrender.com` (app) et
+  `https://boligo-admin.onrender.com` (tableau de bord).
+- Il n'existe **pas d'environnement de préproduction** BOLIGO, et il n'en sera pas
+  créé (décision du 12/10/2026). La migration future vers un autre serveur est
+  préparée dans `docs/MIGRATION_SERVEUR.md` (Docker, variables, sauvegarde,
+  bascule, retour arrière).
+- Avant déploiement, les nouveautés se voient dans les captures et la vidéo
+  (section 0).
+- **Avancer le Sondeur d'un jour** n'est pas possible sur le site en ligne :
+  comptez 3 jours réels pour le parcours complet.
