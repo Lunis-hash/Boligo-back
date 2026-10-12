@@ -32,7 +32,9 @@ const api = () =>
 /**
  * Authentification OpenRouter : clé dans OPENROUTER_API_KEY, ou secret réseau
  * (OPENROUTER_AUTH=proxy) ajouté par le proxy sortant. Dans ce second cas,
- * aucun en-tête n'est envoyé : le proxy pose lui-même Authorization.
+ * aucun en-tête n'est envoyé : le proxy pose lui-même Authorization. Le fetch
+ * de Node n'emprunte HTTPS_PROXY qu'avec NODE_USE_ENV_PROXY=1 ; sans lui,
+ * l'appel part en direct et OpenRouter répond 401.
  */
 export function openRouterAuthAvailable(): boolean {
   return (

@@ -8,7 +8,7 @@
  * (config/sondeur-models.json). Rien n'est qualifié si les seuils ne sont pas
  * atteints.
  *
- *   OPENROUTER_API_KEY=... (ou OPENROUTER_AUTH=proxy) BENCH_MAX_EUR=20 npx ts-node --skipProject --transpile-only \
+ *   OPENROUTER_API_KEY=... (ou OPENROUTER_AUTH=proxy NODE_USE_ENV_PROXY=1) BENCH_MAX_EUR=20 npx ts-node --skipProject --transpile-only \
  *     -O '{"module":"commonjs","esModuleInterop":true}' scripts/sondeur-benchmark.ts all [--qualify]
  *
  * Étapes : catalog | screen | final | critic | cost | select | all.
