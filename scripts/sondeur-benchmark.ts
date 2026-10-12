@@ -1181,7 +1181,7 @@ async function main() {
     const critics = paid
       .filter((e) => e.family !== modelFamily(writer ?? ''))
       .map((e) => e.id);
-    const results = [];
+    const results: Array<Awaited<ReturnType<typeof runCritic>>> = [];
     for (const c of critics) {
       if (await stop()) break;
       results.push(await runCritic(c, writer));

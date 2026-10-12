@@ -35,6 +35,10 @@ const MODEL = JSON.parse(
   ),
 ) as Record<string, { type: string; options: Record<string, string> }>;
 
+/** Environnement de test (les types Expo exigent NODE_ENV dans ProcessEnv). */
+const testEnv = (o: Record<string, string>) =>
+  o as unknown as NodeJS.ProcessEnv;
+
 describe('Grand Entretien V8.2 — contenu', () => {
   it('118 questions : les 113 du modèle validé, 4 reprises de la V7 et M8_Q13 reformulée', () => {
     expect(V82_QUESTIONS).toHaveLength(118);
@@ -111,23 +115,23 @@ describe('Grand Entretien V8.2 — contenu', () => {
 
 describe('Grand Entretien V8.2 — version servie', () => {
   it('nouvel entretien : V7.1 par défaut, V8.2 seulement sur configuration explicite', () => {
-    expect(configuredInterviewVersion('u1', {})).toBe('7.1');
-    expect(configuredInterviewVersion('u1', { INTERVIEW_VERSION: '' })).toBe(
-      '7.1',
-    );
-    expect(configuredInterviewVersion('u1', { INTERVIEW_VERSION: '8' })).toBe(
-      '7.1',
-    );
-    expect(configuredInterviewVersion('u1', { INTERVIEW_VERSION: '8.2' })).toBe(
-      '8.2',
-    );
+    expect(configuredInterviewVersion('u1', testEnv({}))).toBe('7.1');
+    expect(
+      configuredInterviewVersion('u1', testEnv({ INTERVIEW_VERSION: '' })),
+    ).toBe('7.1');
+    expect(
+      configuredInterviewVersion('u1', testEnv({ INTERVIEW_VERSION: '8' })),
+    ).toBe('7.1');
+    expect(
+      configuredInterviewVersion('u1', testEnv({ INTERVIEW_VERSION: '8.2' })),
+    ).toBe('8.2');
     const ids = pendingQuestions(0, {}, 30, 'F', false, '7.1').map((q) => q.id);
     expect(ids).toContain('M0_Q01');
     for (const id of ids) expect(V82_ONLY_IDS.has(id)).toBe(false);
   });
 
   it('activation progressive : stable par membre, proportionnelle au pourcentage', () => {
-    const env = { INTERVIEW_V82_PERCENT: '20' };
+    const env = testEnv({ INTERVIEW_V82_PERCENT: '20' });
     const users = Array.from({ length: 2000 }, (_, i) => `membre-${i}`);
     const v82 = users.filter(
       (u) => configuredInterviewVersion(u, env) === '8.2',
@@ -138,17 +142,23 @@ describe('Grand Entretien V8.2 — version servie', () => {
     for (const u of v82.slice(0, 50)) {
       expect(configuredInterviewVersion(u, env)).toBe('8.2');
       expect(
-        configuredInterviewVersion(u, { INTERVIEW_V82_PERCENT: '50' }),
+        configuredInterviewVersion(u, testEnv({ INTERVIEW_V82_PERCENT: '50' })),
       ).toBe('8.2');
     }
     expect(
-      configuredInterviewVersion('x', { INTERVIEW_V82_PERCENT: '0' }),
+      configuredInterviewVersion('x', testEnv({ INTERVIEW_V82_PERCENT: '0' })),
     ).toBe('7.1');
     expect(
-      configuredInterviewVersion('x', { INTERVIEW_V82_PERCENT: '100' }),
+      configuredInterviewVersion(
+        'x',
+        testEnv({ INTERVIEW_V82_PERCENT: '100' }),
+      ),
     ).toBe('8.2');
     expect(
-      configuredInterviewVersion(undefined, { INTERVIEW_V82_PERCENT: '100' }),
+      configuredInterviewVersion(
+        undefined,
+        testEnv({ INTERVIEW_V82_PERCENT: '100' }),
+      ),
     ).toBe('7.1');
   });
 

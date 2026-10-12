@@ -93,7 +93,7 @@ function run(questionsA: Question[], questionsB: Question[], n: number) {
           themeKey: q.themeKey,
           text: q.text,
           evidence: trace.evidence.length ? trace.evidence : ['?'],
-          claim: trace.claim === 'safety' ? 'neutral' : trace.claim,
+          claim: (trace.claim as string) === 'safety' ? 'neutral' : trace.claim,
         },
         index,
         { deterministic: true },
