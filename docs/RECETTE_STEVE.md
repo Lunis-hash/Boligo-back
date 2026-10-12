@@ -157,7 +157,7 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 4. **A** : regardez l'écran après la réponse de B, puis cliquez « Question suivante ».
 5. Au milieu de la journée : **A** revient à l'accueil avec la flèche ←, ferme l'onglet, puis rouvre « Question du jour ».
 6. Terminez les questions du jour 1 sur les deux comptes, puis ouvrez de nouveau l'onglet Matchs.
-7. Le lendemain (ou après que la personne technique a avancé le parcours d'un jour), faites les jours 2 et 3.
+7. Le lendemain, faites le jour 2, puis le surlendemain le jour 3.
 
 **Ce que vous devez voir :**
 - **Une seule question à la fois.**
@@ -202,7 +202,7 @@ Pour chaque étape, faites ce qui est indiqué dans « Ce que vous faites ». Pu
 ### Étape 10 — Tableau de bord admin
 **Ce que vous faites :**
 1. Ouvrez `https://boligo-admin.onrender.com`, puis la page `/login`.
-2. Connectez-vous avec `steve.recette.admin@example.com` et votre mot de passe.
+2. Connectez-vous avec le compte administrateur existant de l'équipe.
 3. Visitez : Vue d'ensemble, Membres, Rencontres, Parcours, **Signalements**, **Modération** (messages bloqués), Finances, Codes promo, Équipe.
 
 **Ce que vous devez voir :**
