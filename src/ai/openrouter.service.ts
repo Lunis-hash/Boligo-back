@@ -42,6 +42,31 @@ export function openRouterAuthAvailable(): boolean {
   );
 }
 
+/**
+ * Erreur de compte OpenRouter (401 authentification, 402 crédits épuisés) :
+ * elle touche tous les modèles, inutile d'essayer les suivants.
+ */
+export class OpenRouterAccountError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'OpenRouterAccountError';
+  }
+}
+
+let lastAccountError: OpenRouterAccountError | null = null;
+
+/** Dernière erreur de compte rencontrée (le banc d'essai s'arrête dessus). */
+export function openRouterAccountError(): OpenRouterAccountError | null {
+  return lastAccountError;
+}
+
+export function resetOpenRouterAccountError(): void {
+  lastAccountError = null;
+}
+
 export function openRouterAuthHeaders(): Record<string, string> {
   const key = process.env.OPENROUTER_API_KEY;
   return key ? { Authorization: `Bearer ${key}` } : {};
@@ -270,6 +295,11 @@ export class OpenRouterService {
 
         if (!response.ok) {
           const errorText = await response.text();
+          if (response.status === 401 || response.status === 402)
+            throw new OpenRouterAccountError(
+              response.status,
+              `HTTP ${response.status}: ${errorText.slice(0, 200)}`,
+            );
           throw new Error(
             `HTTP ${response.status}: ${errorText.slice(0, 200)}`,
           );
@@ -288,6 +318,13 @@ export class OpenRouterService {
         this.logger.warn(
           `⚠️ [OpenRouter] ${agentName} : échec du modèle ${model} (${lastError.message}).`,
         );
+        if (error instanceof OpenRouterAccountError) {
+          lastAccountError = error;
+          throw new OpenRouterAccountError(
+            error.status,
+            `[OpenRouter] Erreur de compte, aucun autre modèle essayé : ${error.message}`,
+          );
+        }
       }
     }
 

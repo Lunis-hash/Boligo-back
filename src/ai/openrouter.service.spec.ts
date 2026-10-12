@@ -1,7 +1,10 @@
 import {
+  OpenRouterAccountError,
   OpenRouterService,
   maxPrice,
+  openRouterAccountError,
   openRouterAuthHeaders,
+  resetOpenRouterAccountError,
 } from './openrouter.service';
 
 /** Catalogue OpenRouter simulé : prix en dollars par jeton, comme l'API. */
@@ -217,6 +220,26 @@ describe('OpenRouterService', () => {
       ),
     ).rejects.toThrow(/ont échoué/);
   });
+
+  it.each([401, 402])(
+    'erreur de compte (HTTP %i) : arrêt net, aucun autre modèle essayé',
+    async (status) => {
+      resetOpenRouterAccountError();
+      const fetchFn = mockFetch(() => ({ ok: false, status }));
+      await expect(
+        service.executeAgentPrompt('coach', [{ role: 'user', content: 'x' }], {
+          role: 'quality',
+        }),
+      ).rejects.toBeInstanceOf(OpenRouterAccountError);
+      const chatCalls = (fetchFn.mock.calls as FetchCall[]).filter(([u]) =>
+        u.endsWith('/chat/completions'),
+      );
+      expect(chatCalls).toHaveLength(1);
+      expect(openRouterAccountError()?.status).toBe(status);
+      resetOpenRouterAccountError();
+      expect(openRouterAccountError()).toBeNull();
+    },
+  );
 
   it('sans clé : aucun appel', async () => {
     delete process.env.OPENROUTER_API_KEY;

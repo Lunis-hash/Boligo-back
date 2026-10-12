@@ -19,6 +19,7 @@ import { join } from 'path';
 import { AiService } from '../src/ai/ai.service';
 import {
   OpenRouterService,
+  openRouterAccountError,
   openRouterAuthAvailable,
   openRouterAuthHeaders,
 } from '../src/ai/openrouter.service';
@@ -70,14 +71,31 @@ let spentMicro = Number(
   load<{ spentMicro: number }>('budget.json')?.spentMicro ?? 0,
 );
 const cap = Math.round(MAX_EUR * 1_000_000);
+// Crédit épuisé ou authentification refusée : arrêt net, aucun résultat
+// fabriqué à partir d'appels qui n'ont pas eu lieu.
+const haltOnAccountError = () => {
+  const err = openRouterAccountError();
+  if (!err) return;
+  save('halt.json', { status: err.status, message: err.message, spentMicro });
+  console.error(
+    `ARRÊT : erreur de compte OpenRouter (HTTP ${err.status}). Aucun modèle qualifié. ${err.message}`,
+  );
+  process.exit(2);
+};
 const lab = {
-  allow: (estimate: number) => spentMicro + estimate <= cap,
+  allow: (estimate: number) => {
+    haltOnAccountError();
+    return spentMicro + estimate <= cap;
+  },
   add: (cost: number) => {
     spentMicro += cost;
     save('budget.json', { spentMicro, capMicro: cap });
   },
 };
-const overBudget = () => spentMicro >= cap;
+const overBudget = () => {
+  haltOnAccountError();
+  return spentMicro >= cap;
+};
 
 // ─── 1. Catalogue réel ───────────────────────────────────────────────────────
 /** Familles et motifs demandés (le catalogue du jour décide de ce qui existe). */
