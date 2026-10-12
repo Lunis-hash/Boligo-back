@@ -14,6 +14,16 @@
  * questions conditionnelles, Découverte, invitation, Sondeur sur 3 jours.
  * B (Femme, interface EN) est pilotée par l'API et refuse les questions
  * sensibles.
+ *
+ * Réponses scriptées choisies pour que le couple porte de VRAIS écarts non
+ * sensibles (épargne M4_Q14 A/C, déménagement M0_Q03 A/D) et un risque
+ * partagé (M3_Q12 C/C) : le faux OpenRouter (e2e/fake-openrouter.js) y
+ * rédige des questions valides et des questions pièges, que le backend doit
+ * rejeter (NO_FAKE_GAP). Il lit le jour 1 comme un écart non compris et le
+ * jour 2 comme un écart compris (ADAPTIVE_FOLLOWUP).
+ *
+ * Backend de recette lancé avec INSIGHTS_RETRY_AFTER_MS=2000 (écart entre
+ * deux essais de lecture ; la règle des trois essais ne change pas).
  */
 const path = require('path');
 const fs = require('fs');
@@ -23,7 +33,8 @@ const { execSync } = require('child_process');
 const APP_URL = process.env.APP_URL || 'http://localhost:8081';
 const API = process.env.API_URL || 'http://localhost:3000/api';
 const E2E_PSQL = process.env.E2E_PSQL || '';
-if (!/localhost|127\.0\.0\.1/.test(API) || (E2E_PSQL && !/localhost|127\.0\.0\.1/.test(E2E_PSQL))) {
+const FAKE_URL = process.env.FAKE_OPENROUTER_URL || 'http://localhost:8799';
+if (!/localhost|127\.0\.0\.1/.test(API) || !/localhost|127\.0\.0\.1/.test(FAKE_URL) || (E2E_PSQL && !/localhost|127\.0\.0\.1/.test(E2E_PSQL))) {
   console.error('Recette réservée à un backend et une base locaux.');
   process.exit(2);
 }
@@ -62,8 +73,17 @@ async function register(firstName, gender, birth) {
   return { email, password, token: ver.data.access_token, userId: ver.data.userId };
 }
 
-/** Membre piloté par l'API : premières options, plage d'âge, langue choisie. */
-async function answerByApi(member, lang) {
+/** Réponses imposées (identifiant d'entretien → option) pour créer de vrais écarts. */
+const FORCED_A = { M3_Q12: 'C' };
+const FORCED_B = { M4_Q14: 'C', M0_Q03: 'D', M3_Q12: 'C' };
+/** Emoji de chaque thème du Sondeur (src/matching/divergence.engine.ts). */
+const THEME_EMOJI = {
+  'Famille': '👨‍👩‍👧', 'Argent & dettes': '💶', 'Religion & spiritualité': '🕊️', 'Intimité & sexualité': '❤️‍🔥',
+  'Communication & émotions': '💬', 'Projet de vie': '🌱', 'Lieu de vie & mobilité': '🧭',
+};
+
+/** Membre piloté par l'API : premières options (sauf réponses imposées), plage d'âge, langue choisie. */
+async function answerByApi(member, lang, forced = {}) {
   for (let m = 0; m <= 10; m++) {
     const answers = {};
     for (let round = 0; round < 3; round++) {
@@ -72,6 +92,7 @@ async function answerByApi(member, lang) {
       if (!pending.length) break;
       for (const x of pending) {
         if (x.input === 'ageRange') answers[x.id] = '30-42';
+        else if (forced[x.id] && x.options.some((o) => o.key === forced[x.id])) answers[x.id] = forced[x.id];
         else answers[x.id] = (x.options.find((o) => !o.freeText) || x.options[0])?.key || 'A';
       }
       await api('POST', '/interview/save-module', { token: member.token, body: { moduleNumber: m, moduleName: `Module ${m}`, answers } });
@@ -181,6 +202,7 @@ function watchAppDialogs(pg, sink) {
         continue;
       }
 
+      const pageText = await body().catch(() => '');
       const ageMin = page.getByTestId('interview-age-min');
       if (await ageMin.isVisible().catch(() => false)) {
         await ageMin.fill('45');
@@ -207,6 +229,27 @@ function watchAppDialogs(pg, sink) {
         await yes.click();
         await sleep(900);
         continue;
+      }
+
+      // Réponse imposée (risque partagé M3_Q12) : la question est reconnue à son texte.
+      const forcedHere = Object.entries(FORCED_A).find(([id]) => {
+        const q = (served[mod] || []).find((x) => x.id === id);
+        const label = q && (q.text || q.questionText || '');
+        return label && pageText.includes(label.slice(0, 40));
+      });
+      if (forcedHere && !page.__forced?.[forcedHere[0]]) {
+        const opt = page.getByTestId(`option-${forcedHere[1]}`);
+        if (await opt.isVisible().catch(() => false)) {
+          page.__forced = { ...(page.__forced || {}), [forcedHere[0]]: true };
+          await opt.click();
+          await sleep(300);
+          const v = page.getByTestId('interview-validate');
+          if (await v.isVisible().catch(() => false) && (await v.getAttribute('aria-disabled')) !== 'true') await v.click();
+          answered++;
+          if (mod === 3) page.__mod3answers = (page.__mod3answers || 0) + 1;
+          await sleep(900);
+          continue;
+        }
       }
 
       const validate = page.getByTestId('interview-validate');
@@ -248,6 +291,7 @@ function watchAppDialogs(pg, sink) {
     const wrong = conditional.filter((q) => (q.id in stored) !== met(q));
     record('Questions conditionnelles : posées si et seulement si la condition est remplie', wrong.length === 0,
       `${conditional.filter(met).length} posées, ${conditional.filter((q) => !met(q)).length} écartées${wrong.length ? ' ; écarts : ' + wrong.map((q) => q.id).join(',') : ''}`);
+    record('Réponse scriptée de A enregistrée (M3_Q12 = C, risque partagé avec B)', stored.M3_Q12 === 'C', String(stored.M3_Q12));
     const ageStored = Object.entries(stored).find(([, v]) => /^\d{2}-\d{2}$/.test(String(v)));
     record('Plage d’âge enregistrée « 28-38 »', ageStored?.[1] === '28-38', JSON.stringify(ageStored));
 
@@ -259,7 +303,7 @@ function watchAppDialogs(pg, sink) {
 
     // ── 3. B : entretien en anglais par l'API, questions sensibles refusées
     await api('POST', '/interview/sensitive-consent', { token: B.token, body: { accepted: false } });
-    await answerByApi(B, 'en');
+    await answerByApi(B, 'en', FORCED_B);
     const bStatus = await api('GET', '/interview/status', { token: B.token });
     record('B : entretien V8.2 terminé en anglais, sans questions sensibles', bStatus.data?.isCompleted === true, JSON.stringify({ done: bStatus.data?.isCompleted }));
 
@@ -297,6 +341,31 @@ function watchAppDialogs(pg, sink) {
     const qb = (await api('GET', `/journey/${journeyId}/questions?lang=en`, { token: B.token })).data || [];
     record('Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres', qa.length >= 9 && qa.length <= 21 && qb.length === qa.length &&
       qa.map((q) => q.id).join() === qb.map((q) => q.id).join(), `${qa.length}/${qb.length}`);
+    // ── NO_FAKE_GAP : aucune question piège (accord, risque partagé) servie ;
+    // chaque question de l'IA servie porte une preuve d'écart réel.
+    {
+      const fake = await fetch(`${FAKE_URL}/__traps`).then((r) => r.json()).catch(() => null);
+      const rowsQ = sql(`SELECT json_build_object('day', day, 'text', "questionText", 'meta', meta) FROM "HarmonyQuestion" WHERE "journeyId"='${journeyId}' ORDER BY "sentAt"`)
+        .split('\n').filter(Boolean).map((l) => JSON.parse(l));
+      const traps = new Set(fake?.traps || []);
+      const kindOf = new Map((fake?.evidence || []).map((e) => [e.id, e.kind]));
+      const servedTraps = rowsQ.filter((q) => traps.has(q.text));
+      const ia = rowsQ.filter((q) => q.meta?.source === 'ia');
+      const badIa = ia.filter((q) => {
+        const ev = q.meta?.evidence;
+        return !ev || ev.claim !== 'divergence' || !(ev.evidence || []).length ||
+          ev.evidence.some((id) => kindOf.get(id) !== 'gap');
+      });
+      const ok = !!fake && traps.size > 0 && ia.length > 0 && servedTraps.length === 0 && badIa.length === 0;
+      const ids = [...new Set(ia.flatMap((q) => q.meta.evidence?.evidence || []))];
+      record('NO_FAKE_GAP : aucune question piège servie, chaque question IA porte une preuve d’écart réel', ok,
+        !fake ? `faux OpenRouter injoignable (${FAKE_URL}/__traps)`
+          : traps.size === 0 ? 'aucun piège rédigé par le faux OpenRouter : le contrôle ne prouve rien'
+            : ia.length === 0 ? 'aucune question IA servie : le contrôle ne prouve rien (écarts réels absents ou rédaction refusée)'
+              : `${ia.length} question(s) IA servies (preuves ${ids.map((id) => `${id}=${kindOf.get(id)}`).join(', ')}), ${traps.size} piège(s) rédigé(s), ${servedTraps.length} servi(s)` +
+                (servedTraps.length ? ` : ${servedTraps.map((q) => q.text).join(' | ')}` : '') +
+                (badIa.length ? ` ; IA sans preuve d’écart : ${badIa.map((q) => q.text).join(' | ')}` : ''));
+    }
     const frInEn = qb.filter((q) => /[àâçéèêîôûù]|\bvous\b/i.test(q.questionText));
     record('Sondeur : B lit chaque question en anglais', frInEn.length === 0 && qb.every((q) => q.language === 'en'), frInEn.slice(0, 2).map((q) => q.questionText).join(' | '));
 
@@ -365,6 +434,30 @@ function watchAppDialogs(pg, sink) {
         const reports = Number(sql(`SELECT count(*) FROM "Report" WHERE description LIKE '%${journeyId}%'`));
         record('Jour 1 : réponses anodines, aucun signalement de modération', reports === 0, `${reports} signalement(s)`);
       }
+      // ── ADAPTIVE_FOLLOWUP : la lecture du jour (écrite après la dernière
+      // réponse) décide de la relance du lendemain.
+      if (day < 3) {
+        let insight = null;
+        for (let i = 0; i < 30 && !insight; i++) {
+          const raw = sql(`SELECT content FROM "JourneyInsight" WHERE "journeyId"='${journeyId}' AND day=${day}`);
+          insight = raw ? JSON.parse(raw) : null;
+          if (!insight) await sleep(1000);
+        }
+        // La relance est placée juste avant l'enregistrement de la lecture.
+        const follow = sql(`SELECT json_build_object('emoji', emoji, 'text', "questionText", 'meta', meta) FROM "HarmonyQuestion" WHERE "journeyId"='${journeyId}' AND day=${day + 1} AND "followUp"`)
+          .split('\n').filter(Boolean).map((l) => JSON.parse(l));
+        const gaps = insight?.toDiscuss || [];
+        if (day === 1) {
+          const gapEmoji = THEME_EMOJI[gaps[0]?.theme];
+          const ok = insight?.source === 'ia' && gaps.length > 0 && follow.length === 1 && follow[0].emoji === gapEmoji && follow[0].meta?.source === 'suivi';
+          record('ADAPTIVE_FOLLOWUP : jour 1 (écart non compris) → une relance au jour 2, sur le thème de l’écart', ok,
+            `lecture ${insight ? insight.source : 'absente'}, ${gaps.length} écart(s) à explorer (${gaps.map((g) => g.theme).join(', ')}), ${follow.length} relance(s) au jour 2${follow[0] ? ` : ${follow[0].emoji} « ${follow[0].text} »` : ''}`);
+        } else {
+          const ok = insight?.source === 'ia' && gaps.length === 0 && follow.length === 0;
+          record('ADAPTIVE_FOLLOWUP : jour 2 (écart compris) → aucune relance au jour 3', ok,
+            `lecture ${insight ? insight.source : 'absente'}, ${gaps.length} écart(s) à explorer, ${follow.length} relance(s) au jour 3`);
+        }
+      }
       if (day < 3) {
         await page.reload({ waitUntil: 'networkidle' });
         await sleep(2500);
@@ -396,14 +489,20 @@ function watchAppDialogs(pg, sink) {
     await shot('12-sondeur-termine');
     // La messagerie attend la lecture IA de chaque journée (ou trois échecs) :
     // chaque visite relance la lecture, comme dans l'app.
+    // Lectures réussies : le dialogue s'ouvre dès qu'elles sont écrites. Si
+    // une lecture échoue, trois essais espacés de INSIGHTS_RETRY_AFTER_MS
+    // (2 s en recette) : 60 s d'attente au plus.
     let status;
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 20; i++) {
       await api('GET', '/matching/my-matches', { token: A.token });
       status = await api('GET', `/journey/${journeyId}/status`, { token: A.token });
       if (status.data?.currentStep === 'chat_libre') break;
       await sleep(3000);
     }
-    record('Parcours ouvert au dialogue après les 3 jours', status.data?.currentStep === 'chat_libre', status.data?.currentStep);
+    const insightDays = sql(`SELECT string_agg(day || ':' || source, ',' ORDER BY day) FROM "JourneyInsight" WHERE "journeyId"='${journeyId}'`);
+    record('Parcours ouvert au dialogue après les 3 jours', status.data?.currentStep === 'chat_libre', `${status.data?.currentStep} ; lectures ${insightDays || 'aucune'}`);
+    const fakeStats = await fetch(`${FAKE_URL}/__stats`).then((r) => r.json()).catch(() => null);
+    if (fakeStats) console.log(`Faux OpenRouter : ${JSON.stringify(fakeStats.byKind)}`);
 
     // ── 6. Affichage : B (EN) dans un second navigateur, aucune trace de la langue de A
     const ctxB = await browser.newContext({ viewport: { width: 420, height: 900 }, locale: 'en-GB' });

@@ -57,12 +57,17 @@
   {
     "step": "Accord enregistré côté serveur",
     "ok": true,
-    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-12T21:24:59.031Z\"}"
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-12T23:23:46.005Z\"}"
   },
   {
     "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
     "ok": true,
     "detail": "2 posées, 1 écartées"
+  },
+  {
+    "step": "Réponse scriptée de A enregistrée (M3_Q12 = C, risque partagé avec B)",
+    "ok": true,
+    "detail": "C"
   },
   {
     "step": "Plage d’âge enregistrée « 28-38 »",
@@ -82,7 +87,7 @@
   {
     "step": "Découverte : B proposée à A",
     "ok": true,
-    "detail": "79 %"
+    "detail": "69 %"
   },
   {
     "step": "Découverte : aucune donnée interne exposée (safetyHold, réponses brutes, consentement)",
@@ -102,7 +107,12 @@
   {
     "step": "Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres",
     "ok": true,
-    "detail": "9/9"
+    "detail": "11/11"
+  },
+  {
+    "step": "NO_FAKE_GAP : aucune question piège servie, chaque question IA porte une preuve d’écart réel",
+    "ok": true,
+    "detail": "6 question(s) IA servies (preuves E3=gap, E2=gap), 6 piège(s) rédigé(s), 0 servi(s)"
   },
   {
     "step": "Sondeur : B lit chaque question en anglais",
@@ -115,9 +125,19 @@
     "detail": "0 signalement(s)"
   },
   {
+    "step": "ADAPTIVE_FOLLOWUP : jour 1 (écart non compris) → une relance au jour 2, sur le thème de l’écart",
+    "ok": true,
+    "detail": "lecture ia, 1 écart(s) à explorer (Argent & dettes), 1 relance(s) au jour 2 : 💶 « Quelle part d’une prime inattendue aimeriez-vous garder pour un plaisir ? »"
+  },
+  {
     "step": "Jour 1 terminé → jour 2 fermé jusqu’au lendemain",
     "ok": true,
     "detail": ""
+  },
+  {
+    "step": "ADAPTIVE_FOLLOWUP : jour 2 (écart compris) → aucune relance au jour 3",
+    "ok": true,
+    "detail": "lecture ia, 0 écart(s) à explorer, 0 relance(s) au jour 3"
   },
   {
     "step": "Jour 2 terminé → jour 3 fermé jusqu’au lendemain",
@@ -155,19 +175,19 @@
     "detail": ""
   },
   {
-    "step": "Sondeur : 9 réponses envoyées depuis le navigateur (toutes les questions)",
+    "step": "Sondeur : 11 réponses envoyées depuis le navigateur (toutes les questions)",
     "ok": true,
     "detail": ""
   },
   {
-    "step": "Progression côté serveur = 9/9",
+    "step": "Progression côté serveur = 11/11",
     "ok": true,
-    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":9,\"totalQuestions\":9,\"partnerName\":\"Nadia\",\"journeyId\":\"d1d85883-f86a-44bc-b33f-e330a3e67d6f\"}"
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":11,\"totalQuestions\":11,\"partnerName\":\"Nadia\",\"journeyId\":\"f1c6cfbd-4606-479e-931e-a26d851d5ae1\"}"
   },
   {
     "step": "Parcours ouvert au dialogue après les 3 jours",
-    "ok": false,
-    "detail": "phase_harmonie"
+    "ok": true,
+    "detail": "chat_libre ; lectures 0:ia,1:ia,2:ia,3:ia"
   },
   {
     "step": "B (interface anglaise) : libellés du Sondeur en anglais",
