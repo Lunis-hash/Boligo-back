@@ -61,6 +61,8 @@ const FINALISTS = Number(process.env.BENCH_FINALISTS ?? 4);
 // Essai réduit : corpus ciblé par sujets, sans juges IA (contrôle humain).
 const TOPICS = (process.env.BENCH_TOPICS ?? '').split(',').filter(Boolean);
 const NO_JUDGES = process.env.BENCH_NO_JUDGES === '1';
+// Relecteur imposé pour l'essai du rédacteur (d'une autre famille).
+const CRITIC = process.env.BENCH_CRITIC ?? '';
 // Plafond de couples par modèle (« modèle=n,… ») : un modèle cher sur moins de cas.
 const CASES_PER_MODEL: Record<string, number> = Object.fromEntries(
   (process.env.BENCH_CASES_PER_MODEL ?? '')
@@ -514,6 +516,9 @@ interface WriterRun {
   passedGate: number;
   formRejected: number;
   evidenceRejected: number;
+  criticRejected?: number;
+  unreviewedDays?: number;
+  duplicates?: number;
   reasons: Record<string, number>;
   leaks: number;
   costMicro: number;
@@ -544,17 +549,23 @@ function coupleOf(c: BenchCase) {
 async function runWriter(model: string, c: BenchCase): Promise<WriterRun> {
   const { report, couple } = coupleOf(c);
   const ai = new AiService(
-    new ForcedOpenRouter({ quality: [model], escalation: [] }),
+    new ForcedOpenRouter({
+      quality: [model],
+      escalation: [],
+      ...(CRITIC ? { critic: [CRITIC] } : {}),
+    }),
   );
-  // Rédacteur seul : la relecture est mesurée à part (étape critic).
-  (
-    ai as unknown as { reviewSondeurQuestions: unknown }
-  ).reviewSondeurQuestions = async () => ({
-    rejected: new Set<number>(),
-    preferred: new Set<number>(),
-    refusals: [],
-    model: 'sans-relecteur',
-  });
+  // Rédacteur seul par défaut : la relecture est mesurée à part (étape
+  // critic). BENCH_CRITIC : relecture réelle par ce modèle (autre famille).
+  if (!CRITIC)
+    (
+      ai as unknown as { reviewSondeurQuestions: unknown }
+    ).reviewSondeurQuestions = async () => ({
+      rejected: new Set<number>(),
+      preferred: new Set<number>(),
+      refusals: [],
+      model: 'sans-relecteur',
+    });
   const before = spentMicro;
   const t0 = Date.now();
   try {
@@ -587,6 +598,9 @@ async function runWriter(model: string, c: BenchCase): Promise<WriterRun> {
       passedGate: r.questions.length,
       formRejected: r.trace.formRejected.length,
       evidenceRejected: r.trace.evidenceRejected.length,
+      criticRejected: r.trace.refused.length,
+      unreviewedDays: r.trace.unreviewedDays.length,
+      duplicates: r.trace.duplicates.length,
       reasons,
       leaks,
       costMicro: spentMicro - before,

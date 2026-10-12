@@ -33,7 +33,7 @@ const ask = (
 describe('Sondeur — l’IA n’écrit que sur un écart réel', () => {
   it('question qui confronte l’écart à la réalité : acceptée', () => {
     const v = ask(
-      "Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous dans l'épargne commune ?",
+      "Sur 3 000 € gagnés à deux, combien mettriez-vous dans l'épargne ?",
     );
     expect(v.reasons).toEqual([]);
   });
@@ -67,6 +67,49 @@ describe('Sondeur — l’IA n’écrit que sur un écart réel', () => {
       expect(ask(t).reasons.join(' ')).toMatch(/P15/);
     },
   );
+
+  it.each([
+    [
+      "Si votre partenaire ne voulait jamais d'épargne, ou en voulait absolument, que feriez-vous ?",
+      'P19',
+    ],
+    [
+      'Pour l’épargne, où en êtes-vous : tout de côté, un peu, ou rien du tout ?',
+      'P19',
+    ],
+    [
+      "Si votre partenaire refusait toute épargne commune, pourriez-vous l'accepter ?",
+      'P20',
+    ],
+    [
+      "Si votre partenaire gardait toute son épargne pour lui, qu'est-ce que vous ne pourriez pas accepter ?",
+      'P21',
+    ],
+    [
+      "Si l'un de vous élevait la voix pour une dépense, pourriez-vous l'accepter ?",
+      'P22',
+    ],
+  ])('règles du rédacteur : %s → %s', (t, code) => {
+    expect(ask(t).reasons.join(' ')).toContain(code);
+  });
+
+  it('P18 : risque partagé (mêmes réponses), pas un écart', () => {
+    const shared = index.map((e) =>
+      e.id === gapId ? { ...e, shared: true } : e,
+    );
+    const v = validate(
+      {
+        day: 1,
+        themeKey: 'argent',
+        text: "Sur 3 000 € gagnés à deux, combien mettriez-vous dans l'épargne ?",
+        evidence: [gapId],
+        claim: 'divergence',
+      },
+      shared,
+      { gapOnly: true },
+    );
+    expect(v.reasons.join(' ')).toMatch(/P18/);
+  });
 
   it('P17 : question sans lien avec l’écart cité, refusée', () => {
     expect(

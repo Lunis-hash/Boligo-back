@@ -10,7 +10,11 @@ import {
   THEME_LIST,
   Theme,
 } from '../matching/divergence.engine';
-import { COMPROMISE, isWellFormedQuestion } from './clinical-lens';
+import {
+  COMPROMISE,
+  isWellFormedQuestion,
+  similarQuestions,
+} from './clinical-lens';
 import { HarmonyQuestionPayload } from './harmony-question.types';
 import {
   DAY_ANGLES,
@@ -54,6 +58,8 @@ export interface SondeurAiResult {
       question: HarmonyQuestionPayload;
       reasons: string[];
     }>;
+    /** Écartées comme doublon (quasi) identique d'une question du parcours. */
+    duplicates: HarmonyQuestionPayload[];
   };
   /** V8.2 — index des preuves du couple (traçabilité des questions servies). */
   evidenceIndex: EvidenceItem[];
@@ -247,7 +253,21 @@ export async function draftReviewedSondeur(
       return kept;
     }),
   );
-  const questions = reviewed.flat();
+  // Dans un même parcours, jamais deux questions identiques ou quasi
+  // identiques (même seuil que la règle anti-répétition) : la première
+  // gardée, déjà la préférée de son créneau, reste.
+  const duplicates: HarmonyQuestionPayload[] = [];
+  const questions: HarmonyQuestionPayload[] = [];
+  const key = (t: string) => t.toLowerCase().replace(/\s+/g, ' ').trim();
+  for (const q of reviewed.flat()) {
+    if (
+      questions.some(
+        (k) => key(k.text) === key(q.text) || similarQuestions(k.text, q.text),
+      )
+    )
+      duplicates.push(q);
+    else questions.push(q);
+  }
   const covered = new Set(questions.map((q) => `${q.day}|${q.themeKey}`)).size;
   const open = 3 * (THEME_LIST.length - safetyThemes.length);
   return {
@@ -261,6 +281,7 @@ export async function draftReviewedSondeur(
       escalatedDays: escalatedDays.sort(),
       safetyThemes,
       evidenceRejected,
+      duplicates,
     },
     evidenceIndex,
   };

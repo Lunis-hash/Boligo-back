@@ -18,6 +18,7 @@ import {
 } from '../matching/divergence.engine';
 import {
   ORIGIN_DETOUR,
+  gapQuestionIssues,
   isWellFormedQuestion,
   passesFormRules,
 } from './clinical-lens';
@@ -34,6 +35,8 @@ export interface EvidenceItem {
   /** Sujet en clair (« Accueillir un proche à la maison »), montrable. */
   topic: string;
   severity?: string;
+  /** Risque partagé : même réponse des deux, qui pose problème (pas un écart). */
+  shared?: boolean;
   /** Textes de réponses des membres : servent au contrôle de non-divulgation, jamais envoyés à l'IA. */
   privateTexts: string[];
 }
@@ -64,6 +67,8 @@ export function buildEvidence(report: DivergenceReport): EvidenceItem[] {
       subjects: [d.questionId],
       topic: d.label,
       severity: d.severity,
+      // Risque partagé : les deux ont donné la même réponse (pas un écart).
+      ...(d.shared ? { shared: true } : {}),
       privateTexts: hidden
         ? []
         : [
@@ -98,12 +103,13 @@ export function buildEvidence(report: DivergenceReport): EvidenceItem[] {
 export function evidenceForAi(items: EvidenceItem[]) {
   return items
     .filter((e) => e.kind !== 'safety')
-    .map(({ id, theme, kind, topic, severity }) => ({
+    .map(({ id, theme, kind, topic, severity, shared }) => ({
       id,
       theme,
       kind,
       topic,
       severity,
+      ...(shared ? { shared } : {}),
     }));
 }
 
@@ -600,7 +606,11 @@ export function validate(
       reasons.push(
         'P15 détour par l’enfance, la famille d’origine ou un proche',
       );
+    reasons.push(...gapQuestionIssues(q.text));
     // Accords et sujets neutres restent aux gabarits écrits par l'équipe.
+    const gaps = known.filter((e) => e.kind === 'divergence');
+    if (gaps.length && gaps.every((e) => e.shared))
+      reasons.push('P18 risque partagé (mêmes réponses), pas un écart');
     if (q.claim !== 'divergence' || !kinds.has('divergence'))
       reasons.push('P16 question de l’IA hors écart (accord ou neutre)');
     else if (
@@ -630,7 +640,7 @@ export function describeEvidenceForAi(items: EvidenceItem[]): string {
   return evidenceForAi(items)
     .map(
       (e) =>
-        `${e.id} · ${e.theme} · ${kind[e.kind as keyof typeof kind] ?? e.kind}${
+        `${e.id} · ${e.theme} · ${e.shared ? 'risque partagé (mêmes réponses, aucune question)' : (kind[e.kind as keyof typeof kind] ?? e.kind)}${
           e.kind === 'neutral' ? '' : ` · ${e.topic}`
         }${e.severity ? ` (${e.severity})` : ''}`,
     )

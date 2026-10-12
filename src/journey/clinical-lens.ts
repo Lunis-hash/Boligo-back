@@ -27,12 +27,22 @@ CE QUE FAIT UNE BONNE QUESTION : elle confronte l'écart à la réalité, pour q
 - jamais de souvenir d'enfance, de famille d'origine (« dans votre famille », « où vous avez grandi »), de regard d'un proche (« un proche qui vous connaît »), d'« angle mort » ni de « sacré » ;
 - jamais de jargon, aucune étiquette, aucun diagnostic, ni de tournure alambiquée (« dans ce souhait », « cette divergence », « votre positionnement », « qu'est-ce qui, pour vous, », « dans quelle mesure », « que signifie pour vous »).
 
-EXEMPLES (écart détecté → question) :
-- A veut 2 enfants, B en veut 4 → « Jusqu'à combien d'enfants pourriez-vous réellement aller ? » ; relance possible : « Si votre partenaire restait sur son chiffre, pourriez-vous l'accepter ? »
-- A n'est pas sûr de vouloir des enfants, B en veut absolument → « Si votre partenaire ne voulait finalement jamais d'enfant, resteriez-vous ? »
-- A épargne presque tout, B dépense pour ses envies → « Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous dans l'épargne commune ? »
-- B garde ses enfants la plupart du temps, A préfère qu'ils ne vivent pas à plein temps avec le couple → « Si ses enfants vivaient chez vous 5 jours sur 7, pourriez-vous le vivre au quotidien ? »
-- A veut beaucoup de temps à deux, B a une carrière prenante → « Si votre partenaire rentrait après 21 h plusieurs soirs par semaine, pourriez-vous vivre ainsi pendant des années ? »
+RÉCIPROCITÉ : la même question est posée à A et à B. Elle vaut pour chacun des deux, quelle que soit sa position. Jamais une hypothèse qui ne vise que l'un des deux (« si votre partenaire ne voulait jamais d'enfant » n'a de sens que pour celui qui en veut) : formule l'écart de façon symétrique (« vos positions », « l'un de vous », « chacun »).
+
+RISQUE PARTAGÉ (mêmes réponses des deux, signalé comme un risque) : ce n'est pas un écart, aucune question. Sujet proche de la violence (élever la voix, cris, menace) : jamais de question, cela relève des questions de limite de BOLIGO.
+
+EXEMPLES (écart détecté → plusieurs formulations possibles ; ne recopie jamais un exemple mot pour mot, invente ta propre question) :
+- Nombre d'enfants différent (2 contre 4) → « Jusqu'à combien d'enfants pourriez-vous réellement aller ? » ou « Quel nombre d'enfants serait pour vous un vrai renoncement ? »
+- L'un hésite à avoir des enfants, l'autre en veut absolument → « Si vos positions sur les enfants ne bougeaient jamais, resteriez-vous ensemble ? » ou « Dans dix ans sans enfant, qu'est-ce qui vous manquerait le plus ? »
+- L'un épargne presque tout, l'autre dépense pour ses envies → « Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous de côté à deux ? » ou « Quelle dépense plaisir mensuelle vous semblerait trop élevée dans un couple ? »
+- Enfants d'une union précédente, présents chez l'un la plupart du temps → « Si des enfants vivaient chez vous cinq jours sur sept, pourriez-vous le vivre au quotidien ? »
+- Temps à deux contre carrière prenante → « Si l'un de vous rentrait après 21 h plusieurs soirs par semaine, pourriez-vous vivre ainsi pendant des années ? »
+- Lieu de vie → « Si l'un de vous ne quittait jamais sa ville, pourriez-vous vous y installer pour de bon ? »
+
+CONTRE-EXEMPLES (à ne jamais écrire) :
+- Hypothèse retournée : « Si votre partenaire gardait un moment à soi chaque semaine, qu'est-ce que vous ne pourriez pas accepter ? » (on suppose une position puis on demande l'inverse) → demande directement : « Combien de soirées seul(e) par semaine vous sembleraient trop ? »
+- Deux alternatives opposées : « Si votre partenaire ne voulait jamais d'enfant, ou en voulait absolument, que feriez-vous ? » → une seule hypothèse, symétrique.
+- Liste de choix : « Où en êtes-vous : un oui ferme, un non ferme, ou un vrai doute ? » → une question ouverte.
 
 POINTS NON NÉGOCIABLES (${NON_NEGOTIABLE_TOPICS}) : jamais de compromis ni de terrain d'entente ; confronte chacun à la réalité de la position de l'autre (« si cela ne changeait jamais… »).
 
@@ -68,7 +78,7 @@ export const CRITIC_RULES = `Refuse une question si :
 2. elle passe par un souvenir d'enfance, la famille d'origine, le regard d'un proche, un « angle mort » ou le « sacré » ;
 3. elle reste abstraite au lieu de confronter l'écart à la réalité (combien, jusqu'où, si cela ne changeait jamais, ce que l'on ne pourrait pas accepter) ;
 4. elle redemande un fait déjà connu par l'entretien, ou répète une question de la liste (même sens, autres mots) ;
-5. elle mélange plusieurs idées, propose une liste de choix, ou emploie du jargon, une étiquette, un diagnostic ou une tournure alambiquée ;
+5. elle mélange plusieurs idées, oppose deux alternatives (« … ou … »), propose une liste de choix, ou emploie du jargon, une étiquette, un diagnostic ou une tournure alambiquée ;
 6. elle oriente vers une réponse, juge ou fait la morale ;
 7. elle contient une faute, oublie le vouvoiement, cite les réponses entre guillemets ou dit qui a répondu quoi ;
 8. elle suppose un passé commun aux deux membres, ou un fait de leur vie absent de l'analyse (invention) ;
@@ -80,7 +90,10 @@ export const CRITIC_RULES = `Refuse une question si :
 14. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
 15. elle dépasse 180 caractères ;
 16. elle présente un modèle culturel, religieux ou familial comme allant de soi, dépassé ou problématique ;
-17. sa version anglaise (« EN ») ne dit pas exactement la même chose, sonne comme une traduction mot à mot, ou enfreint l'une des règles ci-dessus.`;
+17. elle ne vaut pas pour chacun des deux membres, quelle que soit sa position (hypothèse qui ne vise que l'un : « si votre partenaire ne voulait jamais d'enfant »), ou retourne une hypothèse (« si votre partenaire gardait…, qu'est-ce que vous ne pourriez pas accepter ? ») ;
+18. elle porte sur un risque partagé (mêmes réponses) ou sur un sujet proche de la violence (élever la voix, cris, menace) ;
+19. elle reprend, même reformulé, un exemple de la consigne ;
+20. sa version anglaise (« EN ») ne dit pas exactement la même chose, sonne comme une traduction mot à mot, ou enfreint l'une des règles ci-dessus.`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur
@@ -296,7 +309,24 @@ export const COMPROMISE =
   /(?<!\p{L})(?:rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|compromis|concessions?|concilier (?:vos|leurs|les deux) (?:positions|visions|croyances|religions)|voie médiane|juste milieu|pas[^?.]{0,30} vers l['’]autre|chacun (?:fait|ferait|pourrait faire) (?:un|des) (?:pas|efforts?)|trouve\p{L}* un chemin|conversion progressive|eau dans (?:son|votre|leur) vin|mi-chemin|équilibre (?:à|reste à) trouver|trouver un équilibre|arrangement|accommodement|s['’]adapter l['’]un à l['’]autre|(?:pourra|devra|pourrait|pourrez|devrez) s['’]adapter|lâcher du lest|céder)(?!\p{L})/iu;
 
 export function isIntrusiveQuestion(text: string): boolean {
-  return INTRUSIVE.test(text);
+  return INTRUSIVE.test(neutralizeHypotheticalSum(text));
+}
+
+/**
+ * Somme ronde posée en hypothèse (« Sur 1 000 € qui vous restent… ») : ce
+ * n'est pas une demande de revenu, et « combien mettriez-vous » y demande une
+ * part, pas le montant de son épargne.
+ */
+export function neutralizeHypotheticalSum(text: string): string {
+  const AMOUNT =
+    /(?<!\p{L})sur (?:\d[\d\s\u202f.]*)\s?(?:€|euros?)(?!\p{L})/giu;
+  if (!AMOUNT.test(text)) return text;
+  return text
+    .replace(AMOUNT, 'sur une somme donnée')
+    .replace(
+      /(?<!\p{L})combien (?=mett|épargn|dépens|vers|envoy)/giu,
+      'quelle part ',
+    );
 }
 
 /** Question qui dit qui a répondu quoi : la même question est posée aux deux. */
@@ -351,6 +381,31 @@ export function isRealityCheck(text: string): boolean {
  */
 export const ORIGIN_DETOUR =
   /(?<!\p{L})(?:dans votre famille|dans la famille où|(?:où|là où) vous avez grandi|maison où vous avez grandi|un proche qui vous (?:connaît|a vu)|vos proches diraient|chez vous,\s*qui|à quoi (?:la|le|les|l['’]) ?reconna[iî]t-on|angle mort|sacré)(?!\p{L})/iu;
+
+/**
+ * Deux alternatives opposées dans une même question (« s'il ne voulait jamais
+ * d'enfant, ou en voulait absolument, que feriez-vous ? »), ou liste de
+ * choix (« un oui ferme, un non ferme, ou un vrai doute ? ») : deux idées.
+ */
+export const TWO_ALTERNATIVES =
+  /(?<!\p{L})(?:voul|voudr|refus|accept|souhait|rest|gard|quitt)\p{L}*[^?]{0,80}?,?\s+ou\s+(?:(?:en|s['’]|si|qu['’](?:il|elle)|il|elle|le|la|les|y)\s*)*(?:voul|voudr|refus|accept|souhait|rest|gard|quitt)\p{L}*|:\s*[^?:]{2,40},\s*[^?:]{2,40},?\s+ou\s+[^?]{2,40}\?\s*$|,\s*ou\s+[^,?]{2,60},\s*que\s/iu;
+
+/**
+ * Hypothèse qui ne vise que l'un des deux : prêter au partenaire une position
+ * sur l'écart (« si votre partenaire ne voulait jamais d'enfant… ») n'a de
+ * sens que pour celui qui tient la position opposée. La même question est
+ * posée aux deux : l'écart se formule de façon symétrique.
+ */
+export const ONE_SIDED =
+  /^si votre partenaire (?:ne |n['’])?(?:voul|voudr|refus|accept|souhait|ten)\p{L}*/iu;
+
+/**
+ * Hypothèse retournée : on suppose une position de l'autre, puis on demande ce
+ * que l'on n'accepterait pas (« si votre partenaire gardait un moment à soi,
+ * qu'est-ce que vous ne pourriez pas accepter ? »).
+ */
+export const REVERSED_HYPOTHESIS =
+  /^si\s[^?]+,\s*qu['’]est-ce que vous ne pourriez pas accepter/iu;
 
 /** Morale ou « bonne réponse » suggérée. */
 export const MORALE = word(
@@ -429,7 +484,9 @@ export const PRESUPPOSED =
 
 /** Bonnes questions données en exemple dans la consigne : jamais recopiées. */
 export const LENS_EXAMPLES = [
-  ...CLINICAL_LENS.matchAll(/Bon : « ([^»]+) »/g),
+  ...(CLINICAL_LENS.split('EXEMPLES (écart détecté')[1] ?? '')
+    .split('CONTRE-EXEMPLES')[0]
+    .matchAll(/« ([^»]+\?) »/g),
 ].map((m) => m[1]);
 
 /**
@@ -457,6 +514,9 @@ const NN_ARRANGEMENT =
  */
 const SAFETY_TOPIC =
   /(?<!\p{L})(?:gifl\p{L}*|claques?|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|ne plus voir vos|(?:connaître )?votre code|vérifi\p{L}* où vous|où vous êtes|décid\p{L}* seul\p{L}* de vos|vos sorties|votre passeport|jet\p{L}* vos affaires|punitions?|punir|hausser la voix|lever le ton|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
+/** Sujet voisin de la violence verbale : relève des questions de limite. */
+export const ELEVATED_VOICE =
+  /(?<!\p{L})(?:élev\p{L}* la voix|monte(?:r|nt)? le ton|cri(?:s|ait|aient|erait)?|menaç\p{L}*)(?!\p{L})/iu;
 /** Seuil personnel de tolérance (« à partir de combien de cris… »). */
 const THRESHOLD =
   /(?:à partir de (?:quand|combien|quel moment)|jusqu['’]où)[^?]{0,60}(?:accept|tolér|support|invivable|trop|limite|parler de|aller)/iu;
@@ -473,23 +533,13 @@ export const HEDGED =
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
   const reality = isRealityCheck(t);
-  // Confrontation à la réalité : un montant rond posé en hypothèse (« Sur
-  // 1 000 €… ») n'est pas une demande de revenu ; « combien devrait aller à… »
-  // demande une répartition, pas une morale ; « Si votre partenaire… » parle
-  // d'un futur conjoint, pas d'un passé commun.
-  const AMOUNT =
-    /(?<!\p{L})sur (?:\d[\d\s\u202f.]*)\s?(?:€|euros?)(?!\p{L})/giu;
-  const hypothetical = AMOUNT.test(t);
-  let forForm = t
-    .replace(AMOUNT, 'sur une somme donnée')
-    .replace(/^si votre partenaire(?!\p{L})/iu, 'Si la personne choisie');
-  // Répartition d'une somme donnée : « combien mettriez-vous… » demande une
-  // part, pas le montant de son épargne.
-  if (hypothetical)
-    forForm = forForm.replace(
-      /(?<!\p{L})combien (?=mett|épargn|dépens|vers|envoy)/giu,
-      'quelle part ',
-    );
+  // Confrontation à la réalité : une somme ronde posée en hypothèse n'est pas
+  // une demande de revenu ; « Si votre partenaire… » parle d'un futur
+  // conjoint, pas d'un passé commun.
+  const forForm = neutralizeHypotheticalSum(t).replace(
+    /^si votre partenaire(?!\p{L})/iu,
+    'Si la personne choisie',
+  );
   return (
     !HEDGED.test(t) &&
     t.split(/\s+/).length <= 22 &&
@@ -541,4 +591,21 @@ export function passesFormRules(
     !VIOLENCE_NORMALIZE.test(t) &&
     !PRESUPPOSED.test(t)
   );
+}
+
+/**
+ * Règles propres au rédacteur du Sondeur (écarts réels) : une question vaut
+ * pour les deux membres, porte une seule idée, ne retourne pas une hypothèse
+ * et laisse la violence verbale aux questions de limite.
+ */
+export function gapQuestionIssues(text: string): string[] {
+  const t = text.trim();
+  const r: string[] = [];
+  if (TWO_ALTERNATIVES.test(t))
+    r.push('P19 deux alternatives opposées ou liste de choix');
+  if (ONE_SIDED.test(t)) r.push('P20 hypothèse qui ne vise que l’un des deux');
+  if (REVERSED_HYPOTHESIS.test(t)) r.push('P21 hypothèse retournée');
+  if (ELEVATED_VOICE.test(t))
+    r.push('P22 sujet voisin de la violence (questions de limite)');
+  return r;
 }

@@ -77,7 +77,13 @@ describe('Regard clinique du Sondeur', () => {
   it('cadre adapté à deux inconnus, écart détecté puis question', () => {
     expect(CLINICAL_LENS).toMatch(/jamais parlé/);
     expect(CLINICAL_LENS).toMatch(/180 caractères/);
-    expect(CLINICAL_LENS).toMatch(/EXEMPLES \(écart détecté → question\)/);
+    expect(CLINICAL_LENS).toMatch(
+      /EXEMPLES \(écart détecté → plusieurs formulations/,
+    );
+    expect(CLINICAL_LENS).toMatch(/ne recopie jamais un exemple mot pour mot/);
+    expect(CLINICAL_LENS).toMatch(/RÉCIPROCITÉ/);
+    expect(CLINICAL_LENS).toMatch(/CONTRE-EXEMPLES/);
+    expect(CRITIC_RULES).toMatch(/ne vaut pas pour chacun des deux membres/);
     expect(CLINICAL_LENS).toMatch(/POINTS NON NÉGOCIABLES/);
     expect(CRITIC_RULES).toMatch(/15\. /);
     expect(CRITIC_RULES).toMatch(/passé commun/);
@@ -87,12 +93,12 @@ describe('Regard clinique du Sondeur', () => {
 
   it('confrontation à la réalité : admise pour l’IA, sans ouvrir l’ultimatum ni l’intrusion', () => {
     for (const ok of [
-      "Jusqu'à combien d'enfants pourriez-vous réellement aller ?",
+      "Combien d'enfants pourriez-vous accueillir dans votre foyer, au plus ?",
       "Si votre partenaire restait sur son chiffre, pourriez-vous l'accepter ?",
-      "Si votre partenaire ne voulait finalement jamais d'enfant, resteriez-vous ?",
-      "Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous dans l'épargne commune ?",
-      'Si ses enfants vivaient chez vous 5 jours sur 7, pourriez-vous le vivre au quotidien ?',
-      'Si votre partenaire rentrait après 21 h plusieurs soirs par semaine, pourriez-vous vivre ainsi pendant des années ?',
+      "Si l'un de vous ne voulait jamais d'enfant, pourriez-vous rester ensemble ?",
+      'Sur 3 000 € gagnés à deux, combien garderiez-vous pour les loisirs ?',
+      "Si ses enfants passaient toute l'année avec vous, pourriez-vous tenir sur la durée ?",
+      'Si votre partenaire travaillait chaque samedi, pourriez-vous vivre ainsi pendant des années ?',
     ])
       expect([ok, isWellFormedQuestion(ok)]).toEqual([ok, true]);
     for (const bad of [
@@ -103,6 +109,8 @@ describe('Regard clinique du Sondeur', () => {
       // Montant réel, pas une somme posée en hypothèse.
       'Combien épargnez-vous chaque mois ?',
       'Quel est votre salaire, en euros ?',
+      // Exemple de la consigne recopié : refusé.
+      "Jusqu'à combien d'enfants pourriez-vous réellement aller ?",
       // « Votre partenaire » hors hypothèse : ils ne se connaissent pas.
       'Comment votre partenaire décrirait-il votre façon de dépenser ?',
     ])

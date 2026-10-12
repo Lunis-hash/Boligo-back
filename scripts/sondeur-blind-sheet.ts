@@ -39,6 +39,8 @@ interface Run {
   passedGate: number;
   formRejected: number;
   evidenceRejected: number;
+  criticRejected?: number;
+  duplicates?: number;
   reasons: Record<string, number>;
   costMicro: number;
   latencyMs: number;
@@ -173,6 +175,8 @@ export function controlSummary(runs: Run[]) {
       passed: rs.reduce((a, x) => a + x.passedGate, 0),
       formRejected: rs.reduce((a, x) => a + x.formRejected, 0),
       evidenceRejected: rs.reduce((a, x) => a + x.evidenceRejected, 0),
+      criticRejected: rs.reduce((a, x) => a + (x.criticRejected ?? 0), 0),
+      duplicates: rs.reduce((a, x) => a + (x.duplicates ?? 0), 0),
       reasons,
       costEur: rs.reduce((a, x) => a + x.costMicro, 0) / 1e6,
       latencyP50s:
@@ -246,6 +250,6 @@ if (require.main === module) {
   console.log(md);
   for (const s of sum)
     console.log(
-      `${s.model}${s.run ? ` (${s.run})` : ''} : ${s.drafted} rédigées, ${s.passed} retenues, rejets forme ${s.formRejected} / preuve ${s.evidenceRejected} ${JSON.stringify(s.reasons)}, ${s.costEur.toFixed(4)} €, latence P50 ${s.latencyP50s.toFixed(1)} s, erreurs ${s.errors}`,
+      `${s.model}${s.run ? ` (${s.run})` : ''} : ${s.drafted} rédigées, ${s.passed} retenues, rejets forme ${s.formRejected} / preuve ${s.evidenceRejected} / relecteur ${s.criticRejected} / doublons ${s.duplicates} ${JSON.stringify(s.reasons)}, ${s.costEur.toFixed(4)} €, latence P50 ${s.latencyP50s.toFixed(1)} s, erreurs ${s.errors}`,
     );
 }
