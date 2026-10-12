@@ -498,6 +498,9 @@ class ForcedOpenRouter extends OpenRouterService {
     super();
   }
   async candidates(role: OpenRouterRole): Promise<string[]> {
+    // Charge les prix réels : sans eux, l'estimation avant appel prend le
+    // prix plafond et l'enveloppe refuse à tort les appels longs.
+    await this.catalogPrices();
     return this.forced[role] ?? [];
   }
 }

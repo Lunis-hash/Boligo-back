@@ -44,6 +44,7 @@ interface Run {
   latencyMs: number;
   questions: Question[];
   error?: string;
+  run?: string;
 }
 
 export interface SheetLine {
@@ -82,7 +83,10 @@ export function pick(
   seed = 42,
 ): Array<SheetLine & { model: string; caseId: string; evidence: string[] }> {
   const r = rng(seed);
-  const models = [...new Set(runs.map((x) => x.model))];
+  // Seuls les modèles qui ont produit des questions figurent sur la fiche.
+  const models = [
+    ...new Set(runs.filter((x) => x.questions.length).map((x) => x.model)),
+  ];
   const pool = new Map<string, Array<{ q: Question; caseId: string }>>();
   for (const m of models) {
     // Tour par couple : une question de chaque couple avant la deuxième.
@@ -133,16 +137,19 @@ function quantile(xs: number[], q: number): number {
   return s[Math.min(s.length - 1, Math.floor(q * s.length))];
 }
 
+/** Résumé par modèle et par essai (une relance n'est pas mêlée à l'essai initial). */
 export function controlSummary(runs: Run[]) {
-  const models = [...new Set(runs.map((x) => x.model))];
-  return models.map((m) => {
-    const rs = runs.filter((x) => x.model === m);
+  const keys = [...new Set(runs.map((x) => `${x.model}|${x.run ?? ''}`))];
+  return keys.map((key) => {
+    const [m, run] = key.split('|');
+    const rs = runs.filter((x) => x.model === m && (x.run ?? '') === run);
     const reasons: Record<string, number> = {};
     for (const x of rs)
       for (const [k, v] of Object.entries(x.reasons))
         reasons[k] = (reasons[k] ?? 0) + v;
     return {
       model: m,
+      ...(run ? { run } : {}),
       cases: rs.length,
       errors: rs.filter((x) => x.error).length,
       drafted: rs.reduce((a, x) => a + x.drafted, 0),
@@ -161,20 +168,30 @@ export function controlSummary(runs: Run[]) {
 }
 
 if (require.main === module) {
-  const run = process.argv[2];
-  if (!run) {
-    console.error('Usage : sondeur-blind-sheet.ts <run> [total]');
+  // Plusieurs essais séparés par des virgules (ex. un essai et sa relance) :
+  // la fiche et ses fichiers sont écrits dans le premier.
+  const names = (process.argv[2] ?? '').split(',').filter(Boolean);
+  if (!names.length) {
+    console.error('Usage : sondeur-blind-sheet.ts <run[,run2]> [total]');
     process.exit(2);
   }
+  const run = names.join(' + ');
   const total = Number(process.argv[3] ?? 30);
-  const dir = join(__dirname, '..', 'docs', 'sondeur-benchmark', run);
-  const runs = JSON.parse(
-    readFileSync(join(dir, 'screen-runs.json'), 'utf8'),
-  ) as Run[];
-  const corpus = JSON.parse(
-    readFileSync(join(dir, 'corpus-screen.json'), 'utf8'),
-  ) as Case[];
-  const lines = pick(runs, new Map(corpus.map((c) => [c.id, c])), total);
+  const base = join(__dirname, '..', 'docs', 'sondeur-benchmark');
+  const dir = join(base, names[0]);
+  const runs: Run[] = [];
+  const cases = new Map<string, Case>();
+  for (const n of names) {
+    for (const x of JSON.parse(
+      readFileSync(join(base, n, 'screen-runs.json'), 'utf8'),
+    ) as Run[])
+      runs.push({ ...x, run: n });
+    for (const c of JSON.parse(
+      readFileSync(join(base, n, 'corpus-screen.json'), 'utf8'),
+    ) as Case[])
+      cases.set(c.id, c);
+  }
+  const lines = pick(runs, cases, total);
   const md = [
     `# Fiche à l'aveugle — Sondeur (essai ${run})`,
     '',
@@ -209,6 +226,6 @@ if (require.main === module) {
   console.log(md);
   for (const s of sum)
     console.log(
-      `${s.model} : ${s.drafted} rédigées, ${s.passed} retenues, rejets forme ${s.formRejected} / preuve ${s.evidenceRejected} ${JSON.stringify(s.reasons)}, ${s.costEur.toFixed(4)} €, latence P50 ${s.latencyP50s.toFixed(1)} s, erreurs ${s.errors}`,
+      `${s.model}${s.run ? ` (${s.run})` : ''} : ${s.drafted} rédigées, ${s.passed} retenues, rejets forme ${s.formRejected} / preuve ${s.evidenceRejected} ${JSON.stringify(s.reasons)}, ${s.costEur.toFixed(4)} €, latence P50 ${s.latencyP50s.toFixed(1)} s, erreurs ${s.errors}`,
     );
 }
