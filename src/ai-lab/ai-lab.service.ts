@@ -115,6 +115,7 @@ export interface LabRun {
 export class AiLabService {
   private readonly logger = new Logger('Laboratoire IA');
   private readonly runs = new Map<string, LabRun>();
+  private totalTokensConsumed = 0;
 
   constructor(private readonly ai: AiService) {}
 
