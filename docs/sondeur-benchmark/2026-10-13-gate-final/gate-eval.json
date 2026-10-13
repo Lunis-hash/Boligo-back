@@ -4,8 +4,8 @@
     "chain": "contrôle seul",
     "faulty": 56,
     "valid": 52,
-    "faultyRejectionRate": 0.8392857142857143,
-    "validAcceptanceRate": 0.5769230769230769,
+    "faultyRejectionRate": 0.8035714285714286,
+    "validAcceptanceRate": 0.7884615384615384,
     "leaksAccepted": 1,
     "byCategory": {
       "unsupported_assumption": {
@@ -22,7 +22,7 @@
       },
       "wrong_partner_position": {
         "n": 4,
-        "rejected": 4
+        "rejected": 3
       },
       "reversed_hypothesis": {
         "n": 4,
@@ -58,7 +58,7 @@
       },
       "non_reciprocal": {
         "n": 4,
-        "rejected": 3
+        "rejected": 2
       },
       "known_fact_repetition": {
         "n": 4,
@@ -70,6 +70,11 @@
         "id": "Q007",
         "category": "unsupported_assumption",
         "text": "Que vous faudrait-il savoir avant de partager votre foyer avec des enfants qui ne sont pas les vôtres ?"
+      },
+      {
+        "id": "Q024",
+        "category": "wrong_partner_position",
+        "text": "Si la question des enfants restait ouverte, pourriez-vous vous engager quand même ?"
       },
       {
         "id": "Q129",
@@ -110,40 +115,14 @@
         "id": "Q321",
         "category": "known_fact_repetition",
         "text": "Que faites-vous de l'argent qui vous reste en fin de mois ?"
+      },
+      {
+        "id": "Q323",
+        "category": "non_reciprocal",
+        "text": "Qu'est-ce que l'autre devrait comprendre de votre choix sur les enfants ?"
       }
     ],
     "validRejected": [
-      {
-        "id": "Q030",
-        "text": "Si vous deviez vivre dans la ville de l'autre pour toujours, pourriez-vous y être heureux(se) ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q047",
-        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet de la foi dans votre futur foyer ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q048",
-        "text": "Combien de temps faudrait-il avant que vous jouiez un vrai rôle de parent auprès d'un enfant de l'autre ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q055",
-        "text": "Si l'autre allait chaque semaine à un lieu de culte sans vous, comment le vivriez-vous ?",
-        "gate": [
-          "P2 preuve d’un autre thème"
-        ]
-      },
       {
         "id": "Q063",
         "text": "Jusqu'où iriez-vous pour accueillir sous votre toit des enfants qui ne sont pas les vôtres ?",
@@ -156,14 +135,6 @@
         "text": "Pour acheter un logement dans cinq ans, combien mettriez-vous de côté chaque mois ?",
         "gate": [
           "P8 forme"
-        ]
-      },
-      {
-        "id": "Q102",
-        "text": "Jusqu'à quel point vous sentiriez-vous responsable d'un enfant qui n'est pas le vôtre ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -188,22 +159,6 @@
         ]
       },
       {
-        "id": "Q138",
-        "text": "Si l'un de vous recevait une offre d'emploi à 500 km, comment réagiriez-vous ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q165",
-        "text": "Qu'est-ce que l'autre devrait absolument comprendre de votre choix sur les enfants avant d'aller plus loin ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q177",
         "text": "Si un médecin vous conseillait d'arrêter l'alcool, pourriez-vous le faire du jour au lendemain ?",
         "gate": [
@@ -225,14 +180,6 @@
         ]
       },
       {
-        "id": "Q197",
-        "text": "Comment aimeriez-vous qu'un enfant de l'autre vous appelle ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q205",
         "text": "À partir de combien de nuits par semaine la présence d'enfants qui ne sont pas les vôtres deviendrait-elle trop lourde ?",
         "gate": [
@@ -240,33 +187,10 @@
         ]
       },
       {
-        "id": "Q215",
-        "text": "Si la foi restait un sujet sensible entre vous toute votre vie, pourriez-vous l'accepter ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q224",
-        "text": "Si aucun de vous ne déménageait jamais, comment votre couple fonctionnerait-il concrètement ?",
-        "gate": [
-          "P2 preuve d’un autre thème"
-        ]
-      },
-      {
         "id": "Q230",
         "text": "Seriez-vous prêt(e) à priver de sortie un enfant qui n'est pas le vôtre ?",
         "gate": [
           "P8 forme"
-        ]
-      },
-      {
-        "id": "Q241",
-        "text": "Si la question des enfants restait ouverte pendant cinq ans, comment vivriez-vous cette attente ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -369,10 +293,7 @@
       {
         "id": "Q030",
         "text": "Si vous deviez vivre dans la ville de l'autre pour toujours, pourriez-vous y être heureux(se) ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q037",
@@ -382,18 +303,12 @@
       {
         "id": "Q047",
         "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet de la foi dans votre futur foyer ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q048",
         "text": "Combien de temps faudrait-il avant que vous jouiez un vrai rôle de parent auprès d'un enfant de l'autre ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q050",
@@ -403,9 +318,7 @@
       {
         "id": "Q055",
         "text": "Si l'autre allait chaque semaine à un lieu de culte sans vous, comment le vivriez-vous ?",
-        "gate": [
-          "P2 preuve d’un autre thème"
-        ]
+        "gate": []
       },
       {
         "id": "Q063",
@@ -434,10 +347,7 @@
       {
         "id": "Q102",
         "text": "Jusqu'à quel point vous sentiriez-vous responsable d'un enfant qui n'est pas le vôtre ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q103",
@@ -488,10 +398,7 @@
       {
         "id": "Q138",
         "text": "Si l'un de vous recevait une offre d'emploi à 500 km, comment réagiriez-vous ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q164",
@@ -501,10 +408,7 @@
       {
         "id": "Q165",
         "text": "Qu'est-ce que l'autre devrait absolument comprendre de votre choix sur les enfants avant d'aller plus loin ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q176",
@@ -535,10 +439,7 @@
       {
         "id": "Q197",
         "text": "Comment aimeriez-vous qu'un enfant de l'autre vous appelle ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q204",
@@ -555,10 +456,7 @@
       {
         "id": "Q215",
         "text": "Si la foi restait un sujet sensible entre vous toute votre vie, pourriez-vous l'accepter ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q220",
@@ -573,9 +471,7 @@
       {
         "id": "Q224",
         "text": "Si aucun de vous ne déménageait jamais, comment votre couple fonctionnerait-il concrètement ?",
-        "gate": [
-          "P2 preuve d’un autre thème"
-        ]
+        "gate": []
       },
       {
         "id": "Q230",
@@ -587,10 +483,7 @@
       {
         "id": "Q241",
         "text": "Si la question des enfants restait ouverte pendant cinq ans, comment vivriez-vous cette attente ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": []
       },
       {
         "id": "Q244",
@@ -666,8 +559,8 @@
     "chain": "contrôle seul",
     "faulty": 113,
     "valid": 120,
-    "faultyRejectionRate": 0.8141592920353983,
-    "validAcceptanceRate": 0.5,
+    "faultyRejectionRate": 0.7522123893805309,
+    "validAcceptanceRate": 0.5833333333333334,
     "leaksAccepted": 1,
     "byCategory": {
       "diagnosis": {
@@ -688,7 +581,7 @@
       },
       "known_fact_repetition": {
         "n": 8,
-        "rejected": 7
+        "rejected": 6
       },
       "forced_conclusion": {
         "n": 8,
@@ -696,19 +589,19 @@
       },
       "non_reciprocal": {
         "n": 8,
-        "rejected": 5
+        "rejected": 3
       },
       "jargon": {
         "n": 8,
-        "rejected": 5
+        "rejected": 4
       },
       "reversed_hypothesis": {
         "n": 8,
-        "rejected": 5
+        "rejected": 4
       },
       "childhood_family_detour": {
         "n": 8,
-        "rejected": 7
+        "rejected": 6
       },
       "invented_fact": {
         "n": 8,
@@ -716,7 +609,7 @@
       },
       "violence_or_compromise": {
         "n": 8,
-        "rejected": 7
+        "rejected": 6
       },
       "answer_leak": {
         "n": 8,
@@ -754,9 +647,24 @@
         "text": "Combien d'heures par semaine rien qu'à vous vous semblent indispensables ?"
       },
       {
+        "id": "Q067",
+        "category": "violence_or_compromise",
+        "text": "Que vous faudrait-il savoir sur les enfants avant de vous engager ?"
+      },
+      {
+        "id": "Q076",
+        "category": "known_fact_repetition",
+        "text": "Quelle place pensez-vous prendre auprès des enfants d'un conjoint ?"
+      },
+      {
         "id": "Q090",
         "category": "answer_leak",
         "text": "Membre A ne pourrait pas accepter les enfants de l'autre : jusqu'où pourriez-vous aller sur ce point ?"
+      },
+      {
+        "id": "Q108",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre refusait catégoriquement de déménager, comment le vivriez-vous ?"
       },
       {
         "id": "Q123",
@@ -777,6 +685,11 @@
         "id": "Q149",
         "category": "non_reciprocal",
         "text": "Qu'est-ce qui vous aiderait à vous décider enfin sur les enfants ?"
+      },
+      {
+        "id": "Q157",
+        "category": "non_reciprocal",
+        "text": "Combien de temps faudrait-il, selon vous, pour trouver votre place auprès d'un enfant de l'autre ?"
       },
       {
         "id": "Q175",
@@ -804,9 +717,19 @@
         "text": "Qu'est-ce qui pourrait concrètement faire évoluer votre position sur les enfants ?"
       },
       {
+        "id": "Q227",
+        "category": "childhood_family_detour",
+        "text": "Quelle place la religion avait-elle dans la maison de votre enfance ?"
+      },
+      {
         "id": "Q229",
         "category": "invented_fact",
         "text": "À combien de kilomètres de votre ville actuelle pourriez-vous réellement vivre ?"
+      },
+      {
+        "id": "Q246",
+        "category": "jargon",
+        "text": "Dans quelle situation pourriez-vous regretter votre choix sur les enfants ?"
       },
       {
         "id": "Q275",
@@ -827,6 +750,11 @@
         "id": "Q314",
         "category": "violence_or_compromise",
         "text": "Combien de jours sans alcool par semaine vous sembleraient normaux à la maison ?"
+      },
+      {
+        "id": "Q335",
+        "category": "non_reciprocal",
+        "text": "Qu'est-ce qui vous empêche d'accepter de déménager ?"
       },
       {
         "id": "Q336",
@@ -857,18 +785,10 @@
         ]
       },
       {
-        "id": "Q026",
-        "text": "Si personne ne changeait d'avis sur les enfants, pourriez-vous être heureux(se) dans ce couple ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q027",
         "text": "Lors des grandes fêtes de l'année, comment imaginez-vous votre foyer ?",
         "gate": [
-          "P2 preuve d’un autre thème"
+          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -893,22 +813,6 @@
         ]
       },
       {
-        "id": "Q045",
-        "text": "Si le lieu de vie ne se décidait jamais, resteriez-vous dans cette relation ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q051",
-        "text": "Quelle décision concernant un enfant de l'autre ne voudriez-vous jamais prendre sans son parent ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q052",
         "text": "Qu'est-ce que vous ne pourriez pas accepter si l'un de vous restait longtemps sans revenu ?",
         "gate": [
@@ -926,15 +830,6 @@
         "id": "Q054",
         "text": "Que vous faudrait-il savoir des convictions de l'autre avant de vous engager ?",
         "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q075",
-        "text": "Si la question du lieu de vie restait bloquée, combien de temps pourriez-vous vivre à distance ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -988,26 +883,10 @@
         ]
       },
       {
-        "id": "Q107",
-        "text": "Quelle règle religieuse à la maison serait pour vous impossible à vivre ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q112",
         "text": "Lors d'un repas de famille, quelle quantité d'alcool vous semblerait normale ?",
         "gate": [
           "P8 forme"
-        ]
-      },
-      {
-        "id": "Q114",
-        "text": "Dans quelle situation regretteriez-vous le plus votre choix sur les enfants ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -1028,7 +907,6 @@
         "id": "Q125",
         "text": "Pour un mariage, quelle cérémonie vous serait impossible à envisager ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1036,7 +914,6 @@
         "id": "Q142",
         "text": "Qu'est-ce qui vous attache le plus à l'endroit où vous vivez aujourd'hui ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P14 fait de vie présupposé (verbe « vivez »)",
           "P17 sans lien avec l’écart cité"
         ]
@@ -1056,22 +933,6 @@
         ]
       },
       {
-        "id": "Q167",
-        "text": "Que ne pourriez-vous pas accepter dans le rôle qu'on vous laisserait auprès d'enfants qui ne sont pas les vôtres ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q168",
-        "text": "Qu'est-ce que votre vie spirituelle demanderait concrètement à un conjoint ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q173",
         "text": "Pourriez-vous construire toute une vie avec quelqu'un qui ne fait pas le même choix que vous sur les enfants ?",
         "gate": [
@@ -1086,26 +947,10 @@
         ]
       },
       {
-        "id": "Q194",
-        "text": "Quelle condition sur le lieu de vie serait pour vous impossible à lâcher ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q196",
         "text": "Quelle habitude liée à l'alcool serait pour vous un point de rupture ?",
         "gate": [
           "P8 forme"
-        ]
-      },
-      {
-        "id": "Q200",
-        "text": "Si on attendait de vous l'aide aux devoirs chaque soir pour un enfant de l'autre, le feriez-vous ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -1197,7 +1042,6 @@
         "id": "Q281",
         "text": "Quelle place vos convictions devraient-elles avoir dans votre quotidien à deux ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1212,7 +1056,6 @@
         "id": "Q296",
         "text": "Si vos convictions ne se rejoignaient jamais, pourriez-vous construire un foyer ensemble ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1234,7 +1077,6 @@
         "id": "Q315",
         "text": "Combien de temps une relation à distance pourrait-elle durer avant de devenir trop lourde pour vous ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1281,7 +1123,7 @@
     "faulty": 113,
     "valid": 120,
     "faultyRejectionRate": 0.9734513274336283,
-    "validAcceptanceRate": 0.38333333333333336,
+    "validAcceptanceRate": 0.475,
     "leaksAccepted": 0,
     "byCategory": {
       "diagnosis": {
@@ -1290,7 +1132,7 @@
       },
       "two_ideas": {
         "n": 8,
-        "rejected": 8
+        "rejected": 7
       },
       "fake_gap": {
         "n": 9,
@@ -1310,7 +1152,7 @@
       },
       "non_reciprocal": {
         "n": 8,
-        "rejected": 6
+        "rejected": 7
       },
       "jargon": {
         "n": 8,
@@ -1343,14 +1185,14 @@
     },
     "faultyAccepted": [
       {
-        "id": "Q042",
-        "category": "non_reciprocal",
-        "text": "Combien de soirées entre amis par semaine pourriez-vous sacrifier pour le couple ?"
-      },
-      {
         "id": "Q049",
         "category": "reversed_hypothesis",
         "text": "Si l'autre ne vous soutenait pas après une perte d'emploi, qu'est-ce que cela changerait pour vous ?"
+      },
+      {
+        "id": "Q123",
+        "category": "two_ideas",
+        "text": "Jusqu'où et pendant combien de temps pourriez-vous vivre avec la fumée à la maison ?"
       },
       {
         "id": "Q149",
@@ -1381,18 +1223,10 @@
         ]
       },
       {
-        "id": "Q026",
-        "text": "Si personne ne changeait d'avis sur les enfants, pourriez-vous être heureux(se) dans ce couple ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q027",
         "text": "Lors des grandes fêtes de l'année, comment imaginez-vous votre foyer ?",
         "gate": [
-          "P2 preuve d’un autre thème"
+          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -1401,15 +1235,6 @@
         "gate": [
           "P8 forme"
         ]
-      },
-      {
-        "id": "Q031",
-        "text": "Combien de jours par mois pourriez-vous réellement partager votre foyer avec des enfants de l'autre ?",
-        "gate": [],
-        "critic": {
-          "ok": false,
-          "rule": null
-        }
       },
       {
         "id": "Q035",
@@ -1422,22 +1247,6 @@
         "id": "Q044",
         "text": "Si la cigarette restait dans votre vie commune pour toujours, pourriez-vous vous engager ?",
         "gate": [
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q045",
-        "text": "Si le lieu de vie ne se décidait jamais, resteriez-vous dans cette relation ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q051",
-        "text": "Quelle décision concernant un enfant de l'autre ne voudriez-vous jamais prendre sans son parent ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1459,7 +1268,6 @@
         "id": "Q054",
         "text": "Que vous faudrait-il savoir des convictions de l'autre avant de vous engager ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1482,28 +1290,11 @@
         }
       },
       {
-        "id": "Q075",
-        "text": "Si la question du lieu de vie restait bloquée, combien de temps pourriez-vous vivre à distance ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q079",
         "text": "Qu'est-ce qui compte le plus pour vous dans ce que vos enfants recevraient sur le plan spirituel ?",
         "gate": [
           "P8 forme"
         ]
-      },
-      {
-        "id": "Q081",
-        "text": "Combien de mois d'épargne de sécurité vous faudrait-il pour être serein(e) ?",
-        "gate": [],
-        "critic": {
-          "ok": false,
-          "rule": 9
-        }
       },
       {
         "id": "Q085",
@@ -1548,14 +1339,6 @@
         ]
       },
       {
-        "id": "Q107",
-        "text": "Quelle règle religieuse à la maison serait pour vous impossible à vivre ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q112",
         "text": "Lors d'un repas de famille, quelle quantité d'alcool vous semblerait normale ?",
         "gate": [
@@ -1565,10 +1348,11 @@
       {
         "id": "Q114",
         "text": "Dans quelle situation regretteriez-vous le plus votre choix sur les enfants ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
       },
       {
         "id": "Q120",
@@ -1588,7 +1372,6 @@
         "id": "Q125",
         "text": "Pour un mariage, quelle cérémonie vous serait impossible à envisager ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1596,7 +1379,6 @@
         "id": "Q142",
         "text": "Qu'est-ce qui vous attache le plus à l'endroit où vous vivez aujourd'hui ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P14 fait de vie présupposé (verbe « vivez »)",
           "P17 sans lien avec l’écart cité"
         ]
@@ -1614,7 +1396,7 @@
         "gate": [],
         "critic": {
           "ok": false,
-          "rule": null
+          "rule": 3
         }
       },
       {
@@ -1625,20 +1407,13 @@
         ]
       },
       {
-        "id": "Q167",
-        "text": "Que ne pourriez-vous pas accepter dans le rôle qu'on vous laisserait auprès d'enfants qui ne sont pas les vôtres ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
-        "id": "Q168",
-        "text": "Qu'est-ce que votre vie spirituelle demanderait concrètement à un conjoint ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
+        "id": "Q169",
+        "text": "Si la vie ne vous donnait pas d'enfant, comment imagineriez-vous votre couple ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 17
+        }
       },
       {
         "id": "Q173",
@@ -1653,7 +1428,7 @@
         "gate": [],
         "critic": {
           "ok": false,
-          "rule": 4
+          "rule": 3
         }
       },
       {
@@ -1664,35 +1439,10 @@
         ]
       },
       {
-        "id": "Q190",
-        "text": "Si vos envies de temps seul ne se rejoignaient jamais, à quoi ressembleraient vos week-ends ?",
-        "gate": [],
-        "critic": {
-          "ok": false,
-          "rule": null
-        }
-      },
-      {
-        "id": "Q194",
-        "text": "Quelle condition sur le lieu de vie serait pour vous impossible à lâcher ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
-        ]
-      },
-      {
         "id": "Q196",
         "text": "Quelle habitude liée à l'alcool serait pour vous un point de rupture ?",
         "gate": [
           "P8 forme"
-        ]
-      },
-      {
-        "id": "Q200",
-        "text": "Si on attendait de vous l'aide aux devoirs chaque soir pour un enfant de l'autre, le feriez-vous ?",
-        "gate": [
-          "P2 preuve d’un autre thème",
-          "P17 sans lien avec l’écart cité"
         ]
       },
       {
@@ -1716,15 +1466,6 @@
         "gate": [
           "P17 sans lien avec l’écart cité"
         ]
-      },
-      {
-        "id": "Q219",
-        "text": "Combien de soirées par semaine à deux vous sembleraient un minimum ?",
-        "gate": [],
-        "critic": {
-          "ok": false,
-          "rule": null
-        }
       },
       {
         "id": "Q231",
@@ -1764,12 +1505,12 @@
         ]
       },
       {
-        "id": "Q248",
-        "text": "Si un enfant de l'autre avait besoin d'habiter chez vous à l'adolescence, pourriez-vous dire oui ?",
+        "id": "Q256",
+        "text": "À quoi ressemble pour vous une fin de mois réussie ?",
         "gate": [],
         "critic": {
           "ok": false,
-          "rule": null
+          "rule": 3
         }
       },
       {
@@ -1820,7 +1561,6 @@
         "id": "Q281",
         "text": "Quelle place vos convictions devraient-elles avoir dans votre quotidien à deux ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1835,7 +1575,6 @@
         "id": "Q296",
         "text": "Si vos convictions ne se rejoignaient jamais, pourriez-vous construire un foyer ensemble ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1845,6 +1584,15 @@
         "gate": [
           "P8 forme"
         ]
+      },
+      {
+        "id": "Q303",
+        "text": "Si la question des enfants de chacun ne se réglait jamais entre vous, pourriez-vous vous engager ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 5
+        }
       },
       {
         "id": "Q308",
@@ -1857,7 +1605,6 @@
         "id": "Q315",
         "text": "Combien de temps une relation à distance pourrait-elle durer avant de devenir trop lourde pour vous ?",
         "gate": [
-          "P2 preuve d’un autre thème",
           "P17 sans lien avec l’écart cité"
         ]
       },
@@ -1895,7 +1642,7 @@
         "gate": [],
         "critic": {
           "ok": false,
-          "rule": null
+          "rule": 3
         }
       },
       {
@@ -1911,7 +1658,7 @@
         "gate": [],
         "critic": {
           "ok": false,
-          "rule": 5
+          "rule": 8
         }
       },
       {
@@ -1920,7 +1667,7 @@
         "gate": [],
         "critic": {
           "ok": false,
-          "rule": null
+          "rule": 12
         }
       }
     ]

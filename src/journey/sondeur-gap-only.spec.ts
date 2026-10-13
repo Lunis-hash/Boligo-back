@@ -1,4 +1,10 @@
-import { buildEvidence, relatesToGap, validate } from './sondeur-evidence';
+import {
+  buildEvidence,
+  relatesToGap,
+  validate,
+  validateEn,
+} from './sondeur-evidence';
+import { gapQuestionIssuesEn } from './clinical-lens';
 import { buildDivergenceReport } from '../matching/divergence.engine';
 
 /** Couple avec un seul écart réel : l'épargne (M4_Q14 A/C), le reste identique. */
@@ -101,6 +107,95 @@ describe('Sondeur — l’IA n’écrit que sur un écart réel', () => {
     ['Combien et comment mettriez-vous de côté chaque mois ?', 'P24'],
   ])('règles du rédacteur : %s → %s', (t, code) => {
     expect(ask(t).reasons.join(' ')).toContain(code);
+  });
+
+  it.each([
+    ['Combien de soirs par mois pourriez-vous vous retenir de miser ?', 'P26'],
+    ['Qu’est-ce qui vous aiderait à arrêter de boire pour le couple ?', 'P26'],
+    [
+      'De combien pourriez-vous réduire vos dépenses plaisir chaque mois ?',
+      'P26',
+    ],
+    ['Qu’est-ce qui vous attire tant dans les paris sportifs ?', 'P27'],
+    [
+      'Si l’autre jouait chaque soir, que ne pourriez-vous pas accepter ?',
+      'P21',
+    ],
+    ['Si l’autre dépensait tout son mois, où serait votre limite ?', 'P21'],
+  ])('règles ajoutées : %s → %s', (t, code) => {
+    expect(ask(t).reasons.join(' ')).toContain(code);
+  });
+
+  it.each([
+    'Si l’un de vous voulait garder un compte à part, comment le vivriez-vous ?',
+    'Combien de soirées par mois consacreriez-vous aux sorties sans l’autre ?',
+    'Qu’est-ce que vous ne pourriez pas accepter au sujet des dépenses à deux ?',
+  ])('formes admises, non visées par P21, P26 ou P27 : %s', (t) => {
+    expect(ask(t).reasons.join(' ')).not.toMatch(/P2[1267]/);
+  });
+
+  it.each([
+    ['If your partner refused any joint savings, could you stay?', 'EN-P20'],
+    [
+      'Your partner has ruled out saving for good; could you live with that?',
+      'EN-P20',
+    ],
+    [
+      'If the other spent their whole salary, where would you draw the line?',
+      'EN-P21',
+    ],
+    [
+      'Since one of you isn’t sure about saving, what would you need to know?',
+      'EN-P25',
+    ],
+    ['How much would you save, and what would you do with it?', 'EN-P24'],
+    ['Growing up, how did your parents handle savings?', 'EN-P15'],
+    ['Wouldn’t you agree that your budgets can’t work together?', 'conclusion'],
+    ['Could you meet halfway on how much to save?', 'compromis'],
+    ['Do you see your spending as an addiction?', 'jargon'],
+    ['Before going further, could you tell us whether you save?', 'redemande'],
+    ['What would help you stop spending on impulse?', 'EN-P26'],
+  ])('version anglaise : %s → %s', (t, code) => {
+    expect(gapQuestionIssuesEn(t).join(' ')).toContain(code);
+  });
+
+  it.each([
+    'If one of you wanted a separate account, how would you feel about it?',
+    'How many months of shared savings would make you feel at ease?',
+    'If your positions on saving never changed, could you still commit?',
+    'How long could you keep up that pace if nothing changed?',
+  ])('version anglaise admise : %s', (t) => {
+    expect(gapQuestionIssuesEn(t)).toEqual([]);
+  });
+
+  it('écart d’argent : achat, emploi et revenu y sont liés ; « keep up » n’est pas une habitude', () => {
+    const gap = index.filter((e) => e.id === gapId);
+    expect(
+      relatesToGap('À partir de quel achat imprévu en parleriez-vous ?', gap),
+    ).toBe(true);
+    expect(
+      relatesToGap(
+        'Si l’un de vous perdait son emploi, combien de temps tiendriez-vous ?',
+        gap,
+      ),
+    ).toBe(true);
+    const contract = {
+      day: 1,
+      themeKey: 'argent' as const,
+      text: "Sur 3 000 € gagnés à deux, combien mettriez-vous dans l'épargne ?",
+      evidence: [gapId],
+      claim: 'divergence' as const,
+    };
+    expect(
+      validateEn(
+        'How long could you keep up that pace of saving?',
+        contract,
+        index,
+      ).reasons,
+    ).not.toContain('EN5 habitude présupposée');
+    expect(
+      validateEn('Do you keep spending on impulse?', contract, index).reasons,
+    ).toContain('EN5 habitude présupposée');
   });
 
   it('P18 : risque partagé (mêmes réponses), pas un écart', () => {

@@ -289,6 +289,7 @@ const POSSESSIVE_OK = new Set([
   'enfance',
   'vie',
   'quotidien',
+  'foyer',
   'semaine',
   'journée',
   'journées',
@@ -477,7 +478,7 @@ const THEME_WORDS: Record<string, RegExp> = {
   famille:
     /(?<!\p{L})(?:enfant|garde|beau|belle|parent|famil|visite|aîné|dot|mariage|foyer|chez vous|vivaient|habit)/iu,
   argent:
-    /(?<!\p{L})(?:argent|jeu|mise|pari|casino|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ)/iu,
+    /(?<!\p{L})(?:argent|jeu|mise|pari|casino|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ|achat|achet|économ|emploi|chômage|professionn|revenu|soutenu)/iu,
   spiritualite:
     /(?<!\p{L})(?:foi|relig|pri|croy|culte|église|mosquée|spiritu|convers|enfant)/iu,
   intimite:
@@ -799,7 +800,7 @@ const ATTRIBUTION_EN = WE(
 );
 /** Habitude présupposée (anglais). */
 const HABIT_EN = WE(
-  '(?:whenever|every time) you|do you (?:still|always|usually)|you (?:always|usually|keep|tend to)|once again|any more|anymore|these days',
+  '(?:whenever|every time) you|do you (?:still|always|usually)|you (?:always|usually|keep(?! up)|tend to)|once again|any more|anymore|these days',
 );
 /** Réponse individuelle révélée (anglais). */
 const WHO_ANSWERED_EN = WE(

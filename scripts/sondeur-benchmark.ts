@@ -24,7 +24,7 @@ import {
   openRouterAuthHeaders,
 } from '../src/ai/openrouter.service';
 import { OpenRouterRole } from '../src/ai/openrouter.config';
-import { modelFamily } from '../src/ai/groq-model';
+import { modelFamily, sameFamily } from '../src/ai/groq-model';
 import {
   buildDivergenceReport,
   DivergenceReport,
@@ -511,14 +511,15 @@ class ForcedOpenRouter extends OpenRouterService {
   ) {
     super();
   }
-  async candidates(role: OpenRouterRole, avoid?: string): Promise<string[]> {
+  async candidates(
+    role: OpenRouterRole,
+    avoid?: string | readonly string[],
+  ): Promise<string[]> {
     // Charge les prix réels : sans eux, l'estimation avant appel prend le
     // prix plafond et l'enveloppe refuse à tort les appels longs.
     await this.catalogPrices();
     // Comme en production : jamais un relecteur de la famille du rédacteur.
-    return (this.forced[role] ?? []).filter(
-      (m) => !avoid || modelFamily(m) !== modelFamily(avoid),
-    );
+    return (this.forced[role] ?? []).filter((m) => !sameFamily(m, avoid));
   }
 }
 
@@ -1483,6 +1484,8 @@ export {
   judgePrompt,
   journeyCosts,
   FLOOR,
+  topicCorpus,
+  gapsOf,
 };
 
 if (require.main === module)
@@ -1494,7 +1497,7 @@ if (require.main === module)
 // ─── Corpus étiqueté : contrôle seul, puis contrôle + relecteur réel ─────────
 interface LabeledItem {
   id: string;
-  split: 'dev' | 'final';
+  split: 'dev' | 'final' | 'final2';
   lang: 'fr' | 'en';
   caseId: string;
   day: number;
@@ -1513,11 +1516,16 @@ async function gateEval() {
   const { items } = JSON.parse(readFileSync(file, 'utf8')) as {
     items: LabeledItem[];
   };
+  // BENCH_HELDOUT2_TOPICS : second lot tenu à l'écart (graines 90 000).
+  const heldout2 = (process.env.BENCH_HELDOUT2_TOPICS ?? '')
+    .split(',')
+    .filter(Boolean);
   const cases = new Map(
-    [...topicCorpus(TOPICS), ...topicCorpus(HELDOUT, 70_000)].map((c) => [
-      c.id,
-      c,
-    ]),
+    [
+      ...topicCorpus(TOPICS),
+      ...topicCorpus(HELDOUT, 70_000),
+      ...topicCorpus(heldout2, 90_000),
+    ].map((c) => [c.id, c]),
   );
   const missing = [...new Set(items.map((i) => i.caseId))].filter(
     (id) => !cases.has(id),
@@ -1603,6 +1611,8 @@ async function gateEval() {
           couple: ctx.couple,
           days: `jour ${qs[0].day}`,
           evidence: describeEvidenceForAi(ctx.evidenceIndex),
+          // BENCH_VOTE=1 : second avis d'une troisième famille (liste BENCH_CRITIC).
+          secondOpinion: process.env.BENCH_VOTE === '1',
         },
         lab,
       );
@@ -1620,7 +1630,7 @@ async function gateEval() {
   }
   const rate = (xs: boolean[]) =>
     xs.length ? xs.filter(Boolean).length / xs.length : NaN;
-  const measure = (split: 'dev' | 'final', writer?: string) => {
+  const measure = (split: LabeledItem['split'], writer?: string) => {
     const xs = gate.filter((g) => g.split === split);
     const passes = (g: (typeof gate)[number]) =>
       g.gateOk && (!writer || critic[writer]?.[g.id]?.ok === true);
@@ -1658,7 +1668,10 @@ async function gateEval() {
         })),
     };
   };
-  const results = (['dev', 'final'] as const).flatMap((sp) => [
+  const splits = (['dev', 'final', 'final2'] as const).filter((sp) =>
+    gate.some((g) => g.split === sp),
+  );
+  const results = splits.flatMap((sp) => [
     measure(sp),
     ...writers.map((w) => measure(sp, w)),
   ]);

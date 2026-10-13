@@ -18,7 +18,7 @@
  */
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { modelFamily } from './groq-model';
+import { sameFamily } from './groq-model';
 import { OPENROUTER_PREFERENCES } from './openrouter.config';
 
 export type SondeurRole = 'writer' | 'critic' | 'escalation' | 'fallback';
@@ -33,6 +33,11 @@ export interface Qualification {
   fallback: string[];
   /** Part des questions rejetées par le relecteur au-delà de laquelle on escalade. */
   escalateAboveRejectRate: number;
+  /**
+   * Second avis : un relecteur d'une troisième famille (liste `critic`)
+   * tranche chaque refus du premier.
+   */
+  criticVote?: boolean;
   /** Rédacteur par langue si le banc d'essai l'a justifié (sinon writer). */
   byLanguage?: Partial<Record<'fr' | 'en', string[]>>;
 }
@@ -97,17 +102,15 @@ export function isValidQualification(q: unknown): q is Qualification {
 export function modelsFor(
   role: SondeurRole,
   options: {
-    avoid?: string;
+    avoid?: string | readonly string[];
     lang?: 'fr' | 'en';
     q?: Qualification | null;
   } = {},
 ): { models: string[]; qualified: boolean } {
   const q = options.q === undefined ? qualification() : options.q;
-  const avoidFamily = options.avoid ? modelFamily(options.avoid) : null;
   const keep = (list: string[]) =>
     [...new Set(list)].filter(
-      (m) =>
-        !/:free$/.test(m) && (!avoidFamily || modelFamily(m) !== avoidFamily),
+      (m) => !/:free$/.test(m) && !sameFamily(m, options.avoid),
     );
   if (!q) {
     // Mode provisoire : préférences historiques (rédacteur Claude, relecteur GPT).

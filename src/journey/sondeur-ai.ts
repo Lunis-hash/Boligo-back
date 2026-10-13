@@ -13,6 +13,7 @@ import {
 import {
   COMPROMISE,
   isWellFormedQuestion,
+  gapQuestionIssuesEn,
   similarQuestions,
 } from './clinical-lens';
 import { HarmonyQuestionPayload } from './harmony-question.types';
@@ -332,6 +333,8 @@ export function gateSondeurQuestion(
   if (verdict.ok) {
     const en = validateEn(q.textEn, contract, ctx.evidenceIndex);
     if (!en.ok) return { ok: false, stage: 'evidence', reasons: en.reasons };
+    const enGap = gapQuestionIssuesEn(q.textEn);
+    if (enGap.length) return { ok: false, stage: 'form', reasons: enGap };
   }
   return verdict.ok
     ? { ok: true, stage: null, reasons: [] }

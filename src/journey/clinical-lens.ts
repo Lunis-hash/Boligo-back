@@ -76,7 +76,7 @@ export const READING_LENS = `POUR LIRE LEURS RÉPONSES :
 export const CRITIC_RULES = `Refuse une question si :
 1. elle ne porte pas sur un écart réel détecté (accord ou sujet neutre), ou n'a pas de lien avec l'écart cité par ses preuves ;
 2. elle passe par un souvenir d'enfance, la famille d'origine, le regard d'un proche, un « angle mort » ou le « sacré » ;
-3. elle est purement théorique, sans lien avec la vie de la personne (« que représente l'amour pour vous ? », « que pensez-vous de l'argent ? ») ; toute question sur ce que chacun ferait, accepterait, choisirait, supporterait, ou sur ce que l'autre aurait besoin de savoir, est concrète et acceptée, même sans chiffre ;
+3. elle demande seulement de définir une valeur abstraite (« que représente l'amour pour vous ? », « que pensez-vous de l'argent ? ») ; toute question sur ce que chacun ferait, accepterait, choisirait, supporterait, vivrait, garderait, ou sur ce que l'autre aurait besoin de savoir, est concrète et acceptée, même sans chiffre ;
 4. elle redemande telle quelle une réponse de l'entretien (« voulez-vous des enfants ? »), ou répète une question de la liste (même sens, autres mots) ; aller au cran suivant (combien, jusqu'où, à quelles conditions, pendant combien de temps) n'est pas une répétition ;
 5. elle mélange plusieurs idées, oppose deux alternatives (« … ou … »), propose une liste de choix, ou emploie du jargon, une étiquette, un diagnostic ou une tournure alambiquée ;
 6. elle oriente vers une réponse, juge ou fait la morale ;
@@ -94,6 +94,19 @@ export const CRITIC_RULES = `Refuse une question si :
 18. elle porte sur un risque partagé (mêmes réponses) ou sur un sujet proche de la violence (élever la voix, cris, menace) ;
 19. elle reprend, même reformulé, un exemple de la consigne ;
 20. sa version anglaise (« EN ») ne dit pas exactement la même chose, sonne comme une traduction mot à mot, ou enfreint l'une des règles ci-dessus.`;
+
+/**
+ * Relecture : un refus doit être une faute nette, citée mot pour mot. Le style
+ * (une question claire, concrète et valable pour les deux) n'est jamais un motif.
+ */
+export const CRITIC_STANCE = `Tu refuses une question seulement pour une FAUTE NETTE d'une règle ci-dessous, et tu cites dans "extrait" les mots exacts de la question (ou de sa version EN) qui la constituent. Sans extrait précis, tu acceptes.
+Ne sont PAS des fautes : une question concrète sur ce que chacun ferait, accepterait, vivrait ou garderait ; « si l'un de vous… », « si l'autre… , comment le vivriez-vous ? », « si vos positions ne bougeaient jamais… » (chacun répond depuis sa propre position) ; une durée, une fréquence ou une somme ronde posée en hypothèse ; l'alcool, le tabac ou le jeu comme habitude de vie ; ce que l'autre aurait besoin de savoir ou de comprendre ; une limite personnelle (« qu'est-ce que vous ne pourriez pas accepter au sujet de… ») qui ne prête rien à l'autre.
+Sont des fautes : citer ou laisser deviner la réponse d'un membre (« l'un de vous a répondu… », « comme l'alcool est quotidien pour l'un de vous… ») ; prêter une position à « votre partenaire » ; une hypothèse sur l'autre suivie de « qu'est-ce que vous ne supporteriez pas » ; une question qui n'a de sens que pour l'un des deux (« vous retenir de parier », « arrêter de fumer pour le couple ») ; un fait inventé ; un diagnostic ou une étiquette ; un arrangement sur un point non négociable ; la violence.`;
+
+/** Exemples de relecture : jamais posés aux membres, jamais recopiés. */
+export const CRITIC_EXAMPLES = `EXEMPLES (sujets fictifs, à ne pas recopier) :
+À ACCEPTER — « Si l'un de vous devait passer deux soirs par semaine en formation pendant un an, comment l'organiseriez-vous ? » ; « Combien de dîners par mois chez des amis vous sembleraient idéals à deux ? » ; « Si vos positions sur le chien ne bougeaient jamais, pourriez-vous vivre ensemble quand même ? » ; « Qu'est-ce que l'autre devrait savoir de votre rythme de sommeil avant de partager un logement ? »
+À REFUSER — « L'un de vous ne veut pas de chien : qu'en pensez-vous ? » (règle 7, extrait « L'un de vous ne veut pas de chien ») ; « Si votre partenaire refusait tout animal, pourriez-vous rester ? » (règle 17, extrait « Si votre partenaire refusait tout animal ») ; « Combien de fois par semaine pourriez-vous vous passer de sortir sans l'autre ? » (règle 17, extrait « vous passer de sortir », ne vaut que pour celui qui sort) ; « Votre besoin de calme cache-t-il une fragilité ? » (règle 5, extrait « cache-t-il une fragilité »).`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur
@@ -326,6 +339,12 @@ export function neutralizeHypotheticalSum(text: string): string {
     /(?<!\p{L})combien (?=(?:mett|épargn|dépens|vers|envoy)\p{L}*riez(?!\p{L}))/giu,
     'quelle part ',
   );
+  // Seuil (« à partir de quel montant… », « jusqu'à quelle somme… ») : une
+  // limite envisagée, pas un revenu ni une épargne.
+  text = text.replace(
+    /(?<!\p{L})(à partir de|jusqu['’]à|au-delà de) (?:quel(?:le)?) (?:montant|somme)(?!\p{L})/giu,
+    '$1 quel seuil',
+  );
   if (!AMOUNT.test(text)) return text;
   return text
     .replace(AMOUNT, 'sur une somme donnée')
@@ -359,7 +378,7 @@ const prefix = (alternatives: string) =>
 
 /** Ultimatum : une réponse sincère difficile à montrer (« partiriez-vous ? »). */
 export const ULTIMATUM = prefix(
-  'partiriez|quitteriez|resteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez|ferai(?:t|ent) quitter(?! la (?:pièce|table|conversation|salle))|ferai(?:t|ent) partir',
+  "partiriez|quitteriez|resteriez(?![- ]vous (?:à l['’]aise|serein|sereine|calme|tranquille|confortable))|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez|ferai(?:t|ent) quitter(?! la (?:pièce|table|conversation|salle))|ferai(?:t|ent) partir",
 );
 /**
  * Ultimatum sans issue, refusé même dans une question de confrontation
@@ -421,7 +440,20 @@ export const ONE_SIDED =
  * qu'est-ce que vous ne pourriez pas accepter ? »).
  */
 export const REVERSED_HYPOTHESIS =
-  /^si\s[^?]+,\s*qu['’]est-ce que vous (?:ne pourriez pas (?:accepter|supporter|tolérer)|ne supporteriez pas|n['’]accepteriez pas|ne toléreriez pas)/iu;
+  /^si\s[^?]+,\s*(?:qu['’]est-ce que vous (?:ne pourriez (?:pas|plus) (?:accepter|supporter|tolérer|vivre)|ne supporteriez (?:pas|plus)|n['’]accepteriez (?:pas|plus)|ne toléreriez (?:pas|plus))|que ne (?:pourriez|supporteriez|accepteriez|toléreriez)-vous pas|qu['’]est-ce qui vous serait (?:insupportable|inacceptable|intolérable)|où (?:serait|placeriez-vous|mettriez-vous) (?:votre|la) limite)/iu;
+
+/**
+ * Effort à sens unique : la question demande de renoncer à son propre
+ * comportement sur l'écart (« vous retenir de parier », « arrêter de fumer
+ * pour le couple », « réduire vos dépenses plaisir ») ; elle n'a de sens que
+ * pour celui qui le pratique.
+ */
+export const ONE_WAY_EFFORT =
+  /(?<!\p{L})(?:vous retenir|vous empêcher|vous passer|vous abstenir|arrêter|cesser|renon\p{L}*|réduire|rédui\p{L}*|diminuer|limiter|modérer|freiner|décrocher)\s+(?:de\s+|d['’]|à\s+)?(?:vos\s+|votre\s+|vos\s+propres\s+|la\s+|le\s+|les\s+|l['’])?(?:boire|fumer|jouer|parier|miser|dépenser|consommation|envies|tabac|alcool|cigarettes?|paris|jeux?(?! de société)|verres?|dépenses(?: plaisir)?|achats? plaisir|sorties)(?!\p{L})/iu;
+
+/** Présupposé d'un penchant (« qu'est-ce qui vous attire tant dans… »). */
+export const PRESUPPOSED_PULL =
+  /(?:qu['’]est-ce qui|que(?:l(?:le)?s?)? [^?]{0,20}) vous (?:attire|plaît|pousse|retient|tente|manque) (?:tant|autant|si fort|tellement)|frisson du jeu/iu;
 
 /** Morale ou « bonne réponse » suggérée. */
 export const MORALE = word(
@@ -450,7 +482,7 @@ export const TUTOIEMENT = word(
   "tu|toi|(?<!(?:le|quel|un|du|au|ce|son|mon|votre|même) )ton|ta|tes|te|t'|t’",
 );
 export const VOUVOIEMENT = word(
-  'vous|votre|vos|pensez|imaginez|rappelez|souvenez|décrivez|choisissez|citez|dites|prenez|regardez',
+  'vous|votre|vos|vôtres?|pensez|imaginez|rappelez|souvenez|décrivez|choisissez|citez|dites|prenez|regardez',
 );
 /** Question impersonnelle sur le sens d'un mot (« Que veut dire « respecter »… ? »). */
 const IMPERSONAL =
@@ -517,7 +549,7 @@ export const LENS_EXAMPLES = [
  * limite de l'équipe, relus par des humains, ne passent pas par ce filtre.
  */
 const STAGED_HARM =
-  /(?<!\p{L})(?:gifl\p{L}*|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|(?<![-\p{L}])vous protéger|vous réfugier|où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
+  /(?<!\p{L})(?:gifl\p{L}*|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|(?<![-\p{L}])vous protéger|vous réfugier|(?<!jusqu['’])où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
 
 /** Arrangement ou concession sur un sujet non négociable, dans une question de l'IA. */
 const NN_ARRANGEMENT =
@@ -571,10 +603,13 @@ export function isWellFormedQuestion(text: string): boolean {
   // En hypothèse, « votre couple » ou « cette relation » parlent du couple
   // à venir, pas d'un passé commun.
   if (/^si\s/iu.test(t))
-    forForm = forForm.replace(
-      /(?<!\p{L})(?:votre couple|cette relation)(?!\p{L})/giu,
-      'le couple',
-    );
+    forForm = forForm
+      .replace(
+        /(?<!\p{L})(?:votre couple|cette relation)(?!\p{L})/giu,
+        'le couple',
+      )
+      // « Si l'école de vos enfants… » : des enfants à venir, pas présupposés.
+      .replace(/(?<!\p{L})vos enfants(?!\p{L})/giu, 'des enfants');
   // « Que devrait savoir l'autre… » : une attente, pas une morale (« vous
   // devriez » reste refusé).
   forForm = forForm.replace(
@@ -661,5 +696,88 @@ export function gapQuestionIssues(text: string): string[] {
     r.push('P24 deux interrogatifs coordonnés (une seule idée)');
   if (ELEVATED_VOICE.test(t))
     r.push('P22 sujet voisin de la violence (questions de limite)');
+  if (ONE_WAY_EFFORT.test(t))
+    r.push('P26 effort à sens unique (ne vaut que pour l’un des deux)');
+  if (PRESUPPOSED_PULL.test(t))
+    r.push('P27 penchant présupposé (« ce qui vous attire tant »)');
   return r;
+}
+
+const EN = (s: string) => new RegExp(s, 'i');
+/** Mêmes règles du rédacteur, sur la version anglaise. */
+const GAP_RULES_EN: Array<[RegExp, string]> = [
+  [
+    EN(
+      "^if (?:your partner|the other(?: person)?) (?:didn't |did not |never |doesn't |does not )?(?:want|refus|accept|insist|rul|drank|drink|smok|gambl|bet|spent|spend|kept|keep|sav)",
+    ),
+    'EN-P20 hypothèse qui ne vise que l’un des deux',
+  ],
+  [
+    EN(
+      "your partner (?:has|had|is|was|'s) (?:ruled|decided|refused|chosen|set on|against|unsure|not sure|certain)|your partner (?:doesn't|does not|won't|will not) want",
+    ),
+    'EN-P20 position prêtée au partenaire',
+  ],
+  [
+    EN(
+      "^if [^?]+, (?:where would you draw the line|what (?:couldn't|could not|wouldn't|would not) you (?:accept|tolerate|stand|live with)|what would be (?:unbearable|unacceptable))",
+    ),
+    'EN-P21 hypothèse retournée',
+  ],
+  [
+    EN(
+      "^(?:since|as|given that|now that|because|considering)\\b|\\bfor one of you\\b|\\bone of you (?:is|isn't|is not|has|hasn't|was|doesn't|does not|can't|cannot)\\b",
+    ),
+    'EN-P25 prémisse affirmée',
+  ],
+  [
+    EN(
+      '\\b(?:and|or) (?:what|how|when|why|where|which) (?:would|could|do|did|will|is|are|should|might|can)\\b',
+    ),
+    'EN-P24 deux questions en une',
+  ],
+  [
+    EN(
+      '\\b(?:growing up|your parents|in your family|as a child|childhood|your mother|your father|someone who knows you)\\b',
+    ),
+    'EN-P15 détour par l’enfance, la famille d’origine ou un proche',
+  ],
+  [
+    EN(
+      "\\b(?:wouldn't you agree|don't you think|can't work|cannot work|simply can't|isn't it clear|admit that)\\b",
+    ),
+    'EN conclusion forcée',
+  ],
+  [
+    EN(
+      '\\b(?:split the difference|meet (?:in the middle|halfway)|halfway between|middle ground|compromise)\\b',
+    ),
+    'EN compromis proposé',
+  ],
+  [
+    EN(
+      '\\b(?:addict\\w*|in denial|transgenerational|codependen\\w*|attachment style|toxic|trauma\\w*|narciss\\w*|disorder|patholog\\w*|anxious temperament)\\b',
+    ),
+    'EN jargon ou diagnostic',
+  ],
+  [
+    EN(
+      '\\b(?:tell us|let us know|could you say) (?:whether|if) you\\b|^do you (?:smoke|drink|gamble|want (?:kids|children)|believe in)\\b',
+    ),
+    'EN redemande une réponse de l’entretien',
+  ],
+  [
+    EN(
+      '\\b(?:hold (?:yourself )?back from|stop (?:smoking|drinking|gambling|betting|spending)|cut (?:back|down) on your|give up your (?:drinking|smoking|gambling|bets|spending|treats))\\b',
+    ),
+    'EN-P26 effort à sens unique',
+  ],
+];
+
+/** Règles du rédacteur du Sondeur appliquées à la version anglaise. */
+export function gapQuestionIssuesEn(textEn: string | undefined): string[] {
+  // Apostrophe typographique ramenée à la forme droite des motifs.
+  const t = (textEn ?? '').replace(/[’`]/g, "'").trim();
+  if (!t) return [];
+  return GAP_RULES_EN.filter(([re]) => re.test(t)).map(([, why]) => why);
 }

@@ -7,7 +7,7 @@ import {
   OpenRouterAgent,
   OpenRouterRole,
 } from './openrouter.config';
-import { modelFamily, parseModelList } from './groq-model';
+import { parseModelList, sameFamily } from './groq-model';
 import {
   SondeurRole,
   modelsFor,
@@ -94,8 +94,8 @@ export interface OpenRouterCallOptions {
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
-  /** Rédacteur à écarter : le relecteur est d'une autre famille. */
-  avoidModel?: string;
+  /** Rédacteur (et premier relecteur) à écarter : autre famille. */
+  avoidModel?: string | readonly string[];
 }
 
 /** Prix d'un modèle en dollars par million de jetons. */
@@ -198,7 +198,10 @@ export class OpenRouterService {
    * préférences ; jamais gratuits ; présents au catalogue et sous le prix
    * plafond quand le catalogue est connu.
    */
-  async candidates(role: OpenRouterRole, avoid?: string): Promise<string[]> {
+  async candidates(
+    role: OpenRouterRole,
+    avoid?: string | readonly string[],
+  ): Promise<string[]> {
     // Rôles du Sondeur : modèles qualifiés par le banc d'essai (routeur) ;
     // une variable d'environnement ne peut choisir qu'un modèle qualifié.
     const sondeurRole = SONDEUR_ROLE[role];
@@ -218,7 +221,7 @@ export class OpenRouterService {
     const out: string[] = [];
     for (const model of wanted) {
       if (out.includes(model) || /:free$/.test(model)) continue;
-      if (avoid && modelFamily(model) === modelFamily(avoid)) continue;
+      if (sameFamily(model, avoid)) continue;
       if (catalog) {
         const price = catalog.get(model);
         if (!price) continue;

@@ -83,7 +83,9 @@ describe('Regard clinique du Sondeur', () => {
     expect(CLINICAL_LENS).toMatch(/ne recopie jamais un exemple mot pour mot/);
     expect(CLINICAL_LENS).toMatch(/RÉCIPROCITÉ/);
     expect(CLINICAL_LENS).toMatch(/CONTRE-EXEMPLES/);
-    expect(CRITIC_RULES).toMatch(/suppose qu'un membre précis tient une position/);
+    expect(CRITIC_RULES).toMatch(
+      /suppose qu'un membre précis tient une position/,
+    );
     expect(CLINICAL_LENS).toMatch(/POINTS NON NÉGOCIABLES/);
     expect(CRITIC_RULES).toMatch(/15\. /);
     expect(CRITIC_RULES).toMatch(/passé commun/);
@@ -153,5 +155,27 @@ describe('Regard clinique du Sondeur', () => {
     ]) {
       expect(isWellFormedQuestion(bad)).toBe(false);
     }
+  });
+});
+
+describe('Forme : faux refus corrigés, refus maintenus', () => {
+  it.each([
+    "Jusqu'où iriez-vous pour accueillir chez vous des enfants d'une autre union ?",
+    'À partir de quel montant une dépense imprévue mériterait-elle, selon vous, une discussion à deux ?',
+    "Jusqu'à quelle somme par sortie resteriez-vous à l'aise ?",
+    'À partir de combien de week-ends par mois la présence des enfants des vôtres deviendrait-elle lourde ?',
+    "Si l'école de vos enfants suivait une autre religion que la vôtre, l'accepteriez-vous ?",
+  ])('admise : %s', (t) => {
+    expect(isWellFormedQuestion(t)).toBe(true);
+  });
+
+  it.each([
+    'Où iriez-vous dormir si la soirée tournait mal ?',
+    'Quel est votre salaire mensuel aujourd’hui ?',
+    'Combien gagnez-vous par mois actuellement ?',
+    'Resteriez-vous malgré tout avec cette personne ?',
+    'Comment vos enfants vivent-ils la situation aujourd’hui ?',
+  ])('toujours refusée : %s', (t) => {
+    expect(isWellFormedQuestion(t)).toBe(false);
   });
 });

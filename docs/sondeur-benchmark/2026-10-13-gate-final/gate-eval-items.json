@@ -480,11 +480,8 @@
     "label": "faulty",
     "category": "wrong_partner_position",
     "why": "La version anglaise attribue une position au partenaire.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q025",
@@ -523,11 +520,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le désir d'enfants à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q027",
@@ -547,7 +541,7 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème"
+      "P17 sans lien avec l’écart cité"
     ]
   },
   {
@@ -568,9 +562,7 @@
     "why": "Hypothèse inversée.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P20 hypothèse qui ne vise que l’un des deux",
-      "P17 sans lien avec l’écart cité"
+      "P20 hypothèse qui ne vise que l’un des deux"
     ]
   },
   {
@@ -610,11 +602,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q031",
@@ -814,7 +803,6 @@
     "why": "Jargon de coach.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P13 possessif non autorisé (« votre ancrage »)"
     ]
   },
@@ -914,11 +902,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q046",
@@ -957,11 +942,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q048",
@@ -979,11 +961,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place du beau-parent en famille recomposée à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q049",
@@ -1039,11 +1018,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place du beau-parent en famille recomposée à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q052",
@@ -1105,7 +1081,6 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P17 sans lien avec l’écart cité"
     ]
   },
@@ -1125,10 +1100,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q056",
@@ -1249,8 +1222,7 @@
     "why": "La version anglaise invente un écart sur les tâches, où ils sont d'accord.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
+      "P2 preuve d’un autre thème"
     ]
   },
   {
@@ -1373,11 +1345,8 @@
     "label": "faulty",
     "category": "violence_or_compromise",
     "why": "La version anglaise propose un compromis sur les enfants.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q068",
@@ -1539,11 +1508,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q076",
@@ -1561,11 +1527,8 @@
     "label": "faulty",
     "category": "known_fact_repetition",
     "why": "Redemande la position déjà recueillie.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q077",
@@ -1767,8 +1730,7 @@
     "why": "Dévoile des réponses religieuses qui ne devaient pas être transmises.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
+      "P7 reprend la réponse d’un membre"
     ]
   },
   {
@@ -1892,7 +1854,7 @@
     "why": "Compromis sur un non-négociable.",
     "gateOk": false,
     "gateReasons": [
-      "P8 forme"
+      "compromis sur un non-négociable"
     ]
   },
   {
@@ -2094,11 +2056,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place du beau-parent en famille recomposée à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q103",
@@ -2137,7 +2096,6 @@
     "why": "La version anglaise affirme la position du partenaire.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P11 habitude présupposée",
       "P17 sans lien avec l’écart cité"
     ]
@@ -2201,11 +2159,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q108",
@@ -2223,11 +2178,8 @@
     "label": "faulty",
     "category": "reversed_hypothesis",
     "why": "Hypothèse portant sur la position de l'autre.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q109",
@@ -2331,13 +2283,11 @@
     "why": "Invente l'âge des membres.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P6 attribue une peur, une intention, un comportement ou un passé",
       "P14 fait de vie présupposé (verbe « avez »)",
       "P12 passé présupposé",
       "P9 état partagé affirmé",
-      "P25 prémisse affirmée (fait ou réponse présentés comme acquis)",
-      "P17 sans lien avec l’écart cité"
+      "P25 prémisse affirmée (fait ou réponse présentés comme acquis)"
     ]
   },
   {
@@ -2356,11 +2306,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le désir d'enfants à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q115",
@@ -2580,7 +2527,6 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P17 sans lien avec l’écart cité"
     ]
   },
@@ -2844,11 +2790,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q139",
@@ -2931,7 +2874,6 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P14 fait de vie présupposé (verbe « vivez »)",
       "P17 sans lien avec l’écart cité"
     ]
@@ -3231,11 +3173,8 @@
     "label": "faulty",
     "category": "non_reciprocal",
     "why": "La version anglaise ne concerne qu'un parent.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q158",
@@ -3394,11 +3333,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le désir d'enfants à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q166",
@@ -3437,11 +3373,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place du beau-parent en famille recomposée à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q168",
@@ -3459,11 +3392,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q169",
@@ -3724,10 +3654,8 @@
     "why": "Présuppose de la jalousie.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P14 fait de vie présupposé (verbe « gérez »)",
-      "P10 émotion présupposée",
-      "P17 sans lien avec l’écart cité"
+      "P10 émotion présupposée"
     ]
   },
   {
@@ -3990,11 +3918,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q195",
@@ -4014,10 +3939,8 @@
     "why": "Révèle la réponse d'un des deux membres.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P7 révèle la réponse de l’un des deux",
-      "P25 prémisse affirmée (fait ou réponse présentés comme acquis)",
-      "P17 sans lien avec l’écart cité"
+      "P25 prémisse affirmée (fait ou réponse présentés comme acquis)"
     ]
   },
   {
@@ -4057,11 +3980,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place du beau-parent en famille recomposée à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q198",
@@ -4121,11 +4041,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place du beau-parent en famille recomposée à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q201",
@@ -4166,7 +4083,6 @@
     "why": "Jargon : « posture identitaire ».",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P13 possessif non autorisé (« votre posture »)"
     ]
   },
@@ -4429,11 +4345,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q216",
@@ -4611,10 +4524,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q225",
@@ -4673,11 +4584,8 @@
     "label": "faulty",
     "category": "childhood_family_detour",
     "why": "Détour par l'enfance sur un sujet sensible.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q228",
@@ -4841,9 +4749,7 @@
     "why": "Présuppose un éloignement religieux passé.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P14 fait de vie présupposé (verbe « avez »)",
-      "P17 sans lien avec l’écart cité"
+      "P14 fait de vie présupposé (verbe « avez »)"
     ]
   },
   {
@@ -4971,11 +4877,8 @@
     "label": "valid",
     "category": "valid",
     "why": "Une seule question, réciproque, qui confronte l'écart sur le désir d'enfants à la réalité sans révéler les réponses.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q242",
@@ -5075,11 +4978,8 @@
     "label": "faulty",
     "category": "jargon",
     "why": "La version anglaise utilise du jargon.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q247",
@@ -5403,9 +5303,7 @@
     "why": "Détour par la famille d'origine.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P15 détour par l’enfance, la famille d’origine ou un proche",
-      "P17 sans lien avec l’écart cité"
+      "P15 détour par l’enfance, la famille d’origine ou un proche"
     ]
   },
   {
@@ -5709,9 +5607,7 @@
     "why": "Invente des villes et des emplois.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P13 possessif non autorisé (« vos postes »)",
-      "P17 sans lien avec l’écart cité"
+      "P13 possessif non autorisé (« vos postes »)"
     ]
   },
   {
@@ -5789,7 +5685,6 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P17 sans lien avec l’écart cité"
     ]
   },
@@ -6096,7 +5991,6 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur la place de la foi dans le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P17 sans lien avec l’écart cité"
     ]
   },
@@ -6439,7 +6333,7 @@
     "why": "Compromis sur la religion.",
     "gateOk": false,
     "gateReasons": [
-      "P8 forme"
+      "compromis sur un non-négociable"
     ]
   },
   {
@@ -6479,7 +6373,6 @@
     "why": "Une seule question, réciproque, qui confronte l'écart sur le déménagement pour le couple à la réalité sans révéler les réponses.",
     "gateOk": false,
     "gateReasons": [
-      "P2 preuve d’un autre thème",
       "P17 sans lien avec l’écart cité"
     ]
   },
@@ -6644,11 +6537,8 @@
     "label": "faulty",
     "category": "non_reciprocal",
     "why": "La version anglaise vise uniquement celui qui refuse.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q324",
@@ -6885,11 +6775,8 @@
     "label": "faulty",
     "category": "non_reciprocal",
     "why": "Suppose un refus, valable pour un seul.",
-    "gateOk": false,
-    "gateReasons": [
-      "P2 preuve d’un autre thème",
-      "P17 sans lien avec l’écart cité"
-    ]
+    "gateOk": true,
+    "gateReasons": []
   },
   {
     "id": "Q336",

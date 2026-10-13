@@ -3,7 +3,7 @@ import { join } from 'path';
 import { modelFamily } from './groq-model';
 import { isValidQualification, modelsFor } from './sondeur-router';
 
-/** Qualification réelle, écrite par le banc d'essai (2026-10-12-final). */
+/** Qualification réelle (banc d'essai 2026-10-12-final, puis mesure du seuil 2026-10-13). */
 const q = JSON.parse(
   readFileSync(
     join(__dirname, '..', '..', 'config', 'sondeur-models.json'),
@@ -20,6 +20,8 @@ describe('config/sondeur-models.json', () => {
     const measured = new Set([
       'z-ai/glm-5.3-flash',
       'anthropic/claude-sonnet-5.5',
+      // Second avis : mesuré sur corpus étiqueté (docs/sondeur-benchmark/2026-10-13-gate-vote).
+      'openai/gpt-5.6-luna',
     ]);
     const v = q as Record<string, string[]>;
     for (const role of ['writer', 'critic', 'escalation', 'fallback'])
@@ -31,12 +33,40 @@ describe('config/sondeur-models.json', () => {
     for (const writer of [
       ...(q as { writer: string[] }).writer,
       ...(q as { escalation: string[] }).escalation,
+      ...(q as { fallback: string[] }).fallback,
     ]) {
       const critics = modelsFor('critic', { avoid: writer, q: v }).models;
       expect(critics.length).toBeGreaterThan(0);
       expect(critics.every((c) => modelFamily(c) !== modelFamily(writer))).toBe(
         true,
       );
+    }
+  });
+
+  it('second avis : une troisième famille existe pour chaque rédacteur', () => {
+    const v = q as {
+      criticVote?: boolean;
+      writer: string[];
+      fallback: string[];
+    };
+    if (!v.criticVote) return;
+    for (const writer of [...v.writer, ...v.fallback]) {
+      const [first] = modelsFor('critic', {
+        avoid: writer,
+        q: v as never,
+      }).models;
+      const second = modelsFor('critic', {
+        avoid: [writer, first],
+        q: v as never,
+      }).models;
+      expect(second.length).toBeGreaterThan(0);
+      expect(
+        second.every(
+          (m) =>
+            modelFamily(m) !== modelFamily(writer) &&
+            modelFamily(m) !== modelFamily(first),
+        ),
+      ).toBe(true);
     }
   });
 });
