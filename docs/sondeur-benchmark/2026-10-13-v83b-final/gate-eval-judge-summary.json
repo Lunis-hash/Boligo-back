@@ -1,0 +1,22 @@
+{
+  "judge": "qwen/qwen3.7-plus",
+  "served": 104,
+  "valid": {
+    "label": "valid",
+    "judged": 102,
+    "presupposition": 0.1568627450980392,
+    "reciprocal": 0.9705882352941176,
+    "sameMeaning": 0.9901960784313726,
+    "depth": 3.892156862745098,
+    "relevance": 4.931372549019608
+  },
+  "faulty": {
+    "label": "faulty",
+    "judged": 0,
+    "presupposition": null,
+    "reciprocal": null,
+    "sameMeaning": null,
+    "depth": null,
+    "relevance": null
+  }
+}

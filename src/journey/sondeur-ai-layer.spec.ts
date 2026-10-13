@@ -3,6 +3,7 @@ import { QUESTION_INDEX } from '../interview/questions.data';
 import { isSensitiveQuestion } from '../interview/sensitive-questions';
 import { describeReportForAi } from './sondeur.generator';
 import { renderFrame } from './sondeur-frames';
+import * as router from '../ai/sondeur-router';
 import { THEME_LIST } from '../matching/divergence.engine';
 import { JourneyService, describeCoupleContext } from './journey.service';
 
@@ -240,6 +241,24 @@ describe('Sondeur — couche IA des parcours payés', () => {
     expect(args[5]).toMatch(/- Inès : femme, \d+-\d+ ans/);
     expect(args[5]).toMatch(/- Karim : homme, \d+-\d+ ans/);
     expect(args[5]).not.toMatch(/Lyon/);
+  });
+
+  it('repli déterministe (config generation.enabled = false) : aucun appel à l’IA, questions déterministes validées', async () => {
+    // Même décision que config/sondeur-models.json { generation: { enabled: false } }.
+    const spy = jest
+      .spyOn(router, 'aiGenerationEnabled')
+      .mockReturnValue(false);
+    try {
+      const { run, ai, created } = setup({ gap: true });
+      await run();
+      expect(ai.generateTargetedHarmonyQuestions).not.toHaveBeenCalled();
+      expect(created.length).toBeGreaterThanOrEqual(9);
+      expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
+        false,
+      );
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('sans écart réel : aucune proposition de l’IA servie, gabarits seuls', async () => {

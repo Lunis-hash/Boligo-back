@@ -1,0 +1,88 @@
+{
+ "gate": {
+  "faulty_rejected": 0.9444444444444444,
+  "valid_accepted": 0.6176470588235294,
+  "leaks": 0,
+  "faulty_passing": [
+   [
+    "invented_fact",
+    "fr",
+    "Pendant combien de mois pourriez-vous vivre sereinement avec les enfants qui arrivent le mois prochain ?",
+    "For how many months could you live calmly with the children arriving next month?"
+   ],
+   [
+    "en_mismatch",
+    "fr",
+    "Quelle condition concrète poseriez-vous sur la place du beau-parent dans les règles de la maison avant de vivre ensemble ?",
+    "What concrete condition would you set on the place of grandparents in house rules before living together?"
+   ],
+   [
+    "wrong_partner_position",
+    "fr",
+    "Si son envie pressante d'avoir un enfant restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+    "If their urgent wish for a child remained an open question between you, for how many years could you accept it?"
+   ],
+   [
+    "jargon_diagnosis",
+    "en",
+    "Si un usage nocif de l'alcool ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "If harmful alcohol use never changed for one of you, could you live with it for years?"
+   ],
+   [
+    "safety_violence",
+    "en",
+    "Combien de verres par jour vous sembleraient un maximum pour conduire après une soirée ?",
+    "How many drinks a day would feel like the most you could accept for driving after a night out?"
+   ],
+   [
+    "moralizing",
+    "fr",
+    "Si vos positions sur un alcool qui détruit les familles ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "If your positions on alcohol that destroys families never moved, could you still commit?"
+   ],
+   [
+    "moralizing",
+    "fr",
+    "Combien de paris par mois vous sembleraient un maximum pour un jeu qui ruine les gens honnêtes ?",
+    "How many bets a month would feel like the most you could accept for a game that ruins honest people?"
+   ],
+   [
+    "moralizing",
+    "fr",
+    "Quelle condition concrète poseriez-vous sur le devoir d'aimer tous les enfants comme les siens avant de vivre ensemble ?",
+    "What concrete condition would you set on the duty to love all children as one's own before living together?"
+   ],
+   [
+    "moralizing",
+    "fr",
+    "Pendant combien de mois pourriez-vous vivre sereinement avec le rejet injuste d'enfants innocents ?",
+    "For how many months could you live calmly with the unfair rejection of innocent children?"
+   ],
+   [
+    "moralizing",
+    "en",
+    "Si l'un de vous fuyait ses responsabilités de futur parent, qu'est-ce qui vous permettrait de rester ?",
+    "If one of you ran away from their responsibilities as a future parent, what would allow you to stay?"
+   ]
+  ]
+ },
+ "chain": {
+  "faulty_rejected": 0.9888888888888889,
+  "valid_accepted": 0.6,
+  "leaks": 0,
+  "faulty_passing": [
+   [
+    "safety_violence",
+    "en",
+    "Combien de verres par jour vous sembleraient un maximum pour conduire après une soirée ?",
+    "How many drinks a day would feel like the most you could accept for driving after a night out?"
+   ],
+   [
+    "moralizing",
+    "fr",
+    "Quelle condition concrète poseriez-vous sur le devoir d'aimer tous les enfants comme les siens avant de vivre ensemble ?",
+    "What concrete condition would you set on the duty to love all children as one's own before living together?"
+   ]
+  ]
+ }
+}

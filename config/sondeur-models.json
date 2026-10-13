@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-10-13T01:00:00Z",
-  "run": "2026-10-13-gate-vote",
+  "run": "2026-10-13-v83b-final",
   "writer": ["anthropic/claude-sonnet-5.5"],
   "critic": [
     "z-ai/glm-5.3-flash",
@@ -10,5 +10,10 @@
   "escalation": [],
   "fallback": ["z-ai/glm-5.3-flash"],
   "escalateAboveRejectRate": 0.5,
-  "criticVote": true
+  "criticVote": true,
+  "generation": {
+    "enabled": false,
+    "disabledThemes": [],
+    "disabledFrames": []
+  }
 }

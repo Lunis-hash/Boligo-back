@@ -1,0 +1,491 @@
+{
+  "anthropic/claude-sonnet-5.5": {
+    "K001": {
+      "ok": true,
+      "rule": null
+    },
+    "K002": {
+      "ok": true,
+      "rule": null
+    },
+    "K003": {
+      "ok": true,
+      "rule": null
+    },
+    "K013": {
+      "ok": true,
+      "rule": null
+    },
+    "K019": {
+      "ok": true,
+      "rule": null
+    },
+    "K005": {
+      "ok": true,
+      "rule": null
+    },
+    "K006": {
+      "ok": true,
+      "rule": null
+    },
+    "K014": {
+      "ok": true,
+      "rule": null
+    },
+    "K017": {
+      "ok": true,
+      "rule": null
+    },
+    "K020": {
+      "ok": true,
+      "rule": null
+    },
+    "K007": {
+      "ok": false,
+      "rule": 12,
+      "reason": "Invite à un compromis sur un point non négociable",
+      "excerpt": "Jusqu'où iriez-vous pour accorder vos envies de devenir parents"
+    },
+    "K008": {
+      "ok": true,
+      "rule": null
+    },
+    "K009": {
+      "ok": true,
+      "rule": null
+    },
+    "K012": {
+      "ok": true,
+      "rule": null
+    },
+    "K015": {
+      "ok": true,
+      "rule": null
+    },
+    "K018": {
+      "ok": true,
+      "rule": null
+    },
+    "K022": {
+      "ok": true,
+      "rule": null
+    },
+    "K023": {
+      "ok": true,
+      "rule": null
+    },
+    "K024": {
+      "ok": true,
+      "rule": null
+    },
+    "K037": {
+      "ok": true,
+      "rule": null
+    },
+    "K040": {
+      "ok": true,
+      "rule": null
+    },
+    "K025": {
+      "ok": true,
+      "rule": null
+    },
+    "K026": {
+      "ok": true,
+      "rule": null
+    },
+    "K035": {
+      "ok": true,
+      "rule": null
+    },
+    "K038": {
+      "ok": true,
+      "rule": null
+    },
+    "K041": {
+      "ok": true,
+      "rule": null
+    },
+    "K028": {
+      "ok": true,
+      "rule": null
+    },
+    "K029": {
+      "ok": true,
+      "rule": null
+    },
+    "K030": {
+      "ok": true,
+      "rule": null
+    },
+    "K036": {
+      "ok": true,
+      "rule": null
+    },
+    "K042": {
+      "ok": true,
+      "rule": null
+    },
+    "K043": {
+      "ok": true,
+      "rule": null
+    },
+    "K191": {
+      "ok": false,
+      "rule": 8,
+      "reason": "fait inventé, absent de l'analyse",
+      "excerpt": "les enfants qui arrivent le mois prochain"
+    },
+    "K337": {
+      "ok": false,
+      "rule": 6,
+      "reason": "juge et fait la morale",
+      "excerpt": "le rejet injuste d'enfants innocents"
+    },
+    "K044": {
+      "ok": true,
+      "rule": null
+    },
+    "K045": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "K046": {
+      "ok": true,
+      "rule": null
+    },
+    "K054": {
+      "ok": true,
+      "rule": null
+    },
+    "K057": {
+      "ok": true,
+      "rule": null
+    },
+    "K060": {
+      "ok": true,
+      "rule": null
+    },
+    "K048": {
+      "ok": true,
+      "rule": null
+    },
+    "K050": {
+      "ok": true,
+      "rule": null
+    },
+    "K055": {
+      "ok": true,
+      "rule": null
+    },
+    "K058": {
+      "ok": true,
+      "rule": null
+    },
+    "K061": {
+      "ok": true,
+      "rule": null
+    },
+    "K053": {
+      "ok": true,
+      "rule": null
+    },
+    "K056": {
+      "ok": true,
+      "rule": null
+    },
+    "K063": {
+      "ok": true,
+      "rule": null
+    },
+    "K064": {
+      "ok": true,
+      "rule": null
+    },
+    "K065": {
+      "ok": true,
+      "rule": null
+    },
+    "K066": {
+      "ok": true,
+      "rule": null
+    },
+    "K074": {
+      "ok": true,
+      "rule": null
+    },
+    "K077": {
+      "ok": true,
+      "rule": null
+    },
+    "K083": {
+      "ok": true,
+      "rule": null
+    },
+    "K327": {
+      "ok": false,
+      "rule": 16,
+      "reason": "présente l'alcool comme destructeur, juge et oriente la réponse",
+      "excerpt": "un alcool qui détruit les familles"
+    },
+    "K068": {
+      "ok": true,
+      "rule": null
+    },
+    "K069": {
+      "ok": true,
+      "rule": null
+    },
+    "K070": {
+      "ok": true,
+      "rule": null
+    },
+    "K075": {
+      "ok": true,
+      "rule": null
+    },
+    "K085": {
+      "ok": true,
+      "rule": null
+    },
+    "K323": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "K071": {
+      "ok": true,
+      "rule": null
+    },
+    "K072": {
+      "ok": true,
+      "rule": null
+    },
+    "K073": {
+      "ok": true,
+      "rule": null
+    },
+    "K076": {
+      "ok": true,
+      "rule": null
+    },
+    "K087": {
+      "ok": true,
+      "rule": null
+    },
+    "K088": {
+      "ok": true,
+      "rule": null
+    },
+    "K089": {
+      "ok": true,
+      "rule": null
+    },
+    "K090": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "K091": {
+      "ok": true,
+      "rule": null
+    },
+    "K092": {
+      "ok": true,
+      "rule": null
+    },
+    "K093": {
+      "ok": true,
+      "rule": null
+    },
+    "K099": {
+      "ok": true,
+      "rule": null
+    },
+    "K100": {
+      "ok": true,
+      "rule": null
+    },
+    "K105": {
+      "ok": true,
+      "rule": null
+    },
+    "K311": {
+      "ok": false,
+      "rule": 11,
+      "reason": "traite un usage nocif comme habitude à aménager, réservé aux limites",
+      "excerpt": "un usage nocif de l'alcool ne changeait jamais"
+    },
+    "K094": {
+      "ok": true,
+      "rule": null
+    },
+    "K095": {
+      "ok": false,
+      "rule": 1,
+      "reason": "Ne traite pas directement du soutien en cas de perte d'emploi.",
+      "excerpt": "à consacrer à l'épargne de précaution"
+    },
+    "K096": {
+      "ok": true,
+      "rule": null
+    },
+    "K102": {
+      "ok": true,
+      "rule": null
+    },
+    "K109": {
+      "ok": true,
+      "rule": null
+    },
+    "K112": {
+      "ok": true,
+      "rule": null
+    },
+    "K113": {
+      "ok": true,
+      "rule": null
+    },
+    "K127": {
+      "ok": true,
+      "rule": null
+    },
+    "K126": {
+      "ok": true,
+      "rule": null
+    },
+    "K128": {
+      "ok": true,
+      "rule": null
+    },
+    "K139": {
+      "ok": true,
+      "rule": null
+    },
+    "K144": {
+      "ok": true,
+      "rule": null
+    },
+    "K147": {
+      "ok": true,
+      "rule": null
+    },
+    "K333": {
+      "ok": false,
+      "rule": 6,
+      "reason": "juge le jeu, oriente la réponse",
+      "excerpt": "un jeu qui ruine les gens honnêtes"
+    },
+    "K131": {
+      "ok": true,
+      "rule": null
+    },
+    "K134": {
+      "ok": true,
+      "rule": null
+    },
+    "K140": {
+      "ok": true,
+      "rule": null
+    },
+    "K145": {
+      "ok": true,
+      "rule": null
+    },
+    "K148": {
+      "ok": true,
+      "rule": null
+    },
+    "K213": {
+      "ok": false,
+      "rule": 20,
+      "reason": "La version EN parle de grands-parents, pas du beau-parent",
+      "excerpt": "the place of grandparents in house rules"
+    },
+    "K335": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "K135": {
+      "ok": true,
+      "rule": null
+    },
+    "K136": {
+      "ok": true,
+      "rule": null
+    },
+    "K137": {
+      "ok": true,
+      "rule": null
+    },
+    "K142": {
+      "ok": true,
+      "rule": null
+    },
+    "K146": {
+      "ok": true,
+      "rule": null
+    },
+    "K149": {
+      "ok": true,
+      "rule": null
+    },
+    "K150": {
+      "ok": true,
+      "rule": null
+    },
+    "K159": {
+      "ok": true,
+      "rule": null
+    },
+    "K160": {
+      "ok": true,
+      "rule": null
+    },
+    "K168": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "K338": {
+      "ok": false,
+      "rule": 17,
+      "reason": "prête un comportement fautif inventé à l'un des deux",
+      "excerpt": "Si l'un de vous fuyait ses responsabilités de futur parent"
+    },
+    "K154": {
+      "ok": true,
+      "rule": null
+    },
+    "K155": {
+      "ok": true,
+      "rule": null
+    },
+    "K166": {
+      "ok": false,
+      "rule": 5,
+      "reason": "Mélange deux idées et présuppose un projet commun inexistant.",
+      "excerpt": "le projet d'avoir des enfants avant de vivre ensemble"
+    },
+    "K170": {
+      "ok": true,
+      "rule": null
+    },
+    "K237": {
+      "ok": false,
+      "rule": 17,
+      "reason": "Prête une position et un attribut à l'autre, non réciproque.",
+      "excerpt": "Si son envie pressante d'avoir un enfant restait une question ouverte"
+    },
+    "K157": {
+      "ok": true,
+      "rule": null
+    },
+    "K164": {
+      "ok": true,
+      "rule": null
+    }
+  }
+}

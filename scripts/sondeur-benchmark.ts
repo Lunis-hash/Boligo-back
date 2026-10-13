@@ -1574,9 +1574,14 @@ interface LabeledItem {
 async function gateEval() {
   const file = process.env.BENCH_CORPUS;
   if (!file) throw new Error('BENCH_CORPUS manquant');
-  const { items } = JSON.parse(readFileSync(file, 'utf8')) as {
+  const raw = JSON.parse(readFileSync(file, 'utf8')) as {
     items: LabeledItem[];
   };
+  // Étiquette « invalid » d'un annotateur = « faulty ».
+  const items = raw.items.map((i) => ({
+    ...i,
+    label: (i.label as string) === 'invalid' ? ('faulty' as const) : i.label,
+  }));
   // BENCH_HELDOUT2_TOPICS : second lot tenu à l'écart (graines 90 000).
   const heldout2 = (process.env.BENCH_HELDOUT2_TOPICS ?? '')
     .split(',')
