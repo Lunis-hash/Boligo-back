@@ -1,0 +1,504 @@
+{
+  "anthropic/claude-sonnet-5.5": {
+    "H001": {
+      "ok": false,
+      "rule": 12
+    },
+    "H019": {
+      "ok": true,
+      "rule": null
+    },
+    "H025": {
+      "ok": true,
+      "rule": null
+    },
+    "H031": {
+      "ok": true,
+      "rule": null
+    },
+    "H037": {
+      "ok": true,
+      "rule": null
+    },
+    "H003": {
+      "ok": true,
+      "rule": null
+    },
+    "H009": {
+      "ok": false,
+      "rule": 12
+    },
+    "H015": {
+      "ok": false,
+      "rule": 12
+    },
+    "H021": {
+      "ok": true,
+      "rule": null
+    },
+    "H027": {
+      "ok": true,
+      "rule": null
+    },
+    "H033": {
+      "ok": true,
+      "rule": null
+    },
+    "H198": {
+      "ok": false,
+      "rule": 20
+    },
+    "H004": {
+      "ok": false,
+      "rule": 12
+    },
+    "H043": {
+      "ok": true,
+      "rule": null
+    },
+    "H052": {
+      "ok": false,
+      "rule": 17
+    },
+    "H055": {
+      "ok": true,
+      "rule": null
+    },
+    "H061": {
+      "ok": true,
+      "rule": null
+    },
+    "H067": {
+      "ok": false,
+      "rule": 3
+    },
+    "H184": {
+      "ok": false,
+      "rule": 5
+    },
+    "H005": {
+      "ok": false,
+      "rule": 12
+    },
+    "H011": {
+      "ok": false,
+      "rule": 12
+    },
+    "H017": {
+      "ok": true,
+      "rule": null
+    },
+    "H023": {
+      "ok": true,
+      "rule": null
+    },
+    "H029": {
+      "ok": true,
+      "rule": null
+    },
+    "H098": {
+      "ok": false,
+      "rule": 20
+    },
+    "H164": {
+      "ok": false,
+      "rule": 5
+    },
+    "H006": {
+      "ok": true,
+      "rule": null
+    },
+    "H018": {
+      "ok": false,
+      "rule": 20
+    },
+    "H036": {
+      "ok": false,
+      "rule": 20
+    },
+    "H243": {
+      "ok": true,
+      "rule": null
+    },
+    "H255": {
+      "ok": true,
+      "rule": null
+    },
+    "H261": {
+      "ok": true,
+      "rule": null
+    },
+    "H267": {
+      "ok": true,
+      "rule": null
+    },
+    "H273": {
+      "ok": true,
+      "rule": null
+    },
+    "H279": {
+      "ok": true,
+      "rule": null
+    },
+    "H040": {
+      "ok": false,
+      "rule": 17
+    },
+    "H058": {
+      "ok": false,
+      "rule": 20
+    },
+    "H070": {
+      "ok": false,
+      "rule": 17
+    },
+    "H136": {
+      "ok": false,
+      "rule": 20
+    },
+    "H139": {
+      "ok": false,
+      "rule": 5
+    },
+    "H151": {
+      "ok": true,
+      "rule": null
+    },
+    "H157": {
+      "ok": true,
+      "rule": null
+    },
+    "H163": {
+      "ok": true,
+      "rule": null
+    },
+    "H190": {
+      "ok": false,
+      "rule": 5
+    },
+    "H045": {
+      "ok": false,
+      "rule": 12
+    },
+    "H051": {
+      "ok": false,
+      "rule": 12
+    },
+    "H057": {
+      "ok": false,
+      "rule": 12
+    },
+    "H063": {
+      "ok": false,
+      "rule": 12
+    },
+    "H084": {
+      "ok": false,
+      "rule": 17
+    },
+    "H047": {
+      "ok": true,
+      "rule": null
+    },
+    "H059": {
+      "ok": true,
+      "rule": null
+    },
+    "H104": {
+      "ok": false,
+      "rule": 8
+    },
+    "H066": {
+      "ok": true,
+      "rule": null
+    },
+    "H069": {
+      "ok": true,
+      "rule": null
+    },
+    "H081": {
+      "ok": true,
+      "rule": null
+    },
+    "H087": {
+      "ok": true,
+      "rule": null
+    },
+    "H093": {
+      "ok": true,
+      "rule": null
+    },
+    "H096": {
+      "ok": false,
+      "rule": 20
+    },
+    "H099": {
+      "ok": true,
+      "rule": null
+    },
+    "H105": {
+      "ok": true,
+      "rule": null
+    },
+    "H156": {
+      "ok": false,
+      "rule": 20
+    },
+    "H180": {
+      "ok": false,
+      "rule": 5
+    },
+    "H186": {
+      "ok": false,
+      "rule": 5
+    },
+    "H071": {
+      "ok": true,
+      "rule": null
+    },
+    "H077": {
+      "ok": true,
+      "rule": null
+    },
+    "H083": {
+      "ok": true,
+      "rule": null
+    },
+    "H089": {
+      "ok": true,
+      "rule": null
+    },
+    "H095": {
+      "ok": true,
+      "rule": null
+    },
+    "H101": {
+      "ok": true,
+      "rule": null
+    },
+    "H107": {
+      "ok": true,
+      "rule": null
+    },
+    "H079": {
+      "ok": true,
+      "rule": null
+    },
+    "H085": {
+      "ok": true,
+      "rule": null
+    },
+    "H091": {
+      "ok": true,
+      "rule": null
+    },
+    "H086": {
+      "ok": false,
+      "rule": 6
+    },
+    "H125": {
+      "ok": true,
+      "rule": null
+    },
+    "H092": {
+      "ok": true,
+      "rule": null
+    },
+    "H194": {
+      "ok": false,
+      "rule": 5
+    },
+    "H221": {
+      "ok": true,
+      "rule": null
+    },
+    "H233": {
+      "ok": true,
+      "rule": null
+    },
+    "H239": {
+      "ok": true,
+      "rule": null
+    },
+    "H109": {
+      "ok": true,
+      "rule": null
+    },
+    "H121": {
+      "ok": false,
+      "rule": 12
+    },
+    "H111": {
+      "ok": true,
+      "rule": null
+    },
+    "H117": {
+      "ok": false,
+      "rule": 12
+    },
+    "H123": {
+      "ok": true,
+      "rule": null
+    },
+    "H129": {
+      "ok": true,
+      "rule": null
+    },
+    "H137": {
+      "ok": true,
+      "rule": null
+    },
+    "H143": {
+      "ok": false,
+      "rule": 3
+    },
+    "H149": {
+      "ok": true,
+      "rule": null
+    },
+    "H155": {
+      "ok": true,
+      "rule": null
+    },
+    "H161": {
+      "ok": true,
+      "rule": null
+    },
+    "H173": {
+      "ok": true,
+      "rule": null
+    },
+    "H138": {
+      "ok": false,
+      "rule": 20
+    },
+    "H219": {
+      "ok": true,
+      "rule": null
+    },
+    "H225": {
+      "ok": true,
+      "rule": null
+    },
+    "H231": {
+      "ok": true,
+      "rule": null
+    },
+    "H288": {
+      "ok": false,
+      "rule": 20
+    },
+    "H141": {
+      "ok": true,
+      "rule": null
+    },
+    "H147": {
+      "ok": true,
+      "rule": null
+    },
+    "H153": {
+      "ok": true,
+      "rule": null
+    },
+    "H165": {
+      "ok": true,
+      "rule": null
+    },
+    "H171": {
+      "ok": true,
+      "rule": null
+    },
+    "H181": {
+      "ok": true,
+      "rule": null
+    },
+    "H193": {
+      "ok": true,
+      "rule": null
+    },
+    "H199": {
+      "ok": true,
+      "rule": null
+    },
+    "H205": {
+      "ok": true,
+      "rule": null
+    },
+    "H211": {
+      "ok": false,
+      "rule": 6
+    },
+    "H185": {
+      "ok": true,
+      "rule": null
+    },
+    "H191": {
+      "ok": true,
+      "rule": null
+    },
+    "H197": {
+      "ok": true,
+      "rule": null
+    },
+    "H203": {
+      "ok": false,
+      "rule": 12
+    },
+    "H209": {
+      "ok": true,
+      "rule": null
+    },
+    "H189": {
+      "ok": true,
+      "rule": null
+    },
+    "H207": {
+      "ok": true,
+      "rule": null
+    },
+    "H229": {
+      "ok": true,
+      "rule": null
+    },
+    "H235": {
+      "ok": true,
+      "rule": null
+    },
+    "H241": {
+      "ok": true,
+      "rule": null
+    },
+    "H247": {
+      "ok": true,
+      "rule": null
+    },
+    "H253": {
+      "ok": true,
+      "rule": null
+    },
+    "H259": {
+      "ok": true,
+      "rule": null
+    },
+    "H271": {
+      "ok": true,
+      "rule": null
+    },
+    "H277": {
+      "ok": true,
+      "rule": null
+    },
+    "H289": {
+      "ok": false,
+      "rule": 20
+    },
+    "H251": {
+      "ok": true,
+      "rule": null
+    },
+    "H269": {
+      "ok": true,
+      "rule": null
+    }
+  }
+}

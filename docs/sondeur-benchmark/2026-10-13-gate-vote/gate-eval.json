@@ -1,0 +1,1038 @@
+[
+  {
+    "split": "final2",
+    "chain": "contrôle seul",
+    "faulty": 150,
+    "valid": 140,
+    "faultyRejectionRate": 0.82,
+    "validAcceptanceRate": 0.7,
+    "leaksAccepted": 3,
+    "byCategory": {
+      "answer_leak": {
+        "n": 10,
+        "rejected": 7
+      },
+      "wrong_partner_position": {
+        "n": 10,
+        "rejected": 8
+      },
+      "non_reciprocal": {
+        "n": 10,
+        "rejected": 8
+      },
+      "reversed_hypothesis": {
+        "n": 10,
+        "rejected": 8
+      },
+      "unsupported_assumption": {
+        "n": 10,
+        "rejected": 5
+      },
+      "invented_fact": {
+        "n": 10,
+        "rejected": 9
+      },
+      "known_fact_repetition": {
+        "n": 10,
+        "rejected": 8
+      },
+      "childhood_family_detour": {
+        "n": 10,
+        "rejected": 9
+      },
+      "two_ideas": {
+        "n": 10,
+        "rejected": 8
+      },
+      "jargon": {
+        "n": 10,
+        "rejected": 5
+      },
+      "diagnosis": {
+        "n": 10,
+        "rejected": 10
+      },
+      "forced_conclusion": {
+        "n": 10,
+        "rejected": 10
+      },
+      "violence_or_compromise": {
+        "n": 10,
+        "rejected": 10
+      },
+      "fake_gap": {
+        "n": 10,
+        "rejected": 10
+      },
+      "moralizing": {
+        "n": 10,
+        "rejected": 8
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "H004",
+        "category": "answer_leak",
+        "text": "Comment concilieriez-vous un jeu presque quotidien avec un budget commun ?"
+      },
+      {
+        "id": "H006",
+        "category": "answer_leak",
+        "text": "Si l'un de vous ne veut définitivement pas d'enfant, comment voyez-vous la suite ?"
+      },
+      {
+        "id": "H018",
+        "category": "answer_leak",
+        "text": "Quel rythme de jeux d'argent vous semblerait compatible avec une vie à deux ?"
+      },
+      {
+        "id": "H036",
+        "category": "wrong_partner_position",
+        "text": "Quelle transparence attendriez-vous dans un couple au sujet des paris ?"
+      },
+      {
+        "id": "H040",
+        "category": "wrong_partner_position",
+        "text": "L'autre établirait un plan avec des limites : combien de mois de soutien accepteriez-vous ?"
+      },
+      {
+        "id": "H052",
+        "category": "non_reciprocal",
+        "text": "Quel jeu d'argent auriez-vous le plus de mal à abandonner ?"
+      },
+      {
+        "id": "H058",
+        "category": "non_reciprocal",
+        "text": "Selon vous, quelle place le tabac aurait-il dans un logement partagé ?"
+      },
+      {
+        "id": "H066",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre avait des enfants d'une précédente union, que refuseriez-vous ?"
+      },
+      {
+        "id": "H070",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre perdait son emploi, quelle situation ne pourriez-vous pas accepter ?"
+      },
+      {
+        "id": "H084",
+        "category": "unsupported_assumption",
+        "text": "Pourquoi les jeux d'argent vous mettent-ils mal à l'aise ?"
+      },
+      {
+        "id": "H086",
+        "category": "unsupported_assumption",
+        "text": "Qu'est-ce qui rend si difficile pour vous l'idée de déménager ?"
+      },
+      {
+        "id": "H092",
+        "category": "unsupported_assumption",
+        "text": "Combien de temps la culpabilité vous retiendrait-elle face à une famille qui désapprouve ?"
+      },
+      {
+        "id": "H096",
+        "category": "unsupported_assumption",
+        "text": "Quel rôle seriez-vous prêt(e) à jouer auprès d'enfants qui ne seraient pas les vôtres ?"
+      },
+      {
+        "id": "H098",
+        "category": "unsupported_assumption",
+        "text": "Qu'est-ce qui pourrait faire évoluer votre position sur les enfants dans les années à venir ?"
+      },
+      {
+        "id": "H104",
+        "category": "invented_fact",
+        "text": "Après la dette de jeu mentionnée dans l'entretien, quelle règle poseriez-vous sur un compte commun ?"
+      },
+      {
+        "id": "H136",
+        "category": "known_fact_repetition",
+        "text": "Si une période sans emploi durait deux ans, comment organiseriez-vous les finances du foyer ?"
+      },
+      {
+        "id": "H138",
+        "category": "known_fact_repetition",
+        "text": "Jusqu'où iriez-vous pour gagner l'accord d'une famille qui désapprouve votre choix ?"
+      },
+      {
+        "id": "H156",
+        "category": "childhood_family_detour",
+        "text": "Quelle place une cérémonie religieuse aurait-elle pour vous à l'arrivée d'un enfant ?"
+      },
+      {
+        "id": "H164",
+        "category": "two_ideas",
+        "text": "Combien d'enfants voudriez-vous et à quel âge aimeriez-vous les avoir ?"
+      },
+      {
+        "id": "H180",
+        "category": "two_ideas",
+        "text": "Quelles fêtes célébreriez-vous avec des enfants, et qui choisirait leur école ?"
+      },
+      {
+        "id": "H184",
+        "category": "jargon",
+        "text": "Quel seuil sur l'Indice canadien du jeu excessif vous paraîtrait acceptable chez un conjoint ?"
+      },
+      {
+        "id": "H186",
+        "category": "jargon",
+        "text": "Quel modèle de coparentalité en famille recomposée envisageriez-vous en résidence alternée ?"
+      },
+      {
+        "id": "H190",
+        "category": "jargon",
+        "text": "Quel niveau de résilience financière intra-couple vous paraîtrait soutenable en cas de choc de revenu ?"
+      },
+      {
+        "id": "H194",
+        "category": "jargon",
+        "text": "Comment géreriez-vous un conflit de loyauté systémique face à une famille qui désapprouve ?"
+      },
+      {
+        "id": "H198",
+        "category": "jargon",
+        "text": "À quel âge, au plus tard, souhaiteriez-vous l'arrivée d'un éventuel premier enfant ?"
+      },
+      {
+        "id": "H288",
+        "category": "moralizing",
+        "text": "Si la désapprobation d'une famille durait des années, qu'est-ce qui vous amènerait à trancher ?"
+      },
+      {
+        "id": "H289",
+        "category": "moralizing",
+        "text": "Si votre position sur les jeux d'argent ne bougeait pas d'ici dix ans, qu'est-ce que cela impliquerait pour un couple ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "H007",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le tabac est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H013",
+        "text": "Pendant des vacances passées ensemble, quelle place le tabac pourrait-il prendre, de votre point de vue ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre point »)"
+        ]
+      },
+      {
+        "id": "H035",
+        "text": "Pour vous, une décision d'avoir un enfant se prend-elle plutôt en quelques mois ou en plusieurs années ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H039",
+        "text": "Si vos positions sur les enfants ne bougeaient pas d'ici cinq ans, que feriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H041",
+        "text": "Quel montant mensuel consacré aux jeux d'argent vous paraîtrait acceptable dans un foyer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H049",
+        "text": "Si 100 € par mois partaient en paris, comment le vivriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H053",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur les jeux d'argent est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H065",
+        "text": "Si un gain de 500 € arrivait grâce à un pari, qu'en feriez-vous dans un foyer commun ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H073",
+        "text": "Si des enfants d'une précédente union vivaient chez vous une semaine sur deux, qu'est-ce qui devrait être organisé pour que ce soit vivable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H075",
+        "text": "Pendant les vacances scolaires, quelle présence d'enfants d'une autre union vous semblerait acceptable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H097",
+        "text": "Jusqu'où accepteriez-vous qu'un enfant reçoive un enseignement religieux que vous ne partagez pas ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « partagez »)"
+        ]
+      },
+      {
+        "id": "H103",
+        "text": "Si un enfant choisissait plus tard une voie spirituelle que vous ne partagez pas, comment l'accompagneriez-vous ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « partagez »)"
+        ]
+      },
+      {
+        "id": "H113",
+        "text": "Qu'est-ce qui compterait le plus pour vous dans une décision de changer de région pour une relation ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H115",
+        "text": "Pendant combien de temps une relation à distance vous paraîtrait-elle vivable ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H119",
+        "text": "À quelles conditions un déménagement pour le couple vous semblerait-il juste pour les deux ?",
+        "gate": [
+          "EN4 affirme un accord (réservé aux gabarits)"
+        ]
+      },
+      {
+        "id": "H127",
+        "text": "Quelle distance entre deux domiciles vous semblerait encore compatible avec une relation sérieuse ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H131",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le lieu de vie est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H133",
+        "text": "Si s'installer ensemble passait par une ville nouvelle pour les deux, comment l'envisageriez-vous ?",
+        "gate": [
+          "EN4 affirme un accord (réservé aux gabarits)"
+        ]
+      },
+      {
+        "id": "H135",
+        "text": "Sur le tabac, qu'est-ce qui, pour vous, ne pourrait pas bouger dans une vie commune ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H145",
+        "text": "À quel moment d'une rencontre faut-il, pour vous, trancher la question du tabac ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H159",
+        "text": "Quelle durée de dépendance financière entre conjoints vous paraîtrait acceptable ?",
+        "gate": [
+          "P7 reprend la réponse d’un membre",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H167",
+        "text": "S'il fallait couvrir 1 000 € par mois pour l'autre, combien de temps cela vous semblerait-il tenable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H169",
+        "text": "Qu'est-ce qui vous aiderait à accepter de dépendre financièrement de l'autre pendant un temps ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H175",
+        "text": "Combien de soirées par semaine aimeriez-vous passer chacun de votre côté dans une vie commune ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre côté »)"
+        ]
+      },
+      {
+        "id": "H177",
+        "text": "Un week-end par mois passé chacun de son côté vous semblerait-il trop, assez ou pas assez ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H179",
+        "text": "Quelles activités aimeriez-vous garder pour vous seul(e) dans une vie à deux ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H183",
+        "text": "À quelle fréquence aimeriez-vous partager vos loisirs avec l'autre ?",
+        "gate": [
+          "P13 possessif non autorisé (« vos loisirs »)",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H187",
+        "text": "Dans un logement commun, auriez-vous besoin d'un espace rien qu'à vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H195",
+        "text": "Quelle place laisseriez-vous aux convictions de l'autre dans la vie de tous les jours, qu'elles soient proches ou non des vôtres ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H201",
+        "text": "Jusqu'où seriez-vous à l'aise pour participer à un rituel qui n'a pas le même sens pour vous ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H213",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur la foi est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H215",
+        "text": "Si une famille désapprouvait votre union, combien de temps seriez-vous prêt(e) à attendre avant de décider ?",
+        "gate": [
+          "P7 reprend la réponse d’un membre"
+        ]
+      },
+      {
+        "id": "H217",
+        "text": "Face à un refus familial de votre union, quelle place donneriez-vous à une médiation ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre union »)"
+        ]
+      },
+      {
+        "id": "H223",
+        "text": "À quelles conditions accepteriez-vous de vous unir sans l'accord d'une famille ?",
+        "gate": [
+          "EN4 affirme un accord (réservé aux gabarits)"
+        ]
+      },
+      {
+        "id": "H227",
+        "text": "Qui devrait avoir le dernier mot, selon vous, si une famille s'opposait à votre couple ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H237",
+        "text": "Quel rôle laisseriez-vous à une tierce personne neutre si une famille désapprouvait votre union ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre union »)"
+        ]
+      },
+      {
+        "id": "H245",
+        "text": "Dans un budget commun, quelle somme mensuelle pour les paris vous semblerait acceptable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H249",
+        "text": "Si 80 € par mois partaient en jeux d'argent, comment le vivriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H257",
+        "text": "Qu'est-ce que vous seriez prêt(e) à changer concrètement pour qu'une différence sur les jeux d'argent reste vivable ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H263",
+        "text": "Sur le désir d'enfant, qu'est-ce qui, pour vous, ne pourrait pas bouger ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H265",
+        "text": "À quel moment d'une rencontre faut-il, selon vous, savoir si l'on veut des enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H275",
+        "text": "Qu'est-ce qui, dans votre projet de vie, dépend directement de la question des enfants ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre projet »)"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "final2",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 150,
+    "valid": 140,
+    "faultyRejectionRate": 0.98,
+    "validAcceptanceRate": 0.5857142857142857,
+    "leaksAccepted": 1,
+    "byCategory": {
+      "answer_leak": {
+        "n": 10,
+        "rejected": 9
+      },
+      "wrong_partner_position": {
+        "n": 10,
+        "rejected": 10
+      },
+      "non_reciprocal": {
+        "n": 10,
+        "rejected": 10
+      },
+      "reversed_hypothesis": {
+        "n": 10,
+        "rejected": 9
+      },
+      "unsupported_assumption": {
+        "n": 10,
+        "rejected": 9
+      },
+      "invented_fact": {
+        "n": 10,
+        "rejected": 10
+      },
+      "known_fact_repetition": {
+        "n": 10,
+        "rejected": 10
+      },
+      "childhood_family_detour": {
+        "n": 10,
+        "rejected": 10
+      },
+      "two_ideas": {
+        "n": 10,
+        "rejected": 10
+      },
+      "jargon": {
+        "n": 10,
+        "rejected": 10
+      },
+      "diagnosis": {
+        "n": 10,
+        "rejected": 10
+      },
+      "forced_conclusion": {
+        "n": 10,
+        "rejected": 10
+      },
+      "violence_or_compromise": {
+        "n": 10,
+        "rejected": 10
+      },
+      "fake_gap": {
+        "n": 10,
+        "rejected": 10
+      },
+      "moralizing": {
+        "n": 10,
+        "rejected": 10
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "H006",
+        "category": "answer_leak",
+        "text": "Si l'un de vous ne veut définitivement pas d'enfant, comment voyez-vous la suite ?"
+      },
+      {
+        "id": "H066",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre avait des enfants d'une précédente union, que refuseriez-vous ?"
+      },
+      {
+        "id": "H092",
+        "category": "unsupported_assumption",
+        "text": "Combien de temps la culpabilité vous retiendrait-elle face à une famille qui désapprouve ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "H001",
+        "text": "Dans un logement partagé, quelles règles sur le tabac vous sembleraient tenables au quotidien ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H005",
+        "text": "Sur le tabac, qu'est-ce que vous seriez prêt(e) à ajuster concrètement pour une vie à deux ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H007",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le tabac est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H009",
+        "text": "Dans une voiture ou une chambre partagée, quelle règle sur le tabac vous paraîtrait juste ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H011",
+        "text": "À quelles conditions le tabac pourrait-il faire partie d'un quotidien partagé, selon vous ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H013",
+        "text": "Pendant des vacances passées ensemble, quelle place le tabac pourrait-il prendre, de votre point de vue ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre point »)"
+        ]
+      },
+      {
+        "id": "H015",
+        "text": "Qu'est-ce qui vous permettrait de considérer la question du tabac comme réglée dans un couple ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H035",
+        "text": "Pour vous, une décision d'avoir un enfant se prend-elle plutôt en quelques mois ou en plusieurs années ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H039",
+        "text": "Si vos positions sur les enfants ne bougeaient pas d'ici cinq ans, que feriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H041",
+        "text": "Quel montant mensuel consacré aux jeux d'argent vous paraîtrait acceptable dans un foyer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H045",
+        "text": "À quelles conditions les jeux d'argent pourraient-ils coexister avec un budget commun, selon vous ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H049",
+        "text": "Si 100 € par mois partaient en paris, comment le vivriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H051",
+        "text": "Quelle règle sur les jeux d'argent aimeriez-vous fixer avant de partager un compte commun ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H053",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur les jeux d'argent est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H057",
+        "text": "Jusqu'où seriez-vous prêt(e) à aller pour qu'une différence sur les jeux d'argent ne fragilise pas le couple ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H063",
+        "text": "Quel plafond de dépense en jeux d'argent, s'il en fallait un, vous semblerait juste dans un couple ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H065",
+        "text": "Si un gain de 500 € arrivait grâce à un pari, qu'en feriez-vous dans un foyer commun ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H067",
+        "text": "À quel moment d'une relation la question des jeux d'argent devrait-elle être tranchée, pour vous ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "H073",
+        "text": "Si des enfants d'une précédente union vivaient chez vous une semaine sur deux, qu'est-ce qui devrait être organisé pour que ce soit vivable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H075",
+        "text": "Pendant les vacances scolaires, quelle présence d'enfants d'une autre union vous semblerait acceptable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H097",
+        "text": "Jusqu'où accepteriez-vous qu'un enfant reçoive un enseignement religieux que vous ne partagez pas ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « partagez »)"
+        ]
+      },
+      {
+        "id": "H103",
+        "text": "Si un enfant choisissait plus tard une voie spirituelle que vous ne partagez pas, comment l'accompagneriez-vous ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « partagez »)"
+        ]
+      },
+      {
+        "id": "H113",
+        "text": "Qu'est-ce qui compterait le plus pour vous dans une décision de changer de région pour une relation ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H115",
+        "text": "Pendant combien de temps une relation à distance vous paraîtrait-elle vivable ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H117",
+        "text": "Si le lieu de vie restait un point de désaccord, quelle solution concrète envisageriez-vous ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H119",
+        "text": "À quelles conditions un déménagement pour le couple vous semblerait-il juste pour les deux ?",
+        "gate": [
+          "EN4 affirme un accord (réservé aux gabarits)"
+        ]
+      },
+      {
+        "id": "H121",
+        "text": "Quel délai vous paraîtrait raisonnable entre une rencontre et un emménagement dans la même ville ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H127",
+        "text": "Quelle distance entre deux domiciles vous semblerait encore compatible avec une relation sérieuse ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H131",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le lieu de vie est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H133",
+        "text": "Si s'installer ensemble passait par une ville nouvelle pour les deux, comment l'envisageriez-vous ?",
+        "gate": [
+          "EN4 affirme un accord (réservé aux gabarits)"
+        ]
+      },
+      {
+        "id": "H135",
+        "text": "Sur le tabac, qu'est-ce qui, pour vous, ne pourrait pas bouger dans une vie commune ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H139",
+        "text": "Comment sauriez-vous qu'une différence sur le tabac est, pour vous, rédhibitoire ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 5
+        }
+      },
+      {
+        "id": "H143",
+        "text": "Si le tabac restait un point sans accord, sur quoi fonderiez-vous votre décision de continuer ou non ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "H145",
+        "text": "À quel moment d'une rencontre faut-il, pour vous, trancher la question du tabac ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H159",
+        "text": "Quelle durée de dépendance financière entre conjoints vous paraîtrait acceptable ?",
+        "gate": [
+          "P7 reprend la réponse d’un membre",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H167",
+        "text": "S'il fallait couvrir 1 000 € par mois pour l'autre, combien de temps cela vous semblerait-il tenable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H169",
+        "text": "Qu'est-ce qui vous aiderait à accepter de dépendre financièrement de l'autre pendant un temps ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H175",
+        "text": "Combien de soirées par semaine aimeriez-vous passer chacun de votre côté dans une vie commune ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre côté »)"
+        ]
+      },
+      {
+        "id": "H177",
+        "text": "Un week-end par mois passé chacun de son côté vous semblerait-il trop, assez ou pas assez ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H179",
+        "text": "Quelles activités aimeriez-vous garder pour vous seul(e) dans une vie à deux ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H183",
+        "text": "À quelle fréquence aimeriez-vous partager vos loisirs avec l'autre ?",
+        "gate": [
+          "P13 possessif non autorisé (« vos loisirs »)",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H187",
+        "text": "Dans un logement commun, auriez-vous besoin d'un espace rien qu'à vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H195",
+        "text": "Quelle place laisseriez-vous aux convictions de l'autre dans la vie de tous les jours, qu'elles soient proches ou non des vôtres ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H201",
+        "text": "Jusqu'où seriez-vous à l'aise pour participer à un rituel qui n'a pas le même sens pour vous ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H203",
+        "text": "Comment aimeriez-vous que les fêtes religieuses soient vécues dans un foyer commun ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      },
+      {
+        "id": "H211",
+        "text": "Quelle limite poseriez-vous pour que la question de la foi ne pèse pas sur la vie commune ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 6
+        }
+      },
+      {
+        "id": "H213",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur la foi est vivable pour vous ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H215",
+        "text": "Si une famille désapprouvait votre union, combien de temps seriez-vous prêt(e) à attendre avant de décider ?",
+        "gate": [
+          "P7 reprend la réponse d’un membre"
+        ]
+      },
+      {
+        "id": "H217",
+        "text": "Face à un refus familial de votre union, quelle place donneriez-vous à une médiation ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre union »)"
+        ]
+      },
+      {
+        "id": "H223",
+        "text": "À quelles conditions accepteriez-vous de vous unir sans l'accord d'une famille ?",
+        "gate": [
+          "EN4 affirme un accord (réservé aux gabarits)"
+        ]
+      },
+      {
+        "id": "H227",
+        "text": "Qui devrait avoir le dernier mot, selon vous, si une famille s'opposait à votre couple ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H237",
+        "text": "Quel rôle laisseriez-vous à une tierce personne neutre si une famille désapprouvait votre union ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre union »)"
+        ]
+      },
+      {
+        "id": "H245",
+        "text": "Dans un budget commun, quelle somme mensuelle pour les paris vous semblerait acceptable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H249",
+        "text": "Si 80 € par mois partaient en jeux d'argent, comment le vivriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H257",
+        "text": "Qu'est-ce que vous seriez prêt(e) à changer concrètement pour qu'une différence sur les jeux d'argent reste vivable ?",
+        "gate": [
+          "compromis sur un non-négociable"
+        ]
+      },
+      {
+        "id": "H263",
+        "text": "Sur le désir d'enfant, qu'est-ce qui, pour vous, ne pourrait pas bouger ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H265",
+        "text": "À quel moment d'une rencontre faut-il, selon vous, savoir si l'on veut des enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "H275",
+        "text": "Qu'est-ce qui, dans votre projet de vie, dépend directement de la question des enfants ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre projet »)"
+        ]
+      }
+    ]
+  }
+]
