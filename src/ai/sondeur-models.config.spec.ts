@@ -1,7 +1,12 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { modelFamily } from './groq-model';
-import { isValidQualification, modelsFor } from './sondeur-router';
+import {
+  aiGenerationBlocked,
+  aiGenerationEnabled,
+  isValidQualification,
+  modelsFor,
+} from './sondeur-router';
 
 /** Qualification réelle (banc d'essai 2026-10-12-final, puis mesure du seuil 2026-10-13). */
 const q = JSON.parse(
@@ -68,5 +73,39 @@ describe('config/sondeur-models.json', () => {
         ),
       ).toBe(true);
     }
+  });
+});
+
+describe('repli déterministe (generation)', () => {
+  const base = {
+    generatedAt: 't',
+    run: 'r',
+    writer: ['anthropic/claude-sonnet-5.5'],
+    critic: ['z-ai/glm-5.3-flash'],
+    escalation: [],
+    fallback: [],
+    escalateAboveRejectRate: 0.5,
+  };
+  it('sans réglage : IA active partout', () => {
+    expect(aiGenerationEnabled(base)).toBe(true);
+    expect(aiGenerationBlocked('argent', 'C12', base)).toBe(false);
+  });
+  it('enabled: false : repli complet', () => {
+    const q = { ...base, generation: { enabled: false } };
+    expect(aiGenerationEnabled(q)).toBe(false);
+    expect(aiGenerationBlocked('argent', 'C12', q)).toBe(true);
+  });
+  it('thème ou cadre désactivé : repli pour eux seuls', () => {
+    const q = {
+      ...base,
+      generation: { disabledThemes: ['famille'], disabledFrames: ['C03'] },
+    };
+    expect(aiGenerationEnabled(q)).toBe(true);
+    expect(aiGenerationBlocked('famille', 'C14', q)).toBe(true);
+    expect(aiGenerationBlocked('argent', 'C03', q)).toBe(true);
+    expect(aiGenerationBlocked('argent', 'C12', q)).toBe(false);
+  });
+  it('le fichier en vigueur reste une qualification valide', () => {
+    expect(isValidQualification(q)).toBe(true);
   });
 });

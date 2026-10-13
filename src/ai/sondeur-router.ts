@@ -38,6 +38,17 @@ export interface Qualification {
    * tranche chaque refus du premier.
    */
   criticVote?: boolean;
+  /**
+   * Rédaction des questions par l'IA (V8.3). `enabled: false` : repli complet
+   * sur les questions déterministes déjà validées. `disabledThemes` /
+   * `disabledFrames` : repli pour ces thèmes d'écart ou ces cadres seulement.
+   * Réactiver : remettre `enabled` à true et vider les listes.
+   */
+  generation?: {
+    enabled?: boolean;
+    disabledThemes?: string[];
+    disabledFrames?: string[];
+  };
   /** Rédacteur par langue si le banc d'essai l'a justifié (sinon writer). */
   byLanguage?: Partial<Record<'fr' | 'en', string[]>>;
 }
@@ -67,6 +78,26 @@ export function qualification(now = Date.now()): Qualification | null {
   }
   cached = { at: now, value };
   return value;
+}
+
+/** L'IA rédige-t-elle les questions du Sondeur ? (repli déterministe sinon) */
+export function aiGenerationEnabled(q = qualification()): boolean {
+  return q?.generation?.enabled !== false;
+}
+
+/** Thème ou cadre désactivé : la question de l'IA est écartée (repli). */
+export function aiGenerationBlocked(
+  theme: string,
+  frameId: string | null,
+  q = qualification(),
+): boolean {
+  const g = q?.generation;
+  if (!g) return false;
+  if (g.enabled === false) return true;
+  return (
+    !!g.disabledThemes?.includes(theme) ||
+    (!!frameId && !!g.disabledFrames?.includes(frameId))
+  );
 }
 
 /** Pour les tests. */

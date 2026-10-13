@@ -24,7 +24,7 @@ const word = (n: number) =>
 
 /** Proposition sur l'écart d'épargne, composée dans un cadre validé. */
 function framed(day: number, variant: string) {
-  const id = ({ 1: 'C12', 2: 'C14', 3: 'C09' } as Record<number, string>)[day];
+  const id = ({ 1: 'C12', 2: 'C14', 3: 'C22' } as Record<number, string>)[day];
   const tag = [0, 1].map((k) => word(200 + day * 10 + k)).join(' ');
   return renderFrame(
     id,

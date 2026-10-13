@@ -23,7 +23,7 @@ import {
   safetyThemesOf,
 } from './sondeur.generator';
 import { isNonNegotiable } from './sondeur.pool';
-import { shouldEscalate } from '../ai/sondeur-router';
+import { aiGenerationBlocked, shouldEscalate } from '../ai/sondeur-router';
 import {
   EvidenceItem,
   buildEvidence,
@@ -306,6 +306,13 @@ export function gateSondeurQuestion(
   reasons: string[];
 } {
   const theme = q.themeKey as Theme;
+  // Repli déterministe pour un thème ou un cadre désactivé (config).
+  if (aiGenerationBlocked(theme, matchFrame(q.text, 'fr')?.id ?? null))
+    return {
+      ok: false,
+      stage: 'theme',
+      reasons: ['rédaction IA désactivée pour ce thème ou ce cadre (config)'],
+    };
   // V8.3 — cadre validé exact (FR et EN), cases liées à l'écart, aucune fuite.
   const cited = (q.evidence ?? [])
     .map((id) => ctx.evidenceIndex.find((e) => e.id === id))

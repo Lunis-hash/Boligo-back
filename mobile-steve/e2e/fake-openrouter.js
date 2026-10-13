@@ -61,14 +61,12 @@ const FRAMES = {
   C04: ["Qu'est-ce que vous ne pourriez pas accepter dans {objet} ?", 'What could you not accept about {objet}?'],
   C07: ['Combien de {duree} pourriez-vous attendre avant de trancher {objet} ?', 'How many {duree} could you wait before settling {objet}?'],
   C08: ['Pour {objet}, à partir de combien de {unite} par {periode} ce serait trop pour vous ?', 'For {objet}, how many {unite} a {periode} would be too much for you?'],
-  C09: ["Qu'auriez-vous besoin de savoir sur {objet} avant de vous engager ?", 'What would you need to know about {objet} before committing?'],
   C10: ['Si vos positions sur {objet} ne bougeaient jamais, pourriez-vous vous engager quand même ?', 'If your positions on {objet} never moved, could you still commit?'],
-  C11: ['Quelle place laisseriez-vous à {objet} dans une semaine ordinaire à deux ?', 'How much room would you leave for {objet} in an ordinary week together?'],
   C12: ['Sur {montant} € par mois à deux, quelle part consacreriez-vous à {objet} ?', 'Out of €{montant} a month for the two of you, what share would you put toward {objet}?'],
   C14: ['Quelle limite fixeriez-vous pour {objet} dans une vie à deux ?', 'What limit would you set for {objet} in a life together?'],
   C15: ['Pendant combien de {duree} pourriez-vous vivre sereinement avec {objet} ?', 'For how many {duree} could you live calmly with {objet}?'],
-  C18: ['Concrètement, comment organiseriez-vous {objet} au quotidien ?', 'In practical terms, how would you organise {objet} day to day?'],
-  C20: ['Si {objet} ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?', 'If {objet} never changed, what life together would you picture in five years?'],
+  C16: ["Si {objet} restait une question ouverte entre vous, combien de {duree} pourriez-vous l'accepter ?", 'If {objet} remained an open question between you, for how many {duree} could you accept it?'],
+  C22: ['Quelle condition concrète poseriez-vous sur {objet} avant de vivre ensemble ?', 'What concrete condition would you set on {objet} before living together?'],
 };
 const CLOSED_EN = { mois: 'months', années: 'years', semaines: 'weeks', sorties: 'outings', '2 000': '2,000' };
 /** Texte composé par le backend (français), pour reconnaître un piège servi. */
@@ -95,7 +93,7 @@ const GAP_BANK = {
     ],
     3: [
       ['C02', { objet: "la façon d'épargner" }, { objet: 'the way of saving' }, 'si cela ne changeait jamais'],
-      ['C18', { objet: 'le budget commun' }, { objet: 'the shared budget' }, 'confrontation'],
+      ['C22', { objet: 'le budget commun' }, { objet: 'the shared budget' }, 'confrontation'],
     ],
   },
   lieu: {
@@ -105,11 +103,11 @@ const GAP_BANK = {
     ],
     2: [
       ['C07', { duree: 'mois', objet: 'la question du déménagement' }, { objet: 'the question of moving' }, 'chiffre'],
-      ['C12', { montant: '2 000', objet: 'un déménagement' }, { objet: 'a move' }, 'chiffre'],
+      ['C16', { objet: 'le lieu de vie', duree: 'mois' }, { objet: 'where to live' }, 'chiffre'],
     ],
     3: [
       ['C10', { objet: 'le déménagement' }, { objet: 'moving' }, 'si cela ne changeait jamais'],
-      ['C20', { objet: 'le choix de la ville' }, { objet: 'the choice of city' }, 'confrontation'],
+      ['C22', { objet: 'le choix de la ville' }, { objet: 'the choice of city' }, 'confrontation'],
     ],
   },
 };
@@ -120,14 +118,14 @@ const GAP_BANK = {
  * F8, P16, P18) doit les rejeter ; aucune ne doit être servie.
  */
 const ACCORD_TRAPS = {
-  famille: { 1: ['C11', { objet: 'les visites familiales' }, { objet: 'family visits' }], 2: ['C09', { objet: 'les visites familiales' }, { objet: 'family visits' }], 3: ['C18', { objet: 'les visites familiales' }, { objet: 'family visits' }] },
-  argent: { 1: ['C18', { objet: "l'argent du foyer" }, { objet: 'household money' }], 2: ['C14', { objet: "l'argent du foyer" }, { objet: 'household money' }], 3: ['C09', { objet: "l'argent du foyer" }, { objet: 'household money' }] },
-  projet: { 1: ['C11', { objet: 'les projets communs' }, { objet: 'shared projects' }], 2: ['C09', { objet: 'les projets communs' }, { objet: 'shared projects' }], 3: ['C18', { objet: 'les projets communs' }, { objet: 'shared projects' }] },
-  lieu: { 1: ['C14', { objet: 'le lieu de vie' }, { objet: 'where to live' }], 2: ['C09', { objet: 'le lieu de vie' }, { objet: 'where to live' }], 3: ['C18', { objet: 'le lieu de vie' }, { objet: 'where to live' }] },
+  famille: { 1: ['C22', { objet: 'les visites familiales' }, { objet: 'family visits' }], 2: ['C14', { objet: 'les visites familiales' }, { objet: 'family visits' }], 3: ['C04', { objet: 'les visites familiales' }, { objet: 'family visits' }] },
+  argent: { 1: ['C04', { objet: "l'argent du foyer" }, { objet: 'household money' }], 2: ['C14', { objet: "l'argent du foyer" }, { objet: 'household money' }], 3: ['C22', { objet: "l'argent du foyer" }, { objet: 'household money' }] },
+  projet: { 1: ['C22', { objet: 'les projets communs' }, { objet: 'shared projects' }], 2: ['C14', { objet: 'les projets communs' }, { objet: 'shared projects' }], 3: ['C04', { objet: 'les projets communs' }, { objet: 'shared projects' }] },
+  lieu: { 1: ['C14', { objet: 'le lieu de vie' }, { objet: 'where to live' }], 2: ['C22', { objet: 'le lieu de vie' }, { objet: 'where to live' }], 3: ['C04', { objet: 'le lieu de vie' }, { objet: 'where to live' }] },
 };
 const SHARED_RISK_TRAPS = {
-  communication: { 1: ['C04', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }], 2: ['C09', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }], 3: ['C14', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }] },
-  famille: { 1: ['C09', { objet: 'les décisions de famille' }, { objet: 'family decisions' }], 2: ['C14', { objet: 'les décisions de famille' }, { objet: 'family decisions' }], 3: ['C18', { objet: 'les décisions de famille' }, { objet: 'family decisions' }] },
+  communication: { 1: ['C04', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }], 2: ['C22', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }], 3: ['C14', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }] },
+  famille: { 1: ['C22', { objet: 'les décisions de famille' }, { objet: 'family decisions' }], 2: ['C14', { objet: 'les décisions de famille' }, { objet: 'family decisions' }], 3: ['C04', { objet: 'les décisions de famille' }, { objet: 'family decisions' }] },
 };
 void CLOSED_EN;
 

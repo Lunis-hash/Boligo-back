@@ -759,6 +759,66 @@ async function judge(
   }
 }
 
+interface BlindVerdict {
+  n: number;
+  presuppose: boolean;
+  reciprocal: boolean;
+  same_meaning: boolean;
+  depth: number;
+  relevance: number;
+}
+
+/** Jugement à l'aveugle d'un lot de questions servies (aucune étiquette). */
+async function blindJudge(
+  judgeModel: string,
+  items: Array<{ n: number; gap: string; text: string; textEn: string }>,
+): Promise<BlindVerdict[] | null> {
+  const prompt = `Tu évalues, à l'aveugle, des questions posées par une application de rencontres sérieuses à DEUX membres d'un couple qui ne se sont jamais parlé. Chacun répond à la même question, puis lit la réponse de l'autre. Chaque question porte sur un écart entre leurs réponses à un entretien (sujet indiqué ; les réponses ne sont pas fournies).
+
+Pour CHAQUE question, donne :
+- "presuppose" : true si la question présuppose un fait, une habitude, un sentiment, une difficulté ou une position d'un membre qui n'est pas posé comme hypothèse ;
+- "reciprocal" : true si chacun des deux peut y répondre depuis sa propre position (elle ne vise pas un seul des deux) ;
+- "same_meaning" : true si la version anglaise dit la même chose que la française ;
+- "depth" : 1 à 5 (5 = fait préciser concrètement capacités, attentes, limites ou conditions de vie commune, parfois chiffrées ; 1 = vague) ;
+- "relevance" : 1 à 5 (5 = au cœur du sujet de l'écart).
+
+Retourne UNIQUEMENT ce JSON : {"verdicts": [{"n": 1, "presuppose": false, "reciprocal": true, "same_meaning": true, "depth": 4, "relevance": 5}]}
+
+QUESTIONS :
+${items.map((i) => `${i.n}. [sujet de l'écart : ${i.gap}]\n   FR : ${i.text}\n   EN : ${i.textEn}`).join('\n')}`;
+  const or = new ForcedOpenRouter({ critic: [judgeModel] });
+  const p = load<CatalogEntry[]>('catalog.json')?.find(
+    (e) => e.id === judgeModel,
+  );
+  const est = Math.ceil(
+    (prompt.length / 3) * (p?.priceIn ?? 20) + 16000 * (p?.priceOut ?? 80),
+  );
+  if (!lab.allow(est)) return null;
+  try {
+    const res = await or.executeAgentPrompt(
+      'sondeur',
+      [{ role: 'user', content: prompt }],
+      { role: 'critic', maxTokens: 16000, temperature: 0, timeoutMs: 300_000 },
+    );
+    lab.add(
+      typeof res.usage?.cost === 'number'
+        ? Math.ceil(res.usage.cost * 1e6)
+        : est,
+    );
+    const m = res.content.match(/\{[\s\S]*\}/);
+    if (!m)
+      console.warn(
+        `Juge ${judgeModel} : réponse sans JSON (${res.content.slice(0, 120)})`,
+      );
+    return m
+      ? ((JSON.parse(m[0]) as { verdicts: BlindVerdict[] }).verdicts ?? null)
+      : null;
+  } catch (e) {
+    console.warn(`Juge ${judgeModel} indisponible : ${(e as Error).message}`);
+    return null;
+  }
+}
+
 interface Scored {
   model: string;
   caseId: string;
@@ -1498,7 +1558,7 @@ if (require.main === module)
 // ─── Corpus étiqueté : contrôle seul, puis contrôle + relecteur réel ─────────
 interface LabeledItem {
   id: string;
-  split: 'dev' | 'final' | 'final2' | 'dev3' | 'final3';
+  split: 'dev' | 'final' | 'final2' | 'dev3' | 'final3' | 'final4';
   lang: 'fr' | 'en';
   caseId: string;
   day: number;
@@ -1531,6 +1591,10 @@ async function gateEval() {
       ...topicCorpus(HELDOUT, 70_000),
       ...topicCorpus(heldout2, 90_000),
       ...topicCorpus(heldout3, 110_000),
+      ...topicCorpus(
+        (process.env.BENCH_HELDOUT4_TOPICS ?? '').split(',').filter(Boolean),
+        130_000,
+      ),
     ].map((c) => [c.id, c]),
   );
   const missing = [...new Set(items.map((i) => i.caseId))].filter(
@@ -1691,16 +1755,76 @@ async function gateEval() {
     };
   };
   const splits = (
-    ['dev', 'final', 'final2', 'dev3', 'final3'] as const
-  ).filter((sp) =>
-    gate.some((g) => g.split === sp),
-  );
+    ['dev', 'final', 'final2', 'dev3', 'final3', 'final4'] as const
+  ).filter((sp) => gate.some((g) => g.split === sp));
   const results = splits.flatMap((sp) => [
     measure(sp),
     ...writers.map((w) => measure(sp, w)),
   ]);
   save('gate-eval-items.json', gate);
   save('gate-eval.json', results);
+  // BENCH_EVAL_JUDGE : jugement à l'aveugle des questions servies (contrôle
+  // + relecture), par un modèle d'une autre famille : présupposition,
+  // réciprocité, profondeur, pertinence, même sens FR/EN.
+  const judgeModel = process.env.BENCH_EVAL_JUDGE;
+  if (judgeModel && writers.length) {
+    const only = process.env.BENCH_EVAL_SPLIT;
+    const served = gate.filter(
+      (g) =>
+        g.gateOk &&
+        (!only || g.split === only) &&
+        critic[writers[0]]?.[g.id]?.ok === true,
+    );
+    const r = rng(4242);
+    const shuffled = [...served].sort(() => r() - 0.5);
+    const verdicts: Record<string, BlindVerdict> = {};
+    for (let i = 0; i < shuffled.length; i += 10) {
+      if (await stop()) break;
+      const batch = shuffled.slice(i, i + 10);
+      const out = await blindJudge(
+        judgeModel,
+        batch.map((g, k) => ({
+          n: k + 1,
+          gap:
+            ctxOf
+              .get(g.caseId)
+              ?.evidenceIndex.find((e) => e.id === g.evidence[0])?.topic ?? '',
+          text: g.text,
+          textEn: g.textEn ?? '',
+        })),
+      );
+      for (const v of out ?? []) {
+        const g = batch[v.n - 1];
+        if (g) verdicts[g.id] = v;
+      }
+      save('gate-eval-judge.json', verdicts);
+    }
+    const summary = (label: 'valid' | 'faulty') => {
+      const xs = served
+        .filter((g) => g.label === label)
+        .map((g) => verdicts[g.id])
+        .filter(Boolean);
+      const avg = (f: (v: BlindVerdict) => number) =>
+        xs.length ? xs.reduce((a, v) => a + f(v), 0) / xs.length : NaN;
+      return {
+        label,
+        judged: xs.length,
+        presupposition: avg((v) => (v.presuppose ? 1 : 0)),
+        reciprocal: avg((v) => (v.reciprocal ? 1 : 0)),
+        sameMeaning: avg((v) => (v.same_meaning ? 1 : 0)),
+        depth: avg((v) => Number(v.depth) || 0),
+        relevance: avg((v) => Number(v.relevance) || 0),
+      };
+    };
+    const judged = {
+      judge: judgeModel,
+      served: served.length,
+      valid: summary('valid'),
+      faulty: summary('faulty'),
+    };
+    save('gate-eval-judge-summary.json', judged);
+    console.log(JSON.stringify(judged));
+  }
   for (const r of results)
     console.log(
       `${r.split} | ${r.chain} : fautives rejetées ${(r.faultyRejectionRate * 100).toFixed(1)} % (${r.faulty}), valides acceptées ${(r.validAcceptanceRate * 100).toFixed(1)} % (${r.valid}), fuites acceptées ${r.leaksAccepted}`,

@@ -43,7 +43,7 @@ describe('Sondeur — doublons dans un même parcours', () => {
       { objet: 'shared savings' },
     );
     const otherQ = framed(
-      'C06',
+      'C13',
       { action: 'dépensait presque tout en loisirs' },
       { action: 'spent nearly everything on leisure' },
     );

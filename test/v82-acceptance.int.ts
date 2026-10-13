@@ -100,7 +100,7 @@ const ai: any = {
           options: ['Autre...'],
           // V8.3 : question composée dans un cadre validé (un cadre par jour).
           ...renderFrame(
-            ({ 1: 'C14', 2: 'C09', 3: 'C11' } as Record<number, string>)[day],
+            ({ 1: 'C14', 2: 'C22', 3: 'C04' } as Record<number, string>)[day],
             { objet: `${WORD[g.themeKey] ?? 'cela'} de la proposition valide` },
             {
               objet: `${WORD_EN[g.themeKey] ?? 'it'} of the valid proposal`,

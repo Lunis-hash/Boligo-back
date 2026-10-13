@@ -597,8 +597,8 @@ export function isWellFormedQuestion(text: string): boolean {
   // une demande de revenu ; « Si votre partenaire… » parle d'un futur
   // conjoint, pas d'un passé commun.
   let forForm = neutralizeHypotheticalSum(t).replace(
-    /^si votre partenaire(?!\p{L})/iu,
-    'Si la personne choisie',
+    /(?<!\p{L})si votre partenaire(?!\p{L})/giu,
+    (m) => (m[0] === 'S' ? 'Si' : 'si') + ' la personne choisie',
   );
   // En hypothèse, « votre couple » ou « cette relation » parlent du couple
   // à venir, pas d'un passé commun.

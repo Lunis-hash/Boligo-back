@@ -32,6 +32,14 @@ import {
   composeFramedQuestions,
   framesForPrompt,
 } from '../journey/sondeur-frames';
+
+/** Thèmes des écarts réels du bloc de preuves (« E3 · argent · écart · … »). */
+function gapThemesOf(evidenceIndex: string): string[] | undefined {
+  const themes = [
+    ...evidenceIndex.matchAll(/^E\d+ · (\w+) · écart(?: · |$)/gm),
+  ].map((m) => m[1]);
+  return themes.length ? [...new Set(themes)] : undefined;
+}
 import type { DangerCategory } from '../journey/sondeur-insights';
 import { interviewDigest } from '../journey/interview-digest';
 import { decodeUserResponses } from '../interview/questions.data';
@@ -715,8 +723,8 @@ Les trois jours (${days}) sont préparés séparément : reste à la profondeur 
 
 ÉTAPE 2 — QUESTIONS DANS DES CADRES VALIDÉS : tu n'écris PAS de question libre. Pour chaque thème qui porte un ÉCART RÉEL (preuve de nature « écart »), propose TROIS questions, chacune dans un CADRE différent de la liste ci-dessous, en remplissant ses cases avec le sujet concret de l'écart (en français ET en anglais). Le code compose la question ; toute question hors cadre, ou dont une case est sans lien avec l'écart, est écartée. Un relecteur indépendant gardera la meilleure.
 
-CADRES VALIDÉS :
-${framesForPrompt()}
+CADRES VALIDÉS (un cadre ne sert que pour un écart de l'un de ses thèmes) :
+${framesForPrompt(gapThemesOf(evidenceIndex))}
 
 Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).join(' ; ')}.
 - Thème sans écart réel (accord, sujet neutre) : n'écris AUCUNE question ; BOLIGO y pose ses propres questions.

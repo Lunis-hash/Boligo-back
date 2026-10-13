@@ -1,3 +1,4 @@
+import { aiGenerationEnabled } from '../ai/sondeur-router';
 import { Prisma } from '@prisma/client';
 import { SondeurLanguage, localizeStoredQuestion } from './sondeur.i18n';
 import { EvidenceTrace, buildEvidence, servedTrace } from './sondeur-evidence';
@@ -491,7 +492,10 @@ export class JourneyService {
 
   /** IA par défaut ; mettre HARMONY_QUESTIONS_SOURCE=bank pour désactiver. */
   private useAiHarmonyQuestions(): boolean {
-    return process.env.HARMONY_QUESTIONS_SOURCE !== 'bank';
+    // Repli déterministe complet : config/sondeur-models.json, generation.enabled.
+    return (
+      process.env.HARMONY_QUESTIONS_SOURCE !== 'bank' && aiGenerationEnabled()
+    );
   }
 
   private normalizeQuestionKey(text: string): string {

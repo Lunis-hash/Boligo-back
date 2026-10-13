@@ -48,7 +48,17 @@ export interface Frame {
   en: string;
   /** Intention, pour le rédacteur. */
   use: string;
+  /**
+   * Thèmes d'écart pour lesquels le cadre est proposé : un cadre n'est admis
+   * que si son thème correspond à un écart réel du couple.
+   */
+  themes: string[];
 }
+
+/** Thèmes d'écart que l'IA peut aborder (jamais la communication : violence). */
+const ALL = ['famille', 'argent', 'projet', 'lieu', 'spiritualite', 'intimite'];
+/** Habitudes et temps de vie : cadres chiffrés par unité. */
+const HABITS = ['projet', 'argent', 'famille', 'lieu'];
 
 /** Valeurs fermées : français → anglais. */
 export const CLOSED: Record<
@@ -99,120 +109,126 @@ export const FRAMES: Frame[] = [
     fr: 'Combien de {unite} par {periode} pourriez-vous réellement vivre avec {objet} ?',
     en: 'How many {unite} a {periode} of {objet} could you really live with?',
     use: 'tolérance chiffrée',
+    themes: HABITS,
   },
   {
     id: 'C02',
     fr: "Si {objet} ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
     en: 'If {objet} never changed for one of you, could you live with it for years?',
     use: 'si cela ne changeait jamais',
+    themes: ALL,
   },
   {
     id: 'C03',
     fr: "Jusqu'où iriez-vous pour {infinitif} ?",
     en: 'How far would you go to {infinitif}?',
     use: "jusqu'où",
+    themes: ALL,
   },
   {
     id: 'C04',
     fr: "Qu'est-ce que vous ne pourriez pas accepter [dans|au sujet de|au sujet du|au sujet des|concernant] {objet} ?",
     en: 'What could you not accept [about|in|regarding] {objet}?',
     use: 'limite personnelle',
+    themes: ALL,
   },
   {
     id: 'C05',
     fr: "Si l'un de vous {action}, pendant combien de {duree} pourriez-vous tenir ainsi ?",
     en: 'If one of you {action}, for how many {duree} could you carry on like that?',
     use: 'durée tenable',
-  },
-  {
-    id: 'C06',
-    fr: "Si l'un de vous {action}, comment le vivriez-vous au quotidien ?",
-    en: 'If one of you {action}, how would you live with it day to day?',
-    use: 'confrontation au quotidien',
+    themes: ALL,
   },
   {
     id: 'C07',
     fr: 'Combien de {duree} pourriez-vous attendre avant de trancher {objet} ?',
     en: 'How many {duree} could you wait before settling {objet}?',
     use: 'attente tenable',
+    themes: ['famille', 'lieu', 'spiritualite', 'projet'],
   },
   {
     id: 'C08',
     fr: 'Pour {objet}, à partir de combien de {unite} par {periode} ce serait trop pour vous ?',
     en: 'For {objet}, how many {unite} a {periode} would be too much for you?',
     use: 'seuil',
-  },
-  {
-    id: 'C09',
-    fr: "Qu'auriez-vous besoin de savoir sur {objet} avant de vous engager ?",
-    en: 'What would you need to know about {objet} before committing?',
-    use: "avant de s'engager",
+    themes: HABITS,
   },
   {
     id: 'C10',
     fr: 'Si vos positions sur {objet} ne bougeaient jamais, pourriez-vous vous engager quand même ?',
     en: 'If your positions on {objet} never moved, could you still commit?',
     use: 'si cela ne changeait jamais',
-  },
-  {
-    id: 'C11',
-    fr: 'Quelle place laisseriez-vous à {objet} dans une semaine ordinaire à deux ?',
-    en: 'How much room would you leave for {objet} in an ordinary week together?',
-    use: 'place concrète',
+    themes: ALL,
   },
   {
     id: 'C12',
     fr: 'Sur {montant} € par mois à deux, quelle part consacreriez-vous à {objet} ?',
     en: 'Out of €{montant} a month for the two of you, what share would you put toward {objet}?',
     use: 'somme ronde en hypothèse',
+    themes: ['argent'],
   },
   {
     id: 'C13',
     fr: "Si l'un de vous {action}, qu'est-ce qui vous permettrait de rester ?",
     en: 'If one of you {action}, what would allow you to stay?',
     use: 'condition pour rester',
+    themes: ALL,
   },
   {
     id: 'C14',
     fr: 'Quelle limite fixeriez-vous pour {objet} dans une vie à deux ?',
     en: 'What limit would you set for {objet} in a life together?',
     use: 'limite personnelle',
+    themes: ALL,
   },
   {
     id: 'C15',
     fr: 'Pendant combien de {duree} pourriez-vous vivre sereinement avec {objet} ?',
     en: 'For how many {duree} could you live calmly with {objet}?',
     use: 'durée tenable',
+    themes: ALL,
   },
   {
     id: 'C16',
     fr: 'Si {objet} restait une question ouverte entre vous, combien de {duree} pourriez-vous l’accepter ?',
     en: 'If {objet} remained an open question between you, for how many {duree} could you accept it?',
     use: 'attente tenable',
-  },
-  {
-    id: 'C17',
-    fr: "Qu'est-ce que l'autre aurait besoin de savoir de vous sur {objet} ?",
-    en: 'What would the other person need to know about you regarding {objet}?',
-    use: 'se dire',
-  },
-  {
-    id: 'C18',
-    fr: 'Concrètement, comment organiseriez-vous {objet} au quotidien ?',
-    en: 'In practical terms, how would you organise {objet} day to day?',
-    use: 'organisation concrète',
+    themes: ['famille', 'lieu', 'spiritualite', 'projet'],
   },
   {
     id: 'C19',
     fr: 'Combien de {unite} par {periode} vous sembleraient un maximum pour {objet} ?',
     en: 'How many {unite} a {periode} would feel like the most you could accept for {objet}?',
     use: 'tolérance chiffrée',
+    themes: HABITS,
   },
   {
-    id: 'C20',
-    fr: 'Si {objet} ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?',
-    en: 'If {objet} never changed, what life together would you picture in five years?',
-    use: 'projection',
+    id: 'C21',
+    fr: 'Pendant combien de {duree} pourriez-vous assumer seul(e) {objet} si votre partenaire {action} ?',
+    en: 'For how many {duree} could you cover {objet} on your own if your partner {action}?',
+    use: 'capacité chiffrée (exemple validé)',
+    themes: ['argent'],
+  },
+  {
+    id: 'C22',
+    fr: 'Quelle condition concrète poseriez-vous sur {objet} avant de vivre ensemble ?',
+    en: 'What concrete condition would you set on {objet} before living together?',
+    use: 'condition de vie commune',
+    themes: ALL,
+  },
+  {
+    id: 'C23',
+    fr: 'Si {objet} devenait la règle à la maison, pendant combien de {duree} pourriez-vous l’accepter ?',
+    en: 'If {objet} became the rule at home, for how many {duree} could you accept it?',
+    use: 'durée tenable',
+    themes: ['projet', 'famille', 'argent'],
+  },
+  {
+    id: 'C24',
+    fr: 'Quelle part des dépenses du foyer accepteriez-vous de consacrer à {objet} ?',
+    en: 'What share of household spending would you be willing to put toward {objet}?',
+    use: 'capacité chiffrée',
+    themes: ['argent', 'famille'],
   },
 ];
 
@@ -375,11 +391,6 @@ const SLOT_RULES: Array<[string, RegExp, RegExp]> = [
     /\b\w{3,} and \w+/i,
   ],
   [
-    'F10 effort à sens unique (ne vaut que pour l’un des deux)',
-    /(?<!\p{L})(?:renon\p{L}*|sacrifi\p{L}*|effort\p{L}*|moins (?:acheter|dépenser|boire|fumer|jouer|sortir)|celui qui|celle qui|ceux qui|suivre quelqu['’]un|céder)(?!\p{L})|^(?:accepter|supporter|tolérer|(?:se|vous) résoudre|(?:se|vous) résigner)(?!\p{L})/iu,
-    /\b(?:give up|gave up|giving up|sacrific\w*|effort\w*|whoever|the one who|follow someone|(?:buy|spend|drink|smoke|gamble) less)\b|^(?:accept|put up with|tolerate|resign)\b/i,
-  ],
-  [
     'F11 jugement moral dans la case',
     /(?<!\p{L})(?:excès|vice\p{L}*|corvée\p{L}*|laiss\p{L}* aller|respecte rien|abus\p{L}*|dérive\p{L}*|laxis\p{L}*|irrespons\p{L}*|égoïs\p{L}*|paress\p{L}*|capric\p{L}*|immatur\p{L}*|mauvais\p{L}*|honte\p{L}*|gâchis)(?!\p{L})/iu,
     /\b(?:excess\w*|vice\w*|chore\w*|let (?:themselves|oneself|himself|herself) go|respects nothing|abus\w*|irresponsib\w*|selfish\w*|lazy|laziness|immatur\w*|shame\w*|bad habits?|waste\w*)\b/i,
@@ -390,19 +401,9 @@ const SLOT_RULES: Array<[string, RegExp, RegExp]> = [
     /\b(?:compulsiv\w*|at-risk|loyalty conflict|disorder|syndrome|dysfunction\w*|narciss\w*|toxic|codependen\w*|patholog\w*|denial)\b/i,
   ],
   [
-    'F7 case intrusive (revenu, banque, patrimoine)',
-    /(?<!\p{L})(?:bancaire\p{L}*|comptes? en banque|patrimoine|héritage|fortune|salaire\p{L}*|revenus?|propriét\p{L}*)(?!\p{L})/iu,
-    /\b(?:bank\w*|wealth|inheritance|fortune|salar\w*|income|property|assets)\b/i,
-  ],
-  [
     'F7 case sur la sécurité (cris, coups, menace, contrôle)',
     /(?<!\p{L})(?:hauss\p{L}* le ton|lev\p{L}* le ton|cri\p{L}*|hurl\p{L}*|gifl\p{L}*|frapp\p{L}*|menac\p{L}*|insult\p{L}*|contrôl\p{L}*|surveill\p{L}*)(?!\p{L})/iu,
     /\b(?:shout\w*|yell\w*|scream\w*|hit|hits|hitting|slap\w*|threat\w*|insult\w*|control\w*|monitor\w*)\b/i,
-  ],
-  [
-    'F12 fait supposé (nombre, événement ou personne absents des données)',
-    /(?<!\p{L})(?:trois|quatre|cinq|six|sept|huit|neuf|dix|dettes?|récent\p{L}*|dernier|dernière|arrêté\p{L}*|prévu\p{L}*|actuel\p{L}*|ex-\p{L}+|brouille\p{L}*|belle-mère|beau-père)(?!\p{L})|\d/iu,
-    /\b(?:three|four|five|six|seven|eight|nine|ten|debts?|recent\w*|last year|given up|quit|planned|current|former|ex-\w+|falling-out|mother-in-law|father-in-law)\b|\d/i,
   ],
   [
     'F5 difficulté présupposée',
@@ -410,6 +411,49 @@ const SLOT_RULES: Array<[string, RegExp, RegExp]> = [
     /\b(?:difficult\w*|struggl\w*|inabilit\w*|failure\w*|lack of|weakness\w*)\b/i,
   ],
 ];
+
+/**
+ * CAUSE 1 — effort à sens unique : un verbe d'effort, de renoncement ou de
+ * sacrifice dont le sujet est celui qui répond (« vous »), « l'un de vous » ou
+ * le partenaire, sans marque de symétrie (« à deux », « ensemble », « tous
+ * les deux », « chacun », « commun »). Une telle question ne vaut que pour
+ * celui qui fait l'effort.
+ */
+export const EFFORT_FR =
+  /(?<!\p{L})(?:(?:s['’]|vous |se )?effac\p{L}*|abandonn\p{L}*|renon\p{L}*|sacrifi\p{L}*|quitt\p{L}*|arrêt\p{L}*|cess\p{L}*|rédui\p{L}*|diminu\p{L}*|(?:se |vous |s['’])?priv\p{L}*|céd\p{L}*|rejoi\p{L}*|suivre|suivait|suivi|retrouv\p{L}* (?:un|son|du|vite|au plus vite)|(?:s['’]|vous |se )?adapt\p{L}*|(?:se |vous )?pli\p{L}*|(?:se |vous )?conform\p{L}*|(?:se |vous )?convert\p{L}*|(?:s['’]|vous )?effor\p{L}*|lâch\p{L}*|(?:se |vous )?résign\p{L}*|(?:se |vous )?résoudr\p{L}*|faire des (?:efforts|concessions)|mettre (?:entre parenthèses|en pause)|ralenti\p{L}*|moins (?:acheter|dépenser|boire|fumer|jouer|sortir)|celui qui|celle qui|ceux qui|suivre quelqu['’]un|accepter|supporter|tolérer)(?!\p{L})/iu;
+export const EFFORT_EN =
+  /\b(?:efface\w*|step(?:ping)? back|give up|gave up|giving up|abandon\w*|renounc\w*|sacrific\w*|quit\w*|leave|left|leaving|stop\w*|cut(?:ting)? (?:back|down)|reduc\w*|depriv\w*|follow\w*|join\w*|find (?:a|another) job|get (?:a|back to) (?:job|work)|adapt\w*|conform\w*|convert\w*|bend\w*|yield\w*|resign\w*|make (?:efforts|concessions)|put on hold|slow\w* down|(?:buy|spend|drink|smoke|gamble) less|whoever|the one who|accept|tolerate|put up with)\b/i;
+const SYMMETRY_FR =
+  /(?<!\p{L})(?:à deux|ensemble|tous les deux|toutes les deux|chacun\p{L}*|commun\p{L}*|mutuel\p{L}*|réciproque\p{L}*)(?!\p{L})/iu;
+const SYMMETRY_EN =
+  /\b(?:together|both|each|shared|mutual\w*|reciprocal\w*|as a couple)\b/i;
+
+/**
+ * CAUSE 2 — fait personnel inventé : durée, date, événement ou habitude
+ * présentés comme réels (« qui dure depuis un an », « l'offre d'emploi à
+ * l'étranger », « le lieu de culte fréquenté »). Un scénario doit rester
+ * explicitement hypothétique : le cadre porte le « si », la case reste
+ * générale (« une offre d'emploi », jamais « l'offre »).
+ */
+export const INVENTED_FR =
+  /(?<!\p{L})(?:depuis|il y a|l['’]an dernier|l['’]année dernière|ce mois-ci|cette année|en cours|actuel\p{L}*|récent\p{L}*|dernier|dernière|habituel\p{L}*|fréquent\p{L}*|prévu\p{L}*|arrêté\p{L}*|trois|quatre|cinq|six|sept|huit|neuf|dix|dettes?|brouille\p{L}*|ex-\p{L}+|belle-mère|beau-père)(?!\p{L})|\d|^(?:l['’]|le |la |les )(?:offre|proposition|mutation|licenciement|accident|maladie|grossesse|divorce|séparation|décès|héritage|procès|projet de|promotion|déménagement prévu)/iu;
+export const INVENTED_EN =
+  /\b(?:since|ago|last (?:year|month|week)|this (?:year|month)|ongoing|current\w*|recent\w*|usual\w*|frequent\w*|planned|given up|three|four|five|six|seven|eight|nine|ten|debts?|falling-out|ex-\w+|mother-in-law|father-in-law|for (?:a|one|two) (?:year|month)s?)\b|\d|^the (?:offer|job offer|transfer|layoff|redundancy|accident|illness|pregnancy|divorce|separation|death|inheritance|trial|promotion)\b/i;
+
+/**
+ * CAUSE 3 — question intrusive : lieu précis (lieu de culte, quartier,
+ * adresse, lieu de travail), santé, vie sexuelle, nom d'un tiers, pratique
+ * religieuse localisée, argent personnel. Un membre doit toujours pouvoir ne
+ * pas divulguer : la case reste générale.
+ */
+export const INTRUSIVE_FR =
+  /(?<!\p{L})(?:lieu de culte|paroisse|mosquée|église|temple|synagogue|quartier|adresse|domicile|rue|lieu de travail|employeur|entreprise|bancaire\p{L}*|comptes? en banque|patrimoine|héritage|fortune|salaire\p{L}*|revenus?|propriét\p{L}*|médec\p{L}*|médic\p{L}*|traitement|maladie\p{L}*|santé|thérap\p{L}*|diagnost\p{L}*|sexu\p{L}*|intime\p{L}*|nom d['’]|prénom)(?!\p{L})/iu;
+export const INTRUSIVE_EN =
+  /\b(?:place of worship|parish|mosque|church|temple|synagogue|neighbou?rhood|address|street|workplace|employer|company|bank\w*|wealth|inheritance|fortune|salar\w*|income|property|assets|doctor|medic\w*|treatment|illness|health|therap\w*|diagnos\w*|sexual\w*|intimate|first name|surname)\b/i;
+/** Nom propre dans une case (un tiers, un lieu précis), hors fêtes et jours. */
+const PROPER_NOUN_EN =
+  /(?<!^)\b(?!(?:I|Christmas|Easter|Ramadan|Eid|Sunday|Saturday|Friday|Monday|Tuesday|Wednesday|Thursday)\b)[A-Z][a-z]+/;
+const PROPER_NOUN_FR = /(?<!^)(?<![.!?]\s)\b[A-ZÉÈÀ][a-zéèêàâîôûç]+/u;
 
 /**
  * Sujet de l'écart → mots qui s'y rattachent (français, anglais) : une case
@@ -460,8 +504,8 @@ const TOPIC_LINKS: Array<[RegExp, RegExp, RegExp]> = [
   ],
   [
     /épargne|dépense/i,
-    /épargn|dépens|économ|budget|argent|achat|réserve|côté|plaisir|sortie/iu,
-    /sav|spen[dt]|budget|money|purchase|reserve|treat|outing/i,
+    /épargn|dépens|économ|budget|argent|achat|réserve|côté|plaisir|sortie|loisir/iu,
+    /sav|spen[dt]|budget|money|purchase|reserve|treat|outing|leisure/i,
   ],
 ];
 
@@ -501,6 +545,23 @@ const CONCEPTS: Array<[RegExp, RegExp]> = [
     /\b(?:union|blended|(?:previous|first|another|other|earlier|former) (?:relationship|marriage|union))\b/i,
   ],
   [/ville/iu, /\b(?:city|cities|town\w*)\b/i],
+  // CAUSE 4 — concepts clés supplémentaires (le sens doit être le même).
+  [
+    /solo|seul|soi(?!\p{L})/iu,
+    /\b(?:alone|solo|on (?:my|your|their) own|own time|by (?:my|your|them)sel\w*)\b/i,
+  ],
+  [/loisir/iu, /\b(?:leisure|hobb\w*|pastime\w*)\b/i],
+  [
+    /(?<!\p{L})garde(?!\p{L})/iu,
+    /\b(?:custody|care arrangement\w*|childcare)\b/i,
+  ],
+  [
+    /éducation|élever/iu,
+    /\b(?:raising|upbringing|educat\w*|bring(?:ing)? up)\b/i,
+  ],
+  [/étranger/iu, /\b(?:abroad|foreign|overseas)\b/i],
+  [/dépens/iu, /\b(?:spend\w*|spent|expens\w*|cost\w*)\b/i],
+  [/emploi|travail/iu, /\b(?:jobs?|work\w*|employ\w*)\b/i],
 ];
 
 /** Verbe à l'imparfait, 3e personne (« perdait », « ne voulait »). */
@@ -661,6 +722,29 @@ export function frameIssues(
       r.push('F6 case « infinitif » : verbe à l’infinitif attendu');
     for (const [why, reFr, reEn] of SLOT_RULES)
       if (reFr.test(v) || reEn.test(e)) r.push(`${why} — « ${kind} »`);
+    // Cause 1 : effort à sens unique (sans marque de symétrie).
+    if (
+      (EFFORT_FR.test(v) && !SYMMETRY_FR.test(v)) ||
+      (EFFORT_EN.test(e) && !SYMMETRY_EN.test(e))
+    )
+      r.push(
+        `F10 effort à sens unique (ne vaut que pour l’un des deux) — « ${kind} »`,
+      );
+    // Cause 2 : fait personnel présenté comme réel.
+    if (INVENTED_FR.test(v) || INVENTED_EN.test(e))
+      r.push(
+        `F12 fait personnel inventé (durée, date, événement ou habitude réels) — « ${kind} »`,
+      );
+    // Cause 3 : intrusion (lieu précis, santé, vie sexuelle, tiers nommé).
+    if (
+      INTRUSIVE_FR.test(v) ||
+      INTRUSIVE_EN.test(e) ||
+      PROPER_NOUN_FR.test(v) ||
+      PROPER_NOUN_EN.test(e)
+    )
+      r.push(
+        `F14 case intrusive (lieu précis, santé, intimité, tiers nommé, argent personnel) — « ${kind} »`,
+      );
     if (kind !== 'infinitif' && /(?<!\p{L})vous(?!\p{L})/iu.test(v))
       r.push(`F5 case « ${kind} » : « vous » réservé au cadre`);
     if (
@@ -706,7 +790,18 @@ export function frameIssues(
   const unitLinked = ctx.gaps.some((g) =>
     UNIT_TOPIC[unit]?.test(`${g.topic} ${g.theme}`),
   );
+  // « Si votre partenaire {action} » : un événement (perte d'emploi…),
+  // jamais une position prêtée au partenaire.
+  if (
+    frame.fr.includes('votre partenaire {action}') &&
+    /(?<!\p{L})(?:ne |n['’])?(?:voul|refus|accept|pens|préfér|tenait|souhait|croy|désir|exige|imposait|décid)\p{L}*/iu.test(
+      fr.slots.action ?? '',
+    )
+  )
+    r.push('F15 position prêtée au partenaire (un événement seulement)');
   if (!ctx.gaps.length) r.push('F8 aucun écart cité');
+  else if (!ctx.gaps.some((g) => frame.themes.includes(g.theme)))
+    r.push(`F13 cadre ${frame.id} hors des thèmes de l'écart cité`);
   else {
     const linked = (lang: 1 | 2, t: string) =>
       ctx.gaps.some((g) =>
@@ -763,11 +858,17 @@ export function composeFramedQuestions(raw: unknown): unknown {
 }
 
 /** Liste des cadres pour la consigne du rédacteur. */
-export function framesForPrompt(): string {
+export function framesForPrompt(themes?: string[]): string {
   const closed = (k: keyof typeof CLOSED) =>
     CLOSED[k].map(([fr]) => fr).join(' | ');
   return [
-    ...FRAMES.map((f) => `${f.id} (${f.use}) : ${f.fr}  ‖  EN : ${f.en}`),
+    // Seuls les cadres compatibles avec un écart réel du couple sont proposés.
+    ...FRAMES.filter(
+      (f) => !themes || f.themes.some((t) => themes.includes(t)),
+    ).map(
+      (f) =>
+        `${f.id} (${f.use} ; thèmes : ${f.themes.join(', ')}) : ${f.fr}  ‖  EN : ${f.en}`,
+    ),
     '',
     `Cases fermées (valeur française exacte ; l'anglais est déduit) : {unite} = ${closed('unite')} ; {periode} = ${closed('periode')} ; {duree} = ${closed('duree')} ; {montant} = ${closed('montant')}.`,
     "Cases libres (en français ET en anglais) : {objet} = groupe nominal de 1 à 12 mots (« le tabac à la maison ») ; {action} = verbe à l'imparfait, 3e personne (« perdait son emploi ») ; {infinitif} = verbe à l'infinitif (« accueillir des enfants d'une autre union »).",

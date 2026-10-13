@@ -607,7 +607,20 @@ export function validate(
       : isWellFormedQuestion(q.text))
   )
     reasons.push('P8 règles de forme existantes');
-  if (!opts.deterministic) reasons.push(...aiOnlyIssues(q.text, q.themeKey));
+  if (!opts.deterministic)
+    reasons.push(
+      ...aiOnlyIssues(
+        // Cadre validé : « si votre partenaire… » est une hypothèse sur la
+        // personne choisie, pas un passé commun.
+        opts.framedSlots
+          ? q.text.replace(
+              /(?<!\p{L})si votre partenaire(?!\p{L})/giu,
+              'si la personne choisie',
+            )
+          : q.text,
+        q.themeKey,
+      ),
+    );
   if (opts.gapOnly && !opts.deterministic) {
     if (ORIGIN_DETOUR.test(q.text))
       reasons.push(
