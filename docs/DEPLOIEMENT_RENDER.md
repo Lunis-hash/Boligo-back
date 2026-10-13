@@ -332,3 +332,13 @@ V8.2 : les entretiens déjà commencés gardent leur version (7.1 pour tous les 
 - « Mode d'envoi : resend » ;
 - aucune erreur Prisma ;
 - `GET /api/health` → 200 et `db ok`.
+
+### 8.3 Sauvegarde réelle effectuée (13/10/2026, 19:23 UTC)
+
+Exécutée par Steve sur son poste Windows, avec `scripts/sauvegarde-boligo.ps1` (commit `1ee7631`).
+
+- **Archive** : `boligo-20261013T192342Z.dump.gpg` (26 Ko), chiffrée AES-256 (gpg) et conservée hors du dépôt, en local.
+- **SHA-256** : `a1a09149e94154f87f04a90fdb819a522deb6007d79767978c485dfc4deacb0f`
+- **Vérification** : 32 tables BOLIGO, 76 lignes, identiques à la base. Les nombres de lignes concordent avec un relevé indépendant fait par le connecteur Supabase.
+- **Exclus** : `public.documents`, schémas `oweke`, `oweke_test` et Supabase. Aucune modification de Supabase.
+- **Tables non vides** : `User` 3, `Profile` 2, `InterviewIA` 2, `ModuleResponse` 22, `MentalMap` 2, `MatchProposal` 1, `Journey` 1, `HarmonyQuestion` 21, `HarmonyResponse` 3, `CreditTransaction` 6, `PromoCode` 6, `Notification` 4, `AiSpend` 1, `GeoRegion` 2. Les 18 autres tables sont vides.
