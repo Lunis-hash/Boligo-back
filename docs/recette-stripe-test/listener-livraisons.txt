@@ -1,0 +1,6 @@
+2026-10-13 16:50:58   --> payment_intent.succeeded [evt_3UQ8ujLz8rnS1CBn1ZwQwKZ2]
+2026-10-13 16:51:03  <--  [200] POST http://127.0.0.1:3000/api/payment/webhook [evt_3UQ8ujLz8rnS1CBn1ZwQwKZ2]
+2026-10-13 16:51:05   --> payment_intent.succeeded [evt_3UQ8ujLz8rnS1CBn1ZwQwKZ2]
+2026-10-13 16:51:05  <--  [200] POST http://127.0.0.1:3000/api/payment/webhook [evt_3UQ8ujLz8rnS1CBn1ZwQwKZ2]
+2026-10-13 16:51:09   --> charge.refunded [evt_3UQ8ujLz8rnS1CBn1O1SMsk6]
+2026-10-13 16:51:09  <--  [200] POST http://127.0.0.1:3000/api/payment/webhook [evt_3UQ8ujLz8rnS1CBn1O1SMsk6]

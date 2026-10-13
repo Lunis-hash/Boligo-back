@@ -1,0 +1,8 @@
+[33m[Nest] 539  - [39m10/13/2026, 4:50:35 PM [33m   WARN[39m [38;5;3m[PaymentService] [39m[33mFactures incomplètes, à renseigner : BILLING_SELLER_NAME, BILLING_SELLER_LEGAL_FORM, BILLING_SELLER_ADDRESS, BILLING_SELLER_SIREN, BILLING_MEDIATOR, BILLING_SELLER_VAT_NUMBER.[39m
+[32m[Nest] 539  - [39m10/13/2026, 4:50:36 PM [32m    LOG[39m [38;5;3m[PaymentService] [39m[32mStripe connecté : compte « environnement de test BOLIGO » (acct_1UMQWmLz8rnS1CBn), mode test.[39m
+[32m[Nest] 539  - [39m10/13/2026, 4:50:58 PM [32m    LOG[39m [38;5;3m[PaymentService] [39m[32mÉvénement Stripe reçu : payment_intent.succeeded[39m
+[32m[Nest] 539  - [39m10/13/2026, 4:50:58 PM [32m    LOG[39m [38;5;3m[PaymentService] [39m[32mPaiement réussi — user 9a74230d-f2ca-4ff6-b7b9-f451ec0074cf, 1 crédit(s), 15€, ref: pi_3UQ8ujLz8rnS1CBn14dLxnf2[39m
+[32m[Nest] 539  - [39m10/13/2026, 4:51:03 PM [32m    LOG[39m [38;5;3m[InvoiceService] [39m[32mFacture 7OM1D724-0003 émise pour le paiement pi_3UQ8ujLz8rnS1CBn14dLxnf2.[39m
+[32m[Nest] 539  - [39m10/13/2026, 4:51:05 PM [32m    LOG[39m [38;5;3m[PaymentService] [39m[32mÉvénement Stripe reçu : payment_intent.succeeded[39m
+[32m[Nest] 539  - [39m10/13/2026, 4:51:09 PM [32m    LOG[39m [38;5;3m[PaymentService] [39m[32mÉvénement Stripe reçu : charge.refunded[39m
+[EMAIL SIMULATED] Subject: BOLIGO : votre remboursement

@@ -1,0 +1,18 @@
+✅ Webhook Render we_1UP2h9Lz8rnS1CBnjkMldEOm coupé (mode test), état d'origine enregistré
+✅ Comptes fictifs créés sur la base locale dédiée
+✅ 1. Création du paiement : session Checkout créée par l’API — HTTP 201, 1500 centimes
+✅    Session relue chez Stripe : mode test, montant, membre rattaché, non payée — livemode=false montant=1500 statut=unpaid
+✅ 2. Page Stripe Checkout payée (carte de test 4242), retour success — statut=paid PI=pi_3UQ8ujLz8rnS1CBn14dLxnf2
+✅ 3. Webhook payment_intent.succeeded livré par Stripe et accepté localement (HTTP 200) — événement evt_3UQ8ujLz8rnS1CBn1ZwQwKZ2 livraisons=1 crédits=1
+✅ 4. Crédit unique : confirmation de l’app + nouvelle livraison réelle de l’événement — confirmation HTTP 200, renvoi CLI code 0, livraisons 1→2, crédits=1, transactions=1
+✅    Paiement enregistré une seule fois (table Payment) — reussi|1500
+✅ 5. Facture : émise, payée chez Stripe, PDF disponible — registre=emise|in_1UQ8ulLz8rnS1CBnwW7tbx63 Stripe=paid PDF=oui
+✅ 6. Remboursement réel chez Stripe (rétractation acceptée par l’admin) — demande HTTP 201, décision HTTP 201, re_3UQ8ujLz8rnS1CBn1M9kTctv:succeeded:1500
+✅    Webhook charge.refunded livré par Stripe et accepté localement — événement evt_3UQ8ujLz8rnS1CBn1O1SMsk6 livraisons=1
+✅ 7. Crédits mis à jour : crédit retiré une seule fois — crédits=0, écriture de remboursement=1|-1
+✅    Réceptions par le backend local (journal) — payment_intent.succeeded=2, charge.refunded=1
+
+12/12 vérifications Stripe réussies (aucun résultat simulé)
+Restauration du webhook Render TEST…
+✅ Webhook Render we_1UP2h9Lz8rnS1CBnjkMldEOm RÉACTIVÉ et identique à l'origine (statut enabled, 4 événements, https://boligo-back.onrender.com/api/payment/webhook)
+✅ Configuration des webhooks Stripe identique avant et après la recette

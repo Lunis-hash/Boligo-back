@@ -1,0 +1,17 @@
+[
+  {
+    "id": "we_1UP2h9Lz8rnS1CBnjkMldEOm",
+    "url": "https://boligo-back.onrender.com/api/payment/webhook",
+    "status": "enabled",
+    "enabled_events": [
+      "charge.dispute.closed",
+      "charge.dispute.created",
+      "charge.refunded",
+      "payment_intent.succeeded"
+    ],
+    "api_version": "2024-06-20",
+    "description": "BOLIGO API (Render Boligo-back)",
+    "livemode": false,
+    "metadata": {}
+  }
+]
