@@ -1,0 +1,222 @@
+[
+  {
+    "step": "[360 px] Page déclarée en français, sans traduction automatique",
+    "ok": true,
+    "detail": "{\"lang\":\"fr\",\"translate\":\"no\"}"
+  },
+  {
+    "step": "[360 px] Tranche d’âge : « vous attire » et « Entre … et … ans »",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[360 px] Tranche d’âge : aucun débordement horizontal",
+    "ok": true,
+    "detail": "0 px"
+  },
+  {
+    "step": "[360 px] Âges inversés : message dans le champ, bouton désactivé",
+    "ok": true,
+    "detail": "Le premier âge doit être inférieur ou égal au second."
+  },
+  {
+    "step": "[360 px] Plage acceptée préremplie avec la tranche idéale",
+    "ok": true,
+    "detail": "28-34"
+  },
+  {
+    "step": "[360 px] Plage qui n’englobe pas la tranche idéale : explication claire, bouton actif",
+    "ok": true,
+    "detail": "Ces âges doivent inclure votre tranche idéale (28 – 34 ans) : nous enregistrerons 28 – 40 ans."
+  },
+  {
+    "step": "[360 px] Jamais « Sauvegarde impossible » : plage enregistrée 28-40",
+    "ok": true,
+    "detail": "{\"a\":\"28-34\",\"b\":\"28-40\"}"
+  },
+  {
+    "step": "[360 px] Réponse enregistrée aussitôt (sans attendre la fin du module)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[360 px] Retour : question précédente affichée, réponse actuelle cochée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[360 px] Réponse modifiée : remplacée, une seule ligne pour le module 0",
+    "ok": true,
+    "detail": "M0_Q03=C, lignes=1"
+  },
+  {
+    "step": "[360 px] Fil de discussion reconstruit (réponses modifiables)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[360 px] Toucher une réponse du fil la rouvre, valeurs reprises",
+    "ok": true,
+    "detail": "28-34"
+  },
+  {
+    "step": "[360 px] Tranche idéale élargie après coup : plage acceptée ajustée (25-45)",
+    "ok": true,
+    "detail": "25-45 / 25-45"
+  },
+  {
+    "step": "[360 px] Reprise après interruption : réponses conservées, première question restante",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[360 px] Module 0 terminé → module 1",
+    "ok": true,
+    "detail": "http://localhost:8091/interview/1"
+  },
+  {
+    "step": "[360 px] Retour depuis le module 1 : dernière question du module 0 rouverte",
+    "ok": true,
+    "detail": "http://localhost:8091/interview/0?at=last"
+  },
+  {
+    "step": "[360 px] Écran de retour : aucun débordement horizontal",
+    "ok": true,
+    "detail": "0 px"
+  },
+  {
+    "step": "[360 px] Réponse gardée → retour au module 1 sans rien reposer",
+    "ok": false,
+    "detail": "http://localhost:8091/interview/0?at=last"
+  },
+  {
+    "step": "[360 px] Réponse de suite devenue sans objet effacée (V82_M8_02)",
+    "ok": true,
+    "detail": "{\"success\":true,\"allModulesCompleted\":false,\"removed\":[\"V82_M8_02\"]}"
+  },
+  {
+    "step": "[360 px] Réponse invalide refusée (400)",
+    "ok": true,
+    "detail": "400"
+  },
+  {
+    "step": "[360 px] questionnaireVersion inchangée (8.2)",
+    "ok": true,
+    "detail": "8.2"
+  },
+  {
+    "step": "[360 px] Aucun doublon de module",
+    "ok": true,
+    "detail": "max lignes par module = 1"
+  },
+  {
+    "step": "[390 px] Page déclarée en français, sans traduction automatique",
+    "ok": true,
+    "detail": "{\"lang\":\"fr\",\"translate\":\"no\"}"
+  },
+  {
+    "step": "[390 px] Tranche d’âge : « vous attire » et « Entre … et … ans »",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[390 px] Tranche d’âge : aucun débordement horizontal",
+    "ok": true,
+    "detail": "0 px"
+  },
+  {
+    "step": "[390 px] Âges inversés : message dans le champ, bouton désactivé",
+    "ok": true,
+    "detail": "Le premier âge doit être inférieur ou égal au second."
+  },
+  {
+    "step": "[390 px] Plage acceptée préremplie avec la tranche idéale",
+    "ok": true,
+    "detail": "28-34"
+  },
+  {
+    "step": "[390 px] Plage qui n’englobe pas la tranche idéale : explication claire, bouton actif",
+    "ok": true,
+    "detail": "Ces âges doivent inclure votre tranche idéale (28 – 34 ans) : nous enregistrerons 28 – 40 ans."
+  },
+  {
+    "step": "[390 px] Jamais « Sauvegarde impossible » : plage enregistrée 28-40",
+    "ok": true,
+    "detail": "{\"a\":\"28-34\",\"b\":\"28-40\"}"
+  },
+  {
+    "step": "[390 px] Réponse enregistrée aussitôt (sans attendre la fin du module)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[390 px] Retour : question précédente affichée, réponse actuelle cochée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[390 px] Réponse modifiée : remplacée, une seule ligne pour le module 0",
+    "ok": true,
+    "detail": "M0_Q03=C, lignes=1"
+  },
+  {
+    "step": "[390 px] Fil de discussion reconstruit (réponses modifiables)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[390 px] Toucher une réponse du fil la rouvre, valeurs reprises",
+    "ok": true,
+    "detail": "28-34"
+  },
+  {
+    "step": "[390 px] Tranche idéale élargie après coup : plage acceptée ajustée (25-45)",
+    "ok": true,
+    "detail": "25-45 / 25-45"
+  },
+  {
+    "step": "[390 px] Reprise après interruption : réponses conservées, première question restante",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "[390 px] Module 0 terminé → module 1",
+    "ok": true,
+    "detail": "http://localhost:8091/interview/1"
+  },
+  {
+    "step": "[390 px] Retour depuis le module 1 : dernière question du module 0 rouverte",
+    "ok": true,
+    "detail": "http://localhost:8091/interview/0?at=last"
+  },
+  {
+    "step": "[390 px] Écran de retour : aucun débordement horizontal",
+    "ok": true,
+    "detail": "0 px"
+  },
+  {
+    "step": "[390 px] Réponse gardée → retour au module 1 sans rien reposer",
+    "ok": false,
+    "detail": "http://localhost:8091/interview/0?at=last"
+  },
+  {
+    "step": "[390 px] Réponse de suite devenue sans objet effacée (V82_M8_02)",
+    "ok": true,
+    "detail": "{\"success\":true,\"allModulesCompleted\":false,\"removed\":[\"V82_M8_02\"]}"
+  },
+  {
+    "step": "[390 px] Réponse invalide refusée (400)",
+    "ok": true,
+    "detail": "400"
+  },
+  {
+    "step": "[390 px] questionnaireVersion inchangée (8.2)",
+    "ok": true,
+    "detail": "8.2"
+  },
+  {
+    "step": "[390 px] Aucun doublon de module",
+    "ok": true,
+    "detail": "max lignes par module = 1"
+  }
+]

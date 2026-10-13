@@ -60,11 +60,45 @@ export const COUNTRIES: Country[] = [
   { code: 'GF', name: 'Guyane', flag: '🇬🇫', dialCode: '+594', placeholder: '0694 12 34 56', regions: ['Cayenne', 'Matoury', 'Saint-Laurent-du-Maroni', 'Kourou'] },
 ];
 
+// Fuseaux horaires propres à un seul pays de la liste (complète la détection ci-dessous).
+const TIMEZONE_COUNTRY: Record<string, string> = {
+  'Africa/Kinshasa': 'CD',
+  'Africa/Lubumbashi': 'CD',
+  'Africa/Brazzaville': 'CG',
+  'Africa/Libreville': 'GA',
+  'Africa/Lome': 'TG',
+  'Africa/Porto-Novo': 'BJ',
+  'Africa/Ouagadougou': 'BF',
+  'Africa/Bamako': 'ML',
+  'Africa/Conakry': 'GN',
+  'Africa/Niamey': 'NE',
+  'Africa/Kigali': 'RW',
+  'Indian/Mauritius': 'MU',
+  'Indian/Antananarivo': 'MG',
+  'Indian/Reunion': 'RE',
+  'America/Martinique': 'MQ',
+  'America/Guadeloupe': 'GP',
+  'America/Cayenne': 'GF',
+  'America/Port-au-Prince': 'HT',
+  'Europe/Stockholm': 'SE',
+  'Europe/Oslo': 'NO',
+  'Europe/Copenhagen': 'DK',
+  'Europe/Dublin': 'IE',
+  'Europe/Vienna': 'AT',
+  'Europe/Warsaw': 'PL',
+  'Europe/Bucharest': 'RO',
+  'Europe/Athens': 'GR',
+};
+
 // ─── Détection Dynamique du Pays Utilisateur ────────────────────────
 export function detectUserCountry(): Country {
   try {
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    
+    const byZone = TIMEZONE_COUNTRY[timeZone];
+    if (byZone) {
+      return COUNTRIES.find(c => c.code === byZone) || COUNTRIES[0];
+    }
+
     // Mapping Timezone vers Code Pays
     if (timeZone.startsWith('Europe/Paris') || timeZone.startsWith('Europe/Monaco')) {
       return COUNTRIES.find(c => c.code === 'FR') || COUNTRIES[0];

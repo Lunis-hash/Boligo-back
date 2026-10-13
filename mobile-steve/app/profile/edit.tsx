@@ -8,7 +8,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import client, { getReadableError } from '@/services/api';
 import cacheService from '@/services/cacheService';
 import { COUNTRIES, Country } from '@/constants/countries';
-import { detectPlace, LocationPermissionError, normName, splitResidence } from '@/services/location';
+import { detectPlace, formatResidence, LocationPermissionError, normName, splitResidence } from '@/services/location';
+import CityAutocomplete from '@/components/CityAutocomplete';
 
 type MeetingScope = 'local' | 'national' | 'international';
 
@@ -127,9 +128,7 @@ export default function EditProfileScreen() {
 
   /** « Ville, Pays » envoyé au serveur (la virgule sépare la ville du pays). */
   const residenceValue = () => {
-    const city = residenceCity.replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!city) return '';
-    return residenceCountry ? `${city}, ${residenceCountry.name}` : city;
+    return formatResidence(residenceCity, residenceCountry);
   };
 
   const handleLocate = async () => {
@@ -257,7 +256,18 @@ export default function EditProfileScreen() {
               <View style={styles.iconCircle}><MapPin size={16} color={Colors.primary.red} /></View>
               <Text style={styles.fieldLabel}>Ville de résidence</Text>
             </View>
-            <TextInput style={styles.input} value={residenceCity} onChangeText={setResidenceCity} placeholder="Abidjan, Dakar…" placeholderTextColor={Colors.text.inactive} testID="residence-city" />
+            <CityAutocomplete
+              value={residenceCity}
+              onChangeText={setResidenceCity}
+              onSelect={(s) => {
+                if (s.country) setResidenceCountry(s.country);
+                setResidenceCity(s.name);
+              }}
+              countryCode={residenceCountry?.code}
+              placeholder="Abidjan, Bezons, Montréal…"
+              inputStyle={styles.input}
+              testID="residence-city"
+            />
             <TouchableOpacity style={styles.locateBtn} onPress={handleLocate} disabled={locating} activeOpacity={0.7}>
               <Navigation size={14} color={Colors.primary.red} />
               <Text style={styles.locateText}>{locating ? 'Détection en cours…' : 'Détecter ma position'}</Text>

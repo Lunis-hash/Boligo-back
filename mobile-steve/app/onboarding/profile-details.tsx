@@ -9,7 +9,6 @@ import {
   ScrollView,
   Modal,
   Animated,
-  Alert,
   FlatList,
   StatusBar,
   ActivityIndicator,
@@ -18,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   ChevronLeft,
   ChevronRight,
@@ -32,17 +32,23 @@ import {
   Briefcase,
   Plus,
   X,
-  Calendar,
 } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import { Brand } from '@/constants/brand';
 import { PROFESSIONS_DATA, ALL_PROFESSIONS } from '@/constants/professions';
 import { ProfessionIcon } from '@/components/BrandIcons';
+import CityAutocomplete from '@/components/CityAutocomplete';
 import legal from '@/constants/legal.json';
 import { formatLegalDate } from '@/components/LegalDocument';
 
-import { COUNTRIES, Country, detectUserCountry } from '@/constants/countries';
-import { detectPlace, LocationPermissionError } from '@/services/location';
+import { COUNTRIES, Country, detectUserCountry, getCountryByCode } from '@/constants/countries';
+import {
+  detectPlace,
+  formatResidence,
+  hasLocationPermission,
+  LocationPermissionError,
+  normName,
+} from '@/services/location';
 
 // ─── Écran principal ───────────────────────────────────────────────
 import { useAuth } from '@/context/auth';
@@ -50,6 +56,8 @@ import { AuthService } from '@/services/auth';
 
 
 const ERROR_COLOR = Brand.danger;
+/** Nombre d'écrans de l'inscription (courts, un thème chacun). */
+const STEP_COUNT = 6;
 
 // ─── Date de naissance ────────────────────────────────────────────
 const MIN_AGE = 18;
@@ -76,6 +84,22 @@ function getBirthDateError(date: Date | null, today: Date = new Date()): string 
   return null;
 }
 
+/** Jour, mois, année saisis → date locale, ou message d'erreur. */
+function parseBirthFields(day: string, month: string, year: string): { date: Date | null; error: string | null } {
+  if (!day && !month && !year) return { date: null, error: 'Indiquez votre date de naissance.' };
+  const d = Number(day);
+  const m = Number(month);
+  const y = Number(year);
+  if (!day || !month || year.length !== 4) {
+    return { date: null, error: 'Date incomplète : jour, mois et année (4 chiffres).' };
+  }
+  const date = new Date(y, m - 1, d);
+  if (m < 1 || m > 12 || d < 1 || date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    return { date: null, error: 'Cette date n’existe pas. Vérifiez le jour et le mois.' };
+  }
+  return { date, error: getBirthDateError(date) };
+}
+
 /** Date locale → « AAAA-MM-JJ » (toISOString décalerait la date d'un jour hors UTC). */
 function toIsoDay(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -88,6 +112,35 @@ function serverMessageOf(error: any): string {
   if (Array.isArray(message)) return message.join('\n');
   return typeof message === 'string' ? message : '';
 }
+
+// ─── Brouillon d'inscription (sans mot de passe) ──────────────────
+const DRAFT_KEY = 'boligo:signup-draft:v1';
+const DRAFT_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
+
+interface SignupDraft {
+  savedAt: number;
+  step: number;
+  firstName: string;
+  lastName: string;
+  gender: 'H' | 'F' | null;
+  birthDay: string;
+  birthMonth: string;
+  birthYear: string;
+  profession: string;
+  countryCode: string | null;
+  city: string;
+  meetingScope: string | null;
+  email: string;
+  phone: string;
+  dialCountryCode: string | null;
+}
+
+// Clavier numérique et remplissage automatique adaptés à chaque plateforme.
+const AUTOFILL = {
+  bdayDay: Platform.OS === 'web' ? 'bday-day' : 'birthdate-day',
+  bdayMonth: Platform.OS === 'web' ? 'bday-month' : 'birthdate-month',
+  bdayYear: Platform.OS === 'web' ? 'bday-year' : 'birthdate-year',
+} as const;
 
 // ─── Options de préférences rencontre ─────────────────────────────
 const MEETING_SCOPES = [
@@ -118,21 +171,25 @@ const MEETING_SCOPES = [
 function ProgressHeader({
   step,
   onBack,
-  onSkip,
 }: {
   step: number;
   onBack: () => void;
-  onSkip?: () => void;
 }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.navHeader, { paddingTop: insets.top + 12 }]}>
-      <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
+      <TouchableOpacity
+        onPress={onBack}
+        style={styles.backBtn}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Étape précédente"
+      >
         <ChevronLeft size={26} color={Colors.text.primary100} />
       </TouchableOpacity>
 
       <View style={styles.progressRow}>
-        {[1, 2, 3, 4].map((s) => (
+        {Array.from({ length: STEP_COUNT }, (_, i) => i + 1).map((s) => (
           <View key={s} style={styles.progSegWrap}>
             {s <= step ? (
               <LinearGradient
@@ -148,18 +205,34 @@ function ProgressHeader({
         ))}
       </View>
 
-      {onSkip ? (
-        <TouchableOpacity onPress={onSkip} style={styles.skipBtn} activeOpacity={0.7}>
-          <Text style={styles.skipText}>Passer</Text>
-        </TouchableOpacity>
-      ) : (
-        <View style={{ width: 44 }} />
-      )}
+      <View style={{ width: 34 }} />
     </View>
   );
 }
 
-// ... (reste des constantes)
+/** Message d'erreur sous un champ. */
+function FieldError({ message, testID, inside }: { message?: string | null; testID?: string; inside?: boolean }) {
+  if (!message) return null;
+  return (
+    <Text style={[styles.fieldError, inside && styles.fieldErrorInside]} testID={testID} accessibilityLiveRegion="polite">
+      {message}
+    </Text>
+  );
+}
+
+type FieldName =
+  | 'firstName' | 'gender' | 'birth' | 'profession' | 'country' | 'city' | 'scope'
+  | 'email' | 'phone' | 'password' | 'confirm' | 'terms';
+
+/** Champs vérifiés avant de quitter chaque étape. */
+const STEP_FIELDS: Record<number, FieldName[]> = {
+  1: ['firstName', 'gender'],
+  2: ['birth', 'profession'],
+  3: ['country', 'city'],
+  4: ['scope'],
+  5: ['email', 'phone', 'password', 'confirm'],
+  6: ['terms'],
+};
 
 export default function ProfileDetailsScreen() {
   const router = useRouter();
@@ -167,71 +240,179 @@ export default function ProfileDetailsScreen() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Step 1 — Identité + âge + profession
+  // Étape 1 — Identité
   const [firstName, setFirstName]   = useState('');
   const [lastName, setLastName]     = useState('');
+  const [gender, setGender]         = useState<'H' | 'F' | null>(null);
+
+  // Étape 2 — Naissance et métier
+  const [birthDay, setBirthDay]     = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthYear, setBirthYear]   = useState('');
   const [profession, setProfession] = useState('');
   const [showProfessionModal, setShowProfessionModal] = useState(false);
   const [professionSearch, setProfessionSearch] = useState('');
-  const [birthday, setBirthday]     = useState<Date | null>(null);
-  const [gender, setGender]         = useState<'H' | 'F' | null>(null);
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [calMonth, setCalMonth]     = useState(new Date().getMonth());
-  const [calYear, setCalYear]       = useState(new Date().getFullYear() - 25);
-  const [showYearPicker, setShowYearPicker] = useState(false);
+  const monthRef = useRef<TextInput>(null);
+  const yearRef = useRef<TextInput>(null);
 
   const filteredProfessions = ALL_PROFESSIONS.filter(p =>
-    p.toLowerCase().includes(professionSearch.toLowerCase().trim())
+    normName(p).includes(normName(professionSearch))
   );
 
-  // Step 2 — Localisation
+  // Étape 3 — Localisation
   const [country, setCountry]       = useState<Country | null>(null);
-  const [region, setRegion]         = useState('');
-  const [showCountryModal, setShowCountryModal] = useState(false);
-  const [showRegionModal, setShowRegionModal]   = useState(false);
-  const [countrySearch, setCountrySearch]       = useState('');
-  const [citySearch, setCitySearch]             = useState('');
+  const [city, setCity]             = useState('');
+  /** Liste des pays ouverte pour la résidence ou pour l'indicatif. */
+  const [countryModal, setCountryModal] = useState<null | 'residence' | 'dial'>(null);
+  const [countrySearch, setCountrySearch] = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsMessage, setGpsMessage] = useState<{ text: string; tone: 'info' | 'error' } | null>(null);
+  const autoLocated = useRef(false);
 
-  // Step 3 — Préférences
+  // Étape 4 — Préférences
   const [meetingScope, setMeetingScope] = useState<string | null>(null);
 
-  // Step 4 — Compte & Téléphone avec indicatif pays
+  // Étape 5 — Compte & téléphone (indicatif du pays choisi, modifiable)
   const [email, setEmail]                 = useState('');
   const [password, setPassword]           = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone]                 = useState('');
-  const [phoneDialCode, setPhoneDialCode] = useState('+33');
+  const [dialCountry, setDialCountry]     = useState<Country | null>(null);
+  const [dialTouched, setDialTouched]     = useState(false);
   const [showPassword, setShowPassword]   = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // Acceptation expresse des CGU : décochée par défaut, envoyée au serveur.
+
+  // Étape 6 — Acceptation expresse des CGU : décochée par défaut, envoyée au serveur.
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const birthDateError = getBirthDateError(birthday);
+  // Erreurs : affichées sous le champ après sa sortie, ou après « Continuer ».
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const [attempted, setAttempted] = useState<Record<number, boolean>>({});
+  const [serverErrors, setServerErrors] = useState<{ email?: string; phone?: string; general?: string; emailExists?: boolean }>({});
 
-  // Auto-détection dynamique du pays au démarrage & reset session précédente
+  const touch = (f: FieldName) => setTouched((t) => (t[f] ? t : { ...t, [f]: true }));
+
+  const phoneDialCode = (dialCountry ?? country)?.dialCode ?? '+33';
+  const birth = parseBirthFields(birthDay, birthMonth, birthYear);
+  const birthday = birth.error ? null : birth.date;
+
+  // ─── Erreurs par champ ───────────────────────────────────────────
+  const cleanPhone = phone.trim().replace(/[\s\-.()]/g, '');
+  const fieldErrors: Record<FieldName, string | null> = {
+    firstName: firstName.trim().length >= 2 ? null : 'Indiquez votre prénom (2 lettres au moins).',
+    gender: gender ? null : 'Choisissez une réponse.',
+    birth: birth.error,
+    profession: profession.trim().length >= 2 ? null : 'Choisissez ou saisissez votre métier.',
+    country: country ? null : 'Choisissez votre pays.',
+    city: city.trim().length >= 2 ? null : 'Indiquez votre ville.',
+    scope: meetingScope ? null : 'Choisissez où vous souhaitez rencontrer.',
+    email: !email.trim()
+      ? 'Indiquez votre adresse e-mail.'
+      : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ? serverErrors.email ?? null
+        : 'Adresse e-mail invalide (exemple : nom@domaine.fr).',
+    phone: !cleanPhone
+      ? 'Indiquez votre numéro de téléphone.'
+      : cleanPhone.length >= 8 && /^[0-9+]+$/.test(cleanPhone)
+        ? serverErrors.phone ?? null
+        : 'Numéro invalide : 8 chiffres au moins.',
+    password: password.length >= 8 ? null : 'Mot de passe : 8 caractères au moins.',
+    confirm: !confirmPassword
+      ? 'Répétez votre mot de passe.'
+      : confirmPassword === password ? null : 'Les deux mots de passe sont différents.',
+    terms: termsAccepted ? null : 'Cochez la case pour accepter les CGU et la politique de confidentialité.',
+  };
+  /** Erreur affichée (champ quitté, ou étape déjà tentée). */
+  const shown = (f: FieldName, s: number) => (touched[f] || attempted[s] ? fieldErrors[f] : null);
+  const isStepValid = (s: number = step) => (STEP_FIELDS[s] ?? []).every((f) => !fieldErrors[f]);
+
+  // ─── Brouillon : restauré à l'ouverture, enregistré à chaque changement ─
+  const [draftReady, setDraftReady] = useState(false);
+
   useEffect(() => {
     if (token) {
       signOut().catch(() => {});
     }
-    // Pays deviné d'après le fuseau horaire ; la ville reste à choisir (une
-    // ville présélectionnée fausserait le périmètre « Local »).
-    const detected = detectUserCountry();
-    if (detected) {
-      setCountry(detected);
-      setPhoneDialCode(detected.dialCode);
-    }
+    let alive = true;
+    (async () => {
+      let draft: SignupDraft | null = null;
+      try {
+        const raw = await AsyncStorage.getItem(DRAFT_KEY);
+        draft = raw ? JSON.parse(raw) : null;
+        if (draft && Date.now() - (draft.savedAt ?? 0) > DRAFT_MAX_AGE_MS) draft = null;
+      } catch {
+        draft = null;
+      }
+      if (!alive) return;
+      if (draft) {
+        setFirstName(draft.firstName ?? '');
+        setLastName(draft.lastName ?? '');
+        setGender(draft.gender ?? null);
+        setBirthDay(draft.birthDay ?? '');
+        setBirthMonth(draft.birthMonth ?? '');
+        setBirthYear(draft.birthYear ?? '');
+        setProfession(draft.profession ?? '');
+        setCity(draft.city ?? '');
+        setMeetingScope(draft.meetingScope ?? null);
+        setEmail(draft.email ?? '');
+        setPhone(draft.phone ?? '');
+        const dc = draft.dialCountryCode ? getCountryByCode(draft.dialCountryCode) ?? null : null;
+        if (dc) {
+          setDialCountry(dc);
+          setDialTouched(true);
+        }
+        // Le dernier écran (CGU) se revalide : reprise au plus à l’étape du compte.
+        if (draft.step >= 1) setStep(Math.min(draft.step, STEP_COUNT - 1));
+      }
+      // Pays : celui du brouillon, sinon deviné d'après le fuseau horaire ; la
+      // ville reste à choisir (une ville imposée fausserait le périmètre « Local »).
+      const saved = draft?.countryCode ? getCountryByCode(draft.countryCode) ?? null : null;
+      setCountry(saved ?? detectUserCountry());
+      setDraftReady(true);
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    const draft: SignupDraft = {
+      savedAt: Date.now(),
+      step,
+      firstName,
+      lastName,
+      gender,
+      birthDay,
+      birthMonth,
+      birthYear,
+      profession,
+      countryCode: country?.code ?? null,
+      city,
+      meetingScope,
+      email,
+      phone,
+      dialCountryCode: dialTouched ? dialCountry?.code ?? null : null,
+    };
+    const timer = setTimeout(() => {
+      AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draft)).catch(() => {});
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [draftReady, step, firstName, lastName, gender, birthDay, birthMonth, birthYear, profession,
+    country, city, meetingScope, email, phone, dialCountry, dialTouched]);
 
   // Animations
   const fadeAnim  = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   const isFirstStepRender = useRef(true);
+  const scrollRef = useRef<ScrollView>(null);
 
   const animateTransition = (nextStep: number) => {
-    Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }).start(() => {
+    Animated.timing(fadeAnim, { toValue: 0, duration: 160, useNativeDriver: true }).start(() => {
       setStep(nextStep);
+      scrollRef.current?.scrollTo?.({ y: 0, animated: false });
     });
   };
 
@@ -245,131 +426,128 @@ export default function ProfileDetailsScreen() {
     }
     slideAnim.setValue(24);
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 320, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.spring(slideAnim, { toValue: 0, friction: 8, tension: 55, useNativeDriver: true }),
     ]).start();
   }, [step, fadeAnim, slideAnim]);
 
-  const handleNext = async () => {
-    if (step < 4) animateTransition(step + 1);
-    else {
-      // Garde-fous : le bouton est déjà désactivé dans ces cas.
-      if (!termsAccepted) {
-        Alert.alert(
-          'Conditions à accepter',
-          'Pour créer votre compte, vous devez accepter les CGU et la politique de confidentialité.',
-        );
-        return;
-      }
-      if (!birthday || birthDateError) {
-        Alert.alert('Date de naissance', birthDateError || 'Veuillez indiquer votre date de naissance.');
-        return;
-      }
+  // Étape 3 : si la localisation a déjà été acceptée, la ville est préremplie
+  // sans rien demander (toujours modifiable).
+  useEffect(() => {
+    if (step !== 3 || autoLocated.current || city.trim()) return;
+    autoLocated.current = true;
+    hasLocationPermission().then((granted) => {
+      if (granted) handleGPS(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
-      // L'adresse e-mail est normalisée avant envoi (le serveur l'enregistre en minuscules).
-      const normalizedEmail = email.trim().toLowerCase();
+  const chooseCountry = (c: Country) => {
+    if (c.code !== country?.code) setCity('');
+    setCountry(c);
+    if (!dialTouched) setDialCountry(null);
+  };
 
+  const loginExisting = async (normalizedEmail: string) => {
+    try {
       setIsSubmitting(true);
-      try {
-        const cleanPhone = phone.trim();
-        const formattedPhone = cleanPhone
-          ? (cleanPhone.startsWith('+') ? cleanPhone : `${phoneDialCode} ${cleanPhone}`)
-          : undefined;
+      const loginRes = await AuthService.login(normalizedEmail, password);
 
-        const result = await AuthService.register({
-          email: normalizedEmail,
-          password,
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          birthDate: toIsoDay(birthday),
-          gender: gender!,
-          city: `${region}, ${country?.name || ''}`,
-          telephone: formattedPhone,
-          job: profession.trim(),
-          meetingScope: (meetingScope as 'local' | 'national' | 'international' | null) ?? undefined,
-          acceptTerms: true,
-          termsVersion: legal.version,
+      // Si le compte n'est pas vérifié, redirection vers l'écran OTP
+      if (loginRes.isVerified === false || (!loginRes.access_token && loginRes.email)) {
+        router.push({
+          pathname: '/(auth)/verify',
+          params: { email: (loginRes.email || normalizedEmail).trim() },
         });
-
-        // Vérifier si le token est fourni ou si une vérification OTP est requise
-        const token = result?.access_token || result?.token || result?.accessToken;
-        const userId = result?.userId || result?.user?.id || result?.id || result?.user?._id || result?._id;
-        const refreshToken = result?.refresh_token || result?.refreshToken;
-
-        if (token) {
-          await signIn(token, userId, refreshToken);
-          router.replace('/interview/0');
-        } else {
-          // Le compte a été créé mais nécessite obligatoirement la validation du code OTP
-          router.push({
-            pathname: '/(auth)/verify',
-            params: { email: normalizedEmail },
-          });
-        }
-      } catch (error: any) {
-        console.error('Registration failed:', error?.response?.status ?? error?.message);
-        const serverMsg = serverMessageOf(error);
-
-        if (error?.response?.status === 409) {
-          // Le serveur distingue le doublon de téléphone du doublon d'e-mail.
-          if (/t[ée]l[ée]phone|phone/i.test(serverMsg)) {
-            Alert.alert(
-              'Numéro déjà utilisé',
-              'Ce numéro de téléphone est déjà utilisé. Vérifiez-le, ou connectez-vous si ce compte est le vôtre.',
-              [
-                { text: 'Modifier le numéro', style: 'cancel' },
-                { text: 'Se connecter', onPress: () => router.replace('/(auth)/login') },
-              ],
-            );
-            return;
-          }
-
-          Alert.alert(
-            'Compte existant',
-            'Un compte existe déjà avec cet e-mail. Souhaitez-vous vous connecter ?',
-            [
-              { text: 'Annuler', style: 'cancel' },
-              {
-                text: 'Se connecter',
-                onPress: async () => {
-                  try {
-                    setIsSubmitting(true);
-                    const loginRes = await AuthService.login(normalizedEmail, password);
-
-                    // Si le compte n'est pas vérifié, redirection vers l'écran OTP
-                    if (loginRes.isVerified === false || (!loginRes.access_token && loginRes.email)) {
-                      router.push({
-                        pathname: '/(auth)/verify',
-                        params: { email: (loginRes.email || normalizedEmail).trim() },
-                      });
-                      return;
-                    }
-
-                    const lToken = loginRes?.access_token || loginRes?.token || loginRes?.accessToken;
-                    const lUserId = loginRes?.userId || loginRes?.user?.id || loginRes?.id || loginRes?._id;
-                    await signIn(lToken, lUserId, loginRes?.refresh_token || loginRes?.refreshToken);
-                    router.replace('/interview/0');
-                  } catch {
-                    // Mot de passe différent : l'écran de connexion propose la réinitialisation.
-                    router.replace('/(auth)/login');
-                  } finally {
-                    setIsSubmitting(false);
-                  }
-                },
-              },
-            ]
-          );
-        } else {
-          Alert.alert(
-            'Inscription impossible',
-            // readableMessage (posé par l'intercepteur) couvre réseau, 429 et 5xx en français.
-            error?.readableMessage || serverMsg || 'Une erreur est survenue lors de l’inscription. Veuillez réessayer.',
-          );
-        }
-      } finally {
-        setIsSubmitting(false);
+        return;
       }
+
+      const lToken = loginRes?.access_token || loginRes?.token || loginRes?.accessToken;
+      const lUserId = loginRes?.userId || loginRes?.user?.id || loginRes?.id || loginRes?._id;
+      await signIn(lToken, lUserId, loginRes?.refresh_token || loginRes?.refreshToken);
+      AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+      router.replace('/interview/0');
+    } catch {
+      // Mot de passe différent : l'écran de connexion propose la réinitialisation.
+      router.replace('/(auth)/login');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const submit = async () => {
+    if (!birthday) return;
+    // L'adresse e-mail est normalisée avant envoi (le serveur l'enregistre en minuscules).
+    const normalizedEmail = email.trim().toLowerCase();
+    setServerErrors({});
+    setIsSubmitting(true);
+    try {
+      const formattedPhone = cleanPhone.startsWith('+') ? phone.trim() : `${phoneDialCode} ${phone.trim()}`;
+
+      const result = await AuthService.register({
+        email: normalizedEmail,
+        password,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        birthDate: toIsoDay(birthday),
+        gender: gender!,
+        // « Ville, Pays » : format lu par le serveur (région, langues, filtres).
+        city: formatResidence(city, country),
+        telephone: formattedPhone,
+        job: profession.trim(),
+        meetingScope: (meetingScope as 'local' | 'national' | 'international' | null) ?? undefined,
+        acceptTerms: true,
+        termsVersion: legal.version,
+      });
+
+      // Vérifier si le token est fourni ou si une vérification OTP est requise
+      const accessToken = result?.access_token || result?.token || result?.accessToken;
+      const userId = result?.userId || result?.user?.id || result?.id || result?.user?._id || result?._id;
+      const refreshToken = result?.refresh_token || result?.refreshToken;
+      AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+
+      if (accessToken) {
+        await signIn(accessToken, userId, refreshToken);
+        router.replace('/interview/0');
+      } else {
+        // Le compte a été créé mais nécessite obligatoirement la validation du code OTP
+        router.push({
+          pathname: '/(auth)/verify',
+          params: { email: normalizedEmail },
+        });
+      }
+    } catch (error: any) {
+      console.error('Registration failed:', error?.response?.status ?? error?.message);
+      const serverMsg = serverMessageOf(error);
+
+      if (error?.response?.status === 409) {
+        // Le serveur distingue le doublon de téléphone du doublon d'e-mail :
+        // retour à l'écran du compte, erreur sous le champ concerné.
+        if (/t[ée]l[ée]phone|phone/i.test(serverMsg)) {
+          setServerErrors({ phone: 'Ce numéro est déjà utilisé. Vérifiez-le, ou connectez-vous si ce compte est le vôtre.' });
+        } else {
+          setServerErrors({ email: 'Un compte existe déjà avec cet e-mail.', emailExists: true });
+        }
+        setAttempted((a) => ({ ...a, 5: true }));
+        animateTransition(5);
+      } else {
+        setServerErrors({
+          // readableMessage (posé par l'intercepteur) couvre réseau, 429 et 5xx en français.
+          general: error?.readableMessage || serverMsg || 'Une erreur est survenue lors de l’inscription. Veuillez réessayer.',
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (!isStepValid()) {
+      setAttempted((a) => ({ ...a, [step]: true }));
+      return;
+    }
+    if (step < STEP_COUNT) animateTransition(step + 1);
+    else submit();
   };
 
   const handleBack = () => {
@@ -379,107 +557,50 @@ export default function ProfileDetailsScreen() {
     }
   };
 
-  // GPS
-  const handleGPS = async () => {
+  // GPS : commune exacte, dans un champ modifiable.
+  const handleGPS = async (silent = false) => {
     setGpsLoading(true);
+    setGpsMessage(null);
     try {
       const place = await detectPlace();
+      if (place.country) {
+        chooseCountry(place.country);
+      }
+      if (place.city) setCity(place.city);
       if (!place.country) {
-        Alert.alert(
-          'Pays non proposé',
-          'Votre pays ne figure pas encore dans la liste. Choisissez le pays le plus proche ou réessayez plus tard.',
-        );
+        setGpsMessage({
+          tone: 'error',
+          text: 'Votre pays ne figure pas encore dans la liste : choisissez le plus proche et saisissez votre ville.',
+        });
+      } else if (!place.city) {
+        setGpsMessage({ tone: 'info', text: 'Pays détecté. Saisissez votre ville ci-dessous.' });
+      } else if (place.accuracy && place.accuracy > 2000) {
+        setGpsMessage({
+          tone: 'info',
+          text: `Position approximative (à ${Math.round(place.accuracy / 1000)} km près) : vérifiez la ville et corrigez-la si besoin.`,
+        });
       } else {
-        setCountry(place.country);
-        setPhoneDialCode(place.country.dialCode);
-        setRegion(place.city);
-        if (!place.city) {
-          Alert.alert('Ville introuvable', 'Votre pays est détecté : choisissez votre ville dans la liste.');
-        }
+        setGpsMessage({ tone: 'info', text: 'Ville détectée : vous pouvez la corriger ci-dessous.' });
       }
     } catch (e) {
-      if (e instanceof LocationPermissionError) {
-        Alert.alert('Permission refusée', 'Activez la localisation dans vos paramètres, ou choisissez votre ville manuellement.');
-      } else {
-        Alert.alert('Position introuvable', 'Impossible de détecter votre position. Choisissez votre pays et votre ville manuellement.');
+      if (!silent) {
+        setGpsMessage({
+          tone: 'error',
+          text: e instanceof LocationPermissionError
+            ? 'Localisation refusée : saisissez votre ville ci-dessous (ou activez la localisation dans les réglages).'
+            : 'Position introuvable : saisissez votre ville ci-dessous.',
+        });
       }
     }
     setGpsLoading(false);
   };
 
-  // Calendrier
-  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  const DAYS_OF_WEEK = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  // Années de naissance possibles pour un âge de 18 à 99 ans.
-  const YEARS = Array.from({ length: MAX_AGE - MIN_AGE + 2 }, (_, i) => new Date().getFullYear() - MIN_AGE - i);
-
-  const getDaysInMonth = (m: number, y: number) => new Date(y, m + 1, 0).getDate();
-  const getFirstDay = (m: number, y: number) => {
-    const d = new Date(y, m, 1).getDay();
-    return d === 0 ? 6 : d - 1;
-  };
-
-  const renderCalendarDays = () => {
-    const total = getDaysInMonth(calMonth, calYear);
-    const first = getFirstDay(calMonth, calYear);
-    const els = [];
-    for (let i = 0; i < first; i++) {
-      els.push(<View key={`e${i}`} style={styles.calCell} />);
-    }
-    for (let d = 1; d <= total; d++) {
-      const sel = birthday?.getDate() === d && birthday?.getMonth() === calMonth && birthday?.getFullYear() === calYear;
-      els.push(
-        <TouchableOpacity
-          key={d}
-          style={[styles.calCell, sel && styles.calCellActive]}
-          onPress={() => setBirthday(new Date(calYear, calMonth, d))}
-          activeOpacity={0.7}
-        >
-          {sel ? (
-            <LinearGradient
-              colors={[Colors.primary.red, Colors.primary.purple]}
-              style={styles.calCellGradient}
-            >
-              <Text style={styles.calDayActive}>{d}</Text>
-            </LinearGradient>
-          ) : (
-            <Text style={styles.calDay}>{d}</Text>
-          )}
-        </TouchableOpacity>
-      );
-    }
-    return els;
-  };
-
   const filteredCountries = COUNTRIES.filter(c =>
-    c.name.toLowerCase().includes(countrySearch.toLowerCase())
+    normName(c.name).includes(normName(countrySearch)) || c.dialCode.includes(countrySearch.trim())
   );
-
-  // Villes du pays filtrées par la saisie ; une ville absente peut être choisie telle quelle.
-  const citySearchTrim = citySearch.replace(/\s+/g, ' ').trim();
-  const filteredCities = (country?.regions || []).filter(r =>
-    r.toLowerCase().includes(citySearchTrim.toLowerCase())
-  );
-  const customCity =
-    citySearchTrim.length >= 2 && !filteredCities.some(r => r.toLowerCase() === citySearchTrim.toLowerCase())
-      ? citySearchTrim
-      : null;
-
-  // ─── Validation par étape ────────────────────────────────────────
-  const isStepValid = () => {
-    if (step === 1) {
-      return firstName.trim().length >= 2 && profession.trim().length >= 2 && birthday !== null && !birthDateError && gender !== null;
-    }
-    if (step === 2) return country !== null && region.length > 0;
-    if (step === 3) return meetingScope !== null;
-    if (step === 4) {
-      const isEmailValid = email.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-      const isPasswordValid = password.length >= 8 && confirmPassword === password;
-      const cleanPhone = phone.trim().replace(/[\s\-\.\(\)]/g, '');
-      const isPhoneValid = cleanPhone.length >= 8 && /^[0-9+]+$/.test(cleanPhone);
-      return isEmailValid && isPasswordValid && isPhoneValid && termsAccepted && !!birthday && !birthDateError;
-    }
-    return false;
+  const closeCountryModal = () => {
+    setCountryModal(null);
+    setCountrySearch('');
   };
 
   const openLegal = (path: '/legal/cgu' | '/legal/confidentialite') => (e?: { stopPropagation?: () => void }) => {
@@ -488,139 +609,206 @@ export default function ProfileDetailsScreen() {
     router.push(path as any);
   };
 
-  // ─── Rendu étape 1 — Identité + Âge ────────────────────────────
-  const renderStep1 = () => (
-    <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-      <Text style={styles.stepLabel}>Étape 1 sur 4</Text>
-      <Text style={styles.stepTitle}>Commençons par{'\n'}vous connaître.</Text>
-      <Text style={styles.stepDesc}>Seuls votre prénom, votre âge, votre ville et votre métier apparaissent sur votre fiche ; votre nom reste privé.</Text>
+  const stepAnimStyle = { opacity: fadeAnim, transform: [{ translateY: slideAnim }] };
+  const stepHeader = (title: string, desc?: string) => (
+    <>
+      <Text style={styles.stepLabel}>Étape {step} sur {STEP_COUNT}</Text>
+      <Text style={styles.stepTitle}>{title}</Text>
+      {desc ? <Text style={styles.stepDesc}>{desc}</Text> : null}
+    </>
+  );
 
-      {/* Prénom */}
-      <View style={styles.inputGroup}>
+  // ─── Étape 1 — Identité ──────────────────────────────────────────
+  const renderStep1 = () => (
+    <Animated.View style={[styles.stepWrap, stepAnimStyle]}>
+      {stepHeader('Commençons par\nvous connaître.', "Seuls votre prénom, votre âge, votre ville et votre métier apparaissent sur votre fiche ; votre nom reste privé.")}
+
+      <View style={[styles.inputGroup, shown('firstName', 1) && styles.inputGroupError]}>
         <Text style={styles.inputLabel}>Prénom *</Text>
         <TextInput
           style={styles.input}
           value={firstName}
           onChangeText={setFirstName}
+          onBlur={() => touch('firstName')}
           placeholder="Votre prénom"
           placeholderTextColor={Colors.text.primary40}
-          autoFocus
+          autoComplete="given-name"
+          textContentType="givenName"
+          autoCapitalize="words"
+          autoCorrect={false}
+          returnKeyType="next"
+          testID="first-name"
         />
       </View>
+      <FieldError message={shown('firstName', 1)} testID="first-name-error" />
 
-      {/* Nom */}
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Nom</Text>
+        <Text style={styles.inputLabel}>Nom (privé)</Text>
         <TextInput
           style={styles.input}
           value={lastName}
           onChangeText={setLastName}
           placeholder="Votre nom"
           placeholderTextColor={Colors.text.primary40}
+          autoComplete="family-name"
+          textContentType="familyName"
+          autoCapitalize="words"
+          autoCorrect={false}
+          testID="last-name"
         />
       </View>
 
-      {/* Profession / Métier */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Profession / Métier *</Text>
-        <TouchableOpacity
-          style={styles.selectBtn}
-          onPress={() => setShowProfessionModal(true)}
-          activeOpacity={0.75}
-        >
-          <View style={styles.selectBtnLeft}>
-            <View style={[styles.selectIconWrap, profession ? styles.selectIconWrapActive : null]}>
-              <Briefcase size={17} color={profession ? Colors.primary.red : Colors.text.primary40} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.selectBtnTitle, !profession && styles.selectBtnPlaceholder]}>
-                {profession || 'Sélectionner ou rechercher un métier'}
-              </Text>
-              {profession ? (
-                <Text style={styles.selectBtnSub}>Appuyez pour modifier</Text>
-              ) : null}
-            </View>
-          </View>
-          <ChevronRight size={18} color={Colors.text.primary40} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Genre */}
-      <View style={styles.inputGroup}>
+      <View style={[styles.inputGroup, { borderBottomWidth: 0 }]}>
         <Text style={styles.inputLabel}>Je suis *</Text>
-        <View style={styles.genderRow}>
-          <TouchableOpacity
-            onPress={() => setGender('H')}
-            style={[styles.genderBtn, gender === 'H' && styles.genderBtnActive]}
-          >
-            <Text style={[styles.genderText, gender === 'H' && styles.genderTextActive]}>Homme</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setGender('F')}
-            style={[styles.genderBtn, gender === 'F' && styles.genderBtnActive]}
-          >
-            <Text style={[styles.genderText, gender === 'F' && styles.genderTextActive]}>Femme</Text>
-          </TouchableOpacity>
+        <View style={styles.genderRow} accessibilityRole="radiogroup">
+          {([['H', 'Homme'], ['F', 'Femme']] as const).map(([value, label]) => (
+            <TouchableOpacity
+              key={value}
+              onPress={() => { setGender(value); touch('gender'); }}
+              style={[styles.genderBtn, gender === value && styles.genderBtnActive]}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: gender === value }}
+            >
+              <Text style={[styles.genderText, gender === value && styles.genderTextActive]}>{label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
-      </View>
-
-      {/* Date de naissance */}
-      <View style={[styles.inputGroup, { borderBottomWidth: 0, marginTop: Spacing.md }]}>
-        <Text style={styles.inputLabel}>Date de naissance *</Text>
-        <TouchableOpacity
-          style={styles.dateBtn}
-          onPress={() => setShowCalendar(true)}
-          activeOpacity={0.7}
-        >
-          <LinearGradient
-            colors={birthday ? [Colors.primary.red + '18', Colors.primary.purple + '10'] : ['#FFFFFF', '#FFFFFF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.dateBtnGradient, birthDateError ? styles.dateBtnError : null]}
-          >
-            <View style={styles.dateBtnLeft}>
-              <LinearGradient
-                colors={[Colors.primary.red, Colors.primary.purple]}
-                style={styles.dateBtnIcon}
-              >
-                <Calendar size={17} color="#FFFFFF" strokeWidth={2} />
-              </LinearGradient>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.dateBtnTitle}>
-                  {birthday
-                    ? birthDateError
-                      ? birthday.toLocaleDateString('fr-FR')
-                      : `${birthday.toLocaleDateString('fr-FR')} · ${getAge(birthday)} ans`
-                    : 'Choisir ma date de naissance'}
-                </Text>
-                {!birthday && (
-                  <Text style={styles.dateBtnSub}>Vous devez avoir au moins 18 ans</Text>
-                )}
-                {birthDateError ? (
-                  <Text style={styles.fieldError} testID="birthdate-error">{birthDateError}</Text>
-                ) : null}
-              </View>
-            </View>
-            <ChevronRight size={18} color={Colors.text.primary40} />
-          </LinearGradient>
-        </TouchableOpacity>
+        <FieldError message={shown('gender', 1)} testID="gender-error" inside />
       </View>
     </Animated.View>
   );
 
-  // ─── Rendu étape 2 — Localisation ───────────────────────────────
-  const renderStep2 = () => (
-    <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-      <Text style={styles.stepLabel}>Étape 2 sur 4</Text>
-      <Text style={styles.stepTitle}>Où êtes-vous{'\n'}basé(e) ?</Text>
-      <Text style={styles.stepDesc}>Pour vous connecter avec des personnes près de chez vous ou ailleurs.</Text>
+  // ─── Étape 2 — Naissance et métier ───────────────────────────────
+  const onBirthPart = (part: 'day' | 'month' | 'year', text: string) => {
+    const digits = text.replace(/\D/g, '');
+    // Date collée d'un bloc (« 15/03/1990 ») : répartie dans les trois cases.
+    if (part === 'day' && digits.length >= 8) {
+      setBirthDay(digits.slice(0, 2));
+      setBirthMonth(digits.slice(2, 4));
+      setBirthYear(digits.slice(4, 8));
+      return;
+    }
+    if (part === 'day') {
+      setBirthDay(digits.slice(0, 2));
+      if (digits.length === 2) monthRef.current?.focus();
+    } else if (part === 'month') {
+      setBirthMonth(digits.slice(0, 2));
+      if (digits.length === 2) yearRef.current?.focus();
+    } else {
+      setBirthYear(digits.slice(0, 4));
+      if (digits.length === 4) touch('birth');
+    }
+  };
 
-      {/* Bouton GPS */}
+  const renderStep2 = () => {
+    const birthErr = shown('birth', 2);
+    return (
+      <Animated.View style={[styles.stepWrap, stepAnimStyle]}>
+        {stepHeader('Votre âge\net votre métier.', "Vous devez avoir au moins 18 ans.")}
+
+        <View style={[styles.inputGroup, { borderBottomWidth: 0 }]}>
+          <Text style={styles.inputLabel} nativeID="birth-label">Date de naissance *</Text>
+          <View style={styles.birthRow}>
+            <View style={styles.birthCell}>
+              <TextInput
+                style={[styles.birthInput, birthErr && styles.birthInputError]}
+                value={birthDay}
+                onChangeText={(t) => onBirthPart('day', t)}
+                placeholder="JJ"
+                placeholderTextColor={Colors.text.primary40}
+                keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={Platform.OS === 'web' ? 10 : 2}
+                autoComplete={AUTOFILL.bdayDay as any}
+                accessibilityLabel="Jour de naissance"
+                testID="birth-day"
+              />
+              <Text style={styles.birthHint}>Jour</Text>
+            </View>
+            <Text style={styles.birthSep}>/</Text>
+            <View style={styles.birthCell}>
+              <TextInput
+                ref={monthRef}
+                style={[styles.birthInput, birthErr && styles.birthInputError]}
+                value={birthMonth}
+                onChangeText={(t) => onBirthPart('month', t)}
+                placeholder="MM"
+                placeholderTextColor={Colors.text.primary40}
+                keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={2}
+                autoComplete={AUTOFILL.bdayMonth as any}
+                accessibilityLabel="Mois de naissance"
+                testID="birth-month"
+              />
+              <Text style={styles.birthHint}>Mois</Text>
+            </View>
+            <Text style={styles.birthSep}>/</Text>
+            <View style={[styles.birthCell, styles.birthCellYear]}>
+              <TextInput
+                ref={yearRef}
+                style={[styles.birthInput, birthErr && styles.birthInputError]}
+                value={birthYear}
+                onChangeText={(t) => onBirthPart('year', t)}
+                onBlur={() => touch('birth')}
+                placeholder="AAAA"
+                placeholderTextColor={Colors.text.primary40}
+                keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={4}
+                autoComplete={AUTOFILL.bdayYear as any}
+                accessibilityLabel="Année de naissance"
+                testID="birth-year"
+              />
+              <Text style={styles.birthHint}>Année</Text>
+            </View>
+          </View>
+          {birthday && !birthErr ? (
+            <Text style={styles.fieldOk} testID="birth-age">{getAge(birthday)} ans</Text>
+          ) : null}
+          <FieldError message={birthErr} testID="birthdate-error" inside />
+        </View>
+
+        <View style={[styles.inputGroup, { borderBottomWidth: 0 }]}>
+          <Text style={styles.inputLabel}>Profession / Métier *</Text>
+          <TouchableOpacity
+            style={[styles.selectBtn, shown('profession', 2) && styles.selectBtnError]}
+            onPress={() => setShowProfessionModal(true)}
+            activeOpacity={0.75}
+            testID="profession-select"
+          >
+            <View style={styles.selectBtnLeft}>
+              <View style={[styles.selectIconWrap, profession ? styles.selectIconWrapActive : null]}>
+                <Briefcase size={17} color={profession ? Colors.primary.red : Colors.text.primary40} />
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={[styles.selectBtnTitle, !profession && styles.selectBtnPlaceholder]}>
+                  {profession || 'Sélectionner ou rechercher un métier'}
+                </Text>
+                {profession ? (
+                  <Text style={styles.selectBtnSub}>Appuyez pour modifier</Text>
+                ) : null}
+              </View>
+            </View>
+            <ChevronRight size={18} color={Colors.text.primary40} />
+          </TouchableOpacity>
+          <FieldError message={shown('profession', 2)} testID="profession-error" inside />
+        </View>
+      </Animated.View>
+    );
+  };
+
+  // ─── Étape 3 — Localisation ──────────────────────────────────────
+  const renderStep3 = () => (
+    <Animated.View style={[styles.stepWrap, stepAnimStyle]}>
+      {stepHeader('Où vivez-vous ?', "Pour vous proposer des personnes près de chez vous ou ailleurs.")}
+
       <TouchableOpacity
         style={styles.gpsBtn}
-        onPress={handleGPS}
+        onPress={() => handleGPS(false)}
         activeOpacity={0.8}
         disabled={gpsLoading}
+        testID="gps-button"
       >
         <LinearGradient
           colors={[Colors.primary.red, Colors.primary.purple, Colors.primary.orange]}
@@ -628,53 +816,64 @@ export default function ProfileDetailsScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.gpsBtnGradient}
         >
-          <Navigation size={18} color="#fff" />
+          {gpsLoading ? <ActivityIndicator size="small" color="#fff" /> : <Navigation size={18} color="#fff" />}
           <Text style={styles.gpsBtnText}>
-            {gpsLoading ? 'Détection en cours...' : 'Détecter ma position automatiquement'}
+            {gpsLoading ? 'Détection en cours…' : 'Utiliser ma position'}
           </Text>
         </LinearGradient>
       </TouchableOpacity>
+      {gpsMessage ? (
+        <Text
+          style={[styles.gpsMessage, gpsMessage.tone === 'error' && { color: ERROR_COLOR }]}
+          testID="gps-message"
+        >
+          {gpsMessage.text}
+        </Text>
+      ) : null}
 
       <View style={styles.orRow}>
         <View style={styles.orLine} />
-        <Text style={styles.orText}>ou choisir manuellement</Text>
+        <Text style={styles.orText}>ou saisir</Text>
         <View style={styles.orLine} />
       </View>
 
-      {/* Sélecteur pays */}
       <View style={styles.inputGroup}>
         <Text style={styles.inputLabel}>Pays *</Text>
         <TouchableOpacity
           style={styles.selectorBtn}
-          onPress={() => setShowCountryModal(true)}
+          onPress={() => setCountryModal('residence')}
           activeOpacity={0.7}
+          testID="country-select"
         >
-          <Text style={[styles.selectorText, !country && styles.selectorPlaceholder]}>
+          <Text style={[styles.selectorText, !country && styles.selectorPlaceholder]} numberOfLines={1}>
             {country ? `${country.flag}  ${country.name}` : 'Sélectionner un pays'}
           </Text>
           <ChevronRight size={18} color={Colors.text.primary40} />
         </TouchableOpacity>
+        <FieldError message={shown('country', 3)} inside />
       </View>
 
-      {/* Sélecteur région */}
-      {country && (
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Ville / Région *</Text>
-          <TouchableOpacity
-            style={styles.selectorBtn}
-            onPress={() => setShowRegionModal(true)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.selectorText, !region && styles.selectorPlaceholder]}>
-              {region || 'Sélectionner une ville'}
-            </Text>
-            <ChevronRight size={18} color={Colors.text.primary40} />
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={[styles.inputGroup, { borderBottomWidth: 0 }]}>
+        <Text style={styles.inputLabel}>Ville *</Text>
+        <CityAutocomplete
+          value={city}
+          onChangeText={setCity}
+          onSelect={(s) => {
+            if (s.country && s.country.code !== country?.code) chooseCountry(s.country);
+            setCity(s.name);
+            touch('city');
+          }}
+          onBlur={() => touch('city')}
+          countryCode={country?.code}
+          placeholder="Tapez votre ville (ex. Bezons)"
+          error={shown('city', 3)}
+          testID="city-search"
+          inputStyle={styles.cityInput}
+        />
+        <Text style={styles.fieldHelp}>Votre ville n’apparaît pas ? Écrivez-la simplement.</Text>
+      </View>
 
-      {/* Récap localisation */}
-      {country && region && (
+      {country && city.trim().length >= 2 ? (
         <View style={styles.locationRecap}>
           <LinearGradient
             colors={[Colors.primary.red + '12', Colors.primary.purple + '08']}
@@ -684,20 +883,18 @@ export default function ProfileDetailsScreen() {
           >
             <MapPin size={16} color={Colors.primary.red} />
             <Text style={styles.locationRecapText}>
-              {region}, {country.name} {country.flag}
+              {formatResidence(city, country)} {country.flag}
             </Text>
           </LinearGradient>
         </View>
-      )}
+      ) : null}
     </Animated.View>
   );
 
-  // ─── Rendu étape 3 — Préférences rencontre ──────────────────────
-  const renderStep3 = () => (
-    <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-      <Text style={styles.stepLabel}>Étape 3 sur 4</Text>
-      <Text style={styles.stepTitle}>Où souhaitez-vous{'\n'}rencontrer ?</Text>
-      <Text style={styles.stepDesc}>Vous pourrez la modifier à tout moment depuis « Modifier le profil ».</Text>
+  // ─── Étape 4 — Préférences rencontre ─────────────────────────────
+  const renderStep4 = () => (
+    <Animated.View style={[styles.stepWrap, stepAnimStyle]}>
+      {stepHeader('Où souhaitez-vous\nrencontrer ?', "Vous pourrez la modifier à tout moment depuis « Modifier le profil ».")}
 
       <View style={styles.scopeList}>
         {MEETING_SCOPES.map((scope) => {
@@ -709,6 +906,8 @@ export default function ProfileDetailsScreen() {
               style={[styles.scopeCard, selected && styles.scopeCardActive]}
               onPress={() => setMeetingScope(scope.id)}
               activeOpacity={0.8}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
             >
               {selected && (
                 <LinearGradient
@@ -732,7 +931,7 @@ export default function ProfileDetailsScreen() {
                     <Icon size={20} color={Colors.text.primary40} />
                   )}
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={[styles.scopeTitle, selected && styles.scopeTitleActive]}>
                     {scope.title}
                   </Text>
@@ -755,43 +954,105 @@ export default function ProfileDetailsScreen() {
           );
         })}
       </View>
+      <FieldError message={shown('scope', 4)} inside />
     </Animated.View>
   );
 
-  // ─── Rendu étape 4 — Compte ─────────────────────────────────────
-  const renderStep4 = () => (
-    <Animated.View style={[styles.stepWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-      <Text style={styles.stepLabel}>Étape 4 sur 4</Text>
-      <Text style={styles.stepTitle}>Créez votre{'\n'}compte sécurisé.</Text>
-      <Text style={styles.stepDesc}>Votre e-mail et votre téléphone ne sont révélés qu'avec votre accord. Vos données ne sont jamais vendues.</Text>
+  // ─── Étape 5 — Compte ────────────────────────────────────────────
+  const dialFlag = (dialCountry ?? country)?.flag || '🌍';
+  const phonePlaceholder = (dialCountry ?? country)?.placeholder || '06 12 34 56 78';
+  const renderStep5 = () => (
+    <Animated.View style={[styles.stepWrap, stepAnimStyle]}>
+      {stepHeader('Créez votre\ncompte sécurisé.', "Votre e-mail et votre téléphone ne sont révélés qu'avec votre accord. Vos données ne sont jamais vendues.")}
 
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Adresse email *</Text>
+      <View style={[styles.inputGroup, shown('email', 5) && styles.inputGroupError]}>
+        <Text style={styles.inputLabel}>Adresse e-mail *</Text>
         <TextInput
           style={styles.input}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(t) => {
+            setEmail(t);
+            if (serverErrors.email) setServerErrors((e) => ({ ...e, email: undefined, emailExists: false }));
+          }}
+          onBlur={() => touch('email')}
           placeholder="exemple@email.com"
           placeholderTextColor={Colors.text.primary40}
           keyboardType="email-address"
+          inputMode="email"
+          autoComplete="email"
+          textContentType="emailAddress"
           autoCapitalize="none"
           autoCorrect={false}
+          testID="email"
         />
       </View>
+      <FieldError message={shown('email', 5)} testID="email-error" />
+      {serverErrors.emailExists ? (
+        <TouchableOpacity
+          onPress={() => loginExisting(email.trim().toLowerCase())}
+          style={styles.inlineAction}
+          testID="email-login"
+        >
+          <Text style={styles.inlineActionText}>Se connecter avec cet e-mail</Text>
+        </TouchableOpacity>
+      ) : null}
 
-      {/* Mot de passe */}
-      <View style={styles.inputGroup}>
+      <View style={[styles.inputGroup, shown('phone', 5) && styles.inputGroupError]}>
+        <Text style={styles.inputLabel}>Numéro de téléphone *</Text>
+        <View style={styles.phoneInputRow}>
+          <TouchableOpacity
+            style={styles.dialCodeBtn}
+            onPress={() => setCountryModal('dial')}
+            activeOpacity={0.7}
+            accessibilityLabel={`Indicatif ${phoneDialCode}, modifier`}
+            testID="dial-code"
+          >
+            <Text style={styles.dialCodeFlag}>{dialFlag}</Text>
+            <Text style={styles.dialCodeText}>{phoneDialCode}</Text>
+            <ChevronRight size={14} color={Colors.text.primary40} style={{ transform: [{ rotate: '90deg' }] }} />
+          </TouchableOpacity>
+          <TextInput
+            style={[styles.input, styles.phoneInput]}
+            value={phone}
+            onChangeText={(t) => {
+              setPhone(t);
+              if (serverErrors.phone) setServerErrors((e) => ({ ...e, phone: undefined }));
+            }}
+            onBlur={() => touch('phone')}
+            placeholder={phonePlaceholder}
+            placeholderTextColor={Colors.text.primary40}
+            keyboardType="phone-pad"
+            inputMode="tel"
+            autoComplete="tel-national"
+            textContentType="telephoneNumber"
+            testID="phone"
+          />
+        </View>
+      </View>
+      <FieldError message={shown('phone', 5)} testID="phone-error" />
+
+      <View style={[styles.inputGroup, shown('password', 5) && styles.inputGroupError]}>
         <Text style={styles.inputLabel}>Mot de passe *</Text>
         <View style={styles.passwordRow}>
           <TextInput
-            style={[styles.input, { flex: 1 }]}
+            style={[styles.input, { flex: 1, minWidth: 0 }]}
             value={password}
             onChangeText={setPassword}
+            onBlur={() => touch('password')}
             placeholder="Minimum 8 caractères"
             placeholderTextColor={Colors.text.primary40}
             secureTextEntry={!showPassword}
+            autoComplete="new-password"
+            textContentType="newPassword"
+            autoCapitalize="none"
+            autoCorrect={false}
+            testID="password"
           />
-          <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeBtn}>
+          <TouchableOpacity
+            onPress={() => setShowPassword(v => !v)}
+            style={styles.eyeBtn}
+            accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          >
             {showPassword
               ? <EyeOff size={20} color={Colors.text.primary40} />
               : <Eye size={20} color={Colors.text.primary40} />
@@ -799,20 +1060,30 @@ export default function ProfileDetailsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      <FieldError message={shown('password', 5)} testID="password-error" />
 
-      {/* Confirmer le mot de passe */}
-      <View style={styles.inputGroup}>
+      <View style={[styles.inputGroup, shown('confirm', 5) && styles.inputGroupError]}>
         <Text style={styles.inputLabel}>Confirmer le mot de passe *</Text>
         <View style={styles.passwordRow}>
           <TextInput
-            style={[styles.input, { flex: 1 }]}
+            style={[styles.input, { flex: 1, minWidth: 0 }]}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            onBlur={() => touch('confirm')}
             placeholder="Répétez votre mot de passe"
             placeholderTextColor={Colors.text.primary40}
             secureTextEntry={!showConfirmPassword}
+            autoComplete="new-password"
+            textContentType="newPassword"
+            autoCapitalize="none"
+            autoCorrect={false}
+            testID="password-confirm"
           />
-          <TouchableOpacity onPress={() => setShowConfirmPassword(v => !v)} style={styles.eyeBtn}>
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword(v => !v)}
+            style={styles.eyeBtn}
+            accessibilityLabel={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          >
             {showConfirmPassword
               ? <EyeOff size={20} color={Colors.text.primary40} />
               : <Eye size={20} color={Colors.text.primary40} />
@@ -820,80 +1091,35 @@ export default function ProfileDetailsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      <FieldError message={shown('confirm', 5)} testID="confirm-error" />
+    </Animated.View>
+  );
 
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Numéro de téléphone *</Text>
-        <View style={styles.phoneInputRow}>
-          <TouchableOpacity
-            style={styles.dialCodeBtn}
-            onPress={() => setShowCountryModal(true)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.dialCodeFlag}>{country?.flag || '🌍'}</Text>
-            <Text style={styles.dialCodeText}>{phoneDialCode}</Text>
-            <ChevronRight size={14} color={Colors.text.primary40} style={{ transform: [{ rotate: '90deg' }] }} />
-          </TouchableOpacity>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder={
-              country?.code === 'CI' ? '07 01 02 03 04' :
-              country?.code === 'SN' ? '77 123 45 67' :
-              country?.code === 'CM' ? '6 71 23 45 67' :
-              country?.code === 'FR' ? '6 12 34 56 78' :
-              'Ex: 06 12 34 56 78'
-            }
-            placeholderTextColor={Colors.text.primary40}
-            keyboardType="phone-pad"
-          />
-        </View>
-      </View>
+  // ─── Étape 6 — Récapitulatif et CGU ──────────────────────────────
+  const recapRow = (label: string, value: string, goTo: number) => (
+    <TouchableOpacity key={label} style={styles.recapRow} onPress={() => animateTransition(goTo)} activeOpacity={0.7}>
+      <Text style={styles.recapLabel}>{label}</Text>
+      <Text style={styles.recapVal} numberOfLines={2}>{value}</Text>
+    </TouchableOpacity>
+  );
+  const renderStep6 = () => (
+    <Animated.View style={[styles.stepWrap, stepAnimStyle]}>
+      {stepHeader('Tout est prêt.', "Vérifiez vos informations : touchez une ligne pour la modifier.")}
 
-      {/* Récap profil */}
       <View style={styles.recap}>
         <Text style={styles.recapTitle}>Récapitulatif</Text>
-        <View style={styles.recapRow}>
-          <Text style={styles.recapLabel}>Nom</Text>
-          <Text style={styles.recapVal}>{firstName} {lastName}</Text>
-        </View>
-        {profession ? (
-          <View style={styles.recapRow}>
-            <Text style={styles.recapLabel}>Profession</Text>
-            <Text style={styles.recapVal}>{profession}</Text>
-          </View>
-        ) : null}
-        {birthday && (
-          <View style={styles.recapRow}>
-            <Text style={styles.recapLabel}>Âge</Text>
-            <Text style={styles.recapVal}>{getAge(birthday)} ans</Text>
-          </View>
-        )}
-        {country && region && (
-          <View style={styles.recapRow}>
-            <Text style={styles.recapLabel}>Localisation</Text>
-            <Text style={styles.recapVal}>{region}, {country.flag} {country.name}</Text>
-          </View>
-        )}
-        {phone.trim() ? (
-          <View style={styles.recapRow}>
-            <Text style={styles.recapLabel}>Téléphone</Text>
-            <Text style={styles.recapVal}>{phoneDialCode} {phone.trim()}</Text>
-          </View>
-        ) : null}
-        {meetingScope && (
-          <View style={styles.recapRow}>
-            <Text style={styles.recapLabel}>Rencontres</Text>
-            <Text style={styles.recapVal}>
-              {MEETING_SCOPES.find(s => s.id === meetingScope)?.title}
-            </Text>
-          </View>
-        )}
+        {recapRow('Nom', `${firstName.trim()} ${lastName.trim()}`.trim(), 1)}
+        {birthday ? recapRow('Âge', `${getAge(birthday)} ans`, 2) : null}
+        {profession ? recapRow('Profession', profession, 2) : null}
+        {country && city.trim() ? recapRow('Ville', `${formatResidence(city, country)} ${country.flag}`, 3) : null}
+        {meetingScope ? recapRow('Rencontres', MEETING_SCOPES.find(s => s.id === meetingScope)?.title ?? '', 4) : null}
+        {recapRow('E-mail', email.trim(), 5)}
+        {recapRow('Téléphone', `${phoneDialCode} ${phone.trim()}`, 5)}
       </View>
 
       {/* Acceptation expresse des CGU (décochée par défaut, envoyée au serveur) */}
       <TouchableOpacity
-        style={[styles.termsBox, termsAccepted && styles.termsBoxActive]}
+        style={[styles.termsBox, termsAccepted && styles.termsBoxActive, shown('terms', 6) && styles.termsBoxError]}
         onPress={() => setTermsAccepted(v => !v)}
         activeOpacity={0.8}
         accessibilityRole="checkbox"
@@ -903,7 +1129,7 @@ export default function ProfileDetailsScreen() {
         <View style={[styles.termsCheck, termsAccepted && styles.termsCheckActive]}>
           {termsAccepted && <Check size={14} color="#FFF" strokeWidth={3} />}
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.termsText}>
             J'accepte les{' '}
             <Text style={styles.termsLink} onPress={openLegal('/legal/cgu')} testID="terms-cgu-link">
@@ -918,8 +1144,14 @@ export default function ProfileDetailsScreen() {
           <Text style={styles.termsVersion}>Version du {formatLegalDate(legal.version)}</Text>
         </View>
       </TouchableOpacity>
+      <FieldError message={shown('terms', 6)} testID="terms-error" inside />
+      {serverErrors.general ? (
+        <Text style={[styles.fieldError, styles.generalError]} testID="register-error">{serverErrors.general}</Text>
+      ) : null}
     </Animated.View>
   );
+
+  const valid = isStepValid();
 
   return (
     <KeyboardAvoidingView
@@ -934,6 +1166,7 @@ export default function ProfileDetailsScreen() {
       />
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -943,18 +1176,22 @@ export default function ProfileDetailsScreen() {
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
         {step === 4 && renderStep4()}
+        {step === 5 && renderStep5()}
+        {step === 6 && renderStep6()}
       </ScrollView>
 
-      {/* Footer bouton */}
+      {/* Footer bouton : toujours actif ; s'il manque quelque chose, les erreurs s'affichent sous les champs. */}
       <View style={styles.footer}>
         <TouchableOpacity
           onPress={handleNext}
-          activeOpacity={isStepValid() ? 0.85 : 1}
+          activeOpacity={0.85}
           style={styles.btnWrap}
-          disabled={!isStepValid() || isSubmitting}
+          disabled={isSubmitting}
+          accessibilityRole="button"
+          testID="next-button"
         >
           <LinearGradient
-            colors={isStepValid()
+            colors={valid
               ? [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]
               : ['#E4DCEA', '#E4DCEA', '#E4DCEA']
             }
@@ -970,14 +1207,14 @@ export default function ProfileDetailsScreen() {
                 </Text>
               </View>
             ) : (
-              <Text style={[styles.btnText, !isStepValid() && { color: '#AAAAAA' }]}>
-                {step === 4 ? 'Créer mon compte' : 'Continuer'}
+              <Text style={[styles.btnText, !valid && { color: Colors.text.primary70 }]}>
+                {step === STEP_COUNT ? 'Créer mon compte' : 'Continuer'}
               </Text>
             )}
           </LinearGradient>
         </TouchableOpacity>
 
-        {step === 4 && !termsAccepted && (
+        {step === STEP_COUNT && !termsAccepted && (
           <Text style={styles.termsHint} testID="terms-hint">
             Cochez la case d'acceptation des CGU pour créer votre compte.
           </Text>
@@ -995,104 +1232,6 @@ export default function ProfileDetailsScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      {/* ── Modal Calendrier ─────────────────────────────────────── */}
-      <Modal visible={showCalendar} transparent animationType="slide" onRequestClose={() => setShowCalendar(false)}>
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => setShowCalendar(false)} />
-          <View style={styles.calendarSheet}>
-            <View style={styles.sheetHandle} />
-
-            <View style={styles.calHeader}>
-              <TouchableOpacity onPress={() => {
-                if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
-                else setCalMonth(m => m - 1);
-              }} style={styles.calNavBtn}>
-                <ChevronLeft size={22} color={Colors.text.primary100} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setShowYearPicker(v => !v)}
-                style={styles.calTitleBtn}
-              >
-                <Text style={styles.calMonthText}>{MONTHS[calMonth]}</Text>
-                <View style={styles.calYearRow}>
-                  <Text style={styles.calYearText}>{calYear}</Text>
-                  <ChevronRight
-                    size={14}
-                    color={Colors.primary.red}
-                    style={{ transform: [{ rotate: showYearPicker ? '-90deg' : '90deg' }] }}
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => {
-                if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
-                else setCalMonth(m => m + 1);
-              }} style={styles.calNavBtn}>
-                <ChevronRight size={22} color={Colors.text.primary100} />
-              </TouchableOpacity>
-            </View>
-
-            {showYearPicker ? (
-              <ScrollView style={styles.yearPicker} showsVerticalScrollIndicator={false}>
-                {YEARS.map(y => (
-                  <TouchableOpacity
-                    key={y}
-                    style={[styles.yearItem, y === calYear && styles.yearItemActive]}
-                    onPress={() => { setCalYear(y); setShowYearPicker(false); }}
-                  >
-                    <Text style={[styles.yearText, y === calYear && styles.yearTextActive]}>{y}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : (
-              <View>
-                <View style={styles.calDaysRow}>
-                  {DAYS_OF_WEEK.map(d => (
-                    <Text key={d} style={styles.calDayLabel}>{d}</Text>
-                  ))}
-                </View>
-                <View style={styles.calGrid}>
-                  {renderCalendarDays()}
-                </View>
-              </View>
-            )}
-
-            <View style={styles.calFooter}>
-              {birthDateError ? (
-                <Text style={[styles.fieldError, styles.calError]} testID="calendar-birthdate-error">
-                  {birthDateError}
-                </Text>
-              ) : null}
-              <TouchableOpacity
-                onPress={() => setShowCalendar(false)}
-                activeOpacity={birthday && !birthDateError ? 0.85 : 1}
-                disabled={!birthday || !!birthDateError}
-                style={styles.calConfirmWrap}
-              >
-                <LinearGradient
-                  colors={birthday && !birthDateError
-                    ? [Colors.primary.red, Colors.primary.purple, Colors.primary.orange]
-                    : ['#E4DCEA', '#E4DCEA', '#E4DCEA']
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.calConfirmBtn}
-                >
-                  <Text style={[styles.calConfirmText, (!birthday || !!birthDateError) && { color: '#AAAAAA' }]}>
-                    {!birthday
-                      ? 'Sélectionner une date'
-                      : birthDateError
-                        ? 'Choisir une autre date'
-                        : `Confirmer — ${getAge(birthday)} ans`}
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
 
       {/* ── Modal Métier / Profession ────────────────────────────── */}
       <Modal visible={showProfessionModal} transparent animationType="slide" onRequestClose={() => setShowProfessionModal(false)}>
@@ -1115,6 +1254,7 @@ export default function ProfileDetailsScreen() {
                 onChangeText={setProfessionSearch}
                 placeholder="Rechercher (ex: Développeur, Médecin...)"
                 placeholderTextColor={Colors.text.primary40}
+                autoComplete="organization-title"
                 autoFocus
               />
               {professionSearch.length > 0 && (
@@ -1219,17 +1359,22 @@ export default function ProfileDetailsScreen() {
                 </View>
               )}
             </ScrollView>
+            <TouchableOpacity onPress={() => setShowProfessionModal(false)} style={styles.cancelBtn} testID="profession-cancel">
+              <Text style={styles.cancelBtnText}>Annuler</Text>
+            </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ── Modal Pays ───────────────────────────────────────────── */}
-      <Modal visible={showCountryModal} transparent animationType="slide" onRequestClose={() => setShowCountryModal(false)}>
+      {/* ── Modal Pays (résidence ou indicatif téléphonique) ─────── */}
+      <Modal visible={countryModal !== null} transparent animationType="slide" onRequestClose={closeCountryModal}>
         <View style={styles.modalOverlay}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => setShowCountryModal(false)} />
+          <TouchableOpacity style={{ flex: 1 }} onPress={closeCountryModal} />
           <View style={[styles.calendarSheet, { maxHeight: '80%' }]}>
             <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Choisir un pays</Text>
+            <Text style={styles.sheetTitle}>
+              {countryModal === 'dial' ? 'Indicatif téléphonique' : 'Choisir un pays'}
+            </Text>
 
             <View style={styles.searchBar}>
               <Search size={16} color={Colors.text.primary40} />
@@ -1239,6 +1384,7 @@ export default function ProfileDetailsScreen() {
                 onChangeText={setCountrySearch}
                 placeholder="Rechercher..."
                 placeholderTextColor={Colors.text.primary40}
+                autoComplete="off"
                 autoFocus
               />
             </View>
@@ -1247,84 +1393,40 @@ export default function ProfileDetailsScreen() {
               data={filteredCountries}
               keyExtractor={c => c.code}
               showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.countryItem, country?.code === item.code && styles.countryItemActive]}
-                  onPress={() => {
-                    setCountry(item);
-                    setPhoneDialCode(item.dialCode);
-                    setRegion('');
-                    setCountrySearch('');
-                    setShowCountryModal(false);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.countryFlag}>{item.flag}</Text>
-                  <Text style={[styles.countryName, country?.code === item.code && styles.countryNameActive]}>
-                    {item.name}
-                  </Text>
-                  <Text style={styles.countryDialCodeBadge}>{item.dialCode}</Text>
-                  {country?.code === item.code && (
-                    <Check size={16} color={Colors.primary.red} strokeWidth={2.5} />
-                  )}
-                </TouchableOpacity>
-              )}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => {
+                const active = countryModal === 'dial'
+                  ? (dialCountry ?? country)?.code === item.code
+                  : country?.code === item.code;
+                return (
+                  <TouchableOpacity
+                    style={[styles.countryItem, active && styles.countryItemActive]}
+                    onPress={() => {
+                      if (countryModal === 'dial') {
+                        setDialCountry(item);
+                        setDialTouched(true);
+                      } else {
+                        chooseCountry(item);
+                      }
+                      closeCountryModal();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.countryFlag}>{item.flag}</Text>
+                    <Text style={[styles.countryName, active && styles.countryNameActive]} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <Text style={styles.countryDialCodeBadge}>{item.dialCode}</Text>
+                    {active && (
+                      <Check size={16} color={Colors.primary.red} strokeWidth={2.5} />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
             />
-          </View>
-        </View>
-      </Modal>
-
-      {/* ── Modal Région ─────────────────────────────────────────── */}
-      <Modal visible={showRegionModal} transparent animationType="slide" onRequestClose={() => setShowRegionModal(false)}>
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => setShowRegionModal(false)} />
-          <View style={[styles.calendarSheet, { maxHeight: '70%' }]}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>
-              Ville / Région {country?.flag} {country?.name}
-            </Text>
-
-            {/* Ville absente de la liste : saisie libre (sans virgule, réservée au pays). */}
-            <View style={styles.searchBar}>
-              <Search size={16} color={Colors.text.primary40} />
-              <TextInput
-                style={styles.searchInput}
-                value={citySearch}
-                onChangeText={(t) => setCitySearch(t.replace(/,/g, ' '))}
-                placeholder="Rechercher ou saisir votre ville…"
-                placeholderTextColor={Colors.text.primary40}
-                testID="city-search"
-              />
-            </View>
-            {customCity && (
-              <TouchableOpacity
-                style={styles.countryItem}
-                onPress={() => { setRegion(customCity); setCitySearch(''); setShowRegionModal(false); }}
-                activeOpacity={0.7}
-                testID="city-custom"
-              >
-                <Plus size={16} color={Colors.primary.red} />
-                <Text style={[styles.countryName, styles.countryNameActive]}>Choisir « {customCity} »</Text>
-              </TouchableOpacity>
-            )}
-            <FlatList
-              data={filteredCities}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.countryItem, region === item && styles.countryItemActive]}
-                  onPress={() => { setRegion(item); setCitySearch(''); setShowRegionModal(false); }}
-                  activeOpacity={0.7}
-                >
-                  <MapPin size={16} color={region === item ? Colors.primary.red : Colors.text.primary40} />
-                  <Text style={[styles.countryName, region === item && styles.countryNameActive]}>
-                    {item}
-                  </Text>
-                  {region === item && (
-                    <Check size={16} color={Colors.primary.red} strokeWidth={2.5} />
-                  )}
-                </TouchableOpacity>
-              )}
-            />
+            <TouchableOpacity onPress={closeCountryModal} style={styles.cancelBtn} testID="country-cancel">
+              <Text style={styles.cancelBtnText}>Annuler</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1427,42 +1529,83 @@ const styles = StyleSheet.create({
   },
   eyeBtn: { paddingLeft: Spacing.sm },
 
-  // Date button
-  dateBtn: { borderRadius: BorderRadius.lg, overflow: 'hidden', marginTop: Spacing.sm },
-  dateBtnGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+  inputGroupError: { borderBottomColor: ERROR_COLOR },
+
+  // Date de naissance : trois cases JJ / MM / AAAA
+  birthRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 6 },
+  birthCell: { flex: 1, minWidth: 0 },
+  birthCellYear: { flex: 1.6 },
+  birthInput: {
+    fontFamily: Typography.fontFamily.medium,
+    fontSize: 20,
+    color: Colors.text.primary100,
+    textAlign: 'center',
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: Colors.neutral.border,
+    borderRadius: BorderRadius.md,
+    minWidth: 0,
   },
-  dateBtnLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
-  dateBtnIcon: {
-    width: 40, height: 40, borderRadius: BorderRadius.md,
-    alignItems: 'center', justifyContent: 'center',
+  birthInputError: { borderColor: ERROR_COLOR },
+  birthSep: {
+    fontFamily: Typography.fontFamily.medium,
+    fontSize: 20,
+    color: Colors.text.primary40,
+    paddingTop: 10,
   },
-  dateBtnTitle: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 15,
-    color: Colors.text.primary100,
-  },
-  dateBtnSub: {
+  birthHint: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: 11,
     color: Colors.text.primary40,
-    marginTop: 2,
+    textAlign: 'center',
+    marginTop: 3,
   },
-  dateBtnError: { borderColor: ERROR_COLOR },
+  fieldOk: {
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: 13,
+    color: Colors.primary.red,
+    marginTop: 6,
+  },
   fieldError: {
     fontFamily: Typography.fontFamily.medium,
     fontSize: 12,
     lineHeight: 17,
     color: ERROR_COLOR,
-    marginTop: 4,
+    marginTop: -Spacing.sm,
+    marginBottom: Spacing.md,
   },
-  calError: { textAlign: 'center', marginTop: 0, marginBottom: Spacing.sm },
+  fieldErrorInside: { marginTop: 6, marginBottom: 0 },
+  fieldHelp: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 12,
+    color: Colors.text.primary40,
+    marginTop: 6,
+  },
+  generalError: { marginTop: Spacing.md, textAlign: 'center' },
+  inlineAction: { alignSelf: 'flex-start', paddingVertical: 4, marginBottom: Spacing.md },
+  inlineActionText: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 13,
+    color: Colors.primary.red,
+    textDecorationLine: 'underline',
+  },
+  selectBtnError: { borderColor: ERROR_COLOR },
+  cityInput: { fontSize: 20 },
+  phoneInput: { flex: 1, minWidth: 0 },
+  gpsMessage: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 13,
+    lineHeight: 18,
+    color: Colors.text.primary70,
+    marginTop: -Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  cancelBtn: { alignItems: 'center', paddingVertical: 12, marginTop: Spacing.sm },
+  cancelBtnText: {
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: 15,
+    color: Colors.text.primary70,
+  },
 
   // CGU
   termsBox: {
@@ -1476,6 +1619,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.neutral.border,
     backgroundColor: Colors.neutral.white,
   },
+  termsBoxError: { borderColor: ERROR_COLOR },
   termsBoxActive: { borderColor: Colors.primary.red + '60', backgroundColor: Colors.primary.red + '06' },
   termsCheck: {
     width: 22,
@@ -1704,104 +1848,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Calendar
-  calHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  calNavBtn: {
-    padding: Spacing.sm,
-    backgroundColor: Colors.neutral.backgroundLight,
-    borderRadius: BorderRadius.md,
-  },
-  calTitleBtn: { alignItems: 'center', flex: 1 },
-  calMonthText: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 20,
-    color: Colors.text.primary100,
-  },
-  calYearRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  calYearText: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: Typography.body.fontSize,
-    color: Colors.text.primary40,
-  },
-  calDaysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
-    paddingHorizontal: 2,
-  },
-  calDayLabel: {
-    width: `${100 / 7}%`,
-    textAlign: 'center',
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 11,
-    color: Colors.text.primary40,
-    textTransform: 'uppercase',
-  },
-  calGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: Spacing.lg,
-  },
-  calCell: {
-    width: `${100 / 7}%`,
-    height: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 21,
-    marginBottom: 2,
-  },
-  calCellActive: { overflow: 'hidden' },
-  calCellGradient: {
-    width: 38, height: 38, borderRadius: 19,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  calDay: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: 15,
-    color: Colors.text.primary100,
-  },
-  calDayActive: {
-    fontFamily: Typography.fontFamily.bold,
-    fontSize: 15,
-    color: Colors.neutral.white,
-  },
-  calFooter: { marginTop: Spacing.sm },
-  calConfirmWrap: { borderRadius: BorderRadius.lg, overflow: 'hidden' },
-  calConfirmBtn: {
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: BorderRadius.lg,
-  },
-  calConfirmText: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: 15,
-    color: Colors.neutral.white,
-  },
-
-  // Year picker
-  yearPicker: { height: 260, marginBottom: Spacing.lg },
-  yearItem: {
-    paddingVertical: Spacing.md,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.neutral.border + '30',
-  },
-  yearItemActive: { backgroundColor: Colors.primary.red + '10' },
-  yearText: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: 17,
-    color: Colors.text.primary70,
-  },
-  yearTextActive: {
-    fontFamily: Typography.fontFamily.bold,
-    color: Colors.primary.red,
-  },
 
   // Country/region list
   searchBar: {
