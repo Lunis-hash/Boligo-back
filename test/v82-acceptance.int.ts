@@ -8,6 +8,7 @@
  * notification réels : l'IA est simulée (questions avec et sans preuves) et
  * les notifications sont des bouchons. Les données créées sont supprimées.
  */
+import { renderFrame } from '../src/journey/sondeur-frames';
 import * as assert from 'assert';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { InterviewService } from '../src/interview/interview.service';
@@ -80,6 +81,15 @@ const ai: any = {
       projet: 'le travail',
       lieu: 'la ville',
     };
+    const WORD_EN: Record<string, string> = {
+      famille: 'children',
+      argent: 'the budget',
+      spiritualite: 'faith',
+      intimite: 'tenderness',
+      communication: 'silence',
+      projet: 'work',
+      lieu: 'the city',
+    };
     for (const day of [1, 2, 3])
       for (const g of gaps)
         questions.push({
@@ -88,8 +98,14 @@ const ai: any = {
           themeKey: g.themeKey,
           emoji: '💬',
           options: ['Autre...'],
-          text: `Que représente ${WORD[g.themeKey] ?? 'cela'} pour vous, proposition valide n° ${day}${g.id} ?`,
-          textEn: `What does it mean to you, item ${day}${g.id}?`,
+          // V8.3 : question composée dans un cadre validé (un cadre par jour).
+          ...renderFrame(
+            ({ 1: 'C14', 2: 'C09', 3: 'C11' } as Record<number, string>)[day],
+            { objet: `${WORD[g.themeKey] ?? 'cela'} de la proposition valide` },
+            {
+              objet: `${WORD_EN[g.themeKey] ?? 'it'} of the valid proposal`,
+            },
+          )!,
           optionsEn: ['Other...'],
           preuves: [g.id],
           nature: 'ecart',

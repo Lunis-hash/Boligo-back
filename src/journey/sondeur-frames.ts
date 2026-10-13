@@ -227,7 +227,7 @@ export function canon(text: string): string {
       .replace(/[’`]/g, "'")
       // Élision (« d'années », « d'heures ») : comparée sous sa forme pleine.
       .replace(/(?<!\p{L})d'(années|heures)(?!\p{L})/giu, 'de $1')
-      .replace(/ | /g, ' ')
+      .replace(/\u00a0|\u202f/g, ' ')
       .replace(/\s+/g, ' ')
       .replace(/\s+\?/g, '?')
       .trim()
@@ -306,6 +306,10 @@ export function matchFrame(
   return null;
 }
 
+/** Valeur d'une case : texte ou nombre, sinon vide. */
+const cell = (v: unknown): string =>
+  typeof v === 'string' || typeof v === 'number' ? String(v).trim() : '';
+
 /** Compose la question française et anglaise d'un cadre, sinon null. */
 export function renderFrame(
   id: string,
@@ -320,14 +324,14 @@ export function renderFrame(
       const kind = k as SlotKind;
       if (kind in CLOSED) {
         // Case fermée : la valeur française décide, l'anglais suit.
-        const fr = String(slots[k] ?? '').trim();
+        const fr = cell(slots[k]);
         const pair = CLOSED[kind as keyof typeof CLOSED].find(
           ([a]) => a.toLowerCase() === fr.toLowerCase(),
         );
         if (!pair) ok = false;
         return pair ? (lang === 'fr' ? pair[0] : pair[1]) : '';
       }
-      const v = String((lang === 'fr' ? slots : slotsEn)[k] ?? '')
+      const v = cell((lang === 'fr' ? slots : slotsEn)[k])
         .replace(/[?\n\r]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -738,7 +742,7 @@ export function frameIssues(
  */
 export function composeFramedQuestions(raw: unknown): unknown {
   if (!Array.isArray(raw)) return raw;
-  return raw.flatMap((item) => {
+  return (raw as unknown[]).flatMap((item): unknown[] => {
     if (!item || typeof item !== 'object') return [];
     const o = item as Record<string, unknown>;
     const id = typeof o.cadre === 'string' ? o.cadre.trim().toUpperCase() : '';
