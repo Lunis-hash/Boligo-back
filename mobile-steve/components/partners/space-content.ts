@@ -148,7 +148,7 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     funnelVisits: 'Visites via votre lien',
     funnelSignups: 'Inscriptions',
     funnelPurchases: 'Parcours payés',
-    funnelRate: (r) => `${r} % de conversion`,
+    funnelRate: (r) => `${String(r).replace('.', ',')} % de conversion`,
     funnelFree: (n) => `${n} Parcours offert${n > 1 ? 's' : ''} avec votre code (non comptés dans les ventes).`,
     funnelEmpty: 'Les visites apparaîtront ici dès que votre lien sera partagé.',
     kitTitle: 'Kit prêt à publier',

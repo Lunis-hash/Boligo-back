@@ -24,6 +24,15 @@ describe('Offres des marques : état affiché', () => {
         startsAt: d('2026-10-01T00:00:00Z'),
         endsAt: d('2026-12-31T00:00:00Z'),
       },
+      'brouillon',
+    ],
+    [
+      {
+        isActive: false,
+        startsAt: null,
+        endsAt: null,
+        publishedAt: d('2026-10-02T00:00:00Z'),
+      },
       'retiree',
     ],
   ])('%o → %s', (offer, expected) => {

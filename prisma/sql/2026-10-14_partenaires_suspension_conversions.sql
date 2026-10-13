@@ -1,9 +1,15 @@
 -- BOLIGO : statut « suspendu » des partenaires et ventes confirmées des offres.
--- Migration ADDITIVE : une valeur d'énumération et une table. Aucune donnée
--- existante n'est modifiée. Rejouable sans effet. Base BOLIGO uniquement.
+-- Migration ADDITIVE : une valeur d'énumération, une colonne et une table.
+-- Seule la nouvelle colonne est renseignée (offres actuellement en ligne).
+-- Rejouable sans effet. Base BOLIGO uniquement.
 -- À APPLIQUER AVANT LE DÉPLOIEMENT du code qui l'utilise.
 
 ALTER TYPE "PartnerStatus" ADD VALUE IF NOT EXISTS 'SUSPENDU';
+
+-- Première mise en ligne d'une offre (retirée ≠ brouillon).
+ALTER TABLE "PartnerOffer" ADD COLUMN IF NOT EXISTS "publishedAt" TIMESTAMP(3);
+UPDATE "PartnerOffer" SET "publishedAt" = "createdAt"
+  WHERE "publishedAt" IS NULL AND "isActive" = true;
 
 CREATE TABLE IF NOT EXISTS "PartnerOfferConversion" (
   "id"           TEXT PRIMARY KEY,

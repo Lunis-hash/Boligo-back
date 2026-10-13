@@ -817,6 +817,8 @@ model PartnerOffer {
   isActive    Boolean                  @default(false)
   startsAt    DateTime?
   endsAt      DateTime?
+  /// Première mise en ligne : distingue une offre retirée d'un brouillon.
+  publishedAt DateTime?
   createdAt   DateTime                 @default(now())
   updatedAt   DateTime                 @updatedAt
   stats       PartnerOfferStat[]

@@ -20,11 +20,17 @@ import { OfferConversionDto, OfferInputDto } from './dto/offer.dto';
 
 /** État lisible d'une offre pour l'équipe et le partenaire. */
 export function offerState(
-  o: { isActive: boolean; startsAt: Date | null; endsAt: Date | null },
+  o: {
+    isActive: boolean;
+    startsAt: Date | null;
+    endsAt: Date | null;
+    publishedAt?: Date | null;
+  },
   now: Date = new Date(),
 ): 'brouillon' | 'programmee' | 'en_ligne' | 'expiree' | 'retiree' {
   if (o.endsAt && o.endsAt <= now) return 'expiree';
-  if (!o.isActive) return o.startsAt || o.endsAt ? 'retiree' : 'brouillon';
+  // Retirée : déjà mise en ligne une fois (à la main ou par une suspension).
+  if (!o.isActive) return o.publishedAt ? 'retiree' : 'brouillon';
   if (o.startsAt && o.startsAt > now) return 'programmee';
   return 'en_ligne';
 }
@@ -336,6 +342,7 @@ export class PartnerTrackingService {
         perkCode: dto.perkCode?.trim() || null,
         placement: dto.placement ?? OfferPlacement.OFFRES,
         isActive: dto.isActive ?? false,
+        publishedAt: dto.isActive ? new Date() : null,
         startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
         endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
       },
@@ -382,6 +389,7 @@ export class PartnerTrackingService {
         }),
         ...(dto.placement !== undefined && { placement: dto.placement }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        ...(dto.isActive && !offer.publishedAt && { publishedAt: new Date() }),
         ...(dto.startsAt !== undefined && {
           startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
         }),
@@ -446,7 +454,12 @@ export class PartnerTrackingService {
   async offersSummary() {
     const [offers, stats, conv] = await Promise.all([
       this.prisma.partnerOffer.findMany({
-        select: { isActive: true, startsAt: true, endsAt: true },
+        select: {
+          isActive: true,
+          startsAt: true,
+          endsAt: true,
+          publishedAt: true,
+        },
       }),
       this.prisma.partnerOfferStat.aggregate({
         _sum: { impressions: true, clicks: true },

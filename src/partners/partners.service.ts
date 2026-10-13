@@ -638,7 +638,11 @@ export class PartnersService {
       }),
       this.prisma.partnerApplication.findMany({
         where: { promoCodeId: { not: null } },
-        select: { promoCodeId: true, commissionRate: true },
+        select: {
+          promoCodeId: true,
+          commissionRate: true,
+          promoCode: { select: { isActive: true } },
+        },
       }),
     ]);
     const stats = await this.revenueByCode(
@@ -659,7 +663,8 @@ export class PartnersService {
       byStatus: Object.fromEntries(
         byStatus.map((r) => [r.status, r._count._all]),
       ),
-      activeCodes: withCode.length,
+      // Codes encore utilisables (hors partenaires refusés ou suspendus).
+      activeCodes: withCode.filter((p) => p.promoCode?.isActive).length,
       purchases,
       revenue: Math.round(revenue * 100) / 100,
       commission: Math.round(commission * 100) / 100,

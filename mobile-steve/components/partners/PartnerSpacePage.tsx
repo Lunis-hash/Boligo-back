@@ -329,7 +329,10 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                         {t.offerClicks} <Text style={ff.bold}>{o.clicks}</Text>
                       </Text>
                       <Text style={[styles.offerStat, ff.text]}>
-                        {t.offerRate} <Text style={ff.bold}>{o.clickRate} %</Text>
+                        {t.offerRate}{' '}
+                        <Text style={ff.bold}>
+                          {lang === 'fr' ? `${String(o.clickRate).replace('.', ',')} %` : `${o.clickRate}%`}
+                        </Text>
                       </Text>
                       <Text style={[styles.offerStat, ff.text]} testID={`space-offer-sales-${o.id}`}>
                         {t.offerConfirmed} <Text style={[ff.bold, { color: Brand.framboise }]}>{o.confirmedSales ?? 0}</Text>
