@@ -114,7 +114,9 @@ $env:PGOPTIONS = '-c default_transaction_read_only=on'   # lecture seule garanti
 $archive = $null; $verifiee = $false
 try {
   function Invoke-Sql([string]$sql) {
-    $r = & $psql -X -A -t -v ON_ERROR_STOP=1 -c $sql
+    # Requête envoyée par l'entrée standard : Windows PowerShell 5.1 retire les
+    # guillemets des arguments (« "User" » devenait « user »).
+    $r = $sql | & $psql -X -A -t -q -v ON_ERROR_STOP=1
     if ($LASTEXITCODE -ne 0) { Stop-Sauvegarde 'requête de contrôle en échec (connexion ?).' }
     return $r
   }
