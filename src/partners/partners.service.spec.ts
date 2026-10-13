@@ -76,6 +76,47 @@ function setup() {
         codes.push(row);
         return Promise.resolve(row);
       }),
+      update: jest.fn(({ where, data }: { where: Where; data: Row }) => {
+        const c = codes.find((x) => x.id === where.id)!;
+        Object.assign(c, data);
+        return Promise.resolve(c);
+      }),
+    },
+    partnerOffer: {
+      updateMany: jest.fn(() => Promise.resolve({ count: 0 })),
+      findMany: jest.fn(() => Promise.resolve([])),
+    },
+    partnerDailyStat: {
+      groupBy: jest.fn(() => Promise.resolve([])),
+    },
+    // Registre : 3 ventes à 13,50 € au taux figé de 15 % (2,03 € chacune).
+    partnerCommission: {
+      findMany: jest.fn(
+        ({ where }: { where: { partnerId: string | { in: string[] } } }) => {
+          const id =
+            typeof where.partnerId === 'string'
+              ? where.partnerId
+              : where.partnerId.in[0];
+          const sale = (n: number, createdAt: Date) => ({
+            id: `v${n}`,
+            partnerId: id,
+            kind: 'VENTE',
+            amountCents: 1350,
+            commissionCents: 203,
+            saleId: null,
+            createdAt,
+          });
+          return Promise.resolve(
+            apps.some((a) => a.id === id && a.promoCodeId)
+              ? [
+                  sale(1, new Date()),
+                  sale(2, new Date()),
+                  sale(3, new Date('2020-01-01T00:00:00Z')),
+                ]
+              : [],
+          );
+        },
+      ),
     },
     creditTransaction: {
       groupBy: jest.fn((args: { where?: { euroAmount?: number } } = {}) =>
@@ -150,6 +191,43 @@ const base = {
 const flush = () => new Promise((r) => setImmediate(r));
 
 describe('Programme Partenaires : service', () => {
+  it('l’équipe ajoute un partenaire : « En discussion », sans e-mail, doublon refusé', async () => {
+    const { service, apps, email } = setup();
+    const team = { ...base } as Partial<typeof base>;
+    delete team.consent;
+    delete team.message;
+    const res = await service.createByTeam(
+      {
+        ...(team as typeof base),
+        type: PartnerType.AMBASSADEUR,
+        commissionRate: 18,
+      },
+      'admin@boligo.app',
+    );
+    await flush();
+    expect(res.status).toBe('EN_COURS');
+    expect(apps[0]).toMatchObject({
+      commissionRate: 18,
+      message: 'Partenaire ajouté par l’équipe BOLIGO.',
+    });
+    expect(String(apps[0].notes)).toContain('admin@boligo.app');
+    expect(email.sendSimpleEmail).not.toHaveBeenCalled();
+    await expect(
+      service.createByTeam({
+        ...(team as typeof base),
+        type: PartnerType.AMBASSADEUR,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    // Une marque n'a jamais de commission.
+    const brand = await service.createByTeam({
+      ...(team as typeof base),
+      email: 'marque@exemple.com',
+      type: PartnerType.ANNONCEUR,
+      commissionRate: 10,
+    });
+    expect(brand.commissionRate).toBeNull();
+  });
+
   it('enregistre la candidature avec la commission du profil et prévient l’équipe et le candidat', async () => {
     const { service, apps, email } = setup();
     const res = await service.apply(base);
@@ -215,7 +293,12 @@ describe('Programme Partenaires : service', () => {
       purchases: 3,
       freeActivations: 0,
       revenue: 40.5,
-      commission: 6.08,
+      gross: 40.5,
+      refunded: 0,
+      refundedSales: 0,
+      commission: 6.09,
+      commissionGross: 6.09,
+      commissionReversed: 0,
     });
   });
 
@@ -254,10 +337,11 @@ describe('Programme Partenaires : service', () => {
     const data = await service.portal(portalLink.split('#')[1]);
     expect(data.code.code).toMatch(/^AWADIOP/);
     expect(data.code.isActive).toBe(true);
-    expect(data.totals).toEqual({
+    expect(data.totals).toMatchObject({
       purchases: 3,
       revenue: 40.5,
-      commission: 6.08,
+      refunded: 0,
+      commission: 6.09,
     });
     expect(data.funnel).toMatchObject({
       visits: 40,
@@ -370,5 +454,47 @@ describe('Programme Partenaires : service', () => {
     await expect(
       service.update(apps[0].id, { registrationNumber: 'US1' }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('refuse d’accepter à la main un partenaire dont l’entreprise n’est pas vérifiée', async () => {
+    const { service, apps, registry } = setup();
+    registry.verify.mockResolvedValueOnce({
+      status: PartnerVerification.A_VERIFIER,
+      method: 'Contrôle manuel',
+      officialName: null as unknown as string,
+      note: 'À contrôler.',
+    });
+    await service.apply({
+      ...base,
+      registrationType: PartnerRegistrationType.AUTRE,
+      registrationNumber: 'DEMO-2026-0001',
+    });
+    await flush();
+    await expect(
+      service.update(apps[0].id, { status: PartnerStatus.ACCEPTE }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(apps[0].status).toBe('NOUVEAU');
+  });
+
+  it('suspendre coupe le code et retire les offres ; reprendre réactive le code', async () => {
+    const { service, apps, codes, prisma } = setup();
+    await service.apply(base);
+    await flush();
+    const id = apps[0].id;
+    await service.createCode(id, {});
+    await service.update(id, { status: PartnerStatus.SUSPENDU });
+    expect(codes[0].isActive).toBe(false);
+    expect(prisma.partnerOffer.updateMany).toHaveBeenCalledWith({
+      where: { partnerId: id, isActive: true },
+      data: { isActive: false },
+    });
+    // Lecture seule : un partenaire suspendu garde son Espace.
+    expect(apps[0].portalTokenHash).toBeTruthy();
+    await service.update(id, { status: PartnerStatus.ACCEPTE });
+    expect(codes[0].isActive).toBe(true);
+    // Refus : code coupé et Espace fermé.
+    await service.update(id, { status: PartnerStatus.REFUSE });
+    expect(codes[0].isActive).toBe(false);
+    expect(apps[0].portalTokenHash).toBeNull();
   });
 });

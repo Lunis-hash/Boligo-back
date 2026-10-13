@@ -132,8 +132,14 @@ afficher_acces() {
    diane.sondeur@recette.boligo.test   Parcours en cours : Sondeur (à elle de répondre)
    emma.entretien@recette.boligo.test  Grand Entretien V8.2 en cours (modules 0-3, 4 à moitié)
    felix.nouveau@recette.boligo.test   Nouveau membre, rien de commencé, 0 crédit
+ Partenaires (recette partenaires) :
+   membre@boligo-demo.example / Demo-Membre-2026!   (membre, codes DEMO…)
  Admin : admin@recette.boligo.test / RecetteAdmin2026!
- Codes promo : RECETTE100 (offert), RECETTE50 (-50 %)
+         admin@boligo-demo.example / Demo-Admin-2026!   (programme partenaires)
+         marketing@boligo-demo.example / Demo-Marketing-2026!   (équipe marketing)
+ Espaces partenaires : liens privés ci-dessus (seed partenaires) et dans
+   docs/RECETTE_LOCALE.md, section 4
+ Codes promo : RECETTE100 (offert), RECETTE50 (-50 %), codes partenaires DEMO…
  Paiement : ${PAIEMENT}
  Inscription d'un nouveau compte : code de vérification 1234 (aucun e-mail envoyé)
 ────────────────────────────────────────────────────────────────────

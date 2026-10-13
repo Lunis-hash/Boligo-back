@@ -8,7 +8,8 @@ dist/
 .env.*
 scratch/
 coverage/
-mobile-steve/
+mobile-steve/**
+!mobile-steve/e2e/recette-partenaires-data.js
 admin/
 docs/
 test/

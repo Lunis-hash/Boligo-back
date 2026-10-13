@@ -87,6 +87,8 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
   const data = state.kind === 'ready' ? state.data : null;
   const rate = data?.partner.commissionRate ?? null;
   const hasSales = Boolean(data && data.totals.purchases > 0);
+  const code = data?.code ?? null;
+  const suspended = data?.partner.status === 'SUSPENDU';
 
   return (
     <View style={styles.page} testID="space-page">
@@ -112,7 +114,7 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                 <Text style={[styles.h1, ff.title, { fontSize: wide ? 46 : 32, lineHeight: wide ? 52 : 38 }]}>
                   {t.hello(data.partner.name)}
                 </Text>
-                <Text style={[styles.lead, ff.text, { maxWidth: 760 }]}>{t.intro}</Text>
+                <Text style={[styles.lead, ff.text, { maxWidth: 760 }]}>{code ? t.intro : t.brandIntro}</Text>
               </>
             )}
           </View>
@@ -144,7 +146,15 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
 
           {data && (
             <>
+              {suspended ? (
+                <View style={[styles.card, { borderColor: Brand.framboise, backgroundColor: Brand.rose }]} testID="space-suspended">
+                  <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.suspendedTitle}</Text>
+                  <Text style={[styles.body, ff.text]}>{t.suspendedText}</Text>
+                </View>
+              ) : null}
+
               {/* Code personnel */}
+              {code ? (
               <LinearGradient
                 colors={[Brand.nuit, Brand.lavande]}
                 start={{ x: 0, y: 0 }}
@@ -154,25 +164,25 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                 <View style={{ flex: 1, gap: 8, minWidth: 220 }}>
                   <Text style={[styles.codeLabel, ff.semi]}>{t.codeTitle}</Text>
                   <Text style={[styles.code, ff.bold]} selectable testID="space-code">
-                    {data.code.code}
+                    {code.code}
                   </Text>
                   <Text style={[styles.codeSub, ff.medium]}>
-                    {t.discount(discountLabel(data.code, lang))}
-                    {data.code.expiresAt ? ` · ${t.expires(formatDay(data.code.expiresAt, lang))}` : ''}
+                    {t.discount(discountLabel(code, lang))}
+                    {code.expiresAt ? ` · ${t.expires(formatDay(code.expiresAt, lang))}` : ''}
                   </Text>
                 </View>
                 <View style={{ alignItems: tablet ? 'flex-end' : 'flex-start', gap: 12 }}>
                   <View
-                    style={[styles.status, { backgroundColor: data.code.isActive ? '#E7F6EF' : Brand.rose }]}
+                    style={[styles.status, { backgroundColor: code.isActive ? '#E7F6EF' : Brand.rose }]}
                     testID="space-status"
                   >
-                    <Text style={[ff.bold, { fontSize: 13, color: data.code.isActive ? Brand.succes : Brand.framboise }]}>
-                      {data.code.isActive ? t.codeActive : t.codePaused}
+                    <Text style={[ff.bold, { fontSize: 13, color: code.isActive ? Brand.succes : Brand.framboise }]}>
+                      {code.isActive ? t.codeActive : t.codePaused}
                     </Text>
                   </View>
                   {Platform.OS === 'web' && (
                     <Pressable
-                      onPress={() => void copyText('code', data.code.code)}
+                      onPress={() => void copyText('code', code.code)}
                       accessibilityRole="button"
                       style={styles.copy}
                       testID="space-copy"
@@ -182,6 +192,7 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                   )}
                 </View>
               </LinearGradient>
+              ) : null}
 
               {/* Lien suivi */}
               {data.shareLink ? (
@@ -207,7 +218,7 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
               ) : null}
 
               {/* Tunnel */}
-              {data.funnel ? (
+              {data.funnel && code ? (
                 <View style={styles.card} testID="space-funnel">
                   <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.funnelTitle}</Text>
                   <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 12 }}>
@@ -234,6 +245,23 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                 </View>
               ) : null}
 
+              {data.metrics ? (
+                <View testID="space-metrics">
+                  <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 14 }}>
+                    <Kpi label={t.kpiClicks} value={String(data.metrics.clicks)} ff={ff} testID="space-kpi-clicks" />
+                    <Kpi
+                      label={t.kpiConversions}
+                      value={String(data.metrics.verifiedConversions)}
+                      ff={ff}
+                      testID="space-kpi-conversions"
+                    />
+                  </View>
+                  <Text style={[styles.muted, ff.text, { marginTop: 8 }]}>{t.metricsNote}</Text>
+                </View>
+              ) : null}
+
+              {code ? (
+              <>
               {/* Chiffres clés */}
               <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 14 }}>
                 <Kpi label={t.kpiPurchases} value={String(data.totals.purchases)} ff={ff} testID="space-kpi-purchases" />
@@ -247,10 +275,21 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                     testID="space-kpi-commission"
                   />
                 ) : (
-                  <Kpi label={t.kpiUses} value={String(data.code.uses)} ff={ff} testID="space-kpi-uses" />
+                  <Kpi label={t.kpiUses} value={String(code.uses)} ff={ff} testID="space-kpi-uses" />
                 )}
               </View>
               {rate == null && <Text style={[styles.muted, ff.text]}>{t.noCommission}</Text>}
+              {rate != null && <Text style={[styles.muted, ff.text]}>{t.frozenRate}</Text>}
+              {(data.totals.refunded ?? 0) > 0 ? (
+                <Text style={[styles.muted, ff.text]} testID="space-refunds">
+                  {t.refundNote(
+                    data.totals.refundedSales ?? 0,
+                    formatEuro(data.totals.refunded ?? 0, lang),
+                    formatEuro(data.totals.commissionReversed ?? 0, lang),
+                  )}
+                </Text>
+              ) : null}
+
 
               {/* Historique */}
               <View style={styles.card} testID="space-history">
@@ -265,31 +304,39 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                       <Text style={[styles.cell, styles.head, ff.semi]}>{t.colRevenue}</Text>
                       {rate != null && <Text style={[styles.cell, styles.head, ff.semi]}>{t.colCommission}</Text>}
                     </View>
-                    {data.months.map((m) => (
+                    {data.months.map((m) => {
+                      const idle = m.purchases === 0 && !m.refunded;
+                      return (
                       <View key={m.month} style={styles.row} testID={`space-month-${m.month}`}>
-                        <Text style={[styles.cellMonth, ff.medium, m.purchases === 0 && styles.zero]}>
+                        <Text style={[styles.cellMonth, ff.medium, idle && styles.zero]}>
                           {formatMonth(m.month, lang)}
                         </Text>
-                        <Text style={[styles.cell, ff.text, m.purchases === 0 && styles.zero]}>{m.purchases}</Text>
-                        <Text style={[styles.cell, ff.text, m.purchases === 0 && styles.zero]}>
+                        <Text style={[styles.cell, ff.text, idle && styles.zero]}>{m.purchases}</Text>
+                        <Text style={[styles.cell, ff.text, idle && styles.zero]}>
                           {formatEuro(m.revenue, lang)}
                         </Text>
                         {rate != null && (
-                          <Text style={[styles.cell, ff.semi, { color: m.purchases ? Brand.framboise : Brand.encrePale }]}>
+                          <Text style={[styles.cell, ff.semi, { color: idle ? Brand.encrePale : Brand.framboise }]}>
                             {formatEuro(m.commission, lang)}
                           </Text>
                         )}
                       </View>
-                    ))}
+                      );
+                    })}
                   </View>
                 )}
               </View>
+              </>
+              ) : null}
 
               {/* Offres de la marque */}
               {data.offers && data.offers.length > 0 ? (
                 <View style={styles.card} testID="space-offers">
                   <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.offersTitle}</Text>
                   <Text style={[styles.muted, ff.text]}>{t.offersHint}</Text>
+                  <Text style={[styles.muted, ff.semi, { color: Brand.lavande }]} testID="space-offers-note">
+                    {t.offersClicksNote}
+                  </Text>
                   {data.offers.map((o) => (
                     <View key={o.id} style={styles.offerRow} testID={`space-offer-${o.id}`}>
                       <View style={{ flex: 1, minWidth: 200, gap: 2 }}>
@@ -297,7 +344,10 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                           {o.perk} · {o.title}
                         </Text>
                         <Text style={[styles.muted, ff.text]}>
-                          {t.offerPlacement(o.placement)} · {o.live ? t.offerLive : t.offerOff}
+                          {t.offerPlacement(o.placement)} ·{' '}
+                          <Text testID={`space-offer-state-${o.id}`}>
+                            {o.state ? t.offerState(o.state) : o.live ? t.offerLive : t.offerOff}
+                          </Text>
                         </Text>
                       </View>
                       <Text style={[styles.offerStat, ff.text]}>
@@ -307,7 +357,13 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                         {t.offerClicks} <Text style={ff.bold}>{o.clicks}</Text>
                       </Text>
                       <Text style={[styles.offerStat, ff.text]}>
-                        {t.offerRate} <Text style={ff.bold}>{o.clickRate} %</Text>
+                        {t.offerRate}{' '}
+                        <Text style={ff.bold}>
+                          {lang === 'fr' ? `${String(o.clickRate).replace('.', ',')} %` : `${o.clickRate}%`}
+                        </Text>
+                      </Text>
+                      <Text style={[styles.offerStat, ff.text]} testID={`space-offer-sales-${o.id}`}>
+                        {t.offerConfirmed} <Text style={[ff.bold, { color: Brand.framboise }]}>{o.confirmedSales ?? 0}</Text>
                       </Text>
                     </View>
                   ))}
@@ -315,11 +371,11 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
               ) : null}
 
               {/* Kit prêt à publier */}
-              {data.shareLink ? (
+              {data.shareLink && code && !suspended ? (
                 <View style={styles.card} testID="space-kit">
                   <Text style={[styles.h2, ff.title, { fontSize: 22 }]}>{t.kitTitle}</Text>
                   <Text style={[styles.muted, ff.text]}>{t.kitHint}</Text>
-                  {t.kitPosts(data.shareLink, discountLabel(data.code, lang)).map((post, i) => (
+                  {t.kitPosts(data.shareLink, discountLabel(code, lang)).map((post, i) => (
                     <View key={i} style={styles.kitPost}>
                       <Text style={[styles.body, ff.text, { flex: 1 }]} selectable>
                         {post}

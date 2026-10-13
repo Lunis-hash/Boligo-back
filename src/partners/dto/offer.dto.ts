@@ -7,8 +7,13 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  IsInt,
+  IsNumber,
   IsUUID,
+  Matches,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 /** Offre d'une marque, saisie par l'équipe (tous les champs facultatifs en mise à jour). */
@@ -61,4 +66,29 @@ export class OfferImpressionsDto {
   @ArrayMaxSize(30)
   @IsUUID('4', { each: true })
   ids: string[];
+}
+
+/**
+ * Ventes confirmées par la marque pour un mois (d'après son relevé ou celui
+ * de son réseau d'affiliation) et rémunération due à BOLIGO, en euros.
+ */
+export class OfferConversionDto {
+  /** Mois concerné, « AAAA-MM ». */
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/)
+  month!: string;
+
+  @IsInt()
+  @Min(0)
+  @Max(100000)
+  conversions!: number;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1000000)
+  revenue!: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  reference?: string;
 }

@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-13T22:31:23.743Z",
+  "ok": 24,
+  "total": 24,
+  "results": [
+    {
+      "step": "Admin fictif : connexion API",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "step": "Membre : connexion par le formulaire",
+      "ok": true,
+      "detail": "http://localhost:8081/discover"
+    },
+    {
+      "step": "Membre : « Offres partenaires » depuis le profil = 6 offres en ligne (ni brouillon, ni programmée, ni expirée)",
+      "ok": true,
+      "detail": "6 affichées"
+    },
+    {
+      "step": "Membre : clic sur une offre compté (clic ≠ vente)",
+      "ok": true,
+      "detail": "7 → 8"
+    },
+    {
+      "step": "Membre : code DEMOCLARA appliqué au paiement (15,00 € → 13,50 €)",
+      "ok": true,
+      "detail": "13,50 € TTC"
+    },
+    {
+      "step": "Membre : code d’un partenaire suspendu refusé",
+      "ok": true,
+      "detail": "Code promotionnel inactif."
+    },
+    {
+      "step": "Achat simulé (webhook local) avec DEMOCLARA : +1 vente, +13,50 €, +2,70 € de commission au taux figé (20 %)",
+      "ok": true,
+      "detail": "ventes 3 → 4, commission 5.4 → 8.1"
+    },
+    {
+      "step": "Remboursement partiel (50 %, événement rejoué) : commission reprise au prorata une seule fois (−1,35 €)",
+      "ok": true,
+      "detail": "commission 8.1 → 6.75, revenu confirmé 40.5 → 33.75"
+    },
+    {
+      "step": "Synthèse admin mise à jour des mêmes montants",
+      "ok": true,
+      "detail": "commission 23.91 → 25.26"
+    },
+    {
+      "step": "Espace partenaire et admin : mêmes revenus, commissions, clics et conversions (6 partenaires)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Synthèse admin = somme des lignes",
+      "ok": true,
+      "detail": "157,87 € / 25,26 €"
+    },
+    {
+      "step": "Partenaire (navigateur) : commission nette affichée",
+      "ok": true,
+      "detail": "Votre commission (20 %) 6,75 €"
+    },
+    {
+      "step": "Partenaire : remboursements et reprise de commission expliqués",
+      "ok": true,
+      "detail": "Remboursements : 20,25 € rendu(s), dont 1 Parcours intégralement remboursé(s). Commission reprise au prorata : 3,38 €."
+    },
+    {
+      "step": "Partenaire : clics et conversions vérifiées séparés",
+      "ok": true,
+      "detail": "Clics (visites et offres) 42"
+    },
+    {
+      "step": "Partenaire suspendu : Espace en lecture seule avec bandeau",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Partenaire refusé : aucun Espace",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Admin : cartes « Clics (pas des ventes) », « Conversions vérifiées », « Revenus réellement confirmés »",
+      "ok": true,
+      "detail": "Clics (pas des ventes) 286 Visites des liens et clics sur les offres · 31 inscription(s) Conversions vérifiées 22 Parcours payés + ventes confirmées par les marques Revenus réellement confirmés 157,87 € Paiement réussi et non remboursé"
+    },
+    {
+      "step": "Admin : fiche de Clara = son Espace (commission, remboursements)",
+      "ok": true,
+      "detail": "6,75 € · 1 vente(s) intégralement remboursée(s), 20,25 € remboursé(s) au total · commission reprise : 3,38 € (sur 10,13 € brute)."
+    },
+    {
+      "step": "Admin : partenaire créé depuis le back-office (« En discussion »)",
+      "ok": true,
+      "detail": "EN_COURS"
+    },
+    {
+      "step": "Admin : vérification manuelle puis code créé → accepté",
+      "ok": true,
+      "detail": "DEMOCHAI84"
+    },
+    {
+      "step": "Admin : suspension → code refusé au paiement",
+      "ok": true,
+      "detail": "Code promotionnel inactif."
+    },
+    {
+      "step": "Admin : publication d’une offre brouillon → visible des membres",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Admin : retrait de l’offre → invisible des membres",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Aucune erreur JavaScript dans les pages",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

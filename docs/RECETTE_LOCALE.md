@@ -64,9 +64,13 @@ de l'API est **forcée** sur le conteneur `db`.
 | API | <http://localhost:3000/api> — santé : `/api/health`, documentation : <http://localhost:3000/docs> |
 | Admin | <http://localhost:8081> (sans Docker : <http://localhost:3001>) |
 
-## 4. Accès fictifs
+## 4. Accès fictifs (liste unique)
 
-Mot de passe de **tous les membres** : `Recette2026!`
+Tout est **fictif** et n'existe que dans la base locale. Domaines
+`@recette.boligo.test` (parcours membres) et `@boligo-demo.example`
+(programme partenaires) : aucun e-mail n'est envoyé.
+
+### Membres (parcours) — mot de passe `Recette2026!`
 
 | E-mail | Stade |
 |---|---|
@@ -76,21 +80,54 @@ Mot de passe de **tous les membres** : `Recette2026!`
 | `diane.sondeur@recette.boligo.test` | Parcours en cours avec Cyril, **Sondeur en cours** : question 1 révélée, **à elle** de répondre à la question 2 |
 | `emma.entretien@recette.boligo.test` | Grand Entretien V8.2 **en cours** : modules 0 à 3 complets, module 4 à moitié (tester le retour arrière) ; 0 crédit |
 | `felix.nouveau@recette.boligo.test` | **Nouveau membre** : rien de commencé, 0 crédit (le Grand Entretien démarrera en V8.2) |
+| `membre@boligo-demo.example` / `Demo-Membre-2026!` | Membre de la recette partenaires (codes partenaires `DEMO…`) |
 
-Administrateur : `admin@recette.boligo.test` / `RecetteAdmin2026!` (rôle ADMIN).
+### Administration — <http://localhost:8081/login>
 
-Codes promo de test : `RECETTE100` (parcours offert, sans carte) et `RECETTE50` (-50 %).
+| E-mail | Mot de passe | Rôle |
+|---|---|---|
+| `admin@recette.boligo.test` | `RecetteAdmin2026!` | Administrateur (parcours membres) |
+| `admin@boligo-demo.example` | `Demo-Admin-2026!` | Administrateur (programme partenaires) |
+| `marketing@boligo-demo.example` | `Demo-Marketing-2026!` | Équipe marketing (partenaires) |
 
-Inscrire un nouveau compte : aucun e-mail n'est envoyé ; le code de
-vérification **1234** est accepté (`OTP_DEBUG=true`, recette uniquement).
+### Espaces partenaires — liens privés (fictifs, recette locale uniquement)
+
+20 partenaires « [DÉMO] » (12 acceptés, 2 suspendus, 2 refusés, 4 en attente),
+18 offres, 13 codes `DEMO…`, 14 ventes et 3 remboursements. Liens imprimés par
+`npm run seed:recette:partenaires`, identiques à chaque lancement :
+
+| Partenaire | Lien |
+|---|---|
+| Élise Varnier (Atelier Lumen) | <http://localhost:8080/espace-partenaire#TyFgGraNhI9RNCuaf81OVpVNh58GlML8tcM3KICMGjg> |
+| Thomas Orlin (Maison Cerfeuil) | <http://localhost:8080/espace-partenaire#RCPj9lXVv_n2m8bXOcJG_-RPO-tu_GyivLuCWBIhg7Y> |
+| Agathe Morvan (Vélo Brume) | <http://localhost:8080/espace-partenaire#prCKjaRj-LOeCnxlfmEgirWwRkZN6soAlPDTeJeg9z8> |
+| Bastien Quérel (Librairie L’Ourlet) | <http://localhost:8080/espace-partenaire#4HQq1CYS9dqr2_w20RWOQ3ZwT2dF28lmdw39D176WUQ> |
+| Romane Dufresnoy (Spa Nacre, suspendu) | <http://localhost:8080/espace-partenaire#QBsthQ8rEuT1pMKwUOA20lnxNYcseBDji9CZo9m0HGk> |
+| Clara Fontenay (commerciale indépendante) | <http://localhost:8080/espace-partenaire#zG1NzM7mQ0bhCa7qL0-iKzpx_ZYJlAlpmhrRdeROrFw> |
+| Yanis Belcourt (agent commercial) | <http://localhost:8080/espace-partenaire#uP4sZqngkuL_PMQGzCFvGv273_-OxUbbxkbvcYBB0nM> |
+| Sophie Marchetti (ambassadrice) | <http://localhost:8080/espace-partenaire#hso6ePuoPC3ijExk9-1cSOEihGfcxKHpja_SAQR_6qw> |
+| Karim Delaunay (ambassadeur) | <http://localhost:8080/espace-partenaire#QUOQ2ZkcNsFh8oPvJIU-2wDLGRhI3fLqtdARzMbFEO8> |
+| Lina Arcelle (créatrice de contenu) | <http://localhost:8080/espace-partenaire#PBN9bulkmYLxRF4HyrdfCDEpdp0gvzUPMW-itVG1EVI> |
+| Jade Poitevin (podcast « Cœurs lents ») | <http://localhost:8080/espace-partenaire#cYmS_PFH6l2DstkbiJ6HNPUNPzvH7Gp5Z-UDBTPHpos> |
+| Nora Valsain (YouTube « Rencontres vraies ») | <http://localhost:8080/espace-partenaire#d3iXJGVWdwiSO3M3PXdpDog8LqS6io2d70CcQ3bmaJc> |
+| Théo Grandin (créateur de contenu) | <http://localhost:8080/espace-partenaire#vZxDS_OMQjQC47QTjNGuLeswcZqTa2e4LyfNWAZUdCc> |
+| Maëlle Kerbrat (blog « Le temps d’aimer ») | <http://localhost:8080/espace-partenaire#YvSXtQwaHIkIUwBL3LmCohA654MGuxpWkWMmI28hcaY> |
+
+Les offres « [DÉMO] » n'apparaissent que sur la page Partenaires **locale** ;
+rien n'est publié sur le site public.
+
+### Codes et inscription
+
+- Codes promo : `RECETTE100` (parcours offert, sans carte), `RECETTE50` (-50 %), et les codes partenaires `DEMO…` (liste dans l'admin, Codes promo).
+- Nouveau compte : le code de vérification **1234** est accepté (`OTP_DEBUG=true`, recette uniquement).
 
 Les entretiens, l'invitation et le parcours sont créés par les **vrais services**
 de l'API (mêmes contrôles qu'en production). Le Sondeur utilise la banque de
 questions fixe (`HARMONY_QUESTIONS_SOURCE=bank`) : 9 questions pour Cyril et Diane.
-Le seed est **idempotent** : il supprime puis recrée uniquement ses membres
-`@recette.boligo.test` et ses codes `RECETTE…` ; relancé, il remet ces comptes
-dans l'état ci-dessus. Il refuse de tourner si `DATABASE_URL` ne vise pas
-`localhost`, `127.0.0.1` ou l'hôte Docker `db`.
+Les deux seeds sont **idempotents** : ils suppriment puis recréent uniquement
+leurs propres données (`@recette.boligo.test`, `RECETTE…`, `@boligo-demo.example`,
+`DEMO…`). Ils refusent toute base qui n'est pas `localhost` ou `127.0.0.1`
+(ou l'hôte `db`, seulement à l'intérieur du conteneur de recette Docker).
 
 ## 5. Paiement
 

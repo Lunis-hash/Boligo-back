@@ -37,6 +37,12 @@ services:
       DIRECT_URL: *recette_db_url
       INTERVIEW_VERSION: "8.2"
       HARMONY_QUESTIONS_SOURCE: bank
+      # Garde-fou des seeds (prisma/recette-guard.ts) : l'hôte « db » n'est
+      # accepté que dans ce conteneur de recette.
+      BOLIGO_RECETTE_DOCKER: "1"
+      # Liens imprimés par le seed des partenaires (espaces privés, admin).
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
+      ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:8081}
     restart: "no"
 
   api:
@@ -53,6 +59,8 @@ services:
       DIRECT_URL: *recette_db_url
       NODE_ENV: production
       INTERVIEW_VERSION: "8.2"
+      # Liens des espaces partenaires envoyés par l'admin : la webapp locale.
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
       # Aucune copie de la base vers un autre serveur.
       DB_TRANSFER_TARGET_URL: ""
       # Aucun e-mail réel : sans fournisseur, les envois sont simulés (journal).

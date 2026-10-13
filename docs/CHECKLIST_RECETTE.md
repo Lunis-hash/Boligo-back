@@ -22,8 +22,21 @@ Comptes fictifs (mot de passe `Recette2026!`) :
 | `felix.nouveau@recette.boligo.test` | Nouveau membre, rien de commencé, 0 crédit |
 | `admin@recette.boligo.test` | Administrateur (mot de passe `RecetteAdmin2026!`) |
 
-Codes : `RECETTE100` (parcours offert), `RECETTE50` (-50 %). Code de
-vérification d'inscription : `1234`.
+Programme partenaires (même recette, mêmes adresses) :
+
+| Compte | Mot de passe | Rôle |
+|---|---|---|
+| `admin@boligo-demo.example` | `Demo-Admin-2026!` | Administrateur (partenaires) |
+| `marketing@boligo-demo.example` | `Demo-Marketing-2026!` | Équipe marketing |
+| `membre@boligo-demo.example` | `Demo-Membre-2026!` | Membre (codes partenaires `DEMO…`) |
+
+Les 14 liens privés des espaces partenaires « [DÉMO] » sont imprimés à la fin
+de `./recette.sh` et listés dans `docs/RECETTE_LOCALE.md` (section 4), par
+exemple Clara Fontenay :
+http://localhost:8080/espace-partenaire#zG1NzM7mQ0bhCa7qL0-iKzpx_ZYJlAlpmhrRdeROrFw
+
+Codes : `RECETTE100` (parcours offert), `RECETTE50` (-50 %), codes partenaires
+`DEMO…`. Code de vérification d'inscription : `1234`.
 
 Cocher chaque case ; noter le numéro et une capture si ça ne va pas.
 
@@ -77,10 +90,14 @@ Cocher chaque case ; noter le numéro et une capture si ça ne va pas.
 - [ ] 6.3 Avec une clé `sk_test_` dans `.env.recette` : carte 4242 4242 4242 4242 acceptée, crédit ajouté ; carte 4000 0000 0000 0002 refusée proprement.
 - [ ] 6.4 Profil > Achats : l'achat apparaît avec sa date limite de rétractation.
 
-## 7. Partenaires
-- [ ] 7.1 Page publique Partenaires : aucune entreprise fictive affichée.
-- [ ] 7.2 Espace partenaire : il s'ouvre avec le lien privé envoyé depuis l'admin (`…/espace-partenaire#<lien>`).
-- [ ] 7.3 Si le seed des partenaires de l'autre session est présent : statistiques et offres visibles ; sinon, noter « non fourni ».
+## 7. Partenaires (données « [DÉMO] », base locale)
+- [ ] 7.1 Page Partenaires locale : seules les offres marquées « [DÉMO] » apparaissent (rien sur le site public).
+- [ ] 7.2 Espace d'un partenaire accepté (lien de Clara) : visites, inscriptions, ventes et commissions affichées, avec les mêmes chiffres que dans sa fiche admin.
+- [ ] 7.3 Espace d'un partenaire suspendu (Spa Nacre) : accès bloqué avec un message clair ; un lien d'un partenaire refusé ne fonctionne pas.
+- [ ] 7.4 Admin (`admin@boligo-demo.example`) > Partenaires : synthèse, fiches, vérification, suspension ; création d'un partenaire avec code et lien privé envoyé.
+- [ ] 7.5 Équipe marketing (`marketing@boligo-demo.example`) : accès limité aux partenaires et aux offres.
+- [ ] 7.6 Commissions : taux figé à la vente ; un remboursement reprend la commission au prorata.
+- [ ] 7.7 Membre `membre@boligo-demo.example` : un code `DEMO…` appliqué au paiement est attribué au bon partenaire.
 
 ## 8. Codes et réductions
 - [ ] 8.1 `RECETTE50` : prix affiché divisé par deux avant paiement.
@@ -93,7 +110,6 @@ Cocher chaque case ; noter le numéro et une capture si ça ne va pas.
 - [ ] 9.3 Parcours (Cyril et Diane), signalements, messages bloqués : les pages s'ouvrent sans erreur.
 - [ ] 9.4 Codes promo : `RECETTE100` et `RECETTE50` visibles, avec leur utilisation.
 - [ ] 9.5 Finances : l'achat de test apparaît ; export CSV téléchargeable.
-- [ ] 9.6 Partenaires : envoi d'un lien d'espace partenaire.
 
 ## 10. Général
 - [ ] 10.1 Toutes les pages à 360 et 390 px : pas de défilement horizontal, boutons accessibles au pouce.
@@ -102,5 +118,6 @@ Cocher chaque case ; noter le numéro et une capture si ça ne va pas.
 
 Déjà vérifié automatiquement le 13/10/2026 (rapport de la PR) : jest backend
 (1437 tests) et application (155 tests), intégrations V7.1, V8.2, sécurité et
-Sondeur sur 3 jours, e2e V8.2 complet (41/41), e2e mobile du retour arrière à
-360 et 390 px (44/44), paiement Stripe TEST (livemode=false).
+Sondeur sur 3 jours, partenaires (registre des commissions), e2e V8.2 complet,
+e2e mobile du retour arrière à 360 et 390 px, e2e des interfaces partenaires,
+paiement Stripe TEST (livemode=false). Détail dans la PR #43.

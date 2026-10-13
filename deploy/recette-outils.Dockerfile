@@ -24,6 +24,8 @@ COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 COPY src ./src
 COPY config ./config
 COPY deploy/recette-init.js ./deploy/recette-init.js
+# Jeu de données du seed des partenaires fictifs (seed:recette:partenaires).
+COPY mobile-steve/e2e/recette-partenaires-data.js ./mobile-steve/e2e/recette-partenaires-data.js
 RUN --mount=type=secret,id=ca,required=false \
     if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca; fi; \
     ./node_modules/.bin/prisma generate
