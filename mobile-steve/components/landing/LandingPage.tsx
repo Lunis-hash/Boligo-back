@@ -335,7 +335,7 @@ export function LandingPage() {
               <View style={{ flex: wide ? 0.9 : undefined, gap: 14 }}>
                 <Text style={[styles.overline, ff.bold, { color: '#CFC3FF' }]}>NOTRE ENGAGEMENT</Text>
                 <Text style={[h2, { color: '#FFFFFF' }]}>
-                  Le pacte anti-ghosting : <Text style={[ff.titleItalic, { color: '#FFB8D4' }]}>personne ne reste sans réponse.</Text>
+                  Le pacte anti-ghosting : <Text style={[ff.titleItalic, { color: '#FFB8D4' }]}>une réponse, ou votre crédit rendu.</Text>
                 </Text>
                 <Text style={[styles.body, ff.text, { color: 'rgba(255,255,255,0.86)' }]}>
                   En vous engageant dans un parcours, vous promettez d’aller au bout ou d’y mettre fin poliment. BOLIGO veille au respect de ce pacte.
@@ -382,7 +382,7 @@ export function LandingPage() {
           <View style={{ flex: wide ? 1 : undefined, gap: 14 }}>
             <Text style={[styles.overline, ff.bold, { color: Brand.lavande }]}>TARIF SIMPLE</Text>
             <Text style={h2}>
-              Vous ne payez que lorsqu’une rencontre <Text style={[ff.titleItalic, { color: Brand.framboise }]}>commence.</Text>
+              Vous ne payez qu’au lancement d’un <Text style={[ff.titleItalic, { color: Brand.framboise }]}>parcours.</Text>
             </Text>
             {tablet && (
               <Text style={[styles.body, ff.text]}>

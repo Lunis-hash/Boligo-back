@@ -322,7 +322,6 @@ export default function LoginScreen() {
 
             {/* Lien inscription */}
             <View style={styles.signupRow}>
-              <Text style={styles.signupText}>Nouveau ici — </Text>
               <TouchableOpacity
                 onPress={() => router.push('/onboarding/profile-details')}
                 activeOpacity={0.7}
