@@ -1,8 +1,13 @@
+process.env.SONDEUR_MODELS_FILE ??= `${__dirname}/fixtures/sondeur-models.ia-active.json`;
 /**
  * Recette d'intégration V8.2 : services réels (Grand Entretien, matching,
  * parcours, Sondeur) sur une base PostgreSQL LOCALE uniquement.
  *
  *   DATABASE_URL=postgresql://…@localhost:5432/… npm run test:int:v82
+ *
+ * La couche IA (faux rédacteur) est vérifiée avec la qualification de test
+ * test/fixtures/sondeur-models.ia-active.json (IA active), même si la
+ * production est en repli déterministe (config/sondeur-models.json).
  *
  * Aucune variable de .env n'est chargée ; aucune IA, aucun e-mail, aucune
  * notification réels : l'IA est simulée (questions avec et sans preuves) et
