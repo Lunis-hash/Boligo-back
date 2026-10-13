@@ -2,8 +2,15 @@
 # Recette Stripe RÉELLE en mode TEST sur le build final local.
 #
 #   bash mobile-steve/e2e/recette-stripe-test.sh verifier   # contrôles préalables, aucun paiement
-#   RECETTE_STRIPE_AUTORISEE=oui WEBHOOK_RENDER=desactive|accepte \
+#   RECETTE_STRIPE_AUTORISEE=oui WEBHOOK_RENDER=couper \
 #     bash mobile-steve/e2e/recette-stripe-test.sh executer  # recette complète (une seule)
+#   bash mobile-steve/e2e/recette-stripe-test.sh restaurer  # secours : réactive le webhook Render TEST
+#
+# WEBHOOK_RENDER :
+#   couper    le script coupe le webhook Render TEST (we_1UP2h9…) juste avant les
+#             paiements et le RESTAURE à tout arrêt gérable, avec vérification ;
+#   desactive le webhook a déjà été coupé à la main ;
+#   accepte   webhook laissé actif (effets documentés, non recommandé).
 #
 # Variables (environnement de la session, jamais dans le dépôt ni en argument) :
 #   STRIPE_TEST_SECRET_KEY  clé sk_test_ (ou rk_test_) du compte « environnement de test BOLIGO »
@@ -12,7 +19,7 @@
 #   - compte Stripe imposé (acct_1UMQWmLz8rnS1CBn), toute clé non test refusée ;
 #   - la clé ne figure dans aucun argument de processus, journal ni résultat ;
 #   - seule la base locale « boligo_recette_stripe » (marquée jetable) peut être supprimée ;
-#   - aucun paiement tant que le webhook Render n'est pas traité (WEBHOOK_RENDER) ;
+#   - seul le webhook we_1UP2h9Lz8rnS1CBnjkMldEOm (TEST) peut être coupé, puis restauré ;
 #   - chaque étape a un délai maximal ; toute erreur arrête la recette.
 set -euo pipefail
 umask 077
@@ -26,16 +33,40 @@ readonly MARK='boligo-recette-stripe-jetable'           # commentaire posé à l
 readonly U="postgresql://boligo:boligo@127.0.0.1:5432/$DB"
 readonly STRIPE_BIN=${STRIPE_BIN:-stripe}
 readonly OUT="$ROOT/docs/recette-stripe-test"
+readonly GARDE_DIR=/tmp/boligo-webhook-garde            # état d'origine + marqueur COUPE (hors WORK)
+readonly JS="$ROOT/mobile-steve/e2e/recette-stripe-test.js"
 WORK=$(mktemp -d /tmp/recette-stripe.XXXXXX)            # 0700 : journaux bruts (secrets) supprimés à la fin
+mkdir -p "$GARDE_DIR"; chmod 700 "$GARDE_DIR"
+# Exportés d'emblée : la restauration doit fonctionner quel que soit l'instant de l'arrêt.
+export STRIPE_BIN WORK OUT ACCOUNT GARDE_DIR
 PIDS=()
 
 die() { echo "ARRÊT : $*" >&2; exit 2; }
 mask() { sed -E 's/(sk|rk|pk)_(test|live)_[A-Za-z0-9]+/<clé masquée>/g; s/whsec_[A-Za-z0-9]+/<secret masqué>/g; s/eyJ[A-Za-z0-9_.-]{20,}/<jeton masqué>/g'; }
+
+# Restauration du webhook Render à TOUT arrêt gérable (fin, erreur, Ctrl-C, signal).
+restore_webhook() {
+  [ -f "$GARDE_DIR/COUPE" ] || return 0
+  echo "Restauration du webhook Render TEST…"
+  if node "$JS" webhook-restore 2>&1 | mask | tee -a "$GARDE_DIR/restauration.log"; then
+    return 0
+  fi
+  { echo "🚨 ALERTE $(date -Is) : webhook Render TEST NON RÉACTIVÉ."
+    echo "Secours : bash mobile-steve/e2e/recette-stripe-test.sh restaurer"
+    echo "Ou : tableau de bord Stripe (environnement de test BOLIGO) → Développeurs → Webhooks → BOLIGO API (Render Boligo-back) → Activer."
+  } | tee "$GARDE_DIR/ALERTE" >&2
+  if [ -d "$OUT" ]; then cp "$GARDE_DIR/ALERTE" "$OUT/ALERTE-WEBHOOK.txt"; fi
+  return 1
+}
 cleanup() {
-  for p in "${PIDS[@]:-}"; do [ -n "$p" ] && kill "$p" 2>/dev/null || true; done
+  local code=$?
+  restore_webhook || code=3
+  for p in "${PIDS[@]:-}"; do if [ -n "$p" ]; then kill "$p" 2>/dev/null; fi; done
   rm -rf "$WORK"
+  exit "$code"
 }
 trap cleanup EXIT
+trap 'exit 130' INT TERM HUP
 # Attend une condition (commande) au plus N secondes.
 wait_until() { local n=$1; shift; for _ in $(seq "$n"); do "$@" && return 0; sleep 1; done; return 1; }
 
@@ -51,20 +82,28 @@ CLI_VERSION=$("$STRIPE_BIN" version 2>/dev/null || true)
 echo "Stripe CLI : $(printf '%s\n' "$CLI_VERSION" | grep -i 'stripe version' | head -1)"
 "$STRIPE_BIN" events resend --help 2>&1 | grep -q -- '--webhook-endpoint' \
   || die "« stripe events resend » absent ou syntaxe inattendue dans cette version de Stripe CLI."
+export STRIPE_TEST_SECRET_KEY
+
+if [ "$MODE" = restaurer ]; then
+  touch "$GARDE_DIR/COUPE"   # force la restauration vérifiée (sans effet si déjà actif et identique)
+  if restore_webhook; then echo "Webhook Render TEST vérifié actif."; exit 0; fi
+  exit 3
+fi
+[ ! -f "$GARDE_DIR/COUPE" ] || die "une coupure précédente du webhook n'est pas restaurée : lancer « restaurer » d'abord."
 
 # ── 2. Compte, permissions, webhooks existants (lecture ; aucune création) ─
-export STRIPE_TEST_SECRET_KEY STRIPE_BIN WORK OUT ACCOUNT
-if ! node mobile-steve/e2e/recette-stripe-test.js preflight 2>&1 | mask | tee "$WORK/preflight.txt"; then
+if ! node "$JS" preflight 2>&1 | mask | tee "$WORK/preflight.txt"; then
   die "contrôles préalables Stripe en échec (voir ci-dessus)."
 fi
 if [ "$MODE" = verifier ]; then echo "Contrôles préalables réussis. Aucun paiement effectué."; exit 0; fi
-[ "$MODE" = executer ] || die "mode inconnu : $MODE (verifier | executer)."
+[ "$MODE" = executer ] || die "mode inconnu : $MODE (verifier | executer | restaurer)."
 [ "${RECETTE_STRIPE_AUTORISEE:-}" = oui ] || die "exécution non autorisée (RECETTE_STRIPE_AUTORISEE=oui requis)."
 case "${WEBHOOK_RENDER:-}" in
-  desactive|accepte) ;;
-  *) die "WEBHOOK_RENDER=desactive|accepte requis (voir docs/DEPLOIEMENT_RENDER.md §1)." ;;
+  couper|accepte) ETAT=actif_connu ;;
+  desactive) ETAT=aucun_actif ;;
+  *) die "WEBHOOK_RENDER=couper|desactive|accepte requis (voir docs/DEPLOIEMENT_RENDER.md §1)." ;;
 esac
-grep -q "^WEBHOOK_RENDER_OK $WEBHOOK_RENDER\$" "$WORK/preflight.txt" \
+grep -q "^WEBHOOK_RENDER_ETAT $ETAT\$" "$WORK/preflight.txt" \
   || die "l'état du webhook Render ne correspond pas à WEBHOOK_RENDER=$WEBHOOK_RENDER."
 
 # ── 3. PostgreSQL local et base dédiée ──────────────────────────────────────
@@ -125,14 +164,26 @@ wait_until 30 stripe_ok || { grep -i stripe "$WORK/backend.log" | mask >&2; die 
 node -e "require('http').createServer((q,r)=>r.end('BOLIGO retour paiement')).listen(8081,'127.0.0.1')" &
 PIDS+=("$!")
 
-# ── 6. Recette (une seule exécution) ────────────────────────────────────────
+# ── 6. Coupure du webhook Render TEST (si demandée) ─────────────────────────
 mkdir -p "$OUT"
+if [ "$WEBHOOK_RENDER" = couper ]; then
+  # Chien de garde détaché : si ce script disparaît sans restaurer (kill -9),
+  # ou au plus tard après 45 min, il restaure et vérifie lui-même.
+  setsid bash "$ROOT/mobile-steve/e2e/recette-stripe-garde.sh" "$$" > /dev/null 2>&1 < /dev/null &
+  echo "Chien de garde actif."
+  node "$JS" webhook-cut 2>&1 | mask | tee -a "$OUT/recette.txt" \
+    || die "coupure du webhook non confirmée (restauration automatique en cours)."
+fi
+
+# ── 7. Recette (une seule exécution) ────────────────────────────────────────
 set +e
 API_URL=http://127.0.0.1:3000/api DB_URL=$U LISTEN_LOG="$WORK/listen.log" BACKEND_LOG="$WORK/backend.log" \
-  LISTEN_PID=$LISTEN node mobile-steve/e2e/recette-stripe-test.js run 2>&1 | mask | tee "$OUT/recette.txt"
+  LISTEN_PID=$LISTEN node "$JS" run 2>&1 | mask | tee -a "$OUT/recette.txt"
 STATUS=${PIPESTATUS[0]}
 set -e
-node mobile-steve/e2e/recette-stripe-test.js webhooks-after 2>&1 | mask | tee -a "$OUT/recette.txt"
+restore_webhook 2>&1 | tee -a "$OUT/recette.txt"
+[ ! -f "$GARDE_DIR/COUPE" ] || STATUS=3
+node "$JS" webhooks-after 2>&1 | mask | tee -a "$OUT/recette.txt"
 # Seule l'absence de ligne (code 1) est tolérée.
 { grep -E -- "-->|<--" "$WORK/listen.log" || [ $? -eq 1 ]; } | mask > "$OUT/listener-livraisons.txt"
 { grep -E "Stripe connecté|Événement Stripe reçu|Paiement réussi|[Rr]embours|Facture" "$WORK/backend.log" || [ $? -eq 1 ]; } | mask > "$OUT/journal-backend.txt"

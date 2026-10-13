@@ -22,6 +22,7 @@ const WORK = process.env.WORK || '';
 const OUT = process.env.OUT || '';
 const STRIPE_BIN = process.env.STRIPE_BIN || 'stripe';
 const SNAPSHOT = path.join(WORK, 'webhooks-avant.json');
+const RENDER_ID = 'we_1UP2h9Lz8rnS1CBnjkMldEOm';
 const RENDER_URL = 'https://boligo-back.onrender.com/api/payment/webhook';
 const RENDER_EVENTS = ['charge.dispute.closed', 'charge.dispute.created', 'charge.refunded', 'payment_intent.succeeded'];
 if (!/^(sk|rk)_test_/.test(KEY)) throw new Error('Clé Stripe de TEST requise : refus.');
@@ -52,6 +53,7 @@ function stripe(args, { json = true } = {}) {
   return { status: r.status, text, data };
 }
 const sget = (p, query = {}) => stripe(['get', p, ...Object.entries(query).flatMap(([k, v]) => ['-d', `${k}=${v}`])]).data;
+const normEndpoint = (e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode, metadata: e.metadata || {} });
 const isPermissionError = (d) => !!d?.error && /permission/i.test(d.error.message || '');
 
 // ─── Contrôles préalables (aucune création chez Stripe) ─────────────────────
@@ -86,14 +88,15 @@ function preflight() {
     record('Webhooks du compte lisibles', false, list?.error?.message || 'lecture impossible');
     return false;
   }
-  const eps = list.data.map((e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode }));
+  const eps = list.data.map(normEndpoint);
   fs.writeFileSync(SNAPSHOT, JSON.stringify(eps, null, 2));
   if (OUT) { fs.mkdirSync(OUT, { recursive: true }); fs.writeFileSync(path.join(OUT, 'webhooks-avant.json'), JSON.stringify(eps, null, 2)); }
   for (const e of eps) console.log(`   webhook ${e.id} ${e.status} ${e.url} [${e.enabled_events.join(', ')}]`);
   const remote = eps.filter((e) => e.status === 'enabled' && !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(e.url));
   const onlyKnownRender = remote.every((e) => e.url === RENDER_URL && JSON.stringify(e.enabled_events) === JSON.stringify(RENDER_EVENTS));
-  if (remote.length === 0) console.log('WEBHOOK_RENDER_OK desactive');
-  else if (onlyKnownRender) console.log('WEBHOOK_RENDER_OK accepte');
+  if (remote.length === 0) console.log('WEBHOOK_RENDER_ETAT aucun_actif');
+  else if (onlyKnownRender && remote.length === 1 && remote[0].id === RENDER_ID && remote[0].livemode === false && Object.keys(remote[0].metadata).length === 0)
+    console.log('WEBHOOK_RENDER_ETAT actif_connu');
   record('Webhooks distants actifs identifiés', remote.length === 0 || onlyKnownRender, remote.length ? `${remote.length} actif(s) vers Render : effets décrits dans docs/DEPLOIEMENT_RENDER.md §1` : 'aucun');
   ok = ok && (remote.length === 0 || onlyKnownRender);
   return ok;
@@ -103,10 +106,66 @@ function webhooksAfter() {
   const before = JSON.parse(fs.readFileSync(SNAPSHOT, 'utf8'));
   const list = sget('/v1/webhook_endpoints', { limit: 100 });
   if (!Array.isArray(list?.data)) { console.log('⚠️ Webhooks illisibles après la recette : comparaison impossible'); return; }
-  const after = list.data.map((e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode }));
+  const after = list.data.map(normEndpoint);
   if (OUT) fs.writeFileSync(path.join(OUT, 'webhooks-apres.json'), JSON.stringify(after, null, 2));
   const same = JSON.stringify(before) === JSON.stringify(after);
   console.log(`${same ? '✅' : '⚠️'} Configuration des webhooks Stripe ${same ? 'identique avant et après la recette' : 'MODIFIÉE pendant la recette (voir webhooks-avant/apres.json)'}`);
+}
+
+// ─── Coupure temporaire du webhook Render (TEST) et restauration vérifiée ───
+// Seul RENDER_ID est touché, en mode test. L'état d'origine est l'instantané
+// GARDE_DIR/webhook-origine.json ; GARDE_DIR/COUPE existe tant que le webhook
+// n'est pas restauré et vérifié.
+const GARDE_DIR = process.env.GARDE_DIR || '';
+const ORIGIN = path.join(GARDE_DIR, 'webhook-origine.json');
+const CUT = path.join(GARDE_DIR, 'COUPE');
+const MARK_KEY = 'boligo_recette';
+function readRender() {
+  const e = sget(`/v1/webhook_endpoints/${RENDER_ID}`);
+  return e?.id === RENDER_ID ? normEndpoint(e) : null;
+}
+function webhookCut() {
+  const e = readRender();
+  if (!e || e.livemode !== false || e.status !== 'enabled' || e.url !== RENDER_URL || Object.keys(e.metadata).length)
+    throw new Error(`webhook ${RENDER_ID} absent ou différent de l'état attendu : aucune coupure`);
+  fs.writeFileSync(ORIGIN, JSON.stringify(e, null, 2));
+  fs.writeFileSync(CUT, `${new Date().toISOString()}\n`);
+  const note = `Coupé pour la recette Stripe locale du ${new Date().toISOString()} — À RÉACTIVER s'il est encore désactivé (docs/DEPLOIEMENT_RENDER.md §1)`;
+  stripe(['post', `/v1/webhook_endpoints/${RENDER_ID}`, '-d', 'disabled=true', '-d', `metadata[${MARK_KEY}]=${note}`]);
+  const after = readRender();
+  if (after?.status !== 'disabled') throw new Error(`coupure non confirmée (statut ${after?.status})`);
+  console.log(`✅ Webhook Render ${RENDER_ID} coupé (mode test), état d'origine enregistré`);
+}
+async function webhookRestore() {
+  // Sans instantané (session interrompue, nouveau conteneur) : état d'origine connu.
+  const origin = fs.existsSync(ORIGIN)
+    ? JSON.parse(fs.readFileSync(ORIGIN, 'utf8'))
+    : { id: RENDER_ID, url: RENDER_URL, status: 'enabled', enabled_events: RENDER_EVENTS, api_version: '2024-06-20', description: 'BOLIGO API (Render Boligo-back)', livemode: false, metadata: {} };
+  const current = readRender();
+  if (current && JSON.stringify(current) === JSON.stringify(origin)) {
+    fs.rmSync(CUT, { force: true });
+    console.log(`✅ Webhook Render ${RENDER_ID} actif et identique à l'origine (aucune action)`);
+    return true;
+  }
+  if (current && current.status === 'enabled' && !current.metadata[MARK_KEY]) {
+    console.log(`🚨 ALERTE : le webhook ${RENDER_ID} est actif mais diffère de l'origine sans trace de la recette : aucune modification automatique.`);
+    return false;
+  }
+  for (let i = 1; i <= 5; i++) {
+    stripe(['post', `/v1/webhook_endpoints/${RENDER_ID}`, '-d', 'disabled=false', '-d', `metadata[${MARK_KEY}]=`]);
+    await sleep(2000);
+    // Vérification indépendante : nouvelle lecture, comparaison champ par champ.
+    const now = readRender();
+    if (now && JSON.stringify(now) === JSON.stringify(origin)) {
+      fs.rmSync(CUT, { force: true });
+      console.log(`✅ Webhook Render ${RENDER_ID} RÉACTIVÉ et identique à l'origine (statut ${now.status}, ${now.enabled_events.length} événements, ${now.url})`);
+      return true;
+    }
+    console.log(`… restauration non confirmée (essai ${i}/5, statut ${now?.status ?? 'illisible'})`);
+    await sleep(3000 * i);
+  }
+  console.log(`🚨 ALERTE : le webhook Render ${RENDER_ID} N'EST PAS confirmé réactivé. Réactiver immédiatement : tableau de bord Stripe (environnement de test BOLIGO) → Développeurs → Webhooks → « BOLIGO API (Render Boligo-back) » → Activer, et retirer la métadonnée ${MARK_KEY}.`);
+  return false;
 }
 
 // ─── Recette ─────────────────────────────────────────────────────────────────
@@ -264,6 +323,8 @@ async function run() {
   try {
     if (MODE === 'preflight') ok = preflight();
     else if (MODE === 'webhooks-after') { webhooksAfter(); ok = true; }
+    else if (MODE === 'webhook-cut') { webhookCut(); ok = true; }
+    else if (MODE === 'webhook-restore') ok = await webhookRestore();
     else if (MODE === 'run') { fs.mkdirSync(OUT, { recursive: true }); await run(); ok = results.every((r) => r.ok); }
     else throw new Error(`mode inconnu : ${MODE}`);
   } catch (e) {

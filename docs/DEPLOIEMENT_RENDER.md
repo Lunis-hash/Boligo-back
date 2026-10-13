@@ -36,7 +36,7 @@ Elle n'est exécutée qu'**une seule fois**, après autorisation.
 
 ```
 bash mobile-steve/e2e/recette-stripe-test.sh verifier
-RECETTE_STRIPE_AUTORISEE=oui WEBHOOK_RENDER=desactive bash mobile-steve/e2e/recette-stripe-test.sh executer
+RECETTE_STRIPE_AUTORISEE=oui WEBHOOK_RENDER=couper bash mobile-steve/e2e/recette-stripe-test.sh executer
 ```
 
 - La première commande fait les contrôles préalables, sans aucun paiement.
@@ -94,15 +94,35 @@ Les événements de la recette sont aussi envoyés à `https://boligo-back.onren
 
 Pour garantir « aucune donnée de production modifiée », la **désactivation temporaire du webhook est indispensable**. Elle ne se fait qu'avec l'autorisation de Steve.
 
-**Désactiver** :
-- tableau de bord Stripe, **environnement de test BOLIGO** → Développeurs → Webhooks → `BOLIGO API (Render Boligo-back)` → *Désactiver* ;
-- ou par l'API : `POST /v1/webhook_endpoints/we_1UP2h9Lz8rnS1CBnjkMldEOm` avec `disabled=true`.
+**Coupure et restauration automatiques** (`WEBHOOK_RENDER=couper`, validé par Steve le 13/10/2026) :
 
-Les événements créés pendant la désactivation ne sont pas envoyés à ce point.
+1. **Contrôles avant coupure.** Le script ne touche que `we_1UP2h9Lz8rnS1CBnjkMldEOm`, en mode test. Il refuse de couper si le webhook diffère de l'état attendu : adresse, 4 événements, aucune métadonnée. Il enregistre ensuite l'état d'origine dans `/tmp/boligo-webhook-garde/webhook-origine.json`.
+2. **Moment de la coupure.** Elle a lieu juste avant les paiements (`disabled=true`), avec une métadonnée visible dans le tableau de bord : `boligo_recette = « Coupé pour la recette… À RÉACTIVER »`. La coupure est confirmée par une relecture.
+3. **Restauration automatique.** Elle se déclenche à tout arrêt gérable : fin normale, erreur, Ctrl-C, signal TERM ou HUP. Le script remet `disabled=false`, retire la métadonnée, puis vérifie de façon indépendante par une nouvelle lecture, champ par champ, contre l'état d'origine. Il fait jusqu'à 5 essais.
+4. **Chien de garde détaché** (`recette-stripe-garde.sh`). Si le script disparaît brutalement (`kill -9`), ou au plus tard après 45 minutes, il restaure et vérifie lui-même.
+5. **Échec de restauration.** Le script affiche `🚨 ALERTE`, écrit `docs/recette-stripe-test/ALERTE-WEBHOOK.txt` et `/tmp/boligo-webhook-garde/ALERTE`, puis se termine en code 3.
+6. **Vérification finale.** Elle a lieu après la recette, par un autre canal (le connecteur Stripe de Claude, en lecture).
 
-**Rétablir exactement** : même écran, *Activer* (ou `disabled=false`). L'adresse, les 4 événements, la version d'API `2024-06-20`, la description et le **secret de signature restent inchangés**. Il n'y a rien à modifier sur Render. Le script compare la configuration avant et après la recette.
+Ces comportements ont été testés le 13/10/2026 avec un faux Stripe CLI, sans aucun appel réel :
+- coupure puis restauration identique ;
+- refus de réactivation par Stripe, qui déclenche l'alerte et le code 1 ;
+- `kill -9` du script, puis restauration par le chien de garde en moins de 12 s ;
+- erreur pendant une coupure, puis restauration ;
+- signaux TERM et INT à 0,3 s, 1,5 s et 5 s, puis restauration à chaque fois ;
+- secours sans instantané ;
+- refus de couper un webhook inattendu.
 
-Autre possibilité, `WEBHOOK_RENDER=accepte` : webhook laissé actif, effets ci-dessus acceptés, y compris l'éventuelle ligne `StripeEvent` en production. Non recommandé.
+**Si la session s'interrompt brutalement** (conteneur arrêté : ni le script ni le chien de garde ne tournent plus) :
+
+- **Alerte** : avant le lancement, un rappel automatique est programmé dans cette session environ 40 minutes plus tard. Il est délivré même après un redémarrage du conteneur. À son déclenchement, Claude lit l'état du webhook par le connecteur Stripe. S'il est encore coupé (statut `disabled` ou métadonnée `boligo_recette`), Claude le réactive, vérifie, et signale l'incident à Steve.
+- **Récupération immédiate**, au choix :
+  - dans une nouvelle session : `bash mobile-steve/e2e/recette-stripe-test.sh restaurer` (sans instantané, il rétablit l'état d'origine connu et le vérifie) ;
+  - à la main : tableau de bord Stripe, **environnement de test BOLIGO** → Développeurs → Webhooks → `BOLIGO API (Render Boligo-back)` → *Activer*, puis supprimer la métadonnée `boligo_recette`.
+
+  L'adresse, les 4 événements, la version d'API `2024-06-20`, la description et le **secret de signature ne changent pas**. Il n'y a rien à modifier sur Render.
+- **Impact pendant la coupure.** Les paiements de test de l'app en ligne restent crédités par la confirmation de l'app (`/payment/confirm`). Seul le filet de sécurité par webhook est suspendu.
+
+Autres choix : `WEBHOOK_RENDER=desactive` (déjà coupé à la main) ou `accepte` (laissé actif, effets ci-dessus acceptés, y compris l'éventuelle ligne `StripeEvent` en production). `accepte` n'est pas recommandé.
 
 ### Configuration exacte à faire dans Claude Code
 
