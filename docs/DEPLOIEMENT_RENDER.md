@@ -27,47 +27,103 @@ Points à retenir :
 
 ## 1. Dernière validation : Stripe réel en mode test
 
-### Script prêt
+Le script `mobile-steve/e2e/recette-stripe-test.sh` pilote `recette-stripe-test.js`. La recette tourne sur :
+- le build final (`dist/`) ;
+- une base PostgreSQL locale dédiée ;
+- des comptes fictifs.
 
-`mobile-steve/e2e/recette-stripe-test.sh` lance `recette-stripe-test.js`. Il tourne sur le build final, sur une base PostgreSQL locale, avec des comptes fictifs. Il vérifie contre Stripe :
-
-1. la session Checkout créée par l'API ;
-2. le paiement sur la vraie page Checkout (carte 4242) ;
-3. la livraison réelle du webhook `payment_intent.succeeded` par `stripe listen`, qui donne 1 crédit ;
-4. le crédit unique, malgré la confirmation de l'app et un renvoi de l'événement par Stripe ;
-5. la facture Stripe ;
-6. la rétractation, puis le remboursement Stripe et le webhook réel `charge.refunded` (crédit retiré).
-
-Le script refuse toute clé autre que `sk_test_` ou `rk_test_` et n'affiche aucune clé.
-
-### Ce que Steve doit autoriser
-
-Ces autorisations n'existent pas dans l'environnement actuel ; c'est ce qui bloque la vérification.
-
-1. **Accès réseau** de l'environnement cloud.
-   - Où : menu de l'environnement dans la barre de titre de la session → *Edit* → *Network access* → *Allowed domains*.
-   - Domaines à ajouter :
-     - `api.stripe.com`, `files.stripe.com`, `checkout.stripe.com`, `js.stripe.com`, `m.stripe.network`, `*.stripe.com`, `*.stripe.network` ;
-     - pour télécharger Stripe CLI : `github.com` et `objects.githubusercontent.com`.
-   - Aujourd'hui, `api.stripe.com` est refusé (403 du proxy).
-2. **Clé de test**, en variable d'environnement de l'environnement cloud (même menu → *Edit*). Jamais dans le chat ni dans le dépôt.
-   - Nom : `STRIPE_TEST_SECRET_KEY`.
-   - Valeur : de préférence une clé restreinte `rk_test_…` du compte « environnement de test BOLIGO ».
-   - Droits en écriture : Checkout Sessions, PaymentIntents, Customers, Invoices, Invoice Items, Refunds.
-   - Droits en lecture : Charges, Events, Webhook Endpoints, Account.
-   - Une clé `sk_test_…` convient aussi.
-   - Une nouvelle session prend en compte la variable.
-3. **Webhook de test vers Render pendant la recette** (décision de Steve).
-   - Les événements de la recette seront aussi envoyés à `boligo-back.onrender.com`. Les comptes fictifs n'y existent pas : l'API ne crédite personne et Stripe réessaie.
-   - Pour une isolation totale, désactiver temporairement le point `we_1UP2h9Lz8rnS1CBnjkMldEOm`. Il se trouve dans le tableau de bord Stripe test → Développeurs → Webhooks. Le réactiver après la recette.
-
-### Lancement, une fois les autorisations en place
+Elle n'est exécutée qu'**une seule fois**, après autorisation.
 
 ```
-STRIPE_BIN=<chemin de stripe CLI> bash mobile-steve/e2e/recette-stripe-test.sh
+bash mobile-steve/e2e/recette-stripe-test.sh verifier
+RECETTE_STRIPE_AUTORISEE=oui WEBHOOK_RENDER=desactive bash mobile-steve/e2e/recette-stripe-test.sh executer
 ```
 
-Les résultats sont écrits dans `docs/recette-stripe-test/` : captures, `resultats.json` et journal masqué.
+- La première commande fait les contrôles préalables, sans aucun paiement.
+- La seconde lance la recette complète.
+
+### Étapes vérifiées contre Stripe (aucune simulation)
+
+1. **Création du paiement** : session Checkout créée par l'API, relue chez Stripe (`livemode=false`, montant, membre).
+2. **Page Checkout réelle** : paiement avec la carte de test 4242, puis retour `success`. Captures dans `docs/recette-stripe-test/`.
+3. **Webhook reçu localement** : `payment_intent.succeeded` livré par Stripe via `stripe listen` et accepté (HTTP 200). Le crédit est attribué avant toute confirmation de l'app.
+4. **Crédit unique** :
+   - la confirmation de l'app arrive ensuite ;
+   - puis `stripe events resend <evt>` provoque une nouvelle livraison réelle, comptée dans le journal du listener ;
+   - résultat attendu : toujours 1 crédit et 1 transaction.
+5. **Facture** : émise dans le registre, payée chez Stripe, PDF disponible.
+6. **Remboursement** : rétractation, décision de l'admin, remboursement Stripe `succeeded`, puis webhook réel `charge.refunded`.
+7. **Crédits mis à jour** : crédit retiré une seule fois.
+
+À la fin, la configuration des webhooks du compte est comparée à l'instantané de départ (`webhooks-avant.json` / `webhooks-apres.json`).
+
+### Protections du script
+
+Elles ont été vérifiées le 13/10/2026 avec un faux Stripe CLI local : aucun appel à Stripe, aucun résultat de paiement.
+
+| Protection | Vérification |
+|---|---|
+| Clé `sk_live_`, `pk_` ou absente | refus |
+| Stripe CLI absent | refus |
+| `events resend` sans l'option `--webhook-endpoint` (syntaxe inattendue) | refus |
+| Clé sans les permissions nécessaires (sondes d'écriture volontairement invalides, rien n'est créé) | refus avant la base |
+| Compte autre que `acct_1UMQWmLz8rnS1CBn` | refus |
+| `executer` sans `RECETTE_STRIPE_AUTORISEE=oui` | refus |
+| Décision sur le webhook Render absente, ou contraire à l'état réel du webhook | refus |
+| Base `boligo_recette_stripe` existante **sans** marqueur de base jetable | refus, la base reste intacte |
+| Création de la base dédiée | nom imposé, marqueur posé, identité contrôlée (`current_database` et 127.0.0.1), `prisma db push` bloquant (180 s), 6 tables de paiement contrôlées |
+| Listener Stripe non prêt | arrêt après 60 s |
+| Clé dans les arguments de processus | jamais : `STRIPE_API_KEY` est transmise par l'environnement, 0 occurrence dans 104 appels |
+
+Délais maximaux :
+- PostgreSQL : 30 s ;
+- backend : 90 s (HTTP 200 et `db ok` attendus) ;
+- connexion Stripe annoncée par le backend : 30 s ;
+- chaque attente Stripe : 60 à 120 s.
+
+Le secret de signature est lu dans la sortie du **même** listener que celui qui transmet les événements. Les journaux bruts restent dans un dossier temporaire 0700, supprimé à la fin. Seules des copies masquées sont conservées.
+
+Aucun script `prisma/sql` n'est exécuté : sur une base neuve, `prisma db push` crée tout le schéma. Aucune migration n'est appliquée à Supabase.
+
+### Effets sur le webhook Render existant (`we_1UP2h9Lz8rnS1CBnjkMldEOm`)
+
+Les événements de la recette sont aussi envoyés à `https://boligo-back.onrender.com/api/payment/webhook`. Le code de `main` actuellement en ligne (`5853aa6`) a été lu :
+
+- **`payment_intent.succeeded`** : le membre fictif n'existe pas en production. La mise à jour du solde échoue, la transaction est annulée et rien n'est écrit. Render répond 500 et Stripe réessaie quelques fois. `stripe events resend` peut produire une livraison de plus, avec le même effet nul.
+- **`charge.refunded`** : le paiement est inconnu en production, donc aucune écriture de crédit ni de paiement. **Mais** si la facturation est activée sur Render (`BILLING_ENABLED`), l'API **enregistre une ligne technique `StripeEvent`** (identifiant de l'événement de test) dans la base Supabase de production.
+
+Pour garantir « aucune donnée de production modifiée », la **désactivation temporaire du webhook est indispensable**. Elle ne se fait qu'avec l'autorisation de Steve.
+
+**Désactiver** :
+- tableau de bord Stripe, **environnement de test BOLIGO** → Développeurs → Webhooks → `BOLIGO API (Render Boligo-back)` → *Désactiver* ;
+- ou par l'API : `POST /v1/webhook_endpoints/we_1UP2h9Lz8rnS1CBnjkMldEOm` avec `disabled=true`.
+
+Les événements créés pendant la désactivation ne sont pas envoyés à ce point.
+
+**Rétablir exactement** : même écran, *Activer* (ou `disabled=false`). L'adresse, les 4 événements, la version d'API `2024-06-20`, la description et le **secret de signature restent inchangés**. Il n'y a rien à modifier sur Render. Le script compare la configuration avant et après la recette.
+
+Autre possibilité, `WEBHOOK_RENDER=accepte` : webhook laissé actif, effets ci-dessus acceptés, y compris l'éventuelle ligne `StripeEvent` en production. Non recommandé.
+
+### Configuration exacte à faire dans Claude Code
+
+Menu de l'environnement dans la barre de titre de la session → *Edit*.
+
+1. ***Network access* → *Allowed domains*** : ajouter
+   - `*.stripe.com`, `*.stripe.network`, `*.stripecdn.com` (API, page Checkout et ses ressources, connexion du listener) ;
+   - `github.com`, `objects.githubusercontent.com`, `release-assets.githubusercontent.com` (téléchargement de Stripe CLI).
+
+   Laisser cochée la case des gestionnaires de paquets.
+2. **Variable d'environnement `STRIPE_TEST_SECRET_KEY`** : clé **`sk_test_…`** du compte « environnement de test BOLIGO » (Développeurs → Clés API, en mode test).
+   - Une clé restreinte `rk_test_…` peut ne pas être acceptée par `stripe listen`. Si elle est utilisée, elle doit avoir :
+     - en écriture : Checkout Sessions, Customers, Invoices, Invoice Items, Refunds ;
+     - en lecture : PaymentIntents, Charges, Events, Webhook Endpoints, Account.
+   - Le script le vérifie avant tout paiement.
+   - Ne jamais coller la clé dans le chat ni dans le dépôt.
+3. Ouvrir une **nouvelle session** pour que ces réglages soient pris en compte. Ensuite :
+   - installer Stripe CLI (archive `stripe_<version>_linux_x86_64.tar.gz` de github.com/stripe/stripe-cli/releases, vérifiée avec `checksums.txt`) ;
+   - lancer `verifier` ;
+   - attendre l'autorisation d'exécution ;
+   - lancer `executer` une seule fois.
 
 ## 2. Avant la fusion : sauvegarde et préparation
 
@@ -77,19 +133,7 @@ Les résultats sont écrits dans `docs/recette-stripe-test/` : captures, `result
    - Supabase → *Database* → *Backups* : vérifier qu'une sauvegarde récente existe, ou en déclencher une si le plan le permet ;
    - ou, depuis un poste de confiance : `pg_dump "<URL directe Supabase>" -Fc -f boligo-AAAAMMJJ.dump`. Conserver le fichier hors du dépôt et vérifier sa taille, ou lancer `pg_restore -l` dessus.
 2. **Noter les points de retour** : `Boligo-back` → `5853aa6` (`dep-db61jjou01pc73f5lfs0`), `boligo-web` → `5853aa6` (`dep-db61jjou01pc73f5lfp0`).
-3. **Appliquer les migrations additives** (SQL Editor de Supabase, base BOLIGO). Elles sont rejouables sans effet. **À faire avant la fusion**, car le nouveau code lit ces colonnes.
-   - `prisma/sql/2026-10-12_sondeur_bilingue.sql` : `HarmonyQuestion.questionTextEn`, `optionsEn`.
-   - `prisma/sql/2026-10-12_version_entretien.sql` : `InterviewIA.questionnaireVersion`, sa contrainte et son déclencheur d'immutabilité.
-
-   Contrôle :
-
-   ```sql
-   SELECT table_name, column_name
-   FROM information_schema.columns
-   WHERE column_name IN ('questionTextEn','optionsEn','questionnaireVersion');
-   ```
-
-   Résultat attendu : 3 lignes.
+3. **Migrations : déjà présentes dans Supabase** (confirmé par Steve le 13/10/2026) : `HarmonyQuestion.questionTextEn` et `optionsEn`, `InterviewIA.questionnaireVersion`, la contrainte `InterviewIA_questionnaireVersion_check` (7.1 et 8.2) et le déclencheur `InterviewIA_questionnaireVersion_immutable`. **Ne rien réappliquer.** Aucune modification de la base Supabase n'est autorisée.
 4. **Variables Render de `Boligo-back`.** Vérifier ou ajouter les valeurs suivantes, sans toucher aux clés Stripe, qui restent `sk_test_` et `pk_test_` :
 
    | Variable | Valeur |
@@ -102,7 +146,7 @@ Les résultats sont écrits dans `docs/recette-stripe-test/` : captures, `result
    | `INTERVIEW_VERSION` | à décider : absente = V7.1 pour les nouveaux membres ; `8.2` = nouvel entretien pour tous les nouveaux. Un entretien commencé garde sa version. Progressif possible avec `INTERVIEW_V82_PERCENT` |
    | `STRIPE_WEBHOOK_SECRET` | le `whsec_…` du point `we_1UP2h9…` (mode test) |
 
-5. **Recommandé** : `Boligo-back` → *Settings* → *Health Check Path* = `/api/health`. Render ne bascule alors que si l'API répond.
+5. **Au moment du déploiement, après l'accord de Steve** : `Boligo-back` → *Settings* → *Health Check Path* = `/api/health`. Render ne bascule alors que si l'API répond.
 
 ## 3. Fusion et déploiement (sur autorisation expresse)
 
