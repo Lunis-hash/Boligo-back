@@ -72,12 +72,12 @@
   {
     "step": "[360 px] Module 0 terminé → module 1",
     "ok": true,
-    "detail": "http://localhost:8091/interview/1"
+    "detail": "http://localhost:8081/interview/1"
   },
   {
     "step": "[360 px] Retour depuis le module 1 : dernière question du module 0 rouverte",
     "ok": true,
-    "detail": "http://localhost:8091/interview/0?at=last"
+    "detail": "http://localhost:8081/interview/0?at=last"
   },
   {
     "step": "[360 px] Écran de retour : aucun débordement horizontal",
@@ -87,7 +87,7 @@
   {
     "step": "[360 px] Réponse gardée → retour au module 1 sans rien reposer",
     "ok": true,
-    "detail": "http://localhost:8091/interview/1"
+    "detail": "http://localhost:8081/interview/1"
   },
   {
     "step": "[360 px] Réponse de suite devenue sans objet effacée (V82_M8_02)",
@@ -182,12 +182,12 @@
   {
     "step": "[390 px] Module 0 terminé → module 1",
     "ok": true,
-    "detail": "http://localhost:8091/interview/1"
+    "detail": "http://localhost:8081/interview/1"
   },
   {
     "step": "[390 px] Retour depuis le module 1 : dernière question du module 0 rouverte",
     "ok": true,
-    "detail": "http://localhost:8091/interview/0?at=last"
+    "detail": "http://localhost:8081/interview/0?at=last"
   },
   {
     "step": "[390 px] Écran de retour : aucun débordement horizontal",
@@ -197,7 +197,7 @@
   {
     "step": "[390 px] Réponse gardée → retour au module 1 sans rien reposer",
     "ok": true,
-    "detail": "http://localhost:8091/interview/1"
+    "detail": "http://localhost:8081/interview/1"
   },
   {
     "step": "[390 px] Réponse de suite devenue sans objet effacée (V82_M8_02)",

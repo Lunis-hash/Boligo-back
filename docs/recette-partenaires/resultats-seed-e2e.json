@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-13T22:31:23.743Z",
+  "date": "2026-10-13T22:59:44.633Z",
   "ok": 24,
   "total": 24,
   "results": [
@@ -101,7 +101,7 @@
     {
       "step": "Admin : vérification manuelle puis code créé → accepté",
       "ok": true,
-      "detail": "DEMOCHAI84"
+      "detail": "DEMOCHAI78"
     },
     {
       "step": "Admin : suspension → code refusé au paiement",

@@ -37,12 +37,12 @@
   {
     "step": "Reprise après interruption : retour au module en cours",
     "ok": true,
-    "detail": "http://localhost:8091/interview/3?moduleNumber=3"
+    "detail": "http://localhost:8081/interview/3?moduleNumber=3"
   },
   {
     "step": "Grand Entretien terminé dans le navigateur (113 réponses)",
     "ok": true,
-    "detail": "http://localhost:8091/interview/generation"
+    "detail": "http://localhost:8081/interview/generation"
   },
   {
     "step": "Plage d’âge saisie dans le navigateur",
@@ -57,7 +57,7 @@
   {
     "step": "Accord enregistré côté serveur",
     "ok": true,
-    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-13T22:27:18.460Z\"}"
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-13T23:00:39.863Z\"}"
   },
   {
     "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
@@ -182,7 +182,7 @@
   {
     "step": "Progression côté serveur = 11/11",
     "ok": true,
-    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":11,\"totalQuestions\":11,\"partnerName\":\"Nadia\",\"journeyId\":\"b7fdf0db-83b5-46d7-bb02-d21f40e5c493\"}"
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":11,\"totalQuestions\":11,\"partnerName\":\"Nadia\",\"journeyId\":\"678a0f53-7521-4754-8236-e9ed7ac013db\"}"
   },
   {
     "step": "Parcours ouvert au dialogue après les 3 jours",

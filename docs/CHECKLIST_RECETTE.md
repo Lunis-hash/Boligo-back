@@ -117,7 +117,7 @@ Cocher chaque case ; noter le numéro et une capture si ça ne va pas.
 - [ ] 10.3 Arrêter avec `./recette.sh --arreter`, relancer : les données sont conservées.
 
 Déjà vérifié automatiquement le 13/10/2026 (rapport de la PR) : jest backend
-(1437 tests) et application (155 tests), intégrations V7.1, V8.2, sécurité et
+(1470 tests) et application (155 tests), intégrations V7.1, V8.2, sécurité et
 Sondeur sur 3 jours, partenaires (registre des commissions), e2e V8.2 complet,
 e2e mobile du retour arrière à 360 et 390 px, e2e des interfaces partenaires,
 paiement Stripe TEST (livemode=false). Détail dans la PR #43.
