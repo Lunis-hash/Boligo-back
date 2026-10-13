@@ -1,0 +1,43 @@
+[
+  {
+    "id": "H100070",
+    "seed": 100070,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "enfants"
+    ]
+  },
+  {
+    "id": "H100010",
+    "seed": 100010,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "religion",
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "H100023",
+    "seed": 100023,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": []
+  },
+  {
+    "id": "H100000",
+    "seed": 100000,
+    "scenario": "securite",
+    "lang": "en",
+    "topics": [
+      "enfants",
+      "argent",
+      "famille",
+      "communication",
+      "culture",
+      "mode de vie"
+    ]
+  }
+]

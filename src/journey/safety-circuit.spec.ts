@@ -83,6 +83,7 @@ describe('Réponse au Sondeur : relue à l’envoi', () => {
   }) => {
     const prisma = {
       harmonyQuestion: {
+        findMany: jest.fn(() => Promise.resolve([])),
         findUnique: jest.fn(() =>
           Promise.resolve({
             id: 'q1',

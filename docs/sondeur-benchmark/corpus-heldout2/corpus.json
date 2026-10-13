@@ -1,0 +1,4935 @@
+{
+ "description": "Corpus held-out 2 (rédigé indépendamment, couples T90xxx)",
+ "items": [
+  {
+   "id": "H001",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un logement partagé, quelles règles sur le tabac vous sembleraient tenables au quotidien ?",
+   "textEn": "In a shared home, what rules about smoking would feel workable to you day to day?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H002",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Puisque l'un de vous fume régulièrement, quelles règles poseriez-vous à la maison ?",
+   "textEn": "Since one of you smokes regularly, what rules would you set at home?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Révèle que B fume régulièrement."
+  },
+  {
+   "id": "H003",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre rapport au tabac restait exactement le même pendant dix ans, qu'est-ce que cela impliquerait pour une vie à deux ?",
+   "textEn": "If your relationship to smoking stayed exactly the same for ten years, what would that mean for life as a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H004",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Comment concilieriez-vous un jeu presque quotidien avec un budget commun ?",
+   "textEn": "How would you reconcile near-daily gambling with a joint budget?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Reprend la réponse de A (presque tous les jours)."
+  },
+  {
+   "id": "H005",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Sur le tabac, qu'est-ce que vous seriez prêt(e) à ajuster concrètement pour une vie à deux ?",
+   "textEn": "On smoking, what would you be willing to adjust in practice for a life together?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H006",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous ne veut définitivement pas d'enfant, comment voyez-vous la suite ?",
+   "textEn": "If one of you definitely does not want children, how do you see the future?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Révèle la réponse de B (non définitif)."
+  },
+  {
+   "id": "H007",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le tabac est vivable pour vous ?",
+   "textEn": "How long would it take you to know whether a difference about smoking is livable for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H008",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "L'un de vous préfère rester où il est : qu'est-ce qui pourrait faire évoluer la situation ?",
+   "textEn": "One of you prefers to stay put: what could change the situation?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Laisse deviner la réponse de A."
+  },
+  {
+   "id": "H009",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans une voiture ou une chambre partagée, quelle règle sur le tabac vous paraîtrait juste ?",
+   "textEn": "In a shared car or bedroom, what rule about smoking would seem fair to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H010",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Vous qui ne donnez pas la même place à la foi que l'autre, jusqu'où pourriez-vous suivre ses pratiques ?",
+   "textEn": "Since you don't give faith the same place as the other, how far could you follow their practices?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Sujet sensible : laisse entendre la position de chacun sur la pratique."
+  },
+  {
+   "id": "H011",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions le tabac pourrait-il faire partie d'un quotidien partagé, selon vous ?",
+   "textEn": "Under what conditions could smoking be part of a shared daily life, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H012",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous souhaite élever les enfants sans éducation religieuse, comment trancheriez-vous ?",
+   "textEn": "If one of you wants to raise the children without religious upbringing, how would you decide?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Révèle la réponse de B."
+  },
+  {
+   "id": "H013",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pendant des vacances passées ensemble, quelle place le tabac pourrait-il prendre, de votre point de vue ?",
+   "textEn": "During a holiday spent together, what place could smoking take, from your point of view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H014",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "L'un de vous n'envisage pas de dépendance financière prolongée : combien de mois de soutien vous sembleraient justes ?",
+   "textEn": "One of you can't envisage prolonged financial dependence: how many months of support would seem fair?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Reprend la réponse de B."
+  },
+  {
+   "id": "H015",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui vous permettrait de considérer la question du tabac comme réglée dans un couple ?",
+   "textEn": "What would allow you to consider the question of smoking settled in a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H016",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Dans combien d'années aimeriez-vous avoir tranché la question des enfants ?",
+   "textEn": "Given that one of you absolutely wants children, within how many years would you like to have decided?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Révèle que B veut absolument des enfants (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H017",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si un logement commun n'avait ni balcon ni jardin, comment envisageriez-vous la question du tabac ?",
+   "textEn": "If a shared home had no balcony or garden, how would you approach the question of smoking?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H018",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel rythme de jeux d'argent vous semblerait compatible avec une vie à deux ?",
+   "textEn": "With one of you betting every week, what pace of gambling would seem compatible with a life together?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Révèle que B joue chaque semaine (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H019",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où une différence sur le tabac pourrait-elle aller avant de remettre en cause une vie commune pour vous ?",
+   "textEn": "How far could a difference about smoking go before it would call a shared life into question for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac) sans révéler de réponse."
+  },
+  {
+   "id": "H020",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "L'un de vous préférerait une médiation : combien de temps lui accorderiez-vous avant de décider ?",
+   "textEn": "One of you would rather seek mediation: how long would you give it before deciding?",
+   "label": "faulty",
+   "category": "answer_leak",
+   "why": "Révèle la réponse de A."
+  },
+  {
+   "id": "H021",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "D'ici combien d'années aimeriez-vous que la question des enfants soit tranchée pour vous ?",
+   "textEn": "Within how many years would you like the question of children to be settled for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H022",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre partenaire ne supporte pas le tabac : que seriez-vous prêt(e) à changer ?",
+   "textEn": "Your partner can't stand smoking: what would you be willing to change?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position à « votre partenaire »."
+  },
+  {
+   "id": "H023",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui devrait être réuni, concrètement, pour que vous vous sentiez prêt(e) à accueillir un enfant ?",
+   "textEn": "What would need to be in place, concretely, for you to feel ready to welcome a child?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H024",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre partenaire joue presque tous les jours ; comment réagiriez-vous avec un budget commun ?",
+   "textEn": "Your partner gambles almost every day; how would you react with a joint budget?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Attribue une position à l'autre."
+  },
+  {
+   "id": "H025",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si la question d'avoir un enfant restait ouverte pendant trois ans, comment le vivriez-vous ?",
+   "textEn": "If the question of having a child stayed open for three years, how would you experience that?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H026",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "L'autre veut que ses enfants vivent surtout chez leur autre parent : combien de jours par mois pourriez-vous les accueillir ?",
+   "textEn": "The other wants their children to live mostly with their other parent: how many days a month could you host them?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position (et des enfants) à l'autre."
+  },
+  {
+   "id": "H027",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien d'enfants imagineriez-vous, si un projet d'enfant voyait le jour ?",
+   "textEn": "How many children would you picture, if plans for a child took shape?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H028",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre partenaire est prêt(e) à tout quitter pour vous : jusqu'où iriez-vous en retour ?",
+   "textEn": "Your partner is ready to leave everything for you: how far would you go in return?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Attribue à l'autre sa réponse."
+  },
+  {
+   "id": "H029",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une vie sans enfant s'imposait finalement, que deviendrait pour vous un projet de couple ?",
+   "textEn": "If a life without children ended up being the outcome, what would a couple's plans become for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H030",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre partenaire tient à fumer régulièrement : comment l'envisagez-vous au quotidien ?",
+   "textEn": "Your partner insists on smoking regularly: how do you picture that day to day?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position au partenaire."
+  },
+  {
+   "id": "H031",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quel âge, au plus tard, aimeriez-vous qu'un éventuel premier enfant arrive ?",
+   "textEn": "At what age, at the latest, would you want a possible first child to arrive?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H032",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre partenaire tient beaucoup à son temps seul(e) : combien de soirées par semaine lui laisseriez-vous ?",
+   "textEn": "Your partner really values time alone: how many evenings a week would you give them?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position au partenaire."
+  },
+  {
+   "id": "H033",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui pourrait faire évoluer votre position sur le désir d'enfant dans les prochaines années ?",
+   "textEn": "What could shift your position on wanting children in the coming years?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H034",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Votre partenaire ferait passer le couple avant sa famille : cela vous suffirait-il pour décider ?",
+   "textEn": "Your partner would put the couple before their family: would that be enough for you to decide?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Attribue une position à l'autre."
+  },
+  {
+   "id": "H035",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Pour vous, une décision d'avoir un enfant se prend-elle plutôt en quelques mois ou en plusieurs années ?",
+   "textEn": "For you, is a decision to have a child made over a few months or over several years?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H036",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle transparence attendriez-vous dans un couple au sujet des paris ?",
+   "textEn": "Your partner bets every week: what transparency about betting would you expect?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position au partenaire (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H037",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelles conditions matérielles vous sembleraient nécessaires avant un premier enfant ?",
+   "textEn": "What material conditions would seem necessary to you before a first child?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H038",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quel âge, selon vous, un enfant pourrait-il choisir sa religion ?",
+   "textEn": "Your partner wants the children raised without religion: at what age could a child choose a faith?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position au partenaire (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H039",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si vos positions sur les enfants ne bougeaient pas d'ici cinq ans, que feriez-vous ?",
+   "textEn": "If your positions on children did not move within five years, what would you do?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H040",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "L'autre établirait un plan avec des limites : combien de mois de soutien accepteriez-vous ?",
+   "textEn": "The other would set up a plan with limits: how many months of support would you accept?",
+   "label": "faulty",
+   "category": "wrong_partner_position",
+   "why": "Prête une position à l'autre."
+  },
+  {
+   "id": "H041",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel montant mensuel consacré aux jeux d'argent vous paraîtrait acceptable dans un foyer ?",
+   "textEn": "What monthly amount spent on gambling would seem acceptable to you in a household?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H042",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de cigarettes par jour fumez-vous en ce moment ?",
+   "textEn": "How many cigarettes a day do you smoke at the moment?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne concerne que le fumeur."
+  },
+  {
+   "id": "H043",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre position sur les jeux d'argent ne changeait jamais, qu'est-ce que cela impliquerait pour une vie commune ?",
+   "textEn": "If your position on gambling never changed, what would that mean for a shared life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H044",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel type de pari préférez-vous quand vous jouez ?",
+   "textEn": "What kind of bet do you prefer when you gamble?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne concerne que celui qui joue."
+  },
+  {
+   "id": "H045",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions les jeux d'argent pourraient-ils coexister avec un budget commun, selon vous ?",
+   "textEn": "Under what conditions could gambling coexist with a joint budget, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H046",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de week-ends par mois vos enfants passeraient-ils chez vous ?",
+   "textEn": "How many weekends a month would your children spend at your place?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "N'a de sens que pour un parent."
+  },
+  {
+   "id": "H047",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un couple, quelle transparence sur l'argent dépensé en jeux vous semblerait indispensable ?",
+   "textEn": "In a couple, what transparency about money spent on gambling would seem essential to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H048",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui vous empêche de quitter votre région actuelle ?",
+   "textEn": "What keeps you from leaving your current region?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne vaut que pour celui qui refuse de partir."
+  },
+  {
+   "id": "H049",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si 100 € par mois partaient en paris, comment le vivriez-vous ?",
+   "textEn": "If €100 a month went on bets, how would you feel about it?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H050",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quand vous pariez, à partir de quelle somme vous arrêtez-vous ?",
+   "textEn": "When you bet, at what amount do you stop?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne concerne que le joueur."
+  },
+  {
+   "id": "H051",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle règle sur les jeux d'argent aimeriez-vous fixer avant de partager un compte commun ?",
+   "textEn": "What rule about gambling would you want to set before sharing a joint account?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H052",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel jeu d'argent auriez-vous le plus de mal à abandonner ?",
+   "textEn": "Which form of gambling would you find hardest to give up?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne concerne que le joueur."
+  },
+  {
+   "id": "H053",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps vous faudrait-il pour savoir si une différence sur les jeux d'argent est vivable pour vous ?",
+   "textEn": "How long would it take you to know whether a difference about gambling is livable for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H054",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Dans laquelle de vos religions souhaiteriez-vous élever un enfant ?",
+   "textEn": "In which of your religions would you want to raise a child?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Inopérant pour qui ne veut pas d'éducation religieuse."
+  },
+  {
+   "id": "H055",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un budget commun, quelle part laisseriez-vous aux loisirs de chacun, jeux d'argent compris ?",
+   "textEn": "In a joint budget, what share would you leave for each person's leisure, gambling included?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H056",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle somme mensuelle consacrée aux jeux d'argent vous semblerait raisonnable dans un foyer ?",
+   "textEn": "How much do you usually spend on gambling each month?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne concerne que le joueur (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H057",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où seriez-vous prêt(e) à aller pour qu'une différence sur les jeux d'argent ne fragilise pas le couple ?",
+   "textEn": "How far would you be willing to go so that a difference about gambling does not weaken the couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H058",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Selon vous, quelle place le tabac aurait-il dans un logement partagé ?",
+   "textEn": "Where in a shared home would you go to smoke?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne concerne que le fumeur (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H059",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À partir de quelle fréquence le jeu d'argent poserait-il un problème dans une vie à deux, pour vous ?",
+   "textEn": "At what frequency would gambling become a problem in a life together, for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H060",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Comment feriez-vous comprendre à l'autre que vous avez besoin de temps sans lui ou sans elle ?",
+   "textEn": "How would you make the other understand that you need time without them?",
+   "label": "faulty",
+   "category": "non_reciprocal",
+   "why": "Ne vaut que pour celui qui veut du temps à soi."
+  },
+  {
+   "id": "H061",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si une soirée à deux tombait un jour de grand match, quelle place les paris pourraient-ils y avoir pour vous ?",
+   "textEn": "If an evening together fell on a big match day, what place could betting have in it for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H062",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre fumait tous les jours, qu'est-ce que vous ne pourriez pas accepter ?",
+   "textEn": "If the other smoked every day, what could you not accept?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis ce qu'on refuserait."
+  },
+  {
+   "id": "H063",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel plafond de dépense en jeux d'argent, s'il en fallait un, vous semblerait juste dans un couple ?",
+   "textEn": "What spending cap on gambling, if one were needed, would seem fair to you in a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H064",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre partenaire pariait souvent, qu'est-ce qui vous serait inacceptable ?",
+   "textEn": "If your partner bet often, what would be unacceptable to you?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H065",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si un gain de 500 € arrivait grâce à un pari, qu'en feriez-vous dans un foyer commun ?",
+   "textEn": "If a €500 win came from a bet, what would you do with it in a shared household?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H066",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre avait des enfants d'une précédente union, que refuseriez-vous ?",
+   "textEn": "If the other had children from a previous relationship, what would you refuse?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H067",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quel moment d'une relation la question des jeux d'argent devrait-elle être tranchée, pour vous ?",
+   "textEn": "At what point in a relationship should the question of gambling be settled, for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H068",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre refusait de déménager, qu'est-ce que vous ne pourriez pas tolérer ?",
+   "textEn": "If the other refused to move, what could you not tolerate?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H069",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous avait des enfants d'une précédente union, combien de jours par mois vous paraîtraient tenables à la maison ?",
+   "textEn": "If one of you had children from a previous relationship, how many days a month would feel workable at home?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H070",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre perdait son emploi, quelle situation ne pourriez-vous pas accepter ?",
+   "textEn": "If the other lost their job, what situation could you not accept?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H071",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel rôle seriez-vous prêt(e) à prendre auprès d'enfants qui ne seraient pas les vôtres ?",
+   "textEn": "What role would you be willing to take with children who were not yours?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H072",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre voulait beaucoup de temps seul(e), qu'est-ce que vous ne supporteriez pas ?",
+   "textEn": "If the other wanted a lot of time alone, what could you not bear?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H073",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si des enfants d'une précédente union vivaient chez vous une semaine sur deux, qu'est-ce qui devrait être organisé pour que ce soit vivable ?",
+   "textEn": "If children from a previous relationship lived with you every other week, what would need organizing to make it livable?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H074",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre cherchait à tout prix l'accord de sa famille, qu'est-ce que vous ne pourriez pas accepter ?",
+   "textEn": "If the other sought their family's approval at all costs, what could you not accept?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H075",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pendant les vacances scolaires, quelle présence d'enfants d'une autre union vous semblerait acceptable ?",
+   "textEn": "During school holidays, how much presence of children from another relationship would seem acceptable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H076",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un budget commun, quel montant mensuel pour les paris vous paraîtrait acceptable ?",
+   "textEn": "If the other person gambled, what would you be unable to accept?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H077",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si la garde d'enfants d'une précédente union changeait du jour au lendemain, jusqu'où pourriez-vous vous adapter ?",
+   "textEn": "If custody of children from a previous relationship changed overnight, how far could you adapt?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H078",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où accepteriez-vous qu'un enfant suive un enseignement religieux que vous ne partagez pas ?",
+   "textEn": "If the other wanted the children raised in a religion, what could you not accept?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H079",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelles règles de vie aimeriez-vous fixer avec des enfants qui ne seraient pas les vôtres ?",
+   "textEn": "What house rules would you want to set with children who were not yours?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H080",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'autre hésitait à avoir des enfants, qu'est-ce que vous ne pourriez pas accepter ?",
+   "textEn": "If the other hesitated about having children, what could you not accept?",
+   "label": "faulty",
+   "category": "reversed_hypothesis",
+   "why": "Hypothèse sur l'autre puis refus."
+  },
+  {
+   "id": "H081",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si la question de l'accueil d'enfants d'une autre union ne bougeait jamais, qu'est-ce que cela changerait pour vous ?",
+   "textEn": "If the question of welcoming children from another relationship never moved, what would that change for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H082",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui vous inquiète le plus quand vous pensez au tabac dans un couple ?",
+   "textEn": "What worries you most when you think about smoking in a couple?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une inquiétude."
+  },
+  {
+   "id": "H083",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps vous faudrait-il pour trouver votre place auprès d'enfants qui ne sont pas les vôtres ?",
+   "textEn": "How long would it take you to find your place with children who are not yours?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H084",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pourquoi les jeux d'argent vous mettent-ils mal à l'aise ?",
+   "textEn": "Why does gambling make you uncomfortable?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose un malaise."
+  },
+  {
+   "id": "H085",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un logement commun, quel espace imagineriez-vous pour des enfants d'une précédente union ?",
+   "textEn": "In a shared home, what space would you picture for children from a previous relationship?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H086",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui rend si difficile pour vous l'idée de déménager ?",
+   "textEn": "What makes the idea of moving so hard for you?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une difficulté."
+  },
+  {
+   "id": "H087",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions accepteriez-vous que des enfants d'une autre union passent plus de temps chez vous ?",
+   "textEn": "Under what conditions would you accept children from another relationship spending more time at your home?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (accueil des enfants de l'autre) sans révéler de réponse."
+  },
+  {
+   "id": "H088",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelle peur ressentez-vous à l'idée de soutenir l'autre financièrement ?",
+   "textEn": "What fear do you feel about supporting the other financially?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une peur."
+  },
+  {
+   "id": "H089",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si un enfant vous demandait d'aller dans un lieu de culte, que lui répondriez-vous ?",
+   "textEn": "If a child asked you to go to a place of worship, what would you answer?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H090",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Comment gérez-vous la frustration de ne pas avoir assez de temps pour vous ?",
+   "textEn": "How do you handle the frustration of not having enough time for yourself?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une frustration."
+  },
+  {
+   "id": "H091",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quel âge un enfant pourrait-il, selon vous, choisir lui-même une religion ?",
+   "textEn": "At what age could a child, in your view, choose a religion for themselves?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H092",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps la culpabilité vous retiendrait-elle face à une famille qui désapprouve ?",
+   "textEn": "How long would guilt hold you back with a family that disapproves?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose de la culpabilité."
+  },
+  {
+   "id": "H093",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelles fêtes religieuses aimeriez-vous, ou non, célébrer à la maison avec des enfants ?",
+   "textEn": "Which religious holidays would you want, or not want, to celebrate at home with children?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H094",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quand vous imaginez une vie avec des enfants, qu'est-ce qui vous rend triste ?",
+   "textEn": "When you picture life with children, what makes you sad?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose un sentiment."
+  },
+  {
+   "id": "H095",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comment une décision sur l'éducation religieuse d'un enfant devrait-elle se prendre entre vous ?",
+   "textEn": "How should a decision about a child's religious upbringing be made between you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H096",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel rôle seriez-vous prêt(e) à jouer auprès d'enfants qui ne seraient pas les vôtres ?",
+   "textEn": "Given how hard blended families are for you, what role would you take with children who aren't yours?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une difficulté (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H097",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où accepteriez-vous qu'un enfant reçoive un enseignement religieux que vous ne partagez pas ?",
+   "textEn": "How far would you accept a child receiving religious teaching you do not share?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H098",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui pourrait faire évoluer votre position sur les enfants dans les années à venir ?",
+   "textEn": "What could ease the anxiety you feel about having children in the coming years?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une anxiété (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H099",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si la question de la religion des enfants restait sans accord, comment l'envisageriez-vous concrètement ?",
+   "textEn": "If the question of the children's religion stayed unresolved, how would you handle it in practice?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H100",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui vous blesse quand on parle de foi dans un couple ?",
+   "textEn": "What hurts you when faith comes up in a relationship?",
+   "label": "faulty",
+   "category": "unsupported_assumption",
+   "why": "Présuppose une blessure."
+  },
+  {
+   "id": "H101",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelle place une cérémonie religieuse aurait-elle pour vous à la naissance d'un enfant ?",
+   "textEn": "What place would a religious ceremony have for you at a child's birth?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H102",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Comme vous avez tous deux déjà essayé d'arrêter de fumer, qu'est-ce qui vous aiderait à tenir ?",
+   "textEn": "Since you have both already tried to quit smoking, what would help you stick with it?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Fait inventé."
+  },
+  {
+   "id": "H103",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si un enfant choisissait plus tard une voie spirituelle que vous ne partagez pas, comment l'accompagneriez-vous ?",
+   "textEn": "If a child later chose a spiritual path you do not share, how would you support them?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H104",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Après la dette de jeu mentionnée dans l'entretien, quelle règle poseriez-vous sur un compte commun ?",
+   "textEn": "After the gambling debt mentioned in the interview, what rule would you set on a joint account?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Dette inventée."
+  },
+  {
+   "id": "H105",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions accepteriez-vous qu'un enfant suive un cours de religion chaque semaine ?",
+   "textEn": "Under what conditions would you accept a child attending a weekly religion class?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H106",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Avec vos trois enfants issus d'unions précédentes, combien de chambres prévoiriez-vous ?",
+   "textEn": "With your three children from previous relationships, how many bedrooms would you plan?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Enfants inventés."
+  },
+  {
+   "id": "H107",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps par semaine la religion pourrait-elle occuper dans l'éducation d'un enfant, selon vous ?",
+   "textEn": "How much time a week could religion take in a child's upbringing, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (religion des enfants) sans révéler de réponse."
+  },
+  {
+   "id": "H108",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Avec la mutation qui vous est proposée à l'étranger, accepteriez-vous de partir ensemble ?",
+   "textEn": "With the transfer abroad you've been offered, would you agree to leave together?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Mutation inventée."
+  },
+  {
+   "id": "H109",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si aucun de vous ne déménageait, combien d'heures de trajet par semaine accepteriez-vous pour vous voir ?",
+   "textEn": "If neither of you moved, how many hours of travel a week would you accept to see each other?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H110",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comme l'un de vous est actuellement au chômage, combien de mois de soutien vous sembleraient justes ?",
+   "textEn": "Since one of you is currently unemployed, how many months of support would seem fair?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Chômage inventé."
+  },
+  {
+   "id": "H111",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si vivre ensemble imposait que l'un de vous change de ville, combien de temps vous faudrait-il pour vous décider ?",
+   "textEn": "If living together required one of you to change cities, how long would you need to decide?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H112",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Vos familles ayant déjà exprimé leur désaccord, combien de temps attendriez-vous avant de décider ?",
+   "textEn": "Since your families have already voiced their disagreement, how long would you wait before deciding?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Désaccord familial inventé."
+  },
+  {
+   "id": "H113",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui compterait le plus pour vous dans une décision de changer de région pour une relation ?",
+   "textEn": "What would matter most to you in a decision to change regions for a relationship?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H114",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comme vous êtes de confessions différentes, dans laquelle élèveriez-vous un enfant ?",
+   "textEn": "Since you belong to different faiths, in which one would you raise a child?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Confessions inventées."
+  },
+  {
+   "id": "H115",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pendant combien de temps une relation à distance vous paraîtrait-elle vivable ?",
+   "textEn": "For how long would a long-distance relationship seem livable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H116",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de soirées par semaine aimeriez-vous passer chacun de votre côté ?",
+   "textEn": "Since you both work night shifts, how many evenings a week would you like to spend apart?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Horaires de nuit inventés (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H117",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si le lieu de vie restait un point de désaccord, quelle solution concrète envisageriez-vous ?",
+   "textEn": "If where to live remained a point of disagreement, what concrete solution would you consider?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H118",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle règle sur les jeux d'argent fixeriez-vous avant d'ouvrir un compte joint ?",
+   "textEn": "Now that you've opened a joint account, what gambling rule would you set?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Compte joint inventé (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H119",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions un déménagement pour le couple vous semblerait-il juste pour les deux ?",
+   "textEn": "Under what conditions would moving for the couple seem fair to both of you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H120",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Avec le bébé que vous attendez, quelle place le tabac garderait-il à la maison ?",
+   "textEn": "With the baby you're expecting, what place would smoking keep at home?",
+   "label": "faulty",
+   "category": "invented_fact",
+   "why": "Grossesse inventée."
+  },
+  {
+   "id": "H121",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel délai vous paraîtrait raisonnable entre une rencontre et un emménagement dans la même ville ?",
+   "textEn": "What timeframe would seem reasonable to you between meeting and moving to the same city?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H122",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pourriez-vous vivre avec quelqu'un qui fume ?",
+   "textEn": "Could you live with someone who smokes?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H123",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous devait changer d'emploi pour se rapprocher, qu'est-ce qui vous semblerait acceptable ?",
+   "textEn": "If one of you had to change jobs to be closer, what would seem acceptable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H124",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Souhaitez-vous avoir des enfants ?",
+   "textEn": "Do you want to have children?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H125",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si la question du lieu de vie ne bougeait jamais, comment imagineriez-vous la suite ?",
+   "textEn": "If the question of where to live never moved, how would you picture what comes next?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H126",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelle fréquence jouez-vous à des jeux d'argent ?",
+   "textEn": "How often do you gamble?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H127",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle distance entre deux domiciles vous semblerait encore compatible avec une relation sérieuse ?",
+   "textEn": "What distance between two homes would still seem compatible with a serious relationship?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H128",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Seriez-vous prêt(e) à déménager pour le couple ?",
+   "textEn": "Would you be willing to move for the relationship?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H129",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si un déménagement pour le couple impliquait de recommencer à zéro professionnellement, jusqu'où iriez-vous ?",
+   "textEn": "If moving for the couple meant starting over professionally, how far would you go?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H130",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comment envisagez-vous l'éducation religieuse de vos enfants ?",
+   "textEn": "How do you see your children's religious upbringing?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H131",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le lieu de vie est vivable pour vous ?",
+   "textEn": "How long would it take you to know whether a difference about where to live is livable for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H132",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Êtes-vous d'accord pour dire que chacun a besoin de temps à soi dans un couple ?",
+   "textEn": "Do you agree that each person needs time to themselves in a couple?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande l'énoncé de l'entretien."
+  },
+  {
+   "id": "H133",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si s'installer ensemble passait par une ville nouvelle pour les deux, comment l'envisageriez-vous ?",
+   "textEn": "If settling down together meant a city new to both of you, how would you approach it?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (déménager pour le couple) sans révéler de réponse."
+  },
+  {
+   "id": "H134",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pourriez-vous accepter que l'autre joue à des jeux d'argent ?",
+   "textEn": "Could you accept the other gambling?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H135",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Sur le tabac, qu'est-ce qui, pour vous, ne pourrait pas bouger dans une vie commune ?",
+   "textEn": "On smoking, what could not change for you in a shared life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H136",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une période sans emploi durait deux ans, comment organiseriez-vous les finances du foyer ?",
+   "textEn": "How would you support the other if they lost their job?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H137",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre position sur le tabac restait exactement la même dans dix ans, que cela signifierait-il pour un couple ?",
+   "textEn": "If your position on smoking were exactly the same in ten years, what would that mean for a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H138",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où iriez-vous pour gagner l'accord d'une famille qui désapprouve votre choix ?",
+   "textEn": "How would you decide if a family disapproved of your relationship?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H139",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Comment sauriez-vous qu'une différence sur le tabac est, pour vous, rédhibitoire ?",
+   "textEn": "How would you know that a difference about smoking is a dealbreaker for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H140",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Accepteriez-vous d'accueillir les enfants de l'autre ?",
+   "textEn": "Would you be willing to welcome the other's children?",
+   "label": "faulty",
+   "category": "known_fact_repetition",
+   "why": "Redemande la question de l'entretien."
+  },
+  {
+   "id": "H141",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle place le tabac aurait-il dans un logement que vous partageriez, selon vous ?",
+   "textEn": "What place would smoking have in a home you shared, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H142",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Vos parents fumaient-ils quand vous étiez enfant ?",
+   "textEn": "Did your parents smoke when you were a child?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par l'enfance."
+  },
+  {
+   "id": "H143",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si le tabac restait un point sans accord, sur quoi fonderiez-vous votre décision de continuer ou non ?",
+   "textEn": "If smoking remained unresolved, what would you base your decision to continue or not on?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H144",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans votre famille, comment parlait-on des jeux d'argent ?",
+   "textEn": "In your family, how was gambling talked about?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par la famille d'origine."
+  },
+  {
+   "id": "H145",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quel moment d'une rencontre faut-il, pour vous, trancher la question du tabac ?",
+   "textEn": "At what point in getting to know someone should the question of smoking be settled, for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H146",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Comment avez-vous vécu, enfant, l'arrivée d'un beau-parent dans votre foyer ?",
+   "textEn": "As a child, how did you experience a step-parent joining your home?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par l'enfance, présuppose un beau-parent."
+  },
+  {
+   "id": "H147",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce que vous auriez besoin de savoir de l'autre sur le tabac avant d'aller plus loin ?",
+   "textEn": "What would you need to know from the other about smoking before going further?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H148",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Avez-vous souvent déménagé pendant votre enfance ?",
+   "textEn": "Did you move house often during your childhood?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par l'enfance."
+  },
+  {
+   "id": "H149",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si un enfant vivait un jour sous votre toit, la place du tabac à la maison changerait-elle pour vous ?",
+   "textEn": "If a child one day lived under your roof, would the place of smoking at home change for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H150",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comment vos parents se soutenaient-ils quand l'un d'eux perdait son travail ?",
+   "textEn": "How did your parents support each other when one of them lost their job?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par la famille d'origine."
+  },
+  {
+   "id": "H151",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans les moments passés ensemble, quelle présence du tabac vous paraîtrait compatible avec votre façon de vivre ?",
+   "textEn": "During time spent together, what presence of smoking would seem compatible with your way of life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H152",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Que penserait votre mère d'une union conclue sans l'accord de la famille ?",
+   "textEn": "What would your mother think of a union made without the family's approval?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par un proche."
+  },
+  {
+   "id": "H153",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle règle sur le tabac poseriez-vous d'emblée en cas d'emménagement commun ?",
+   "textEn": "What rule about smoking would you set from the start if you moved in together?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (tabac, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H154",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quel souvenir d'enfance influence aujourd'hui votre désir d'enfant ?",
+   "textEn": "Which childhood memory influences your wish for children today?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par l'enfance."
+  },
+  {
+   "id": "H155",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous perdait son emploi, pendant combien de mois accepteriez-vous de porter seul(e) les dépenses communes ?",
+   "textEn": "If one of you lost their job, for how many months would you accept covering the shared expenses alone?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H156",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelle place une cérémonie religieuse aurait-elle pour vous à l'arrivée d'un enfant ?",
+   "textEn": "Which religious ceremonies did your family celebrate when you were a child?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par l'enfance (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H157",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous était sans emploi pendant un an, qu'est-ce qui vous semblerait juste dans le partage des dépenses ?",
+   "textEn": "If one of you were out of work for a year, what would seem fair to you in splitting expenses?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H158",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelles activités souhaiteriez-vous garder pour vous seul(e) dans une vie commune ?",
+   "textEn": "As a child, did you have time to yourself in your family home?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par l'enfance (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H159",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelle durée de dépendance financière entre conjoints vous paraîtrait acceptable ?",
+   "textEn": "What length of financial dependence between partners would seem acceptable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H160",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Un de vos proches a-t-il déjà eu des problèmes avec les jeux d'argent ?",
+   "textEn": "Has someone close to you ever had problems with gambling?",
+   "label": "faulty",
+   "category": "childhood_family_detour",
+   "why": "Détour par un proche."
+  },
+  {
+   "id": "H161",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si vous étiez celui ou celle qui perd son emploi, qu'attendriez-vous de l'autre ?",
+   "textEn": "If you were the one who lost your job, what would you expect from the other?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H162",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Où pourrait-on fumer chez vous, et combien de fois par jour ?",
+   "textEn": "Where could someone smoke in your home, and how many times a day?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux idées (lieu et fréquence)."
+  },
+  {
+   "id": "H163",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelles conditions poseriez-vous pour soutenir financièrement l'autre après une perte d'emploi ?",
+   "textEn": "What conditions would you set for supporting the other financially after a job loss?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H164",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien d'enfants voudriez-vous et à quel âge aimeriez-vous les avoir ?",
+   "textEn": "How many children would you want and at what age would you like to have them?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux questions en une."
+  },
+  {
+   "id": "H165",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une perte d'emploi durait deux ans, comment imagineriez-vous l'organisation financière du foyer ?",
+   "textEn": "If a job loss lasted two years, how would you picture the household's finances being organized?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H166",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle somme accepteriez-vous pour les jeux d'argent ? Et sur quel compte ?",
+   "textEn": "What amount would you accept for gambling? And from which account?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux points d'interrogation."
+  },
+  {
+   "id": "H167",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "S'il fallait couvrir 1 000 € par mois pour l'autre, combien de temps cela vous semblerait-il tenable ?",
+   "textEn": "If you had to cover €1,000 a month for the other, how long would that seem sustainable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H168",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de jours par mois accueilleriez-vous des enfants d'une autre union, et quel rôle y prendriez-vous ?",
+   "textEn": "How many days a month would you host children from another relationship, and what role would you take?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux idées."
+  },
+  {
+   "id": "H169",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui vous aiderait à accepter de dépendre financièrement de l'autre pendant un temps ?",
+   "textEn": "What would help you accept depending financially on the other for a while?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H170",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où pourriez-vous déménager, et que deviendrait votre travail ?",
+   "textEn": "How far could you move, and what would happen to your work?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux idées."
+  },
+  {
+   "id": "H171",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si la question du soutien après une perte d'emploi restait sans accord, que feriez-vous concrètement ?",
+   "textEn": "If the question of support after a job loss stayed unresolved, what would you do in practice?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H172",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien de mois soutiendriez-vous l'autre, et comment partageriez-vous ensuite les dépenses ?",
+   "textEn": "How many months would you support the other, and how would you then split expenses?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux idées."
+  },
+  {
+   "id": "H173",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelles dépenses communes réduiriez-vous en premier si l'un des revenus du foyer disparaissait ?",
+   "textEn": "Which shared expenses would you cut first if one of the household incomes disappeared?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (soutien après perte d'emploi) sans révéler de réponse."
+  },
+  {
+   "id": "H174",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Face à une famille qui désapprouve, chercheriez-vous une médiation ? Combien de temps attendriez-vous ?",
+   "textEn": "Faced with a disapproving family, would you seek mediation? How long would you wait?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux questions."
+  },
+  {
+   "id": "H175",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de soirées par semaine aimeriez-vous passer chacun de votre côté dans une vie commune ?",
+   "textEn": "How many evenings a week would you like to spend apart in a shared life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H176",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien d'heures par semaine passées chacun de son côté vous sembleraient idéales ?",
+   "textEn": "How many hours a week apart would feel ideal, and what would you do with them?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux idées (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H177",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Un week-end par mois passé chacun de son côté vous semblerait-il trop, assez ou pas assez ?",
+   "textEn": "Would one weekend a month spent apart seem too much, enough, or not enough to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H178",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quel moment d'une relation faut-il, selon vous, savoir si l'on veut des enfants ?",
+   "textEn": "When should you know whether you want children? And how would you tell the other?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux questions (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H179",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelles activités aimeriez-vous garder pour vous seul(e) dans une vie à deux ?",
+   "textEn": "Which activities would you want to keep for yourself in a life together?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H180",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelles fêtes célébreriez-vous avec des enfants, et qui choisirait leur école ?",
+   "textEn": "Which holidays would you celebrate with children, and who would choose their school?",
+   "label": "faulty",
+   "category": "two_ideas",
+   "why": "Deux idées."
+  },
+  {
+   "id": "H181",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous partait une semaine en vacances sans l'autre, qu'est-ce que cela changerait pour vous ?",
+   "textEn": "If one of you went on a week's holiday without the other, what would that change for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H182",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle stratégie de réduction des risques liés au tabagisme passif mettriez-vous en place au domicile ?",
+   "textEn": "What harm-reduction strategy for passive smoking would you implement at home?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon de santé publique."
+  },
+  {
+   "id": "H183",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelle fréquence aimeriez-vous partager vos loisirs avec l'autre ?",
+   "textEn": "How often would you like to share your leisure time with the other?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H184",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel seuil sur l'Indice canadien du jeu excessif vous paraîtrait acceptable chez un conjoint ?",
+   "textEn": "What score on the Problem Gambling Severity Index would seem acceptable in a partner?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon clinique."
+  },
+  {
+   "id": "H185",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre besoin de temps seul(e) ou à deux ne changeait jamais, qu'est-ce que cela impliquerait pour le couple ?",
+   "textEn": "If your need for time alone or together never changed, what would that mean for the couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H186",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel modèle de coparentalité en famille recomposée envisageriez-vous en résidence alternée ?",
+   "textEn": "What co-parenting model for a blended family would you consider under alternating residence?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon juridique et psychologique."
+  },
+  {
+   "id": "H187",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un logement commun, auriez-vous besoin d'un espace rien qu'à vous ?",
+   "textEn": "In a shared home, would you need a space just for yourself?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H188",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel arbitrage coût-bénéfice feriez-vous sur la mobilité géographique conjugale ?",
+   "textEn": "What cost-benefit trade-off would you make on conjugal geographic mobility?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon économique."
+  },
+  {
+   "id": "H189",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien d'heures par semaine passées chacun de son côté vous paraîtraient idéales ?",
+   "textEn": "How many hours a week spent apart would seem ideal to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H190",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quel niveau de résilience financière intra-couple vous paraîtrait soutenable en cas de choc de revenu ?",
+   "textEn": "What level of intra-couple financial resilience would seem sustainable in case of an income shock?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon financier."
+  },
+  {
+   "id": "H191",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions un temps passé séparément vous conviendrait-il dans une relation ?",
+   "textEn": "Under what conditions would time spent apart suit you in a relationship?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H192",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel ratio entre autonomie différenciée et fusion dyadique vous conviendrait ?",
+   "textEn": "What ratio between differentiated autonomy and dyadic fusion would suit you?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon psychologique."
+  },
+  {
+   "id": "H193",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'un de vous avait besoin d'une soirée seul(e), comment aimeriez-vous que cela soit dit ?",
+   "textEn": "If one of you needed an evening alone, how would you like that to be said?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (temps à soi) sans révéler de réponse."
+  },
+  {
+   "id": "H194",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comment géreriez-vous un conflit de loyauté systémique face à une famille qui désapprouve ?",
+   "textEn": "How would you handle a systemic loyalty conflict with a disapproving family?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon systémique."
+  },
+  {
+   "id": "H195",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelle place laisseriez-vous aux convictions de l'autre dans la vie de tous les jours, qu'elles soient proches ou non des vôtres ?",
+   "textEn": "What room would you give the other's convictions in everyday life, whether close to yours or not?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H196",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions un pari occasionnel pourrait-il trouver sa place dans un foyer ?",
+   "textEn": "Under what conditions could low-stakes variable-ratio reinforcement activities fit in a household?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon comportementaliste (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H197",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si la place de la foi restait un sujet sans accord, qu'est-ce que cela changerait pour vous ?",
+   "textEn": "If the place of faith remained an unresolved topic, what would that change for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H198",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quel âge, au plus tard, souhaiteriez-vous l'arrivée d'un éventuel premier enfant ?",
+   "textEn": "What's your latest acceptable timeline for first-child onset given fertility-window optimization?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H199",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelles pratiques liées à la foi, ou à son absence, aimeriez-vous préserver dans un quotidien partagé ?",
+   "textEn": "Which practices linked to faith, or to its absence, would you want to keep in a shared daily life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H200",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quel serait votre périmètre de mobilité acceptable en matière de relocalisation conjugale ?",
+   "textEn": "What would be your acceptable mobility perimeter for marital relocation?",
+   "label": "faulty",
+   "category": "jargon",
+   "why": "Jargon administratif."
+  },
+  {
+   "id": "H201",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où seriez-vous à l'aise pour participer à un rituel qui n'a pas le même sens pour vous ?",
+   "textEn": "How far would you be comfortable taking part in a ritual that does not hold the same meaning for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H202",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'on jouait plusieurs fois par semaine, y verriez-vous une addiction à soigner ?",
+   "textEn": "If someone gambled several times a week, would you see it as an addiction needing treatment?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Pose un diagnostic d'addiction."
+  },
+  {
+   "id": "H203",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comment aimeriez-vous que les fêtes religieuses soient vécues dans un foyer commun ?",
+   "textEn": "How would you like religious holidays to be lived in a shared home?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H204",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre dépendance à la nicotine serait-elle un frein pour vivre à deux ?",
+   "textEn": "Would your nicotine dependence be an obstacle to living together?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic de dépendance."
+  },
+  {
+   "id": "H205",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps par semaine la spiritualité pourrait-elle occuper dans une vie à deux, selon vous ?",
+   "textEn": "How much time a week could spirituality take in a life together, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H206",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Votre refus de partir pourrait-il traduire une peur de l'abandon ?",
+   "textEn": "Could your refusal to leave reflect a fear of abandonment?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Interprétation psychologique."
+  },
+  {
+   "id": "H207",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui vous permettrait de respecter une conviction sur la foi différente de la vôtre ?",
+   "textEn": "What would allow you to respect a conviction about faith different from your own?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H208",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Le refus du temps à soi ne révèle-t-il pas une forme de dépendance affective ?",
+   "textEn": "Doesn't rejecting time to oneself reveal a form of emotional dependency?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic de dépendance affective."
+  },
+  {
+   "id": "H209",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions la foi pourrait-elle être un sujet de conversation serein pour vous dans un couple ?",
+   "textEn": "Under what conditions could faith be a calm topic of conversation for you in a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H210",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Le besoin de médiation familiale pourrait-il être le signe d'un attachement anxieux ?",
+   "textEn": "Could the need for family mediation be a sign of anxious attachment?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic d'attachement."
+  },
+  {
+   "id": "H211",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quelle limite poseriez-vous pour que la question de la foi ne pèse pas sur la vie commune ?",
+   "textEn": "What limit would you set so that the question of faith does not weigh on shared life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H212",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Un refus d'avoir des enfants pourrait-il venir d'un traumatisme non résolu ?",
+   "textEn": "Could a refusal to have children come from an unresolved trauma?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic de traumatisme."
+  },
+  {
+   "id": "H213",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps vous faudrait-il pour savoir si une différence sur la foi est vivable pour vous ?",
+   "textEn": "How long would it take you to know whether a difference about faith is livable for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (place de la foi, sujet sensible) sans révéler de réponse."
+  },
+  {
+   "id": "H214",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Le rejet de toute dépendance financière serait-il chez vous un trait d'évitement ?",
+   "textEn": "Would rejecting any financial dependence be an avoidant trait in you?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic de personnalité."
+  },
+  {
+   "id": "H215",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une famille désapprouvait votre union, combien de temps seriez-vous prêt(e) à attendre avant de décider ?",
+   "textEn": "If a family disapproved of your union, how long would you be willing to wait before deciding?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H216",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Combien de temps vous faudrait-il pour trouver votre place auprès d'enfants d'une autre union ?",
+   "textEn": "Could your reluctance about stepchildren be a sign of attachment avoidance?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H217",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Face à un refus familial de votre union, quelle place donneriez-vous à une médiation ?",
+   "textEn": "Faced with a family's refusal of your union, what place would you give to mediation?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H218",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "En combien de temps sauriez-vous si une différence sur la foi est vivable pour vous ?",
+   "textEn": "Could your view on faith be a form of religious anxiety disorder?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic sur un sujet sensible (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H219",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une désapprobation familiale durait plusieurs années, qu'est-ce qui vous ferait trancher ?",
+   "textEn": "If a family's disapproval lasted several years, what would make you decide?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H220",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Le jeu presque quotidien pourrait-il être un trouble compulsif à traiter avant la vie commune ?",
+   "textEn": "Could near-daily gambling be a compulsive disorder to treat before living together?",
+   "label": "faulty",
+   "category": "diagnosis",
+   "why": "Diagnostic (et révèle la réponse de A)."
+  },
+  {
+   "id": "H221",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où iriez-vous pour obtenir l'accord d'une famille qui désapprouve votre choix ?",
+   "textEn": "How far would you go to win the agreement of a family that disapproves of your choice?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H222",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Ne pensez-vous pas qu'arrêter de fumer serait la meilleure preuve d'engagement ?",
+   "textEn": "Don't you think quitting smoking would be the best proof of commitment?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente vers une conclusion."
+  },
+  {
+   "id": "H223",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions accepteriez-vous de vous unir sans l'accord d'une famille ?",
+   "textEn": "Under what conditions would you agree to commit without a family's approval?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H224",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Ne serait-il pas plus sage d'attendre d'être sûrs tous les deux avant de parler d'enfants ?",
+   "textEn": "Wouldn't it be wiser to wait until you're both sure before talking about children?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente la réponse."
+  },
+  {
+   "id": "H225",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une famille posait une condition à votre union, comment décideriez-vous de la suivre ou non ?",
+   "textEn": "If a family set a condition on your union, how would you decide whether to follow it?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H226",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "N'est-il pas évident qu'un couple ne peut pas durer avec des jeux d'argent ?",
+   "textEn": "Isn't it obvious that a couple can't last with gambling?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Impose une conclusion."
+  },
+  {
+   "id": "H227",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qui devrait avoir le dernier mot, selon vous, si une famille s'opposait à votre couple ?",
+   "textEn": "Who should have the final say, in your view, if a family opposed your relationship?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H228",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Ne faudrait-il pas que celui ou celle qui a le moins d'attaches fasse le déménagement ?",
+   "textEn": "Shouldn't the one with fewer ties be the one to move?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente vers une solution."
+  },
+  {
+   "id": "H229",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si la question de l'avis familial restait sans accord entre vous, comment l'envisageriez-vous concrètement ?",
+   "textEn": "If the question of family approval stayed unresolved between you, how would you handle it in practice?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H230",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Un plan avec des limites, n'est-ce pas finalement la solution la plus raisonnable ?",
+   "textEn": "Isn't a plan with limits ultimately the most reasonable solution?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente (et reprend la réponse de A)."
+  },
+  {
+   "id": "H231",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Combien de tentatives de rapprochement feriez-vous avant d'avancer sans l'accord d'une famille ?",
+   "textEn": "How many attempts at reconciliation would you make before moving forward without a family's approval?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H232",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Un couple solide ne partage-t-il pas tout son temps libre ?",
+   "textEn": "Doesn't a strong couple share all its free time?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente vers une conclusion."
+  },
+  {
+   "id": "H233",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une désapprobation familiale vous obligeait à choisir, qu'est-ce qui pèserait le plus pour vous ?",
+   "textEn": "If a family's disapproval forced you to choose, what would weigh most for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H234",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Le choix du couple ne devrait-il pas toujours primer sur l'avis des familles ?",
+   "textEn": "Shouldn't the couple's choice always come before the families' opinion?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente (et reprend la réponse de B)."
+  },
+  {
+   "id": "H235",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si une famille acceptait votre union seulement après un délai, quelle durée vous paraîtrait acceptable ?",
+   "textEn": "If a family accepted your union only after a waiting period, what length would seem acceptable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H236",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Comment une décision sur l'éducation religieuse d'un enfant devrait-elle se prendre à deux ?",
+   "textEn": "Wouldn't raising children without religion be the fairest choice for both of you?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente vers une conclusion (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H237",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quel rôle laisseriez-vous à une tierce personne neutre si une famille désapprouvait votre union ?",
+   "textEn": "What role would you give a neutral third party if a family disapproved of your union?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H238",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si 80 € par mois étaient consacrés aux jeux d'argent, comment le vivriez-vous ?",
+   "textEn": "If €80 a month went on gambling, wouldn't you agree that's clearly too much?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente la réponse (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H239",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si l'avis d'une famille restait négatif pendant dix ans, qu'est-ce que cela changerait pour vous ?",
+   "textEn": "If a family's view stayed negative for ten years, what would that change for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (famille qui désapprouve) sans révéler de réponse."
+  },
+  {
+   "id": "H240",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90134",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Ne serait-il pas plus simple que les enfants restent chez leur autre parent ?",
+   "textEn": "Wouldn't it be simpler if the children stayed with their other parent?",
+   "label": "faulty",
+   "category": "forced_conclusion",
+   "why": "Oriente (et reprend la réponse de B)."
+  },
+  {
+   "id": "H241",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle fréquence de jeux d'argent vous paraîtrait compatible avec une vie commune ?",
+   "textEn": "What frequency of gambling would seem compatible with a shared life to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H242",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Seriez-vous prêt(e) à couper la poire en deux en limitant le tabac aux week-ends ?",
+   "textEn": "Would you be willing to meet halfway by limiting smoking to weekends?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Compromis sur un point non négociable."
+  },
+  {
+   "id": "H243",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre position sur les jeux d'argent restait la même dans dix ans, qu'est-ce que cela impliquerait pour un couple ?",
+   "textEn": "If your position on gambling were the same in ten years, what would that mean for a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H244",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Et si vous vous mettiez d'accord sur un seul enfant, ce compromis vous irait-il ?",
+   "textEn": "What if you agreed on just one child, would that compromise suit you?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Compromis sur un point non négociable."
+  },
+  {
+   "id": "H245",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Dans un budget commun, quelle somme mensuelle pour les paris vous semblerait acceptable ?",
+   "textEn": "In a joint budget, what monthly amount for betting would seem acceptable to you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H246",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Accepteriez-vous de repousser de cinq ans la décision sur les enfants pour trouver un terrain d'entente ?",
+   "textEn": "Would you agree to postpone the decision on children by five years to find common ground?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Compromis sur un point non négociable."
+  },
+  {
+   "id": "H247",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quelles conditions un loto ou un pari occasionnel pourrait-il avoir sa place dans un foyer, selon vous ?",
+   "textEn": "Under what conditions could a lottery ticket or an occasional bet have a place in a household, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H248",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Pour avancer, accepteriez-vous un tabac occasionnel, uniquement à l'extérieur ?",
+   "textEn": "To move forward, would you accept occasional smoking, outdoors only?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Compromis sur un point non négociable."
+  },
+  {
+   "id": "H249",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si 80 € par mois partaient en jeux d'argent, comment le vivriez-vous ?",
+   "textEn": "If €80 a month went on gambling, how would you feel about it?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H250",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si une dispute sur les jeux d'argent devenait violente, comment réagiriez-vous ?",
+   "textEn": "If an argument about gambling turned violent, how would you react?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Évoque la violence."
+  },
+  {
+   "id": "H251",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle transparence sur les jeux d'argent attendriez-vous dans un couple ?",
+   "textEn": "What transparency about gambling would you expect in a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H252",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si un membre d'une famille s'en prenait physiquement à l'un de vous, que feriez-vous ?",
+   "textEn": "If a family member physically attacked one of you, what would you do?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Évoque la violence."
+  },
+  {
+   "id": "H253",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "À quel moment d'une relation faudrait-il, selon vous, régler la question des jeux d'argent ?",
+   "textEn": "At what point in a relationship should the question of gambling be settled, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H254",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'on vous menaçait pour vous faire déménager, que feriez-vous ?",
+   "textEn": "If you were threatened into moving, what would you do?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Évoque la violence."
+  },
+  {
+   "id": "H255",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Quelle règle sur les jeux d'argent poseriez-vous avant d'ouvrir un compte commun ?",
+   "textEn": "What rule about gambling would you set before opening a joint account?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H256",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Sur le désir d'enfant, qu'est-ce qui ne pourrait pas bouger pour vous ?",
+   "textEn": "On children, could you meet halfway by trying for one child and seeing how it goes?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Compromis sur un point non négociable (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H257",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce que vous seriez prêt(e) à changer concrètement pour qu'une différence sur les jeux d'argent reste vivable ?",
+   "textEn": "What would you be willing to change in practice so a difference about gambling stays livable?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H258",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Sur le tabac, qu'est-ce qui resterait fixe pour vous dans une vie commune ?",
+   "textEn": "On smoking, would you settle for a middle ground of a few cigarettes a week?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Compromis sur un point non négociable (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H259",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si les jeux d'argent restaient un point sans accord, sur quoi fonderiez-vous votre décision d'avancer ou non ?",
+   "textEn": "If gambling remained unresolved, what would you base your decision to move forward or not on?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E1 (jeux d'argent) sans révéler de réponse."
+  },
+  {
+   "id": "H260",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si l'odeur du tabac provoquait des cris ou des coups, que feriez-vous ?",
+   "textEn": "If the smell of smoke led to shouting or blows, what would you do?",
+   "label": "faulty",
+   "category": "violence_or_compromise",
+   "why": "Évoque la violence."
+  },
+  {
+   "id": "H261",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si votre position sur les enfants ne changeait jamais, que cela signifierait-il pour la suite d'une relation ?",
+   "textEn": "If your position on children never changed, what would that mean for the future of a relationship?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H262",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "text": "Jusqu'où seriez-vous prêt(e) à déménager pour le couple, vu l'écart entre vous sur ce point ?",
+   "textEn": "How far would you be willing to move for the relationship, given the gap between you on this?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H263",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Sur le désir d'enfant, qu'est-ce qui, pour vous, ne pourrait pas bouger ?",
+   "textEn": "On wanting children, what could not change for you?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H264",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E8"
+   ],
+   "claim": "divergence",
+   "text": "Sur la dot, quel montant vous semblerait acceptable, puisque vos avis divergent ?",
+   "textEn": "On the dowry, what amount would seem acceptable, since your views differ?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H265",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "À quel moment d'une rencontre faut-il, selon vous, savoir si l'on veut des enfants ?",
+   "textEn": "At what point in getting to know someone should you know whether you want children, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H266",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E8"
+   ],
+   "claim": "divergence",
+   "text": "Comment répartiriez-vous les tâches ménagères, sur ce point où vous divergez ?",
+   "textEn": "How would you split household chores, on this point where you differ?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H267",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce que vous auriez besoin d'entendre de l'autre sur les enfants avant d'aller plus loin ?",
+   "textEn": "What would you need to hear from the other about children before going further?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H268",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E7"
+   ],
+   "claim": "divergence",
+   "text": "Sur l'éducation des enfants, qu'est-ce qui pourrait rapprocher vos positions ?",
+   "textEn": "On raising children, what could bring your positions closer?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H269",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Dans quinze ans, à quoi ressemblerait votre vie, côté enfants ?",
+   "textEn": "In fifteen years, what would your life look like when it comes to children?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H270",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 3,
+   "themeKey": "lieu",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Puisque vous ne vous voyez pas au même endroit dans cinq ans, quel compromis envisageriez-vous ?",
+   "textEn": "Since you don't see yourselves in the same place in five years, what compromise would you consider?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H271",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si vous restiez sur des positions différentes au sujet des enfants, sur quoi fonderiez-vous la décision de continuer ou non ?",
+   "textEn": "If you kept different positions on children, what would you base the decision to continue or not on?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H272",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 2,
+   "themeKey": "communication",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Sur la façon dont les disputes se réglaient chez vous, qu'est-ce qui vous distingue ?",
+   "textEn": "On how arguments were handled in your home, what sets you apart?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Risque partagé présenté comme un écart."
+  },
+  {
+   "id": "H273",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Quel serait, pour vous, le prix d'une différence durable sur le désir d'enfant dans un couple ?",
+   "textEn": "What would be the cost, for you, of a lasting difference about wanting children in a couple?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H274",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90490",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E6"
+   ],
+   "claim": "divergence",
+   "text": "Quelle place donneriez-vous à la famille dans vos décisions, puisque vous divergez là-dessus ?",
+   "textEn": "What place would you give family in your decisions, since you differ on this?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H275",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Qu'est-ce qui, dans votre projet de vie, dépend directement de la question des enfants ?",
+   "textEn": "What in your life plans depends directly on the question of children?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H276",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90457",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E4"
+   ],
+   "claim": "divergence",
+   "text": "Sur le désir d'enfants, qu'est-ce qui vous rapprocherait, vu l'écart entre vous ?",
+   "textEn": "On wanting children, what would bring you closer, given the gap between you?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H277",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si un couple ne s'accordait pas sur les enfants, combien de temps faudrait-il pour en tirer une conclusion, selon vous ?",
+   "textEn": "If a couple did not agree on children, how long should it take to draw a conclusion, in your view?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H278",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E4"
+   ],
+   "claim": "divergence",
+   "text": "Combien d'enfants accepteriez-vous à la maison, puisque vos avis divergent ?",
+   "textEn": "How many children would you accept at home, since your views differ?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H279",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90522",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Dans dix ans, à quoi ressemblerait une journée ordinaire chez vous, côté vie de famille ?",
+   "textEn": "In ten years, what would an ordinary day at home look like for you, in terms of family life?",
+   "label": "valid",
+   "category": "valid",
+   "why": "Concrète, réciproque et liée à l'écart E2 (désir d'enfants, non négociable) sans révéler de réponse."
+  },
+  {
+   "id": "H280",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90329",
+   "day": 1,
+   "themeKey": "lieu",
+   "evidence": [
+    "E3"
+   ],
+   "claim": "divergence",
+   "text": "Combien de kilomètres seriez-vous prêt(e) à parcourir pour vivre ensemble, sur ce point de désaccord ?",
+   "textEn": "How many kilometres would you be willing to move to live together, on this point of disagreement?",
+   "label": "faulty",
+   "category": "fake_gap",
+   "why": "Accord présenté comme un écart."
+  },
+  {
+   "id": "H281",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Ne trouvez-vous pas irresponsable de fumer quand on construit un couple ?",
+   "textEn": "Don't you find it irresponsible to smoke when building a relationship?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge et fait la morale."
+  },
+  {
+   "id": "H282",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90059",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Jouer de l'argent très souvent, est-ce vraiment raisonnable pour un futur conjoint ?",
+   "textEn": "Gambling very often, is that really reasonable for a future spouse?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge le comportement."
+  },
+  {
+   "id": "H283",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 1,
+   "themeKey": "famille",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Tenir les enfants de l'autre à distance, n'est-ce pas un peu égoïste ?",
+   "textEn": "Keeping the other's children at a distance, isn't that a bit selfish?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Fait la morale."
+  },
+  {
+   "id": "H284",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90281",
+   "day": 2,
+   "themeKey": "lieu",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Rester attaché(e) à son lieu de vie, n'est-ce pas manquer de générosité envers l'autre ?",
+   "textEn": "Staying attached to where you live, isn't that a lack of generosity toward the other?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge."
+  },
+  {
+   "id": "H285",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90329",
+   "day": 3,
+   "themeKey": "argent",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Laisser l'autre seul face à une perte d'emploi, n'est-ce pas trahir l'idée même de couple ?",
+   "textEn": "Leaving the other alone after a job loss, isn't that betraying the very idea of a couple?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Fait la morale."
+  },
+  {
+   "id": "H286",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90457",
+   "day": 1,
+   "themeKey": "projet",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Vouloir du temps sans l'autre, n'est-ce pas déjà un manque d'amour ?",
+   "textEn": "Wanting time without the other, isn't that already a lack of love?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge."
+  },
+  {
+   "id": "H287",
+   "split": "final2",
+   "lang": "fr",
+   "caseId": "T90134",
+   "day": 2,
+   "themeKey": "spiritualite",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Élever un enfant sans religion, n'est-ce pas le priver de repères ?",
+   "textEn": "Raising a child without religion, isn't that depriving them of guidance?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge une position."
+  },
+  {
+   "id": "H288",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90490",
+   "day": 3,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Si la désapprobation d'une famille durait des années, qu'est-ce qui vous amènerait à trancher ?",
+   "textEn": "If a family's disapproval lasted years, what would push you to finally do the respectful thing and decide?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Fait la morale (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H289",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90522",
+   "day": 1,
+   "themeKey": "argent",
+   "evidence": [
+    "E1"
+   ],
+   "claim": "divergence",
+   "text": "Si votre position sur les jeux d'argent ne bougeait pas d'ici dix ans, qu'est-ce que cela impliquerait pour un couple ?",
+   "textEn": "If your stance on gambling, a harmful vice, stayed the same for ten years, what would that mean for a couple?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge le jeu (faute uniquement dans la version anglaise)."
+  },
+  {
+   "id": "H290",
+   "split": "final2",
+   "lang": "en",
+   "caseId": "T90034",
+   "day": 2,
+   "themeKey": "famille",
+   "evidence": [
+    "E2"
+   ],
+   "claim": "divergence",
+   "text": "Hésiter à avoir des enfants à votre âge, est-ce bien sérieux ?",
+   "textEn": "Hesitating about children at your age, is that really serious?",
+   "label": "faulty",
+   "category": "moralizing",
+   "why": "Juge (et laisse deviner la réponse de A)."
+  }
+ ]
+}

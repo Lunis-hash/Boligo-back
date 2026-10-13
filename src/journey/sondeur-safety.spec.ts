@@ -347,3 +347,22 @@ describe('Réponses gardées pour la rencontre', () => {
     expect(isReservedAnswer(text)).toBe(expected);
   });
 });
+
+describe('Détresse formulée indirectement (FR/EN)', () => {
+  const { dangerCategories } = require('./sondeur-insights');
+  it('repérée', () => {
+    for (const t of [
+      'Parfois je me demande à quoi bon vivre.',
+      "Sometimes I wonder what's the point of living.",
+      'I want to end it all.',
+    ])
+      expect(dangerCategories(t)).toContain('detresse');
+  });
+  it('sans fausse alerte sur un « à quoi bon » ordinaire', () => {
+    for (const t of [
+      'À quoi bon se disputer pour si peu ?',
+      "What's the point of arguing?",
+    ])
+      expect(dangerCategories(t)).toEqual([]);
+  });
+});

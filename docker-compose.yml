@@ -1,0 +1,107 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# BOLIGO auto-hébergé : base Postgres + API NestJS + application web + admin.
+# Voir docs/MIGRATION_SERVEUR.md.
+#
+#   cp .env.example .env            # puis renseigner les secrets
+#   docker compose build
+#   docker compose --profile init run --rm db-init   # base NEUVE uniquement
+#   docker compose up -d
+#   curl http://localhost:3000/api/health
+#
+# Ports publiés sur l'hôte (modifiables sans toucher au fichier) :
+#   API_PORT (3000), WEB_PORT (8080), ADMIN_PORT (8081), DB_PORT (5432,
+#   lié à 127.0.0.1 seulement). En production, placer un reverse-proxy TLS
+#   (Caddy, nginx, Traefik) devant api / web / admin.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  db:
+    # postgres:16 par défaut. La base source (Supabase) est en PostgreSQL 17 :
+    # pour restaurer un pg_dump 17 sans écart, mettre POSTGRES_IMAGE=postgres:17.
+    image: ${POSTGRES_IMAGE:-postgres:16}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-boligo}
+      POSTGRES_USER: ${POSTGRES_USER:-boligo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?définir POSTGRES_PASSWORD (fichier .env ou environnement)}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-}
+    image: boligo-api:${APP_VERSION:-local}
+    restart: unless-stopped
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: ${API_ENV_FILE:-.env}
+        required: false
+    environment:
+      # La base du conteneur « db » remplace celle du fichier d'environnement.
+      # Pour une base externe, définir API_DATABASE_URL / API_DIRECT_URL.
+      DATABASE_URL: ${API_DATABASE_URL:-postgresql://${POSTGRES_USER:-boligo}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-boligo}?schema=public}
+      DIRECT_URL: ${API_DIRECT_URL:-postgresql://${POSTGRES_USER:-boligo}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-boligo}?schema=public}
+      NODE_ENV: production
+      PORT: "3000"
+    ports:
+      - "${API_PORT:-3000}:3000"
+
+  # Création du schéma sur une base VIDE (prisma db push). Ne jamais lancer
+  # sur une base restaurée depuis la production : utiliser pg_restore.
+  db-init:
+    image: boligo-api:${APP_VERSION:-local}
+    profiles: ["init"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${API_DATABASE_URL:-postgresql://${POSTGRES_USER:-boligo}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-boligo}?schema=public}
+      DIRECT_URL: ${API_DIRECT_URL:-postgresql://${POSTGRES_USER:-boligo}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-boligo}?schema=public}
+    command: ["npx", "prisma", "db", "push", "--skip-generate"]
+
+  web:
+    build:
+      context: ./mobile-steve
+      dockerfile: ../deploy/static-site.Dockerfile
+      additional_contexts:
+        nginxconf: ./deploy/nginx
+      args:
+        # Adresse publique de l'API vue par le NAVIGATEUR (figée au build).
+        API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
+        STRIPE_PUBLISHABLE_KEY: ${EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+
+  admin:
+    profiles: ["admin"]
+    build:
+      context: ./admin
+      dockerfile: ../deploy/static-site.Dockerfile
+      additional_contexts:
+        nginxconf: ./deploy/nginx
+      args:
+        API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
+        WEB_URL: ${PUBLIC_WEB_URL:-}
+        BUILD_CMD: npm run build
+        OUT_DIR: out
+        NGINX_CONF: admin.conf
+    restart: unless-stopped
+    ports:
+      - "${ADMIN_PORT:-8081}:8080"
+
+volumes:
+  pgdata:

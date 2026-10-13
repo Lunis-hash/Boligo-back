@@ -25,6 +25,14 @@
  * quelques millièmes d'euro par parcours avec.
  */
 import {
+  OTHER_EN,
+  enOptions,
+  enText,
+  enTopicTemplate,
+  enTopicWords,
+  joinEn,
+} from './sondeur.i18n';
+import {
   Convergence,
   Divergence,
   DivergenceReport,
@@ -32,8 +40,10 @@ import {
   THEMES,
   THEME_LIST,
   Theme,
+  SAFETY_QUESTION_IDS,
 } from '../matching/divergence.engine';
 import { QUESTION_INDEX } from '../interview/questions.data';
+import { isSensitiveQuestion } from '../interview/sensitive-questions';
 import {
   HarmonyQuestionPayload,
   ensureAutreOption,
@@ -63,6 +73,7 @@ import {
   topicDeepAll,
   topicKey,
   topicPhrase,
+  topicPhraseKey,
   topicWords,
 } from './sondeur.pool';
 
@@ -78,18 +89,20 @@ export const DAY_ANGLES: Record<
   1: {
     label: 'Lignes rouges',
     emoji: '🚩',
-    intent: 'ce que chacun protège',
+    intent:
+      'la position réelle de chacun sur ses écarts (combien, quoi, quand)',
   },
   2: {
     label: 'Valeurs profondes',
     emoji: '⚖️',
-    intent: "d'où viennent vos positions",
+    intent:
+      "jusqu'où chacun pourrait réellement aller, et ce qu'il ne pourrait pas accepter",
   },
   3: {
     label: 'Futur & intimité',
     emoji: '🔮',
     intent:
-      "ce qu'il faudrait savoir avant de s'engager, et comment chacun le vivrait au quotidien",
+      "si l'écart ne changeait jamais : pourriez-vous le vivre au quotidien, pendant des années",
   },
 };
 
@@ -319,12 +332,7 @@ function pickFresh(
  * V7.1 : justification de la violence (M6_Q24) et contrôle coercitif
  * (M9_Q24, tendance tirée de l'entretien).
  */
-export const SAFETY_QUESTIONS = new Set([
-  'M6_Q04',
-  'M6_Q05',
-  'M6_Q24',
-  'M9_Q24',
-]);
+export const SAFETY_QUESTIONS = SAFETY_QUESTION_IDS;
 
 /**
  * Auto-évaluations (aveux, fréquences sur soi) : la réponse d'un membre n'est
@@ -665,10 +673,15 @@ function divergenceCandidates(
   used: DayUsage,
 ): PoolTemplate[] {
   const words = topicWords(topicPhrase(d));
-  const generic = topicTemplates(day, d, strictTheme).map((t) => ({
-    text: t.text(words),
-    options: t.options,
-  }));
+  const wordsEn = enTopicWords(topicPhraseKey(d));
+  const generic = topicTemplates(day, d, strictTheme).map((t) => {
+    const en = enTopicTemplate(t.text);
+    return {
+      text: t.text(words),
+      options: t.options,
+      ...(en && wordsEn ? { en: en(wordsEn) } : {}),
+    };
+  });
   return [
     ...preferNewOpenings(usableDeep(d, day, strictTheme), used),
     ...preferNewOpenings(arrange(generic, seed, `${slot}|div`), used),
@@ -870,9 +883,11 @@ function convergenceCandidates(
     ),
   ];
   if (!statement) return own;
+  const statementEn = enText(statement);
   const withStatement = (t: PoolTemplate) => ({
     text: `${statement} ${t.text}`,
     options: t.options,
+    en: joinEn(statementEn, t.en ?? enText(t.text)),
   });
   const generic = c.theme === 'intimite' ? [] : CONVERGENT[day].filter(allowed);
   return [
@@ -975,6 +990,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         question = {
           ...base,
           text: limit.text,
+          textEn: enText(limit.text),
           options: ensureAutreOption(limit.options),
           source: 'divergence',
           subject: 'controle',
@@ -988,6 +1004,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         question = {
           ...base,
           text: pick.text,
+          textEn: enText(pick.text),
           options: ensureAutreOption(pick.options),
           source: 'divergence',
           subject: 'securite',
@@ -1025,6 +1042,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           question = {
             ...base,
             text: pick.text,
+            textEn: pick.en ?? enText(pick.text),
             options: ensureAutreOption(pick.options),
             source: 'divergence',
             subject: topicKey(divergence),
@@ -1055,6 +1073,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           question = {
             ...base,
             text: pick.text,
+            textEn: pick.en ?? enText(pick.text),
             options: ensureAutreOption(pick.options),
             source: 'convergence',
             subject: c.questionId,
@@ -1071,7 +1090,8 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
           THEME_POOL[theme][day].filter(
             (t) =>
               !(strictThemes.has(theme) && t.compromise) &&
-              !(childFree && t.needsChildren),
+              !(childFree && t.needsChildren) &&
+              !(t.v82Only && report.questionnaire !== '8.2'),
           ),
           seed,
           `${slot}|gen`,
@@ -1094,6 +1114,7 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
         question = {
           ...base,
           text: tpl.text,
+          textEn: tpl.en ?? enText(tpl.text),
           options: ensureAutreOption(tpl.options),
           source: 'gabarit',
         };
@@ -1115,6 +1136,20 @@ export function assembleSondeur(input: SondeurInput): SondeurQuestion[] {
   if (hasNoReligiousPractice(report))
     for (const question of result)
       question.options = neutralOptions(question.options);
+
+  // Options anglaises : celles de l'IA, sinon celles des gabarits (toutes ou
+  // aucune). Une question sans version anglaise complète reste en français.
+  for (const question of result) {
+    const optionsEn =
+      question.source === 'ia' && question.optionsEn?.length
+        ? ensureOtherOption(question.optionsEn)
+        : enOptions(question.options);
+    if (question.textEn && optionsEn) question.optionsEn = optionsEn;
+    else {
+      delete question.textEn;
+      delete question.optionsEn;
+    }
+  }
 
   return result;
 }
@@ -1257,6 +1292,11 @@ const CONTROL_TOPICS = new Set(['M5_Q08', 'M9_Q11', 'M8_Q10']);
 export function describeReportForAi(
   report: DivergenceReport,
   firstNames: [string, string],
+  /**
+   * Données minimales (rédacteur et relecteur du Sondeur) : l'écart sans les
+   * réponses, chaque libellé d'option remplacé par son code.
+   */
+  opts: { abstract?: boolean } = {},
 ): string {
   // Prénoms sur une ligne, sans citation : rien ne peut s'y glisser.
   const [a, b] = firstNames.map(
@@ -1270,7 +1310,7 @@ export function describeReportForAi(
   const lines: string[] = [];
   // Points non négociables et signaux de contrôle : nommés au rédacteur.
   const marks = (d: Divergence) =>
-    `${isNonNegotiable(d) ? ' — POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d’entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.' : ''}${CONTROL_TOPICS.has(d.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance ; jamais l’accès au téléphone ou à la localisation présenté comme une preuve d’amour.' : ''}`;
+    `${isNonNegotiable(d) ? (opts.abstract ? ' — POINT NON NÉGOCIABLE : ne pousse pas au compromis ; mesurer la tolérance de chacun (« pourriez-vous vivre avec… », « combien… », « pendant combien de temps… ») est admis ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.' : ' — POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d’entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.') : ''}${CONTROL_TOPICS.has(d.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance ; jamais l’accès au téléphone ou à la localisation présenté comme une preuve d’amour.' : ''}`;
   lines.push(
     `Questions comparées : ${report.comparedQuestions}. Incompatibilité déclarée : ${report.hardStop ? 'oui' : 'non'}.`,
   );
@@ -1294,9 +1334,17 @@ export function describeReportForAi(
         lines.push(
           `${head} : l'un préfère en parler en personne. Ne pas relancer ce sujet.`,
         );
+      } else if (isSensitiveQuestion(d.questionId)) {
+        // Donnée sensible (religion, vie intime) : jamais transmise à l'IA ;
+        // le sujet et la gravité de l'écart suffisent à écrire la question.
+        lines.push(
+          `${head} : écart sur un sujet sensible (réponses non transmises) — à explorer sans supposer la position de chacun.${marks(d)}`,
+        );
       } else {
         lines.push(
-          `${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »${marks(d)}`,
+          opts.abstract
+            ? `${head} : écart entre deux options (codes ${d.a.key} / ${d.b.key} ; réponses non transmises)${marks(d)}`
+            : `${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »${marks(d)}`,
         );
       }
     }
@@ -1309,7 +1357,7 @@ export function describeReportForAi(
       const head = `- ${THEMES[c.theme].label} — ${c.topic ?? c.label}`;
       if (SAFETY_QUESTIONS.has(c.questionId)) {
         lines.push(
-          `${head} : même réponse « ${c.answer} » — LIMITE DE SÉCURITÉ : uniquement des questions de limite, jamais de compromis.`,
+          `${head} : même réponse${opts.abstract ? '' : ` « ${c.answer} »`} — LIMITE DE SÉCURITÉ : uniquement des questions de limite, jamais de compromis.`,
         );
       } else if (SELF_DISCLOSURE_QUESTIONS.has(c.questionId)) {
         lines.push(
@@ -1319,9 +1367,13 @@ export function describeReportForAi(
         lines.push(
           `${head} : les deux préfèrent en parler en personne. Ne pas relancer ce sujet.`,
         );
+      } else if (isSensitiveQuestion(c.questionId)) {
+        lines.push(
+          `${head} : même réponse des deux sur un sujet sensible (réponse non transmise).`,
+        );
       } else {
         lines.push(
-          `${head} : même réponse des deux, « ${c.answer} »${CONTROL_TOPICS.has(c.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance.' : ''}`,
+          `${head} : même réponse des deux${opts.abstract ? ' (non transmise)' : `, « ${c.answer} »`}${CONTROL_TOPICS.has(c.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance.' : ''}`,
         );
       }
     }
@@ -1342,4 +1394,13 @@ export function validateSondeurGrid(
     if (themes.size !== THEME_LIST.length) return false;
   }
   return true;
+}
+
+/** Grille anglaise : toujours « Other... » en dernier, comme « Autre... ». */
+function ensureOtherOption(options: string[]): string[] {
+  const kept = options
+    .map((o) => String(o).trim())
+    .filter((o) => o && !/^other/i.test(o))
+    .slice(0, 4);
+  return [...kept, OTHER_EN];
 }

@@ -1,3 +1,4 @@
+import { openRouterAuthAvailable } from '../ai/openrouter.service';
 import {
   BadRequestException,
   Injectable,
@@ -135,7 +136,7 @@ export class AiLabService {
 
   /** Lance une évaluation sur les `count` premiers couples types (1 à 27). */
   start(count: number): LabRun {
-    if (!process.env.OPENROUTER_API_KEY && !process.env.GROQ_API_KEY) {
+    if (!openRouterAuthAvailable() && !process.env.GROQ_API_KEY) {
       throw new BadRequestException(
         'Aucune clé d’IA configurée : ajoutez OPENROUTER_API_KEY sur Render.',
       );

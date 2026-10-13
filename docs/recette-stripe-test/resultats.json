@@ -1,0 +1,62 @@
+[
+  {
+    "step": "Comptes fictifs créés sur la base locale dédiée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "1. Création du paiement : session Checkout créée par l’API",
+    "ok": true,
+    "detail": "HTTP 201, 1500 centimes"
+  },
+  {
+    "step": "   Session relue chez Stripe : mode test, montant, membre rattaché, non payée",
+    "ok": true,
+    "detail": "livemode=false montant=1500 statut=unpaid"
+  },
+  {
+    "step": "2. Page Stripe Checkout payée (carte de test 4242), retour success",
+    "ok": true,
+    "detail": "statut=paid PI=pi_3UQ8ujLz8rnS1CBn14dLxnf2"
+  },
+  {
+    "step": "3. Webhook payment_intent.succeeded livré par Stripe et accepté localement (HTTP 200)",
+    "ok": true,
+    "detail": "événement evt_3UQ8ujLz8rnS1CBn1ZwQwKZ2 livraisons=1 crédits=1"
+  },
+  {
+    "step": "4. Crédit unique : confirmation de l’app + nouvelle livraison réelle de l’événement",
+    "ok": true,
+    "detail": "confirmation HTTP 200, renvoi CLI code 0, livraisons 1→2, crédits=1, transactions=1"
+  },
+  {
+    "step": "   Paiement enregistré une seule fois (table Payment)",
+    "ok": true,
+    "detail": "reussi|1500"
+  },
+  {
+    "step": "5. Facture : émise, payée chez Stripe, PDF disponible",
+    "ok": true,
+    "detail": "registre=emise|in_1UQ8ulLz8rnS1CBnwW7tbx63 Stripe=paid PDF=oui"
+  },
+  {
+    "step": "6. Remboursement réel chez Stripe (rétractation acceptée par l’admin)",
+    "ok": true,
+    "detail": "demande HTTP 201, décision HTTP 201, re_3UQ8ujLz8rnS1CBn1M9kTctv:succeeded:1500"
+  },
+  {
+    "step": "   Webhook charge.refunded livré par Stripe et accepté localement",
+    "ok": true,
+    "detail": "événement evt_3UQ8ujLz8rnS1CBn1O1SMsk6 livraisons=1"
+  },
+  {
+    "step": "7. Crédits mis à jour : crédit retiré une seule fois",
+    "ok": true,
+    "detail": "crédits=0, écriture de remboursement=1|-1"
+  },
+  {
+    "step": "   Réceptions par le backend local (journal)",
+    "ok": true,
+    "detail": "payment_intent.succeeded=2, charge.refunded=1"
+  }
+]

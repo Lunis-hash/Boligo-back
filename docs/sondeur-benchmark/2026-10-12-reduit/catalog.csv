@@ -1,0 +1,120 @@
+model_id,family,price_in,price_out,context,structured_output,reasoning,free,providers,zdr_any
+openai/gpt-6.1-sol-pro,openai,2,10,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|Azure|OpenAI|OpenAI,false
+openai/gpt-6.1-sol,openai,2,10,1050000,true,true,false,OpenAI|Azure|OpenAI|Amazon Bedrock|Azure|Azure|OpenAI|OpenAI,false
+anthropic/claude-sonnet-5.5,anthropic,2,10,1000000,true,true,false,Google|Amazon Bedrock|Azure|Claude Platform on AWS|Anthropic|Google|Azure|Google,false
+z-ai/glm-5.3-prime,z-ai,2.8,8.8,1000000,true,true,false,Alibaba,false
+qwen/qwen3.8-max-prime,qwen,4,12,1000000,true,true,false,Alibaba,false
+openai/gpt-6-luna-pro,openai,0.09999999999999999,0.5,1050000,true,true,false,OpenAI|OpenAI|Azure|Azure|Azure|OpenAI,false
+openai/gpt-6-luna,openai,0.09999999999999999,0.5,1050000,true,true,false,OpenAI|OpenAI|Azure|Azure|Azure|Amazon Bedrock|OpenAI,false
+openai/gpt-6-sol-pro,openai,2,10,1050000,true,true,false,OpenAI|OpenAI|Azure|Azure|Azure|OpenAI,false
+openai/gpt-6-sol,openai,2,10,1050000,true,true,false,OpenAI|OpenAI|Azure|Azure|Azure|Amazon Bedrock|OpenAI,false
+anthropic/claude-opus-5.5,anthropic,4,20,1000000,true,true,false,Amazon Bedrock|Azure|Google|Claude Platform on AWS|Anthropic|Amazon Bedrock|Amazon Bedrock|Azure|Google|Google|Anthropic,false
+qwen/qwen3.8-omni-flash,qwen,0.15,0.47,1000000,true,true,false,Alibaba,false
+z-ai/glm-5.3-flashx,z-ai,0.37,1.25,1048576,true,true,false,Z.AI,false
+~deepseek/deepseek-pro-latest,~deepseek,0.24947999999999998,0.7484400000000001,1048576,true,true,false,,false
+~deepseek/deepseek-flash-latest,~deepseek,0.033600000000000005,1.1880000000000002,1048576,true,true,false,,false
+deepseek/deepseek-v4.1-flash,deepseek,0.15,0.6,1048576,true,true,false,OpenInference|Morph|Relace|InferenceNet|Sail Research|Decart|Wafer|Ionstream|DeepInfra|StreamLake|Alibaba|DeepSeek|DigitalOcean|GMICloud|Novita|CoreWeave|Phala|Makora|Crusoe|Baidu|AtlasCloud|BaseTen|Together|SiliconFlow|Modal|BaseTen|Parasail|Fireworks|Venice|Fireworks|BaseTen,false
+openai/gpt-6-astra,openai,10,50,1050000,true,true,false,OpenAI|Azure|OpenAI|Amazon Bedrock|Azure|OpenAI|OpenAI,false
+openai/gpt-6-astra-pro,openai,10,50,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|OpenAI|OpenAI,false
+qwen/qwen3.8-max-0902,qwen,2,6,1000000,true,true,false,Alibaba|Alibaba,false
+~z-ai/glm-flash-latest,~z-ai,0.0232,1.2,1048576,true,true,false,,false
+qwen/qwen3.8-flash,qwen,0.15,0.47,1000000,true,true,false,Alibaba|Alibaba,false
+z-ai/glm-5.3-flash,z-ai,0.0232,1.2,1048576,true,true,false,OpenInference|Morph|Relace|StreamLake|Sail Research|Sail Research|Wafer|Reka|Inceptron|InferenceNet|DeepInfra|Novita|GMICloud|Decart|Near AI|Phala|Modal|BaseTen|Crusoe|CoreWeave|AtlasCloud|Fireworks|Friendli|SiliconFlow|DigitalOcean|Together|Parasail|BaseTen|Venice|Z.AI|Parasail|Fireworks,false
+deepseek/deepseek-v4-flash-vision-exp,deepseek,0.21559999999999999,0.6468,1048576,true,true,false,DeepInfra|GMICloud|SiliconFlow,false
+~z-ai/glm-latest,~z-ai,0.055,5,1048576,true,true,false,,false
+z-ai/glm-5.3,z-ai,0.079,4.8,1048576,true,true,false,Morph|Wafer|InferenceNet|Reka|Makora|Wafer|AkashML|Baidu|Sail Research|Sail Research|Io Net|DeepInfra|Inceptron|Tenstorrent|Novita|Phala|Decart|DigitalOcean|GMICloud|SiliconFlow|Alibaba|Friendli|Mistral|BaseTen|Mistral|Crusoe|PrimeIntellect|Venice|Together|Parasail|Modal|BaseTen|Fireworks|Cloudflare|AtlasCloud|Z.AI|Mistral|Fireworks|BaseTen|BaseTen|Alibaba,false
+qwen/qwen3.8-27b,qwen,0.04,2.3,1000000,true,true,false,Chutes|Tenstorrent|Near AI|Reka|Wafer|DekaLLM|Darkbloom|Ionstream|DeepInfra|ModelRun|Mancer 2|Phala|AkashML|Parasail|CoreWeave|Novita|Alibaba|Cloudflare|Venice|Cerebras,false
+qwen/qwen3.8-2.4t-a95b,qwen,2,6,1048576,true,true,false,Novita|Alibaba|SiliconFlow|Venice|Modal|Together,false
+deepseek/deepseek-v4-pro-0813,deepseek,0.66,1.9800000000000002,1048576,true,true,false,Baidu|Wafer|Ionstream|Sail Research|Sail Research|Reka|Alibaba|Alibaba|StreamLake|DeepSeek|Phala|Novita|GMICloud|DeepInfra|CoreWeave|AtlasCloud|Parasail|Together|DigitalOcean|SiliconFlow|Cloudflare|Venice,false
+~deepseek/deepseek-v4-flash-latest,~deepseek,0.0128,0.768,1048576,true,true,false,,false
+deepseek/deepseek-v4-flash-0731,deepseek,0.016,0.64,1048576,true,true,false,OpenInference|Relace|Sail Research|Reka|DeepInfra|Sail Research|DigitalOcean|Wafer|BaseTen|BaseTen|Venice|CoreWeave|Inceptron|StreamLake|Cohere|Together|Parasail|Alibaba|Alibaba|Mancer 2|SiliconFlow|GMICloud|Phala|Novita|Baidu|AtlasCloud|Cloudflare,false
+qwen/qwen3.7-flash,qwen,0.03,0.13,1000000,true,true,false,Alibaba|Alibaba,false
+anthropic/claude-opus-5,anthropic,5,25,1000000,true,true,false,Claude Platform on AWS|Google|Amazon Bedrock|Azure|Anthropic|Amazon Bedrock|Azure|Google|Google|Amazon Bedrock|Anthropic,false
+moonshotai/kimi-k3,moonshotai,0.73,10,1048576,true,true,false,Wafer|InferenceNet|Sail Research|Morph|AkashML|Makora|Chutes|Relace|Decart|Phala|DigitalOcean|Parasail|Together|Wafer|DeepInfra|InferenceNet|Parasail|Amazon Bedrock|Modal|Fireworks|BaseTen|Moonshot AI|Alibaba|Fireworks|Fireworks,false
+openai/gpt-5.6-luna-pro,openai,0.19999999999999998,1.2,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|OpenAI,false
+openai/gpt-5.6-luna,openai,0.19999999999999998,1.2,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|Amazon Bedrock|Azure|OpenAI,false
+openai/gpt-5.6-terra-pro,openai,2,12,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|OpenAI,false
+openai/gpt-5.6-terra,openai,2,12,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|Amazon Bedrock|Azure|OpenAI,false
+openai/gpt-5.6-sol-pro,openai,2,10,1050000,true,true,false,OpenAI|OpenAI|OpenAI|Azure|Azure,false
+openai/gpt-5.6-sol,openai,2,10,1050000,true,true,false,OpenAI|OpenAI|OpenAI|Azure|Azure|Amazon Bedrock|Azure,false
+anthropic/claude-sonnet-5,anthropic,2,10,1000000,true,true,false,Claude Platform on AWS|Azure|Google|Amazon Bedrock|Anthropic|Amazon Bedrock|Azure|Google|Google|Amazon Bedrock,false
+z-ai/glm-5.2,z-ai,0.06,7,1048576,true,true,false,Wafer|Baidu|Wafer|Cloudflare|InferenceNet|Decart|Morph|DeepInfra|StreamLake|Novita|DigitalOcean|Baidu|CoreWeave|AtlasCloud|Inceptron|Alibaba|Alibaba|SiliconFlow|Phala|Nebius|Mistral|BaseTen|Together|BaseTen|Venice|GMICloud|Parasail|Friendli|Z.AI|Mistral|BaseTen|BaseTen|Alibaba|Decart,false
+moonshotai/kimi-k2.7-code,moonshotai,0.6712,3.35,262144,true,true,false,Inceptron|CoreWeave|StreamLake|Venice|SiliconFlow|Novita|Nebius|GMICloud|Alibaba|Cloudflare|Moonshot AI|Moonshot AI,false
+qwen/qwen3.7-plus,qwen,0.32,1.28,1000000,true,true,false,Alibaba|Alibaba,false
+anthropic/claude-opus-4.8,anthropic,5,25,1000000,true,true,false,Claude Platform on AWS|Azure|Amazon Bedrock|Google|Anthropic|Azure|Amazon Bedrock|Google|Amazon Bedrock|Google|Anthropic,false
+qwen/qwen3.7-max,qwen,1.475,4.425,1000000,true,true,false,Alibaba|Alibaba,false
+~moonshotai/kimi-latest,~moonshotai,0.72,24,1048576,true,true,false,,false
+~anthropic/claude-sonnet-latest,anthropic,2,10,1000000,true,true,false,,false
+qwen/qwen3.5-plus-20260420,qwen,0.3,1.7999999999999998,1000000,true,true,false,Alibaba,false
+qwen/qwen3.6-flash,qwen,0.1875,1.125,1000000,true,true,false,Alibaba,false
+qwen/qwen3.6-35b-a3b,qwen,0.09999999999999999,0.95,262144,true,true,false,Darkbloom|AkashML|DeepInfra|DekaLLM|Venice|Parasail|AtlasCloud|Phala|SiliconFlow|CoreWeave,false
+qwen/qwen3.6-27b,qwen,0.32,3.1999999999999997,262144,true,true,false,Chutes|Reka|SiliconFlow|DeepInfra|Phala|Venice|Alibaba,false
+openai/gpt-5.5-pro,openai,30,180,1050000,true,true,false,OpenAI|OpenAI,false
+openai/gpt-5.5,openai,5,30,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|Azure|Amazon Bedrock|OpenAI,false
+deepseek/deepseek-v4-pro,deepseek,0.41237999999999997,0.8247599999999999,1048576,true,true,false,StreamLake|Baidu|Parasail|GMICloud|DigitalOcean|Reka|Cloudflare|DeepInfra|Alibaba|SiliconFlow|Alibaba|Novita|Venice|AtlasCloud|Azure,false
+deepseek/deepseek-v4-flash,deepseek,0.03,1.28,1048576,true,true,false,OpenInference|Relace|StreamLake|DeepInfra|Baidu|GMICloud|Venice|DigitalOcean|SiliconFlow|AtlasCloud|Parasail|Alibaba|Mancer 2|Azure|Wafer|Cloudflare,false
+openai/gpt-5.4-image-2,openai,8,15,272000,true,true,false,OpenAI,false
+~anthropic/claude-opus-latest,anthropic,4,20,1000000,true,true,false,,false
+moonshotai/kimi-k2.6,moonshotai,0.65,3.41,262144,true,true,false,Baidu|Inceptron|Chutes|DigitalOcean|StreamLake|CoreWeave|Crusoe|DeepInfra|Venice|Parasail|SiliconFlow|Novita|GMICloud|AtlasCloud|Cloudflare|Moonshot AI|Phala,false
+anthropic/claude-opus-4.7,anthropic,5,25,1000000,true,true,false,Claude Platform on AWS|Azure|Google|Amazon Bedrock|Anthropic|Google|Amazon Bedrock|Google,false
+z-ai/glm-5.1,z-ai,0.966,3.036,204800,true,true,false,Baidu|StreamLake|Chutes|SiliconFlow|Phala|AtlasCloud|Alibaba|Novita|Nebius|GMICloud|Friendli|Z.AI|Venice,false
+qwen/qwen3.6-plus,qwen,0.325,1.95,1000000,true,true,false,Alibaba,false
+z-ai/glm-5v-turbo,z-ai,1.2,4,202752,true,true,false,Z.AI,false
+openai/gpt-5.4-nano,openai,0.19999999999999998,1.25,400000,true,true,false,OpenAI|Azure|OpenAI|Azure,false
+openai/gpt-5.4-mini,openai,0.75,4.5,400000,true,true,false,OpenAI|Azure|OpenAI|Azure|OpenAI,false
+z-ai/glm-5-turbo,z-ai,1.2,4,202752,true,true,false,Z.AI,false
+qwen/qwen3.5-9b,qwen,0.09999999999999999,0.15,262144,true,true,false,Darkbloom|SiliconFlow|DeepInfra|Venice|Parasail|Together,false
+openai/gpt-5.4-pro,openai,30,180,1050000,true,true,false,OpenAI|Azure|OpenAI,false
+openai/gpt-5.4,openai,2.5,15,1050000,true,true,false,OpenAI|Azure|OpenAI|Azure|Azure|Amazon Bedrock|OpenAI,false
+qwen/qwen3.5-35b-a3b,qwen,0.08,0.75,262144,true,true,false,Darkbloom|DeepInfra|Parasail|Venice|Alibaba|AtlasCloud|SiliconFlow,false
+qwen/qwen3.5-27b,qwen,0.26,2.6,262144,true,true,false,Alibaba|SiliconFlow|DeepInfra|AtlasCloud|Phala|Novita,false
+qwen/qwen3.5-122b-a10b,qwen,0.26,2.08,262144,true,true,false,SiliconFlow|Alibaba|AtlasCloud|Novita,false
+qwen/qwen3.5-flash-02-23,qwen,0.065,0.26,1000000,true,true,false,Alibaba,false
+openai/gpt-5.3-codex,openai,1.75,14,400000,true,true,false,Azure|OpenAI|OpenAI,false
+anthropic/claude-sonnet-4.6,anthropic,3,15,1000000,true,true,false,Claude Platform on AWS|Azure|Anthropic|Amazon Bedrock|Google|Amazon Bedrock|Amazon Bedrock|Google|Google,false
+qwen/qwen3.5-plus-02-15,qwen,0.26,1.56,1000000,true,true,false,Alibaba,false
+qwen/qwen3.5-397b-a17b,qwen,0.55,3.5,262144,true,true,false,Alibaba|DeepInfra|Parasail|DigitalOcean|Phala|AtlasCloud|StreamLake|GMICloud|Novita|Venice,false
+z-ai/glm-5,z-ai,0.6,1.92,204800,true,true,false,StreamLake|GMICloud|Baidu|SiliconFlow|Amazon Bedrock|Venice|Novita|Z.AI,false
+anthropic/claude-opus-4.6,anthropic,5,25,1000000,true,true,false,Claude Platform on AWS|Azure|Google|Amazon Bedrock|Anthropic|Google,false
+moonshotai/kimi-k2.5,moonshotai,0.5,2.5,262144,true,true,false,AtlasCloud|SiliconFlow|Venice|Novita|Amazon Bedrock,false
+z-ai/glm-4.7-flash,z-ai,0.060500000000000005,0.39999999999999997,200000,true,true,false,Venice|Cloudflare|Novita,false
+openai/gpt-5.2-codex,openai,1.75,14,400000,true,true,false,Azure,false
+z-ai/glm-4.7,z-ai,0.6,2.2,204800,true,true,false,DeepInfra|Venice|Novita|Google|Z.AI|Mancer 2,false
+openai/gpt-5.2-chat,openai,1.75,14,128000,true,false,false,Azure,false
+openai/gpt-5.2-pro,openai,21,168,400000,true,true,false,OpenAI,false
+openai/gpt-5.2,openai,1.75,14,400000,true,true,false,OpenAI|Azure|OpenAI|OpenAI,false
+z-ai/glm-4.6v,z-ai,0.3,0.8999999999999999,131072,true,true,false,Novita|Z.AI,false
+openai/gpt-5.1-codex-max,openai,1.25,10,400000,true,true,false,Azure,false
+deepseek/deepseek-v3.2,deepseek,0.25899999999999995,0.7999999999999999,163840,true,true,false,GMICloud|SiliconFlow|DeepInfra|AtlasCloud|Venice|Baidu|DigitalOcean|Friendli|Google|Phala|Mara|SambaNova,false
+anthropic/claude-opus-4.5,anthropic,5,25,200000,true,true,false,Claude Platform on AWS|Azure|Google|Amazon Bedrock|Anthropic|Amazon Bedrock,false
+openai/gpt-5.1,openai,1.25,10,400000,true,true,false,OpenAI|Azure|OpenAI|Azure|OpenAI,false
+openai/gpt-5.1-codex,openai,1.25,10,400000,true,true,false,Azure,false
+openai/gpt-5.1-codex-mini,openai,0.25,2,400000,true,true,false,Azure,false
+moonshotai/kimi-k2-thinking,moonshotai,0.6,2.5,262144,true,true,false,Google|Novita,false
+openai/gpt-5-image-mini,openai,2.5,2,400000,true,true,false,OpenAI,false
+openai/gpt-5-image,openai,10,10,400000,true,true,false,OpenAI,false
+openai/gpt-5-pro,openai,15,120,400000,true,true,false,OpenAI,false
+z-ai/glm-4.6,z-ai,0.5,2,204800,true,true,false,Venice|DeepInfra|Novita|Z.AI,false
+anthropic/claude-sonnet-4.5,anthropic,3,15,1000000,true,true,false,Claude Platform on AWS|Azure|Amazon Bedrock|Anthropic|Google|Amazon Bedrock|Google,false
+deepseek/deepseek-v3.2-exp,deepseek,0.27,0.41,163840,true,true,false,SiliconFlow,false
+qwen/qwen3-vl-235b-a22b-instruct,qwen,0.21,1.9,262144,true,false,false,DeepInfra|Venice|Parasail,false
+deepseek/deepseek-v3.1-terminus,deepseek,0.27,1,163840,true,true,false,SiliconFlow|StreamLake,false
+qwen/qwen3-coder-flash,qwen,0.195,0.975,1000000,true,false,false,Alibaba,false
+moonshotai/kimi-k2-0905,moonshotai,0.6,2.5,262144,true,false,false,Novita,false
+deepseek/deepseek-chat-v3.1,deepseek,0.25,0.95,163840,true,true,false,DeepInfra|SiliconFlow|CoreWeave|Mara|SambaNova,false
+z-ai/glm-4.5v,z-ai,0.6,1.7999999999999998,65536,true,true,false,Novita|Z.AI,false
+openai/gpt-5,openai,1.25,10,400000,true,true,false,Azure|OpenAI|Azure,false
+openai/gpt-5-mini,openai,0.25,2,400000,true,true,false,OpenAI|Azure|OpenAI|Azure,false
+openai/gpt-5-nano,openai,0.049999999999999996,0.39999999999999997,400000,true,true,false,OpenAI|Azure|OpenAI|Azure,false
+anthropic/claude-opus-4.1,anthropic,15,75,200000,false,true,false,Amazon Bedrock,false
+z-ai/glm-4.5,z-ai,0.6,2.2,131072,true,true,false,Z.AI,false
+z-ai/glm-4.5-air,z-ai,0.13,0.85,131072,false,true,false,Novita|SiliconFlow|Z.AI,false
+qwen/qwen3-235b-a22b-thinking-2507,qwen,0.44999999999999996,3.5,128000,false,true,false,Venice,false
+qwen/qwen3-235b-a22b-2507,qwen,0.09,0.55,262144,true,false,false,GMICloud|DeepInfra|Parasail|Venice|Nebius|Google|Google,false
+moonshotai/kimi-k2,moonshotai,0.5700000000000001,2.3,131072,false,false,false,Novita,false
+deepseek/deepseek-r1-0528,deepseek,0.5,2.1500000000000004,163840,true,true,false,DeepInfra|SiliconFlow|StreamLake|Novita,false
+anthropic/claude-sonnet-4,anthropic,3,15,200000,false,true,false,Amazon Bedrock|Amazon Bedrock,false
+deepseek/deepseek-chat-v3-0324,deepseek,0.29,1.1400000000000001,163840,true,false,false,SiliconFlow|GMICloud,false
+qwen/qwen-plus,qwen,0.26,0.78,1000000,true,false,false,Alibaba,false
+deepseek/deepseek-r1,deepseek,0.7,2.5,64000,true,true,false,Novita,false
+deepseek/deepseek-chat,deepseek,0.32,0.8899999999999999,163840,true,false,false,StreamLake|DeepInfra,false

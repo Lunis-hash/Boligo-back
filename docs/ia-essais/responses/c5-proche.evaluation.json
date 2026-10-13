@@ -1,0 +1,355 @@
+{
+  "metrics": {
+    "couple": "c5-proche",
+    "drafted": 42,
+    "accepted": 27,
+    "formRejected": 1,
+    "evidenceRejected": 8,
+    "reasons": {
+      "P7": 3,
+      "P13": 3,
+      "P14": 1,
+      "EN4": 1
+    },
+    "leaks": [],
+    "englishMissing": 0,
+    "outputChars": 31927,
+    "inputChars": 99102,
+    "refusedByReviewer": 0
+  },
+  "accepted": [
+    {
+      "day": 1,
+      "theme": "argent",
+      "text": "Autour des jeux d'argent, qu'est-ce que votre position vous permet de protéger d'essentiel dans votre vie ?",
+      "textEn": "When it comes to gambling, what does your stance help you protect that really matters in your life?",
+      "evidence": [
+        "E1"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "argent",
+      "text": "Selon vous, quelle règle autour des jeux d'argent protège le mieux la confiance dans un foyer ?",
+      "textEn": "In your view, what rule around gambling best protects trust within a household?",
+      "evidence": [
+        "E1"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "intimite",
+      "text": "Que veut dire, très concrètement, « être affectueux » pour vous ?",
+      "textEn": "What does being affectionate actually look like for you, in everyday terms?",
+      "evidence": [
+        "E4"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "intimite",
+      "text": "Qu'est-ce que votre façon de donner ou de recevoir de l'affection vous permet de protéger ?",
+      "textEn": "What does your way of giving or receiving affection help you protect?",
+      "evidence": [
+        "E4"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 1,
+      "theme": "famille",
+      "text": "Qu'est-ce que des visites familiales plutôt rares vous permettent de protéger dans un couple ?",
+      "textEn": "What do fairly rare family visits help you protect in a relationship?",
+      "evidence": [
+        "E16"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "famille",
+      "text": "Que veut dire, très concrètement, une dot « symbolique » pour vous ?",
+      "textEn": "What would a symbolic dowry actually mean to you, in concrete terms?",
+      "evidence": [
+        "E18"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "spiritualite",
+      "text": "Dans votre vie de tous les jours, qu'est-ce que votre rapport à la foi ou à vos convictions vous aide à protéger ?",
+      "textEn": "In your everyday life, what does your relationship with faith or your convictions help you protect?",
+      "evidence": [
+        "E27",
+        "E28"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "spiritualite",
+      "text": "Que veut dire, très concrètement, un mariage « vraiment accompli » pour vous ?",
+      "textEn": "What does a truly complete marriage mean to you, in concrete terms?",
+      "evidence": [
+        "E29"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "projet",
+      "text": "Qu'est-ce que le rythme que vous souhaitez avant un engagement vous permet de protéger ?",
+      "textEn": "What does the pace you'd like before committing help you protect?",
+      "evidence": [
+        "E25"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 1,
+      "theme": "lieu",
+      "text": "Qu'est-ce qu'un lieu de vie doit absolument préserver pour que vous vous y sentiez chez vous ?",
+      "textEn": "What must a place to live absolutely preserve for you to feel at home there?",
+      "evidence": [
+        "N-lieu"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "argent",
+      "text": "Qui, dans votre entourage, a le plus façonné votre regard sur les jeux d'argent ?",
+      "textEn": "Who in your life has most shaped the way you see gambling?",
+      "evidence": [
+        "E1"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "argent",
+      "text": "Dans votre famille, quelle idée de l'argent gagné ou de l'argent risqué vous a-t-on transmise ?",
+      "textEn": "Growing up, what ideas about earning money, or risking it, were passed on to you?",
+      "evidence": [
+        "E1"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "intimite",
+      "text": "Enfant, quels gestes ou quels mots de vos proches vous faisaient sentir aimé(e) ?",
+      "textEn": "As a child, what gestures or words from the people close to you made you feel loved?",
+      "evidence": [
+        "E4"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 2,
+      "theme": "famille",
+      "text": "Dans la maison où vous avez grandi, qu'avez-vous aimé dans la façon dont chacun trouvait sa place ?",
+      "textEn": "In the home you grew up in, what did you appreciate about the way everyone found their place?",
+      "evidence": [
+        "E32"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 2,
+      "theme": "spiritualite",
+      "text": "Qui vous a transmis votre rapport à la foi ou à vos convictions, et de quelle manière ?",
+      "textEn": "Who passed on your relationship with faith or your convictions, and how did they do it?",
+      "evidence": [
+        "E27"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 2,
+      "theme": "projet",
+      "text": "Dans votre famille, comment savait-on qu'un couple était prêt à s'engager ?",
+      "textEn": "In your family, how could people tell that a couple was ready to commit?",
+      "evidence": [
+        "E25"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 2,
+      "theme": "projet",
+      "text": "Comment un proche qui vous connaît bien décrirait-il votre façon de prendre une grande décision ?",
+      "textEn": "How would someone who knows you well describe the way you make a big decision?",
+      "evidence": [
+        "N-projet"
+      ],
+      "claim": "neutre"
+    },
+    {
+      "day": 2,
+      "theme": "lieu",
+      "text": "Dans votre famille, quelle idée avait-on du fait de partir vivre ailleurs ?",
+      "textEn": "In your family, how was moving away to live somewhere else seen?",
+      "evidence": [
+        "E13"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 3,
+      "theme": "argent",
+      "text": "Sur les jeux d'argent, qu'auriez-vous besoin de savoir de l'autre avant de vous engager ?",
+      "textEn": "When it comes to gambling, what would you need to know about the other person before committing?",
+      "evidence": [
+        "E1"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "argent",
+      "text": "Avant un engagement, sur quoi tiendriez-vous à être parfaitement clair(e) au sujet des jeux d'argent ?",
+      "textEn": "Before any commitment, what would you want to be completely clear about regarding gambling?",
+      "evidence": [
+        "E1"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "intimite",
+      "text": "Dans une vie à deux, comment aimeriez-vous pouvoir dire oui ou non à un geste tendre, en restant respecté(e) ?",
+      "textEn": "In a life together, how would you like to be able to say yes or no to an affectionate gesture and still feel respected?",
+      "evidence": [
+        "E4"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "intimite",
+      "text": "Imaginez un soir ordinaire, dans trois ans : à quel petit signe verriez-vous que l'affection a trouvé sa juste place dans votre vie à deux ?",
+      "textEn": "Picture an ordinary evening three years from now: what small sign would tell you affection has found its right place in your life together?",
+      "evidence": [
+        "E4"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "projet",
+      "text": "Qu'aimeriez-vous que l'autre sache de votre position sur le tabac avant un engagement ?",
+      "textEn": "What would you want the other person to know about your stance on smoking before any commitment?",
+      "evidence": [
+        "E8"
+      ],
+      "claim": "ecart"
+    },
+    {
+      "day": 3,
+      "theme": "famille",
+      "text": "Sur la question des enfants, qu'auriez-vous besoin de savoir de l'autre pour y voir plus clair ?",
+      "textEn": "On the question of children, what would you need to know about the other person to see things more clearly?",
+      "evidence": [
+        "E14"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 3,
+      "theme": "famille",
+      "text": "Imaginez un dimanche ordinaire, dans trois ans, où couple et famille trouvent chacun leur place : à quel petit signe le verriez-vous ?",
+      "textEn": "Picture an ordinary Sunday three years from now, where both your relationship and your family have their place: what small sign would show it?",
+      "evidence": [
+        "E34"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 3,
+      "theme": "spiritualite",
+      "text": "Imaginez une semaine ordinaire, dans trois ans : quelle place aimeriez-vous que la foi ou vos convictions y tiennent ?",
+      "textEn": "Picture an ordinary week three years from now: what place would you like faith or your convictions to have in it?",
+      "evidence": [
+        "E27",
+        "E28"
+      ],
+      "claim": "accord"
+    },
+    {
+      "day": 3,
+      "theme": "spiritualite",
+      "text": "Avant de vous engager, qu'aimeriez-vous savoir de la façon dont l'autre imagine les cérémonies du mariage ?",
+      "textEn": "Before committing, what would you like to know about how the other person pictures the wedding ceremonies?",
+      "evidence": [
+        "E29"
+      ],
+      "claim": "accord"
+    }
+  ],
+  "rejected": [
+    {
+      "text": "Que veut dire, très concrètement, un projet de vie « solide » pour vous ?",
+      "textEn": "What does a solid life plan actually mean to you, in concrete terms?",
+      "reasons": [
+        "P7 reprend la réponse d’un membre"
+      ]
+    },
+    {
+      "text": "Comment un proche qui vous connaît bien décrirait-il votre façon d'exprimer votre attachement ?",
+      "textEn": "How would someone who knows you well describe the way you show you care about someone?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre attachement »)"
+      ]
+    },
+    {
+      "text": "D'où vous vient votre attachement au dialogue dans l'éducation des enfants ?",
+      "textEn": "Where does your belief in dialogue when raising children come from?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre attachement »)"
+      ]
+    },
+    {
+      "text": "Qu'est-ce qui a façonné la façon dont vous vivez aujourd'hui votre foi ou vos convictions au quotidien ?",
+      "textEn": "What has shaped the way you live your faith or convictions day to day?",
+      "reasons": [
+        "P14 fait de vie présupposé (verbe « vivez »)"
+      ]
+    },
+    {
+      "text": "Qu'est-ce qui, dans votre parcours, vous a appris ce qui fait d'un endroit un vrai foyer ?",
+      "textEn": "What in your life taught you what turns a place into a real home?",
+      "reasons": [
+        "P13 possessif non autorisé (« votre parcours »)"
+      ]
+    },
+    {
+      "text": "Avant de vous engager, qu'auriez-vous besoin de savoir sur ce qu'un engagement officiel représente pour l'autre ?",
+      "textEn": "Before committing, what would you need to know about what an official commitment means to the other person?",
+      "reasons": [
+        "P7 reprend la réponse d’un membre"
+      ]
+    },
+    {
+      "text": "Avant de déménager pour quelqu'un, qu'auriez-vous besoin de savoir pour sentir que le projet est solide ?",
+      "textEn": "Before moving for someone, what would you need to know to feel the plan is solid?",
+      "reasons": [
+        "P7 reprend la réponse d’un membre"
+      ]
+    },
+    {
+      "text": "Imaginez un matin ordinaire, dans trois ans, dans un lieu où vous vous sentez bien à deux : quel petit détail le montrerait ?",
+      "textEn": "Picture an ordinary morning three years from now, somewhere you both feel good: what small detail would show it?",
+      "reasons": [
+        "EN4 affirme un accord (réservé aux gabarits)"
+      ]
+    }
+  ],
+  "formRejected": [
+    "De 0 à 10, combien la vie commune avant le mariage touche-t-elle vos valeurs ? Qu'est-ce qui explique ce chiffre ?"
+  ]
+}

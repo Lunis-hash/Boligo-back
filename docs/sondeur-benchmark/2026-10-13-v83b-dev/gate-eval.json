@@ -1,0 +1,702 @@
+[
+  {
+    "split": "dev3",
+    "chain": "contrôle seul",
+    "faulty": 159,
+    "valid": 92,
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0.5652173913043478,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "fake_gap": {
+        "n": 13,
+        "rejected": 13
+      },
+      "wrong_partner_position": {
+        "n": 11,
+        "rejected": 11
+      },
+      "presupposition": {
+        "n": 12,
+        "rejected": 12
+      },
+      "off_frame": {
+        "n": 10,
+        "rejected": 10
+      },
+      "invented_fact": {
+        "n": 11,
+        "rejected": 11
+      },
+      "safety_violence": {
+        "n": 11,
+        "rejected": 11
+      },
+      "en_mismatch": {
+        "n": 12,
+        "rejected": 12
+      },
+      "jargon_diagnosis": {
+        "n": 11,
+        "rejected": 11
+      },
+      "intrusive": {
+        "n": 11,
+        "rejected": 11
+      },
+      "two_ideas": {
+        "n": 11,
+        "rejected": 11
+      },
+      "one_sided_effort": {
+        "n": 11,
+        "rejected": 11
+      },
+      "answer_leak": {
+        "n": 12,
+        "rejected": 12
+      },
+      "unrelated_slot": {
+        "n": 12,
+        "rejected": 12
+      },
+      "moralizing": {
+        "n": 11,
+        "rejected": 11
+      }
+    },
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "D005",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D008",
+        "text": "Concrètement, comment organiseriez-vous le budget commun au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D010",
+        "text": "Si la pratique du pari ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D015",
+        "text": "Si la place des moments en solo ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D018",
+        "text": "Quelle place laisseriez-vous aux pratiques de foi des enfants dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D021",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur l'alcool ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D039",
+        "text": "Concrètement, comment organiseriez-vous les pauses cigarette au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D045",
+        "text": "Si l'un de vous ne souhaitait pas d'enfant, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D048",
+        "text": "Si la question de la foi des enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D049",
+        "text": "Qu'auriez-vous besoin de savoir sur la place de l'alcool au quotidien avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D053",
+        "text": "Qu'auriez-vous besoin de savoir sur le soutien en cas de chômage avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D054",
+        "text": "Si l'un de vous se retrouvait sans travail, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D062",
+        "text": "Quelle place laisseriez-vous aux paris sportifs dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D065",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le désir d'enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D071",
+        "text": "Si le désir d'enfants de chacun ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D086",
+        "text": "Quelle place laisseriez-vous à des enfants d'une précédente union dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D089",
+        "text": "Concrètement, comment organiseriez-vous les soirées de poker au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D107",
+        "text": "Si l'un de vous voyait sa famille désapprouver la relation, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D116",
+        "text": "Si l'un de vous hébergeait ses enfants la moitié du mois, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D123",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'alcool ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D162",
+        "text": "Si la position de chacun sur les enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D163",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'avis de la famille ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D164",
+        "text": "Si la place du tabac ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D169",
+        "text": "Qu'auriez-vous besoin de savoir sur le désir d'enfants avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D173",
+        "text": "Qu'auriez-vous besoin de savoir sur le rapport à l'argent avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D177",
+        "text": "Si l'un de vous souhaitait devenir parent, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D181",
+        "text": "Si la façon de gérer l'argent ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D183",
+        "text": "Si vos positions sur le poids de l'avis familial ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "D185",
+        "text": "Si l'un de vous accueillait ses enfants plusieurs jours par semaine, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D198",
+        "text": "Si l'un de vous passait ses soirées en solo, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D201",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la parentalité ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D203",
+        "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous à l'accueil d'enfants d'une première union ?",
+        "gate": [
+          "F13 cadre C12 hors des thèmes de l'écart cité"
+        ]
+      },
+      {
+        "id": "D206",
+        "text": "Si l'organisation de la garde ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D207",
+        "text": "Qu'auriez-vous besoin de savoir sur l'accueil d'enfants d'une précédente union avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D216",
+        "text": "Quelle place laisseriez-vous à l'espace personnel dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D225",
+        "text": "Si l'un de vous devait changer de ville, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D226",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la foi dans la vie des enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D230",
+        "text": "Quelle place laisseriez-vous à l'apéritif dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D244",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur un déménagement ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D246",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "dev3",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 159,
+    "valid": 92,
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0.5652173913043478,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "fake_gap": {
+        "n": 13,
+        "rejected": 13
+      },
+      "wrong_partner_position": {
+        "n": 11,
+        "rejected": 11
+      },
+      "presupposition": {
+        "n": 12,
+        "rejected": 12
+      },
+      "off_frame": {
+        "n": 10,
+        "rejected": 10
+      },
+      "invented_fact": {
+        "n": 11,
+        "rejected": 11
+      },
+      "safety_violence": {
+        "n": 11,
+        "rejected": 11
+      },
+      "en_mismatch": {
+        "n": 12,
+        "rejected": 12
+      },
+      "jargon_diagnosis": {
+        "n": 11,
+        "rejected": 11
+      },
+      "intrusive": {
+        "n": 11,
+        "rejected": 11
+      },
+      "two_ideas": {
+        "n": 11,
+        "rejected": 11
+      },
+      "one_sided_effort": {
+        "n": 11,
+        "rejected": 11
+      },
+      "answer_leak": {
+        "n": 12,
+        "rejected": 12
+      },
+      "unrelated_slot": {
+        "n": 12,
+        "rejected": 12
+      },
+      "moralizing": {
+        "n": 11,
+        "rejected": 11
+      }
+    },
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "D005",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D008",
+        "text": "Concrètement, comment organiseriez-vous le budget commun au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D010",
+        "text": "Si la pratique du pari ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D015",
+        "text": "Si la place des moments en solo ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D018",
+        "text": "Quelle place laisseriez-vous aux pratiques de foi des enfants dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D021",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur l'alcool ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D039",
+        "text": "Concrètement, comment organiseriez-vous les pauses cigarette au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D045",
+        "text": "Si l'un de vous ne souhaitait pas d'enfant, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D048",
+        "text": "Si la question de la foi des enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D049",
+        "text": "Qu'auriez-vous besoin de savoir sur la place de l'alcool au quotidien avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D053",
+        "text": "Qu'auriez-vous besoin de savoir sur le soutien en cas de chômage avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D054",
+        "text": "Si l'un de vous se retrouvait sans travail, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D062",
+        "text": "Quelle place laisseriez-vous aux paris sportifs dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D065",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le désir d'enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D071",
+        "text": "Si le désir d'enfants de chacun ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D086",
+        "text": "Quelle place laisseriez-vous à des enfants d'une précédente union dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D089",
+        "text": "Concrètement, comment organiseriez-vous les soirées de poker au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D107",
+        "text": "Si l'un de vous voyait sa famille désapprouver la relation, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D116",
+        "text": "Si l'un de vous hébergeait ses enfants la moitié du mois, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D123",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'alcool ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D162",
+        "text": "Si la position de chacun sur les enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D163",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'avis de la famille ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D164",
+        "text": "Si la place du tabac ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D169",
+        "text": "Qu'auriez-vous besoin de savoir sur le désir d'enfants avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D173",
+        "text": "Qu'auriez-vous besoin de savoir sur le rapport à l'argent avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D177",
+        "text": "Si l'un de vous souhaitait devenir parent, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D181",
+        "text": "Si la façon de gérer l'argent ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D183",
+        "text": "Si vos positions sur le poids de l'avis familial ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "D185",
+        "text": "Si l'un de vous accueillait ses enfants plusieurs jours par semaine, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D198",
+        "text": "Si l'un de vous passait ses soirées en solo, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D201",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la parentalité ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D203",
+        "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous à l'accueil d'enfants d'une première union ?",
+        "gate": [
+          "F13 cadre C12 hors des thèmes de l'écart cité"
+        ]
+      },
+      {
+        "id": "D206",
+        "text": "Si l'organisation de la garde ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D207",
+        "text": "Qu'auriez-vous besoin de savoir sur l'accueil d'enfants d'une précédente union avant de vous engager ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D216",
+        "text": "Quelle place laisseriez-vous à l'espace personnel dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D225",
+        "text": "Si l'un de vous devait changer de ville, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D226",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la foi dans la vie des enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D230",
+        "text": "Quelle place laisseriez-vous à l'apéritif dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D244",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur un déménagement ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "D246",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      }
+    ]
+  }
+]

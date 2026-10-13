@@ -213,3 +213,27 @@ describe('Filtres non négociables du Module 0', () => {
     ).toBe(false);
   });
 });
+
+describe('V8.2 — plage d’âges acceptée (V82_M0_02)', () => {
+  const at = (age: number, range?: string): FilterSubject => ({
+    age,
+    city: 'Paris, France',
+    answers: { M0_Q02: 'D', ...(range ? { V82_M0_02: range } : {}) },
+  });
+
+  it('remplace la limite fixe de ±5 ans : la plage déclarée filtre, dans les deux sens', () => {
+    // 30 ans, accepte de 28 à 45 ans : un candidat de 41 ans passe (V7 : refusé).
+    expect(acceptsCandidate(at(30, '28-45'), at(41, '30-45'))).toBe(true);
+    expect(mutuallyAccepted(at(30, '28-45'), at(41, '30-45'))).toBe(true);
+    // Le candidat n'accepte pas 30 ans : refus réciproque.
+    expect(mutuallyAccepted(at(30, '28-45'), at(41, '35-45'))).toBe(false);
+    expect(acceptsCandidate(at(30, '28-45'), at(27))).toBe(false);
+  });
+
+  it('pré-filtre de la requête : englobe la plage acceptée', () => {
+    const now = new Date('2026-10-11');
+    const b = birthDateBounds(30, undefined, now, '28-45')!;
+    expect(b.gte!.getFullYear()).toBe(2026 - 47);
+    expect(b.lte!.getFullYear()).toBe(2026 - 27);
+  });
+});

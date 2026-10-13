@@ -1,0 +1,5447 @@
+[
+  {
+    "id": "D001",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E5"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'envie de fonder une famille ?",
+    "textEn": "What would the other person need to know about you regarding the wish to start a family?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E5 (Le désir d'enfants) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D002",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si le désir d'enfants de l'autre restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+    "textEn": "If the other person's wish for children remained an open question between you, for how many years could you accept it?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « le désir d'enfants de l'autre » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« the other »)"
+    ]
+  },
+  {
+    "id": "D003",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C05",
+    "text": "Si l'un de vous fumait dans le logement, pendant combien de semaines pourriez-vous tenir ainsi ?",
+    "textEn": "If one of you smoked inside the home, for how many weeks could you carry on like that?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C05 exact, cases neutres liées à l'écart E2 (Tabac), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D004",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le besoin constant de s'isoler ?",
+    "textEn": "What would the other person need to know about you regarding the constant need to withdraw?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « le besoin constant de s'isoler » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D005",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+    "textEn": "How far would you go to find common ground on parenthood?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C03 exact, cases neutres liées à l'écart E1 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": false,
+    "gateReasons": [
+      "P8 règles de forme existantes"
+    ]
+  },
+  {
+    "id": "D006",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C05",
+    "text": "Si l'un de vous recevait ses enfants chaque week-end, pendant combien d'années pourriez-vous tenir ainsi ?",
+    "textEn": "If one of you had their children every weekend, for how many years could you carry on like that?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C05 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D007",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "lieu",
+    "evidence": [
+      "E3"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour déménager pour vivre ensemble ?",
+    "textEn": "How far would you go to move to live together?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E3 (Déménager pour le couple) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D008",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous le budget commun au quotidien ?",
+    "textEn": "In practical terms, how would you organise a shared budget day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C18 exact, cases neutres liées à l'écart E1 (Épargne et dépenses), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D009",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Qu'est-ce que l'argent représente pour vous ?",
+    "textEn": "What does money mean to you?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : question libre hors cadre.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D010",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la pratique du pari ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If betting never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E1 (Jeux d'argent), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D011",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous aux dettes de jeu du couple ?",
+    "textEn": "Out of €2,000 a month for the two of you, what share would you put toward the couple's gambling debts?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « les dettes de jeu du couple » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »",
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D012",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si le souhait d'avoir des enfants ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If the wish to have children never changed for one of you, could you live with it for years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C02 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D013",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Si l'un de vous perdait son emploi, comment réagiriez-vous ?",
+    "textEn": "If one of you lost their job, how would you react?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : texte fixe de C06 modifié.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D014",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E8"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous l'argent du couple au quotidien ?",
+    "textEn": "In practical terms, how would you organise the couple's money day to day?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E8 (L'organisation de l'argent du couple) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D015",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la place des moments en solo ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the place of time alone never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E2 (Le temps à soi dans le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D016",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous le contrôle des dépenses de chacun au quotidien ?",
+    "textEn": "In practical terms, how would you organise controlling each other's spending day to day?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « le contrôle des dépenses de chacun » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case sur la sécurité (cris, coups, menace, contrôle) — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D017",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur la ville que votre partenaire refuse de quitter avant de vous engager ?",
+    "textEn": "What would you need to know about the city your partner refuses to leave before committing?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « la ville que votre partenaire refuse de quitter » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+    ]
+  },
+  {
+    "id": "D018",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous aux pratiques de foi des enfants dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for children's faith practices in an ordinary week together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C11 exact, cases neutres liées à l'écart E2 (Religion des enfants), sans reprise des réponses ni attribution. Sujet sensible : aucune position supposée.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D019",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si la transmission d'une foi restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+    "textEn": "If passing on a faith remained an open question between you, for how many years could you accept it?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C16 exact, cases neutres liées à l'écart E2 (Religion des enfants), sans reprise des réponses ni attribution. Sujet sensible : aucune position supposée.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D020",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous l'habitude de fumer encore au quotidien ?",
+    "textEn": "In practical terms, how would you organise still smoking day to day?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « l'habitude de fumer encore » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« habitude »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« still »)"
+    ]
+  },
+  {
+    "id": "D021",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur l'alcool ?",
+    "textEn": "How far would you go to find common ground on alcohol?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C03 exact, cases neutres liées à l'écart E2 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": false,
+    "gateReasons": [
+      "P8 règles de forme existantes"
+    ]
+  },
+  {
+    "id": "D022",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour le crédit immobilier en cours dans une vie à deux ?",
+    "textEn": "What limit would you set for the current mortgage in a life together?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « le crédit immobilier en cours » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D023",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur les trois enfants d'une précédente union avant de vous engager ?",
+    "textEn": "What would you need to know about the three children from a previous relationship before committing?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « les trois enfants d'une précédente union » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »"
+    ]
+  },
+  {
+    "id": "D024",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien d'années pourriez-vous vivre sereinement avec une question des enfants non tranchée ?",
+    "textEn": "For how many years could you live calmly with an unsettled question about children?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C15 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D025",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec une famille qui désapprouve ?",
+    "textEn": "For how many months could you live calmly with a supportive family?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; la case anglaise inverse le sens (supportive).",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D026",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'ambivalence parentale ?",
+    "textEn": "What would the other person need to know about you regarding parental ambivalence?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « l'ambivalence parentale » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D027",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec le tabagisme chronique ?",
+    "textEn": "For how many months could you live calmly with chronic tobacco use?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « le tabagisme chronique » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D028",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si la position sur la parentalité ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If the stance on parenthood never changed for one of you, could you live with it for years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C02 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D029",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 1 000 € par mois à deux, quelle part consacreriez-vous aux frais médicaux ?",
+    "textEn": "Out of €1,000 a month for the two of you, what share would you put toward medical bills?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « les frais médicaux » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D030",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant un projet de parentalité ?",
+    "textEn": "What could you not accept regarding a plan for parenthood?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D031",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la foi et la politique ?",
+    "textEn": "What would the other person need to know about you regarding faith and politics?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « la foi et la politique » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D032",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour les sacrifices pour accueillir des enfants qui ne sont pas les siens dans une vie à deux ?",
+    "textEn": "What limit would you set for sacrifices to host children who are not one's own in a life together?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « les sacrifices pour accueillir des enfants qui ne sont pas les siens » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « objet »"
+    ]
+  },
+  {
+    "id": "D033",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E4"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si le désir d'enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the wish for children never changed, what life together would you picture in five years?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E4 (Le désir d'enfants) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D034",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour le tabac au quotidien, à partir de combien de cigarettes par jour ce serait trop pour vous ?",
+    "textEn": "For everyday smoking, how many cigarettes a day would be too much for you?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C08 exact, cases neutres liées à l'écart E2 (Tabac), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D035",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Quelle place laisseriez-vous aux moments en solo dans un mois ordinaire à deux ?",
+    "textEn": "How much room would you leave for time alone in an ordinary month together?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : texte fixe de C11 modifié (mois au lieu de semaine).",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D036",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à des paris chaque semaine dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for weekly bets in an ordinary week together?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « des paris chaque semaine » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D037",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E3"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur un changement de ville avant de vous engager ?",
+    "textEn": "What would you need to know about a change of city before committing?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E3 (Déménager pour le couple) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D038",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour le tabac au foyer, à partir de combien de cigarettes par jour ce serait trop pour vous ?",
+    "textEn": "For smoking at home, how many cigarettes a week would be too much for you?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; l'anglais dit « a week » au lieu de « a day ».",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « periode » différente entre le français et l'anglais"
+    ]
+  },
+  {
+    "id": "D039",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous les pauses cigarette au quotidien ?",
+    "textEn": "In practical terms, how would you organise cigarette breaks day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C18 exact, cases neutres liées à l'écart E2 (Tabac), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D040",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 3 000 € par mois à deux, quelle part consacreriez-vous à une réserve en cas de chômage ?",
+    "textEn": "Out of €3,000 a month for the two of you, what share would you put toward a reserve in case of unemployment?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C12 exact, cases neutres liées à l'écart E1 (Le soutien quand l'autre perd son emploi), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D041",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant la décoration du logement ?",
+    "textEn": "What could you not accept regarding home decor?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « la décoration du logement » est sans lien avec l'écart E2 (Désir d'enfants).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D042",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur le salaire exact avant de vous engager ?",
+    "textEn": "What would you need to know about the exact salary before committing?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « le salaire exact » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case intrusive (revenu, banque, patrimoine) — « objet »",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D043",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Combien de verres par semaine pourriez-vous supporter avec l'alcool à la maison ?",
+    "textEn": "How many drinks a week of alcohol at home could you really live with?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : texte fixe de C01 modifié (« supporter » au lieu de « réellement vivre »).",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D044",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de fois par mois pourriez-vous réellement vivre avec les jeux d'argent ?",
+    "textEn": "How many times a month of gambling could you really live with?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C01 exact, cases neutres liées à l'écart E1 (Jeux d'argent), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D045",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous ne souhaitait pas d'enfant, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you did not want children, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E1 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D046",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à la brouille avec la belle-mère dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for the falling-out with the mother-in-law in an ordinary week together?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « la brouille avec la belle-mère » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »"
+    ]
+  },
+  {
+    "id": "D047",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si la peur de devenir parent ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If the fear of becoming a parent never changed for one of you, could you live with it for years?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « la peur de devenir parent » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« peur »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« fear »)"
+    ]
+  },
+  {
+    "id": "D048",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la question de la foi des enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the question of the children's faith never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E2 (Religion des enfants), sans reprise des réponses ni attribution. Sujet sensible : aucune position supposée.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D049",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur la place de l'alcool au quotidien avant de vous engager ?",
+    "textEn": "What would you need to know about the place of alcohol in daily life before committing?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C09 exact, cases neutres liées à l'écart E2 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D050",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si l'agressivité sous l'effet de l'alcool ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If aggression under the influence never changed for one of you, could you live with it for years?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « l'agressivité sous l'effet de l'alcool » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D051",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous la recherche d'emploi de celui qui est sans travail au quotidien ?",
+    "textEn": "In practical terms, how would you organise the job search of whoever is out of work day to day?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « la recherche d'emploi de celui qui est sans travail » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « objet »"
+    ]
+  },
+  {
+    "id": "D052",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C19",
+    "text": "Combien de soirs par mois vous sembleraient un maximum pour les apéritifs entre amis ?",
+    "textEn": "How many evenings a month would feel like the most you could accept for drinks with friends?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C19 exact, cases neutres liées à l'écart E1 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D053",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur le soutien en cas de chômage avant de vous engager ?",
+    "textEn": "What would you need to know about support during unemployment before committing?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C09 exact, cases neutres liées à l'écart E1 (Le soutien quand l'autre perd son emploi), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D054",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous se retrouvait sans travail, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you found themselves out of work, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E1 (Le soutien quand l'autre perd son emploi), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D055",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur les enfants et le mariage avant de vous engager ?",
+    "textEn": "What would you need to know about children and marriage before committing?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « les enfants et le mariage » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D056",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si l'organisation de la garde restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+    "textEn": "If the custody arrangement remained an open question between you, for how many months could you accept it?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C16 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D057",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour les sorties au restaurant dans une vie à deux ?",
+    "textEn": "What limit would you set for restaurant outings in a life together?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « les sorties au restaurant » est sans lien avec l'écart E1 (Le soutien quand l'autre perd son emploi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D058",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour les paris et les jeux vidéo, à partir de combien d'heures par semaine ce serait trop pour vous ?",
+    "textEn": "For betting and video games, how many hours a week would be too much for you?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « les paris et les jeux vidéo » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D059",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur le refus d'enfants de votre partenaire ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on your partner's refusal to have children never moved, could you still commit?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « le refus d'enfants de votre partenaire » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+    ]
+  },
+  {
+    "id": "D060",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le devoir sacré d'être parent ?",
+    "textEn": "What would the other person need to know about you regarding the sacred duty of parenthood?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « le devoir sacré d'être parent » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D061",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur la transmission des croyances ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on passing on beliefs never moved, could you still commit?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C10 exact, cases neutres liées à l'écart E2 (Religion des enfants), sans reprise des réponses ni attribution. Sujet sensible : aucune position supposée.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D062",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous aux paris sportifs dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for sports betting in an ordinary week together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C11 exact, cases neutres liées à l'écart E1 (Jeux d'argent), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D063",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur l'épargne et les vacances avant de vous engager ?",
+    "textEn": "What would you need to know about savings and holidays before committing?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « l'épargne et les vacances » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D064",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la mutation prévue à Lyon ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the planned transfer to Lyon never changed, what life together would you picture in five years?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « la mutation prévue à Lyon » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D065",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le désir d'enfants ?",
+    "textEn": "What would the other person need to know about you regarding the wish for children?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C17 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D066",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C19",
+    "text": "Combien de fois par mois vous sembleraient un maximum pour les sorties payantes ?",
+    "textEn": "How many times a month would feel like the most you could accept for paid outings?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C19 exact, cases neutres liées à l'écart E1 (Épargne et dépenses), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D067",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous le montant de la pension alimentaire au quotidien ?",
+    "textEn": "In practical terms, how would you organise the child support amount day to day?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « le montant de la pension alimentaire » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D068",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec des enfants d'une première union au foyer ?",
+    "textEn": "For how many months could you live calmly with children from a first relationship in the home?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C15 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D069",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si le gaspillage ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If wastefulness never changed for one of you, could you live with it for years?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « le gaspillage » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D070",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C13",
+    "text": "Si l'un de vous devenait violent après avoir bu, qu'est-ce qui vous permettrait de rester ?",
+    "textEn": "If one of you became violent after drinking, what would allow you to stay?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « devenait violent après avoir bu » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « action » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D071",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si le désir d'enfants de chacun ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If each person's wish for children never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D072",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si une famille qui ne respecte rien restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+    "textEn": "If a family that respects nothing remained an open question between you, for how many months could you accept it?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « une famille qui ne respecte rien » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D073",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour l'accueil d'enfants d'une première union dans une vie à deux ?",
+    "textEn": "What limit would you set for hosting children from a first relationship in a life together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C14 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D074",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous aux vacances d'été ?",
+    "textEn": "Out of €2,000 a month for the two of you, what share would you put toward summer holidays?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « les vacances d'été » est sans lien avec l'écart E1 (Accueillir les enfants de l'autre).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D075",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si une ludopathie ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If gambling disorder never changed for one of you, could you live with it for years?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « une ludopathie » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »",
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D076",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous le baptême prévu des enfants au quotidien ?",
+    "textEn": "In practical terms, how would you organise the children's planned baptism day to day?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « le baptême prévu des enfants » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »"
+    ]
+  },
+  {
+    "id": "D077",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour arrêter de fumer pour le couple ?",
+    "textEn": "How far would you go to quit smoking for the relationship?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « arrêter de fumer pour le couple » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « infinitif »"
+    ]
+  },
+  {
+    "id": "D078",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour ces excès d'alcool, à partir de combien de verres par semaine ce serait trop pour vous ?",
+    "textEn": "For these drinking excesses, how many drinks a week would be too much for you?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « ces excès d'alcool » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D079",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70462",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans le projet d'adoption en cours ?",
+    "textEn": "What could you not accept in the adoption under way?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « le projet d'adoption en cours » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D080",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C13",
+    "text": "Si l'un de vous renonçait à devenir parent, qu'est-ce qui vous permettrait de rester ?",
+    "textEn": "If one of you gave up on becoming a parent, what would allow you to stay?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « renonçait à devenir parent » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « action »"
+    ]
+  },
+  {
+    "id": "D081",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Que ressentez-vous quand quelqu'un fume près de vous ?",
+    "textEn": "How do you feel when someone smokes near you?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : question libre hors cadre.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D082",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur les enfants ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on having children never moved, could you still commit?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C10 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D083",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous les tâches ménagères au quotidien ?",
+    "textEn": "In practical terms, how would you organise household chores day to day?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « les tâches ménagères » est sans lien avec l'écart E2 (Alcool).",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D084",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C19",
+    "text": "Combien de verres par jour vous sembleraient un maximum pour l'alcool au quotidien ?",
+    "textEn": "How many evenings a day would feel like the most you could accept for alcohol in everyday life?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; unité différente en anglais (evenings au lieu de drinks).",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « unite » différente entre le français et l'anglais"
+    ]
+  },
+  {
+    "id": "D085",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C07",
+    "text": "Combien de mois pourriez-vous attendre avant de trancher le déménagement et le mariage ?",
+    "textEn": "How many months could you wait before settling moving and marriage?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « le déménagement et le mariage » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D086",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à des enfants d'une précédente union dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for children from a previous relationship in an ordinary week together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C11 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D087",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant un conflit de loyauté chez les enfants ?",
+    "textEn": "What could you not accept regarding the children's loyalty conflict?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « un conflit de loyauté chez les enfants » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D088",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le choix des vacances ?",
+    "textEn": "What would the other person need to know about you regarding holiday plans?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « le choix des vacances » est sans lien avec l'écart E2 (Désir d'enfants).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D089",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous les soirées de poker au quotidien ?",
+    "textEn": "In practical terms, how would you organise poker nights day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C18 exact, cases neutres liées à l'écart E1 (Jeux d'argent), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D090",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de soirs par semaine pourriez-vous réellement vivre avec des soirées séparées ?",
+    "textEn": "How many evenings a week of separate evenings could you really live with?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C01 exact, cases neutres liées à l'écart E2 (Le temps à soi dans le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D091",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans un accueil qui ne serait pas à plein temps ?",
+    "textEn": "What could you not accept in hosting that would not be full time?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « un accueil qui ne serait pas à plein temps » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases anglaises sans lien avec l’écart cité",
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D092",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C13",
+    "text": "Si l'un de vous accueillait ses enfants au foyer, qu'est-ce qui vous permettrait de rester ?",
+    "textEn": "If one of you had their children living in the home, what would allow you to stay?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C13 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D093",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur la réticence déjà présente face aux enfants d'une autre union avant de vous engager ?",
+    "textEn": "What would you need to know about the reluctance already felt about children from another relationship before committing?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « la réticence déjà présente face aux enfants d'une autre union » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« déjà »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« already »)"
+    ]
+  },
+  {
+    "id": "D094",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour l'alcool à la maison, à partir de combien de verres par semaine ce serait trop pour vous ?",
+    "textEn": "For alcohol at home, how many drinks a week would be too much for you?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C08 exact, cases neutres liées à l'écart E1 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D095",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant la cigarette à la maison ?",
+    "textEn": "What could you not accept regarding cigarettes at home?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E2 (Tabac), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D096",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Si vous deviez fixer une règle sur les jeux d'argent, laquelle serait-ce ?",
+    "textEn": "If you had to set one rule about gambling, what would it be?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : question libre hors cadre.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D097",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour une dépendance financière prolongée dans une vie à deux ?",
+    "textEn": "What limit would you set for prolonged financial dependence in a life together?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « une dépendance financière prolongée » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« dépendance »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« dependence »)",
+      "F8 cases sans lien avec l’écart cité",
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D098",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous changeait de ville, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you moved to another city, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « changeait de ville » est sans lien avec l'écart E1 (Épargne et dépenses).",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D099",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si le lieu où s'installer restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+    "textEn": "How many months could you wait before settling the place to live?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; l'anglais utilise le cadre C07.",
+    "gateOk": false,
+    "gateReasons": [
+      "F2 version anglaise hors du cadre C16"
+    ]
+  },
+  {
+    "id": "D100",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si l'approbation des familles restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+    "textEn": "If family approval remained an open question between you, for how many months could you accept it?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C16 exact, cases neutres liées à l'écart E2 (Décider face à une famille qui désapprouve), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D101",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous haussait le ton sur les enfants, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you shouted at the children, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « haussait le ton sur les enfants » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case sur la sécurité (cris, coups, menace, contrôle) — « action »"
+    ]
+  },
+  {
+    "id": "D102",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous au sport dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for sport in an ordinary week together?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « le sport » est sans lien avec l'écart E2 (Désir d'enfants).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D103",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour vous retenir de parier ?",
+    "textEn": "How far would you go to stop yourself from betting?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « vous retenir de parier » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "P26 effort à sens unique (ne vaut que pour l’un des deux)"
+    ]
+  },
+  {
+    "id": "D104",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour vous installer dans une nouvelle ville à deux ?",
+    "textEn": "How far would you go to settle in a new city together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C03 exact, cases neutres liées à l'écart E1 (Déménager pour le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D105",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C07",
+    "text": "Combien de semaines pourriez-vous attendre avant de trancher la question des enfants ?",
+    "textEn": "How many years could you wait before settling the question of children?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; durée différente en anglais (years au lieu de weeks).",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « duree » différente entre le français et l'anglais"
+    ]
+  },
+  {
+    "id": "D106",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant l'adresse actuelle ?",
+    "textEn": "What could you not accept regarding the current address?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « l'adresse actuelle » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D107",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous voyait sa famille désapprouver la relation, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you saw their family disapprove of the relationship, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E2 (Décider face à une famille qui désapprouve), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D108",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous prenait ses enfants en résidence alternée, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you had their children in alternating residence, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « prenait ses enfants en résidence alternée » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D109",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour l'alcool qu'elle boit dans une vie à deux ?",
+    "textEn": "What limit would you set for the alcohol she drinks in a life together?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « l'alcool qu'elle boit » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« elle »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« she »)"
+    ]
+  },
+  {
+    "id": "D110",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous aux paris ?",
+    "textEn": "Out of €3,000 a month for the two of you, what share would you put toward betting?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; montant différent en anglais (3,000 au lieu de 2,000).",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « montant » différente entre le français et l'anglais"
+    ]
+  },
+  {
+    "id": "D111",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de verres par semaine pourriez-vous réellement vivre avec une consommation déjà installée ?",
+    "textEn": "How many drinks a week of an already established drinking habit could you really live with?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « une consommation déjà installée » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« déjà »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« already »)",
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D112",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour la cigarette et l'alcool dans une vie à deux ?",
+    "textEn": "What limit would you set for cigarettes and alcohol in a life together?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « la cigarette et l'alcool » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D113",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour les disputes violentes sur le tabac, à partir de combien de fois par mois ce serait trop pour vous ?",
+    "textEn": "For violent arguments about smoking, how many times a month would be too much for you?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « les disputes violentes sur le tabac » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D114",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour faire une place à des enfants d'une première union ?",
+    "textEn": "How far would you go to have children of your own?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; l'infinitif anglais change de sujet.",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « infinitif » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D115",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur un désir d'enfants absolument certain avant de vous engager ?",
+    "textEn": "What would you need to know about an absolutely certain wish for children before committing?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « un désir d'enfants absolument certain » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D116",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous hébergeait ses enfants la moitié du mois, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you had their children half of each month, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D117",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si le désir d'enfants restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+    "textEn": "If the wish for children remained an open question between you, for how many years could you accept it?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C16 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D118",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si le fait de fumer régulièrement ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If smoking regularly never changed for one of you, could you live with it for years?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « le fait de fumer régulièrement » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D119",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70462",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur les animaux domestiques ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on pets never moved, could you still commit?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « les animaux domestiques » est sans lien avec l'écart E1 (Désir d'enfants).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D120",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Jusqu'où seriez-vous prêt(e) à aller pour faire une place à des enfants d'une première union ?",
+    "textEn": "How far would you be willing to go to make room for children from a first relationship?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : texte fixe de C03 modifié.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D121",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C13",
+    "text": "Si l'un de vous ne voulait pas d'enfant, qu'est-ce qui vous permettrait de rester ?",
+    "textEn": "If one of you did not want children, what would allow you to stay?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C13 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D122",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C19",
+    "text": "Combien de jours par mois vous sembleraient un maximum pour la présence d'enfants d'une première union ?",
+    "textEn": "How many days a month would feel like the most you could accept for having children from a first relationship around?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C19 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D123",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'alcool ?",
+    "textEn": "What would the other person need to know about you regarding alcohol?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C17 exact, cases neutres liées à l'écart E2 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D124",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous aux examens de fertilité dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for fertility tests in an ordinary week together?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « les examens de fertilité » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D125",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec une période sans emploi ?",
+    "textEn": "For how many months could you live calmly with a period without work?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C15 exact, cases neutres liées à l'écart E1 (Le soutien quand l'autre perd son emploi), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D126",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour vous accorder sur un budget commun ?",
+    "textEn": "How far would you go to agree on a shared budget?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C03 exact, cases neutres liées à l'écart E1 (Épargne et dépenses), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D127",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour la difficulté à épargner dans une vie à deux ?",
+    "textEn": "What limit would you set for the difficulty of saving in a life together?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « la difficulté à épargner » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 difficulté présupposée — « objet »"
+    ]
+  },
+  {
+    "id": "D128",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la fertilité ?",
+    "textEn": "What would the other person need to know about you regarding fertility?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « la fertilité » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D129",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si la place de l'alcool ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If the place of alcohol never changed for one of you, could you live with it for years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C02 exact, cases neutres liées à l'écart E2 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D130",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 1,
+    "themeKey": "communication",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la façon de gérer les conflits ?",
+    "textEn": "What would the other person need to know about you regarding how conflict is handled?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E2 (Disputes dans la famille d'origine) est le risque partagé, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D131",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Qu'auriez-vous besoin de savoir sur le désir d'enfants avant de vous marier ?",
+    "textEn": "What would you need to know about the wish for children before getting married?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : texte fixe de C09 modifié (se marier).",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D132",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour les moments en solo dans une vie à deux ?",
+    "textEn": "What could you not accept about time alone?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; l'anglais utilise le cadre C04, pas C14.",
+    "gateOk": false,
+    "gateReasons": [
+      "F2 version anglaise hors du cadre C14"
+    ]
+  },
+  {
+    "id": "D133",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur l'avis des familles et des amis ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on the opinions of family and friends never moved, could you still commit?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « l'avis des familles et des amis » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D134",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 3 000 € par mois à deux, quelle part consacreriez-vous à l'épargne ?",
+    "textEn": "Out of €3,000 a month for the two of you, what share would you put toward savings?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C12 exact, cases neutres liées à l'écart E1 (Épargne et dépenses), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D135",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de nuits par mois pourriez-vous réellement vivre avec des enfants d'une précédente union ?",
+    "textEn": "How many nights a month of children from a previous relationship could you really live with?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C01 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D136",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C13",
+    "text": "Si l'un de vous buvait toujours un peu trop, qu'est-ce qui vous permettrait de rester ?",
+    "textEn": "If one of you always drank a bit too much, what would allow you to stay?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « buvait toujours un peu trop » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « action » : attribution ou présupposé (« toujours »)",
+      "F5 case anglaise « action » : attribution ou présupposé (« always »)",
+      "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D137",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Comment imaginez-vous votre famille idéale ?",
+    "textEn": "How do you picture your ideal family?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : question libre hors cadre.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D138",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour la consommation à risque, à partir de combien de verres par semaine ce serait trop pour vous ?",
+    "textEn": "For at-risk drinking, how many drinks a week would be too much for you?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « la consommation à risque » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »",
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D139",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si le divorce en cours restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+    "textEn": "If the ongoing divorce remained an open question between you, for how many years could you accept it?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « le divorce en cours » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D140",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur l'alcool ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on alcohol never moved, could you still commit?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C10 exact, cases neutres liées à l'écart E2 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D141",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E4"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans la place du beau-parent ?",
+    "textEn": "What could you not accept in the step-parent's role?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E4 (La place du beau-parent) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D142",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour clarifier la question des enfants avant de vous engager ?",
+    "textEn": "How far would you go to settle the question of children before committing?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C03 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D143",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si une habitude aussi nocive que le tabac ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If a habit as harmful as smoking never changed, what life together would you picture in five years?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « une habitude aussi nocive que le tabac » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« habitude »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« habit »)"
+    ]
+  },
+  {
+    "id": "D144",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C05",
+    "text": "Si l'un de vous perdait son emploi, pendant combien de mois pourriez-vous tenir ainsi ?",
+    "textEn": "If one of you changed jobs, for how many months could you carry on like that?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; l'action anglaise (changed jobs) n'a pas le même sens.",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « action » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D145",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur un projet de vie solide avant de vous engager ?",
+    "textEn": "What would you need to know about a solid life plan before committing?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « un projet de vie solide » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité",
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D146",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C19",
+    "text": "Combien de verres par semaine vous sembleraient un maximum pour l'alcool presque tous les jours ?",
+    "textEn": "How many drinks a week would feel like the most you could accept for drinking almost every day?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « l'alcool presque tous les jours » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D147",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur un style d'attachement évitant ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on an avoidant attachment style never moved, could you still commit?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « un style d'attachement évitant » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D148",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour le soutien pendant un chômage dans une vie à deux ?",
+    "textEn": "What limit would you set for support during unemployment in a life together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C14 exact, cases neutres liées à l'écart E1 (Le soutien quand l'autre perd son emploi), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D149",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur l'état de santé des poumons avant de vous engager ?",
+    "textEn": "What would you need to know about lung health before committing?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « l'état de santé des poumons » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D150",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C05",
+    "text": "Si l'un de vous attendait une réponse sur les enfants, pendant combien de mois pourriez-vous tenir ainsi ?",
+    "textEn": "If one of you was waiting for an answer about children, for how many months could you carry on like that?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C05 exact, cases neutres liées à l'écart E1 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D151",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur le permis de conduire avant de vous engager ?",
+    "textEn": "What would you need to know about a driving licence before committing?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « le permis de conduire » est sans lien avec l'écart E2 (Décider face à une famille qui désapprouve).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D152",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour un vice comme le jeu dans une vie à deux ?",
+    "textEn": "What limit would you set for a vice like gambling in a life together?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « un vice comme le jeu » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »",
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D153",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour accepter une vie sans enfant ?",
+    "textEn": "How far would you go to accept a life without children?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « accepter une vie sans enfant » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « infinitif »"
+    ]
+  },
+  {
+    "id": "D154",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet des menaces de la famille ?",
+    "textEn": "What could you not accept about threats from the family?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « les menaces de la famille » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case sur la sécurité (cris, coups, menace, contrôle) — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D155",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "lieu",
+    "evidence": [
+      "E3"
+    ],
+    "claim": "divergence",
+    "frame": "C05",
+    "text": "Si l'un de vous devait déménager pour la relation, pendant combien de mois pourriez-vous tenir ainsi ?",
+    "textEn": "If one of you had to move for the relationship, for how many months could you carry on like that?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E3 (Déménager pour le couple) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D156",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C13",
+    "text": "Si l'un de vous se laissait aller sans emploi, qu'est-ce qui vous permettrait de rester ?",
+    "textEn": "If one of you let themselves go while out of work, what would allow you to stay?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « se laissait aller sans emploi » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « action »"
+    ]
+  },
+  {
+    "id": "D157",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la vérification des messages ?",
+    "textEn": "What would the other person need to know about you regarding checking each other's messages?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « la vérification des messages » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D158",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec la menace de partir sans enfant ?",
+    "textEn": "For how many months could you live calmly with the threat of leaving if there is no child?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « la menace de partir sans enfant » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case sur la sécurité (cris, coups, menace, contrôle) — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D159",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E3"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur le projet d'enfant ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on having a child never moved, could you still commit?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E3 (Le désir d'enfants) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D160",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C16",
+    "text": "Si la parentalité restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+    "textEn": "If parenthood remained an open question between you, for how many years could you accept it?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C16 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D161",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans l'accueil des enfants que votre partenaire veut garder avec lui ?",
+    "textEn": "What could you not accept in hosting the children your partner wants to keep with them?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « l'accueil des enfants que votre partenaire veut garder avec lui » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+    ]
+  },
+  {
+    "id": "D162",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la position de chacun sur les enfants ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If each person's stance on children never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E1 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D163",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'avis de la famille ?",
+    "textEn": "What would the other person need to know about you regarding family opinion?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C17 exact, cases neutres liées à l'écart E2 (Décider face à une famille qui désapprouve), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D164",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la place du tabac ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the place of smoking never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E2 (Tabac), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D165",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour un trouble de l'usage de l'alcool dans une vie à deux ?",
+    "textEn": "What limit would you set for an alcohol use disorder in a life together?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « un trouble de l'usage de l'alcool » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D166",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous la corvée des enfants d'une autre union au quotidien ?",
+    "textEn": "In practical terms, how would you organise the chore of children from another relationship day to day?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « la corvée des enfants d'une autre union » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D167",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à des enfants principalement chez leur autre parent dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for children who live mainly with their other parent in an ordinary week together?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « des enfants principalement chez leur autre parent » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« leur »)",
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D168",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de soirs par mois pourriez-vous réellement vivre avec un apéritif à la maison ?",
+    "textEn": "How many evenings a month of drinks at home could you really live with?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C01 exact, cases neutres liées à l'écart E1 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D169",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur le désir d'enfants avant de vous engager ?",
+    "textEn": "What would you need to know about the wish for children before committing?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C09 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D170",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant les paris en ligne ?",
+    "textEn": "What could you not accept regarding online betting?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E1 (Jeux d'argent), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D171",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour boire moins pour faire plaisir ?",
+    "textEn": "How far would you go to drink less to please?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « boire moins pour faire plaisir » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « infinitif »"
+    ]
+  },
+  {
+    "id": "D172",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C07",
+    "text": "Combien de mois pourriez-vous attendre avant de trancher la question des enfants ?",
+    "textEn": "How many months could you wait before settling the question of children?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C07 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D173",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur le rapport à l'argent avant de vous engager ?",
+    "textEn": "What would you need to know about attitudes to money before committing?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C09 exact, cases neutres liées à l'écart E1 (Épargne et dépenses), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D174",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous aux envies du moment ?",
+    "textEn": "Out of €2,000 a month for the two of you, what share would you put toward spur-of-the-moment wants?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « les envies du moment » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité",
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D175",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur l'accident de voiture après une soirée ?",
+    "textEn": "What would the other person need to know about you regarding the car accident after a party?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « l'accident de voiture après une soirée » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D176",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à son habitude de parier dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for their betting habit in an ordinary week together?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « son habitude de parier » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« habitude »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« habit »)"
+    ]
+  },
+  {
+    "id": "D177",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous souhaitait devenir parent, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you wanted to become a parent, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D178",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de cigarettes par jour pourriez-vous réellement vivre avec le tabac de votre partenaire ?",
+    "textEn": "How many cigarettes a day of your partner's smoking could you really live with?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « le tabac de votre partenaire » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+    ]
+  },
+  {
+    "id": "D179",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E8"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 1 000 € par mois à deux, quelle part consacreriez-vous à l'épargne ?",
+    "textEn": "Out of €1,000 a month for the two of you, what share would you put toward savings?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E8 (Le rapport à l'épargne) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D180",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "",
+    "text": "Comment réagiriez-vous si une famille désapprouvait la relation ?",
+    "textEn": "How would you react if a family disapproved of the relationship?",
+    "label": "faulty",
+    "category": "off_frame",
+    "why": "Hors cadre : question libre hors cadre.",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D181",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si la façon de gérer l'argent ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the way money is handled never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E1 (Épargne et dépenses), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D182",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du soutien pendant un chômage ?",
+    "textEn": "What could you not accept about support during unemployment?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E1 (Le soutien quand l'autre perd son emploi), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D183",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur le poids de l'avis familial ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on the weight of family opinion never moved, could you still commit?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C10 exact, cases neutres liées à l'écart E2 (Décider face à une famille qui désapprouve), sans reprise des réponses ni attribution.",
+    "gateOk": false,
+    "gateReasons": [
+      "P8 forme"
+    ]
+  },
+  {
+    "id": "D184",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour les trajets entre deux villes, à partir de combien d'heures par semaine ce serait trop pour vous ?",
+    "textEn": "For travel between two cities, how many hours a week would be too much for you?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C08 exact, cases neutres liées à l'écart E1 (Déménager pour le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D185",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous accueillait ses enfants plusieurs jours par semaine, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you had their children stay several days a week, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D186",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous la codépendance financière au quotidien ?",
+    "textEn": "In practical terms, how would you organise financial codependency day to day?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « la codépendance financière » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D187",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous au temps seul que l'autre réclame dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for the time alone the other person asks for in an ordinary week together?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « le temps seul que l'autre réclame » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« the other »)"
+    ]
+  },
+  {
+    "id": "D188",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C07",
+    "text": "Combien de mois pourriez-vous attendre avant de trancher le désir de devenir parent ?",
+    "textEn": "How many months could you wait before settling the wish to become a parent?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C07 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D189",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si le rythme de garde des enfants ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If the children's custody schedule never changed for one of you, could you live with it for years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C02 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D190",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C19",
+    "text": "Combien de nuits par semaine vous sembleraient un maximum pour la présence d'enfants d'une première union ?",
+    "textEn": "How many nights a week would feel like the most you could accept for having children from a first relationship around?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C19 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D191",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 3 000 € par mois à deux, quelle part consacreriez-vous aux achats que votre partenaire aime faire ?",
+    "textEn": "Out of €3,000 a month for the two of you, what share would you put toward the purchases your partner likes to make?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « les achats que votre partenaire aime faire » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+    ]
+  },
+  {
+    "id": "D192",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50786",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous criait après une perte au jeu, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you shouted after losing a bet, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « criait après une perte au jeu » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case sur la sécurité (cris, coups, menace, contrôle) — « action »",
+      "F3 case « action » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D193",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous l'accueil des enfants que votre partenaire préfère éviter au quotidien ?",
+    "textEn": "In practical terms, how would you organise hosting the children your partner would rather avoid day to day?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « l'accueil des enfants que votre partenaire préfère éviter » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+    ]
+  },
+  {
+    "id": "D194",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le montant des revenus ?",
+    "textEn": "What would the other person need to know about you regarding the amount of income?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « le montant des revenus » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case intrusive (revenu, banque, patrimoine) — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D195",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour la distance entre deux logements dans une vie à deux ?",
+    "textEn": "What limit would you set for the distance between two homes in a life together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C14 exact, cases neutres liées à l'écart E1 (Déménager pour le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D196",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à cette mauvaise habitude de boire dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for this bad drinking habit in an ordinary week together?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « cette mauvaise habitude de boire » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« habitude »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« habit »)",
+      "F11 jugement moral dans la case — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D197",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70462",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur la parentalité ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on marriage never moved, could you still commit?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; la case anglaise parle de mariage.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D198",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous passait ses soirées en solo, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you spent their evenings alone, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E2 (Le temps à soi dans le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D199",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de verres par semaine pourriez-vous réellement vivre avec l'alcool à la maison ?",
+    "textEn": "How many drinks a month of alcohol at home could you really live with?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; l'anglais dit « a month » au lieu de « a week ».",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « periode » différente entre le français et l'anglais"
+    ]
+  },
+  {
+    "id": "D200",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de cigarettes par jour pourriez-vous réellement vivre avec le tabac à la maison ?",
+    "textEn": "How many cigarettes a day of smoking at home could you really live with?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « le tabac à la maison » est sans lien avec l'écart E1 (Déménager pour le couple).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D201",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la parentalité ?",
+    "textEn": "What would the other person need to know about you regarding parenthood?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C17 exact, cases neutres liées à l'écart E2 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D202",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans un rapport compulsif à l'achat ?",
+    "textEn": "What could you not accept in compulsive buying?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « un rapport compulsif à l'achat » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D203",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C12",
+    "text": "Sur 2 000 € par mois à deux, quelle part consacreriez-vous à l'accueil d'enfants d'une première union ?",
+    "textEn": "Out of €2,000 a month for the two of you, what share would you put toward hosting children from a first relationship?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C12 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D204",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50402",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à un effort pour moins acheter dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for an effort to buy less in an ordinary week together?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « un effort pour moins acheter » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « objet »"
+    ]
+  },
+  {
+    "id": "D205",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous subissait encore le rejet de sa famille, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you still faced rejection from their family, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « subissait encore le rejet de sa famille » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « action » : attribution ou présupposé (« encore »)",
+      "F5 case anglaise « action » : attribution ou présupposé (« still »)"
+    ]
+  },
+  {
+    "id": "D206",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C20",
+    "text": "Si l'organisation de la garde ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+    "textEn": "If the custody arrangement never changed, what life together would you picture in five years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C20 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D207",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur l'accueil d'enfants d'une précédente union avant de vous engager ?",
+    "textEn": "What would you need to know about hosting children from a previous relationship before committing?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C09 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D208",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 1,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous au jardinage dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for gardening in an ordinary week together?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « le jardinage » est sans lien avec l'écart E2 (Religion des enfants).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D209",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de cigarettes par semaine pourriez-vous réellement vivre avec le tabac à la maison ?",
+    "textEn": "How many cigarettes a week of smoking at home could you really live with?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C01 exact, cases neutres liées à l'écart E2 (Tabac), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D210",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet d'une médiation avant de décider ?",
+    "textEn": "What could you not accept about mediation before deciding?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « une médiation avant de décider » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F1 hors cadre (aucun cadre validé ne correspond)"
+    ]
+  },
+  {
+    "id": "D211",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à la dynamique de triangulation familiale dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for family triangulation dynamics in an ordinary week together?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « la dynamique de triangulation familiale » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D212",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur la fusion familiale pathologique avant de vous engager ?",
+    "textEn": "What would you need to know about pathological family enmeshment before committing?",
+    "label": "faulty",
+    "category": "jargon_diagnosis",
+    "why": "La case « la fusion familiale pathologique » emploie un jargon ou un diagnostic.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 jargon ou diagnostic dans la case — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D213",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le souhait de médiation de votre partenaire ?",
+    "textEn": "What would the other person need to know about you regarding your partner's wish for mediation?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « le souhait de médiation de votre partenaire » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« votre »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« your »)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D214",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec la peur de déménager ?",
+    "textEn": "For how many months could you live calmly with the fear of moving?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « la peur de déménager » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« peur »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« fear »)"
+    ]
+  },
+  {
+    "id": "D215",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E6"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur la place de la famille dans les décisions avant de vous engager ?",
+    "textEn": "What would you need to know about the family's place in decisions before committing?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E6 (La place de la famille dans les décisions) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D216",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à l'espace personnel dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for personal space in an ordinary week together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C11 exact, cases neutres liées à l'écart E2 (Le temps à soi dans le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D217",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C05",
+    "text": "Si l'un de vous ne retrouvait toujours pas d'emploi, pendant combien de mois pourriez-vous tenir ainsi ?",
+    "textEn": "If one of you still could not find a job, for how many months could you carry on like that?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « ne retrouvait toujours pas d'emploi » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « action » : attribution ou présupposé (« toujours »)",
+      "F5 case anglaise « action » : attribution ou présupposé (« still »)"
+    ]
+  },
+  {
+    "id": "D218",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec l'alcool qu'il aime boire ?",
+    "textEn": "For how many months could you live calmly with the alcohol he likes to drink?",
+    "label": "faulty",
+    "category": "wrong_partner_position",
+    "why": "La case « l'alcool qu'il aime boire » prête une position au partenaire (votre partenaire / l'autre / il / elle).",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « objet » : attribution ou présupposé (« il »)",
+      "F5 case anglaise « objet » : attribution ou présupposé (« he »)"
+    ]
+  },
+  {
+    "id": "D219",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70462",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C15",
+    "text": "Pendant combien de mois pourriez-vous vivre sereinement avec une question des enfants non tranchée ?",
+    "textEn": "For how many months could you live calmly with an unsettled question about children?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C15 exact, cases neutres liées à l'écart E1 (Désir d'enfants), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D220",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour la surveillance des comptes bancaires dans une vie à deux ?",
+    "textEn": "What limit would you set for monitoring bank accounts in a life together?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « la surveillance des comptes bancaires » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case intrusive (revenu, banque, patrimoine) — « objet »",
+      "F7 case sur la sécurité (cris, coups, menace, contrôle) — « objet »",
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)"
+    ]
+  },
+  {
+    "id": "D221",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet de l'accueil d'enfants d'une précédente union ?",
+    "textEn": "What could you not accept about hosting children from a previous relationship?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E1 (Accueillir les enfants de l'autre), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D222",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur le refus égoïste d'avoir des enfants ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on the selfish refusal to have children never moved, could you still commit?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « le refus égoïste d'avoir des enfants » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D223",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50786",
+    "day": 3,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur l'état des comptes bancaires ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on bank account balances never moved, could you still commit?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « l'état des comptes bancaires » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case intrusive (revenu, banque, patrimoine) — « objet »"
+    ]
+  },
+  {
+    "id": "D224",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour les sorties en solo et le sport dans une vie à deux ?",
+    "textEn": "What limit would you set for solo outings and sport in a life together?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « les sorties en solo et le sport » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »"
+    ]
+  },
+  {
+    "id": "D225",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous devait changer de ville, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you had to move to another city, how would you live with it day to day?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C06 exact, cases neutres liées à l'écart E1 (Déménager pour le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D226",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 2,
+    "themeKey": "spiritualite",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur la foi dans la vie des enfants ?",
+    "textEn": "What would the other person need to know about you regarding faith in children's lives?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C17 exact, cases neutres liées à l'écart E2 (Religion des enfants), sans reprise des réponses ni attribution. Sujet sensible : aucune position supposée.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D227",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour prendre vos distances avec vos parents ?",
+    "textEn": "How far would you go to distance yourself from your parents?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « prendre vos distances avec vos parents » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "P13 possessif non autorisé (« vos distances »)"
+    ]
+  },
+  {
+    "id": "D228",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 2,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C10",
+    "text": "Si vos positions sur le licenciement récent ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+    "textEn": "If your positions on the recent redundancy never moved, could you still commit?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « le licenciement récent » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »"
+    ]
+  },
+  {
+    "id": "D229",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous aux achats plaisir dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for savings in an ordinary week together?",
+    "label": "faulty",
+    "category": "en_mismatch",
+    "why": "Français correct ; la case anglaise parle d'épargne, pas d'achats plaisir.",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D230",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C11",
+    "text": "Quelle place laisseriez-vous à l'apéritif dans une semaine ordinaire à deux ?",
+    "textEn": "How much room would you leave for evening drinks in an ordinary week together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C11 exact, cases neutres liées à l'écart E1 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D231",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour l'alcool chaque semaine, à partir de combien de verres par mois ce serait trop pour vous ?",
+    "textEn": "For drinking every week, how many drinks a month would be too much for you?",
+    "label": "faulty",
+    "category": "answer_leak",
+    "why": "La case « l'alcool chaque semaine » reprend les mots d'une réponse d'un membre (ou laisse deviner qui a répondu quoi).",
+    "gateOk": false,
+    "gateReasons": [
+      "F9 reprend la réponse d’un membre (fuite)"
+    ]
+  },
+  {
+    "id": "D232",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C01",
+    "text": "Combien de soirs par semaine pourriez-vous réellement vivre avec l'alcool ou le tabac ?",
+    "textEn": "How many evenings a week of alcohol or tobacco could you really live with?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « l'alcool ou le tabac » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case « objet » (« ou »)"
+    ]
+  },
+  {
+    "id": "D233",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant l'espace personnel ?",
+    "textEn": "What could you not accept regarding personal space?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E2 (Le temps à soi dans le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D234",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50125",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous accueillait encore ses enfants chaque semaine, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you still had their children every week, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "presupposition",
+    "why": "La case « accueillait encore ses enfants chaque semaine » présuppose une habitude, une peur ou une difficulté.",
+    "gateOk": false,
+    "gateReasons": [
+      "F5 case « action » : attribution ou présupposé (« encore »)",
+      "F5 case anglaise « action » : attribution ou présupposé (« still »)"
+    ]
+  },
+  {
+    "id": "D235",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90134",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur les punitions physiques avant de vous engager ?",
+    "textEn": "What would you need to know about physical punishment before committing?",
+    "label": "faulty",
+    "category": "safety_violence",
+    "why": "La case « les punitions physiques » évoque violence, cris, contrôle ou menace.",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D236",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T90490",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le patrimoine familial ?",
+    "textEn": "What would the other person need to know about you regarding family wealth?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « le patrimoine familial » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case intrusive (revenu, banque, patrimoine) — « objet »"
+    ]
+  },
+  {
+    "id": "D237",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50402",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E3"
+    ],
+    "claim": "divergence",
+    "frame": "C07",
+    "text": "Combien de mois pourriez-vous attendre avant de trancher la question d'avoir un enfant ?",
+    "textEn": "How many months could you wait before settling the question of having a child?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E3 (Le désir d'enfants) est un accord, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D238",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C03",
+    "text": "Jusqu'où iriez-vous pour renoncer à votre ville pour suivre quelqu'un ?",
+    "textEn": "How far would you go to give up your city to follow someone?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « renoncer à votre ville pour suivre quelqu'un » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « infinitif »"
+    ]
+  },
+  {
+    "id": "D239",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C09",
+    "text": "Qu'auriez-vous besoin de savoir sur les antécédents médicaux avant de vous engager ?",
+    "textEn": "What would you need to know about medical history before committing?",
+    "label": "faulty",
+    "category": "intrusive",
+    "why": "La case « les antécédents médicaux » est intrusive (revenu, banque, adresse, employeur ou santé).",
+    "gateOk": false,
+    "gateReasons": [
+      "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D240",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T70131",
+    "day": 1,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur les enfants ou un animal ?",
+    "textEn": "What would the other person need to know about you regarding children or a pet?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « les enfants ou un animal » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case « objet » (« ou »)"
+    ]
+  },
+  {
+    "id": "D241",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter dans un égoïsme déguisé en besoin d'espace ?",
+    "textEn": "What could you not accept in selfishness disguised as a need for space?",
+    "label": "faulty",
+    "category": "moralizing",
+    "why": "La case « un égoïsme déguisé en besoin d'espace » porte un jugement moral.",
+    "gateOk": false,
+    "gateReasons": [
+      "F11 jugement moral dans la case — « objet »"
+    ]
+  },
+  {
+    "id": "D242",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50643",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C06",
+    "text": "Si l'un de vous renonçait à ses moments en solo, comment le vivriez-vous au quotidien ?",
+    "textEn": "If one of you gave up their time alone, how would you live with it day to day?",
+    "label": "faulty",
+    "category": "one_sided_effort",
+    "why": "La case « renonçait à ses moments en solo » ne vaut que pour l'un des deux (effort unilatéral).",
+    "gateOk": false,
+    "gateReasons": [
+      "F10 effort à sens unique (ne vaut que pour l’un des deux) — « action »"
+    ]
+  },
+  {
+    "id": "D243",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 1,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour l'alcool à la maison dans une vie à deux ?",
+    "textEn": "What limit would you set for alcohol at home in a life together?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C14 exact, cases neutres liées à l'écart E2 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D244",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 2,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C17",
+    "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur un déménagement ?",
+    "textEn": "What would the other person need to know about you regarding moving?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C17 exact, cases neutres liées à l'écart E1 (Déménager pour le couple), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D245",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 1,
+    "themeKey": "communication",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C14",
+    "text": "Quelle limite fixeriez-vous pour les conflits familiaux dans une vie à deux ?",
+    "textEn": "What limit would you set for family conflict in a life together?",
+    "label": "faulty",
+    "category": "fake_gap",
+    "why": "E1 (Disputes dans la famille d'origine) est le risque partagé, pas un écart : la question le traite comme une divergence.",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 aucun écart cité"
+    ]
+  },
+  {
+    "id": "D246",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50602",
+    "day": 3,
+    "themeKey": "lieu",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C07",
+    "text": "Combien de mois pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+    "textEn": "How many months could you wait before settling the question of where to settle?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C07 exact, cases neutres liées à l'écart E1 (Déménager pour le couple), sans reprise des réponses ni attribution.",
+    "gateOk": false,
+    "gateReasons": [
+      "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+    ]
+  },
+  {
+    "id": "D247",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T70131",
+    "day": 2,
+    "themeKey": "projet",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C02",
+    "text": "Si le goût pour l'apéritif ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+    "textEn": "If a liking for evening drinks never changed for one of you, could you live with it for years?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C02 exact, cases neutres liées à l'écart E1 (Alcool), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D248",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50643",
+    "day": 3,
+    "themeKey": "famille",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C08",
+    "text": "Pour les jeux vidéo, à partir de combien d'heures par semaine ce serait trop pour vous ?",
+    "textEn": "For video games, how many hours a week would be too much for you?",
+    "label": "faulty",
+    "category": "unrelated_slot",
+    "why": "La case « les jeux vidéo » est sans lien avec l'écart E1 (Accueillir les enfants de l'autre).",
+    "gateOk": false,
+    "gateReasons": [
+      "F8 cases sans lien avec l’écart cité",
+      "F8 cases anglaises sans lien avec l’écart cité"
+    ]
+  },
+  {
+    "id": "D249",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T50603",
+    "day": 3,
+    "themeKey": "projet",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du tabac arrêté l'an dernier ?",
+    "textEn": "What could you not accept about the smoking given up last year?",
+    "label": "faulty",
+    "category": "invented_fact",
+    "why": "La case « le tabac arrêté l'an dernier » affirme un fait absent des données.",
+    "gateOk": false,
+    "gateReasons": [
+      "F12 fait supposé (nombre, événement ou personne absents des données) — « objet »"
+    ]
+  },
+  {
+    "id": "D250",
+    "split": "dev3",
+    "lang": "fr",
+    "caseId": "T90490",
+    "day": 2,
+    "themeKey": "famille",
+    "evidence": [
+      "E2"
+    ],
+    "claim": "divergence",
+    "frame": "C04",
+    "text": "Qu'est-ce que vous ne pourriez pas accepter concernant l'avis des familles ?",
+    "textEn": "What could you not accept regarding families' opinions?",
+    "label": "valid",
+    "category": "valid",
+    "why": "Cadre C04 exact, cases neutres liées à l'écart E2 (Décider face à une famille qui désapprouve), sans reprise des réponses ni attribution.",
+    "gateOk": true,
+    "gateReasons": []
+  },
+  {
+    "id": "D251",
+    "split": "dev3",
+    "lang": "en",
+    "caseId": "T50603",
+    "day": 1,
+    "themeKey": "argent",
+    "evidence": [
+      "E1"
+    ],
+    "claim": "divergence",
+    "frame": "C18",
+    "text": "Concrètement, comment organiseriez-vous le chômage et les tâches ménagères au quotidien ?",
+    "textEn": "In practical terms, how would you organise unemployment and household chores day to day?",
+    "label": "faulty",
+    "category": "two_ideas",
+    "why": "La case « le chômage et les tâches ménagères » contient deux sujets.",
+    "gateOk": false,
+    "gateReasons": [
+      "F4 deux idées dans la case (« et ») — « objet »",
+      "F11 jugement moral dans la case — « objet »"
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "run": "2026-10-12",
+  "writer": null,
+  "critic": null,
+  "escalation": null,
+  "fallback": null,
+  "frWinner": null,
+  "enWinner": null,
+  "floor": {
+    "quality": 0.8,
+    "hardFailRate": 0.02,
+    "leaks": 0,
+    "equivalence": 0.03
+  },
+  "qualified": false,
+  "reason": "aucun rédacteur au-dessus du plancher",
+  "spentEur": 3.13432,
+  "costP50": null,
+  "costP90": null,
+  "costP99": null,
+  "escalationRate": null
+}

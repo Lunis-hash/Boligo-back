@@ -1,0 +1,175 @@
+[
+  {
+    "n": 1,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50402",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 2,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E5"
+    ]
+  },
+  {
+    "n": 3,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E6"
+    ]
+  },
+  {
+    "n": 4,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E24"
+    ]
+  },
+  {
+    "n": 5,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 6,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50402",
+    "evidence": [
+      "E6"
+    ]
+  },
+  {
+    "n": 7,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E6",
+      "E5"
+    ]
+  },
+  {
+    "n": 8,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50395",
+    "evidence": [
+      "N-argent"
+    ]
+  },
+  {
+    "n": 9,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E22"
+    ]
+  },
+  {
+    "n": 10,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50395",
+    "evidence": [
+      "E1",
+      "E24"
+    ]
+  },
+  {
+    "n": 11,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 12,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50650",
+    "evidence": [
+      "E8",
+      "E9"
+    ]
+  },
+  {
+    "n": 13,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 14,
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50395",
+    "evidence": [
+      "E7"
+    ]
+  },
+  {
+    "n": 15,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E1",
+      "E4"
+    ]
+  },
+  {
+    "n": 16,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E8"
+    ]
+  },
+  {
+    "n": 17,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E13"
+    ]
+  },
+  {
+    "n": 18,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E24"
+    ]
+  },
+  {
+    "n": 19,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "caseId": "T50402",
+    "evidence": [
+      "E19"
+    ]
+  },
+  {
+    "n": 20,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E8"
+    ]
+  },
+  {
+    "n": 21,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E1",
+      "E6"
+    ]
+  }
+]

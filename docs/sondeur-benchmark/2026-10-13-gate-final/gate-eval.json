@@ -1,0 +1,1675 @@
+[
+  {
+    "split": "dev",
+    "chain": "contrôle seul",
+    "faulty": 56,
+    "valid": 52,
+    "faultyRejectionRate": 0.8035714285714286,
+    "validAcceptanceRate": 0.7884615384615384,
+    "leaksAccepted": 1,
+    "byCategory": {
+      "unsupported_assumption": {
+        "n": 4,
+        "rejected": 2
+      },
+      "diagnosis": {
+        "n": 4,
+        "rejected": 3
+      },
+      "childhood_family_detour": {
+        "n": 4,
+        "rejected": 3
+      },
+      "wrong_partner_position": {
+        "n": 4,
+        "rejected": 3
+      },
+      "reversed_hypothesis": {
+        "n": 4,
+        "rejected": 4
+      },
+      "fake_gap": {
+        "n": 4,
+        "rejected": 4
+      },
+      "two_ideas": {
+        "n": 4,
+        "rejected": 3
+      },
+      "jargon": {
+        "n": 4,
+        "rejected": 4
+      },
+      "invented_fact": {
+        "n": 4,
+        "rejected": 4
+      },
+      "forced_conclusion": {
+        "n": 4,
+        "rejected": 4
+      },
+      "violence_or_compromise": {
+        "n": 4,
+        "rejected": 4
+      },
+      "answer_leak": {
+        "n": 4,
+        "rejected": 3
+      },
+      "non_reciprocal": {
+        "n": 4,
+        "rejected": 2
+      },
+      "known_fact_repetition": {
+        "n": 4,
+        "rejected": 2
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "Q007",
+        "category": "unsupported_assumption",
+        "text": "Que vous faudrait-il savoir avant de partager votre foyer avec des enfants qui ne sont pas les vôtres ?"
+      },
+      {
+        "id": "Q024",
+        "category": "wrong_partner_position",
+        "text": "Si la question des enfants restait ouverte, pourriez-vous vous engager quand même ?"
+      },
+      {
+        "id": "Q129",
+        "category": "two_ideas",
+        "text": "Combien de temps pourriez-vous attendre une réponse claire sur les enfants ?"
+      },
+      {
+        "id": "Q145",
+        "category": "unsupported_assumption",
+        "text": "Qu'est-ce qui vous attire tant dans le frisson du jeu ?"
+      },
+      {
+        "id": "Q170",
+        "category": "non_reciprocal",
+        "text": "Combien de fois par mois pourriez-vous vous retenir de parier ?"
+      },
+      {
+        "id": "Q212",
+        "category": "answer_leak",
+        "text": "Que vous faudrait-il savoir sur les enfants avant d'aller plus loin ?"
+      },
+      {
+        "id": "Q267",
+        "category": "childhood_family_detour",
+        "text": "Combien de mois d'épargne de sécurité vous faudrait-il pour être serein(e) ?"
+      },
+      {
+        "id": "Q271",
+        "category": "diagnosis",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du tabac au quotidien ?"
+      },
+      {
+        "id": "Q312",
+        "category": "known_fact_repetition",
+        "text": "Que vous faudrait-il savoir sur le tabac avant de vous engager ?"
+      },
+      {
+        "id": "Q321",
+        "category": "known_fact_repetition",
+        "text": "Que faites-vous de l'argent qui vous reste en fin de mois ?"
+      },
+      {
+        "id": "Q323",
+        "category": "non_reciprocal",
+        "text": "Qu'est-ce que l'autre devrait comprendre de votre choix sur les enfants ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "Q063",
+        "text": "Jusqu'où iriez-vous pour accueillir sous votre toit des enfants qui ne sont pas les vôtres ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q099",
+        "text": "Pour acheter un logement dans cinq ans, combien mettriez-vous de côté chaque mois ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q116",
+        "text": "Si l'école de vos enfants avait une orientation religieuse différente de la vôtre, l'accepteriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q131",
+        "text": "Jusqu'à quelle somme misée par semaine resteriez-vous à l'aise ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q133",
+        "text": "À partir de quel montant un achat imprévu devrait-il, selon vous, être discuté à deux ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q177",
+        "text": "Si un médecin vous conseillait d'arrêter l'alcool, pourriez-vous le faire du jour au lendemain ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q180",
+        "text": "Si des enfants de l'autre s'installaient chez vous pour de bon, combien de temps tiendriez-vous ce rythme ?",
+        "gate": [
+          "EN5 habitude présupposée"
+        ]
+      },
+      {
+        "id": "Q191",
+        "text": "Que vous faudrait-il savoir sur la situation professionnelle de l'autre avant de vous engager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q205",
+        "text": "À partir de combien de nuits par semaine la présence d'enfants qui ne sont pas les vôtres deviendrait-elle trop lourde ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q230",
+        "text": "Seriez-vous prêt(e) à priver de sortie un enfant qui n'est pas le vôtre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q244",
+        "text": "Que vous coûterait-il réellement de renoncer à votre choix sur les enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "dev",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 56,
+    "valid": 52,
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "unsupported_assumption": {
+        "n": 4,
+        "rejected": 4
+      },
+      "diagnosis": {
+        "n": 4,
+        "rejected": 4
+      },
+      "childhood_family_detour": {
+        "n": 4,
+        "rejected": 4
+      },
+      "wrong_partner_position": {
+        "n": 4,
+        "rejected": 4
+      },
+      "reversed_hypothesis": {
+        "n": 4,
+        "rejected": 4
+      },
+      "fake_gap": {
+        "n": 4,
+        "rejected": 4
+      },
+      "two_ideas": {
+        "n": 4,
+        "rejected": 4
+      },
+      "jargon": {
+        "n": 4,
+        "rejected": 4
+      },
+      "invented_fact": {
+        "n": 4,
+        "rejected": 4
+      },
+      "forced_conclusion": {
+        "n": 4,
+        "rejected": 4
+      },
+      "violence_or_compromise": {
+        "n": 4,
+        "rejected": 4
+      },
+      "answer_leak": {
+        "n": 4,
+        "rejected": 4
+      },
+      "non_reciprocal": {
+        "n": 4,
+        "rejected": 4
+      },
+      "known_fact_repetition": {
+        "n": 4,
+        "rejected": 4
+      }
+    },
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "Q005",
+        "text": "Que vous faudrait-il savoir sur l'éducation religieuse des enfants avant de vous engager ?",
+        "gate": []
+      },
+      {
+        "id": "Q009",
+        "text": "Que devrait savoir l'autre de vos limites sur l'alcool avant d'aller plus loin ?",
+        "gate": []
+      },
+      {
+        "id": "Q011",
+        "text": "Combien de verres par semaine vous sembleraient encore raisonnables dans une vie de couple ?",
+        "gate": []
+      },
+      {
+        "id": "Q014",
+        "text": "Quelle habitude liée au tabac serait pour vous impossible à vivre ?",
+        "gate": []
+      },
+      {
+        "id": "Q030",
+        "text": "Si vous deviez vivre dans la ville de l'autre pour toujours, pourriez-vous y être heureux(se) ?",
+        "gate": []
+      },
+      {
+        "id": "Q037",
+        "text": "À quel point votre décision sur les enfants est-elle définitive aujourd'hui ?",
+        "gate": []
+      },
+      {
+        "id": "Q047",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet de la foi dans votre futur foyer ?",
+        "gate": []
+      },
+      {
+        "id": "Q048",
+        "text": "Combien de temps faudrait-il avant que vous jouiez un vrai rôle de parent auprès d'un enfant de l'autre ?",
+        "gate": []
+      },
+      {
+        "id": "Q050",
+        "text": "Partir une semaine en vacances chacun de son côté, est-ce envisageable pour vous ?",
+        "gate": []
+      },
+      {
+        "id": "Q055",
+        "text": "Si l'autre allait chaque semaine à un lieu de culte sans vous, comment le vivriez-vous ?",
+        "gate": []
+      },
+      {
+        "id": "Q063",
+        "text": "Jusqu'où iriez-vous pour accueillir sous votre toit des enfants qui ne sont pas les vôtres ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q077",
+        "text": "Que vous faudrait-il savoir sur la gestion de l'argent de l'autre avant de partager un compte ?",
+        "gate": []
+      },
+      {
+        "id": "Q099",
+        "text": "Pour acheter un logement dans cinq ans, combien mettriez-vous de côté chaque mois ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q100",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du jeu dans une vie à deux ?",
+        "gate": []
+      },
+      {
+        "id": "Q102",
+        "text": "Jusqu'à quel point vous sentiriez-vous responsable d'un enfant qui n'est pas le vôtre ?",
+        "gate": []
+      },
+      {
+        "id": "Q103",
+        "text": "Si la question de l'alcool était la même dans dix ans, resteriez-vous dans cette relation ?",
+        "gate": []
+      },
+      {
+        "id": "Q116",
+        "text": "Si l'école de vos enfants avait une orientation religieuse différente de la vôtre, l'accepteriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q117",
+        "text": "Si une longue période sans emploi arrivait dans votre couple, que faudrait-il pour que vous restiez ?",
+        "gate": []
+      },
+      {
+        "id": "Q122",
+        "text": "Si vous perdiez votre emploi, combien de temps accepteriez-vous d'être soutenu(e) financièrement ?",
+        "gate": []
+      },
+      {
+        "id": "Q124",
+        "text": "Si votre choix sur les enfants n'était jamais partagé, pourriez-vous quand même vous engager ?",
+        "gate": []
+      },
+      {
+        "id": "Q127",
+        "text": "Si des enfants nés d'une autre union vivaient chez vous à plein temps, qu'est-ce qui changerait dans vos journées ?",
+        "gate": []
+      },
+      {
+        "id": "Q131",
+        "text": "Jusqu'à quelle somme misée par semaine resteriez-vous à l'aise ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q133",
+        "text": "À partir de quel montant un achat imprévu devrait-il, selon vous, être discuté à deux ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q138",
+        "text": "Si l'un de vous recevait une offre d'emploi à 500 km, comment réagiriez-vous ?",
+        "gate": []
+      },
+      {
+        "id": "Q164",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter dans la façon de dépenser de la personne qui partage votre vie ?",
+        "gate": []
+      },
+      {
+        "id": "Q165",
+        "text": "Qu'est-ce que l'autre devrait absolument comprendre de votre choix sur les enfants avant d'aller plus loin ?",
+        "gate": []
+      },
+      {
+        "id": "Q176",
+        "text": "Si des enfants d'une autre union vivaient chez vous sans que cela change jamais, resteriez-vous ?",
+        "gate": []
+      },
+      {
+        "id": "Q177",
+        "text": "Si un médecin vous conseillait d'arrêter l'alcool, pourriez-vous le faire du jour au lendemain ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q180",
+        "text": "Si des enfants de l'autre s'installaient chez vous pour de bon, combien de temps tiendriez-vous ce rythme ?",
+        "gate": [
+          "EN5 habitude présupposée"
+        ]
+      },
+      {
+        "id": "Q191",
+        "text": "Que vous faudrait-il savoir sur la situation professionnelle de l'autre avant de vous engager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q197",
+        "text": "Comment aimeriez-vous qu'un enfant de l'autre vous appelle ?",
+        "gate": []
+      },
+      {
+        "id": "Q204",
+        "text": "Si l'autre partait seul(e) un week-end par mois, comment le vivriez-vous ?",
+        "gate": []
+      },
+      {
+        "id": "Q205",
+        "text": "À partir de combien de nuits par semaine la présence d'enfants qui ne sont pas les vôtres deviendrait-elle trop lourde ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q215",
+        "text": "Si la foi restait un sujet sensible entre vous toute votre vie, pourriez-vous l'accepter ?",
+        "gate": []
+      },
+      {
+        "id": "Q220",
+        "text": "Que perdriez-vous concrètement si vous quittiez votre ville l'an prochain ?",
+        "gate": []
+      },
+      {
+        "id": "Q221",
+        "text": "Que répondriez-vous à un enfant qui vous demande ce que vous croyez ?",
+        "gate": []
+      },
+      {
+        "id": "Q224",
+        "text": "Si aucun de vous ne déménageait jamais, comment votre couple fonctionnerait-il concrètement ?",
+        "gate": []
+      },
+      {
+        "id": "Q230",
+        "text": "Seriez-vous prêt(e) à priver de sortie un enfant qui n'est pas le vôtre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q241",
+        "text": "Si la question des enfants restait ouverte pendant cinq ans, comment vivriez-vous cette attente ?",
+        "gate": []
+      },
+      {
+        "id": "Q244",
+        "text": "Que vous coûterait-il réellement de renoncer à votre choix sur les enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q254",
+        "text": "Si votre rapport au tabac était le même dans vingt ans, cela vous irait-il ?",
+        "gate": []
+      },
+      {
+        "id": "Q255",
+        "text": "Si votre épargne commune n'augmentait pas pendant trois ans, cela vous poserait-il problème ?",
+        "gate": []
+      },
+      {
+        "id": "Q266",
+        "text": "Si des enfants grandissaient chez vous, quelle place l'alcool devrait-il avoir à la maison ?",
+        "gate": []
+      },
+      {
+        "id": "Q283",
+        "text": "Quelle organisation de garde ne pourriez-vous en aucun cas accepter ?",
+        "gate": []
+      },
+      {
+        "id": "Q284",
+        "text": "Que vous faudrait-il savoir sur le lieu de vie avant de vous engager ?",
+        "gate": []
+      },
+      {
+        "id": "Q287",
+        "text": "Jusqu'où seriez-vous prêt(e) à aller pour vivre votre choix sur les enfants ?",
+        "gate": []
+      },
+      {
+        "id": "Q289",
+        "text": "Quelle activité tiendriez-vous à garder pour vous seul(e), même en couple ?",
+        "gate": []
+      },
+      {
+        "id": "Q301",
+        "text": "Pourriez-vous attendre encore trois ans avant que la question des enfants soit tranchée ?",
+        "gate": []
+      },
+      {
+        "id": "Q329",
+        "text": "Si des enfants vivaient avec vous, quelle place le tabac pourrait-il encore avoir ?",
+        "gate": []
+      },
+      {
+        "id": "Q330",
+        "text": "Où passe, pour vous, la frontière entre un loisir et un jeu d'argent qui pose problème ?",
+        "gate": []
+      },
+      {
+        "id": "Q333",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du tabac au quotidien ?",
+        "gate": []
+      },
+      {
+        "id": "Q338",
+        "text": "Si vous n'aviez jamais d'enfant ensemble, qu'est-ce qui manquerait le plus à votre vie dans vingt ans ?",
+        "gate": []
+      }
+    ]
+  },
+  {
+    "split": "final",
+    "chain": "contrôle seul",
+    "faulty": 113,
+    "valid": 120,
+    "faultyRejectionRate": 0.7522123893805309,
+    "validAcceptanceRate": 0.5833333333333334,
+    "leaksAccepted": 1,
+    "byCategory": {
+      "diagnosis": {
+        "n": 8,
+        "rejected": 8
+      },
+      "two_ideas": {
+        "n": 8,
+        "rejected": 7
+      },
+      "fake_gap": {
+        "n": 9,
+        "rejected": 9
+      },
+      "wrong_partner_position": {
+        "n": 8,
+        "rejected": 7
+      },
+      "known_fact_repetition": {
+        "n": 8,
+        "rejected": 6
+      },
+      "forced_conclusion": {
+        "n": 8,
+        "rejected": 7
+      },
+      "non_reciprocal": {
+        "n": 8,
+        "rejected": 3
+      },
+      "jargon": {
+        "n": 8,
+        "rejected": 4
+      },
+      "reversed_hypothesis": {
+        "n": 8,
+        "rejected": 4
+      },
+      "childhood_family_detour": {
+        "n": 8,
+        "rejected": 6
+      },
+      "invented_fact": {
+        "n": 8,
+        "rejected": 6
+      },
+      "violence_or_compromise": {
+        "n": 8,
+        "rejected": 6
+      },
+      "answer_leak": {
+        "n": 8,
+        "rejected": 7
+      },
+      "unsupported_assumption": {
+        "n": 8,
+        "rejected": 5
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "Q015",
+        "category": "wrong_partner_position",
+        "text": "Combien de jours par mois pourriez-vous vivre avec des enfants qui ne sont pas les vôtres ?"
+      },
+      {
+        "id": "Q032",
+        "category": "jargon",
+        "text": "Quelle posture parentale incarneriez-vous dans un système familial recomposé ?"
+      },
+      {
+        "id": "Q042",
+        "category": "non_reciprocal",
+        "text": "Combien de soirées entre amis par semaine pourriez-vous sacrifier pour le couple ?"
+      },
+      {
+        "id": "Q049",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre ne vous soutenait pas après une perte d'emploi, qu'est-ce que cela changerait pour vous ?"
+      },
+      {
+        "id": "Q064",
+        "category": "invented_fact",
+        "text": "Combien d'heures par semaine rien qu'à vous vous semblent indispensables ?"
+      },
+      {
+        "id": "Q067",
+        "category": "violence_or_compromise",
+        "text": "Que vous faudrait-il savoir sur les enfants avant de vous engager ?"
+      },
+      {
+        "id": "Q076",
+        "category": "known_fact_repetition",
+        "text": "Quelle place pensez-vous prendre auprès des enfants d'un conjoint ?"
+      },
+      {
+        "id": "Q090",
+        "category": "answer_leak",
+        "text": "Membre A ne pourrait pas accepter les enfants de l'autre : jusqu'où pourriez-vous aller sur ce point ?"
+      },
+      {
+        "id": "Q108",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre refusait catégoriquement de déménager, comment le vivriez-vous ?"
+      },
+      {
+        "id": "Q123",
+        "category": "two_ideas",
+        "text": "Jusqu'où et pendant combien de temps pourriez-vous vivre avec la fumée à la maison ?"
+      },
+      {
+        "id": "Q134",
+        "category": "non_reciprocal",
+        "text": "Combien de verres par semaine vous sembleraient encore raisonnables à deux ?"
+      },
+      {
+        "id": "Q139",
+        "category": "childhood_family_detour",
+        "text": "À quel âge un enfant devrait-il pouvoir choisir sa propre foi, selon vous ?"
+      },
+      {
+        "id": "Q149",
+        "category": "non_reciprocal",
+        "text": "Qu'est-ce qui vous aiderait à vous décider enfin sur les enfants ?"
+      },
+      {
+        "id": "Q157",
+        "category": "non_reciprocal",
+        "text": "Combien de temps faudrait-il, selon vous, pour trouver votre place auprès d'un enfant de l'autre ?"
+      },
+      {
+        "id": "Q175",
+        "category": "reversed_hypothesis",
+        "text": "Si la question des enfants restait sans réponse, combien de temps pourriez-vous attendre ?"
+      },
+      {
+        "id": "Q178",
+        "category": "jargon",
+        "text": "Dans cette divergence sur l'épargne, quels besoins sous-jacents s'expriment chez vous ?"
+      },
+      {
+        "id": "Q185",
+        "category": "unsupported_assumption",
+        "text": "Pourquoi l'argent est-il une source d'angoisse pour vous ?"
+      },
+      {
+        "id": "Q188",
+        "category": "forced_conclusion",
+        "text": "Quelle habitude liée à l'alcool serait pour vous une limite infranchissable ?"
+      },
+      {
+        "id": "Q222",
+        "category": "known_fact_repetition",
+        "text": "Qu'est-ce qui pourrait concrètement faire évoluer votre position sur les enfants ?"
+      },
+      {
+        "id": "Q227",
+        "category": "childhood_family_detour",
+        "text": "Quelle place la religion avait-elle dans la maison de votre enfance ?"
+      },
+      {
+        "id": "Q229",
+        "category": "invented_fact",
+        "text": "À combien de kilomètres de votre ville actuelle pourriez-vous réellement vivre ?"
+      },
+      {
+        "id": "Q246",
+        "category": "jargon",
+        "text": "Dans quelle situation pourriez-vous regretter votre choix sur les enfants ?"
+      },
+      {
+        "id": "Q275",
+        "category": "jargon",
+        "text": "Comment co-construiriez-vous un cadre sécurisant face à une perte d'emploi ?"
+      },
+      {
+        "id": "Q286",
+        "category": "unsupported_assumption",
+        "text": "Combien de soirs par semaine l'alcool pourrait-il être présent chez vous sans vous peser ?"
+      },
+      {
+        "id": "Q307",
+        "category": "unsupported_assumption",
+        "text": "Pourquoi la présence d'enfants d'une autre union vous met-elle mal à l'aise ?"
+      },
+      {
+        "id": "Q314",
+        "category": "violence_or_compromise",
+        "text": "Combien de jours sans alcool par semaine vous sembleraient normaux à la maison ?"
+      },
+      {
+        "id": "Q335",
+        "category": "non_reciprocal",
+        "text": "Qu'est-ce qui vous empêche d'accepter de déménager ?"
+      },
+      {
+        "id": "Q336",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre exigeait des soirées seul(e) chaque semaine, comment réagiriez-vous ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "Q002",
+        "text": "Quelle réponse sur les enfants vous ferait mettre fin à cette rencontre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q003",
+        "text": "Pourriez-vous embrasser chaque jour quelqu'un qui fume régulièrement ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q006",
+        "text": "Quelle place la religion devrait-elle avoir dans les fêtes de famille de vos futurs enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q027",
+        "text": "Lors des grandes fêtes de l'année, comment imaginez-vous votre foyer ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q029",
+        "text": "Que devriez-vous entendre de l'autre sur les enfants pour avoir envie de continuer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q035",
+        "text": "Si des paris revenaient chaque semaine dans votre foyer, qu'est-ce qui vous inquiéterait le plus ?",
+        "gate": [
+          "P7 reprend la réponse d’un membre"
+        ]
+      },
+      {
+        "id": "Q044",
+        "text": "Si la cigarette restait dans votre vie commune pour toujours, pourriez-vous vous engager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q052",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter si l'un de vous restait longtemps sans revenu ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q053",
+        "text": "Où passe pour vous la limite entre un verre convivial et une habitude qui pose problème ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q054",
+        "text": "Que vous faudrait-il savoir des convictions de l'autre avant de vous engager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q079",
+        "text": "Qu'est-ce qui compte le plus pour vous dans ce que vos enfants recevraient sur le plan spirituel ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q085",
+        "text": "Combien d'heures de trajet par semaine pourriez-vous faire pour voir l'autre ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q091",
+        "text": "Quelle place le jeu d'argent devrait-il avoir dans votre futur budget commun ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre futur budget »)"
+        ]
+      },
+      {
+        "id": "Q093",
+        "text": "Pendant combien de mois pourriez-vous assumer seul(e) les charges du foyer ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q094",
+        "text": "Dans une famille recomposée, qui irait à la réunion parents-professeurs ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q096",
+        "text": "Quel est le plus gros achat plaisir que vous pourriez faire sans en parler d'abord ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q106",
+        "text": "Si vos enfants choisissaient un jour une autre voie spirituelle que la vôtre, comment le vivriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q112",
+        "text": "Lors d'un repas de famille, quelle quantité d'alcool vous semblerait normale ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q120",
+        "text": "Quelle somme dépensée en tabac chaque mois vous paraîtrait acceptable pour un foyer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q121",
+        "text": "Si la fumée faisait partie de votre quotidien commun, cela vous irait-il sur le long terme ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q125",
+        "text": "Pour un mariage, quelle cérémonie vous serait impossible à envisager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q142",
+        "text": "Qu'est-ce qui vous attache le plus à l'endroit où vous vivez aujourd'hui ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « vivez »)",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q143",
+        "text": "Quel achat de plus de 500 € vous semblerait justifié sans hésiter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q155",
+        "text": "Combien d'argent perdu au jeu en une année vous paraîtrait inacceptable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q173",
+        "text": "Pourriez-vous construire toute une vie avec quelqu'un qui ne fait pas le même choix que vous sur les enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q184",
+        "text": "À partir de quand une aide financière entre conjoints devient-elle, pour vous, une dépendance ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q196",
+        "text": "Quelle habitude liée à l'alcool serait pour vous un point de rupture ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q201",
+        "text": "Si un médecin vous disait demain que les enfants ne seraient pas possibles, qu'est-ce que cela changerait pour vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q206",
+        "text": "Combien de cigarettes par jour, sous votre toit, vous sembleraient supportables ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre toit »)",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q218",
+        "text": "Si l'un de vous voulait reprendre des études sans revenu pendant deux ans, pourriez-vous l'accepter ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q236",
+        "text": "Si l'autre avait des enfants et que leur garde changeait du jour au lendemain, pourriez-vous suivre ?",
+        "gate": [
+          "EN5 habitude présupposée"
+        ]
+      },
+      {
+        "id": "Q240",
+        "text": "Si une prime de 3 000 € tombait demain, quelle part en mettriez-vous de côté ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q242",
+        "text": "Après une journée de travail, combien de temps seul(e) vous faut-il avant d'être disponible ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q247",
+        "text": "Si vos enfants et ceux de l'autre vivaient un jour sous le même toit, les traiteriez-vous de la même façon ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q257",
+        "text": "L'odeur du tabac sur les vêtements, chaque jour, serait-elle supportable pour vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q258",
+        "text": "Quel montant joué par mois vous semblerait déjà de trop dans un foyer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q261",
+        "text": "Qui devrait avoir le dernier mot sur l'éducation d'un enfant qui n'est pas le vôtre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q263",
+        "text": "Face à un enfant qui n'est pas le vôtre, jusqu'où iriez-vous pour poser une règle ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q272",
+        "text": "Combien de soirs par semaine l'alcool pourrait-il être sur la table sans que cela vous pèse ?",
+        "gate": [
+          "P10 émotion présupposée"
+        ]
+      },
+      {
+        "id": "Q281",
+        "text": "Quelle place vos convictions devraient-elles avoir dans votre quotidien à deux ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q293",
+        "text": "Quelle somme pourriez-vous avancer chaque mois si l'un de vous n'avait plus de salaire ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q296",
+        "text": "Si vos convictions ne se rejoignaient jamais, pourriez-vous construire un foyer ensemble ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q298",
+        "text": "Pour un voyage à 1 500 €, combien de mois seriez-vous prêt(e) à économiser ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q308",
+        "text": "Si un enfant du foyer vous disait « tu n'es pas mon parent », que lui répondriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q315",
+        "text": "Combien de temps une relation à distance pourrait-elle durer avant de devenir trop lourde pour vous ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q317",
+        "text": "Que signifie pour vous, au quotidien, « accueillir » un enfant qui n'est pas le vôtre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q318",
+        "text": "Quelle somme mensuelle pour les envies de chacun vous semblerait raisonnable dans un couple ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q320",
+        "text": "Sur un salaire de 2 000 €, quelle somme accepteriez-vous de voir partir en plaisirs chaque mois ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q322",
+        "text": "Jusqu'où la religion des enfants pourrait-elle décider, pour vous, de l'avenir de cette relation ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q337",
+        "text": "Combien de temps vous laissez-vous encore pour décider, au sujet des enfants ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « laissez »)"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "final",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 113,
+    "valid": 120,
+    "faultyRejectionRate": 0.9734513274336283,
+    "validAcceptanceRate": 0.475,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "diagnosis": {
+        "n": 8,
+        "rejected": 8
+      },
+      "two_ideas": {
+        "n": 8,
+        "rejected": 7
+      },
+      "fake_gap": {
+        "n": 9,
+        "rejected": 9
+      },
+      "wrong_partner_position": {
+        "n": 8,
+        "rejected": 8
+      },
+      "known_fact_repetition": {
+        "n": 8,
+        "rejected": 8
+      },
+      "forced_conclusion": {
+        "n": 8,
+        "rejected": 8
+      },
+      "non_reciprocal": {
+        "n": 8,
+        "rejected": 7
+      },
+      "jargon": {
+        "n": 8,
+        "rejected": 8
+      },
+      "reversed_hypothesis": {
+        "n": 8,
+        "rejected": 7
+      },
+      "childhood_family_detour": {
+        "n": 8,
+        "rejected": 8
+      },
+      "invented_fact": {
+        "n": 8,
+        "rejected": 8
+      },
+      "violence_or_compromise": {
+        "n": 8,
+        "rejected": 8
+      },
+      "answer_leak": {
+        "n": 8,
+        "rejected": 8
+      },
+      "unsupported_assumption": {
+        "n": 8,
+        "rejected": 8
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "Q049",
+        "category": "reversed_hypothesis",
+        "text": "Si l'autre ne vous soutenait pas après une perte d'emploi, qu'est-ce que cela changerait pour vous ?"
+      },
+      {
+        "id": "Q123",
+        "category": "two_ideas",
+        "text": "Jusqu'où et pendant combien de temps pourriez-vous vivre avec la fumée à la maison ?"
+      },
+      {
+        "id": "Q149",
+        "category": "non_reciprocal",
+        "text": "Qu'est-ce qui vous aiderait à vous décider enfin sur les enfants ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "Q002",
+        "text": "Quelle réponse sur les enfants vous ferait mettre fin à cette rencontre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q003",
+        "text": "Pourriez-vous embrasser chaque jour quelqu'un qui fume régulièrement ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q006",
+        "text": "Quelle place la religion devrait-elle avoir dans les fêtes de famille de vos futurs enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q027",
+        "text": "Lors des grandes fêtes de l'année, comment imaginez-vous votre foyer ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q029",
+        "text": "Que devriez-vous entendre de l'autre sur les enfants pour avoir envie de continuer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q035",
+        "text": "Si des paris revenaient chaque semaine dans votre foyer, qu'est-ce qui vous inquiéterait le plus ?",
+        "gate": [
+          "P7 reprend la réponse d’un membre"
+        ]
+      },
+      {
+        "id": "Q044",
+        "text": "Si la cigarette restait dans votre vie commune pour toujours, pourriez-vous vous engager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q052",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter si l'un de vous restait longtemps sans revenu ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q053",
+        "text": "Où passe pour vous la limite entre un verre convivial et une habitude qui pose problème ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q054",
+        "text": "Que vous faudrait-il savoir des convictions de l'autre avant de vous engager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q056",
+        "text": "Quelle place le tabac a-t-il dans l'image que vous vous faites d'une vie saine à deux ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 10
+        }
+      },
+      {
+        "id": "Q060",
+        "text": "Si votre propre salaire disparaissait demain, combien de temps tiendriez-vous sans demander d'aide ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 9
+        }
+      },
+      {
+        "id": "Q079",
+        "text": "Qu'est-ce qui compte le plus pour vous dans ce que vos enfants recevraient sur le plan spirituel ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q085",
+        "text": "Combien d'heures de trajet par semaine pourriez-vous faire pour voir l'autre ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q091",
+        "text": "Quelle place le jeu d'argent devrait-il avoir dans votre futur budget commun ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre futur budget »)"
+        ]
+      },
+      {
+        "id": "Q093",
+        "text": "Pendant combien de mois pourriez-vous assumer seul(e) les charges du foyer ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q094",
+        "text": "Dans une famille recomposée, qui irait à la réunion parents-professeurs ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q096",
+        "text": "Quel est le plus gros achat plaisir que vous pourriez faire sans en parler d'abord ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q106",
+        "text": "Si vos enfants choisissaient un jour une autre voie spirituelle que la vôtre, comment le vivriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q112",
+        "text": "Lors d'un repas de famille, quelle quantité d'alcool vous semblerait normale ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q114",
+        "text": "Dans quelle situation regretteriez-vous le plus votre choix sur les enfants ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "Q120",
+        "text": "Quelle somme dépensée en tabac chaque mois vous paraîtrait acceptable pour un foyer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q121",
+        "text": "Si la fumée faisait partie de votre quotidien commun, cela vous irait-il sur le long terme ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q125",
+        "text": "Pour un mariage, quelle cérémonie vous serait impossible à envisager ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q142",
+        "text": "Qu'est-ce qui vous attache le plus à l'endroit où vous vivez aujourd'hui ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « vivez »)",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q143",
+        "text": "Quel achat de plus de 500 € vous semblerait justifié sans hésiter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q153",
+        "text": "Quelle place les enfants occupent-ils dans la vie que vous imaginez à cinquante ans ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "Q155",
+        "text": "Combien d'argent perdu au jeu en une année vous paraîtrait inacceptable ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q169",
+        "text": "Si la vie ne vous donnait pas d'enfant, comment imagineriez-vous votre couple ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 17
+        }
+      },
+      {
+        "id": "Q173",
+        "text": "Pourriez-vous construire toute une vie avec quelqu'un qui ne fait pas le même choix que vous sur les enfants ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q182",
+        "text": "Qu'est-ce qui rend votre position sur les enfants si importante à vos yeux ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "Q184",
+        "text": "À partir de quand une aide financière entre conjoints devient-elle, pour vous, une dépendance ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q196",
+        "text": "Quelle habitude liée à l'alcool serait pour vous un point de rupture ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q201",
+        "text": "Si un médecin vous disait demain que les enfants ne seraient pas possibles, qu'est-ce que cela changerait pour vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q206",
+        "text": "Combien de cigarettes par jour, sous votre toit, vous sembleraient supportables ?",
+        "gate": [
+          "P13 possessif non autorisé (« votre toit »)",
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q218",
+        "text": "Si l'un de vous voulait reprendre des études sans revenu pendant deux ans, pourriez-vous l'accepter ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q231",
+        "text": "Combien de chambres d'enfants imaginez-vous dans votre futur foyer ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 1
+        }
+      },
+      {
+        "id": "Q236",
+        "text": "Si l'autre avait des enfants et que leur garde changeait du jour au lendemain, pourriez-vous suivre ?",
+        "gate": [
+          "EN5 habitude présupposée"
+        ]
+      },
+      {
+        "id": "Q240",
+        "text": "Si une prime de 3 000 € tombait demain, quelle part en mettriez-vous de côté ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q242",
+        "text": "Après une journée de travail, combien de temps seul(e) vous faut-il avant d'être disponible ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q247",
+        "text": "Si vos enfants et ceux de l'autre vivaient un jour sous le même toit, les traiteriez-vous de la même façon ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q256",
+        "text": "À quoi ressemble pour vous une fin de mois réussie ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "Q257",
+        "text": "L'odeur du tabac sur les vêtements, chaque jour, serait-elle supportable pour vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q258",
+        "text": "Quel montant joué par mois vous semblerait déjà de trop dans un foyer ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q260",
+        "text": "Si un enfant arrivait sans avoir été prévu, comment pensez-vous réagir ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 1
+        }
+      },
+      {
+        "id": "Q261",
+        "text": "Qui devrait avoir le dernier mot sur l'éducation d'un enfant qui n'est pas le vôtre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q263",
+        "text": "Face à un enfant qui n'est pas le vôtre, jusqu'où iriez-vous pour poser une règle ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q272",
+        "text": "Combien de soirs par semaine l'alcool pourrait-il être sur la table sans que cela vous pèse ?",
+        "gate": [
+          "P10 émotion présupposée"
+        ]
+      },
+      {
+        "id": "Q281",
+        "text": "Quelle place vos convictions devraient-elles avoir dans votre quotidien à deux ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q293",
+        "text": "Quelle somme pourriez-vous avancer chaque mois si l'un de vous n'avait plus de salaire ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q296",
+        "text": "Si vos convictions ne se rejoignaient jamais, pourriez-vous construire un foyer ensemble ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q298",
+        "text": "Pour un voyage à 1 500 €, combien de mois seriez-vous prêt(e) à économiser ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q303",
+        "text": "Si la question des enfants de chacun ne se réglait jamais entre vous, pourriez-vous vous engager ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 5
+        }
+      },
+      {
+        "id": "Q308",
+        "text": "Si un enfant du foyer vous disait « tu n'es pas mon parent », que lui répondriez-vous ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q315",
+        "text": "Combien de temps une relation à distance pourrait-elle durer avant de devenir trop lourde pour vous ?",
+        "gate": [
+          "P17 sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "Q317",
+        "text": "Que signifie pour vous, au quotidien, « accueillir » un enfant qui n'est pas le vôtre ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q318",
+        "text": "Quelle somme mensuelle pour les envies de chacun vous semblerait raisonnable dans un couple ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q320",
+        "text": "Sur un salaire de 2 000 €, quelle somme accepteriez-vous de voir partir en plaisirs chaque mois ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q322",
+        "text": "Jusqu'où la religion des enfants pourrait-elle décider, pour vous, de l'avenir de cette relation ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "Q325",
+        "text": "Qu'est-ce qui vous ferait vous sentir vraiment chez vous dans un foyer partagé avec des enfants d'une autre union ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 3
+        }
+      },
+      {
+        "id": "Q337",
+        "text": "Combien de temps vous laissez-vous encore pour décider, au sujet des enfants ?",
+        "gate": [
+          "P14 fait de vie présupposé (verbe « laissez »)"
+        ]
+      },
+      {
+        "id": "Q339",
+        "text": "Si vous deviez décider pour les enfants avant la fin de l'année, que décideriez-vous ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 8
+        }
+      },
+      {
+        "id": "Q340",
+        "text": "Qu'est-ce qui, concrètement, pourrait faire bouger votre position sur les enfants ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12
+        }
+      }
+    ]
+  }
+]

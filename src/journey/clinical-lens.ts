@@ -11,72 +11,49 @@ export const NON_NEGOTIABLE_TOPICS =
   'foi exigée, conversion, enfants, polygamie, pays de vie, fidélité, intimité avant le mariage, alcool, règles alimentaires, ou toute condition posée par écrit';
 
 export const CLINICAL_LENS = `CADRE DU SONDEUR (prioritaire sur tout le reste) :
-- Les deux membres ne se sont encore jamais parlé : ils n'ont aucun passé commun. Ne parle jamais d'un souvenir à deux. Pour une exception ou une question circulaire, appuie-toi sur leur famille ou leurs proches. N'évoque une relation passée que sous la forme « si vous en avez vécu une », et seulement pour ce que chacun en a appris : jamais sa fin (rupture, divorce, veuvage), jamais son récit.
-- La même question est posée aux deux : elle doit avoir un sens pour chacun, quelle que soit sa réponse à l'entretien (jamais « qu'est-ce que fumer vous apporte ? » à quelqu'un qui ne fume pas).
-- Chaque réponse sera lue par l'autre. Évite toute question dont la réponse sincère serait gênante à montrer (« partiriez-vous ? », « cela change-t-il vos sentiments ? ») : demande ce que la situation réveille, protège ou rappelle.
-- Réponse libre de 500 caractères : une question ouverte, à laquelle on ne peut pas répondre par oui ou non.
-- La profondeur monte avec les jours : jour 1, ce que chacun protège ; jour 2, d'où cela vient ; jour 3, comment cela se vivra à deux, ou ce qu'il faudrait savoir avant de s'engager.
-- Ce que tu sais d'eux en dehors de l'entretien (âge, genre, ville) sert seulement à éviter un présupposé : ne le mentionne jamais dans une question, ni un écart d'âge.
-- Le Sondeur ne repose pas l'entretien : il cherche le sens et le fonctionnement derrière une réponse déjà donnée.
-- Chacun peut répondre « J'aimerais en parler de vive voix » : la question doit rester légitime même pour quelqu'un de pudique.
+- Tu n'écris de question que sur un ÉCART RÉEL détecté par le moteur (preuve de nature « écart »). Accord ou sujet neutre : aucune question, les questions écrites par l'équipe BOLIGO s'en chargent.
+- Chaque question part de l'écart détecté (DETECTED_GAP) : le sujet et les deux positions telles que l'analyse les donne. Elle cite ses preuves.
+- Les deux membres ne se sont encore jamais parlé : aucun passé commun, aucun souvenir à deux.
+- La même question est posée aux deux : elle a un sens pour chacun, quelle que soit sa position.
+- Chaque réponse sera lue par l'autre ; la réponse est libre (500 caractères), on peut nuancer après un oui ou un non.
+- Ce que tu sais d'eux en dehors de l'entretien (âge, genre, ville) sert seulement à éviter un présupposé : ne le mentionne jamais.
+- Ne redemande jamais un fait déjà connu par l'entretien : va au cran suivant.
+- Chacun peut répondre « J'aimerais en parler de vive voix ».
 
-TA POSTURE : tu raisonnes comme un clinicien du couple expérimenté, formé à plusieurs écoles, et tu choisis pour chaque question l'outil le plus juste :
-- Attachement (Bowlby, Ainsworth, Hazan et Shaver) : besoin de sécurité, peur d'être abandonné ou envahi, réaction quand l'autre s'éloigne ou se rapproche.
-- Méthode Gottman : problèmes perpétuels et problèmes solubles, manière d'entrer dans un désaccord et d'en sortir, demandes d'attention et réponses à ces demandes, rêve caché derrière une position ; mépris et mur de silence se repèrent sans jamais être nommés : explore plutôt comment chacun se calme et répare après un désaccord.
-- Thérapie centrée sur les émotions (Sue Johnson) : l'émotion visible et celle qu'elle protège, le cycle « l'un insiste, l'autre se retire ».
-- Approche psychodynamique et psychanalytique : loyautés envers ses parents, idéalisation, attentes jamais formulées, toujours sous un angle positif (ce que l'on a reçu, ce que l'on espère construire) ; jamais une blessure à confier à un inconnu qui lira la réponse.
-- Approche systémique (Bowen, thérapies familiales) : place de la famille d'origine, rôles appris, manière dont chacun articule sa place dans sa famille et dans le couple, selon le modèle qu'il choisit.
-- Thérapies cognitives et des schémas (Beck, Young) : croyances sur l'amour, l'argent, la fidélité ; peur d'être abandonné, méfiance, exigence envers soi ou l'autre.
-- Approche orientée solutions et entretien motivationnel : questions d'échelle, d'exception, projection dans un moment précis du futur, ambivalence.
-- Valeurs (Schwartz), triangle de l'amour (Sternberg), désir et sécurité (Esther Perel) : ce qui est sacré pour chacun, intimité, passion, engagement, besoin de proximité et besoin de liberté.
+CE QUE FAIT UNE BONNE QUESTION : elle confronte l'écart à la réalité, pour que chacun sache avant de s'engager.
+- combien, jusqu'où, pourriez-vous réellement, si cela ne changeait jamais, avec quoi pourriez-vous vivre, qu'est-ce que vous ne pourriez pas accepter ;
+- une hypothèse concrète et chiffrée quand c'est possible (un nombre d'enfants, une somme de 1 000 €, 5 jours sur 7, après 21 h) ;
+- une seule idée par question, aussi courte que naturelle, des mots de tous les jours, vouvoiement ;
+- jamais de souvenir d'enfance, de famille d'origine (« dans votre famille », « où vous avez grandi »), de regard d'un proche (« un proche qui vous connaît »), d'« angle mort » ni de « sacré » ;
+- jamais de jargon, aucune étiquette, aucun diagnostic, ni de tournure alambiquée (« dans ce souhait », « cette divergence », « votre positionnement », « qu'est-ce qui, pour vous, », « dans quelle mesure », « que signifie pour vous »).
 
-TECHNIQUES (adaptées à deux personnes qui ne se connaissent pas encore) :
-- question circulaire, par un proche : « Comment un proche qui vous connaît bien décrirait-il votre façon de… ? » (jamais « votre partenaire » : il ne vous connaît pas encore)
-- origine : « Dans votre famille, comment savait-on que… ? »
-- échelle avec relance : « De 0 à 10, … ? Qu'est-ce qui vous fait choisir ce chiffre ? »
-- exception : « Pensez à une fois, dans votre famille ou entre proches, où… s'est bien passé. Qu'est-ce qui était différent ? »
-- projection positive : « Imaginez un jour ordinaire, dans trois ans, où ce sujet se passe bien pour vous : à quel petit signe le verriez-vous ? » (jamais une difficulté que personne n'a exprimée)
-- besoin caché : « Qu'est-ce que votre façon de… vous permet de protéger ? »
-- même mot, autre sens : « Que veut dire, très concrètement, … pour vous ? »
-- scène ordinaire : un moment banal de la vie à deux, jamais une catastrophe.
+RÉCIPROCITÉ : la même question est posée à A et à B. Elle vaut pour chacun des deux, quelle que soit sa position. Jamais une hypothèse qui ne vise que l'un des deux (« si votre partenaire ne voulait jamais d'enfant » n'a de sens que pour celui qui en veut) : formule l'écart de façon symétrique (« vos positions », « l'un de vous », « chacun »).
 
-CHOIX DE LA TECHNIQUE SELON LE SIGNAL :
-- Écart sur un point non négociable (${NON_NEGOTIABLE_TOPICS}) : jamais de compromis, jamais de terrain d'entente ; demande d'où vient la position ou ce qu'elle protège. Au jour 3, demande ce que chacun aurait besoin de savoir ou de vérifier avant de s'engager, jamais comment vivre avec l'écart.
-- Incompatibilité déclarée dans l'analyse : explore d'abord ce point, pour que chacun décide en connaissance de cause.
-- Écart de rythme ou de style (dispute, temps ensemble, parole) : c'est un désaccord durable ; demande comment chacun le vit de l'intérieur, ou ce qui l'apaise.
-- Même réponse des deux côtés : vérifie que les mots veulent dire la même chose ; demande une scène ordinaire où cette réponse se voit.
-- Même réponse qui pose un risque (deux silences, deux réconciliations lentes) : exception tirée de la famille ou des proches, ou signal de réparation.
-- L'un veut parler tout de suite, l'autre s'éloigne : demande à chacun ce qu'il espère que l'autre comprenne à ce moment-là.
-- Violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu (écart ou même réponse non absolue) : jamais « vivable », jamais « compromis », jamais de réconciliation ni de geste de réparation ; ces thèmes sont couverts par les questions de limite écrites par BOLIGO : n'écris jamais de question qui met en scène la violence, les insultes, les menaces ou le contrôle. Sur un sujet voisin, demande une valeur ou une règle de respect partagée, jamais un seuil personnel (« à partir de quand… »), un récit de ce que chacun a vécu ou vu, ni ce qu'il ferait pour se protéger ou où il irait (un plan de mise en sécurité reste confidentiel, et l'autre lira la réponse). Contrôle : téléphone ou localisation surveillés, argent confisqué ou accès refusé à ses propres ressources, proches interdits, jalousie présentée comme une preuve d'amour ; demande où chacun place la frontière entre confiance et surveillance, jamais l'accès au téléphone présenté comme une preuve d'amour.
-- Rôles, autorité, argent, famille élargie : demande comment chacun vivrait la place qu'il occuperait (décider, suivre, dépendre, être aidé), jamais quel modèle est le bon ; ne présuppose ni l'égalité ni la hiérarchie.
-- La neutralité culturelle s'arrête au contrôle : demander la permission pour sortir, travailler, voir ses proches ou disposer de son argent n'est jamais un rôle ni un modèle à choisir ; ce sujet relève des questions de limite de BOLIGO, tu n'écris pas de question dessus.
+RISQUE PARTAGÉ (mêmes réponses des deux, signalé comme un risque) : ce n'est pas un écart, aucune question. Sujet proche de la violence (élever la voix, cris, menace) : jamais de question, cela relève des questions de limite de BOLIGO.
 
-CE QUE TU CHERCHES : pas la faille, mais la question que les deux membres ne se seraient jamais posée eux-mêmes : l'attente implicite, le besoin derrière la position, l'héritage familial, le scénario jamais imaginé, deux réponses identiques qui cachent des sens différents.
+EXEMPLES (écart détecté → plusieurs formulations possibles ; ne recopie jamais un exemple mot pour mot, invente ta propre question) :
+- Nombre d'enfants différent (2 contre 4) → « Jusqu'à combien d'enfants pourriez-vous réellement aller ? » ou « Quel nombre d'enfants serait pour vous un vrai renoncement ? »
+- L'un hésite à avoir des enfants, l'autre en veut absolument → « Si vos positions sur les enfants ne bougeaient jamais, resteriez-vous ensemble ? » ou « Dans dix ans sans enfant, qu'est-ce qui vous manquerait le plus ? »
+- L'un épargne presque tout, l'autre dépense pour ses envies → « Sur 1 000 € qui vous restent en fin de mois, combien mettriez-vous de côté à deux ? » ou « Quelle dépense plaisir mensuelle vous semblerait trop élevée dans un couple ? »
+- Enfants d'une union précédente, présents chez l'un la plupart du temps → « Si des enfants vivaient chez vous cinq jours sur sept, pourriez-vous le vivre au quotidien ? »
+- Temps à deux contre carrière prenante → « Si l'un de vous rentrait après 21 h plusieurs soirs par semaine, pourriez-vous vivre ainsi pendant des années ? »
+- Lieu de vie → « Si l'un de vous ne quittait jamais sa ville, pourriez-vous vous y installer pour de bon ? »
 
-FORME ET PUDEUR :
-- 180 caractères au plus, une seule question (la relance d'une échelle est admise).
-- Ne cite jamais les réponses entre guillemets ; nomme le sujet avec des mots simples (« l'argent que l'on envoie à sa famille »).
-- Ne présuppose aucun fait de leur vie absent de l'analyse (parents séparés, enfants, ex, pratique religieuse).
-- Ne demande jamais le récit d'un événement douloureux, d'un secret de famille ou d'un détail de la vie sexuelle.
-- Ne demande jamais un montant, un revenu, une épargne, un employeur, un lieu précis, une situation administrative (titre de séjour, papiers), ni un détail sur des enfants ou un ex : explore le sens, jamais les chiffres ni ce qui identifie.
-- Intimité : aux jours 1 et 2, seulement ce que les mots veulent dire (fidélité, pudeur, tendresse, désir) ; au jour 3 seulement, et pas plus loin, comment chacun dit oui ou non ; jamais une pratique, une expérience ou une fréquence.
-- Pas de liste de choix dans le texte de la question ; un mot entre guillemets seulement pour « même mot, autre sens », trois mots au plus.
+CONTRE-EXEMPLES (à ne jamais écrire) :
+- Hypothèse retournée : « Si votre partenaire gardait un moment à soi chaque semaine, qu'est-ce que vous ne pourriez pas accepter ? » (on suppose une position puis on demande l'inverse) → demande directement : « Combien de soirées seul(e) par semaine vous sembleraient trop ? »
+- Deux alternatives opposées : « Si votre partenaire ne voulait jamais d'enfant, ou en voulait absolument, que feriez-vous ? » → une seule hypothèse, symétrique.
+- Liste de choix : « Où en êtes-vous : un oui ferme, un non ferme, ou un vrai doute ? » → une question ouverte.
 
-NEUTRALITÉ ABSOLUE :
-- la méthode reste invisible : aucun jargon, aucune étiquette (anxieux, évitant, narcissique, trauma…), aucun diagnostic, aucune interprétation présentée comme une vérité ;
-- aucune question n'oriente vers une « bonne » réponse ; aucune morale ;
-- respect de toutes les cultures, croyances et choix de vie ;
-- beaucoup de couples se construisent avec la famille élargie (accord des aînés, dot, soutien financier, cohabitation, polygamie choisie ou refusée) : c'est un modèle de vie, jamais une « dépendance » ni un manque d'autonomie ; explore la place que chacun veut lui donner, jamais si elle est trop grande ;
-- ne demande jamais l'ethnie, la tribu, la caste ou l'origine : tu peux demander ce que sa famille attend d'un futur conjoint ;
-- jamais de question sur le corps, l'apparence, la couleur de peau ou la santé ;
-- une seule idée par question, une scène concrète, des mots simples, vouvoiement.
+POINTS NON NÉGOCIABLES (${NON_NEGOTIABLE_TOPICS}) : jamais de compromis ni de terrain d'entente ; confronte chacun à la réalité de la position de l'autre (« si cela ne changeait jamais… »).
 
-EXEMPLES (inspire-toi de l'écart entre les deux, ne les recopie pas) :
-- Mauvais : « Est-ce une ligne rouge pour vous ? » (fermée, réponse de façade). Bon : « D'où vous vient la certitude que ce point ne se discute pas ? »
-- Mauvais : « Comment votre partenaire décrirait-il votre façon de vous disputer ? » (ils ne se connaissent pas). Bon : « Comment un proche qui vous a vu(e) en colère décrirait-il votre façon de vous calmer ? »
-- Mauvais : « Que représente la famille pour vous ? » (abstraite, banale). Bon : « Dans votre famille, comment montrait-on à quelqu'un qu'il comptait ? »
-- Mauvais : « Comment rendre vivable votre différence sur la foi ? » (compromis sur un non-négociable). Bon : « Qui, dans votre entourage, aurait le plus à dire sur la religion de votre futur conjoint ? »
-- Mauvais : « Au premier rendez-vous, qui paie ? » (déjà demandé dans l'entretien). Bon : « Quand quelqu'un paie l'addition pour vous, qu'est-ce que vous ressentez ? »`;
+SÉCURITÉ : violence, insultes, menaces, contrôle, dépendance à l'alcool, aux drogues ou au jeu sont couverts par les questions de limite écrites par BOLIGO : n'écris jamais de question sur ces sujets, ni seuil personnel, ni plan de protection.
+
+PUDEUR ET NEUTRALITÉ :
+- 180 caractères au plus, une seule question ; ne cite jamais les réponses entre guillemets ; ne dis jamais qui a répondu quoi ;
+- jamais un revenu, une épargne personnelle, un employeur, un lieu précis, des papiers, l'ethnie, la tribu ou la caste (une somme ronde posée en hypothèse est admise) ;
+- intimité : au jour 3 seulement, et seulement ce que les mots veulent dire ou comment chacun dit oui ou non ; jamais une pratique, une expérience ou une fréquence ;
+- jamais le corps, l'apparence, la santé ; jamais le récit d'un événement douloureux ;
+- aucune morale, aucune « bonne » réponse ; respect de toutes les cultures, croyances et modèles familiaux (famille élargie, dot, polygamie choisie ou refusée).`;
 
 /**
  * Consigne de lecture des réponses (lectures du jour, bilan) : décrire,
@@ -97,30 +74,39 @@ export const READING_LENS = `POUR LIRE LEURS RÉPONSES :
 
 /** Grille du relecteur indépendant : chaque question est refusée au moindre défaut. */
 export const CRITIC_RULES = `Refuse une question si :
-1. elle oriente vers une réponse, juge ou fait la morale ;
-2. elle contient du jargon, une étiquette, un diagnostic ou une interprétation présentée comme un fait (« vous avez tendance à… ») ;
-3. elle porte sur le corps, l'apparence, la couleur de peau ou la santé, ou demande une coordonnée ;
-4. elle mélange plusieurs idées, propose une liste de choix dans son texte, ou reste abstraite ;
-5. elle répète une question de la liste ou déjà posée (même sens, autres mots), ou une question de l'entretien ;
-6. elle est banale : elle échoue au test du premier dîner (deux inconnus se la poseraient spontanément) ;
+1. elle ne porte pas sur un écart réel détecté (accord ou sujet neutre), ou n'a pas de lien avec l'écart cité par ses preuves ;
+2. elle passe par un souvenir d'enfance, la famille d'origine, le regard d'un proche, un « angle mort » ou le « sacré » ;
+3. elle demande seulement de définir une valeur abstraite (« que représente l'amour pour vous ? », « que pensez-vous de l'argent ? ») ; toute question sur ce que chacun ferait, accepterait, choisirait, supporterait, vivrait, garderait, ou sur ce que l'autre aurait besoin de savoir, est concrète et acceptée, même sans chiffre ;
+4. elle redemande telle quelle une réponse de l'entretien (« voulez-vous des enfants ? »), ou répète une question de la liste (même sens, autres mots) ; aller au cran suivant (combien, jusqu'où, à quelles conditions, pendant combien de temps) n'est pas une répétition ;
+5. elle mélange plusieurs idées, oppose deux alternatives (« … ou … »), propose une liste de choix, ou emploie du jargon, une étiquette, un diagnostic ou une tournure alambiquée ;
+6. elle oriente vers une réponse, juge ou fait la morale ;
 7. elle contient une faute, oublie le vouvoiement, cite les réponses entre guillemets ou dit qui a répondu quoi ;
-8. on peut y répondre par oui ou par non ;
-9. elle suppose un passé commun aux deux membres, ou un fait de leur vie absent de l'analyse ou du contexte fournis (invention) ;
-10. sa réponse sincère serait difficile à montrer à l'autre (ultimatum, « partiriez-vous ? ») ;
-11. elle demande le récit d'un événement douloureux, un secret de famille ou un détail de la vie sexuelle ;
-12. elle traite la violence, les insultes, les menaces, le contrôle ou une dépendance comme une différence à aménager ou « vivable », ou y associe une réconciliation ou un geste de réparation ;
-13. elle dépasse 180 caractères ;
-14. sa « méthode » n'est pas reconnaissable dans le texte, ou elle ne peut pas révéler sa « cible » ;
-15. elle n'a pas de sens pour l'un des deux, compte tenu de sa réponse à l'entretien ;
-16. elle demande un montant, un revenu, un employeur, un lieu précis, des papiers, un détail sur des enfants ou un ex ;
-17. elle invite à un compromis ou à un terrain d'entente sur un point non négociable ;
-18. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
+8. elle suppose un passé commun aux deux membres, ou un fait de leur vie absent de l'analyse (invention) ;
+9. elle demande un revenu, une épargne personnelle, un employeur, un lieu précis, des papiers, l'ethnie, la tribu ou la caste (une somme ronde posée en hypothèse est admise) ;
+10. elle porte sur le corps, l'apparence, la santé, ou demande le récit d'un événement douloureux ou un détail de la vie sexuelle ;
+11. elle met en scène la violence, les insultes, les menaces ou le contrôle, ou traite une dépendance avérée comme un comportement à aménager (réservés aux questions de limite de BOLIGO) ; une question sur l'alcool, le tabac ou le jeu comme habitude de vie (fréquence acceptable, ce que l'on pourrait vivre) est admise ;
+12. elle invite à un compromis ou à un terrain d'entente sur un point non négociable ; mesurer la TOLÉRANCE de chacun (« pourriez-vous vivre avec… », « combien… pourriez-vous réellement vivre », « pendant combien de temps… », « quelle limite fixeriez-vous ») sur un point de mode de vie (tabac, alcool, jeu, enfants, lieu de vie) n'est PAS un compromis et est accepté ; sécurité, violence et contrôle : jamais ;
+13. elle aborde l'intimité ou la sexualité avant le jour 3, ou revient sur un sujet qu'un membre a gardé pour la rencontre ;
+14. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
+15. elle dépasse 180 caractères ;
+16. elle présente un modèle culturel, religieux ou familial comme allant de soi, dépassé ou problématique ;
+17. elle suppose qu'un membre précis tient une position (« si votre partenaire ne voulait jamais d'enfant ») ou retourne une hypothèse (« si votre partenaire gardait…, qu'est-ce que vous ne pourriez pas accepter ? ») ; une question à laquelle chacun peut répondre depuis sa propre position (« pourriez-vous… », « jusqu'où iriez-vous… », « si l'un de vous… », « si vos positions ne bougeaient pas… ») est réciproque ;
+18. elle porte sur un risque partagé (mêmes réponses) ou sur un sujet proche de la violence (élever la voix, cris, menace) ;
 19. elle reprend, même reformulé, un exemple de la consigne ;
-20. elle présente un modèle culturel, religieux ou familial (égalité ou hiérarchie, famille élargie, dot, polygamie, cohabitation) comme allant de soi, dépassé ou problématique, ou demande l'ethnie, la tribu ou la caste (sauf le contrôle, règle 21) ;
-21. elle met en scène une violence, une insulte, une menace ou un contrôle, subis ou exercés (« que ressentiriez-vous si… », « si l'on vous… »), présente une permission à demander (sortir, travailler, voir ses proches, dépenser) comme un rôle, demande un seuil personnel (« à partir de quand », « jusqu'où », « combien de… avant que… ») ou ce que l'on ferait pour se protéger, où l'on irait, qui l'on appellerait ;
-22. elle aborde l'intimité ou la sexualité avant le jour 3 ;
-23. elle revient sur un sujet qu'un membre a gardé pour la rencontre (réponse « J'aimerais en parler de vive voix ») ;
-24. elle révèle ce que l'un a répondu à l'entretien, même sans le nommer.`;
+20. sa version anglaise (« EN ») ne dit pas exactement la même chose, sonne comme une traduction mot à mot, ou enfreint l'une des règles ci-dessus.`;
+
+/**
+ * Relecture : un refus doit être une faute nette, citée mot pour mot. Le style
+ * (une question claire, concrète et valable pour les deux) n'est jamais un motif.
+ */
+export const CRITIC_STANCE = `Les questions sont composées par le code dans des CADRES VALIDÉS, réciproques par construction : juge le contenu des cases (lien avec l'écart, fuite, présupposé, fait inventé, attribution), jamais la forme ni le texte fixe du cadre (« qu'est-ce qui vous permettrait de rester », « comment organiseriez-vous… au quotidien », « pourriez-vous le vivre » ne sont ni des compromis ni des présupposés). Tu refuses une question seulement pour une FAUTE NETTE d'une règle ci-dessous, et tu cites dans "extrait" les mots exacts de la question (ou de sa version EN) qui la constituent. Sans extrait précis, tu acceptes.
+Ne sont PAS des fautes : une question concrète sur ce que chacun ferait, accepterait, vivrait ou garderait ; « si l'un de vous… », « si l'autre… , comment le vivriez-vous ? », « si vos positions ne bougeaient jamais… » (chacun répond depuis sa propre position) ; une durée, une fréquence ou une somme ronde posée en hypothèse ; l'alcool, le tabac ou le jeu comme habitude de vie ; ce que l'autre aurait besoin de savoir ou de comprendre ; une limite personnelle (« qu'est-ce que vous ne pourriez pas accepter au sujet de… ») qui ne prête rien à l'autre.
+Sont des fautes : citer ou laisser deviner la réponse d'un membre (« l'un de vous a répondu… », « comme l'alcool est quotidien pour l'un de vous… ») ; prêter une position à « votre partenaire » ; une hypothèse sur l'autre suivie de « qu'est-ce que vous ne supporteriez pas » ; une question qui n'a de sens que pour l'un des deux (« vous retenir de parier », « arrêter de fumer pour le couple ») ; un fait inventé ; un diagnostic ou une étiquette ; un arrangement sur un point non négociable ; la violence.`;
+
+/** Exemples de relecture : jamais posés aux membres, jamais recopiés. */
+export const CRITIC_EXAMPLES = `EXEMPLES (sujets fictifs, à ne pas recopier) :
+À ACCEPTER — « Si l'un de vous devait passer deux soirs par semaine en formation pendant un an, comment l'organiseriez-vous ? » ; « Combien de dîners par mois chez des amis vous sembleraient idéals à deux ? » ; « Si vos positions sur le chien ne bougeaient jamais, pourriez-vous vivre ensemble quand même ? » ; « Qu'est-ce que l'autre devrait savoir de votre rythme de sommeil avant de partager un logement ? »
+À REFUSER — « L'un de vous ne veut pas de chien : qu'en pensez-vous ? » (règle 7, extrait « L'un de vous ne veut pas de chien ») ; « Si votre partenaire refusait tout animal, pourriez-vous rester ? » (règle 17, extrait « Si votre partenaire refusait tout animal ») ; « Combien de fois par semaine pourriez-vous vous passer de sortir sans l'autre ? » (règle 17, extrait « vous passer de sortir », ne vaut que pour celui qui sort) ; « Votre besoin de calme cache-t-il une fragilité ? » (règle 5, extrait « cache-t-il une fragilité »).`;
 
 /**
  * Étiquettes cliniques interdites dans un texte montré aux membres. Le relecteur
@@ -336,7 +322,36 @@ export const COMPROMISE =
   /(?<!\p{L})(?:rendre vivable|vivable|rapprocher vos positions|terrain (?:d['’]entente|commun)|compromis|concessions?|concilier (?:vos|leurs|les deux) (?:positions|visions|croyances|religions)|voie médiane|juste milieu|pas[^?.]{0,30} vers l['’]autre|chacun (?:fait|ferait|pourrait faire) (?:un|des) (?:pas|efforts?)|trouve\p{L}* un chemin|conversion progressive|eau dans (?:son|votre|leur) vin|mi-chemin|équilibre (?:à|reste à) trouver|trouver un équilibre|arrangement|accommodement|s['’]adapter l['’]un à l['’]autre|(?:pourra|devra|pourrait|pourrez|devrez) s['’]adapter|lâcher du lest|céder)(?!\p{L})/iu;
 
 export function isIntrusiveQuestion(text: string): boolean {
-  return INTRUSIVE.test(text);
+  return INTRUSIVE.test(neutralizeHypotheticalSum(text));
+}
+
+/**
+ * Somme ronde posée en hypothèse (« Sur 1 000 € qui vous restent… ») : ce
+ * n'est pas une demande de revenu, et « combien mettriez-vous » y demande une
+ * part, pas le montant de son épargne.
+ */
+export function neutralizeHypotheticalSum(text: string): string {
+  const AMOUNT =
+    /(?<!\p{L})sur (?:\d[\d\s\u202f.]*)\s?(?:€|euros?)(?!\p{L})/giu;
+  // Au conditionnel (« combien mettriez-vous de côté… »), une répartition
+  // envisagée, pas le montant de son épargne actuelle.
+  text = text.replace(
+    /(?<!\p{L})combien (?=(?:mett|épargn|dépens|vers|envoy)\p{L}*riez(?!\p{L}))/giu,
+    'quelle part ',
+  );
+  // Seuil (« à partir de quel montant… », « jusqu'à quelle somme… ») : une
+  // limite envisagée, pas un revenu ni une épargne.
+  text = text.replace(
+    /(?<!\p{L})(à partir de|jusqu['’]à|au-delà de) (?:quel(?:le)?) (?:montant|somme)(?!\p{L})/giu,
+    '$1 quel seuil',
+  );
+  if (!AMOUNT.test(text)) return text;
+  return text
+    .replace(AMOUNT, 'sur une somme donnée')
+    .replace(
+      /(?<!\p{L})combien (?=mett|épargn|dépens|vers|envoy)/giu,
+      'quelle part ',
+    );
 }
 
 /** Question qui dit qui a répondu quoi : la même question est posée aux deux. */
@@ -363,8 +378,83 @@ const prefix = (alternatives: string) =>
 
 /** Ultimatum : une réponse sincère difficile à montrer (« partiriez-vous ? »). */
 export const ULTIMATUM = prefix(
-  'partiriez|quitteriez|resteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez|ferai(?:t|ent) quitter(?! la (?:pièce|table|conversation|salle))|ferai(?:t|ent) partir',
+  "partiriez|quitteriez|resteriez(?![- ]vous (?:à l['’]aise|serein|sereine|calme|tranquille|confortable))|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez|ferai(?:t|ent) quitter(?! la (?:pièce|table|conversation|salle))|ferai(?:t|ent) partir",
 );
+/**
+ * Ultimatum sans issue, refusé même dans une question de confrontation
+ * (« Si…, resteriez-vous ? » est admis : c'est la réalité à regarder en face).
+ */
+const ULTIMATUM_HARD = prefix(
+  'partiriez|quitteriez|romp|rupture|mettre fin|vous retiendrait dans la relation|renonceriez|ferai(?:t|ent) quitter(?! la (?:pièce|table|conversation|salle))|ferai(?:t|ent) partir',
+);
+
+/**
+ * Question de confrontation à la réalité, propre à l'IA et à un écart réel :
+ * une hypothèse concrète (« Si… ») suivie d'un conditionnel adressé au membre
+ * (« pourriez-vous… ? », « resteriez-vous ? »). Elle peut se répondre par oui
+ * ou non : la réponse libre de 500 caractères laisse la place de nuancer.
+ */
+export function isRealityCheck(text: string): boolean {
+  const t = text.trim();
+  // « Si…, pourriez-vous / resteriez-vous / cela vous irait-il… ? »
+  if (
+    /^si\s[^?]{8,},\s*[^?]*(?<!\p{L})\p{L}+-(?:t-)?(?:vous|il|elle|ce)(?!\p{L})[^?]*\?$/iu.test(
+      t,
+    )
+  )
+    return true;
+  // Question fermée portant sur une durée ou une quantité concrète
+  // (« Pourriez-vous attendre encore trois ans… ? ») : réalité, pas façade.
+  return /(?<!\p{L})(?:\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|dix|vingt)\s+(?:ans?|mois|semaines?|jours?|nuits?|soirs?|soirées?|heures?|km|€|euros?)(?!\p{L})/iu.test(
+    t,
+  );
+}
+
+/**
+ * Souvenirs d'enfance, famille d'origine, regard d'un proche, « angle mort »
+ * ou « sacré » : l'IA du Sondeur ne les emploie plus (fiche jugée hors sujet).
+ */
+export const ORIGIN_DETOUR =
+  /(?<!\p{L})(?:dans votre famille|dans la famille où|(?:où|là où) vous avez grandi|maison où vous avez grandi|un proche qui vous (?:connaît|a vu)|vos proches diraient|chez vous,\s*qui|à quoi (?:la|le|les|l['’]) ?reconna[iî]t-on|angle mort|sacré)(?!\p{L})/iu;
+
+/**
+ * Deux alternatives opposées dans une même question (« s'il ne voulait jamais
+ * d'enfant, ou en voulait absolument, que feriez-vous ? »), ou liste de
+ * choix (« un oui ferme, un non ferme, ou un vrai doute ? ») : deux idées.
+ */
+export const TWO_ALTERNATIVES =
+  /(?<!\p{L})(?:voul|voudr|refus|accept|souhait|rest|gard|quitt)\p{L}*[^?]{0,80}?,?\s+ou\s+(?:(?:en|s['’]|si|qu['’](?:il|elle)|il|elle|le|la|les|y)\s*)*(?:voul|voudr|refus|accept|souhait|rest|gard|quitt)\p{L}*|:\s*[^?:]{2,40},\s*[^?:]{2,40},?\s+ou\s+[^?]{2,40}\?\s*$|,\s*ou\s+[^,?]{2,60},\s*que\s/iu;
+
+/**
+ * Hypothèse qui ne vise que l'un des deux : prêter au partenaire une position
+ * sur l'écart (« si votre partenaire ne voulait jamais d'enfant… ») n'a de
+ * sens que pour celui qui tient la position opposée. La même question est
+ * posée aux deux : l'écart se formule de façon symétrique.
+ */
+export const ONE_SIDED =
+  /^si votre partenaire (?:ne |n['’])?(?:voul|voudr|refus|accept|souhait|ten)\p{L}*/iu;
+
+/**
+ * Hypothèse retournée : on suppose une position de l'autre, puis on demande ce
+ * que l'on n'accepterait pas (« si votre partenaire gardait un moment à soi,
+ * qu'est-ce que vous ne pourriez pas accepter ? »).
+ */
+export const REVERSED_HYPOTHESIS =
+  /^si\s[^?]+,\s*(?:qu['’]est-ce que vous (?:ne pourriez (?:pas|plus) (?:accepter|supporter|tolérer|vivre)|ne supporteriez (?:pas|plus)|n['’]accepteriez (?:pas|plus)|ne toléreriez (?:pas|plus))|que ne (?:pourriez|supporteriez|accepteriez|toléreriez)-vous pas|qu['’]est-ce qui vous serait (?:insupportable|inacceptable|intolérable)|où (?:serait|placeriez-vous|mettriez-vous) (?:votre|la) limite)/iu;
+
+/**
+ * Effort à sens unique : la question demande de renoncer à son propre
+ * comportement sur l'écart (« vous retenir de parier », « arrêter de fumer
+ * pour le couple », « réduire vos dépenses plaisir ») ; elle n'a de sens que
+ * pour celui qui le pratique.
+ */
+export const ONE_WAY_EFFORT =
+  /(?<!\p{L})(?:vous retenir|vous empêcher|vous passer|vous abstenir|arrêter|cesser|renon\p{L}*|réduire|rédui\p{L}*|diminuer|limiter|modérer|freiner|décrocher)\s+(?:de\s+|d['’]|à\s+)?(?:vos\s+|votre\s+|vos\s+propres\s+|la\s+|le\s+|les\s+|l['’])?(?:boire|fumer|jouer|parier|miser|dépenser|consommation|envies|tabac|alcool|cigarettes?|paris|jeux?(?! de société)|verres?|dépenses(?: plaisir)?|achats? plaisir|sorties)(?!\p{L})/iu;
+
+/** Présupposé d'un penchant (« qu'est-ce qui vous attire tant dans… »). */
+export const PRESUPPOSED_PULL =
+  /(?:qu['’]est-ce qui|que(?:l(?:le)?s?)? [^?]{0,20}) vous (?:attire|plaît|pousse|retient|tente|manque) (?:tant|autant|si fort|tellement)|frisson du jeu/iu;
+
 /** Morale ou « bonne réponse » suggérée. */
 export const MORALE = word(
   "devriez|devrait|devraient|(?<=(?:on|chacun|un homme|une femme|un mari|une épouse|un conjoint|une conjointe|le mari|la femme|l['’]homme) )doit|doit-(?:on|il|elle)|(?<=(?:les hommes|les femmes|les maris|les épouses) )doivent|dois|(?<!qu'il )faut|bonne réponse|normale?|anormale?|mauvaise?|immature|bien ou mal|coupable|tendance",
@@ -392,7 +482,7 @@ export const TUTOIEMENT = word(
   "tu|toi|(?<!(?:le|quel|un|du|au|ce|son|mon|votre|même) )ton|ta|tes|te|t'|t’",
 );
 export const VOUVOIEMENT = word(
-  'vous|votre|vos|pensez|imaginez|rappelez|souvenez|décrivez|choisissez|citez|dites|prenez|regardez',
+  'vous|votre|vos|vôtres?|pensez|imaginez|rappelez|souvenez|décrivez|choisissez|citez|dites|prenez|regardez',
 );
 /** Question impersonnelle sur le sens d'un mot (« Que veut dire « respecter »… ? »). */
 const IMPERSONAL =
@@ -442,7 +532,9 @@ export const PRESUPPOSED =
 
 /** Bonnes questions données en exemple dans la consigne : jamais recopiées. */
 export const LENS_EXAMPLES = [
-  ...CLINICAL_LENS.matchAll(/Bon : « ([^»]+) »/g),
+  ...(CLINICAL_LENS.split('EXEMPLES (écart détecté')[1] ?? '')
+    .split('CONTRE-EXEMPLES')[0]
+    .matchAll(/« ([^»]+\?) »/g),
 ].map((m) => m[1]);
 
 /**
@@ -456,8 +548,8 @@ export const LENS_EXAMPLES = [
  * « …s'il lisait vos messages par amour ? ») : jamais posée. Les gabarits de
  * limite de l'équipe, relus par des humains, ne passent pas par ce filtre.
  */
-const STAGED_HARM =
-  /(?<!\p{L})(?:gifl\p{L}*|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|(?<![-\p{L}])vous protéger|vous réfugier|où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
+export const STAGED_HARM =
+  /(?<!\p{L})(?:gifl\p{L}*|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|(?<![-\p{L}])vous protéger|vous réfugier|(?<!jusqu['’])où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
 
 /** Arrangement ou concession sur un sujet non négociable, dans une question de l'IA. */
 const NN_ARRANGEMENT =
@@ -468,8 +560,23 @@ const NN_ARRANGEMENT =
  * BOLIGO. Une question de l'IA qui les nomme, même sans les mettre en scène,
  * est écartée.
  */
-const SAFETY_TOPIC =
+export const SAFETY_TOPIC =
   /(?<!\p{L})(?:gifl\p{L}*|claques?|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|ne plus voir vos|(?:connaître )?votre code|vérifi\p{L}* où vous|où vous êtes|décid\p{L}* seul\p{L}* de vos|vos sorties|votre passeport|jet\p{L}* vos affaires|punitions?|punir|hausser la voix|lever le ton|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
+/**
+ * Prémisse affirmée avant la question (« Puisque l'un de vous a déjà deux
+ * enfants… », « Comme l'alcool est quotidien pour l'un de vous… ») : un fait
+ * présenté comme acquis, souvent la réponse de l'un des deux.
+ */
+export const ASSERTED_PREMISE =
+  /^(?:puisque|comme|vu que|étant donné que|sachant que|maintenant que|alors que)(?!\p{L})|(?<!\p{L})(?:pour|chez) l['’]un (?:de vous|d['’]entre vous)(?!\p{L})/iu;
+
+/** Deux interrogatifs coordonnés (« jusqu'où et combien de temps ») : deux idées. */
+export const TWO_INTERROGATIVES =
+  /(?<!\p{L})(?:jusqu['’]où|combien|comment|quand|pourquoi|où|quel(?:le)?s?|à quel point)(?:\s+[^\s?,]+){0,2}?\s+et\s+(?:jusqu['’]où|combien|comment|quand|pourquoi|où|quel(?:le)?s?|à quel point)(?!\p{L})/iu;
+
+/** Sujet voisin de la violence verbale : relève des questions de limite. */
+export const ELEVATED_VOICE =
+  /(?<!\p{L})(?:élev\p{L}* la voix|monte(?:r|nt)? le ton|cri(?:s|ait|aient|erait)?|menaç\p{L}*)(?!\p{L})/iu;
 /** Seuil personnel de tolérance (« à partir de combien de cris… »). */
 const THRESHOLD =
   /(?:à partir de (?:quand|combien|quel moment)|jusqu['’]où)[^?]{0,60}(?:accept|tolér|support|invivable|trop|limite|parler de|aller)/iu;
@@ -479,15 +586,47 @@ const NN_QUESTION_TOPIC =
 const ARRANGE =
   /(?<!\p{L})(?:concili\p{L}*|intermédiaire|acceptable|lâcher|raisonnables?|céder|renoncer|sacrifier|assouplir|compromis|mi-chemin|terrain d['’]entente|formule|entre parenthèses|mettre de côté|mettre en pause)(?!\p{L})/iu;
 
+/** Tournures alambiquées refusées dans une question de l'IA (franchise). */
+export const HEDGED =
+  /(?:vous permet(?:tent)? de (?:protéger|préserver)|dans ce souhait|qu['’]est-ce qui,? pour vous,|dans quelle mesure|que signifie pour vous|qu['’]évoque pour vous)/iu;
+
 export function isWellFormedQuestion(text: string): boolean {
   const t = text.trim();
+  const reality = isRealityCheck(t);
+  // Confrontation à la réalité : une somme ronde posée en hypothèse n'est pas
+  // une demande de revenu ; « Si votre partenaire… » parle d'un futur
+  // conjoint, pas d'un passé commun.
+  let forForm = neutralizeHypotheticalSum(t).replace(
+    /(?<!\p{L})si votre partenaire(?!\p{L})/giu,
+    (m) => (m[0] === 'S' ? 'Si' : 'si') + ' la personne choisie',
+  );
+  // En hypothèse, « votre couple » ou « cette relation » parlent du couple
+  // à venir, pas d'un passé commun.
+  if (/^si\s/iu.test(t))
+    forForm = forForm
+      .replace(
+        /(?<!\p{L})(?:votre couple|cette relation)(?!\p{L})/giu,
+        'le couple',
+      )
+      // « Si l'école de vos enfants… » : des enfants à venir, pas présupposés.
+      .replace(/(?<!\p{L})vos enfants(?!\p{L})/giu, 'des enfants');
+  // « Que devrait savoir l'autre… » : une attente, pas une morale (« vous
+  // devriez » reste refusé).
+  forForm = forForm.replace(
+    /(?<!\p{L})devrai(?:t|ent)(?!\p{L})/giu,
+    'pourrait',
+  );
   return (
-    passesFormRules(t) &&
+    !HEDGED.test(t) &&
+    t.split(/\s+/).length <= 22 &&
+    passesFormRules(forForm, { realityCheck: reality }) &&
     !STAGED_HARM.test(t) &&
     !SAFETY_TOPIC.test(
       t.replace(/frontière entre[^?]{0,40}?(?:surveill\p{L}*)/iu, 'frontière'),
     ) &&
-    !THRESHOLD.test(t) &&
+    // « Jusqu'où… » est une confrontation à la réalité ; le seuil de
+    // tolérance reste refusé dès qu'il touche la sécurité.
+    !(THRESHOLD.test(t) && (SAFETY_TOPIC.test(t) || STAGED_HARM.test(t))) &&
     !(NN_QUESTION_TOPIC.test(t) && ARRANGE.test(t)) &&
     !NN_ARRANGEMENT.test(t) &&
     !LENS_EXAMPLES.some((e) => similarQuestions(e, t) || e === t)
@@ -498,7 +637,10 @@ export function isWellFormedQuestion(text: string): boolean {
  * Règles de forme communes aux gabarits écrits par l'équipe et aux questions
  * de l'IA (sans le contrôle des exemples de la consigne, réservé à l'IA).
  */
-export function passesFormRules(text: string): boolean {
+export function passesFormRules(
+  text: string,
+  opts: { realityCheck?: boolean } = {},
+): boolean {
   const t = text.trim();
   const marks = (t.match(/\?/g) ?? []).length;
   return (
@@ -507,12 +649,12 @@ export function passesFormRules(text: string): boolean {
     t.endsWith('?') &&
     marks <= 2 &&
     quotesAllowed(t) &&
-    isOpenQuestion(t) &&
+    (isOpenQuestion(t) || !!opts.realityCheck) &&
     !hasClinicalJargon(t) &&
     !hasInterpretation(t) &&
     !isIntrusiveQuestion(t) &&
     !REPORTS_ANSWER.test(t) &&
-    !ULTIMATUM.test(t) &&
+    !(opts.realityCheck ? ULTIMATUM_HARD : ULTIMATUM).test(t) &&
     !MORALE.test(t) &&
     !MORALE_PREFIX.test(t) &&
     !SHARED_PAST.test(t) &&
@@ -527,4 +669,115 @@ export function passesFormRules(text: string): boolean {
     !VIOLENCE_NORMALIZE.test(t) &&
     !PRESUPPOSED.test(t)
   );
+}
+
+/**
+ * Règles propres au rédacteur du Sondeur (écarts réels) : une question vaut
+ * pour les deux membres, porte une seule idée, ne retourne pas une hypothèse
+ * et laisse la violence verbale aux questions de limite.
+ */
+export function gapQuestionIssues(text: string): string[] {
+  const t = text.trim();
+  const r: string[] = [];
+  if (TWO_ALTERNATIVES.test(t))
+    r.push('P19 deux alternatives opposées ou liste de choix');
+  if (ONE_SIDED.test(t)) r.push('P20 hypothèse qui ne vise que l’un des deux');
+  if (REVERSED_HYPOTHESIS.test(t)) r.push('P21 hypothèse retournée');
+  if (/^(?:chez vous|dans votre famille)(?!\p{L})/iu.test(t))
+    r.push('P23 commence par « Chez vous » ou « Dans votre famille »');
+  if (ASSERTED_PREMISE.test(t))
+    r.push('P25 prémisse affirmée (fait ou réponse présentés comme acquis)');
+  if (
+    TWO_INTERROGATIVES.test(t) ||
+    /,\s*et\s+(?:à\s+|de\s+|en\s+)?(?:quel(?:le)?s?|comment|combien|quand|pourquoi|où)(?!\p{L})/iu.test(
+      t,
+    )
+  )
+    r.push('P24 deux interrogatifs coordonnés (une seule idée)');
+  if (ELEVATED_VOICE.test(t))
+    r.push('P22 sujet voisin de la violence (questions de limite)');
+  if (ONE_WAY_EFFORT.test(t))
+    r.push('P26 effort à sens unique (ne vaut que pour l’un des deux)');
+  if (PRESUPPOSED_PULL.test(t))
+    r.push('P27 penchant présupposé (« ce qui vous attire tant »)');
+  return r;
+}
+
+const EN = (s: string) => new RegExp(s, 'i');
+/** Mêmes règles du rédacteur, sur la version anglaise. */
+const GAP_RULES_EN: Array<[RegExp, string]> = [
+  [
+    EN(
+      "^if (?:your partner|the other(?: person)?) (?:didn't |did not |never |doesn't |does not )?(?:want|refus|accept|insist|rul|drank|drink|smok|gambl|bet|spent|spend|kept|keep|sav)",
+    ),
+    'EN-P20 hypothèse qui ne vise que l’un des deux',
+  ],
+  [
+    EN(
+      "your partner (?:has|had|is|was|'s) (?:ruled|decided|refused|chosen|set on|against|unsure|not sure|certain)|your partner (?:doesn't|does not|won't|will not) want",
+    ),
+    'EN-P20 position prêtée au partenaire',
+  ],
+  [
+    EN(
+      "^if [^?]+, (?:where would you draw the line|what (?:couldn't|could not|wouldn't|would not) you (?:accept|tolerate|stand|live with)|what would be (?:unbearable|unacceptable))",
+    ),
+    'EN-P21 hypothèse retournée',
+  ],
+  [
+    EN(
+      "^(?:since|as|given that|now that|because|considering)\\b|\\bfor one of you\\b|\\bone of you (?:is|isn't|is not|has|hasn't|was|doesn't|does not|can't|cannot)\\b",
+    ),
+    'EN-P25 prémisse affirmée',
+  ],
+  [
+    EN(
+      '\\b(?:and|or) (?:what|how|when|why|where|which) (?:would|could|do|did|will|is|are|should|might|can)\\b',
+    ),
+    'EN-P24 deux questions en une',
+  ],
+  [
+    EN(
+      '\\b(?:growing up|your parents|in your family|as a child|childhood|your mother|your father|someone who knows you)\\b',
+    ),
+    'EN-P15 détour par l’enfance, la famille d’origine ou un proche',
+  ],
+  [
+    EN(
+      "\\b(?:wouldn't you agree|don't you think|can't work|cannot work|simply can't|isn't it clear|admit that)\\b",
+    ),
+    'EN conclusion forcée',
+  ],
+  [
+    EN(
+      '\\b(?:split the difference|meet (?:in the middle|halfway)|halfway between|middle ground|compromise)\\b',
+    ),
+    'EN compromis proposé',
+  ],
+  [
+    EN(
+      '\\b(?:addict\\w*|in denial|transgenerational|codependen\\w*|attachment style|toxic|trauma\\w*|narciss\\w*|disorder|patholog\\w*|anxious temperament)\\b',
+    ),
+    'EN jargon ou diagnostic',
+  ],
+  [
+    EN(
+      '\\b(?:tell us|let us know|could you say) (?:whether|if) you\\b|^do you (?:smoke|drink|gamble|want (?:kids|children)|believe in)\\b',
+    ),
+    'EN redemande une réponse de l’entretien',
+  ],
+  [
+    EN(
+      '\\b(?:hold (?:yourself )?back from|stop (?:smoking|drinking|gambling|betting|spending)|cut (?:back|down) on your|give up your (?:drinking|smoking|gambling|bets|spending|treats))\\b',
+    ),
+    'EN-P26 effort à sens unique',
+  ],
+];
+
+/** Règles du rédacteur du Sondeur appliquées à la version anglaise. */
+export function gapQuestionIssuesEn(textEn: string | undefined): string[] {
+  // Apostrophe typographique ramenée à la forme droite des motifs.
+  const t = (textEn ?? '').replace(/[’`]/g, "'").trim();
+  if (!t) return [];
+  return GAP_RULES_EN.filter(([re]) => re.test(t)).map(([, why]) => why);
 }

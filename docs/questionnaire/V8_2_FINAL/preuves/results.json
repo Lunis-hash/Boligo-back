@@ -1,0 +1,512 @@
+{
+ "results": [
+  {
+   "fam": "Structure",
+   "name": "113 questions",
+   "ok": true,
+   "detail": "113"
+  },
+  {
+   "fam": "Structure",
+   "name": "Identifiants uniques",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Structure",
+   "name": "11 modules (0 à 10) tous non vides",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Structure",
+   "name": "Format des identifiants",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Structure",
+   "name": "Ordre de passation : chaque question exactement une fois",
+   "ok": true,
+   "detail": "113 positions"
+  },
+  {
+   "fam": "Structure",
+   "name": "Aucun identifiant V7 réutilisé pour un autre sens",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Structure",
+   "name": "Aucun nouvel identifiant ne reprend un identifiant V7 retiré",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "FR/EN",
+   "name": "Texte FR et EN présents",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "FR/EN",
+   "name": "Même nombre d’options FR et EN",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "FR/EN",
+   "name": "« Je préfère ne pas répondre » au même rang en FR et EN",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "FR/EN",
+   "name": "Aucun mot français dans les textes anglais",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "FR/EN",
+   "name": "Options traduites (aucune option identique FR/EN hors noms de langues)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "FR/EN",
+   "name": "Échelles FR/EN de même longueur",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Codes",
+   "name": "Codes uniques par question",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Codes",
+   "name": "Questions reprises : texte, codes, libellés, type et échelle identiques à la V7.1 en service",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Codes",
+   "name": "Options ajoutées aux questions reprises : nouvelles lettres seulement (aucun code réattribué)",
+   "ok": true,
+   "detail": "{'M0_Q06': ['E'], 'M0_Q11': ['D'], 'M0_Q13': ['D'], 'M1_Q16': ['L', 'M', 'N'], 'M1_Q17': ['E'], 'M1_Q19': ['G'], 'M1_Q20': ['E'], 'M4_Q17': ['E'], 'M9_Q16': ['NA'], 'M9_Q24': ['NA'], 'M10_Q17': ['E'], 'M10_Q19': ['E']}"
+  },
+  {
+   "fam": "Codes",
+   "name": "M0_Q10 : C = arabe et H = espagnol dans toutes les versions du code depuis la V6",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Conditions",
+   "name": "Chaque condition ne dépend que de questions posées avant elle",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Conditions",
+   "name": "Chaque condition est tantôt vraie, tantôt fausse (aucune condition morte)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Conditions",
+   "name": "Codes cités dans les conditions existants",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Conditions",
+   "name": "Condition traduite en anglais pour chaque question conditionnelle",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Conditions",
+   "name": "Sans consentement, aucune question sensible n’est affichée",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Choix multiples",
+   "name": "Règle définie pour chaque question à choix multiple",
+   "ok": true,
+   "detail": "['M0_Q10', 'V82_M0_03', 'V82_M1_01', 'M8_Q16', 'M6_Q19', 'M8_Q10', 'M8_Q12']"
+  },
+  {
+   "fam": "Choix multiples",
+   "name": "Toutes les combinaisons (jusqu’à 5 choix) acceptées ou refusées comme prévu",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Choix multiples",
+   "name": "Cas demandés : « pas d’enfant » + enfants, « aucun » + sujets, « ne pas répondre » + réponse, maximum, ordre, code inconnu",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Sensibles",
+   "name": "Toute question sensible est facultative",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Sensibles",
+   "name": "Toute question proposant « Je préfère ne pas répondre » est facultative",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Sensibles",
+   "name": "Questions reprises : même statut sensible qu’en service",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Sensibles",
+   "name": "Questions de sécurité jamais facultatives masquées par le consentement art. 9",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Mini-IPIP : 20 items, clés d’inversion conformes à l’original (stabilité = névrosisme inversé)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Scoring",
+   "name": "Mini-IPIP anglais : libellés de l’original (pronom « I » ajouté, seule adaptation)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Mini-IPIP administré sur l’échelle d’exactitude d’origine (5 points)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Calcul : réponses toutes « E » → 3,0 pour E, A, C, stabilité ; 2,0 pour ouverture (3 items inversés sur 4)",
+   "ok": true,
+   "detail": "{'Attachement : anxiété': None, 'Attachement : évitement': None, 'Régulation : réévaluation': None, 'Régulation : suppression': None, 'Point de vue de l’autre': None, 'Big Five — Extraversion': 3.0, 'Big Five — Agréabilité': 3.0, 'Big Five — Conscienciosité': 3.0, 'Big Five — Stabilité émotionnelle': 3.0, 'Big Five — Ouverture (imagination)': 2.0}"
+  },
+  {
+   "fam": "Scoring",
+   "name": "Données manquantes : 3 items sur 4 suffisent, 2 sur 4 non",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "« Non applicable » et « ne pas répondre » comptés comme manquants, jamais comme 3",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Attachement : 1 item inversé (anxiété), 2 (évitement)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Aucune question de sécurité dans une dimension calculée",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Profil de conflit : paire signalée seulement si négatif fréquent ET positif rare",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Scoring",
+   "name": "Bandes de restitution non chiffrées",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Incompatibilités",
+   "name": "39 cas positifs, négatifs, manquants et « ne pas répondre » (évalués dans les deux sens)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Incompatibilités",
+   "name": "Symétrie sur 2 000 paires de profils simulés",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Incompatibilités",
+   "name": "Les incompatibilités ne proviennent que des 9 règles retenues",
+   "ok": true,
+   "detail": "{'r_tobacco', 'r_dot', 'r_child_faith', 'r_alcohol', 'r_gambling', 'r_children', 'r_religion', 'r_stepchildren', 'r_mahr'}"
+  },
+  {
+   "fam": "Incompatibilités",
+   "name": "Exclusivité, polygamie, fidélité, vie commune, intimité, aide familiale, lieu de vie, pratique : jamais d’exclusion (toutes paires de réponses, sujets non négociables cochés)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Incompatibilités",
+   "name": "Face à un profil vide (aucune réponse) : aucun écart, aucune exclusion",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Incompatibilités",
+   "name": "Questions de sécurité sans aucun effet sur la compatibilité (400 profils modifiés, toutes paires de réponses)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Filtres",
+   "name": "Langue commune, âge réciproque, donnée absente sans effet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Migration",
+   "name": "22 cas de migration (positifs, négatifs, ambigus)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Migration",
+   "name": "Chaque code V7.1 de chaque question reprise reçoit un statut (2 dates testées)",
+   "ok": true,
+   "detail": "352"
+  },
+  {
+   "fam": "Migration",
+   "name": "Une réponse conservée garde exactement son code (aucune réinterprétation)",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Migration",
+   "name": "Réponses réelles en base (2 entretiens de test, 10/10/2026, lecture seule) : toutes valides et classées",
+   "ok": true,
+   "detail": "{'conservée (équivalence démontrée)': 65, 'confirmation demandée (préremplie)': 5, 'nouvelle réponse demandée': 2} ; ['M0_Q02=A ×2 : confirmation demandée (préremplie)', 'M0_Q05=B ×2 : nouvelle réponse demandée', 'M0_Q11=A ×1 : confirmation demandée (préremplie)', 'M0_Q11=B ×1 : confirmation demandée (préremplie)', 'M0_Q13=B ×1 : confirmation demandée (préremplie)']"
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Chaque correspondance produit seulement des codes V7.1 valides",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Valeur ambiguë → réponse absente (exemples : V82_M3_01 = D, V82_M0_03 = B, V82_M8_02 = E)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Réponse conditionnelle : V82_M3_02 = B donne M3_Q05 = B seulement avec enfants",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "La vue V7 ne contient que des questions conservées ou des correspondances démontrées",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Une réponse sensible ne devient jamais une réponse V7 non protégée",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Inventaire : questions V7 retirées lues par le moteur ou le Sondeur",
+   "ok": true,
+   "detail": "61 (14 avec correspondance partielle ou totale, 47 sans équivalent fiable)"
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Questions de sécurité du Sondeur (SAFETY_QUESTIONS) toutes conservées en V8.2",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Les 47 dépendances sans équivalent sont toutes classées une seule fois (inutile, couverte, perte A, perte B)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Stratégie A : chaque sujet renvoie à une question V8.2 existante",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Compatibilité",
+   "name": "Stratégie B : questions V7 reprises mot pour mot, identifiants existants en V7.1",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Parcours",
+   "name": "Nombre de questions affichées par parcours",
+   "ok": true,
+   "detail": "{'Parent, ancienne relation, musulman(e), consentement donné': 113, 'Sans enfant, souhaite des enfants, ancienne relation, chrétien(ne)': 112, 'Sans enfant ni projet d’enfant, jamais de relation sérieuse, sans religion': 104, 'Comme le 2e profil, sans consentement aux questions sensibles': 99}"
+  },
+  {
+   "fam": "Parcours",
+   "name": "Plus longue série d’échelles : 10 (blocs du Mini-IPIP) ; hors Mini-IPIP : 6 au plus",
+   "ok": true,
+   "detail": "10"
+  },
+  {
+   "fam": "Parcours",
+   "name": "Questions sensibles regroupées après l’écran de consentement (séance 1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Qualité",
+   "name": "Variation normale de personnalité non signalée (détendu(e) + sautes d’humeur)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Qualité",
+   "name": "Contradiction factuelle signalée",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Qualité",
+   "name": "Réponses identiques sur un bloc à items inversés signalées",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Qualité",
+   "name": "Rythme très rapide signalé ; rythme normal non signalé",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Textes",
+   "name": "Aucune mention de version ultérieure ni de nom étranger à BOLIGO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Textes",
+   "name": "Aucune promesse de probabilité de réussite",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "fam": "Textes",
+   "name": "Pas de double espace ni d’espace avant virgule",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "paths": {
+  "Parent, ancienne relation, musulman(e), consentement donné": [
+   113,
+   21,
+   [
+    [
+     40,
+     10
+    ],
+    [
+     42,
+     6
+    ],
+    [
+     31,
+     5
+    ]
+   ]
+  ],
+  "Sans enfant, souhaite des enfants, ancienne relation, chrétien(ne)": [
+   112,
+   21,
+   [
+    [
+     39,
+     10
+    ],
+    [
+     42,
+     6
+    ],
+    [
+     31,
+     5
+    ]
+   ]
+  ],
+  "Sans enfant ni projet d’enfant, jamais de relation sérieuse, sans religion": [
+   104,
+   19,
+   [
+    [
+     34,
+     9
+    ],
+    [
+     39,
+     6
+    ],
+    [
+     31,
+     5
+    ]
+   ]
+  ],
+  "Comme le 2e profil, sans consentement aux questions sensibles": [
+   99,
+   18,
+   [
+    [
+     28,
+     7
+    ],
+    [
+     40,
+     6
+    ],
+    [
+     31,
+     5
+    ]
+   ]
+  ]
+ },
+ "migration_real": [
+  {
+   "conservée (équivalence démontrée)": 65,
+   "confirmation demandée (préremplie)": 5,
+   "nouvelle réponse demandée": 2
+  },
+  [
+   "M0_Q02=A ×2 : confirmation demandée (préremplie)",
+   "M0_Q05=B ×2 : nouvelle réponse demandée",
+   "M0_Q11=A ×1 : confirmation demandée (préremplie)",
+   "M0_Q11=B ×1 : confirmation demandée (préremplie)",
+   "M0_Q13=B ×1 : confirmation demandée (préremplie)"
+  ]
+ ]
+}

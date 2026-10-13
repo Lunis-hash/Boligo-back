@@ -1,0 +1,33 @@
+{
+  "selected": null,
+  "compare": [
+    {
+      "writer": "openai/gpt-6.1-sol-pro",
+      "p50": 0.09522315840000001,
+      "p90": 0.09522315840000001,
+      "p99": 0.09522315840000001,
+      "escalationRate": 0
+    },
+    {
+      "writer": "openai/gpt-6.1-sol-pro:batch",
+      "p50": 0.0486421584,
+      "p90": 0.0486421584,
+      "p99": 0.0486421584,
+      "escalationRate": 0
+    },
+    {
+      "writer": "openai/gpt-6.1-sol",
+      "p50": 0.09522315840000001,
+      "p90": 0.09522315840000001,
+      "p99": 0.09522315840000001,
+      "escalationRate": 0
+    },
+    {
+      "writer": "openai/gpt-6.1-sol:batch",
+      "p50": 0.0486421584,
+      "p90": 0.0486421584,
+      "p99": 0.0486421584,
+      "escalationRate": 0
+    }
+  ]
+}

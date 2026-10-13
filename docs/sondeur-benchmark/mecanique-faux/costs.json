@@ -1,0 +1,89 @@
+{
+  "selected": {
+    "writer": "fakeglm/glm-flash",
+    "critic": null,
+    "premium": "fakeqwen/qwen-flash",
+    "journeys": 4,
+    "p50": 0.012659,
+    "p90": 0.012659,
+    "p99": 0.012659,
+    "escalationRate": 0.25,
+    "detail": [
+      {
+        "caseId": "H100070",
+        "writerEur": 0,
+        "criticEur": 0,
+        "readingsEur": 0.005744999999999999,
+        "fidelityEur": 0,
+        "followEur": 0.0025711999999999996,
+        "moderationEur": 0.0043428,
+        "escalationEur": 0,
+        "escalated": false,
+        "total": 0.012659
+      },
+      {
+        "caseId": "H100010",
+        "writerEur": 0,
+        "criticEur": 0,
+        "readingsEur": 0.005744999999999999,
+        "fidelityEur": 0,
+        "followEur": 0.0025711999999999996,
+        "moderationEur": 0.0043428,
+        "escalationEur": 0,
+        "escalated": false,
+        "total": 0.012659
+      },
+      {
+        "caseId": "H100023",
+        "writerEur": 0,
+        "criticEur": 0,
+        "readingsEur": 0.005744999999999999,
+        "fidelityEur": 0,
+        "followEur": 0.0025711999999999996,
+        "moderationEur": 0.0043428,
+        "escalationEur": 0,
+        "escalated": false,
+        "total": 0.012659
+      },
+      {
+        "caseId": "H100000",
+        "writerEur": 0,
+        "criticEur": 0,
+        "readingsEur": 0.005744999999999999,
+        "fidelityEur": 0,
+        "followEur": 0.0025711999999999996,
+        "moderationEur": 0.0043428,
+        "escalationEur": 0,
+        "escalated": true,
+        "total": 0.012659
+      }
+    ],
+    "measured": [
+      "writer",
+      "critic"
+    ],
+    "estimated": [
+      "readings",
+      "fidelity",
+      "followups",
+      "moderation",
+      "escalation"
+    ]
+  },
+  "compare": [
+    {
+      "writer": "fakeqwen/qwen-flash",
+      "p50": 0.008500899999999999,
+      "p90": 0.008500899999999999,
+      "p99": 0.008500899999999999,
+      "escalationRate": 0.25
+    },
+    {
+      "writer": "fakeglm/glm-flash",
+      "p50": 0.012659,
+      "p90": 0.012659,
+      "p99": 0.012659,
+      "escalationRate": 0.25
+    }
+  ]
+}

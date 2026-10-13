@@ -1,0 +1,1121 @@
+[
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 5,
+    "formRejected": 7,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 109498,
+    "latencyMs": 12939,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si votre partenaire restait sur sa position sur les enfants pendant des années, que feriez-vous réellement ?",
+        "options": [
+          "Je resterais",
+          "Je partirais",
+          "Cela dépendrait du temps qui passe",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Voir ce que chacun ferait si la position de l'autre restait la même durablement.",
+        "gap": "A n'est pas sûr(e) de vouloir des enfants, B en veut absolument",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner stayed exactly where they are on having children for years, what would you really do?",
+        "optionsEn": [
+          "I would stay",
+          "I would leave",
+          "It would depend on how much time has passed"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si des enfants vivaient chez vous cinq jours sur sept, pourriez-vous réellement l'accepter au quotidien ?",
+        "options": [
+          "Oui, sans difficulté",
+          "Oui, avec des conditions",
+          "Non, je ne pourrais pas",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "chiffre",
+        "target": "Savoir si la présence des enfants presque tout le temps est vivable pour celui ou celle qui la souhaite moins, et sur quelles conditions concrètes.",
+        "gap": "A accepte les enfants de l'autre s'ils ne vivent pas à plein temps avec le couple / B garde ses enfants la plupart du temps",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If children lived in your home five days out of seven, could you truly accept that in everyday life?",
+        "optionsEn": [
+          "Yes, without difficulty",
+          "Yes, with conditions",
+          "No, I could not"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si votre partenaire ne voulait finalement jamais d'enfant, ou en voulait absolument, que feriez-vous ?",
+        "options": [
+          "Je resterais",
+          "Je partirais",
+          "Je ne sais pas encore",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun resterait si la position de l'autre sur les enfants ne changeait jamais.",
+        "gap": "A n'est pas certaine de vouloir des enfants / B en veut absolument",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner never wanted children, or absolutely wanted them, what would you do?",
+        "optionsEn": [
+          "I would stay",
+          "I would leave",
+          "I don't know yet"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si la question des enfants restait pour toujours telle qu'elle est aujourd'hui entre vous, pourriez-vous vivre avec ?",
+        "options": [
+          "Oui, je pourrais",
+          "Non, ce serait trop difficile",
+          "Cela dépendrait",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Mesurer si l'incertitude de l'une et le désir ferme de l'autre sont tenables dans la durée.",
+        "gap": "A n'est pas certaine de vouloir des enfants / B en veut absolument",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If the question of children stayed exactly as it is today between you, could you live with that?",
+        "optionsEn": [
+          "Yes, I could",
+          "No, it would be too hard",
+          "It would depend"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si votre partenaire ne voulait jamais d'enfant, ou en voulait absolument et que cela ne changeait jamais, pourriez-vous rester ?",
+        "options": [
+          "Oui, je resterais",
+          "Je ne sais pas encore",
+          "Non, je ne resterais pas",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun resterait dans la relation face à la position définitive de l'autre sur les enfants.",
+        "gap": "A n'est pas certaine de vouloir des enfants, B en veut absolument",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner never wanted children, or absolutely wanted them, and that never changed, could you stay?",
+        "optionsEn": [
+          "Yes, I would stay",
+          "I don't know yet",
+          "No, I would not stay"
+        ],
+        "writer": "anthropic/claude-sonnet-5.5",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 85404,
+    "latencyMs": 8025,
+    "questions": []
+  },
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 8,
+    "passedGate": 0,
+    "formRejected": 7,
+    "evidenceRejected": 1,
+    "reasons": {
+      "P7": 1
+    },
+    "leaks": 0,
+    "costMicro": 103208,
+    "latencyMs": 10966,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 8,
+    "passedGate": 4,
+    "formRejected": 4,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 2350,
+    "latencyMs": 16697,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👶",
+        "text": "Si votre partenaire ne voulait finalement jamais d'enfant, resteriez-vous quand même ?",
+        "options": [
+          "Oui, sans hésiter",
+          "Oui, mais j'y réfléchirais beaucoup",
+          "Non, je ne pourrais pas",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Ce que chacun ferait face à l'absence définitive d'enfants",
+        "gap": "A n'est pas certain(e) de vouloir des enfants, B en veut absolument (point non négociable)",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner ultimately never wanted children, would you stay anyway?",
+        "optionsEn": [
+          "Yes, without hesitation",
+          "Yes, but I'd think it over a lot",
+          "No, I couldn't"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👶",
+        "text": "Sur le désir d'enfants, où en êtes-vous réellement aujourd'hui : un oui ferme, un non ferme, ou un vrai doute ?",
+        "options": [
+          "Un oui ferme",
+          "Un non ferme",
+          "Un vrai doute",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "jusqu'où",
+        "target": "La position réelle et ferme de chacun, au-delà du doute déclaré",
+        "gap": "A n'est pas certain(e) de vouloir des enfants, B en veut absolument (point non négociable)",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "About wanting children, where do you truly stand today: a firm yes, a firm no, or real doubt?",
+        "optionsEn": [
+          "A firm yes",
+          "A firm no",
+          "Real doubt"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👶",
+        "text": "Si votre partenaire ne voulait finalement jamais d'enfant, resteriez-vous quand même ?",
+        "options": [
+          "Oui, je resterais",
+          "Je ne sais pas",
+          "Non, je ne pourrais pas",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Confronter chacun à la possibilité que la position de l'autre ne change jamais, avant tout engagement.",
+        "gap": "A n'est pas certain(e) de vouloir des enfants ; B en veut absolument.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner ultimately never wanted children, would you stay anyway?",
+        "optionsEn": [
+          "Yes, I would stay",
+          "I don't know",
+          "No, I couldn't"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👶",
+        "text": "Si votre partenaire hésitait encore sur les enfants après des années, pourriez-vous vivre avec ce doute ?",
+        "options": [
+          "Oui, sans problème",
+          "Un temps, mais pas des années",
+          "Non, pas du tout",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir combien de temps et d'incertitude chacun peut accepter sur une question non négociable.",
+        "gap": "A n'est pas certain(e) de vouloir des enfants ; B en veut absolument.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner was still unsure about children after years together, could you live with that doubt?",
+        "optionsEn": [
+          "Yes, no problem",
+          "For a while, but not years",
+          "No, not at all"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 1908,
+    "latencyMs": 14420,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 8,
+    "passedGate": 2,
+    "formRejected": 6,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 2067,
+    "latencyMs": 20690,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "💬",
+        "text": "Dans un couple, des disputes qui reviennent souvent, jusqu'où pourriez-vous réellement les vivre ?",
+        "options": [
+          "Je cherche vite une solution",
+          "Je peux vivre avec",
+          "C'est insupportable",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "method": "jusqu'où",
+        "target": "Savoir ce que chacun peut tolérer comme conflits répétés dans le quotidien.",
+        "gap": "Écart sur la gestion des désaccords récurrents.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "In a couple, recurring arguments: how much of that could you really live with?",
+        "optionsEn": [
+          "I'd seek solutions fast",
+          "I could live with it",
+          "Unbearable"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "💬",
+        "text": "Si votre partenaire élevait la voix dès qu'un désaccord monte, et que cela ne changeait jamais, pourriez-vous l'accepter ?",
+        "options": [
+          "Oui, je m'y habituerais",
+          "Oui, mais cela me pèserait",
+          "Non, ce serait rédhibitoire",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "communication",
+        "method": "si cela ne changeait jamais",
+        "target": "Confronter chacun à l'acceptation durable d'un mode de désaccord expressif chez l'autre.",
+        "gap": "Écart sur la gestion des désaccords vifs, à confronter à la réalité du quotidien.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner raised their voice whenever a disagreement grew, and it never changed, could you accept it?",
+        "optionsEn": [
+          "Yes, I'd get used to it",
+          "Yes, but it would weigh on me",
+          "No, that would be a dealbreaker",
+          "I'd rather talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 4,
+    "formRejected": 3,
+    "evidenceRejected": 5,
+    "reasons": {
+      "P7": 4,
+      "P13": 1
+    },
+    "leaks": 0,
+    "costMicro": 2241,
+    "latencyMs": 9749,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "📍",
+        "text": "Si votre partenaire ne pouvait jamais quitter sa ville, pourriez-vous vous installer chez lui ou elle définitivement ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, à certaines conditions",
+          "Non, jamais",
+          "Autre..."
+        ],
+        "themeKey": "lieu",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut réellement vivre avec la position fixe de l'autre",
+        "gap": "A prête à déménager si le projet est solide, B refuse de déménager",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner could never leave their city, could you see yourself moving there for good?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, under some conditions",
+          "No, never"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "📍",
+        "text": "Si votre partenaire ne quitterait jamais sa ville pour vous, pourriez-vous renoncer à déménager pour la vie à deux ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, mais avec un poids",
+          "Non, je ne pourrais pas",
+          "Autre..."
+        ],
+        "themeKey": "lieu",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut vivre avec la position fixe de l'autre, sans compromis espéré",
+        "gap": "A prête à déménager si le projet est solide, B refuse de quitter sa ville",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner would never leave their city for you, could you give up moving to build a life together?",
+        "optionsEn": [
+          "Yes, easily",
+          "Yes, but it would weigh on me",
+          "No, I couldn't"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "📍",
+        "text": "Si votre partenaire ne quittait jamais sa ville, pourriez-vous y vivre pendant des années ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, à condition de...",
+          "Non, je ne pourrais pas",
+          "Autre..."
+        ],
+        "themeKey": "lieu",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir qui peut réellement vivre la vie de l'autre sans déménagement.",
+        "gap": "A déménagerait pour un projet solide, B refuse de quitter sa ville.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner never left their city, could you picture living there for years?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, as long as...",
+          "No, I couldn't"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "📍",
+        "text": "Si votre partenaire refusait à vie tout déménagement, qu'est-ce que vous ne pourriez pas accepter ?",
+        "options": [
+          "Rien, je vivrais avec",
+          "Renoncer à certains projets",
+          "C'est rédhibitoire pour moi",
+          "Autre..."
+        ],
+        "themeKey": "lieu",
+        "method": "si cela ne changeait jamais",
+        "target": "Identifier la limite réelle de chacun sur la mobilité.",
+        "gap": "A déménagerait pour un projet solide, B refuse de quitter sa ville.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner refused to ever move, what would you find hardest to accept?",
+        "optionsEn": [
+          "Nothing, I'd cope",
+          "Giving up some plans",
+          "That would be a dealbreaker"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 7,
+    "formRejected": 4,
+    "evidenceRejected": 1,
+    "reasons": {
+      "P13": 1
+    },
+    "leaks": 0,
+    "costMicro": 2230,
+    "latencyMs": 10686,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "💶",
+        "text": "Si votre partenaire perdait son emploi, pendant combien de temps pourriez-vous réellement le soutenir financièrement ?",
+        "options": [
+          "Quelques mois",
+          "Un an ou plus",
+          "Autant que nécessaire",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "method": "chiffre",
+        "target": "La durée réelle de soutien que chacun accepte avant de poser une limite",
+        "gap": "A établirait un plan avec limites, B refuse une dépendance financière prolongée",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner lost their job, how long could you realistically support them financially?",
+        "optionsEn": [
+          "A few months",
+          "A year or more",
+          "As long as it takes"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "🚭",
+        "text": "Si votre partenaire fume tous les jours et que cela ne change jamais, pourriez-vous vivre avec, des années durant ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, mais à contrecœur",
+          "Non",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Ce que chacun peut réellement accepter face au tabac quotidien",
+        "gap": "A accepte le tabac seulement occasionnel, B fume régulièrement",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner smoked every day and it never changed, could you live with it for years?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, but reluctantly",
+          "No"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "💶",
+        "text": "Si votre partenaire restait sans emploi plusieurs mois, jusqu'où pourriez-vous réellement le soutenir financièrement ?",
+        "options": [
+          "Quelques semaines",
+          "Quelques mois, avec des limites",
+          "Aussi longtemps que nécessaire",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "method": "chiffre",
+        "target": "La durée et le montant de soutien que chacun peut réellement tenir.",
+        "gap": "A veut un plan avec limites ; B refuse une dépendance financière prolongée.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner stayed out of work for several months, how long could you really support them financially?",
+        "optionsEn": [
+          "A few weeks",
+          "A few months, with limits",
+          "As long as it takes"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🚭",
+        "text": "Si votre partenaire fumait régulièrement et que cela ne changeait jamais, pourriez-vous vivre avec pendant des années ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, mais avec du mal",
+          "Non",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Si chacun peut réellement vivre avec la position de l'autre sur le tabac.",
+        "gap": "A accepte le tabac seulement occasionnel ; B fume régulièrement.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner smoked regularly and it never changed, could you live with it for years?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, but with difficulty",
+          "No"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "💶",
+        "text": "Si votre partenaire restait sans emploi plusieurs années, pourriez-vous vivre cette situation au quotidien ?",
+        "options": [
+          "Oui, sans limite de temps",
+          "Oui, quelques mois seulement",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "argent",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir combien de temps chacun peut réellement porter un déséquilibre financier durable.",
+        "gap": "A veut un plan et des limites communes, B refuse une dépendance financière prolongée.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner stayed out of work for several years, could you truly live with that day after day?",
+        "optionsEn": [
+          "Yes, for as long as it takes",
+          "Yes, but only a few months",
+          "I'd like to talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "🚭",
+        "text": "Si votre partenaire fumait tous les jours sans jamais changer, pourriez-vous le vivre pendant des années ?",
+        "options": [
+          "Oui, je le vivrais",
+          "Non, cela me serait impossible",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Faire face chacun à la position de l'autre telle qu'elle est, sans espoir de changement.",
+        "gap": "A n'accepte le tabac qu'occasionnel, B fume régulièrement.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner smoked every day and never changed, could you live with it for years?",
+        "optionsEn": [
+          "Yes, I could live with it",
+          "No, that would be impossible for me",
+          "I'd like to talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "🚭",
+        "text": "Si cela ne changeait jamais, qu'est-ce que vous ne pourriez pas accepter dans le quotidien du tabac à la maison ?",
+        "options": [
+          "Rien, j'accepterais tout",
+          "Certaines choses me seraient impossibles",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Identifier ce que chacun ne pourrait pas accepter concrètement au quotidien.",
+        "gap": "A veut un tabac occasionnel, B fume au quotidien.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If it never changed, what would you find impossible to accept about smoking at home day to day?",
+        "optionsEn": [
+          "Nothing, I'd accept it all",
+          "Some things would be impossible for me",
+          "I'd like to talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 4,
+    "formRejected": 7,
+    "evidenceRejected": 1,
+    "reasons": {
+      "P17": 1
+    },
+    "leaks": 0,
+    "costMicro": 2479,
+    "latencyMs": 10536,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si les enfants de l'autre ne vivaient jamais à plein temps chez vous, pourriez-vous vivre avec cela toute votre vie ?",
+        "options": [
+          "Oui, je le vivrais",
+          "J'hésiterais",
+          "Non, impossible",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Tester la position de chacun si elle ne changeait jamais",
+        "gap": "A préfère éviter d'accueillir les enfants de l'autre, B veut une résidence alternée",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner's children never lived with you full time, could you live with that for the rest of your life?",
+        "optionsEn": [
+          "Yes, I could",
+          "I would hesitate",
+          "No, impossible"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🌱",
+        "text": "Si votre partenaire gardait chaque semaine un moment à soi, qu'est-ce que vous ne pourriez pas accepter ?",
+        "options": [
+          "Rien, cela me va",
+          "Une limite précise",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "jusqu'où",
+        "target": "La limite de chacun face au temps à soi de l'autre.",
+        "gap": "A refuse le temps à soi dans le couple, B y est plutôt favorable.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner kept some time to themselves every week, what would you not be able to accept?",
+        "optionsEn": [
+          "Nothing, that's fine",
+          "A specific limit",
+          "I'd rather talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si cela ne changeait jamais, avec quel rythme d'accueil des enfants pourriez-vous réellement vivre au quotidien ?",
+        "options": [
+          "Jamais à la maison",
+          "Quelques jours par mois",
+          "La moitié du temps ou plus",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Faire préciser le rythme maximal acceptable pour chacun, sans bouger.",
+        "gap": "A préférerait éviter d'accueillir les enfants de l'autre, B veut une résidence alternée.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If it never changed, what level of having the children around could you truly live with day to day?",
+        "optionsEn": [
+          "Never at home",
+          "A few days a month",
+          "Half the time or more"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "💑",
+        "text": "Si votre partenaire gardait chaque semaine du temps rien que pour lui, pourriez-vous vivre ainsi pendant des années ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, à condition d'en parler",
+          "Non, je ne pourrais pas",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut accepter durablement le besoin d'espace de l'autre.",
+        "gap": "A refuse le temps à soi dans le couple, B y est plutôt favorable.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner kept weekly time just for themselves, could you live with that for years?",
+        "optionsEn": [
+          "Yes, easily",
+          "Yes, if we talk about it",
+          "No, I couldn't"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50650",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 2021,
+    "latencyMs": 9793,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50786",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 1,
+    "formRejected": 8,
+    "evidenceRejected": 3,
+    "reasons": {
+      "P7": 3,
+      "P17": 2
+    },
+    "leaks": 0,
+    "costMicro": 2228,
+    "latencyMs": 11878,
+    "questions": [
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si votre partenaire ne voulait finalement jamais d'enfant et que cela ne changeait jamais, resteriez-vous ?",
+        "options": [
+          "Oui, je resterais",
+          "Je ne sais pas",
+          "Non, je partirais",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun resterait dans une vie à deux sans jamais d'enfant",
+        "gap": "A veut des enfants si les conditions sont réunies, B n'en veut pas définitivement",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner never wanted children and it never changed, would you stay?",
+        "optionsEn": [
+          "Yes, I'd stay",
+          "I don't know",
+          "No, I'd leave"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T51094",
+    "scenario": "aucun_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 1868,
+    "latencyMs": 2197,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50000",
+    "scenario": "securite",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 5,
+    "formRejected": 4,
+    "evidenceRejected": 3,
+    "reasons": {
+      "P17": 3
+    },
+    "leaks": 0,
+    "costMicro": 2256,
+    "latencyMs": 14529,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si votre partenaire a des enfants adultes, accepteriez-vous qu'ils vivent avec vous un temps, par exemple plusieurs mois ?",
+        "options": [
+          "Oui, sans limite de durée",
+          "Oui, pour quelques mois au plus",
+          "Non, jamais sous mon toit",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "confrontation concrète",
+        "target": "Savoir si l'accueil est possible dans la durée et à quelles conditions.",
+        "gap": "L'un ne pourrait pas accueillir les enfants de l'autre, l'autre les accepte s'ils sont majeurs ou autonomes.",
+        "evidence": [
+          "E3"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner had adult children, would you accept them living with you for a while, say several months?",
+        "optionsEn": [
+          "Yes, with no time limit",
+          "Yes, a few months at most",
+          "No, never under my roof"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "👨‍👩‍👧",
+        "text": "Jusqu'à quel âge d'un enfant pourriez-vous réellement l'accueillir chez vous : adulte, adolescent, ou jeune enfant ?",
+        "options": [
+          "Adulte uniquement",
+          "Adolescent possible",
+          "Jeune enfant aussi",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "jusqu'où",
+        "target": "Fixer la limite d'âge réelle de chacun sur l'accueil des enfants de l'autre.",
+        "gap": "L'un ne pourrait pas accueillir les enfants de l'autre, l'autre les accepte s'ils sont majeurs ou autonomes.",
+        "evidence": [
+          "E3"
+        ],
+        "claim": "ecart",
+        "textEn": "Up to what age could you truly welcome your partner's child at home: adult, teenager, or young child?",
+        "optionsEn": [
+          "Adults only",
+          "Teenager possible",
+          "Young child too"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🚭",
+        "text": "Si votre partenaire fume régulièrement et que cela ne change jamais, pourriez-vous vivre ainsi pendant des années ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, mais avec du mal",
+          "Non, jamais",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun pourrait réellement vivre avec la position de l'autre sur le tabac, sans changement.",
+        "gap": "A ne pourrait pas vivre avec un fumeur régulier, B fume régulièrement.",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner smoked regularly and it never changed, could you live with it for years?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, but with difficulty",
+          "No, never"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "🚭",
+        "text": "Si votre partenaire gardait cette habitude toute sa vie sans jamais changer, pourriez-vous vivre avec, pendant des années ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, avec des limites à préciser",
+          "Non, jamais",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut vivre durablement avec la position de l'autre, sans espoir de changement",
+        "gap": "A ne pourrait pas vivre avec un fumeur régulier, B fume régulièrement",
+        "evidence": [
+          "E1"
+        ],
+        "claim": "ecart",
+        "textEn": "If your partner kept this habit for life and never changed, could you live with it for years?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, with some limits",
+          "No, never",
+          "I'd rather talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "👨‍👩‍👧",
+        "text": "Si cette situation ne changeait jamais, même quand les enfants seront adultes, pourriez-vous l'accepter toute votre vie ?",
+        "options": [
+          "Oui, entièrement",
+          "Oui, mais avec des limites",
+          "Non",
+          "J'aimerais en parler de vive voix",
+          "Autre..."
+        ],
+        "themeKey": "famille",
+        "method": "si cela ne changeait jamais",
+        "target": "Tester si la position de chacun tient sur la durée, au-delà d'une attente de changement",
+        "gap": "A ne pourrait pas accepter d'accueillir les enfants de l'autre, B les imagine majeurs ou autonomes",
+        "evidence": [
+          "E3"
+        ],
+        "claim": "ecart",
+        "textEn": "If this situation never changed, even once the children were grown, could you accept it for life?",
+        "optionsEn": [
+          "Yes, fully",
+          "Yes, but with limits",
+          "No",
+          "I'd rather talk about it in person"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "sans-relecteur"
+      }
+    ]
+  }
+]

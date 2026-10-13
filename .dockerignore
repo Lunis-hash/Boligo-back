@@ -1,10 +1,20 @@
+# Contexte de build de l'API (Dockerfile à la racine) : uniquement le backend.
 .git
-.gitignore
 node_modules/
 dist/
+*.tsbuildinfo
 npm-debug.log
 .env
 .env.*
+!.env.example
 scratch/
 brain/
-README.md
+coverage/
+# Applications construites séparément (deploy/web.Dockerfile, admin/)
+mobile-steve/
+admin/
+docs/
+test/
+scripts/
+deploy/
+*.md

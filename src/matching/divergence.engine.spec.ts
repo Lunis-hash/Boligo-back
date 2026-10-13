@@ -92,13 +92,12 @@ describe('Moteur de divergences BOLIGO', () => {
     };
     const report = buildDivergenceReport(a, b);
     const ranks = report.divergences.map((d) => d.severity);
-    expect(ranks.slice(0, 3)).toEqual(['critique', 'critique', 'critique']);
-    expect(ranks.slice(3)).toEqual([
-      'majeure',
-      'majeure',
-      'majeure',
-      'majeure',
-    ]);
+    // V8.2 : enfants A/D et violence restent critiques (la violence en
+    // alerte de sécurité, hors compatibilité) ; la polygamie devient majeure.
+    expect(ranks.slice(0, 2)).toEqual(['critique', 'critique']);
+    expect(ranks.slice(2).every((x) => x === 'majeure')).toBe(true);
+    expect(report.safetyAlerts!.map((d) => d.questionId)).toEqual(['M6_Q04']);
+    expect(report.hardStop).toBe(true);
     expect(report.penalty).toBe(0.3);
   });
 

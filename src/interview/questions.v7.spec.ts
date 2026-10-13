@@ -1,3 +1,4 @@
+import { V82_INDEX } from './questions.v82';
 import {
   QUESTIONNAIRE_V6_ORDER,
   QUESTIONS,
@@ -169,8 +170,9 @@ describe('Données sensibles (RGPD, article 9)', () => {
   });
 
   it('ne référence que des questions connues', () => {
+    // V8.2 : les questions propres à la V8.2 sont connues de leur questionnaire.
     for (const id of Object.keys(SENSITIVE_QUESTIONS))
-      expect(QUESTION_INDEX.has(id)).toBe(true);
+      expect(QUESTION_INDEX.has(id) || V82_INDEX.has(id)).toBe(true);
     for (const [id, s] of Object.entries(SENSITIVE_OPTIONS)) {
       expect(SENSITIVE_QUESTIONS[id]).toBeUndefined();
       const q = QUESTIONS.find((x) => x.id === id)!;

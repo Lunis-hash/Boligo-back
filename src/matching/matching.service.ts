@@ -10,7 +10,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JourneyService } from '../journey/journey.service';
 import { RegionService } from './region.service';
 import { collectRawAnswers, RawAnswers } from './divergence.engine';
-import { ageFrom, buildMatchView, resolveScore } from './match-view';
+import {
+  ageFrom,
+  buildMatchView,
+  resolveScore,
+  withoutSafetyHold,
+} from './match-view';
 import {
   birthDateBounds,
   FilterSubject,
@@ -119,7 +124,12 @@ export class MatchingService {
       city: filterCity(currentUser),
       answers: viewerAnswers,
     };
-    const birthDate = birthDateBounds(viewerSubject.age, viewerAnswers.M0_Q01);
+    const birthDate = birthDateBounds(
+      viewerSubject.age,
+      viewerAnswers.M0_Q01,
+      new Date(),
+      viewerAnswers.V82_M0_02,
+    );
     const scope = scopeWhere(viewerSubject.city, viewerAnswers.M0_Q02);
 
     const matches = await this.prisma.user.findMany({
@@ -189,7 +199,13 @@ export class MatchingService {
         });
         return { ...view, _sortScore: _score };
       })
-      .filter((view) => !(DISCOVER_HIDE_HARD_STOPS && view.hardStop));
+      // Limite de sécurité déclarée face à une tolérance déclarée : jamais
+      // proposé, indépendamment du score (la séparation ne lève aucune protection).
+      .filter(
+        (view) =>
+          !(DISCOVER_HIDE_HARD_STOPS && view.hardStop) && !view.safetyHold,
+      )
+      .map(withoutSafetyHold);
 
     scored.sort((a, b) => b._sortScore - a._sortScore);
 
@@ -289,6 +305,7 @@ export class MatchingService {
       percent: resolved.percent,
       summary,
       hardStop: resolved.report.hardStop,
+      safetyHold: !!resolved.report.safetyHold,
     };
   }
 
@@ -410,6 +427,8 @@ export class MatchingService {
         mentalMap: partner.mentalMaps?.[0] ?? null,
         answers: answers.get(partner.id) ?? {},
       });
+      // Mise à l'abri de sécurité : jamais renvoyée au membre.
+      delete (view as { safetyHold?: boolean }).safetyHold;
 
       return {
         ...view,
@@ -468,6 +487,7 @@ export class MatchingService {
     // Ni ligne rouge déclarée, ni profil hors des critères non négociables de l'un ou de l'autre.
     if (
       (DISCOVER_HIDE_HARD_STOPS && compat.hardStop) ||
+      compat.safetyHold ||
       !(await this.module0Allows(userId, targetUserId))
     ) {
       return { success: false, message: "Ce profil n'est plus disponible." };
@@ -767,6 +787,7 @@ export class MatchingService {
         mentalMap: p.sourceUser.mentalMaps?.[0] ?? null,
         answers: answers.get(p.sourceUser.id) ?? {},
       });
+      delete (view as { safetyHold?: boolean }).safetyHold;
       return {
         ...view,
         id: p.id,

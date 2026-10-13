@@ -1,0 +1,34 @@
+[
+  {
+    "id": "S57",
+    "seed": 57,
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "topics": [
+      "famille"
+    ]
+  },
+  {
+    "id": "S16",
+    "seed": 16,
+    "scenario": "non_negociable",
+    "lang": "en",
+    "topics": [
+      "mode de vie"
+    ]
+  },
+  {
+    "id": "S11",
+    "seed": 11,
+    "scenario": "donnees_insuffisantes",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "mariage",
+      "religion",
+      "argent",
+      "intimité",
+      "mode de vie"
+    ]
+  }
+]

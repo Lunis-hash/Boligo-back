@@ -23,6 +23,7 @@
  * membres. La sincérité module la confiance accordée aux échelles, jamais la
  * note.
  */
+import { V82_QUESTIONS } from '../interview/questions.v82';
 import { answerKeys, QUESTION_INDEX } from '../interview/questions.data';
 import type {
   Divergence,
@@ -194,6 +195,35 @@ export interface ScaleDef {
   items: Item[];
   /** Affirmations V6, lues quand la version V7 n'a pas assez de réponses. */
   legacy?: Item[];
+  /** V8.2 — affirmations du Grand Entretien V8.2 (attachement, régulation, conflit, Mini-IPIP). */
+  v82?: Item[];
+}
+
+/**
+ * V8.2 — dimension du modèle validé → échelle du profil. Les items et leur
+ * sens (inversé ou non) viennent des données V8.2 exportées du modèle.
+ */
+const V82_DIMENSION_SCALE: Record<string, ScaleName> = {
+  'Attachement : anxiété': 'anxiety',
+  'Attachement : évitement': 'avoidance',
+  'Régulation : réévaluation': 'reappraisal',
+  'Régulation : suppression': 'suppression',
+  'Critique globale': 'criticism',
+  'Mépris / ironie': 'contempt',
+  Défensivité: 'defensiveness',
+  'Retrait sans retour': 'stonewalling',
+  'Big Five — Extraversion': 'extraversion',
+  'Big Five — Agréabilité': 'agreeableness',
+  'Big Five — Conscienciosité': 'conscientiousness',
+  'Big Five — Stabilité émotionnelle': 'emotionalStability',
+  'Big Five — Ouverture (imagination)': 'openness',
+};
+
+/** Items V8.2 d'une échelle du profil. */
+export function v82Items(name: ScaleName): Item[] {
+  return V82_QUESTIONS.filter(
+    (q) => q.dimension && V82_DIMENSION_SCALE[q.dimension] === name,
+  ).map((q) => ({ id: q.id, ...(q.reversed ? { reverse: true } : {}) }));
 }
 
 /** Registre des échelles (documents, tests, contrôle des réponses). */
@@ -257,6 +287,10 @@ export const SCALES: Record<ScaleName, ScaleDef> = {
   },
   sincerity: { label: 'Contrôle de sincérité', items: SINCERITY },
 };
+for (const name of Object.keys(SCALES) as ScaleName[]) {
+  const items = v82Items(name);
+  if (items.length) SCALES[name].v82 = items;
+}
 
 /**
  * Signaux d'alerte (M8_Q10) croisés avec l'habitude correspondante déclarée
@@ -429,7 +463,7 @@ export function scaleResult(
   answers: RawAnswers,
   def: ScaleDef,
 ): { score: number | null; n: number } {
-  for (const items of [def.items, def.legacy]) {
+  for (const items of [def.items, def.legacy, def.v82]) {
     if (!items) continue;
     const score = scaleScore(answers, items);
     if (score !== null)

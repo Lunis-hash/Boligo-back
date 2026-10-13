@@ -5,3 +5,9 @@ dist/
 
 # Cache de compilation incrémentale TypeScript (jamais versionné)
 *.tsbuildinfo
+
+# Sauvegardes de base (données personnelles) : jamais dans le dépôt
+*.dump
+*.dump.gpg
+*.dump.gpg.sha256
+boligo-sauvegardes/

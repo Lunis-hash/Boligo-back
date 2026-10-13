@@ -1,0 +1,106 @@
+[
+  {
+    "n": 1,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 2,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 3,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 4,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 5,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 6,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 7,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 8,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 9,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 10,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 11,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 12,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E1"
+    ]
+  },
+  {
+    "n": 13,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E1"
+    ]
+  }
+]

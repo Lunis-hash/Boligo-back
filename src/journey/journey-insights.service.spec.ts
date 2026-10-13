@@ -1,3 +1,8 @@
+import {
+  resetQualificationCache,
+  setQualificationForTests,
+} from '../ai/sondeur-router';
+import { ENABLED_QUALIFICATION } from '../../test/sondeur-qualification';
 import { THEMES } from '../matching/divergence.engine';
 import {
   JourneyInsightsService,
@@ -208,6 +213,8 @@ const followUps = (themeKey = 'argent') =>
       {
         themeKey,
         text: FOLLOW_UP_TEXT,
+        text_en:
+          'What would a shared budget have to protect for you to feel at ease?',
         methode: 'besoin caché',
         cible: 'ce que l’argent commun représente',
       },
@@ -258,6 +265,9 @@ const reviewer = (verdict: 'ok' | 'refus' | 'absent' = 'ok') =>
   );
 
 describe('JourneyInsightsService — lectures du Sondeur', () => {
+  // Rédaction IA du Sondeur activée explicitement (fail-closed sinon).
+  beforeAll(() => setQualificationForTests(ENABLED_QUALIFICATION));
+  afterAll(() => resetQualificationCache());
   let seq = 0;
   const newJourneyId = () => `journey-${++seq}`;
 
@@ -291,7 +301,7 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
       number,
       number,
     ];
-    expect(followUpCall[1]).toContain('CHOIX DE LA TECHNIQUE SELON LE SIGNAL');
+    expect(followUpCall[1]).toContain('ÉCART RÉEL');
     expect(followUpCall[2]).toContain(
       '- Argent & dettes : Le partage des dépenses reste à préciser.',
     );
@@ -334,6 +344,28 @@ describe('JourneyInsightsService — lectures du Sondeur', () => {
     // Nouvel appel : rien n'est réécrit.
     await service.refresh(id);
     expect(ai.journeyCompletion).toHaveBeenCalledTimes(2);
+  });
+
+  it('ADAPTIVE_FOLLOWUP : écart compris (rien à éclaircir) → aucune relance', async () => {
+    const id = newJourneyId();
+    const db = memoryDb(id);
+    const understood = JSON.stringify({
+      ...JSON.parse(dayAnswer()),
+      toDiscuss: [],
+    });
+    const ai = {
+      journeyCompletion: jest.fn(() => written(understood)),
+      journeyCritique: critic(),
+      reviewSondeurQuestions: reviewer(),
+    };
+    const service = new JourneyInsightsService(db.prisma as never, ai as never);
+    db.answerDay(1, ['a', 'b']);
+    await service.refresh(id);
+    // La lecture est écrite, mais aucun appel pour une relance.
+    expect(db.insights).toHaveLength(1);
+    expect(ai.journeyCompletion).toHaveBeenCalledTimes(1);
+    expect(ai.reviewSondeurQuestions).not.toHaveBeenCalled();
+    expect(db.questions.some((q) => q.followUp)).toBe(false);
   });
 
   it('ne change pas une journée déjà commencée par un membre', async () => {

@@ -1,0 +1,208 @@
+[
+  {
+    "step": "Comptes de recette créés (OTP de test)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Connexion → Grand Entretien module 0 (entretien vierge)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Entretien créé et verrouillé en V8.2",
+    "ok": true,
+    "detail": "8.2"
+  },
+  {
+    "step": "Questions V8.2 servies à A",
+    "ok": true,
+    "detail": "110 questions, 3 conditionnelles"
+  },
+  {
+    "step": "Plage d’âge : 45-30 refusée, 28-38 acceptée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Plage d’âge : 45-30 refusée, 28-38 acceptée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Grand Entretien : bascule en anglais au milieu d’un module",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Reprise après interruption : retour au module en cours",
+    "ok": true,
+    "detail": "http://localhost:8081/interview/3?moduleNumber=3"
+  },
+  {
+    "step": "Grand Entretien terminé dans le navigateur (115 réponses)",
+    "ok": true,
+    "detail": "http://localhost:8081/interview/generation"
+  },
+  {
+    "step": "Plage d’âge saisie dans le navigateur",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Accord pour les questions sensibles demandé avant la première",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Accord enregistré côté serveur",
+    "ok": true,
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-13T11:42:19.672Z\"}"
+  },
+  {
+    "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
+    "ok": true,
+    "detail": "2 posées, 1 écartées"
+  },
+  {
+    "step": "Réponse scriptée de A enregistrée (M3_Q12 = C, risque partagé avec B)",
+    "ok": true,
+    "detail": "C"
+  },
+  {
+    "step": "Plage d’âge enregistrée « 28-38 »",
+    "ok": true,
+    "detail": "[\"V82_M0_01\",\"28-38\"]"
+  },
+  {
+    "step": "Bilan affiché sans « undefined » ni texte vide",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "B : entretien V8.2 terminé en anglais, sans questions sensibles",
+    "ok": true,
+    "detail": "{\"done\":true}"
+  },
+  {
+    "step": "Découverte : B proposée à A",
+    "ok": true,
+    "detail": "69 %"
+  },
+  {
+    "step": "Découverte : aucune donnée interne exposée (safetyHold, réponses brutes, consentement)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Invitation envoyée depuis le navigateur, reçue par B",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "B accepte → parcours Harmonie créé",
+    "ok": true,
+    "detail": "Match accepté avec succès"
+  },
+  {
+    "step": "Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres",
+    "ok": true,
+    "detail": "9/9"
+  },
+  {
+    "step": "NO_FAKE_GAP : questions IA sur un écart réel",
+    "ok": null,
+    "na": true,
+    "detail": "IA désactivée (repli déterministe) : 0 question IA servie sur 9"
+  },
+  {
+    "step": "Sondeur : B lit chaque question en anglais",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Jour 1 : réponses anodines, aucun signalement de modération",
+    "ok": true,
+    "detail": "0 signalement(s)"
+  },
+  {
+    "step": "ADAPTIVE_FOLLOWUP (repli) : jour 1 lu, aucune relance IA placée au jour 2",
+    "ok": true,
+    "detail": "lecture ia, 1 écart(s) à explorer, 0 relance(s) au jour 2"
+  },
+  {
+    "step": "Jour 1 terminé → jour 2 fermé jusqu’au lendemain",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "ADAPTIVE_FOLLOWUP : jour 2 (écart compris) → aucune relance au jour 3",
+    "ok": true,
+    "detail": "lecture ia, 0 écart(s) à explorer, 0 relance(s) au jour 3"
+  },
+  {
+    "step": "Jour 2 terminé → jour 3 fermé jusqu’au lendemain",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "CANNOT_SKIP : aucune option pour passer, refus du serveur",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "CANNOT_ADVANCE_WITHOUT_ANSWER : pas d’avance sans la réponse de l’autre",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "CANNOT_SEE_PARTNER_BEFORE_OWN_ANSWER",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "BOTH_ANSWERS_REVEALED_BEFORE_NEXT : attente puis révélation à chaque question",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "CAN_EXIT : retour à l’accueil au milieu de la journée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "RESUME_SAME_QUESTION : reprise exacte après rechargement",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Sondeur : 9 réponses envoyées depuis le navigateur (toutes les questions)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Progression côté serveur = 9/9",
+    "ok": true,
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":9,\"totalQuestions\":9,\"partnerName\":\"Nadia\",\"journeyId\":\"cc8d0ee0-6c5c-4714-ae8a-52e727b11c1c\"}"
+  },
+  {
+    "step": "Parcours ouvert au dialogue après les 3 jours",
+    "ok": true,
+    "detail": "chat_libre ; lectures 0:ia,1:ia,2:ia,3:ia"
+  },
+  {
+    "step": "B (interface anglaise) : libellés du Sondeur en anglais",
+    "ok": true,
+    "detail": "Day 1"
+  },
+  {
+    "step": "Aucune erreur JavaScript pendant le parcours",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Dialogues d’erreur inattendus",
+    "ok": true,
+    "detail": ""
+  }
+]

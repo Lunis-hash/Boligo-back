@@ -1,0 +1,55 @@
+{
+  "users": {
+    "total": 2,
+    "active": 2,
+    "suspended": 0,
+    "newThisWeek": 2,
+    "newToday": 2,
+    "byStatus": [
+      {
+        "_count": {
+          "id": 2
+        },
+        "accountStatus": "actif"
+      }
+    ]
+  },
+  "interviews": {
+    "completed": 2,
+    "inProgress": 1
+  },
+  "matching": {
+    "proposalsTotal": 1,
+    "pending": 0,
+    "accepted": 1
+  },
+  "journeys": {
+    "total": 1,
+    "inProgress": 1,
+    "successful": 0,
+    "byStep": [
+      {
+        "_count": {
+          "id": 1
+        },
+        "currentStep": "phase_harmonie"
+      }
+    ]
+  },
+  "moderation": {
+    "reportsPending": 0,
+    "messagesBlocked": 0,
+    "messagesTotal": 0
+  },
+  "credits": {
+    "totalBalance": 0
+  },
+  "video": {
+    "sessionsCompleted": 0
+  },
+  "promoCodes": {
+    "total": 0,
+    "active": 0,
+    "totalUsages": 0
+  }
+}

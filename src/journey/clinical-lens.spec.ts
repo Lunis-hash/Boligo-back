@@ -10,23 +10,20 @@ import {
 } from './clinical-lens';
 
 describe('Regard clinique du Sondeur', () => {
-  it('donne à l’IA plusieurs écoles, des techniques de questionnement et la neutralité', () => {
-    for (const school of [
-      'Attachement',
-      'Gottman',
-      'Sue Johnson',
-      'psychanalytique',
-      'systémique',
-      'schémas',
-      'solutions',
-      'Esther Perel',
-    ]) {
-      expect(CLINICAL_LENS).toContain(school);
-    }
-    expect(CLINICAL_LENS).toMatch(/question circulaire/);
-    expect(CLINICAL_LENS).toMatch(/ne se seraient jamais posée/);
-    expect(CLINICAL_LENS).toMatch(/aucun diagnostic/);
-    expect(CRITIC_RULES).toMatch(/banale/);
+  it('consigne : écarts réels seulement, confrontation à la réalité, sans détour par l’enfance ni un proche', () => {
+    expect(CLINICAL_LENS).toMatch(/que sur un ÉCART RÉEL/);
+    expect(CLINICAL_LENS).toMatch(/DETECTED_GAP/);
+    expect(CLINICAL_LENS).toMatch(/Accord ou sujet neutre : aucune question/);
+    expect(CLINICAL_LENS).toMatch(/si cela ne changeait jamais/);
+    expect(CLINICAL_LENS).toMatch(
+      /Jusqu'à combien d'enfants pourriez-vous réellement aller \?/,
+    );
+    expect(CLINICAL_LENS).toMatch(/aucun passé commun/);
+    // Plus aucune incitation au détour : seulement des interdits.
+    expect(CLINICAL_LENS).not.toMatch(/question circulaire|technique.*origine/);
+    expect(CLINICAL_LENS).toMatch(/jamais de souvenir d'enfance/);
+    expect(CRITIC_RULES).toMatch(/1\. elle ne porte pas sur un écart réel/);
+    expect(CRITIC_RULES).toMatch(/famille d'origine, le regard d'un proche/);
     expect(CRITIC_RULES).toMatch(/répète/);
   });
 
@@ -77,17 +74,49 @@ describe('Regard clinique du Sondeur', () => {
     expect(similarQuestions('Et vous ?', 'Et vous ?')).toBe(false);
   });
 
-  it('cadre adapté à deux inconnus, technique choisie selon le signal, exemples contrastés', () => {
+  it('cadre adapté à deux inconnus, écart détecté puis question', () => {
     expect(CLINICAL_LENS).toMatch(/jamais parlé/);
-    expect(CLINICAL_LENS).toMatch(/CHOIX DE LA TECHNIQUE SELON LE SIGNAL/);
     expect(CLINICAL_LENS).toMatch(/180 caractères/);
-    expect(CLINICAL_LENS).toMatch(/Mauvais : .* Bon : /);
-    expect(CLINICAL_LENS).toMatch(/un proche qui vous connaît bien/);
-    expect(CRITIC_RULES).toMatch(/14\. /);
-    expect(CRITIC_RULES).toMatch(/oui ou par non/);
+    expect(CLINICAL_LENS).toMatch(
+      /EXEMPLES \(écart détecté → plusieurs formulations/,
+    );
+    expect(CLINICAL_LENS).toMatch(/ne recopie jamais un exemple mot pour mot/);
+    expect(CLINICAL_LENS).toMatch(/RÉCIPROCITÉ/);
+    expect(CLINICAL_LENS).toMatch(/CONTRE-EXEMPLES/);
+    expect(CRITIC_RULES).toMatch(
+      /suppose qu'un membre précis tient une position/,
+    );
+    expect(CLINICAL_LENS).toMatch(/POINTS NON NÉGOCIABLES/);
+    expect(CRITIC_RULES).toMatch(/15\. /);
     expect(CRITIC_RULES).toMatch(/passé commun/);
     expect(READING_LENS).toMatch(/Décris, compare, cite/);
     expect(READING_LENS).toMatch(/même mot/);
+  });
+
+  it('confrontation à la réalité : admise pour l’IA, sans ouvrir l’ultimatum ni l’intrusion', () => {
+    for (const ok of [
+      "Combien d'enfants pourriez-vous accueillir dans votre foyer, au plus ?",
+      "Si votre partenaire restait sur son chiffre, pourriez-vous l'accepter ?",
+      "Si l'un de vous ne voulait jamais d'enfant, pourriez-vous rester ensemble ?",
+      'Sur 3 000 € gagnés à deux, combien garderiez-vous pour les loisirs ?',
+      "Si ses enfants passaient toute l'année avec vous, pourriez-vous tenir sur la durée ?",
+      'Si votre partenaire travaillait chaque samedi, pourriez-vous vivre ainsi pendant des années ?',
+    ])
+      expect([ok, isWellFormedQuestion(ok)]).toEqual([ok, true]);
+    for (const bad of [
+      // Fermée sans hypothèse concrète : toujours refusée.
+      'Accepteriez-vous de déménager pour l’autre ?',
+      // Ultimatum de rupture, même en hypothèse.
+      'Si votre partenaire refusait, le quitteriez-vous ?',
+      // Montant réel, pas une somme posée en hypothèse.
+      'Combien épargnez-vous chaque mois ?',
+      'Quel est votre salaire, en euros ?',
+      // Exemple de la consigne recopié : refusé.
+      "Jusqu'à combien d'enfants pourriez-vous réellement aller ?",
+      // « Votre partenaire » hors hypothèse : ils ne se connaissent pas.
+      'Comment votre partenaire décrirait-il votre façon de dépenser ?',
+    ])
+      expect([bad, isWellFormedQuestion(bad)]).toEqual([bad, false]);
   });
 
   it('repère une interprétation présentée comme un fait', () => {
@@ -107,12 +136,15 @@ describe('Regard clinique du Sondeur', () => {
   it('contrôle de forme : question ouverte, courte, sans citation ni interprétation', () => {
     for (const ok of [
       'Dans votre famille, comment savait-on qu’une dispute était terminée ?',
-      "Qu'est-ce que votre façon de gérer l'argent vous permet de protéger ?",
+      "Avec l'argent, sur quoi ne céderez-vous jamais ?",
       'De 0 à 10, à quel point tenez-vous à vivre près des vôtres ? Pourquoi pas un point de moins ?',
     ]) {
       expect(isWellFormedQuestion(ok)).toBe(true);
     }
     for (const bad of [
+      // Franchise : tournures alambiquées et questions trop longues refusées.
+      "Qu'est-ce que votre façon de gérer l'argent vous permet de protéger ?",
+      "Dans ce souhait, qu'est-ce qui, pour vous, ne se discute pas ?",
       'Est-ce une ligne rouge pour vous ?',
       'Accepteriez-vous de déménager pour l’autre ?',
       'Vous avez répondu « jamais » : pourquoi ?',
@@ -123,5 +155,27 @@ describe('Regard clinique du Sondeur', () => {
     ]) {
       expect(isWellFormedQuestion(bad)).toBe(false);
     }
+  });
+});
+
+describe('Forme : faux refus corrigés, refus maintenus', () => {
+  it.each([
+    "Jusqu'où iriez-vous pour accueillir chez vous des enfants d'une autre union ?",
+    'À partir de quel montant une dépense imprévue mériterait-elle, selon vous, une discussion à deux ?',
+    "Jusqu'à quelle somme par sortie resteriez-vous à l'aise ?",
+    'À partir de combien de week-ends par mois la présence des enfants des vôtres deviendrait-elle lourde ?',
+    "Si l'école de vos enfants suivait une autre religion que la vôtre, l'accepteriez-vous ?",
+  ])('admise : %s', (t) => {
+    expect(isWellFormedQuestion(t)).toBe(true);
+  });
+
+  it.each([
+    'Où iriez-vous dormir si la soirée tournait mal ?',
+    'Quel est votre salaire mensuel aujourd’hui ?',
+    'Combien gagnez-vous par mois actuellement ?',
+    'Resteriez-vous malgré tout avec cette personne ?',
+    'Comment vos enfants vivent-ils la situation aujourd’hui ?',
+  ])('toujours refusée : %s', (t) => {
+    expect(isWellFormedQuestion(t)).toBe(false);
   });
 });

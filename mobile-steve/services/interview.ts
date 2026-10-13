@@ -19,6 +19,8 @@ export interface Question {
   multiple?: boolean;
   /** Échelle d'accord ou de fréquence (5 points). */
   scale?: 'accord' | 'frequence';
+  /** V8.2 — saisie d'une plage d'âges (« 25-40 »), sans options. */
+  input?: 'ageRange';
   /** Nombre maximal de réponses (signaux d'alerte : 3). */
   maxChoices?: number;
   /** Réponses pré-cochées proposées (langues du pays de résidence). */
@@ -86,6 +88,19 @@ export function togglePick(question: Question, picked: string[], key: string): s
 export function isValidFreeText(text: string): boolean {
   const t = text.replace(/\s+/g, ' ').trim();
   return t.length >= 2 && t.length <= 60 && /^[\p{L}\p{M}][\p{L}\p{M} '’,-]*$/u.test(t);
+}
+
+/** V8.2 — âges acceptés par les curseurs (mêmes bornes que le serveur). */
+export const AGE_MIN = 18;
+export const AGE_MAX = 99;
+
+/** Plage d'âges saisie (« 25 », « 40 ») → réponse « 25-40 », ou null si invalide. */
+export function ageRangeAnswer(min: string, max: string): string | null {
+  if (!/^\d{2}$/.test(min.trim()) || !/^\d{2}$/.test(max.trim())) return null;
+  const lo = Number(min);
+  const hi = Number(max);
+  if (lo < AGE_MIN || hi > AGE_MAX || lo > hi) return null;
+  return `${lo}-${hi}`;
 }
 
 /** Langue dans laquelle le membre passe le Grand Entretien. */

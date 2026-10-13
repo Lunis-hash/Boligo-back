@@ -1,0 +1,30 @@
+[
+  {
+    "model": "fakeqwen/qwen-flash",
+    "family": "qwen",
+    "questions": 45,
+    "quality": 0.5,
+    "qualityFr": 0.5,
+    "qualityEn": 0.5,
+    "hardFailRate": 0,
+    "leaks": 0,
+    "gatePassRate": 0.5357142857142857,
+    "costPerCaseEur": 0,
+    "latencyP50": 12,
+    "errors": 0
+  },
+  {
+    "model": "fakeglm/glm-flash",
+    "family": "fakeglm",
+    "questions": 45,
+    "quality": 0.5,
+    "qualityFr": 0.5,
+    "qualityEn": 0.5,
+    "hardFailRate": 0,
+    "leaks": 0,
+    "gatePassRate": 0.5357142857142857,
+    "costPerCaseEur": 0,
+    "latencyP50": 11,
+    "errors": 0
+  }
+]

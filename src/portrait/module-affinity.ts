@@ -17,6 +17,7 @@
  * Une incompatibilité déclarée ramène le score sous 55 % (« Incompatibilité
  * déclarée ») tout en gardant l'ordre entre deux profils incompatibles.
  */
+import { V82_INDEX } from '../interview/questions.v82';
 import { QUESTION_INDEX } from '../interview/questions.data';
 import {
   Divergence,
@@ -24,6 +25,7 @@ import {
   RawAnswers,
   SEVERITY_SIMILARITY,
   Severity,
+  isSafetyDivergence,
 } from '../matching/divergence.engine';
 import { psychometricSimilarities } from '../psychometrics/psychometrics';
 import { MODULES, ModuleInfo } from './portrait.phrases';
@@ -76,7 +78,9 @@ const SEEK_MATCHES_BRING: Record<string, string[]> = {
 
 /** Module de chaque question, V7 et V6 (une divergence V6 reste rangée dans son module). */
 const MODULE_OF = new Map(
-  [...QUESTION_INDEX.values()].map((q) => [q.id, q.moduleNumber]),
+  [...QUESTION_INDEX.values(), ...V82_INDEX.values()]
+    .filter((q) => !QUESTION_INDEX.has(q.id) || QUESTION_INDEX.get(q.id) === q)
+    .map((q) => [q.id, q.moduleNumber]),
 );
 
 export interface ModuleAffinity {
@@ -130,6 +134,8 @@ function rawVerdict(
   worst: Divergence | undefined,
 ): string {
   const point = worst ? worst.label.toLowerCase() : null;
+  if (worst && isSafetyDivergence(worst))
+    return `Point de sécurité à aborder : ${point}`;
   if (worst?.severity === 'critique')
     return `Incompatibilité déclarée : ${point}`;
   if (value >= 80) return `Alignement fort sur ${info.focus}`;
@@ -269,8 +275,9 @@ export function capForDivergences(
   raw: number,
   report: DivergenceReport,
 ): number {
+  // Les alertes de sécurité ne plafonnent pas la compatibilité (V8.2).
   const critical = report.divergences.filter(
-    (d) => d.severity === 'critique',
+    (d) => d.severity === 'critique' && !isSafetyDivergence(d),
   ).length;
   if (report.hardStop || critical > 0) {
     return (
@@ -279,7 +286,7 @@ export function capForDivergences(
     );
   }
   const major = report.divergences.filter(
-    (d) => d.severity === 'majeure',
+    (d) => d.severity === 'majeure' && !isSafetyDivergence(d),
   ).length;
   return Math.min(raw, MAJOR_CAPS[Math.min(major, MAJOR_CAPS.length - 1)]);
 }

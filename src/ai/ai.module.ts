@@ -9,4 +9,3 @@ import { AiBudgetService } from './ai-budget.service';
   exports: [AiService, OpenRouterService, AiBudgetService],
 })
 export class AiModule {}
-

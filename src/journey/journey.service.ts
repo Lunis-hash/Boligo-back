@@ -1,3 +1,7 @@
+import { aiGenerationEnabled } from '../ai/sondeur-router';
+import { Prisma } from '@prisma/client';
+import { SondeurLanguage, localizeStoredQuestion } from './sondeur.i18n';
+import { EvidenceTrace, buildEvidence, servedTrace } from './sondeur-evidence';
 import { journeyEndedEmail } from '../common/email-templates';
 import {
   BadRequestException,
@@ -21,10 +25,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AiService, SondeurModeration } from '../ai/ai.service';
 import { QUESTIONS_BANK } from './questions.bank';
 import { HarmonyQuestionPayload } from './harmony-question.types';
-import { buildDivergenceReport, collectRawAnswers } from '../matching/divergence.engine';
+import {
+  buildDivergenceReport,
+  collectRawAnswers,
+} from '../matching/divergence.engine';
 import { homeContext } from '../matching/discover-filters';
 import { AiSondeurQuestion, assembleSondeur } from './sondeur.generator';
 import { draftReviewedSondeur } from './sondeur-ai';
+import { adaptiveSelection } from './sondeur-adaptive';
 import { NotificationService } from '../notifications/notification.service';
 import { CreditService } from '../credit/credit.service';
 import { GhostingService } from './ghosting.service';
@@ -38,6 +46,7 @@ import {
   DangerCategory,
   dangerCategories,
   holdsSafety,
+  isReservedAnswer,
 } from './sondeur-insights';
 
 /** Champs du membre transmis à l'IA du Sondeur : jamais de coordonnées. */
@@ -49,51 +58,14 @@ const MEMBER_CONTEXT_FIELDS = {
   city: true,
 } as const;
 
-/**
- * Âge, genre et ville des deux membres, pour que l'IA ne suppose pas un fait
- * de leur vie qu'elle ignore (sans contact, sans photo, sans identifiant).
- */
-export function describeCoupleContext(
-  members: Array<{
-    firstName: string;
-    birthDate: Date | null;
-    gender: string | null;
-    city: string | null;
-  }>,
-  now = new Date(),
-): string {
-  const genders: Record<string, string> = { H: 'homme', F: 'femme' };
-  return members
-    .map((m) => {
-      const parts: string[] = [];
-      if (m.gender && genders[m.gender]) parts.push(genders[m.gender]);
-      if (m.birthDate) {
-        const b = new Date(m.birthDate);
-        let age = now.getFullYear() - b.getFullYear();
-        if (
-          now.getMonth() < b.getMonth() ||
-          (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())
-        )
-          age--;
-        if (age >= 18 && age < 120) parts.push(`${age} ans`);
-      }
-      const city = m.city
-        ?.replace(/[\n\r«»‹›"]/g, ' ')
-        .trim()
-        .slice(0, 60);
-      if (city) parts.push(`vit à ${city}`);
-      const name = m.firstName
-        .replace(/[\n\r«»‹›"]/g, ' ')
-        .trim()
-        .slice(0, 40);
-      return parts.length ? `- ${name} : ${parts.join(', ')}` : '';
-    })
-    .filter(Boolean)
-    .join('\n');
-}
+export { describeCoupleContext } from './couple-context';
+import { describeCoupleContext } from './couple-context';
 
 /** Texte neutre à la place des réponses d'une journée en attente de l'équipe. */
 export const HELD_ANSWER_TEXT = 'Réponse disponible plus tard.';
+
+/** Questions servies au plus (grille complète et approfondissements). */
+const MAX_SONDEUR_QUESTIONS = 30;
 
 @Injectable()
 export class JourneyService {
@@ -120,10 +92,7 @@ export class JourneyService {
     // atteint l'étape chat_libre (Sondeur terminé) ou au-delà
     const journey = await this.prisma.journey.findFirst({
       where: {
-        OR: [
-          { userAId: userId },
-          { userBId: userId },
-        ],
+        OR: [{ userAId: userId }, { userBId: userId }],
         AND: [CHAT_OPEN_WHERE],
       },
     });
@@ -143,10 +112,7 @@ export class JourneyService {
     // Trouver le journey actif de l'utilisateur
     const journey = await this.prisma.journey.findFirst({
       where: {
-        OR: [
-          { userAId: userId },
-          { userBId: userId },
-        ],
+        OR: [{ userAId: userId }, { userBId: userId }],
         currentStep: 'phase_harmonie',
       },
       include: {
@@ -169,7 +135,9 @@ export class JourneyService {
       return {
         hasJourney: !!anyJourney,
         currentStep: anyJourney?.currentStep ?? null,
-        sondeurCompleted: anyJourney ? anyJourney.currentStep !== 'phase_harmonie' : false,
+        sondeurCompleted: anyJourney
+          ? anyJourney.currentStep !== 'phase_harmonie'
+          : false,
         answeredCount: 0,
         totalQuestions: 0,
         partnerName: null,
@@ -178,8 +146,8 @@ export class JourneyService {
 
     const partner = journey.userAId === userId ? journey.userB : journey.userA;
     const totalQuestions = journey.harmonyQuestions.length;
-    const answeredCount = journey.harmonyQuestions.filter(q =>
-      q.responses.some(r => r.userId === userId),
+    const answeredCount = journey.harmonyQuestions.filter((q) =>
+      q.responses.some((r) => r.userId === userId),
     ).length;
 
     return {
@@ -211,7 +179,9 @@ export class JourneyService {
     const partner = isUserA ? journey.userB : journey.userA;
 
     // Calculer le jour actuel (1, 2 ou 3) basé sur la date de début
-    const diffTime = Math.abs(new Date().getTime() - journey.stepStartDate.getTime());
+    const diffTime = Math.abs(
+      new Date().getTime() - journey.stepStartDate.getTime(),
+    );
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const currentDay = Math.min(3, diffDays);
 
@@ -259,7 +229,11 @@ export class JourneyService {
   }
   private readonly logger = new Logger('Parcours');
 
-  /** Génère les 21 questions (3 jours × 7) une seule fois par parcours — IA par défaut. */
+  /**
+   * Génère les questions du Sondeur une seule fois par parcours (nombre
+   * adaptatif, enregistrées en une transaction : un parcours qui a des
+   * questions est complet). Jamais d'effacement : des réponses peuvent exister.
+   */
   async ensureHarmonyQuestions(journeyId: string) {
     const journey = await this.prisma.journey.findUnique({
       where: { id: journeyId },
@@ -268,12 +242,20 @@ export class JourneyService {
     if (!journey) throw new NotFoundException('Parcours non trouvé');
 
     const count = journey.harmonyQuestions.length;
-    if (count >= 21) {
-      if (count > 21) {
+    if (count > 0) {
+      const keys = new Set(
+        journey.harmonyQuestions.map(
+          (q) => `${q.day}:${this.normalizeQuestionKey(q.questionText)}`,
+        ),
+      );
+      if (keys.size < count) {
         try {
           await this.trimDuplicateHarmonyQuestions(journeyId);
         } catch (err) {
-          console.warn('⚠️ [Journey] Nettoyage doublons ignoré (réponses existantes):', err);
+          console.warn(
+            '⚠️ [Journey] Nettoyage doublons ignoré (réponses existantes):',
+            err,
+          );
         }
       }
       return;
@@ -292,9 +274,6 @@ export class JourneyService {
     JourneyService.harmonyGenLocks.set(journeyId, lock);
 
     try {
-      if (count > 0 && count < 21) {
-        await this.clearHarmonyQuestionsForJourney(journeyId);
-      }
       await this.generateHarmonyQuestions(journeyId);
     } finally {
       JourneyService.harmonyGenLocks.delete(journeyId);
@@ -302,21 +281,7 @@ export class JourneyService {
     }
   }
 
-  /** Supprime réponses puis questions d'un parcours (ordre FK). */
-  private async clearHarmonyQuestionsForJourney(journeyId: string) {
-    const ids = await this.prisma.harmonyQuestion.findMany({
-      where: { journeyId },
-      select: { id: true },
-    });
-    const questionIds = ids.map((q) => q.id);
-    if (questionIds.length === 0) return;
-    await this.prisma.harmonyResponse.deleteMany({
-      where: { questionId: { in: questionIds } },
-    });
-    await this.prisma.harmonyQuestion.deleteMany({ where: { journeyId } });
-  }
-
-  /** Garde 21 questions canoniques ; supprime les doublons (réponses liées d'abord). */
+  /** Supprime les doublons (même jour, même texte), réponses liées d'abord. */
   private async trimDuplicateHarmonyQuestions(journeyId: string) {
     const all = await this.prisma.harmonyQuestion.findMany({
       where: { journeyId },
@@ -330,7 +295,7 @@ export class JourneyService {
 
     for (const q of all) {
       const key = `${q.day}:${this.normalizeQuestionKey(q.questionText)}`;
-      if (!seenKeys.has(key) && keepIds.size < 21) {
+      if (!seenKeys.has(key)) {
         seenKeys.add(key);
         keepIds.add(q.id);
       } else {
@@ -346,26 +311,63 @@ export class JourneyService {
     await this.prisma.harmonyQuestion.deleteMany({
       where: { id: { in: toDelete } },
     });
-    console.log(`🧹 [Journey] ${toDelete.length} questions doublons supprimées pour ${journeyId}`);
+    console.log(
+      `🧹 [Journey] ${toDelete.length} questions doublons supprimées pour ${journeyId}`,
+    );
   }
 
   /** Au plus 21 questions uniques renvoyées à l'app (filet si la base en contient plus). */
-  private pickCanonicalHarmonyQuestions<T extends { day: number; questionText: string }>(
-    questions: T[],
-  ): T[] {
+  private pickCanonicalHarmonyQuestions<
+    T extends { day: number; questionText: string },
+  >(questions: T[]): T[] {
     const keep: T[] = [];
     const seen = new Set<string>();
     for (const q of questions) {
       const key = `${q.day}:${this.normalizeQuestionKey(q.questionText)}`;
-      if (seen.has(key) || keep.length >= 21) continue;
+      if (seen.has(key) || keep.length >= MAX_SONDEUR_QUESTIONS) continue;
       seen.add(key);
       keep.push(q);
     }
     return keep;
   }
 
+  /** Questions du parcours dans l'ordre où elles se posent, avec qui a répondu. */
+  private async orderedQuestions(journeyId: string) {
+    const all = await this.prisma.harmonyQuestion.findMany({
+      where: { journeyId },
+      orderBy: [{ day: 'asc' }, { sentAt: 'asc' }],
+      include: { responses: { select: { userId: true } } },
+    });
+    return this.pickCanonicalHarmonyQuestions(all);
+  }
+
+  /**
+   * Tour de réponse : refuse une question tant que la précédente n'a pas reçu
+   * les deux réponses. Personne ne prend d'avance ; chacun découvre la
+   * réponse de l'autre avant de passer à la suite.
+   */
+  private async assertTurn(
+    journey: { id: string; userAId: string; userBId: string },
+    questionId: string,
+  ) {
+    const ordered = await this.orderedQuestions(journey.id);
+    const index = ordered.findIndex((q) => q.id === questionId);
+    if (index <= 0) return;
+    const previous = ordered[index - 1];
+    const answered = (id: string) =>
+      previous.responses.some((r) => r.userId === id);
+    if (!answered(journey.userAId) || !answered(journey.userBId)) {
+      throw new BadRequestException(
+        'Les deux réponses à la question précédente sont attendues avant de passer à celle-ci.',
+      );
+    }
+  }
+
   /** Vérifie que l'utilisateur fait partie du parcours (404 si absent, 403 sinon). */
-  private requireMember<T extends { userAId: string; userBId: string }>(journey: T | null, userId: string): T {
+  private requireMember<T extends { userAId: string; userBId: string }>(
+    journey: T | null,
+    userId: string,
+  ): T {
     if (!journey) throw new NotFoundException('Parcours non trouvé');
     if (journey.userAId !== userId && journey.userBId !== userId) {
       throw new ForbiddenException('Vous ne faites pas partie de ce parcours');
@@ -373,11 +375,28 @@ export class JourneyService {
     return journey;
   }
 
-  async getDailyQuestions(journeyId: string, userId: string) {
+  async getDailyQuestions(
+    journeyId: string,
+    userId: string,
+    lang: SondeurLanguage = 'fr',
+  ) {
     this.requireMember(
-      await this.prisma.journey.findUnique({ where: { id: journeyId }, select: { userAId: true, userBId: true } }),
+      await this.prisma.journey.findUnique({
+        where: { id: journeyId },
+        select: { userAId: true, userBId: true },
+      }),
       userId,
     );
+
+    // Classements restés en attente (IA en panne à l'envoi) : repris en
+    // arrière-plan dès que l'IA répond, sans bloquer l'affichage.
+    void this.insights
+      ?.retryPendingClassifications(journeyId)
+      .catch((err: Error) =>
+        this.logger.warn(
+          `Parcours ${journeyId} : reprise des classements (${err.message})`,
+        ),
+      );
 
     // Préparation en cours (IA lente) : on attend un peu, puis l'app réessaie.
     // Jamais de liste à moitié écrite : tant que la préparation tourne, rien.
@@ -422,38 +441,61 @@ export class JourneyService {
           .map((r) => `${r.userId}:${q.day}`),
       ),
     );
-    return this.pickCanonicalHarmonyQuestions(questions).map((q) => {
-      const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
-      const storedOptions = Array.isArray(q.options) ? (q.options as string[]) : null;
-      // La réponse du partenaire n'est révélée qu'après la sienne : personne
-      // ne peut s'aligner sur l'autre avant d'avoir répondu.
-      const answered = q.responses.some((r) => r.userId === userId);
-      // Mots grossiers cités dans un récit : masqués chez l'autre membre.
-      const visible = answered
-        ? q.responses
-        : q.responses.filter((r) => r.userId === userId);
-      return {
-        ...q,
-        responses: visible.map((r) =>
-          r.userId === userId
-            ? r
-            : {
-                ...r,
-                responseText: heldDays.has(`${r.userId}:${q.day}`)
-                  ? HELD_ANSWER_TEXT
-                  : maskProfanityForDisplay(r.responseText),
-              },
-        ),
-        partnerAnswered: q.responses.some((r) => r.userId !== userId),
-        emoji: q.emoji ?? bankQ?.emoji ?? '💬',
-        options: storedOptions ?? bankQ?.options ?? null,
-      };
-    });
+    // Tour de réponse : la première question sans les deux réponses est la
+    // question en cours ; les suivantes restent fermées jusqu'à la révélation.
+    const canonical = this.pickCanonicalHarmonyQuestions(questions);
+    const firstOpen = canonical.findIndex(
+      (q) => new Set(q.responses.map((r) => r.userId)).size < 2,
+    );
+    return canonical
+      .map((q, index) => {
+        const bankQ = QUESTIONS_BANK.find((bq) => bq.text === q.questionText);
+        const storedOptions = Array.isArray(q.options)
+          ? (q.options as string[])
+          : null;
+        // La réponse du partenaire n'est révélée qu'après la sienne : personne
+        // ne peut s'aligner sur l'autre avant d'avoir répondu.
+        const answered = q.responses.some((r) => r.userId === userId);
+        // Mots grossiers cités dans un récit : masqués chez l'autre membre.
+        const visible = answered
+          ? q.responses
+          : q.responses.filter((r) => r.userId === userId);
+        return {
+          ...q,
+          responses: visible.map((r) =>
+            r.userId === userId
+              ? r
+              : {
+                  ...r,
+                  responseText: heldDays.has(`${r.userId}:${q.day}`)
+                    ? HELD_ANSWER_TEXT
+                    : maskProfanityForDisplay(r.responseText),
+                },
+          ),
+          partnerAnswered: q.responses.some((r) => r.userId !== userId),
+          // revealed : les deux ont répondu ; waiting : ma réponse attend celle
+          // de l'autre ; current : à moi de répondre ; locked : pas encore.
+          turn:
+            firstOpen === -1 || index < firstOpen
+              ? 'revealed'
+              : index > firstOpen
+                ? 'locked'
+                : answered
+                  ? 'waiting'
+                  : 'current',
+          emoji: q.emoji ?? bankQ?.emoji ?? '💬',
+          options: storedOptions ?? bankQ?.options ?? null,
+        };
+      })
+      .map((q) => localizeStoredQuestion(q, lang));
   }
 
   /** IA par défaut ; mettre HARMONY_QUESTIONS_SOURCE=bank pour désactiver. */
   private useAiHarmonyQuestions(): boolean {
-    return process.env.HARMONY_QUESTIONS_SOURCE !== 'bank';
+    // Repli déterministe complet : config/sondeur-models.json, generation.enabled.
+    return (
+      process.env.HARMONY_QUESTIONS_SOURCE !== 'bank' && aiGenerationEnabled()
+    );
   }
 
   private normalizeQuestionKey(text: string): string {
@@ -494,7 +536,9 @@ export class JourneyService {
   }
 
   private async generateHarmonyQuestions(journeyId: string) {
-    const existing = await this.prisma.harmonyQuestion.count({ where: { journeyId } });
+    const existing = await this.prisma.harmonyQuestion.count({
+      where: { journeyId },
+    });
     if (existing > 0) return;
 
     const journey = await this.prisma.journey.findUnique({
@@ -533,13 +577,19 @@ export class JourneyService {
           .trim()
           .slice(0, 40),
     ) as [string, string];
-    const history = await this.getMembersPreviousQuestionTexts(journey.userAId, journey.userBId, journeyId);
+    const history = await this.getMembersPreviousQuestionTexts(
+      journey.userAId,
+      journey.userBId,
+      journeyId,
+    );
 
     // 2. Couche IA des parcours payés : deux propositions par créneau, écrites
     //    avec un regard clinique, contrôlées par le code puis relues jour par
     //    jour par un modèle d'une autre famille. Sans paiement : gabarits.
     let aiQuestions: HarmonyQuestionPayload[] = [];
     let preferAi = false;
+    // V8.2 — index des preuves du couple : chaque question servie en garde la trace.
+    let evidenceIndex = buildEvidence(report);
     if (this.useAiHarmonyQuestions()) {
       const ai = await draftReviewedSondeur(this.aiService, {
         report,
@@ -550,11 +600,13 @@ export class JourneyService {
       });
       aiQuestions = ai.questions;
       preferAi = ai.preferAi;
+      evidenceIndex = ai.evidenceIndex;
     }
 
-    // 3. Assemblage : toujours 21 (3 × 7). Questions de l'IA relues en premier ;
-    //    sinon divergence réelle → IA conforme → gabarit du thème.
-    const questions = assembleSondeur({
+    // 3. Assemblage (grille 3 × 7), puis sélection adaptative : seules les
+    //    questions qui apportent une information sont gardées (écarts réels,
+    //    limites de sécurité, accords à rendre concrets), 3 par jour au moins.
+    const grid = assembleSondeur({
       report,
       firstNames,
       aiQuestions: aiQuestions as AiSondeurQuestion[],
@@ -562,50 +614,86 @@ export class JourneyService {
       seed: journeyId,
       preferAi,
     });
-    const sources = questions.reduce<Record<string, number>>((acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }), {});
-    console.log(`🧭 [Journey] Sondeur assemblé pour ${journeyId} :`, sources, `(${report.divergences.length} divergences)`);
+    const questions = adaptiveSelection(grid, report);
+    const sources = questions.reduce<Record<string, number>>(
+      (acc, q) => ({ ...acc, [q.source]: (acc[q.source] ?? 0) + 1 }),
+      {},
+    );
+    console.log(
+      `🧭 [Journey] Sondeur assemblé pour ${journeyId} :`,
+      sources,
+      `(${report.divergences.length} divergences)`,
+    );
 
-    await this.persistHarmonyQuestions(journeyId, questions);
+    await this.persistHarmonyQuestions(
+      journeyId,
+      questions.map((q) => ({ ...q, trace: servedTrace(q, evidenceIndex) })),
+    );
   }
 
   private async persistHarmonyQuestions(
     journeyId: string,
-    payloads: Array<HarmonyQuestionPayload & { source?: string }>,
+    payloads: Array<
+      HarmonyQuestionPayload & { source?: string; trace?: EvidenceTrace }
+    >,
   ) {
     const seen = new Set<string>();
+    const rows: Prisma.HarmonyQuestionUncheckedCreateInput[] = [];
     for (const q of payloads) {
       const key = this.normalizeQuestionKey(q.text);
       if (seen.has(key)) continue;
       seen.add(key);
       // Traçabilité (jamais montrée aux membres) : origine, méthode, modèles.
-      const meta = Object.fromEntries(
-        Object.entries({
-          source: q.source,
-          method: q.method,
-          target: q.target,
-          writer: q.writer,
-          reviewer: q.reviewer,
-        }).filter(([, v]) => typeof v === 'string' && v.length > 0),
-      );
-      await this.prisma.harmonyQuestion.create({
-        data: {
-          journeyId,
-          day: q.day,
-          theme: q.theme,
-          emoji: q.emoji,
-          questionText: q.text,
-          options: q.options,
-          ...(Object.keys(meta).length ? { meta } : {}),
-        },
+      const meta = {
+        ...Object.fromEntries(
+          Object.entries({
+            source: q.source,
+            method: q.method,
+            target: q.target,
+            writer: q.writer,
+            reviewer: q.reviewer,
+          }).filter(([, v]) => typeof v === 'string' && v.length > 0),
+        ),
+        // Preuves : identifiants et sujets d'entretien, jamais une réponse.
+        ...(q.trace ? { evidence: { ...q.trace } } : {}),
+      };
+      rows.push({
+        journeyId,
+        day: q.day,
+        theme: q.theme,
+        emoji: q.emoji,
+        questionText: q.text,
+        options: q.options,
+        // Sondeur bilingue : la même question en anglais (servie aux
+        // membres dont l'interface est en anglais).
+        ...(q.textEn && q.optionsEn
+          ? { questionTextEn: q.textEn, optionsEn: q.optionsEn }
+          : {}),
+        ...(Object.keys(meta).length ? { meta } : {}),
       });
     }
-    console.log(`✅ [Journey] ${payloads.length} questions Sondeur enregistrées pour ${journeyId}`);
+    // Une seule transaction : jamais un Sondeur à moitié enregistré.
+    // sentAt croissant : l'ordre des questions est celui de la sélection.
+    const base = Date.now();
+    await this.prisma.$transaction(
+      rows.map((data, i) =>
+        this.prisma.harmonyQuestion.create({
+          data: { ...data, sentAt: new Date(base + i) },
+        }),
+      ),
+    );
+    console.log(
+      `✅ [Journey] ${payloads.length} questions Sondeur enregistrées pour ${journeyId}`,
+    );
   }
 
   /** Jour calendaire courant d'un parcours (1..3), même règle que getStatus(). */
   private currentJourneyDay(stepStartDate: Date): number {
     const diffTime = Math.abs(Date.now() - stepStartDate.getTime());
-    return Math.min(3, Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))));
+    return Math.min(
+      3,
+      Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))),
+    );
   }
 
   async respondToQuestion(questionId: string, userId: string, text: string) {
@@ -619,7 +707,9 @@ export class JourneyService {
       throw new ForbiddenException('Vous ne faites pas partie de ce parcours');
     }
     if (journey.currentStep !== 'phase_harmonie') {
-      throw new BadRequestException('La phase Harmonie de ce parcours est terminée.');
+      throw new BadRequestException(
+        'La phase Harmonie de ce parcours est terminée.',
+      );
     }
     if (question.responses.length > 0) {
       throw new BadRequestException('Vous avez déjà répondu à cette question.');
@@ -633,8 +723,18 @@ export class JourneyService {
       );
     }
 
+    // Réciprocité : une question à la fois. La précédente doit avoir reçu
+    // les deux réponses (et donc avoir été révélée aux deux) avant la suivante.
+    await this.assertTurn(journey, questionId);
+
     const trimmed = text.trim();
     if (!trimmed) throw new BadRequestException('Réponse vide.');
+    // On ne passe aucune question : on peut quitter le parcours, pas esquiver.
+    if (isReservedAnswer(trimmed)) {
+      throw new BadRequestException(
+        'Le Sondeur attend votre réponse à cette question. Vous pouvez quitter le parcours, mais pas passer une question.',
+      );
+    }
     if (trimmed.length > 500) {
       throw new BadRequestException(
         'Réponse trop longue (500 caractères max).',
@@ -802,7 +902,12 @@ export class JourneyService {
   }
 
   // Chat libre : envoyer un message (modération locale + IA)
-  async sendMessage(journeyId: string, senderId: string, content: string, type: string) {
+  async sendMessage(
+    journeyId: string,
+    senderId: string,
+    content: string,
+    type: string,
+  ) {
     const journey = await this.prisma.journey.findUnique({
       where: { id: journeyId },
     });
@@ -861,7 +966,10 @@ export class JourneyService {
   // Chat libre : récupérer les messages
   async getMessages(journeyId: string, userId: string) {
     this.requireMember(
-      await this.prisma.journey.findUnique({ where: { id: journeyId }, select: { userAId: true, userBId: true } }),
+      await this.prisma.journey.findUnique({
+        where: { id: journeyId },
+        select: { userAId: true, userBId: true },
+      }),
       userId,
     );
     const rows = await this.prisma.message.findMany({
@@ -959,7 +1067,9 @@ export class JourneyService {
 
       // chat_libre → video : après 3 jours
       if (journey.currentStep === 'chat_libre') {
-        const daysSinceChat = (Date.now() - journey.stepStartDate.getTime()) / (1000 * 60 * 60 * 24);
+        const daysSinceChat =
+          (Date.now() - journey.stepStartDate.getTime()) /
+          (1000 * 60 * 60 * 24);
         if (daysSinceChat >= 3) {
           await this.prisma.journey.updateMany({
             where: { id: journey.id, currentStep: 'chat_libre' },
@@ -975,7 +1085,12 @@ export class JourneyService {
   }
 
   // Échange de contacts : un utilisateur accepte de partager
-  async exchangeContact(journeyId: string, userId: string, sharePhone: boolean, shareEmail: boolean) {
+  async exchangeContact(
+    journeyId: string,
+    userId: string,
+    sharePhone: boolean,
+    shareEmail: boolean,
+  ) {
     const updated = await this.prisma.$transaction(async (tx) => {
       // Deux consentements simultanés ne doivent ni créer deux lignes ni
       // écraser le choix de l'autre membre.
@@ -987,7 +1102,10 @@ export class JourneyService {
         }),
         userId,
       );
-      if (journey.currentStep !== 'echange_contacts' || journey.result !== 'en_cours') {
+      if (
+        journey.currentStep !== 'echange_contacts' ||
+        journey.result !== 'en_cours'
+      ) {
         throw new BadRequestException(
           "L'échange de coordonnées s'ouvre après l'appel vidéo du parcours.",
         );
@@ -995,7 +1113,9 @@ export class JourneyService {
 
       const isUserA = journey.userAId === userId;
       const existing = journey.contactExchange;
-      const alreadyConsented = isUserA ? existing?.consentA : existing?.consentB;
+      const alreadyConsented = isUserA
+        ? existing?.consentA
+        : existing?.consentB;
       if (existing && alreadyConsented) return existing;
 
       if (!existing) {
@@ -1057,8 +1177,12 @@ export class JourneyService {
 
     const isUserA = journey.userAId === userId;
     const partner = isUserA ? journey.userB : journey.userA;
-    const myConsent = isUserA ? journey.contactExchange?.consentA : journey.contactExchange?.consentB;
-    const partnerConsent = isUserA ? journey.contactExchange?.consentB : journey.contactExchange?.consentA;
+    const myConsent = isUserA
+      ? journey.contactExchange?.consentA
+      : journey.contactExchange?.consentB;
+    const partnerConsent = isUserA
+      ? journey.contactExchange?.consentB
+      : journey.contactExchange?.consentA;
     const bothAccepted = Boolean(myConsent && partnerConsent);
 
     // Double consentement : les coordonnées ne quittent le serveur que si les
@@ -1071,8 +1195,14 @@ export class JourneyService {
       emailShared: journey.contactExchange?.emailShared ?? false,
       partner: {
         firstName: partner.firstName,
-        telephone: bothAccepted && journey.contactExchange?.phoneShared ? partner.telephone : null,
-        email: bothAccepted && journey.contactExchange?.emailShared ? partner.email : null,
+        telephone:
+          bothAccepted && journey.contactExchange?.phoneShared
+            ? partner.telephone
+            : null,
+        email:
+          bothAccepted && journey.contactExchange?.emailShared
+            ? partner.email
+            : null,
         profession: partner.profile?.profession,
         displayedCity: partner.profile?.displayedCity || partner.city,
       },
@@ -1108,7 +1238,8 @@ export class JourneyService {
       throw new BadRequestException('Ce parcours est déjà terminé.');
     }
 
-    const partnerId = journey.userAId === userId ? journey.userBId : journey.userAId;
+    const partnerId =
+      journey.userAId === userId ? journey.userBId : journey.userAId;
     const leaver = journey.userAId === userId ? journey.userA : journey.userB;
     const refunded = await this.creditService.refundJourneyOnce(
       partnerId,

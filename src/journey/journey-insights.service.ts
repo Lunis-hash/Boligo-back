@@ -1,3 +1,5 @@
+import { sondeurGenerationEnabled } from '../ai/sondeur-router';
+import { OTHER_EN, OTHER_FR } from './sondeur.i18n';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { Prisma } from '@prisma/client';
@@ -328,9 +330,16 @@ export class SondeurSafety {
 /** Catégories traitées en priorité, 24 h/24 : l'équipe reçoit une alerte. */
 const URGENT_CATEGORIES = ['detresse', 'mineur', 'menace', 'violence_exercee'];
 
-/** Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart. */
+/**
+ * Après un échec, l'IA est relancée au plus trois fois, à dix minutes d'écart.
+ * INSIGHTS_RETRY_AFTER_MS raccourcit seulement l'écart (recette locale) : la
+ * règle, trois essais avant d'ouvrir le dialogue, ne change pas.
+ */
 const MAX_ATTEMPTS = 3;
-const RETRY_AFTER_MS = 10 * 60 * 1000;
+const RETRY_AFTER_MS =
+  Number(process.env.INSIGHTS_RETRY_AFTER_MS) > 0
+    ? Number(process.env.INSIGHTS_RETRY_AFTER_MS)
+    : 10 * 60 * 1000;
 
 export interface SondeurInsightsView {
   days: SondeurReading[];
@@ -587,6 +596,21 @@ export class JourneyInsightsService {
   }
 
   /** Les réponses encore « en attente de classement » sont relues de nouveau (au plus toutes les 10 minutes). */
+  /**
+   * Reprise des classements en attente (IA en panne à l'envoi), aussi
+   * pendant le Sondeur : une réponse anodine n'attend pas la fin des trois
+   * jours pour être montrée. Rien ne change tant que l'IA ne répond pas.
+   */
+  async retryPendingClassifications(journeyId: string): Promise<void> {
+    const journey = await this.load(journeyId);
+    if (!journey) return;
+    await this.retryUnclassified(
+      journeyId,
+      journey.harmonyQuestions,
+      await this.safety(journeyId),
+    );
+  }
+
   private async retryUnclassified(
     journeyId: string,
     qs: Array<{
@@ -1092,9 +1116,14 @@ export class JourneyInsightsService {
     asked: Array<{ day: number; questionText: string; responses: unknown[] }>,
     members: [string, string],
   ): Promise<string | null> {
+    // Rédaction IA du Sondeur désactivée (fail-closed) : aucune relance IA.
+    if (!sondeurGenerationEnabled()) return null;
     // Journée suivante déjà commencée : la question ne pourrait plus changer.
     if (asked.some((q) => q.day === day + 1 && q.responses.length > 0))
       return null;
+    // Relance adaptative : seulement si la lecture laisse un écart à éclaircir
+    // (point « à explorer ») ; un écart compris des deux ne se relance pas.
+    if (reading.toDiscuss.length === 0) return null;
     const askedTexts = asked.map((q) => q.questionText);
     // Les écarts et les non-négociables des entretiens guident la question.
     const report = await this.interviewReport(...members);
@@ -1113,6 +1142,8 @@ export class JourneyInsightsService {
       prompt,
       1200,
       0.6,
+      undefined,
+      true,
     );
     if (!written) return null;
     // Un thème qui porte un écart de sécurité garde sa question de limite.
@@ -1183,6 +1214,9 @@ export class JourneyInsightsService {
     });
     const ofDay = all.filter((q) => q.day === day);
     if (ofDay.some((q) => q.responses.length > 0 || q.followUp)) return null;
+    // Sondeur bilingue : sans version anglaise fidèle, la question bilingue
+    // d'origine reste (les deux membres voient toujours la même question).
+    if (!proposal.textEn) return null;
     // Ni redite exacte, ni question de même sens déjà posée dans ce Sondeur.
     const key = (t: string) => t.toLowerCase().replace(/\s+/g, ' ').trim();
     if (
@@ -1202,6 +1236,8 @@ export class JourneyInsightsService {
       data: {
         questionText: proposal.text,
         options: proposal.options,
+        questionTextEn: proposal.textEn,
+        optionsEn: proposal.options.map((o) => (o === OTHER_FR ? OTHER_EN : o)),
         followUp: true,
         // Traçabilité (jamais montrée aux membres).
         meta: Object.fromEntries(

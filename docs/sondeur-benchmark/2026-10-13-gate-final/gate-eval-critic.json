@@ -1,0 +1,396 @@
+{
+  "anthropic/claude-sonnet-5.5": {
+    "Q008": {
+      "ok": true,
+      "rule": null
+    },
+    "Q081": {
+      "ok": true,
+      "rule": null
+    },
+    "Q178": {
+      "ok": false,
+      "rule": 5
+    },
+    "Q185": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q015": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q031": {
+      "ok": true,
+      "rule": null
+    },
+    "Q153": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q175": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q222": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q325": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q340": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q021": {
+      "ok": true,
+      "rule": null
+    },
+    "Q265": {
+      "ok": true,
+      "rule": null
+    },
+    "Q334": {
+      "ok": true,
+      "rule": null
+    },
+    "Q023": {
+      "ok": true,
+      "rule": null
+    },
+    "Q070": {
+      "ok": true,
+      "rule": null
+    },
+    "Q280": {
+      "ok": true,
+      "rule": null
+    },
+    "Q314": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q026": {
+      "ok": true,
+      "rule": null
+    },
+    "Q246": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q032": {
+      "ok": false,
+      "rule": 4
+    },
+    "Q090": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q033": {
+      "ok": true,
+      "rule": null
+    },
+    "Q034": {
+      "ok": true,
+      "rule": null
+    },
+    "Q278": {
+      "ok": true,
+      "rule": null
+    },
+    "Q309": {
+      "ok": true,
+      "rule": null
+    },
+    "Q041": {
+      "ok": true,
+      "rule": null
+    },
+    "Q042": {
+      "ok": false,
+      "rule": 1
+    },
+    "Q071": {
+      "ok": true,
+      "rule": null
+    },
+    "Q336": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q045": {
+      "ok": true,
+      "rule": null
+    },
+    "Q108": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q194": {
+      "ok": true,
+      "rule": null
+    },
+    "Q335": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q049": {
+      "ok": true,
+      "rule": null
+    },
+    "Q253": {
+      "ok": true,
+      "rule": null
+    },
+    "Q275": {
+      "ok": false,
+      "rule": 5
+    },
+    "Q051": {
+      "ok": true,
+      "rule": null
+    },
+    "Q200": {
+      "ok": true,
+      "rule": null
+    },
+    "Q056": {
+      "ok": false,
+      "rule": 10
+    },
+    "Q059": {
+      "ok": true,
+      "rule": null
+    },
+    "Q060": {
+      "ok": false,
+      "rule": 9
+    },
+    "Q064": {
+      "ok": false,
+      "rule": 8
+    },
+    "Q151": {
+      "ok": true,
+      "rule": null
+    },
+    "Q303": {
+      "ok": false,
+      "rule": 5
+    },
+    "Q310": {
+      "ok": true,
+      "rule": null
+    },
+    "Q067": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q075": {
+      "ok": true,
+      "rule": null
+    },
+    "Q076": {
+      "ok": false,
+      "rule": 4
+    },
+    "Q083": {
+      "ok": true,
+      "rule": null
+    },
+    "Q260": {
+      "ok": false,
+      "rule": 1
+    },
+    "Q300": {
+      "ok": true,
+      "rule": null
+    },
+    "Q084": {
+      "ok": true,
+      "rule": null
+    },
+    "Q154": {
+      "ok": true,
+      "rule": null
+    },
+    "Q209": {
+      "ok": true,
+      "rule": null
+    },
+    "Q229": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q286": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q098": {
+      "ok": true,
+      "rule": null
+    },
+    "Q226": {
+      "ok": true,
+      "rule": null
+    },
+    "Q101": {
+      "ok": true,
+      "rule": null
+    },
+    "Q162": {
+      "ok": true,
+      "rule": null
+    },
+    "Q269": {
+      "ok": true,
+      "rule": null
+    },
+    "Q107": {
+      "ok": true,
+      "rule": null
+    },
+    "Q114": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q119": {
+      "ok": true,
+      "rule": null
+    },
+    "Q147": {
+      "ok": true,
+      "rule": null
+    },
+    "Q251": {
+      "ok": true,
+      "rule": null
+    },
+    "Q123": {
+      "ok": true,
+      "rule": null
+    },
+    "Q168": {
+      "ok": true,
+      "rule": null
+    },
+    "Q227": {
+      "ok": false,
+      "rule": 2
+    },
+    "Q326": {
+      "ok": true,
+      "rule": null
+    },
+    "Q134": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q136": {
+      "ok": true,
+      "rule": null
+    },
+    "Q171": {
+      "ok": true,
+      "rule": null
+    },
+    "Q210": {
+      "ok": true,
+      "rule": null
+    },
+    "Q139": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q163": {
+      "ok": true,
+      "rule": null
+    },
+    "Q213": {
+      "ok": true,
+      "rule": null
+    },
+    "Q146": {
+      "ok": true,
+      "rule": null
+    },
+    "Q183": {
+      "ok": true,
+      "rule": null
+    },
+    "Q245": {
+      "ok": true,
+      "rule": null
+    },
+    "Q149": {
+      "ok": true,
+      "rule": null
+    },
+    "Q311": {
+      "ok": true,
+      "rule": null
+    },
+    "Q150": {
+      "ok": true,
+      "rule": null
+    },
+    "Q169": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q339": {
+      "ok": false,
+      "rule": 8
+    },
+    "Q157": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q167": {
+      "ok": true,
+      "rule": null
+    },
+    "Q182": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q188": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q190": {
+      "ok": true,
+      "rule": null
+    },
+    "Q219": {
+      "ok": true,
+      "rule": null
+    },
+    "Q248": {
+      "ok": true,
+      "rule": null
+    },
+    "Q307": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q231": {
+      "ok": false,
+      "rule": 1
+    },
+    "Q279": {
+      "ok": true,
+      "rule": null
+    },
+    "Q256": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q282": {
+      "ok": true,
+      "rule": null
+    }
+  }
+}

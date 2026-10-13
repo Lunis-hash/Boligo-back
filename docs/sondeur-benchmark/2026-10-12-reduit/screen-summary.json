@@ -1,0 +1,72 @@
+[
+  {
+    "model": "anthropic/claude-sonnet-5.5",
+    "family": "anthropic",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.532258064516129,
+    "costPerCaseEur": 0.19341233333333333,
+    "latencyP50": 26731,
+    "errors": 0
+  },
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "family": "deepseek",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0.0011161,
+    "latencyP50": 48205,
+    "errors": 0
+  },
+  {
+    "model": "qwen/qwen3.8-flash",
+    "family": "qwen",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 75033,
+    "errors": 0
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "family": "z-ai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.5911602209944752,
+    "costPerCaseEur": 0.0021722,
+    "latencyP50": 49056,
+    "errors": 0
+  },
+  {
+    "model": "moonshotai/kimi-k2.6",
+    "family": "moonshotai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0,
+    "costPerCaseEur": 0,
+    "latencyP50": 3,
+    "errors": 0
+  }
+]

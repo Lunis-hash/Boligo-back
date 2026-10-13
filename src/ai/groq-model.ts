@@ -104,6 +104,16 @@ export function reasoningOptions(model: string): {
  * Famille d'un modèle (éditeur) : le relecteur ne doit jamais être de la même
  * famille que le rédacteur, pour ne pas reproduire ses erreurs.
  */
+/** Vrai si `model` est de la famille d'un des modèles à écarter. */
+export function sameFamily(
+  model: string,
+  avoid?: string | readonly string[],
+): boolean {
+  const list =
+    avoid === undefined ? [] : typeof avoid === 'string' ? [avoid] : avoid;
+  return list.some((a) => !!a && modelFamily(a) === modelFamily(model));
+}
+
 export function modelFamily(model: string): string {
   const id = model.toLowerCase();
   if (/llama|meta-llama/.test(id)) return 'meta';

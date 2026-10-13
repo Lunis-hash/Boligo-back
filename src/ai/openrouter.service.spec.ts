@@ -1,4 +1,12 @@
-import { OpenRouterService, maxPrice } from './openrouter.service';
+import {
+  OpenRouterAccountError,
+  OpenRouterService,
+  maxPrice,
+  openRouterAccountError,
+  openRouterAuthHeaders,
+  reasoningFor,
+  resetOpenRouterAccountError,
+} from './openrouter.service';
 
 /** Catalogue OpenRouter simulé : prix en dollars par jeton, comme l'API. */
 const CATALOG = {
@@ -73,6 +81,7 @@ describe('OpenRouterService', () => {
 
   beforeEach(() => {
     process.env.OPENROUTER_API_KEY = 'cle-de-test';
+    delete process.env.OPENROUTER_AUTH;
     delete process.env.OPENROUTER_QUALITY_MODEL;
     delete process.env.OPENROUTER_CRITIC_MODEL;
     delete process.env.OPENROUTER_MAX_PRICE_PROMPT;
@@ -213,6 +222,45 @@ describe('OpenRouterService', () => {
     ).rejects.toThrow(/ont échoué/);
   });
 
+  it.each([401, 402])(
+    'erreur de compte (HTTP %i) : arrêt net, aucun autre modèle essayé',
+    async (status) => {
+      resetOpenRouterAccountError();
+      const fetchFn = mockFetch(() => ({ ok: false, status }));
+      await expect(
+        service.executeAgentPrompt('coach', [{ role: 'user', content: 'x' }], {
+          role: 'quality',
+        }),
+      ).rejects.toBeInstanceOf(OpenRouterAccountError);
+      const chatCalls = (fetchFn.mock.calls as FetchCall[]).filter(([u]) =>
+        u.endsWith('/chat/completions'),
+      );
+      expect(chatCalls).toHaveLength(1);
+      expect(openRouterAccountError()?.status).toBe(status);
+      resetOpenRouterAccountError();
+      expect(openRouterAccountError()).toBeNull();
+    },
+  );
+
+  it('réflexion bornée pour les familles du banc (sinon réponse vide par troncature)', () => {
+    for (const m of [
+      'anthropic/claude-sonnet-5.5',
+      'deepseek/deepseek-v4.1-flash',
+      '~deepseek/deepseek-flash-latest',
+      'qwen/qwen3.8-flash',
+      'z-ai/glm-5.3-flash',
+      'moonshotai/kimi-k2.6',
+      'openai/gpt-6.1-sol',
+    ])
+      expect(reasoningFor(m, 'quality')).toEqual({
+        reasoning: { effort: 'low', exclude: true },
+      });
+    expect(reasoningFor('anthropic/claude-sonnet-5.5', 'critic')).toEqual({
+      reasoning: { effort: 'medium', exclude: true },
+    });
+    expect(reasoningFor('mistralai/mistral-large')).toEqual({});
+  });
+
   it('sans clé : aucun appel', async () => {
     delete process.env.OPENROUTER_API_KEY;
     const fetchFn = mockFetch(() => ({ ok: true }));
@@ -220,5 +268,33 @@ describe('OpenRouterService', () => {
       service.executeAgentPrompt('coach', [{ role: 'user', content: 'x' }]),
     ).rejects.toThrow(/Clé API absente/);
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('secret réseau (OPENROUTER_AUTH=proxy) : appel sans en-tête Authorization', async () => {
+    delete process.env.OPENROUTER_API_KEY;
+    process.env.OPENROUTER_AUTH = 'proxy';
+    const fetchFn = mockFetch(() => ({
+      ok: true,
+      body: { choices: [{ message: { content: 'ok' } }] },
+    }));
+    const res = await service.executeAgentPrompt(
+      'coach',
+      [{ role: 'user', content: 'x' }],
+      { role: 'quality' },
+    );
+    expect(res.content).toBe('ok');
+    const calls = fetchFn.mock.calls as unknown as Array<
+      [string, { headers?: Record<string, string> } | undefined]
+    >;
+    expect(calls.length).toBeGreaterThan(0);
+    for (const [, init] of calls) {
+      expect(init?.headers ?? {}).not.toHaveProperty('Authorization');
+    }
+    expect(openRouterAuthHeaders()).toEqual({});
+
+    process.env.OPENROUTER_API_KEY = 'cle-de-test';
+    expect(openRouterAuthHeaders()).toEqual({
+      Authorization: 'Bearer cle-de-test',
+    });
   });
 });

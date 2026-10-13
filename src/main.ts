@@ -9,12 +9,15 @@ import compression from 'compression';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { runDbTransfer } from './maintenance/db-transfer';
 import { adminOrigins, corsDelegate } from './common/cors';
+import { configReport } from './common/config-report';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
   // Render place un relais devant l'application : sans cela, tous les visiteurs
   // partagent la même IP et le même quota de requêtes.
   app.set('trust proxy', 1);
+  // Réglages vérifiables dans les journaux de l'hébergeur (aucun secret écrit).
+  console.log(`[CONFIG] ${configReport()}`);
   if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
     console.error('[SÉCURITÉ] JWT_SECRET absent en production : les jetons ne sont pas protégés.');
   }

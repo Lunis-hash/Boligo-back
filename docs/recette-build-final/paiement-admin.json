@@ -1,0 +1,82 @@
+[
+  {
+    "step": "Comptes fictifs créés (inscription + code de vérification)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Grand Entretien terminé (A et B)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "step": "Webhook sans signature → refusé (400)",
+    "ok": true,
+    "detail": "status 400"
+  },
+  {
+    "step": "Webhook à signature invalide → refusé (400)",
+    "ok": true,
+    "detail": "status 400"
+  },
+  {
+    "step": "Aucun crédit attribué par un webhook refusé",
+    "ok": true,
+    "detail": "crédits A = 0"
+  },
+  {
+    "step": "Webhook signé payment_intent.succeeded (15,00 €, mode test) → accepté",
+    "ok": true,
+    "detail": "status 200 {\"received\":true}"
+  },
+  {
+    "step": "Crédit attribué au bon compte (A : 0 → 1)",
+    "ok": true,
+    "detail": "crédits A = 1, B = 0"
+  },
+  {
+    "step": "Rejeu du même événement et même paiement : jamais crédité deux fois",
+    "ok": true,
+    "detail": "crédits A = 1"
+  },
+  {
+    "step": "Paiement de B → 1 crédit pour B",
+    "ok": true,
+    "detail": "crédits B = 1"
+  },
+  {
+    "step": "Achat tracé une seule fois (CreditTransaction, paymentRef = PaymentIntent)",
+    "ok": true,
+    "detail": "1 transaction(s) pour A"
+  },
+  {
+    "step": "Après paiement : invitation possible (1 crédit débité)",
+    "ok": true,
+    "detail": "découverte=1, \"Invitation envoyée\""
+  },
+  {
+    "step": "Double consentement : B accepte → parcours Harmonie ouvert (1 crédit débité à B)",
+    "ok": true,
+    "detail": "status 201, crédits B = 0"
+  },
+  {
+    "step": "Parcours accessible à A après paiement : questions du Sondeur servies",
+    "ok": true,
+    "detail": "questions=9"
+  },
+  {
+    "step": "Admin : accès refusé à un membre",
+    "ok": true,
+    "detail": "status 403"
+  },
+  {
+    "step": "Admin : pages du tableau de bord accessibles (stats, membres, parcours, signalements, modération, finances)",
+    "ok": true,
+    "detail": "{\"/admin/stats\":200,\"/admin/users\":200,\"/admin/journeys\":200,\"/admin/reports\":200,\"/admin/messages/blocked\":200,\"/admin/finance/stats\":200}"
+  },
+  {
+    "step": "Admin : le parcours de recette apparaît",
+    "ok": true,
+    "detail": ""
+  }
+]

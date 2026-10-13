@@ -1,0 +1,24 @@
+[
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "run": "2026-10-12-fiche3",
+    "cases": 10,
+    "errors": 0,
+    "drafted": 72,
+    "passed": 3,
+    "formRejected": 23,
+    "evidenceRejected": 22,
+    "criticRejected": 23,
+    "duplicates": 1,
+    "reasons": {
+      "P14": 3,
+      "P7": 6,
+      "P21": 5,
+      "P17": 8,
+      "P13": 2,
+      "P19": 1
+    },
+    "costEur": 0.37152,
+    "latencyP50s": 14.113
+  }
+]

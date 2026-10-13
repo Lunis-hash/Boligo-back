@@ -1,0 +1,1055 @@
+[
+  {
+    "split": "final4",
+    "chain": "contrôle seul",
+    "faulty": 0,
+    "valid": 170,
+    "faultyRejectionRate": null,
+    "validAcceptanceRate": 0.6176470588235294,
+    "leaksAccepted": 0,
+    "byCategory": {},
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "K004",
+        "text": "Pour accueillir chez vous des enfants d'une union précédente, à partir de combien de week-ends par mois ce serait trop pour vous ?",
+        "gate": [
+          "F5 case « objet » : « vous » réservé au cadre"
+        ]
+      },
+      {
+        "id": "K010",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter concernant la place d'enfants d'une précédente union dans votre foyer ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K011",
+        "text": "Si l'un de vous souhaitait un enfant plus tôt que l'autre, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K016",
+        "text": "Pendant combien d'années pourriez-vous vivre sereinement avec un projet d'enfant laissé en suspens ?",
+        "gate": [
+          "F10 effort à sens unique (ne vaut que pour l’un des deux) — « objet »"
+        ]
+      },
+      {
+        "id": "K021",
+        "text": "Quelle condition concrète poseriez-vous sur le projet de fonder une famille avant de vivre ensemble ?",
+        "gate": [
+          "F12 fait personnel inventé (durée, date, événement ou habitude réels) — « objet »"
+        ]
+      },
+      {
+        "id": "K027",
+        "text": "Quelle part des dépenses du foyer accepteriez-vous de consacrer à des jeux d'argent ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K031",
+        "text": "Si la place laissée aux enfants d'une précédente union ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K032",
+        "text": "Si l'accueil d'enfants d'une autre union un week-end par mois devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K033",
+        "text": "Pendant combien de mois pourriez-vous assumer seul(e) les dépenses courantes si votre partenaire perdait une forte somme au jeu ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K034",
+        "text": "Si l'un de vous consacrait une partie de son budget aux jeux d'argent, pendant combien de mois pourriez-vous tenir ainsi ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K039",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la place des enfants d'une autre union dans votre projet de vie ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K047",
+        "text": "Si la place de la foi dans les grandes fêtes de l'année restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K049",
+        "text": "Jusqu'où iriez-vous pour accorder vos façons de vivre la spiritualité ?",
+        "gate": [
+          "P13 possessif non autorisé (« vos façons »)"
+        ]
+      },
+      {
+        "id": "K051",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la place d'une cérémonie religieuse dans votre union ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K052",
+        "text": "Si l'un de vous accordait à la foi une place plus grande que l'autre, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K059",
+        "text": "Si le choix d'une cérémonie religieuse ou civile restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F4 deux idées dans la case « objet » (« ou »)"
+        ]
+      },
+      {
+        "id": "K062",
+        "text": "Jusqu'où iriez-vous pour respecter ensemble vos rapports à la foi ?",
+        "gate": [
+          "F4 ponctuation dans la case « infinitif »"
+        ]
+      },
+      {
+        "id": "K067",
+        "text": "Pour l'apéritif en semaine, à partir de combien de soirs par semaine ce serait trop pour vous ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K078",
+        "text": "Si l'un de vous vivait loin de l'autre en attendant de choisir un lieu, pendant combien de mois pourriez-vous tenir ainsi ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K079",
+        "text": "Combien de week-ends par mois pourriez-vous réellement vivre avec des allers-retours pour vous retrouver ?",
+        "gate": [
+          "F5 case « objet » : « vous » réservé au cadre",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K080",
+        "text": "Si l'un de vous buvait de l'alcool plus souvent que l'autre, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K081",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter concernant l'alcool dans votre vie de couple ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K082",
+        "text": "Combien de soirées par mois vous sembleraient un maximum pour les sorties arrosées ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K084",
+        "text": "Quelle limite fixeriez-vous pour les trajets entre vos deux domiciles dans une vie à deux ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« vos »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)",
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K086",
+        "text": "Si vos positions sur la place de l'alcool dans votre quotidien ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K097",
+        "text": "Si vos positions sur l'entraide financière en cas de coup dur ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K098",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec un seul salaire pour deux ?",
+        "gate": [
+          "F14 case intrusive (lieu précis, santé, intimité, tiers nommé, argent personnel) — « objet »",
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K101",
+        "text": "Pendant combien de semaines pourriez-vous assumer seul(e) les courses du foyer si votre partenaire était licencié(e) ?",
+        "gate": [
+          "F4 ponctuation dans la case « action »"
+        ]
+      },
+      {
+        "id": "K103",
+        "text": "Si le rapport à l'argent en période de chômage ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K104",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec un verre de vin au dîner ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K106",
+        "text": "Si vos positions sur le partage des charges pendant un chômage ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K107",
+        "text": "Si l'un de vous buvait davantage lors des sorties, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K108",
+        "text": "Combien de week-ends par mois pourriez-vous réellement vivre avec des activités menées chacun de son côté ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K110",
+        "text": "Quelle limite fixeriez-vous pour le temps passé seul(e) dans une vie à deux ?",
+        "gate": [
+          "F4 ponctuation dans la case « objet »",
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K111",
+        "text": "Combien de soirs par semaine vous sembleraient un maximum pour le temps pour soi ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K114",
+        "text": "Si une soirée par semaine chacun pour soi devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K115",
+        "text": "Si l'un de vous souhaitait plus de moments seul(e), qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F4 ponctuation dans la case « action »"
+        ]
+      },
+      {
+        "id": "K116",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du temps passé loin de l'autre ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K117",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec des week-ends séparés de temps en temps ?",
+        "gate": [
+          "F4 deux idées dans la case (« et ») — « objet »"
+        ]
+      },
+      {
+        "id": "K118",
+        "text": "Jusqu'où iriez-vous pour préserver à deux un espace personnel pour chacun ?",
+        "gate": [
+          "F4 ponctuation dans la case « infinitif »",
+          "F5 case anglaise « infinitif » : attribution ou présupposé (« each of you »)"
+        ]
+      },
+      {
+        "id": "K119",
+        "text": "Si l'un de vous partait seul(e) en voyage, pendant combien de mois pourriez-vous tenir ainsi ?",
+        "gate": [
+          "F4 ponctuation dans la case « action »"
+        ]
+      },
+      {
+        "id": "K120",
+        "text": "Si le besoin de solitude ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K121",
+        "text": "Si la part de temps passé ensemble restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K122",
+        "text": "Combien de semaines pourriez-vous attendre avant de trancher l'organisation de vos soirées libres ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« vos »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K123",
+        "text": "Combien de soirées par mois pourriez-vous réellement vivre avec des sorties entre amis sans l'autre ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« the other »)",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K124",
+        "text": "Combien de week-ends par an vous sembleraient un maximum pour des escapades chacun de son côté ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K125",
+        "text": "Quelle limite fixeriez-vous pour les activités sans l'autre dans une vie à deux ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« the other »)",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K129",
+        "text": "Sur 3 000 € par mois à deux, quelle part consacreriez-vous aux paris et jeux de hasard ?",
+        "gate": [
+          "F4 deux idées dans la case (« et ») — « objet »"
+        ]
+      },
+      {
+        "id": "K130",
+        "text": "Quelle limite fixeriez-vous pour le rôle éducatif d'un beau-parent dans une vie à deux ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K132",
+        "text": "Quelle condition concrète poseriez-vous sur le rôle de chacun auprès des enfants de l'autre avant de vivre ensemble ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K133",
+        "text": "Quelle part des dépenses du foyer accepteriez-vous de consacrer à des mises au jeu ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K138",
+        "text": "Si le goût pour les jeux de hasard ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K141",
+        "text": "Pendant combien de mois pourriez-vous assumer seul(e) le budget des loisirs si votre partenaire subissait une perte importante aux paris ?",
+        "gate": [
+          "F5 case anglaise « action » : attribution ou présupposé (« suffered »)"
+        ]
+      },
+      {
+        "id": "K143",
+        "text": "Si des règles décidées à deux pour les enfants de chacun devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K151",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher le moment de vous engager pleinement ?",
+        "gate": [
+          "F5 case « objet » : « vous » réservé au cadre",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K152",
+        "text": "Si vos positions sur le rythme de votre engagement ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K153",
+        "text": "Si le calendrier d'une installation commune restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K156",
+        "text": "Quelle condition concrète poseriez-vous sur le rythme de la relation avant de vivre ensemble ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K158",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec une relation qui avance lentement ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K161",
+        "text": "Combien d'années pourriez-vous attendre avant de trancher le projet de devenir parents ensemble ?",
+        "gate": [
+          "F12 fait personnel inventé (durée, date, événement ou habitude réels) — « objet »"
+        ]
+      },
+      {
+        "id": "K162",
+        "text": "Jusqu'où iriez-vous pour accorder vos rythmes d'engagement ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K163",
+        "text": "Si l'un de vous souhaitait avancer plus lentement dans la relation, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K165",
+        "text": "Combien de soirs par semaine vous sembleraient un maximum pour les moments partagés au début de la relation ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K167",
+        "text": "Si le rythme d'engagement ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K169",
+        "text": "Si une installation commune progressive devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "final4",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 0,
+    "valid": 170,
+    "faultyRejectionRate": null,
+    "validAcceptanceRate": 0.6,
+    "leaksAccepted": 0,
+    "byCategory": {},
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "K004",
+        "text": "Pour accueillir chez vous des enfants d'une union précédente, à partir de combien de week-ends par mois ce serait trop pour vous ?",
+        "gate": [
+          "F5 case « objet » : « vous » réservé au cadre"
+        ]
+      },
+      {
+        "id": "K007",
+        "text": "Jusqu'où iriez-vous pour accorder vos envies de devenir parents ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12,
+          "reason": "Invite à un compromis sur un point non négociable",
+          "excerpt": "Jusqu'où iriez-vous pour accorder vos envies de devenir parents"
+        }
+      },
+      {
+        "id": "K010",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter concernant la place d'enfants d'une précédente union dans votre foyer ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K011",
+        "text": "Si l'un de vous souhaitait un enfant plus tôt que l'autre, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K016",
+        "text": "Pendant combien d'années pourriez-vous vivre sereinement avec un projet d'enfant laissé en suspens ?",
+        "gate": [
+          "F10 effort à sens unique (ne vaut que pour l’un des deux) — « objet »"
+        ]
+      },
+      {
+        "id": "K021",
+        "text": "Quelle condition concrète poseriez-vous sur le projet de fonder une famille avant de vivre ensemble ?",
+        "gate": [
+          "F12 fait personnel inventé (durée, date, événement ou habitude réels) — « objet »"
+        ]
+      },
+      {
+        "id": "K027",
+        "text": "Quelle part des dépenses du foyer accepteriez-vous de consacrer à des jeux d'argent ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K031",
+        "text": "Si la place laissée aux enfants d'une précédente union ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K032",
+        "text": "Si l'accueil d'enfants d'une autre union un week-end par mois devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K033",
+        "text": "Pendant combien de mois pourriez-vous assumer seul(e) les dépenses courantes si votre partenaire perdait une forte somme au jeu ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K034",
+        "text": "Si l'un de vous consacrait une partie de son budget aux jeux d'argent, pendant combien de mois pourriez-vous tenir ainsi ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K039",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la place des enfants d'une autre union dans votre projet de vie ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K047",
+        "text": "Si la place de la foi dans les grandes fêtes de l'année restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K049",
+        "text": "Jusqu'où iriez-vous pour accorder vos façons de vivre la spiritualité ?",
+        "gate": [
+          "P13 possessif non autorisé (« vos façons »)"
+        ]
+      },
+      {
+        "id": "K051",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la place d'une cérémonie religieuse dans votre union ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K052",
+        "text": "Si l'un de vous accordait à la foi une place plus grande que l'autre, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K059",
+        "text": "Si le choix d'une cérémonie religieuse ou civile restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F4 deux idées dans la case « objet » (« ou »)"
+        ]
+      },
+      {
+        "id": "K062",
+        "text": "Jusqu'où iriez-vous pour respecter ensemble vos rapports à la foi ?",
+        "gate": [
+          "F4 ponctuation dans la case « infinitif »"
+        ]
+      },
+      {
+        "id": "K067",
+        "text": "Pour l'apéritif en semaine, à partir de combien de soirs par semaine ce serait trop pour vous ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K078",
+        "text": "Si l'un de vous vivait loin de l'autre en attendant de choisir un lieu, pendant combien de mois pourriez-vous tenir ainsi ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K079",
+        "text": "Combien de week-ends par mois pourriez-vous réellement vivre avec des allers-retours pour vous retrouver ?",
+        "gate": [
+          "F5 case « objet » : « vous » réservé au cadre",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K080",
+        "text": "Si l'un de vous buvait de l'alcool plus souvent que l'autre, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F5 case « action » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « action » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K081",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter concernant l'alcool dans votre vie de couple ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K082",
+        "text": "Combien de soirées par mois vous sembleraient un maximum pour les sorties arrosées ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K084",
+        "text": "Quelle limite fixeriez-vous pour les trajets entre vos deux domiciles dans une vie à deux ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« vos »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)",
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K086",
+        "text": "Si vos positions sur la place de l'alcool dans votre quotidien ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K095",
+        "text": "Quelle part des dépenses du foyer accepteriez-vous de consacrer à l'épargne de précaution ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 1,
+          "reason": "Ne traite pas directement du soutien en cas de perte d'emploi.",
+          "excerpt": "à consacrer à l'épargne de précaution"
+        }
+      },
+      {
+        "id": "K097",
+        "text": "Si vos positions sur l'entraide financière en cas de coup dur ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F7 case « objet » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)",
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K098",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec un seul salaire pour deux ?",
+        "gate": [
+          "F14 case intrusive (lieu précis, santé, intimité, tiers nommé, argent personnel) — « objet »",
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K101",
+        "text": "Pendant combien de semaines pourriez-vous assumer seul(e) les courses du foyer si votre partenaire était licencié(e) ?",
+        "gate": [
+          "F4 ponctuation dans la case « action »"
+        ]
+      },
+      {
+        "id": "K103",
+        "text": "Si le rapport à l'argent en période de chômage ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K104",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec un verre de vin au dîner ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K106",
+        "text": "Si vos positions sur le partage des charges pendant un chômage ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K107",
+        "text": "Si l'un de vous buvait davantage lors des sorties, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K108",
+        "text": "Combien de week-ends par mois pourriez-vous réellement vivre avec des activités menées chacun de son côté ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K110",
+        "text": "Quelle limite fixeriez-vous pour le temps passé seul(e) dans une vie à deux ?",
+        "gate": [
+          "F4 ponctuation dans la case « objet »",
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K111",
+        "text": "Combien de soirs par semaine vous sembleraient un maximum pour le temps pour soi ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K114",
+        "text": "Si une soirée par semaine chacun pour soi devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K115",
+        "text": "Si l'un de vous souhaitait plus de moments seul(e), qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F4 ponctuation dans la case « action »"
+        ]
+      },
+      {
+        "id": "K116",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet du temps passé loin de l'autre ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K117",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec des week-ends séparés de temps en temps ?",
+        "gate": [
+          "F4 deux idées dans la case (« et ») — « objet »"
+        ]
+      },
+      {
+        "id": "K118",
+        "text": "Jusqu'où iriez-vous pour préserver à deux un espace personnel pour chacun ?",
+        "gate": [
+          "F4 ponctuation dans la case « infinitif »",
+          "F5 case anglaise « infinitif » : attribution ou présupposé (« each of you »)"
+        ]
+      },
+      {
+        "id": "K119",
+        "text": "Si l'un de vous partait seul(e) en voyage, pendant combien de mois pourriez-vous tenir ainsi ?",
+        "gate": [
+          "F4 ponctuation dans la case « action »"
+        ]
+      },
+      {
+        "id": "K120",
+        "text": "Si le besoin de solitude ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K121",
+        "text": "Si la part de temps passé ensemble restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K122",
+        "text": "Combien de semaines pourriez-vous attendre avant de trancher l'organisation de vos soirées libres ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« vos »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "K123",
+        "text": "Combien de soirées par mois pourriez-vous réellement vivre avec des sorties entre amis sans l'autre ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« the other »)",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K124",
+        "text": "Combien de week-ends par an vous sembleraient un maximum pour des escapades chacun de son côté ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K125",
+        "text": "Quelle limite fixeriez-vous pour les activités sans l'autre dans une vie à deux ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« the other »)",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K129",
+        "text": "Sur 3 000 € par mois à deux, quelle part consacreriez-vous aux paris et jeux de hasard ?",
+        "gate": [
+          "F4 deux idées dans la case (« et ») — « objet »"
+        ]
+      },
+      {
+        "id": "K130",
+        "text": "Quelle limite fixeriez-vous pour le rôle éducatif d'un beau-parent dans une vie à deux ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K132",
+        "text": "Quelle condition concrète poseriez-vous sur le rôle de chacun auprès des enfants de l'autre avant de vivre ensemble ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« l'autre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« the other »)"
+        ]
+      },
+      {
+        "id": "K133",
+        "text": "Quelle part des dépenses du foyer accepteriez-vous de consacrer à des mises au jeu ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "K138",
+        "text": "Si le goût pour les jeux de hasard ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K141",
+        "text": "Pendant combien de mois pourriez-vous assumer seul(e) le budget des loisirs si votre partenaire subissait une perte importante aux paris ?",
+        "gate": [
+          "F5 case anglaise « action » : attribution ou présupposé (« suffered »)"
+        ]
+      },
+      {
+        "id": "K143",
+        "text": "Si des règles décidées à deux pour les enfants de chacun devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "K151",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher le moment de vous engager pleinement ?",
+        "gate": [
+          "F5 case « objet » : « vous » réservé au cadre",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K152",
+        "text": "Si vos positions sur le rythme de votre engagement ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "F5 case « objet » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « objet » : attribution ou présupposé (« your »)",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K153",
+        "text": "Si le calendrier d'une installation commune restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K156",
+        "text": "Quelle condition concrète poseriez-vous sur le rythme de la relation avant de vivre ensemble ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K158",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec une relation qui avance lentement ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K161",
+        "text": "Combien d'années pourriez-vous attendre avant de trancher le projet de devenir parents ensemble ?",
+        "gate": [
+          "F12 fait personnel inventé (durée, date, événement ou habitude réels) — « objet »"
+        ]
+      },
+      {
+        "id": "K162",
+        "text": "Jusqu'où iriez-vous pour accorder vos rythmes d'engagement ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K163",
+        "text": "Si l'un de vous souhaitait avancer plus lentement dans la relation, qu'est-ce qui vous permettrait de rester ?",
+        "gate": [
+          "F3 case « action » : l'anglais ne dit pas la même chose que le français",
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K165",
+        "text": "Combien de soirs par semaine vous sembleraient un maximum pour les moments partagés au début de la relation ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K166",
+        "text": "Quelle condition concrète poseriez-vous sur le projet d'avoir des enfants avant de vivre ensemble ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 5,
+          "reason": "Mélange deux idées et présuppose un projet commun inexistant.",
+          "excerpt": "le projet d'avoir des enfants avant de vivre ensemble"
+        }
+      },
+      {
+        "id": "K167",
+        "text": "Si le rythme d'engagement ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?",
+        "gate": [
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "K169",
+        "text": "Si une installation commune progressive devenait la règle à la maison, pendant combien de mois pourriez-vous l'accepter ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      }
+    ]
+  }
+]

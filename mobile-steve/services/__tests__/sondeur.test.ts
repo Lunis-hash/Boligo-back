@@ -42,3 +42,19 @@ describe('Sondeur : 7 questions par jour pendant 3 jours', () => {
     expect(state).toMatchObject({ canAnswer: false, waitingForNextDay: false, daysUntilUnlock: 0 });
   });
 });
+
+describe('Sondeur bilingue (libellés)', () => {
+  it('mêmes clés en français et en anglais ; aucune option pour passer une question', () => {
+    const { SONDEUR_TEXT } = require('../sondeur');
+    expect(Object.keys(SONDEUR_TEXT.en).sort()).toEqual(Object.keys(SONDEUR_TEXT.fr).sort());
+    expect('inPerson' in SONDEUR_TEXT.fr).toBe(false);
+  });
+
+  it('libellé d’une journée verrouillée dans la langue du membre', () => {
+    const { getSondeurDayState, getSondeurLockedLabel } = require('../sondeur');
+    const state = getSondeurDayState([1], 1);
+    expect(getSondeurLockedLabel(2, state)).toBe('Disponible demain');
+    expect(getSondeurLockedLabel(2, state, 'en')).toBe('Available tomorrow');
+    expect(getSondeurLockedLabel(3, state, 'en')).toBe('Available in 2 days');
+  });
+});

@@ -1063,9 +1063,11 @@ describe('Sécurité, couche IA et résumé pour l’IA', () => {
     expect(validateSondeurGrid(qs)).toBe(true);
   });
 
-  it('jour 1 : « Lignes rouges », sous l’angle de ce que chacun protège', () => {
+  it('jour 1 : « Lignes rouges », sous l’angle de la position réelle de chacun', () => {
     expect(DAY_ANGLES[1].label).toBe('Lignes rouges');
-    expect(DAY_ANGLES[1].intent).toBe('ce que chacun protège');
+    expect(DAY_ANGLES[1].intent).toBe(
+      'la position réelle de chacun sur ses écarts (combien, quoi, quand)',
+    );
   });
 
   it('résumé pour l’IA : chaque accord avec son sujet et la réponse commune', () => {

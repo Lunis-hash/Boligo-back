@@ -1,0 +1,16 @@
+[
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "family": "z-ai",
+    "questions": 0,
+    "quality": 0,
+    "qualityFr": 0,
+    "qualityEn": 0,
+    "hardFailRate": 1,
+    "leaks": 0,
+    "gatePassRate": 0.18055555555555555,
+    "costPerCaseEur": 0.13455383333333334,
+    "latencyP50": 32849,
+    "errors": 0
+  }
+]

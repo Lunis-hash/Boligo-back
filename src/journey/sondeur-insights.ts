@@ -63,6 +63,8 @@ export interface FollowUpProposal {
   /** Technique et cible (jamais montrées aux membres), pour le relecteur. */
   method?: string;
   target?: string;
+  /** Sondeur bilingue : la même question en anglais (obligatoire pour être posée). */
+  textEn?: string;
 }
 
 export interface AnsweredItem {
@@ -183,7 +185,7 @@ export function ruleReview(report: DivergenceReport | null): SondeurReading {
     day: REVIEW_DAY,
     source: 'regles',
     headline:
-      'Sondeur terminé : vous avez répondu tous les deux aux 21 questions.',
+      'Sondeur terminé : vous avez répondu tous les deux à toutes les questions.',
     together: [],
     toDiscuss,
     openers: [...REVIEW_OPENERS],
@@ -384,7 +386,7 @@ function dangerFacts(): Array<[DangerCategory, RegExp]> {
     [
       'detresse',
       new RegExp(
-        String.raw`suicid|(?:envie|besoin|veux|voudrais|vais) (?:de )?mourir(?! (?:vieux|vieille|de (?:rire|faim|froid|chaud|honte|fatigue)|a cote|aupres|dans (?:tes|ses|vos) bras|ensemble|avec))|plus envie de vivre(?! (?:seule?|ici|loin|sans|comme|chez|avec|a [a-z]|dans (?:cette|ce|une|un|la|le)|en (?!ce moment)[a-z]))|(?:plus|aucune|pas) (?:de )?raison de vivre|en finir(?: avec (?:la vie|tout|moi|ma vie|mes jours))?(?=\s*(?:[.,;!?]|$|une bonne fois|pour de bon))|(?:pense|penser|pensais|envie|veux|voudrais|essaye|tente)\w* (?:a |de )?me (?:tuer|suicider|foutre en l'air)|me (?:fais|faire|suis fait) du mal|me scarifi|automutil|disparaitre (?:pour toujours|a jamais|de ce monde)|fatiguee? de vivre(?! (?:seule?|ici|loin|sans|a |en |dans|comme|chez))|la vie n'a plus de sens|mettre fin a (?:mes|ses) jours|m'oter la vie|mieux sans moi|(?:veux|veut) plus vivre|\b(?:want|wanna) to die\b|\bkill myself\b|don'?t want to live|\bend my life\b|\bmwen (?:vle|vl) mouri\b|\bpa vle viv\b`,
+        String.raw`suicid|(?:envie|besoin|veux|voudrais|vais) (?:de )?mourir(?! (?:vieux|vieille|de (?:rire|faim|froid|chaud|honte|fatigue)|a cote|aupres|dans (?:tes|ses|vos) bras|ensemble|avec))|plus envie de vivre(?! (?:seule?|ici|loin|sans|comme|chez|avec|a [a-z]|dans (?:cette|ce|une|un|la|le)|en (?!ce moment)[a-z]))|(?:plus|aucune|pas) (?:de )?raison de vivre|en finir(?: avec (?:la vie|tout|moi|ma vie|mes jours))?(?=\s*(?:[.,;!?]|$|une bonne fois|pour de bon))|(?:pense|penser|pensais|envie|veux|voudrais|essaye|tente)\w* (?:a |de )?me (?:tuer|suicider|foutre en l'air)|me (?:fais|faire|suis fait) du mal|me scarifi|automutil|disparaitre (?:pour toujours|a jamais|de ce monde)|fatiguee? de vivre(?! (?:seule?|ici|loin|sans|a |en |dans|comme|chez))|la vie n'a plus de sens|mettre fin a (?:mes|ses) jours|m'oter la vie|mieux sans moi|(?:veux|veut) plus vivre|a quoi bon (?:vivre|continuer|me lever|exister)|plus la force de (?:vivre|continuer)|\b(?:what'?s|what is) the point (?:of|in) (?:living|going on|being alive|life)\b|\bno (?:reason|point) (?:to|in) (?:live|living|go on|going on)\b|\bend it all\b|\b(?:want|wanna) to die\b|\bkill myself\b|don'?t want to live|\bend my life\b|\bmwen (?:vle|vl) mouri\b|\bpa vle viv\b`,
       ),
     ],
     [
@@ -767,9 +769,10 @@ Propose DEUX questions d'approfondissement pour la journée ${day + 1} (${next.l
 - Ne reprends aucune de ces questions déjà posées, même avec d'autres mots :
 ${asked.map((t) => `  - ${t}`).join('\n')}
 Clés de thème : ${THEME_KEYS}.
+- "text_en" : la même question écrite directement en anglais naturel (jamais mot à mot), même sens, mêmes règles ; une question sans version anglaise fidèle n'est pas posée.
 
 Retourne UNIQUEMENT ce JSON :
-{"questions": [{"themeKey": "argent", "text": "...?", "methode": "...", "cible": "..."}]}`;
+{"questions": [{"themeKey": "argent", "text": "...?", "text_en": "...?", "methode": "...", "cible": "..."}]}`;
   return { system: FOLLOW_UP_SYSTEM, prompt };
 }
 
@@ -1291,16 +1294,32 @@ export function parseFollowUps(raw: string): FollowUpProposal[] {
     if (!themeKey || !text || !isWellFormedQuestion(text)) continue;
     const method = typeof q.methode === 'string' ? q.methode.slice(0, 160) : '';
     const target = typeof q.cible === 'string' ? q.cible.slice(0, 200) : '';
+    const textEn = cleanText(q.text_en, MAX_QUESTION_LENGTH);
     out.push({
       themeKey,
       text,
       options: ensureAutreOption([]),
       ...(method ? { method } : {}),
       ...(target ? { target } : {}),
+      ...(textEn && isWellFormedEnglishQuestion(textEn) ? { textEn } : {}),
     });
     if (out.length === 2) break;
   }
   return out;
+}
+
+/** Forme minimale d'une question anglaise : une seule question, sans reste de français. */
+export function isWellFormedEnglishQuestion(text: string): boolean {
+  const t = text.trim();
+  return (
+    t.length >= 12 &&
+    t.length <= 180 &&
+    t.endsWith('?') &&
+    (t.match(/\?/g) ?? []).length === 1 &&
+    !/(?:\b(?:vous|votre|vos|est-ce|avec|pour|dans|quelle?s?|comment)\b|[àâçéèêëîïôûùœ«»])/i.test(
+      t,
+    )
+  );
 }
 
 function asThemeKey(value: unknown): Theme | null {

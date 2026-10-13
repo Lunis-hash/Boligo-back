@@ -1,0 +1,26 @@
+[
+  {
+    "n": 1,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 2,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E2"
+    ]
+  },
+  {
+    "n": 3,
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "evidence": [
+      "E2"
+    ]
+  }
+]

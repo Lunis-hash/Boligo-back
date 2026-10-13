@@ -20,7 +20,6 @@ import { ageFromBirthDate, pendingQuestions } from './questions.service';
 import { isSensitiveQuestion, withoutSensitive } from './sensitive-questions';
 import {
   FREE_TEXT_SUFFIX,
-  QUESTIONS,
   answerKeys,
   cleanFreeText,
   isValidAnswer,
@@ -29,7 +28,14 @@ import {
   withoutSensitiveOptionAnswers,
 } from './questions.data';
 
-const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
+import {
+  InterviewVersion,
+  ageRangesConsistent,
+  configuredInterviewVersion,
+  interviewVersionOf,
+  isValidRangeAnswer,
+  questionOf,
+} from './questions.v82';
 
 @Injectable()
 export class InterviewService {
@@ -75,6 +81,7 @@ export class InterviewService {
     const completedModules = await this.completedModules(
       userId,
       interview.responses,
+      interview.questionnaireVersion,
     );
     const firstPending = [...Array(11).keys()].find(
       (m) => !completedModules.includes(m),
@@ -92,6 +99,7 @@ export class InterviewService {
   private async completedModules(
     userId: string,
     responses: Array<{ moduleNumber: number; rawResponses: unknown }>,
+    storedVersion: string | null,
   ): Promise<number[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -106,12 +114,25 @@ export class InterviewService {
     return [...Array(11).keys()].filter(
       (m) =>
         saved.has(m) &&
-        pendingQuestions(m, answers, age, user?.gender, skipSensitive)
-          .length === 0,
+        pendingQuestions(
+          m,
+          answers,
+          age,
+          user?.gender,
+          skipSensitive,
+          interviewVersionOf(answers, storedVersion),
+        ).length === 0,
     );
   }
 
-  async startInterview(userId: string) {
+  /**
+   * Entretien en cours, ou nouvel entretien. Sa version est fixée ici, une
+   * fois pour toutes (V8.2 : immuable, garanti aussi par la base).
+   */
+  async startInterview(
+    userId: string,
+    version: InterviewVersion = configuredInterviewVersion(userId),
+  ) {
     const existing = await this.prisma.interviewIA.findFirst({
       where: { userId, status: 'en_cours' },
     });
@@ -124,6 +145,7 @@ export class InterviewService {
       data: {
         userId,
         status: 'en_cours',
+        questionnaireVersion: version,
       },
     });
   }
@@ -133,6 +155,14 @@ export class InterviewService {
     // d'un autre module ou une option inexistante fausserait le matching.
     const answers: Record<string, string> = {};
     const freeTexts: Array<[string, unknown]> = [];
+    // V8.2 : un entretien commencé garde la version enregistrée à sa
+    // création ; un nouvel entretien reçoit la version configurée.
+    const current = await this.currentInterview(userId);
+    const previous = current?.answers ?? {};
+    const version = current
+      ? interviewVersionOf(previous, current.questionnaireVersion)
+      : configuredInterviewVersion(userId);
+    const QUESTION_BY_ID = { get: (id: string) => questionOf(version, id) };
     for (const [questionId, value] of Object.entries(dto.answers ?? {})) {
       if (questionId.endsWith(FREE_TEXT_SUFFIX)) {
         freeTexts.push([questionId, value]);
@@ -143,7 +173,7 @@ export class InterviewService {
       if (
         !q ||
         q.moduleNumber !== dto.moduleNumber ||
-        !isValidAnswer(q, value)
+        !(q.input ? isValidRangeAnswer(q, value) : isValidAnswer(q, value))
       ) {
         throw new BadRequestException(
           `Réponse invalide pour la question ${questionId.slice(0, 20)}.`,
@@ -155,7 +185,15 @@ export class InterviewService {
           `Réponse contradictoire pour la question ${questionId.slice(0, 20)} : « aucun » ne se combine pas avec une autre réponse.`,
         );
       }
-      answers[questionId] = normalizeAnswer(q, value as string);
+      answers[questionId] = q.input
+        ? (value as string).trim()
+        : normalizeAnswer(q, value as string);
+    }
+    // V8.2 : la plage d'âges acceptée englobe la tranche idéale.
+    if (!ageRangesConsistent({ ...previous, ...answers })) {
+      throw new BadRequestException(
+        'Les âges acceptés doivent englober votre tranche d’âge idéale.',
+      );
     }
     // Précision écrite (« une autre langue : bambara ») : gardée seulement si
     // l'option à préciser est cochée dans la même réponse.
@@ -221,7 +259,7 @@ export class InterviewService {
           alreadyCompleted: true,
         };
       }
-      interview = await this.startInterview(userId);
+      interview = await this.startInterview(userId, version);
     }
 
     // Save or update module response
@@ -258,13 +296,42 @@ export class InterviewService {
       select: { moduleNumber: true, rawResponses: true },
     });
     const allModulesCompleted =
-      (await this.completedModules(userId, responses)).length === 11;
+      (await this.completedModules(userId, responses, version)).length === 11;
 
     if (allModulesCompleted) {
       await this.completeInterview(interview.id, userId);
     }
 
     return { success: true, allModulesCompleted };
+  }
+
+  /** Entretien en cours (ou dernier terminé) : ses réponses et sa version enregistrée (null s'il n'y en a pas). */
+  private async currentInterview(userId: string): Promise<{
+    answers: Record<string, string>;
+    questionnaireVersion: string | null;
+  } | null> {
+    // Entretien en cours, sinon le dernier terminé : sa version reste celle de
+    // référence (un membre V7.1 ne reçoit jamais de questions V8.2 après coup).
+    const select = {
+      questionnaireVersion: true,
+      responses: { select: { rawResponses: true } },
+    } as const;
+    const interview =
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'en_cours' },
+        select,
+      })) ??
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'termine' },
+        orderBy: { startDate: 'desc' },
+        select,
+      }));
+    return interview
+      ? {
+          answers: collectRawAnswers(interview.responses),
+          questionnaireVersion: interview.questionnaireVersion ?? null,
+        }
+      : null;
   }
 
   /** Accord du membre pour les questions sensibles : null s'il n'a pas encore été demandé. */

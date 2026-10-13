@@ -1,0 +1,8791 @@
+[
+  {
+    "id": "openai/gpt-6.1-sol-pro",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 34969.5,
+          "p75": 45106,
+          "p90": 53858.5,
+          "p99": 73932.15
+        },
+        "uptime": 0
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 13578,
+          "p75": 20150.5,
+          "p90": 29544.000000000004,
+          "p99": 51923.23999999993
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 18250,
+          "p75": 26384.5,
+          "p90": 58148.19999999998,
+          "p99": 338010.0199999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 8326,
+          "p75": 18576.5,
+          "p90": 25325.800000000003,
+          "p99": 33299.97999999999
+        }
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6.1-sol-pro:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6.1-sol",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 9895.5,
+          "p75": 14364.75,
+          "p90": 24535.1,
+          "p99": 67350.67000000004
+        },
+        "uptime": 40
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 10184,
+          "p75": 21831,
+          "p90": 37016.3,
+          "p99": 113474.45000000024
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 7800,
+          "p75": 16122.25,
+          "p90": 41592.60000000003,
+          "p99": 112737.72000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 720,
+          "p75": 1699,
+          "p90": 3507.200000000007,
+          "p99": 7377.5600000000095
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 5883,
+          "p75": 12300,
+          "p90": 20320.4,
+          "p99": 65371.07999999927
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4961.5,
+          "p75": 8862.75,
+          "p90": 15425.599999999999,
+          "p99": 29813.269999999902
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1756,
+          "p75": 2637.25,
+          "p90": 4677.0999999999985,
+          "p99": 18068.329999999976
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2840,
+          "p75": 3539.25,
+          "p90": 5267.300000000001,
+          "p99": 6762.669999999999
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6.1-sol:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-5.5",
+    "family": "anthropic",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2536,
+          "p75": 3832,
+          "p90": 6527.200000000004,
+          "p99": 18729.65000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 901,
+          "p75": 2080,
+          "p90": 3872,
+          "p99": 8861.230000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1206.5,
+          "p75": 2271,
+          "p90": 3023,
+          "p99": 5453.860000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 2915,
+          "p75": 3682.25,
+          "p90": 4793.800000000001,
+          "p99": 10284.990000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 2232,
+          "p75": 3549.25,
+          "p90": 5114,
+          "p99": 10815.780000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1522,
+          "p75": 1951,
+          "p90": 2460.0000000000005,
+          "p99": 2661.4399999999996
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 638,
+          "p75": 803.25,
+          "p90": 1003.4999999999999,
+          "p99": 1491.2499999999966
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1028,
+          "p75": 2238,
+          "p90": 3133.4000000000005,
+          "p99": 8015.240000000002
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-5.5:batch",
+    "family": "anthropic",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.3-prime",
+    "family": "z-ai",
+    "priceIn": 2.8,
+    "priceOut": 8.8,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 835,
+          "p75": 1211.5,
+          "p90": 2447.5000000000014,
+          "p99": 5207.88000000003
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.8-max-prime",
+    "family": "qwen",
+    "priceIn": 4,
+    "priceOut": 12,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1632,
+          "p75": 2087,
+          "p90": 2851.7,
+          "p99": 7059.529999999986
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-luna-pro",
+    "family": "openai",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 25713,
+          "p75": 43600,
+          "p90": 56256,
+          "p99": 96428.76000000013
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 6195.5,
+          "p75": 8472,
+          "p90": 14555.800000000007,
+          "p99": 58452.38000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 8397.5,
+          "p75": 14806,
+          "p90": 26648.099999999988,
+          "p99": 68690.48000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 9153,
+          "p75": 15746,
+          "p90": 24039.80000000001,
+          "p99": 431722
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 6519,
+          "p75": 14350.75,
+          "p90": 17365.3,
+          "p99": 18623.64
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-luna-pro:batch",
+    "family": "openai",
+    "priceIn": 0.049999999999999996,
+    "priceOut": 0.25,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-luna",
+    "family": "openai",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 5694,
+          "p75": 9999.25,
+          "p90": 17918.8,
+          "p99": 62485.92000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3049.5,
+          "p75": 5051.5,
+          "p90": 8753.800000000001,
+          "p99": 34105.37000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3635.5,
+          "p75": 6587.25,
+          "p90": 11872.200000000004,
+          "p99": 36235.480000000025
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3783,
+          "p75": 6160.75,
+          "p90": 9699.2,
+          "p99": 28868.119999999966
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 782,
+          "p75": 1105,
+          "p90": 1688,
+          "p99": 7328.27
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1887.5,
+          "p75": 3131,
+          "p90": 4829.300000000001,
+          "p99": 25041.789999999983
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1854.5,
+          "p75": 2757.25,
+          "p90": 4116,
+          "p99": 10176.94000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-luna:batch",
+    "family": "openai",
+    "priceIn": 0.049999999999999996,
+    "priceOut": 0.25,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-sol-pro",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 10754,
+          "p75": 15789.5,
+          "p90": 27529.399999999998,
+          "p99": 49120.539999999935
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 2984,
+          "p75": 11107,
+          "p90": 15980.8,
+          "p99": 18905.08
+        }
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 5529,
+          "p75": 7770,
+          "p90": 14297.000000000005,
+          "p99": 20341.45999999999
+        }
+      },
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-sol-pro:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-sol",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1318.5,
+          "p75": 4749.5,
+          "p90": 11457,
+          "p99": 27748.25000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2530,
+          "p75": 3861.5,
+          "p90": 6071.700000000002,
+          "p99": 14795.430000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3133,
+          "p75": 4967,
+          "p90": 8037.6,
+          "p99": 24880.32
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3252,
+          "p75": 4837.75,
+          "p90": 7866.900000000029,
+          "p99": 25459.24999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 3089,
+          "p75": 5059,
+          "p90": 7416.200000000001,
+          "p99": 11186.319999999992
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1857,
+          "p75": 2842.75,
+          "p90": 4350,
+          "p99": 17266.100000000013
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-sol:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-5.5",
+    "family": "anthropic",
+    "priceIn": 4,
+    "priceOut": 20,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 4469,
+          "p75": 5835,
+          "p90": 7785.900000000001,
+          "p99": 24950.660000000025
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3355,
+          "p75": 4260.5,
+          "p90": 8399.800000000005,
+          "p99": 20911.189999999973
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 3058,
+          "p75": 3911.75,
+          "p90": 5675.1,
+          "p99": 17563.21
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 4756.5,
+          "p75": 5606,
+          "p90": 6922.900000000001,
+          "p99": 15815.820000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 3852,
+          "p75": 5243.25,
+          "p90": 7431.700000000002,
+          "p99": 16766.130000000023
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 3464,
+          "p75": 4691,
+          "p90": 8865.200000000006,
+          "p99": 34485.59999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 4480,
+          "p75": 5731.75,
+          "p90": 7449.800000000001,
+          "p99": 12881.219999999968
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 3013,
+          "p75": 3616.5,
+          "p90": 4197.8,
+          "p99": 5078.88
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2895,
+          "p75": 3259,
+          "p90": 3653,
+          "p99": 4420.800000000001
+        }
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 2146,
+          "p75": 3173.5,
+          "p90": 4679.6,
+          "p99": 11812.479999999974
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-5.5:batch",
+    "family": "anthropic",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.8-omni-flash",
+    "family": "qwen",
+    "priceIn": 0.15,
+    "priceOut": 0.47,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 3823.5,
+          "p75": 9467.75,
+          "p90": 21598.999999999996,
+          "p99": 69852.22
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.3-flashx",
+    "family": "z-ai",
+    "priceIn": 0.37,
+    "priceOut": 1.25,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 2207,
+          "p75": 3191.25,
+          "p90": 4970.900000000001,
+          "p99": 9838.900000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "~deepseek/deepseek-pro-latest",
+    "family": "~deepseek",
+    "priceIn": 0.24947999999999998,
+    "priceOut": 0.7484400000000001,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "~deepseek/deepseek-flash-latest",
+    "family": "~deepseek",
+    "priceIn": 0.0333,
+    "priceOut": 0.1332,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "deepseek/deepseek-v4.1-flash",
+    "family": "deepseek",
+    "priceIn": 0.15,
+    "priceOut": 0.6,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1251,
+          "p75": 3408.5,
+          "p90": 12494.000000000004,
+          "p99": 28884.38000000007
+        },
+        "uptime": 83.33333333333334
+      },
+      {
+        "name": "OpenInference",
+        "latency": {
+          "p50": 5371,
+          "p75": 11849.75,
+          "p90": 19080.200000000015,
+          "p99": 48164.18
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "Morph",
+        "latency": {
+          "p50": 1310.5,
+          "p75": 2664,
+          "p90": 5271.900000000001,
+          "p99": 13476.54
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Relace",
+        "latency": {
+          "p50": 1404,
+          "p75": 2520,
+          "p90": 4523.700000000002,
+          "p99": 12605.700000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "InferenceNet",
+        "latency": {
+          "p50": 584,
+          "p75": 1036.25,
+          "p90": 1756,
+          "p99": 5020.27
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 1436,
+          "p75": 1838,
+          "p90": 2423.7000000000016,
+          "p99": 4259.27
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 712,
+          "p75": 1023,
+          "p90": 1561.9000000000005,
+          "p99": 4383.18
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Decart",
+        "latency": {
+          "p50": 1111,
+          "p75": 1907,
+          "p90": 3095.9000000000005,
+          "p99": 6583.330000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Ionstream",
+        "latency": {
+          "p50": 836,
+          "p75": 1323,
+          "p90": 2363.5000000000027,
+          "p99": 10586.689999999982
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 982.5,
+          "p75": 1856,
+          "p90": 3201.600000000002,
+          "p99": 8748.920000000013
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 1647,
+          "p75": 2280,
+          "p90": 3401.9000000000005,
+          "p99": 8174.400000000009
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepSeek",
+        "latency": {
+          "p50": 1174,
+          "p75": 1568,
+          "p90": 1929,
+          "p99": 3030.3600000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 758,
+          "p75": 1102.25,
+          "p90": 1695,
+          "p99": 5369.260000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 2622.5,
+          "p75": 4377.25,
+          "p90": 8491.399999999996,
+          "p99": 62275.26000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1736.5,
+          "p75": 2565,
+          "p90": 3668.800000000001,
+          "p99": 7569.150000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 535,
+          "p75": 713,
+          "p90": 997,
+          "p99": 2256.9000000000015
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2403,
+          "p75": 4075.5,
+          "p90": 8285.799999999996,
+          "p99": 30885.159999999814
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Makora",
+        "latency": {
+          "p50": 642,
+          "p75": 905,
+          "p90": 1266,
+          "p99": 3379.9900000000016
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Crusoe",
+        "latency": {
+          "p50": 597,
+          "p75": 926,
+          "p90": 1543.800000000001,
+          "p99": 5759.700000000019
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1138,
+          "p75": 1441,
+          "p90": 2014.6000000000008,
+          "p99": 5995.840000000058
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 405,
+          "p75": 656.75,
+          "p90": 1699.7000000000003,
+          "p99": 10701.949999999946
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1151,
+          "p75": 1897.25,
+          "p90": 3600.9000000000005,
+          "p99": 14870.830000000027
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 313,
+          "p75": 461.25,
+          "p90": 885.9000000000005,
+          "p99": 6570.890000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 5341,
+          "p75": 10168,
+          "p90": 19414,
+          "p99": 60719.200000000055
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Modal",
+        "latency": {
+          "p50": 569,
+          "p75": 767,
+          "p90": 1172,
+          "p99": 2950.630000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 376,
+          "p75": 541,
+          "p90": 935,
+          "p99": 3965
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 765,
+          "p75": 1105,
+          "p90": 1775,
+          "p99": 13235.050000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 1570,
+          "p75": 2328,
+          "p90": 3899.7000000000016,
+          "p99": 10199.330000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 847,
+          "p75": 1349.25,
+          "p90": 2068.9000000000005,
+          "p99": 4673.880000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 356,
+          "p75": 714,
+          "p90": 995.8000000000011,
+          "p99": 3031.5000000000064
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 335,
+          "p75": 460,
+          "p90": 731.6999999999998,
+          "p99": 2201.0600000000013
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v4.1-flash:batch",
+    "family": "deepseek",
+    "priceIn": 0.112,
+    "priceOut": 0.33599999999999997,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-astra",
+    "family": "openai",
+    "priceIn": 10,
+    "priceOut": 50,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1926,
+          "p75": 3322.75,
+          "p90": 7472,
+          "p99": 27334.39999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 6840.5,
+          "p75": 12746.25,
+          "p90": 19443,
+          "p99": 58341.460000000036
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 4617,
+          "p75": 9048.25,
+          "p90": 18840.400000000005,
+          "p99": 70435.93000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 3968,
+          "p75": 5212,
+          "p90": 7125.2,
+          "p99": 9223.92000000001
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3037,
+          "p75": 8428.5,
+          "p90": 16513.700000000004,
+          "p99": 29964.12000000001
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3866,
+          "p75": 6946,
+          "p90": 12866.2,
+          "p99": 29401.179999999884
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 4448,
+          "p75": 6060,
+          "p90": 8452.5,
+          "p99": 13201.4
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-astra:batch",
+    "family": "openai",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-astra-pro",
+    "family": "openai",
+    "priceIn": 10,
+    "priceOut": 50,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 5245,
+          "p75": 8509.5,
+          "p90": 12674.500000000002,
+          "p99": 41127.72999999984
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 27443.5,
+          "p75": 64658,
+          "p90": 117390.5,
+          "p99": 301444.25
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 15439,
+          "p75": 21896,
+          "p90": 31027.199999999997,
+          "p99": 221628.62000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-6-astra-pro:batch",
+    "family": "openai",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.8-max-0902",
+    "family": "qwen",
+    "priceIn": 2,
+    "priceOut": 6,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 3856,
+          "p75": 5380.25,
+          "p90": 7826.900000000001,
+          "p99": 32757.760000000126
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 2702,
+          "p75": 5889,
+          "p90": 10553.400000000001,
+          "p99": 74828.68000000002
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "~z-ai/glm-flash-latest",
+    "family": "~z-ai",
+    "priceIn": 0.0232,
+    "priceOut": 1.2,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "qwen/qwen3.8-flash",
+    "family": "qwen",
+    "priceIn": 0.15,
+    "priceOut": 0.47,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1904.5,
+          "p75": 4782,
+          "p90": 7278.600000000002,
+          "p99": 17602.470000000012
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1249,
+          "p75": 2721,
+          "p90": 4796,
+          "p99": 14304.21000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.3-flash",
+    "family": "z-ai",
+    "priceIn": 0.0232,
+    "priceOut": 1.2,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenInference",
+        "latency": {
+          "p50": 4216,
+          "p75": 10976,
+          "p90": 14583.900000000001,
+          "p99": 46098.22000000002
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "Morph",
+        "latency": {
+          "p50": 1929.5,
+          "p75": 3005,
+          "p90": 4530.900000000001,
+          "p99": 10968.420000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Relace",
+        "latency": {
+          "p50": 1396,
+          "p75": 2425.25,
+          "p90": 4466.20000000001,
+          "p99": 16811.70000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 1964,
+          "p75": 4471.5,
+          "p90": 8331.900000000012,
+          "p99": 20949.36
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 1309,
+          "p75": 2162,
+          "p90": 3751.4000000000033,
+          "p99": 26737.84000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 1296,
+          "p75": 1903.5,
+          "p90": 3713.6000000000004,
+          "p99": 26754.08000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 1212,
+          "p75": 2484,
+          "p90": 4855.700000000002,
+          "p99": 19606.730000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 1004,
+          "p75": 1663,
+          "p90": 2349,
+          "p99": 9091.800000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Inceptron",
+        "latency": {
+          "p50": 833.5,
+          "p75": 1839.25,
+          "p90": 3907.7000000000016,
+          "p99": 9293.890000000018
+        },
+        "uptime": 100
+      },
+      {
+        "name": "InferenceNet",
+        "latency": {
+          "p50": 322,
+          "p75": 594,
+          "p90": 1293.9000000000005,
+          "p99": 4160.060000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1682,
+          "p75": 3021,
+          "p90": 7469.700000000003,
+          "p99": 14558.179999999997
+        }
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 4521,
+          "p75": 5948.75,
+          "p90": 9340.600000000008,
+          "p99": 29368.160000000033
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 5221,
+          "p75": 11503,
+          "p90": 20156.9,
+          "p99": 58482.74000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Decart",
+        "latency": {
+          "p50": 1717,
+          "p75": 2480,
+          "p90": 3554,
+          "p99": 8099.110000000026
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Near AI",
+        "latency": {
+          "p50": 1079,
+          "p75": 1430,
+          "p90": 2060,
+          "p99": 7002.819999999985
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 4543.5,
+          "p75": 5663,
+          "p90": 7482.300000000002,
+          "p99": 11554.150000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Modal",
+        "latency": {
+          "p50": 310,
+          "p75": 422,
+          "p90": 576,
+          "p99": 1355.3500000000022
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 591,
+          "p75": 1231.25,
+          "p90": 2297.5000000000014,
+          "p99": 6621.929999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Crusoe",
+        "latency": {
+          "p50": 1091.5,
+          "p75": 1610,
+          "p90": 2562.9000000000005,
+          "p99": 13861.570000000025
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 710,
+          "p75": 1101,
+          "p90": 2224,
+          "p99": 9031.09
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 4236,
+          "p75": 8331.5,
+          "p90": 11176.900000000001,
+          "p99": 20700.129999999936
+        },
+        "uptime": 84
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 824,
+          "p75": 1518.25,
+          "p90": 2529,
+          "p99": 6248.27
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Friendli",
+        "latency": {
+          "p50": 336,
+          "p75": 900,
+          "p90": 2462.9000000000005,
+          "p99": 8373.710000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 910,
+          "p75": 1495,
+          "p90": 8327.000000000002,
+          "p99": 18807.90000000001
+        },
+        "uptime": 93.33333333333333
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 890,
+          "p75": 1197,
+          "p90": 1878.8000000000002,
+          "p99": 7975.159999999979
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 513,
+          "p75": 1055.25,
+          "p90": 2843.7000000000016,
+          "p99": 14233.880000000034
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 1279,
+          "p75": 2688.25,
+          "p90": 6164.800000000012,
+          "p99": 14228.590000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 711,
+          "p75": 1275.5,
+          "p90": 2332.2000000000044,
+          "p99": 11490.21000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 978,
+          "p75": 1748.75,
+          "p90": 2869,
+          "p99": 27927.20000000015
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 4172,
+          "p75": 7913.5,
+          "p90": 13058.600000000002,
+          "p99": 23096.97000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 977,
+          "p75": 1753.25,
+          "p90": 2923.3000000000006,
+          "p99": 6767.379999999959
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 668,
+          "p75": 769,
+          "p90": 959,
+          "p99": 2535.45
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.3-flash:batch",
+    "family": "z-ai",
+    "priceIn": 0.06,
+    "priceOut": 0.19999999999999998,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra"
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v4-flash-vision-exp",
+    "family": "deepseek",
+    "priceIn": 0.21559999999999999,
+    "priceOut": 0.6468,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1689.5,
+          "p75": 3395.75,
+          "p90": 14067.100000000002,
+          "p99": 58528.53000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 4471,
+          "p75": 5740,
+          "p90": 7685.299999999999,
+          "p99": 20310.180000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1939.5,
+          "p75": 3469.5,
+          "p90": 9095.1,
+          "p99": 12108.380000000016
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "~z-ai/glm-latest",
+    "family": "~z-ai",
+    "priceIn": 0.055,
+    "priceOut": 5,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "z-ai/glm-5.3",
+    "family": "z-ai",
+    "priceIn": 0.079,
+    "priceOut": 4.8,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Morph",
+        "latency": {
+          "p50": 1095,
+          "p75": 1714,
+          "p90": 3564.6000000000004,
+          "p99": 14457.819999999898
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 866.5,
+          "p75": 1322.25,
+          "p90": 2579,
+          "p99": 10938.160000000018
+        },
+        "uptime": 100
+      },
+      {
+        "name": "InferenceNet",
+        "latency": {
+          "p50": 876,
+          "p75": 1356.25,
+          "p90": 2330.7000000000016,
+          "p99": 19739.340000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 1365,
+          "p75": 3302.5,
+          "p90": 8489.299999999996,
+          "p99": 46980.09999999992
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Makora",
+        "latency": {
+          "p50": 1685.5,
+          "p75": 4397.25,
+          "p90": 15309.30000000001,
+          "p99": 55974.57000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 753,
+          "p75": 1292,
+          "p90": 2360.0000000000005,
+          "p99": 16595.819999999763
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AkashML",
+        "latency": {
+          "p50": 1804.5,
+          "p75": 2514.75,
+          "p90": 3343.5,
+          "p99": 7530.800000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1356,
+          "p75": 2627,
+          "p90": 3548.200000000001,
+          "p99": 9799.68
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 1999,
+          "p75": 2721,
+          "p90": 3709,
+          "p99": 8584.399999999987
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 2074,
+          "p75": 3086.25,
+          "p90": 4529.8,
+          "p99": 10277.32999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Io Net",
+        "latency": {
+          "p50": 1706.5,
+          "p75": 2078,
+          "p90": 2518.2000000000003,
+          "p99": 4946.569999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1949,
+          "p75": 3604.25,
+          "p90": 8908.30000000001,
+          "p99": 27939.59999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Inceptron",
+        "latency": {
+          "p50": 665.5,
+          "p75": 1311,
+          "p90": 2426.5,
+          "p99": 15869.5
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Tenstorrent",
+        "latency": {
+          "p50": 387,
+          "p75": 1550.25,
+          "p90": 2771.4000000000005,
+          "p99": 12331.349999999988
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1782,
+          "p75": 2433.25,
+          "p90": 3202,
+          "p99": 12048.520000000039
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 724.5,
+          "p75": 1635.25,
+          "p90": 8956,
+          "p99": 28498.5
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Decart",
+        "latency": {
+          "p50": 855,
+          "p75": 1142,
+          "p90": 1607.9000000000005,
+          "p99": 3896.340000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 1039,
+          "p75": 1386,
+          "p90": 1998,
+          "p99": 7480.760000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 4068,
+          "p75": 5743,
+          "p90": 7779.4,
+          "p99": 12217.759999999962
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 3599,
+          "p75": 5095.5,
+          "p90": 9163.600000000004,
+          "p99": 36927.44000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 2040,
+          "p75": 3494.25,
+          "p90": 5256,
+          "p99": 9202.529999999982
+        }
+      },
+      {
+        "name": "Friendli",
+        "latency": {
+          "p50": 1052,
+          "p75": 2040,
+          "p90": 3309.4000000000005,
+          "p99": 5356.259999999993
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mistral",
+        "latency": {
+          "p50": 1783,
+          "p75": 2744,
+          "p90": 4360.300000000002,
+          "p99": 28985.00000000002
+        },
+        "uptime": 96
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 2601.5,
+          "p75": 4215.5,
+          "p90": 5997.199999999999,
+          "p99": 16840.289999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mistral",
+        "latency": {
+          "p50": 1042,
+          "p75": 1732,
+          "p90": 3503.3999999999996,
+          "p99": 24530.160000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Crusoe",
+        "latency": {
+          "p50": 710,
+          "p75": 1097,
+          "p90": 1811,
+          "p99": 5579.799999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "PrimeIntellect",
+        "latency": {
+          "p50": 1014,
+          "p75": 1517,
+          "p90": 2569.5999999999995,
+          "p99": 9132.24
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1854,
+          "p75": 4194.5,
+          "p90": 6242.600000000002,
+          "p99": 11744.34000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 386,
+          "p75": 786,
+          "p90": 3163.7000000000016,
+          "p99": 108111.13000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 796.5,
+          "p75": 1336.5,
+          "p90": 2040.2999999999995,
+          "p99": 11063.959999999992
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Modal",
+        "latency": {
+          "p50": 556,
+          "p75": 1740,
+          "p90": 3190.6,
+          "p99": 38556.03999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 2735,
+          "p75": 4302,
+          "p90": 5730.6,
+          "p99": 14125.559999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 1430.5,
+          "p75": 3569.25,
+          "p90": 5248.899999999999,
+          "p99": 37450.53
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 3144,
+          "p75": 5487,
+          "p90": 9095.000000000004,
+          "p99": 44087.71999999997
+        }
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1368,
+          "p75": 1833,
+          "p90": 3104.600000000001,
+          "p99": 7594.079999999987
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 3421,
+          "p75": 4939,
+          "p90": 7345.800000000007,
+          "p99": 20768.190000000028
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mistral",
+        "latency": {
+          "p50": 893,
+          "p75": 1361,
+          "p90": 2452.6,
+          "p99": 4982.400000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 1291,
+          "p75": 2401,
+          "p90": 4069.800000000001,
+          "p99": 17282.680000000022
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 622,
+          "p75": 1080.5,
+          "p90": 2062.8,
+          "p99": 8827.199999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 694,
+          "p75": 1336,
+          "p90": 2321.6000000000004,
+          "p99": 15584.240000000033
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1451,
+          "p75": 2104,
+          "p90": 2808,
+          "p99": 9823.999999999984
+        }
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.3:batch",
+    "family": "z-ai",
+    "priceIn": 0.44999999999999996,
+    "priceOut": 2,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra"
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.8-27b",
+    "family": "qwen",
+    "priceIn": 0.04,
+    "priceOut": 2.3,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Tenstorrent",
+        "latency": {
+          "p50": 628,
+          "p75": 1093,
+          "p90": 1860.6000000000004,
+          "p99": 7867.559999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Near AI",
+        "latency": {
+          "p50": 1045,
+          "p75": 1912.25,
+          "p90": 2759.2999999999997,
+          "p99": 11440.929999999953
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 732,
+          "p75": 1297,
+          "p90": 2524.400000000006,
+          "p99": 10990.72000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 703,
+          "p75": 1156.25,
+          "p90": 2072.100000000001,
+          "p99": 9661.670000000233
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DekaLLM",
+        "latency": {
+          "p50": 630.5,
+          "p75": 1352,
+          "p90": 2628.999999999999,
+          "p99": 18503.999999999993
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Darkbloom",
+        "latency": {
+          "p50": 2195,
+          "p75": 4200.5,
+          "p90": 6286,
+          "p99": 14852.5
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Ionstream",
+        "latency": {
+          "p50": 852,
+          "p75": 1329,
+          "p90": 1995.6000000000004,
+          "p99": 4741.300000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 537.5,
+          "p75": 751,
+          "p90": 1203.9000000000005,
+          "p99": 3818.260000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mancer 2",
+        "latency": {
+          "p50": 596,
+          "p75": 1104.5,
+          "p90": 3144,
+          "p99": 42506.09999999986
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 629.5,
+          "p75": 1310.75,
+          "p90": 4629.1000000000095,
+          "p99": 41728.41
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AkashML",
+        "latency": {
+          "p50": 679,
+          "p75": 1029,
+          "p90": 2071.4000000000005,
+          "p99": 8878.399999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 1112,
+          "p75": 2121,
+          "p90": 4145.800000000006,
+          "p99": 31303.040000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Chutes",
+        "latency": {
+          "p50": 2190.5,
+          "p75": 3189.25,
+          "p90": 4744.1,
+          "p99": 8636.080000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 449,
+          "p75": 626,
+          "p90": 1035.9999999999995,
+          "p99": 11241.880000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 7551,
+          "p75": 14049,
+          "p90": 25266.6,
+          "p99": 136303.4199999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 2497,
+          "p75": 3898.25,
+          "p90": 5720.5,
+          "p99": 53766.22000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 565,
+          "p75": 2421,
+          "p90": 13891.00000000001,
+          "p99": 41870.44000000003
+        }
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1553,
+          "p75": 2113.75,
+          "p90": 5420.8,
+          "p99": 7875.16
+        }
+      },
+      {
+        "name": "ModelRun",
+        "latency": {
+          "p50": 298.5,
+          "p75": 412,
+          "p90": 588.3000000000002,
+          "p99": 3696.550000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cerebras",
+        "latency": {
+          "p50": 328,
+          "p75": 734.5,
+          "p90": 2280.7999999999993,
+          "p99": 8082.039999999985
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.8-2.4t-a95b",
+    "family": "qwen",
+    "priceIn": 2,
+    "priceOut": 6,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 3770,
+          "p75": 9008.75,
+          "p90": 13092.800000000001,
+          "p99": 47293.28
+        }
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1273,
+          "p75": 1498,
+          "p90": 2666.8000000000006,
+          "p99": 6983.239999999999
+        }
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1693.5,
+          "p75": 3455.5,
+          "p90": 5063.499999999999,
+          "p99": 25555.709999999985
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 764,
+          "p75": 952,
+          "p90": 1184.4,
+          "p99": 3153.280000000005
+        }
+      },
+      {
+        "name": "Modal",
+        "latency": {
+          "p50": 474,
+          "p75": 1229.5,
+          "p90": 2808,
+          "p99": 17505.000000000025
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 1995,
+          "p75": 3210.75,
+          "p90": 5285,
+          "p99": 19778.489999999983
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v4-pro-0813",
+    "family": "deepseek",
+    "priceIn": 0.66,
+    "priceOut": 1.9800000000000002,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1482,
+          "p75": 2114,
+          "p90": 3247.5,
+          "p99": 9165.500000000076
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 834,
+          "p75": 1344.5,
+          "p90": 2706,
+          "p99": 57457.93999999961
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Ionstream",
+        "latency": {
+          "p50": 963,
+          "p75": 1589.25,
+          "p90": 2790.500000000002,
+          "p99": 8818.829999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 2125,
+          "p75": 2873,
+          "p90": 3933,
+          "p99": 13047.50000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 2378.5,
+          "p75": 3432.75,
+          "p90": 5431.300000000001,
+          "p99": 13326.520000000055
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 2020,
+          "p75": 2680.75,
+          "p90": 3410.3,
+          "p99": 6847.66
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepSeek",
+        "latency": {
+          "p50": 1237,
+          "p75": 1532.25,
+          "p90": 2130.7000000000016,
+          "p99": 5565.710000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2361,
+          "p75": 2783.5,
+          "p90": 3609.5,
+          "p99": 30185.59999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 2547,
+          "p75": 3561.75,
+          "p90": 4783.699999999999,
+          "p99": 17642.419999999984
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 2265,
+          "p75": 2618,
+          "p90": 3052.5999999999995,
+          "p99": 4810.5999999999985
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1634,
+          "p75": 2087,
+          "p90": 2824.0000000000005,
+          "p99": 7562.400000000059
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1264,
+          "p75": 2306,
+          "p90": 3501.7999999999997,
+          "p99": 10478.519999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 841,
+          "p75": 1227.75,
+          "p90": 2062.7000000000003,
+          "p99": 6645.620000000012
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1692,
+          "p75": 2294,
+          "p90": 2675.4,
+          "p99": 3315.759999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 1091,
+          "p75": 1460,
+          "p90": 1947.6,
+          "p99": 5181.3599999999915
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1387,
+          "p75": 1996,
+          "p90": 9177,
+          "p99": 23522
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 989,
+          "p75": 1815,
+          "p90": 34702,
+          "p99": 62538.5
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 1086.5,
+          "p75": 1664.75,
+          "p90": 3194.6000000000104,
+          "p99": 16859.48000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 612.5,
+          "p75": 793.25,
+          "p90": 1190.5,
+          "p99": 1510
+        }
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2099,
+          "p75": 2915,
+          "p90": 3623.2,
+          "p99": 11402.720000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 5096,
+          "p75": 8054.5,
+          "p90": 22755,
+          "p99": 78963
+        }
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1976.5,
+          "p75": 2301.75,
+          "p90": 2830.3,
+          "p99": 4991.370000000005
+        }
+      }
+    ]
+  },
+  {
+    "id": "~deepseek/deepseek-v4-flash-latest",
+    "family": "~deepseek",
+    "priceIn": 0.0128,
+    "priceOut": 0.768,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "deepseek/deepseek-v4-flash-0731",
+    "family": "deepseek",
+    "priceIn": 0.016,
+    "priceOut": 0.64,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenInference",
+        "latency": {
+          "p50": 2989.5,
+          "p75": 5231.25,
+          "p90": 9322,
+          "p99": 20967.72
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "Relace",
+        "latency": {
+          "p50": 720,
+          "p75": 1299.25,
+          "p90": 2288.7000000000016,
+          "p99": 9187.460000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 2211,
+          "p75": 2810,
+          "p90": 3741,
+          "p99": 8085.27
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 869,
+          "p75": 2031,
+          "p90": 4851.200000000004,
+          "p99": 21112.820000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 6969,
+          "p75": 10383.25,
+          "p90": 14130,
+          "p99": 22594.260000000002
+        },
+        "uptime": 92.85714285714286
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 2237,
+          "p75": 2790.5,
+          "p90": 3220.9000000000005,
+          "p99": 6642.660000000011
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 887.5,
+          "p75": 1163,
+          "p90": 11151.300000000014,
+          "p99": 128763.49000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 567,
+          "p75": 912,
+          "p90": 1754.800000000001,
+          "p99": 12774.690000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 678,
+          "p75": 1353.25,
+          "p90": 3486.5,
+          "p99": 9475.200000000012
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 630,
+          "p75": 1268.5,
+          "p90": 3264.0000000000027,
+          "p99": 8857.330000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 8503,
+          "p75": 11291,
+          "p90": 14513.2,
+          "p99": 20708.64
+        },
+        "uptime": 73.33333333333333
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 624,
+          "p75": 1198.25,
+          "p90": 1814.9000000000005,
+          "p99": 7631.4200000000055
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Inceptron",
+        "latency": {
+          "p50": 610.5,
+          "p75": 887,
+          "p90": 1727.9000000000005,
+          "p99": 30728.390000000025
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 2022,
+          "p75": 3167.25,
+          "p90": 4840.800000000001,
+          "p99": 16126.520000000033
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cohere",
+        "latency": {
+          "p50": 572,
+          "p75": 1026.25,
+          "p90": 2222.9000000000005,
+          "p99": 11697.48000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 1116,
+          "p75": 2841,
+          "p90": 7149.400000000009,
+          "p99": 52535.26000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 780,
+          "p75": 1088,
+          "p90": 2007.9000000000005,
+          "p99": 6745.150000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mancer 2",
+        "latency": {
+          "p50": 8158,
+          "p75": 11002.5,
+          "p90": 13217.7,
+          "p99": 19971.560000000012
+        },
+        "uptime": 84.61538461538461
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1583.5,
+          "p75": 2387.25,
+          "p90": 3617.9,
+          "p99": 6967.269999999995
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 1740,
+          "p75": 2025.25,
+          "p90": 2802,
+          "p99": 7477.7400000000125
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2886,
+          "p75": 4889,
+          "p90": 8174.700000000002,
+          "p99": 48068.19999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1118,
+          "p75": 1669,
+          "p90": 4978,
+          "p99": 8231.54
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1504,
+          "p75": 1716.25,
+          "p90": 2177.9000000000005,
+          "p99": 6185.789999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1975,
+          "p75": 2733.25,
+          "p90": 4949.100000000005,
+          "p99": 16658.9
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 746,
+          "p75": 1002,
+          "p90": 1470,
+          "p99": 5735.899999999991
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1613,
+          "p75": 2035,
+          "p90": 3125.8,
+          "p99": 5409.249999999991
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 1626,
+          "p75": 4236.5,
+          "p90": 19145.6,
+          "p99": 63119.98
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.7-flash",
+    "family": "qwen",
+    "priceIn": 0.03,
+    "priceOut": 0.13,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 756,
+          "p75": 1549.75,
+          "p90": 3322.7000000000016,
+          "p99": 7235.03000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1027,
+          "p75": 2079,
+          "p90": 2884.7000000000016,
+          "p99": 4339.080000000002
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-5",
+    "family": "anthropic",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 3404,
+          "p75": 4489,
+          "p90": 5230,
+          "p99": 11957.87999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2711,
+          "p75": 3304,
+          "p90": 4005,
+          "p99": 7168.600000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 4616,
+          "p75": 5571.25,
+          "p90": 6519,
+          "p99": 11564.630000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3738,
+          "p75": 4115.5,
+          "p90": 4342,
+          "p99": 4477.900000000001
+        }
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 2266.5,
+          "p75": 3961,
+          "p90": 4850.6,
+          "p99": 9838.779999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1759,
+          "p75": 3538,
+          "p90": 5775,
+          "p99": 22333
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Google"
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1438,
+          "p75": 2852,
+          "p90": 3417.2,
+          "p99": 4458.4800000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock"
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1752,
+          "p75": 2579,
+          "p90": 3431,
+          "p99": 5638.200000000004
+        }
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-5:batch",
+    "family": "anthropic",
+    "priceIn": 2.5,
+    "priceOut": 12.5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k3",
+    "family": "moonshotai",
+    "priceIn": 0.73,
+    "priceOut": 10,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "InferenceNet",
+        "latency": {
+          "p50": 1141,
+          "p75": 1848,
+          "p90": 3133.9000000000005,
+          "p99": 16870.41000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 1030,
+          "p75": 2403,
+          "p90": 14006.900000000001,
+          "p99": 93681.7400000011
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Sail Research",
+        "latency": {
+          "p50": 4644,
+          "p75": 11475,
+          "p90": 38607.2,
+          "p99": 68311.74000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Morph",
+        "latency": {
+          "p50": 1941,
+          "p75": 4732.5,
+          "p90": 10370,
+          "p99": 17963.400000000056
+        },
+        "uptime": 82.75862068965517
+      },
+      {
+        "name": "AkashML",
+        "latency": {
+          "p50": 824,
+          "p75": 1375,
+          "p90": 3074.6000000000013,
+          "p99": 4697.180000000001
+        },
+        "uptime": 33.33333333333333
+      },
+      {
+        "name": "Makora",
+        "latency": {
+          "p50": 1761,
+          "p75": 3357.5,
+          "p90": 5924.100000000002,
+          "p99": 20825.530000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Relace",
+        "latency": {
+          "p50": 1374,
+          "p75": 2375,
+          "p90": 4544,
+          "p99": 11757.399999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Decart",
+        "latency": {
+          "p50": 1495,
+          "p75": 2868,
+          "p90": 5297.6,
+          "p99": 12645.95999999993
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2604,
+          "p75": 4757,
+          "p90": 9470.800000000001,
+          "p99": 28150.4
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 2086,
+          "p75": 3391,
+          "p90": 5878.2000000000035,
+          "p99": 24245.279999999984
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 1780,
+          "p75": 3277.5,
+          "p90": 6611.800000000001,
+          "p99": 28414.500000000022
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 1515,
+          "p75": 2630.5,
+          "p90": 6544.900000000001,
+          "p99": 24828.589999999873
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 1066,
+          "p75": 2849.25,
+          "p90": 13525.600000000006,
+          "p99": 70409.48000000035
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1936,
+          "p75": 3372.5,
+          "p90": 5629.8,
+          "p99": 36843.620000000024
+        },
+        "uptime": 100
+      },
+      {
+        "name": "InferenceNet",
+        "latency": {
+          "p50": 911,
+          "p75": 1387,
+          "p90": 2056,
+          "p99": 5741.94000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 1409,
+          "p75": 1740.75,
+          "p90": 1931.3999999999999,
+          "p99": 2945.4300000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 2214,
+          "p75": 3857,
+          "p90": 6620,
+          "p99": 25567.5
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Chutes",
+        "latency": {
+          "p50": 2789,
+          "p75": 3738,
+          "p90": 6239.5999999999985,
+          "p99": 11385.779999999999
+        }
+      },
+      {
+        "name": "Modal",
+        "latency": {
+          "p50": 3341.5,
+          "p75": 6362.5,
+          "p90": 14524.6,
+          "p99": 44531.579999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 3169.5,
+          "p75": 4105.75,
+          "p90": 5203.299999999999,
+          "p99": 12303.699999999977
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 1759,
+          "p75": 3099,
+          "p90": 5440,
+          "p99": 15349.60000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Moonshot AI",
+        "latency": {
+          "p50": 4680.5,
+          "p75": 6515.25,
+          "p90": 8444,
+          "p99": 13517.770000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 4017,
+          "p75": 5505,
+          "p90": 7625.900000000001,
+          "p99": 32069.11000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 1242,
+          "p75": 1765,
+          "p90": 2965,
+          "p99": 10071.859999999991
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Fireworks",
+        "latency": {
+          "p50": 1497,
+          "p75": 2580,
+          "p90": 4640.600000000002,
+          "p99": 10941.800000000003
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k3:batch",
+    "family": "moonshotai",
+    "priceIn": 2.2800000000000002,
+    "priceOut": 11.399999999999999,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-luna-pro",
+    "family": "openai",
+    "priceIn": 0.19999999999999998,
+    "priceOut": 1.2,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 10416,
+          "p75": 16808,
+          "p90": 17649.2,
+          "p99": 23819.96
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 9015,
+          "p75": 12336.5,
+          "p90": 18609,
+          "p99": 68625.74999999968
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 8287.5,
+          "p75": 13942,
+          "p90": 27374.5,
+          "p99": 72439.65000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 14565,
+          "p75": 15493,
+          "p90": 15616,
+          "p99": 15689.800000000001
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1573,
+          "p75": 1771,
+          "p90": 2964.600000000001,
+          "p99": 5735.320000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-luna-pro:batch",
+    "family": "openai",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.6,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-luna",
+    "family": "openai",
+    "priceIn": 0.19999999999999998,
+    "priceOut": 1.2,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2995.5,
+          "p75": 5096.25,
+          "p90": 9314.300000000003,
+          "p99": 44796.13000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3271,
+          "p75": 5632,
+          "p90": 9774.7,
+          "p99": 33203.92000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1946,
+          "p75": 2831,
+          "p90": 4417.800000000001,
+          "p99": 12642.130000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4543,
+          "p75": 5760,
+          "p90": 8901,
+          "p99": 45989.960000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 657,
+          "p75": 1816.25,
+          "p90": 4723.800000000001,
+          "p99": 7825.18
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1421,
+          "p75": 2148,
+          "p90": 3207.800000000001,
+          "p99": 8346.039999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1658.5,
+          "p75": 2501,
+          "p90": 3399.3,
+          "p99": 7514.399999999981
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-luna:batch",
+    "family": "openai",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.6,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-terra-pro",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 12,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4026,
+          "p75": 5066.5,
+          "p90": 7572.5,
+          "p99": 16453.89999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 6419.5,
+          "p75": 11586.5,
+          "p90": 23758.700000000055,
+          "p99": 74937.84999999983
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 7926.5,
+          "p75": 13403.75,
+          "p90": 15926.2,
+          "p99": 17202.03
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2216,
+          "p75": 2325.5,
+          "p90": 2391.2,
+          "p99": 2430.62
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-terra-pro:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 6,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-terra",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 12,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1824,
+          "p75": 2610.5,
+          "p90": 4127.5,
+          "p99": 18454.75
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 2887,
+          "p75": 4922.25,
+          "p90": 8288,
+          "p99": 22168.75
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2790,
+          "p75": 4178,
+          "p90": 7538.800000000001,
+          "p99": 21480.650000000056
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3698,
+          "p75": 3698,
+          "p90": 3698,
+          "p99": 3698
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 510,
+          "p75": 2349,
+          "p90": 3476,
+          "p99": 6620.599999999999
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3947,
+          "p75": 5149.5,
+          "p90": 6880,
+          "p99": 15524.100000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1392.5,
+          "p75": 1978.5,
+          "p90": 2767.3999999999996,
+          "p99": 5341.4299999999985
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-terra:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 6,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-sol-pro",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 7284,
+          "p75": 14171,
+          "p90": 32958.19999999999,
+          "p99": 82455.00000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2039.5,
+          "p75": 2105.75,
+          "p90": 2145.5,
+          "p99": 2169.3500000000004
+        }
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3240,
+          "p75": 3606,
+          "p90": 4587.6,
+          "p99": 5176.5599999999995
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-sol-pro:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-sol",
+    "family": "openai",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 4503.5,
+          "p75": 9031,
+          "p90": 18193.1,
+          "p99": 60513.04999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2753,
+          "p75": 5204,
+          "p90": 9827.900000000007,
+          "p99": 33788.62000000009
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2517,
+          "p75": 3465.25,
+          "p90": 4710.000000000001,
+          "p99": 10853.670000000026
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4519,
+          "p75": 7518,
+          "p90": 13027.7,
+          "p99": 32781.250000000015
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1123,
+          "p75": 1695,
+          "p90": 2514.2000000000003,
+          "p99": 3004.5199999999995
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 3961.5,
+          "p75": 9344.25,
+          "p90": 17773.9,
+          "p99": 35266.19999999996
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1616,
+          "p75": 2869,
+          "p90": 5759.7999999999965,
+          "p99": 21437.160000000054
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.6-sol:batch",
+    "family": "openai",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-5",
+    "family": "anthropic",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 2462,
+          "p75": 3873,
+          "p90": 4481.900000000001,
+          "p99": 9490.810000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1351,
+          "p75": 1877,
+          "p90": 2720.6000000000004,
+          "p99": 4868.74
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1922,
+          "p75": 3100.5,
+          "p90": 5511.600000000003,
+          "p99": 18190.180000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1486,
+          "p75": 2636.25,
+          "p90": 4437,
+          "p99": 8645.720000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1270,
+          "p75": 2818.25,
+          "p90": 4250.900000000001,
+          "p99": 9139.340000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1451,
+          "p75": 1773,
+          "p90": 2419.0000000000027,
+          "p99": 5599.959999999999
+        }
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2632,
+          "p75": 2805,
+          "p90": 3840.4,
+          "p99": 4180.24
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2167,
+          "p75": 2832.5,
+          "p90": 3599.5,
+          "p99": 10175.56999999992
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1123,
+          "p75": 1325,
+          "p90": 3304.000000000001,
+          "p99": 3608.56
+        }
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-5:batch",
+    "family": "anthropic",
+    "priceIn": 1,
+    "priceOut": 5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.2",
+    "family": "z-ai",
+    "priceIn": 0.06,
+    "priceOut": 7,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 562,
+          "p75": 925,
+          "p90": 1743.9000000000005,
+          "p99": 5331.620000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 494,
+          "p75": 715,
+          "p90": 1298.9,
+          "p99": 3330.1599999999944
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 1418,
+          "p75": 1988.5,
+          "p90": 3008,
+          "p99": 15250.099999999924
+        },
+        "uptime": 100
+      },
+      {
+        "name": "InferenceNet",
+        "latency": {
+          "p50": 423,
+          "p75": 893,
+          "p90": 1585.9000000000005,
+          "p99": 4903.810000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Decart",
+        "latency": {
+          "p50": 3857,
+          "p75": 6806,
+          "p90": 9754.800000000001,
+          "p99": 17952.47999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Morph",
+        "latency": {
+          "p50": 758,
+          "p75": 1099,
+          "p90": 1921.600000000001,
+          "p99": 4621.600000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1699,
+          "p75": 3297,
+          "p90": 6110,
+          "p99": 17934.24000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 2819.5,
+          "p75": 5120,
+          "p90": 8106,
+          "p99": 15765.620000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1732,
+          "p75": 2438,
+          "p90": 4192.300000000001,
+          "p99": 17962.23
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 609,
+          "p75": 823,
+          "p90": 1124,
+          "p99": 3959.1800000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 737.5,
+          "p75": 919,
+          "p90": 1219.4,
+          "p99": 2569.2700000000013
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 754,
+          "p75": 960,
+          "p90": 1411.8000000000002,
+          "p99": 3884.999999999989
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 450,
+          "p75": 658,
+          "p90": 1160.6000000000022,
+          "p99": 4348.18
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1312,
+          "p75": 2281.75,
+          "p90": 3789.0000000000005,
+          "p99": 9156.099999999988
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Inceptron",
+        "latency": {
+          "p50": 266,
+          "p75": 347,
+          "p90": 520.1999999999998,
+          "p99": 1517.0199999999968
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1148,
+          "p75": 5653,
+          "p90": 6543,
+          "p99": 13355.59999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1220,
+          "p75": 1510,
+          "p90": 1896.6000000000004,
+          "p99": 8706.719999999961
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1062,
+          "p75": 1303,
+          "p90": 1663.4,
+          "p99": 3626.4799999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "uptime": 0
+      },
+      {
+        "name": "Nebius",
+        "latency": {
+          "p50": 440,
+          "p75": 606,
+          "p90": 962.6000000000009,
+          "p99": 2217.7000000000016
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mistral",
+        "latency": {
+          "p50": 513,
+          "p75": 876,
+          "p90": 1454.0000000000002,
+          "p99": 2900.2599999999998
+        },
+        "uptime": 90
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 1871,
+          "p75": 2759,
+          "p90": 4487.200000000003,
+          "p99": 13243.79999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 251,
+          "p75": 459,
+          "p90": 1190,
+          "p99": 6632.03000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 1869.5,
+          "p75": 2653,
+          "p90": 3664.1000000000017,
+          "p99": 10223.949999999995
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1501.5,
+          "p75": 1905,
+          "p90": 2504.2000000000003,
+          "p99": 6528.089999999975
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 2029.5,
+          "p75": 2667.25,
+          "p90": 4143.7,
+          "p99": 10398.910000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 460,
+          "p75": 573,
+          "p90": 964.1999999999998,
+          "p99": 4118.159999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Friendli",
+        "latency": {
+          "p50": 235,
+          "p75": 303,
+          "p90": 695.9000000000005,
+          "p99": 4969.630000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 3156,
+          "p75": 6720.5,
+          "p90": 10127.800000000001,
+          "p99": 25801.780000000028
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mistral",
+        "latency": {
+          "p50": 506,
+          "p75": 701,
+          "p90": 1235,
+          "p99": 3106.499999999999
+        }
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 584,
+          "p75": 961.5,
+          "p90": 1758.0000000000023,
+          "p99": 7678.039999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "BaseTen",
+        "latency": {
+          "p50": 545,
+          "p75": 753,
+          "p90": 1101,
+          "p99": 3132.9999999999964
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 928,
+          "p75": 5329,
+          "p90": 6457.1,
+          "p99": 7694.1799999999985
+        }
+      },
+      {
+        "name": "Decart",
+        "latency": {
+          "p50": 694,
+          "p75": 1255,
+          "p90": 1886.6000000000004,
+          "p99": 10095.020000000019
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k2.7-code",
+    "family": "moonshotai",
+    "priceIn": 0.6712,
+    "priceOut": 3.35,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Inceptron",
+        "latency": {
+          "p50": 1073,
+          "p75": 2026.75,
+          "p90": 4676.499999999994,
+          "p99": 12379.469999999992
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 1268,
+          "p75": 1792,
+          "p90": 3091.0000000000005,
+          "p99": 8770.039999999995
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 2502,
+          "p75": 4113.5,
+          "p90": 6251,
+          "p99": 20539
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 2520,
+          "p75": 5049,
+          "p90": 10373.200000000004,
+          "p99": 17056.87999999999
+        }
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 3355,
+          "p75": 4047,
+          "p90": 6891,
+          "p99": 17521.20000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 2783,
+          "p75": 5008.25,
+          "p90": 8890.199999999995,
+          "p99": 51071.460000000036
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Nebius",
+        "latency": {
+          "p50": 1368,
+          "p75": 1556,
+          "p90": 1817.1999999999998,
+          "p99": 2466.7
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 5659,
+          "p75": 7356,
+          "p90": 9433.9,
+          "p99": 12825.079999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 979,
+          "p75": 2981.75,
+          "p90": 4387.6,
+          "p99": 6446.519999999995
+        }
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 3454,
+          "p75": 6571,
+          "p90": 14070.600000000006,
+          "p99": 29916.83999999999
+        }
+      },
+      {
+        "name": "Moonshot AI",
+        "latency": {
+          "p50": 2476.5,
+          "p75": 3227.5,
+          "p90": 4438.5,
+          "p99": 19297
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Moonshot AI",
+        "latency": {
+          "p50": 3062,
+          "p75": 3764,
+          "p90": 4742.8,
+          "p99": 22718.879999999925
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.7-plus",
+    "family": "qwen",
+    "priceIn": 0.32,
+    "priceOut": 1.28,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1648,
+          "p75": 2380,
+          "p90": 3016.4000000000005,
+          "p99": 5378.339999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1120,
+          "p75": 1297,
+          "p90": 1675.9000000000005,
+          "p99": 3672.3600000000006
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.8",
+    "family": "anthropic",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 1148.5,
+          "p75": 2550.25,
+          "p90": 5376.900000000001,
+          "p99": 25884.32000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 2650,
+          "p75": 5367.75,
+          "p90": 11209.2,
+          "p99": 222933.30999999968
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1651,
+          "p75": 5551,
+          "p90": 8044.800000000001,
+          "p99": 17268.15000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1065,
+          "p75": 2109,
+          "p90": 4138.4,
+          "p99": 8011.900000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1103,
+          "p75": 1103,
+          "p90": 1103,
+          "p99": 1103
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 3421,
+          "p75": 4376.25,
+          "p90": 5133.400000000001,
+          "p99": 5998.609999999999
+        }
+      },
+      {
+        "name": "Google"
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 990,
+          "p75": 4448.5,
+          "p90": 10383.000000000002,
+          "p99": 12003.560000000001
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 586.5,
+          "p75": 705.25,
+          "p90": 877.3000000000004,
+          "p99": 1102.69
+        }
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1012,
+          "p75": 2551,
+          "p90": 3010.8,
+          "p99": 5363.479999999997
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.8:batch",
+    "family": "anthropic",
+    "priceIn": 2.5,
+    "priceOut": 12.5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.7-max",
+    "family": "qwen",
+    "priceIn": 1.475,
+    "priceOut": 4.425,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1228,
+          "p75": 1550,
+          "p90": 2092.7000000000007,
+          "p99": 4560.370000000012
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1328,
+          "p75": 1599.5,
+          "p90": 1927,
+          "p99": 3497
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "~moonshotai/kimi-latest",
+    "family": "~moonshotai",
+    "priceIn": 0.73,
+    "priceOut": 10,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "~anthropic/claude-sonnet-latest",
+    "family": "anthropic",
+    "priceIn": 2,
+    "priceOut": 10,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "qwen/qwen3.5-plus-20260420",
+    "family": "qwen",
+    "priceIn": 0.3,
+    "priceOut": 1.7999999999999998,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1923,
+          "p75": 3362,
+          "p90": 6053.400000000008,
+          "p99": 19830.75999999999
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.6-flash",
+    "family": "qwen",
+    "priceIn": 0.1875,
+    "priceOut": 1.125,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 402,
+          "p75": 796,
+          "p90": 2495.4000000000033,
+          "p99": 4038.6399999999994
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.6-35b-a3b",
+    "family": "qwen",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.95,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Darkbloom",
+        "latency": {
+          "p50": 2923.5,
+          "p75": 5151,
+          "p90": 7361,
+          "p99": 18550.349999999955
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AkashML",
+        "latency": {
+          "p50": 571,
+          "p75": 812.25,
+          "p90": 1207.9000000000005,
+          "p99": 3716.1800000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 655.5,
+          "p75": 1249.5,
+          "p90": 3046.7000000000003,
+          "p99": 8252.429999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DekaLLM",
+        "latency": {
+          "p50": 532,
+          "p75": 881.75,
+          "p90": 1796,
+          "p99": 4434.17
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 668,
+          "p75": 817,
+          "p90": 1186.0000000000014,
+          "p99": 11728.599999999984
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 652,
+          "p75": 838,
+          "p90": 1061,
+          "p99": 3278.350000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1188,
+          "p75": 1559.5,
+          "p90": 4458,
+          "p99": 16778.000000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2835,
+          "p75": 4525.25,
+          "p90": 6159,
+          "p99": 14165.25
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 913,
+          "p75": 2441,
+          "p90": 4219.000000000001,
+          "p99": 13533.830000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 441,
+          "p75": 539,
+          "p90": 1242,
+          "p99": 3831
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.6-27b",
+    "family": "qwen",
+    "priceIn": 0.32,
+    "priceOut": 3.1999999999999997,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 436,
+          "p75": 557.5,
+          "p90": 1753.000000000001,
+          "p99": 13947.060000000032
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Chutes",
+        "latency": {
+          "p50": 2801.5,
+          "p75": 3635,
+          "p90": 4771.1,
+          "p99": 6996.44
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1216,
+          "p75": 1412.75,
+          "p90": 2154.2,
+          "p99": 7463.180000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 784.5,
+          "p75": 1341.5,
+          "p90": 1612.3000000000002,
+          "p99": 14777.289999999975
+        },
+        "uptime": 90
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 985,
+          "p75": 1682.5,
+          "p90": 2488.9999999999986,
+          "p99": 6409.280000000057
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 638,
+          "p75": 775,
+          "p90": 2733,
+          "p99": 9125
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 2559,
+          "p75": 3071,
+          "p90": 4570.5,
+          "p99": 8918.050000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.5-pro",
+    "family": "openai",
+    "priceIn": 30,
+    "priceOut": 180,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 204668,
+          "p75": 204668,
+          "p90": 204668,
+          "p99": 204668
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3554,
+          "p75": 4491,
+          "p90": 5853.5999999999985,
+          "p99": 169055.1600000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.5-pro:batch",
+    "family": "openai",
+    "priceIn": 15,
+    "priceOut": 90,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.5",
+    "family": "openai",
+    "priceIn": 5,
+    "priceOut": 30,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 5388,
+          "p75": 10221.5,
+          "p90": 15623.900000000012,
+          "p99": 41471.99000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3015,
+          "p75": 4957,
+          "p90": 8032.8,
+          "p99": 26350.84000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 2021,
+          "p75": 5369.75,
+          "p90": 6387,
+          "p99": 12050.949999999997
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 4925.5,
+          "p75": 5368,
+          "p90": 6172.000000000001,
+          "p99": 8493.550000000005
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3736,
+          "p75": 3736,
+          "p90": 3736,
+          "p99": 3736
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.5:batch",
+    "family": "openai",
+    "priceIn": 2.5,
+    "priceOut": 15,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v4-pro",
+    "family": "deepseek",
+    "priceIn": 0.442656,
+    "priceOut": 0.885312,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 3021,
+          "p75": 4565,
+          "p90": 6945.900000000001,
+          "p99": 15710.18
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1779,
+          "p75": 2847.25,
+          "p90": 5072.500000000003,
+          "p99": 13700.780000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 938.5,
+          "p75": 3529,
+          "p90": 15157.600000000042,
+          "p99": 60387.32999999968
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 2395,
+          "p75": 3202,
+          "p90": 4314,
+          "p99": 10263.79999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 2385,
+          "p75": 3846.25,
+          "p90": 9209,
+          "p99": 33799.35000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Reka",
+        "latency": {
+          "p50": 1904,
+          "p75": 4066,
+          "p90": 7406.4000000000015,
+          "p99": 13065.44
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 2962.5,
+          "p75": 6006.75,
+          "p90": 11702,
+          "p99": 51607.76000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1228,
+          "p75": 2035,
+          "p90": 3148.9999999999995,
+          "p99": 6492.639999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 2041.5,
+          "p75": 2422,
+          "p90": 4366.5,
+          "p99": 25570
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1880.5,
+          "p75": 2728.25,
+          "p90": 4111.7,
+          "p99": 9907.499999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1659,
+          "p75": 1882,
+          "p90": 2417.8,
+          "p99": 6947.969999999981
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 2096,
+          "p75": 3029,
+          "p90": 4611.900000000001,
+          "p99": 8842.870000000014
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1459.5,
+          "p75": 2090.25,
+          "p90": 3506.5,
+          "p99": 18107.899999999958
+        },
+        "uptime": 86.66666666666667
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1645,
+          "p75": 2443,
+          "p90": 3483.4000000000005,
+          "p99": 18519.23999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 2040,
+          "p75": 3083,
+          "p90": 4775,
+          "p99": 21839.209999999992
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v4-flash",
+    "family": "deepseek",
+    "priceIn": 0.03,
+    "priceOut": 1.28,
+    "context": 1048576,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenInference",
+        "latency": {
+          "p50": 2512,
+          "p75": 4031,
+          "p90": 7837.900000000001,
+          "p99": 21795.840000000026
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "Relace",
+        "latency": {
+          "p50": 621,
+          "p75": 1011,
+          "p90": 1755.800000000001,
+          "p99": 8720.290000000012
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 1617.5,
+          "p75": 2482,
+          "p90": 3840.800000000001,
+          "p99": 9554.220000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 8607.5,
+          "p75": 9987.25,
+          "p90": 11307,
+          "p99": 16680.93000000001
+        }
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1086.5,
+          "p75": 1590,
+          "p90": 2538,
+          "p99": 5285.810000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 1621,
+          "p75": 1919.25,
+          "p90": 2481.9000000000005,
+          "p99": 5621.810000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1425,
+          "p75": 2614.25,
+          "p90": 4644.900000000001,
+          "p99": 12195.610000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 874,
+          "p75": 1264.5,
+          "p90": 1822,
+          "p99": 18030.810000000016
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1207,
+          "p75": 1678,
+          "p90": 2868.9000000000005,
+          "p99": 7713.7900000000045
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 2612,
+          "p75": 3848,
+          "p90": 5479.600000000002,
+          "p99": 11516.530000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 878,
+          "p75": 1538,
+          "p90": 3375,
+          "p99": 9508.800000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1268,
+          "p75": 1565,
+          "p90": 2103,
+          "p99": 4351.57
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mancer 2",
+        "latency": {
+          "p50": 1298,
+          "p75": 3381,
+          "p90": 8841,
+          "p99": 13367.399999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 2581.5,
+          "p75": 6044.25,
+          "p90": 11800.100000000006,
+          "p99": 31273.11000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Wafer",
+        "latency": {
+          "p50": 3722,
+          "p75": 8106,
+          "p90": 14822.2,
+          "p99": 35987.60000000005
+        },
+        "uptime": 90
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 2362,
+          "p75": 6729.75,
+          "p90": 13968.300000000007,
+          "p99": 35472.09999999998
+        },
+        "uptime": 75
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-image-2",
+    "family": "openai",
+    "priceIn": 8,
+    "priceOut": 15,
+    "context": 272000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 17206,
+          "p75": 19856,
+          "p90": 32402.5,
+          "p99": 127385.05000000005
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "~anthropic/claude-opus-latest",
+    "family": "anthropic",
+    "priceIn": 4,
+    "priceOut": 20,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": []
+  },
+  {
+    "id": "moonshotai/kimi-k2.6",
+    "family": "moonshotai",
+    "priceIn": 0.65,
+    "priceOut": 3.41,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1178,
+          "p75": 2000,
+          "p90": 3175.8999999999987,
+          "p99": 10128.580000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Inceptron",
+        "latency": {
+          "p50": 410,
+          "p75": 809,
+          "p90": 1660,
+          "p99": 6704.68
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Chutes",
+        "latency": {
+          "p50": 1936.5,
+          "p75": 2471,
+          "p90": 3347.9,
+          "p99": 9209.020000000046
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 1605.5,
+          "p75": 1959.75,
+          "p90": 2267.4,
+          "p99": 5304.999999999949
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 1891,
+          "p75": 5866.5,
+          "p90": 9572.800000000001,
+          "p99": 26062.100000000024
+        },
+        "uptime": 92.85714285714286
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 348,
+          "p75": 491,
+          "p90": 1181.7000000000003,
+          "p99": 54128.059999999095
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Crusoe",
+        "latency": {
+          "p50": 416,
+          "p75": 498,
+          "p90": 680,
+          "p99": 2007.700000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 20775.5,
+          "p75": 38501.75,
+          "p90": 61208.299999999996,
+          "p99": 103953.68999999962
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 4344,
+          "p75": 5698.5,
+          "p90": 9833,
+          "p99": 33324.94000000002
+        },
+        "uptime": 50
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 839,
+          "p75": 1481,
+          "p90": 2977.2000000000003,
+          "p99": 9372.039999999972
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 942,
+          "p75": 1762,
+          "p90": 3216.6000000000004,
+          "p99": 7244.16
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 2331,
+          "p75": 5269,
+          "p90": 9417.7,
+          "p99": 13858.71
+        },
+        "uptime": 96.42857142857143
+      },
+      {
+        "name": "GMICloud"
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1793,
+          "p75": 2950.5,
+          "p90": 6092,
+          "p99": 11090.300000000001
+        }
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 1624,
+          "p75": 2698.5,
+          "p90": 4250.600000000004,
+          "p99": 12159.690000000017
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Moonshot AI",
+        "latency": {
+          "p50": 2288,
+          "p75": 4940,
+          "p90": 9228.200000000004,
+          "p99": 14351.300000000032
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 1787,
+          "p75": 4179.5,
+          "p90": 8673,
+          "p99": 15108.399999999983
+        },
+        "uptime": 95.23809523809523
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.7",
+    "family": "anthropic",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 1279,
+          "p75": 3492.5,
+          "p90": 5977,
+          "p99": 38418.15000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1021,
+          "p75": 1021,
+          "p90": 1021,
+          "p99": 1021
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 3512,
+          "p75": 6370,
+          "p90": 6555,
+          "p99": 6886.280000000001
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1311,
+          "p75": 1662.75,
+          "p90": 2311.8,
+          "p99": 4444.889999999995
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1581.5,
+          "p75": 3460.25,
+          "p90": 5406.5,
+          "p99": 10561.500000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google"
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 815,
+          "p75": 1047.25,
+          "p90": 1415.3000000000036,
+          "p99": 3817.690000000001
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 508,
+          "p75": 660,
+          "p90": 939,
+          "p99": 1291.8
+        }
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.7:batch",
+    "family": "anthropic",
+    "priceIn": 2.5,
+    "priceOut": 12.5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5.1",
+    "family": "z-ai",
+    "priceIn": 0.966,
+    "priceOut": 3.036,
+    "context": 204800,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1624,
+          "p75": 2898.25,
+          "p90": 6313.000000000001,
+          "p99": 25475.770000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 2767,
+          "p75": 4925,
+          "p90": 9630.400000000001,
+          "p99": 53422.84000000003
+        },
+        "uptime": 93.10344827586206
+      },
+      {
+        "name": "Chutes",
+        "latency": {
+          "p50": 3838,
+          "p75": 7363,
+          "p90": 31585.600000000028,
+          "p99": 94324.51999999996
+        }
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2068,
+          "p75": 2800,
+          "p90": 6384.399999999997,
+          "p99": 23375.000000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2426,
+          "p75": 3610,
+          "p90": 42145.60000000002,
+          "p99": 80670.43999999987
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 2464,
+          "p75": 4649,
+          "p90": 8826.600000000006,
+          "p99": 25743.240000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1984.5,
+          "p75": 2409,
+          "p90": 3277.5,
+          "p99": 21193.660000000018
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 3764.5,
+          "p75": 5201.5,
+          "p90": 8209.700000000008,
+          "p99": 38113.88
+        }
+      },
+      {
+        "name": "Nebius",
+        "latency": {
+          "p50": 470,
+          "p75": 611.75,
+          "p90": 2338,
+          "p99": 38060.75
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 2551.5,
+          "p75": 6293.75,
+          "p90": 8878.900000000003,
+          "p99": 15593.04
+        }
+      },
+      {
+        "name": "Friendli",
+        "latency": {
+          "p50": 381,
+          "p75": 506.25,
+          "p90": 828.5,
+          "p99": 6344.05000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 9387,
+          "p75": 9976.5,
+          "p90": 10585.5,
+          "p99": 32496.06999999986
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 2290,
+          "p75": 6581,
+          "p90": 11909.200000000004,
+          "p99": 33313.51999999996
+        }
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.6-plus",
+    "family": "qwen",
+    "priceIn": 0.325,
+    "priceOut": 1.95,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1053,
+          "p75": 1369,
+          "p90": 3370,
+          "p99": 54513.999999999985
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5v-turbo",
+    "family": "z-ai",
+    "priceIn": 1.2,
+    "priceOut": 4,
+    "context": 202752,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 8696.5,
+          "p75": 39332.75,
+          "p90": 51425.5,
+          "p99": 72358.09999999998
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-nano",
+    "family": "openai",
+    "priceIn": 0.19999999999999998,
+    "priceOut": 1.25,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 804.5,
+          "p75": 2019.5,
+          "p90": 4055.5,
+          "p99": 6087.270000000002
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1744,
+          "p75": 2221,
+          "p90": 2864.9000000000005,
+          "p99": 6711.9000000000015
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 921,
+          "p75": 1273,
+          "p90": 2027.7000000000016,
+          "p99": 5114.9000000000015
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-nano:batch",
+    "family": "openai",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.625,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-mini",
+    "family": "openai",
+    "priceIn": 0.75,
+    "priceOut": 4.5,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1001,
+          "p75": 2031,
+          "p90": 2674.0000000000005,
+          "p99": 4128.2
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1473.5,
+          "p75": 3095,
+          "p90": 5011.800000000001,
+          "p99": 11535.990000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1030,
+          "p75": 1345,
+          "p90": 2245,
+          "p99": 5618.990000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1531,
+          "p75": 1912,
+          "p90": 6551.599999999989,
+          "p99": 137784.66000000003
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1116,
+          "p75": 1644.5,
+          "p90": 2186.2000000000007,
+          "p99": 2706.38
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-mini:batch",
+    "family": "openai",
+    "priceIn": 0.375,
+    "priceOut": 2.25,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5-turbo",
+    "family": "z-ai",
+    "priceIn": 1.2,
+    "priceOut": 4,
+    "context": 202752,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 7899,
+          "p75": 8911,
+          "p90": 9852,
+          "p99": 29857.919999999984
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-9b",
+    "family": "qwen",
+    "priceIn": 0.09999999999999999,
+    "priceOut": 0.15,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Darkbloom",
+        "latency": {
+          "p50": 4377,
+          "p75": 6571,
+          "p90": 9590.9,
+          "p99": 19672.430000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1440,
+          "p75": 2773,
+          "p90": 5559.000000000007,
+          "p99": 14091.919999999973
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 726,
+          "p75": 1100,
+          "p90": 1637,
+          "p99": 3383.1999999999925
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 824,
+          "p75": 1170,
+          "p90": 1585.9000000000005,
+          "p99": 3364.970000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 820.5,
+          "p75": 1036,
+          "p90": 1324.5,
+          "p99": 2908
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Together",
+        "latency": {
+          "p50": 612,
+          "p75": 975.25,
+          "p90": 1876,
+          "p99": 5227.09
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-pro",
+    "family": "openai",
+    "priceIn": 30,
+    "priceOut": 180,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 19175.5,
+          "p75": 26162.75,
+          "p90": 30355.1,
+          "p99": 32870.51
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 6696.5,
+          "p75": 10856.25,
+          "p90": 26894.500000000025,
+          "p99": 156934.41999999984
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4-pro:batch",
+    "family": "openai",
+    "priceIn": 15,
+    "priceOut": 90,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4",
+    "family": "openai",
+    "priceIn": 2.5,
+    "priceOut": 15,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1095,
+          "p75": 1221.25,
+          "p90": 1415.8000000000002,
+          "p99": 12296.229999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1546,
+          "p75": 2129,
+          "p90": 3499.7999999999975,
+          "p99": 15402.00000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1414,
+          "p75": 2005,
+          "p90": 3345.800000000001,
+          "p99": 10901.36
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure"
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1533,
+          "p75": 3720.5,
+          "p90": 5257.400000000001,
+          "p99": 11107.46
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1487.5,
+          "p75": 1840.5,
+          "p90": 2524.2,
+          "p99": 13923.77000000016
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2410.5,
+          "p75": 3032.5,
+          "p90": 4037,
+          "p99": 4989.25
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.4:batch",
+    "family": "openai",
+    "priceIn": 1.25,
+    "priceOut": 7.5,
+    "context": 1050000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-35b-a3b",
+    "family": "qwen",
+    "priceIn": 0.08,
+    "priceOut": 0.75,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Darkbloom",
+        "latency": {
+          "p50": 2273,
+          "p75": 3136,
+          "p90": 4656,
+          "p99": 8355.6
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 662,
+          "p75": 1345.5,
+          "p90": 2014.4,
+          "p99": 4171.28
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 471,
+          "p75": 599.5,
+          "p90": 793,
+          "p99": 3246.2000000000016
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1703,
+          "p75": 1844,
+          "p90": 2102.8,
+          "p99": 3503.6799999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 650,
+          "p75": 946.75,
+          "p90": 1261.8000000000002,
+          "p99": 1934.8099999999986
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1341,
+          "p75": 1485,
+          "p90": 1789,
+          "p99": 4009.5999999999967
+        }
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 863,
+          "p75": 1243.5,
+          "p90": 1510.4000000000005,
+          "p99": 7184.850000000035
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-27b",
+    "family": "qwen",
+    "priceIn": 0.26,
+    "priceOut": 2.6,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1555,
+          "p75": 6284,
+          "p90": 12094.600000000002,
+          "p99": 21328.759999999995
+        },
+        "uptime": 93.33333333333333
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2519.5,
+          "p75": 4981.75,
+          "p90": 10829.600000000006,
+          "p99": 20857.13
+        },
+        "uptime": 31.818181818181817
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 928,
+          "p75": 1578,
+          "p90": 2370,
+          "p99": 4262.51999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 2439,
+          "p75": 4794,
+          "p90": 7940,
+          "p99": 11291.56
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 1668,
+          "p75": 2223,
+          "p90": 2950.7000000000003,
+          "p99": 6354.600000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 2068.5,
+          "p75": 4065.25,
+          "p90": 7482.200000000003,
+          "p99": 10678.859999999999
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-122b-a10b",
+    "family": "qwen",
+    "priceIn": 0.26,
+    "priceOut": 2.08,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1220,
+          "p75": 1630.75,
+          "p90": 2115.4,
+          "p99": 6789.259999999967
+        },
+        "uptime": 89.28571428571429
+      },
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1170,
+          "p75": 1773,
+          "p90": 2868.6,
+          "p99": 9718.39999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 2020,
+          "p75": 4115,
+          "p90": 6790,
+          "p99": 11751
+        },
+        "uptime": 95.65217391304348
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1198,
+          "p75": 1521.25,
+          "p90": 11044.500000000004,
+          "p99": 14304.079999999998
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-flash-02-23",
+    "family": "qwen",
+    "priceIn": 0.065,
+    "priceOut": 0.26,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 589,
+          "p75": 707,
+          "p90": 980.9000000000005,
+          "p99": 4196.720000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.3-codex",
+    "family": "openai",
+    "priceIn": 1.75,
+    "priceOut": 14,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 6101,
+          "p75": 9697,
+          "p90": 14588.8,
+          "p99": 19805.760000000002
+        }
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2449,
+          "p75": 4342,
+          "p90": 8772.800000000001,
+          "p99": 24441.080000000038
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.6",
+    "family": "anthropic",
+    "priceIn": 3,
+    "priceOut": 15,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 942,
+          "p75": 1441,
+          "p90": 6336.200000000026,
+          "p99": 38956.270000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1906.5,
+          "p75": 2122,
+          "p90": 3343.8999999999996,
+          "p99": 4655.29
+        }
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1311.5,
+          "p75": 1796.25,
+          "p90": 2733.800000000001,
+          "p99": 7395.000000000058
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 916,
+          "p75": 1276,
+          "p90": 2127.7,
+          "p99": 15042
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1346.5,
+          "p75": 1769.25,
+          "p90": 2669.2000000000007,
+          "p99": 8562.090000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 709,
+          "p75": 806,
+          "p90": 1111.4,
+          "p99": 8800.719999999985
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 798.5,
+          "p75": 1012,
+          "p90": 3096.6,
+          "p99": 7395.6900000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 650,
+          "p75": 8666,
+          "p90": 23362.200000000004,
+          "p99": 33837.11999999999
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1036,
+          "p75": 1450.5,
+          "p90": 1699.2,
+          "p99": 1848.42
+        }
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.6:batch",
+    "family": "anthropic",
+    "priceIn": 1.5,
+    "priceOut": 7.5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-plus-02-15",
+    "family": "qwen",
+    "priceIn": 0.26,
+    "priceOut": 1.56,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1033,
+          "p75": 1491.75,
+          "p90": 3186.9,
+          "p99": 6103.000000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3.5-397b-a17b",
+    "family": "qwen",
+    "priceIn": 0.55,
+    "priceOut": 3.5,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 1509.5,
+          "p75": 2124,
+          "p90": 4031.5,
+          "p99": 10104.409999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 957,
+          "p75": 2082.5,
+          "p90": 4494.200000000002,
+          "p99": 15220.389999999956
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 839,
+          "p75": 1179,
+          "p90": 1840.4000000000005,
+          "p99": 6066.959999999957
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 9009,
+          "p75": 14116.75,
+          "p90": 20905,
+          "p99": 27368.59999999999
+        },
+        "uptime": 85.71428571428571
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2624.5,
+          "p75": 6144.5,
+          "p90": 8287.3,
+          "p99": 19585.449999999975
+        },
+        "uptime": 100
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 1529,
+          "p75": 1734,
+          "p90": 2084,
+          "p99": 6695.4000000000015
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 633,
+          "p75": 2058.5,
+          "p90": 3701.8,
+          "p99": 18972.719999999958
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 1917.5,
+          "p75": 4334.75,
+          "p90": 7238.100000000001,
+          "p99": 11355.33000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1454,
+          "p75": 2119.75,
+          "p90": 4250.1,
+          "p99": 23758.649999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1453,
+          "p75": 2321,
+          "p90": 11848.999999999996,
+          "p99": 135623.8799999999
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-5",
+    "family": "z-ai",
+    "priceIn": 0.6,
+    "priceOut": 1.92,
+    "context": 204800,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 2044,
+          "p75": 2742,
+          "p90": 3600.1,
+          "p99": 5394.389999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 2474,
+          "p75": 3122,
+          "p90": 4326.5,
+          "p99": 7158.050000000021
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 1429.5,
+          "p75": 2241.75,
+          "p90": 3544.2000000000007,
+          "p99": 7592.3000000000075
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2870,
+          "p75": 4922.5,
+          "p90": 9980,
+          "p99": 21082.50000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 658,
+          "p75": 1086.25,
+          "p90": 1934.0000000000014,
+          "p99": 4687.239999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1372,
+          "p75": 2615.5,
+          "p90": 4403.5,
+          "p99": 8222.300000000014
+        }
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1580,
+          "p75": 2089,
+          "p90": 3315.200000000007,
+          "p99": 12067.64
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 8891,
+          "p75": 10225.5,
+          "p90": 11946.2,
+          "p99": 18121.45999999997
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.6",
+    "family": "anthropic",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 1839,
+          "p75": 2392,
+          "p90": 3302.600000000005,
+          "p99": 17515.07999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3980,
+          "p75": 4214.5,
+          "p90": 4355.2,
+          "p99": 4439.62
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2010,
+          "p75": 2229,
+          "p90": 2581.6000000000004,
+          "p99": 8592.060000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1652,
+          "p75": 2456.5,
+          "p90": 3617.7999999999993,
+          "p99": 14500.319999999982
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 2035,
+          "p75": 2682,
+          "p90": 3763,
+          "p99": 13052.200000000052
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1606,
+          "p75": 1823,
+          "p90": 2178.3999999999996,
+          "p99": 29190.780000000013
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.6:batch",
+    "family": "anthropic",
+    "priceIn": 2.5,
+    "priceOut": 12.5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k2.5",
+    "family": "moonshotai",
+    "priceIn": 0.5,
+    "priceOut": 2.5,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 680,
+          "p75": 762,
+          "p90": 1093,
+          "p99": 8780.19999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1342,
+          "p75": 1538,
+          "p90": 2343.199999999999,
+          "p99": 5234.999999999985
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 890,
+          "p75": 1141,
+          "p90": 1856.3000000000002,
+          "p99": 8332.659999999894
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1869,
+          "p75": 4819,
+          "p90": 11668.200000000008,
+          "p99": 35124.580000000016
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1401.5,
+          "p75": 2269.25,
+          "p90": 3023.3,
+          "p99": 6482.390000000014
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.7-flash",
+    "family": "z-ai",
+    "priceIn": 0.060500000000000005,
+    "priceOut": 0.39999999999999997,
+    "context": 200000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1592.5,
+          "p75": 2475,
+          "p90": 3250.6000000000013,
+          "p99": 6023.58
+        }
+      },
+      {
+        "name": "Cloudflare",
+        "latency": {
+          "p50": 381,
+          "p75": 573,
+          "p90": 1143.9000000000005,
+          "p99": 8402.67000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1028,
+          "p75": 2002,
+          "p90": 7576.4,
+          "p99": 49792.92000000002
+        },
+        "uptime": 0
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.2-codex",
+    "family": "openai",
+    "priceIn": 1.75,
+    "priceOut": 14,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 2702,
+          "p75": 5118.5,
+          "p90": 10804.999999999998,
+          "p99": 28297.140000000003
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.7",
+    "family": "z-ai",
+    "priceIn": 0.6,
+    "priceOut": 2.2,
+    "context": 204800,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1076,
+          "p75": 2388,
+          "p90": 5427.6,
+          "p99": 16114.880000000041
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1520,
+          "p75": 3925,
+          "p90": 6876.8,
+          "p99": 12564.119999999988
+        },
+        "uptime": 67.85714285714286
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 4283,
+          "p75": 4940,
+          "p90": 5620.4,
+          "p99": 8410.239999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 664.5,
+          "p75": 834,
+          "p90": 1167.3000000000004,
+          "p99": 2167.24
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 8980,
+          "p75": 9760,
+          "p90": 10441.2,
+          "p99": 11793.08
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mancer 2",
+        "latency": {
+          "p50": 1257,
+          "p75": 2759,
+          "p90": 5599.200000000002,
+          "p99": 12087.38000000002
+        },
+        "uptime": 53.84615384615385
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.2-chat",
+    "family": "openai",
+    "priceIn": 1.75,
+    "priceOut": 14,
+    "context": 128000,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.2-pro",
+    "family": "openai",
+    "priceIn": 21,
+    "priceOut": 168,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 9948,
+          "p75": 63038.75,
+          "p90": 159894.7,
+          "p99": 244706.99
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.2-pro:batch",
+    "family": "openai",
+    "priceIn": 10.5,
+    "priceOut": 84,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.2",
+    "family": "openai",
+    "priceIn": 1.75,
+    "priceOut": 14,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1397,
+          "p75": 2250,
+          "p90": 2633.4,
+          "p99": 2716.64
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4021,
+          "p75": 6227.5,
+          "p90": 11573,
+          "p99": 41325.49999999989
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3077.5,
+          "p75": 4090.25,
+          "p90": 5876.900000000001,
+          "p99": 16586.06000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 3069,
+          "p75": 3900,
+          "p90": 5330.999999999999,
+          "p99": 7863.919999999999
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.2:batch",
+    "family": "openai",
+    "priceIn": 0.875,
+    "priceOut": 7,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.6v",
+    "family": "z-ai",
+    "priceIn": 0.3,
+    "priceOut": 0.8999999999999999,
+    "context": 131072,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1111,
+          "p75": 1951,
+          "p90": 3501.8,
+          "p99": 9088.359999999977
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 2421.5,
+          "p75": 3267,
+          "p90": 4997.8,
+          "p99": 25204.669999999944
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.1-codex-max",
+    "family": "openai",
+    "priceIn": 1.25,
+    "priceOut": 10,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 7572.5,
+          "p75": 15977.25,
+          "p90": 22500.1,
+          "p99": 24900.489999999998
+        }
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v3.2",
+    "family": "deepseek",
+    "priceIn": 0.25899999999999995,
+    "priceOut": 0.7999999999999999,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 1554,
+          "p75": 2483.5,
+          "p90": 5651.300000000004,
+          "p99": 32324.23000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2401,
+          "p75": 4262,
+          "p90": 7643.4000000000015,
+          "p99": 23329.09999999998
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 3480.5,
+          "p75": 6762.25,
+          "p90": 10089.900000000001,
+          "p99": 29265.50999999998
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "AtlasCloud",
+        "latency": {
+          "p50": 5000,
+          "p75": 7187.25,
+          "p90": 9619,
+          "p99": 16554.740000000013
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 4972,
+          "p75": 8800.5,
+          "p90": 14037.400000000003,
+          "p99": 25411.73999999996
+        },
+        "uptime": 86.20689655172413
+      },
+      {
+        "name": "Baidu",
+        "latency": {
+          "p50": 2550.5,
+          "p75": 8831.25,
+          "p90": 20097.7,
+          "p99": 30338.18
+        },
+        "uptime": 56.666666666666664
+      },
+      {
+        "name": "DigitalOcean",
+        "latency": {
+          "p50": 1193,
+          "p75": 1723.25,
+          "p90": 2638.7000000000016,
+          "p99": 5986.520000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Friendli",
+        "latency": {
+          "p50": 4380.5,
+          "p75": 5122,
+          "p90": 5762,
+          "p99": 9602.330000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 2869.5,
+          "p75": 6431.25,
+          "p90": 21120.999999999996,
+          "p99": 42534.570000000036
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Phala",
+        "latency": {
+          "p50": 2488,
+          "p75": 3812,
+          "p90": 7522.400000000003,
+          "p99": 20962.319999999996
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mara",
+        "latency": {
+          "p50": 5614.5,
+          "p75": 8105.25,
+          "p90": 10567.4,
+          "p99": 13884.7
+        },
+        "uptime": 66.66666666666666
+      },
+      {
+        "name": "SambaNova",
+        "latency": {
+          "p50": 4613,
+          "p75": 6925.75,
+          "p90": 9228.8,
+          "p99": 11769.689999999984
+        },
+        "uptime": 75
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.5",
+    "family": "anthropic",
+    "priceIn": 5,
+    "priceOut": 25,
+    "context": 200000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 1778,
+          "p75": 1941.5,
+          "p90": 2039.6,
+          "p99": 2098.46
+        }
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1637,
+          "p75": 1832.5,
+          "p90": 2412.0000000000005,
+          "p99": 3116.6999999999994
+        }
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 6949,
+          "p75": 7185.75,
+          "p90": 7281.9,
+          "p99": 7450.349999999999
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1433,
+          "p75": 1710.5,
+          "p90": 2343.8,
+          "p99": 4695.619999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1054.5,
+          "p75": 1141,
+          "p90": 1362.5,
+          "p99": 1668.5500000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 2161,
+          "p75": 2287.5,
+          "p90": 2427.4,
+          "p99": 3694.2400000000016
+        }
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.5:batch",
+    "family": "anthropic",
+    "priceIn": 2.5,
+    "priceOut": 12.5,
+    "context": 200000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.1",
+    "family": "openai",
+    "priceIn": 1.25,
+    "priceOut": 10,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 858,
+          "p75": 945.25,
+          "p90": 1186.2000000000007,
+          "p99": 1623.7400000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1104,
+          "p75": 1845.25,
+          "p90": 4240.8,
+          "p99": 13467.370000000006
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1356,
+          "p75": 1766,
+          "p90": 3393.5000000000027,
+          "p99": 57223.05
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4199,
+          "p75": 4199,
+          "p90": 4199,
+          "p99": 4199
+        }
+      },
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.1:batch",
+    "family": "openai",
+    "priceIn": 0.625,
+    "priceOut": 5,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.1-codex",
+    "family": "openai",
+    "priceIn": 1.25,
+    "priceOut": 10,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 7362,
+          "p75": 12630.5,
+          "p90": 22327.800000000003,
+          "p99": 45433.84
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5.1-codex-mini",
+    "family": "openai",
+    "priceIn": 0.25,
+    "priceOut": 2,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 8061,
+          "p75": 13985.5,
+          "p90": 24604.399999999994,
+          "p99": 48152.649999999936
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k2-thinking",
+    "family": "moonshotai",
+    "priceIn": 0.6,
+    "priceOut": 2.5,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 770,
+          "p75": 1000.25,
+          "p90": 1479,
+          "p99": 2254.6500000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1878,
+          "p75": 5633,
+          "p90": 12294.800000000017,
+          "p99": 45889.08
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-image-mini",
+    "family": "openai",
+    "priceIn": 2.5,
+    "priceOut": 2,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 41578,
+          "p75": 51093.5,
+          "p90": 58034,
+          "p99": 64031.89999999999
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-image",
+    "family": "openai",
+    "priceIn": 10,
+    "priceOut": 10,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 12789,
+          "p75": 44076,
+          "p90": 75136,
+          "p99": 118677.8800000001
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-pro",
+    "family": "openai",
+    "priceIn": 15,
+    "priceOut": 120,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 11990,
+          "p75": 12210,
+          "p90": 12342,
+          "p99": 12421.2
+        }
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-pro:batch",
+    "family": "openai",
+    "priceIn": 7.5,
+    "priceOut": 60,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.6",
+    "family": "z-ai",
+    "priceIn": 0.5,
+    "priceOut": 2,
+    "context": 204800,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1034,
+          "p75": 1386,
+          "p90": 2356.4,
+          "p99": 8303.51999999994
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 659,
+          "p75": 1194,
+          "p90": 2020.6000000000015,
+          "p99": 7062.679999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 4468.5,
+          "p75": 5256.5,
+          "p90": 6256.200000000001,
+          "p99": 14129.150000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 9176.5,
+          "p75": 10116.5,
+          "p90": 11097.600000000002,
+          "p99": 13016.020000000004
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.5",
+    "family": "anthropic",
+    "priceIn": 3,
+    "priceOut": 15,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Claude Platform on AWS",
+        "latency": {
+          "p50": 1458,
+          "p75": 1682,
+          "p90": 2064,
+          "p99": 10172.900000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 15471.5,
+          "p75": 17523.5,
+          "p90": 17567.6,
+          "p99": 17594.06
+        }
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1584,
+          "p75": 1981,
+          "p90": 2975,
+          "p99": 7195.340000000018
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Anthropic",
+        "latency": {
+          "p50": 1167,
+          "p75": 1420,
+          "p90": 2032,
+          "p99": 7183.5899999999965
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1163.5,
+          "p75": 1585.75,
+          "p90": 2798.500000000002,
+          "p99": 8318.96
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1495.5,
+          "p75": 1939,
+          "p90": 2575.9,
+          "p99": 4176.229999999995
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 1348,
+          "p75": 2034,
+          "p90": 3182.4000000000005,
+          "p99": 3871.4399999999996
+        }
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.5:batch",
+    "family": "anthropic",
+    "priceIn": 1.5,
+    "priceOut": 7.5,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v3.2-exp",
+    "family": "deepseek",
+    "priceIn": 0.27,
+    "priceOut": 0.41,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2064,
+          "p75": 3270,
+          "p90": 7195.900000000001,
+          "p99": 18965.640000000014
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3-vl-235b-a22b-instruct",
+    "family": "qwen",
+    "priceIn": 0.21,
+    "priceOut": 1.9,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 1748.5,
+          "p75": 3498,
+          "p90": 5209.800000000001,
+          "p99": 16569.739999999965
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1537,
+          "p75": 2603,
+          "p90": 4498.200000000001,
+          "p99": 8514.150000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 1309.5,
+          "p75": 2955.25,
+          "p90": 5778.700000000002,
+          "p99": 10408.76
+        },
+        "uptime": 96.66666666666667
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-v3.1-terminus",
+    "family": "deepseek",
+    "priceIn": 0.27,
+    "priceOut": 1,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 2122,
+          "p75": 3554.5,
+          "p90": 11603.5,
+          "p99": 27499.949999999997
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 703.5,
+          "p75": 1745,
+          "p90": 2709.900000000001,
+          "p99": 13871.300000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3-coder-flash",
+    "family": "qwen",
+    "priceIn": 0.195,
+    "priceOut": 0.975,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 811,
+          "p75": 920.5,
+          "p90": 1062.3999999999996,
+          "p99": 3440.999999999978
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k2-0905",
+    "family": "moonshotai",
+    "priceIn": 0.6,
+    "priceOut": 2.5,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 786,
+          "p75": 1214,
+          "p90": 2926,
+          "p99": 37337.950000000754
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-chat-v3.1",
+    "family": "deepseek",
+    "priceIn": 0.25,
+    "priceOut": 0.95,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 750,
+          "p75": 944,
+          "p90": 1310.800000000001,
+          "p99": 7004.980000000032
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1896,
+          "p75": 3009,
+          "p90": 6702.0000000000055,
+          "p99": 12040.810000000001
+        },
+        "uptime": 63.33333333333333
+      },
+      {
+        "name": "CoreWeave",
+        "latency": {
+          "p50": 645,
+          "p75": 986,
+          "p90": 1519,
+          "p99": 3626.9900000000016
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Mara",
+        "latency": {
+          "p50": 1162,
+          "p75": 2710,
+          "p90": 5562.800000000001,
+          "p99": 10520.159999999998
+        },
+        "uptime": 76.66666666666667
+      },
+      {
+        "name": "SambaNova",
+        "latency": {
+          "p50": 3294,
+          "p75": 5654,
+          "p90": 8247,
+          "p99": 11471
+        },
+        "uptime": 96.66666666666667
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.5v",
+    "family": "z-ai",
+    "priceIn": 0.6,
+    "priceOut": 1.7999999999999998,
+    "context": 65536,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1363.5,
+          "p75": 1903.25,
+          "p90": 3579.9000000000015,
+          "p99": 8037.5500000000075
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 1101,
+          "p75": 2174,
+          "p90": 4118.599999999999,
+          "p99": 11764.659999999967
+        },
+        "uptime": 66.66666666666666
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5",
+    "family": "openai",
+    "priceIn": 1.25,
+    "priceOut": 10,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 7442.5,
+          "p75": 12418.75,
+          "p90": 19515.200000000004,
+          "p99": 49404.70000000008
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 6771.5,
+          "p75": 13329.25,
+          "p90": 25737.1,
+          "p99": 65499.43999999999
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4625,
+          "p75": 6903,
+          "p90": 11908.199999999997,
+          "p99": 28628.3
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5:batch",
+    "family": "openai",
+    "priceIn": 0.625,
+    "priceOut": 5,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-mini",
+    "family": "openai",
+    "priceIn": 0.25,
+    "priceOut": 2,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2083,
+          "p75": 3044,
+          "p90": 4565,
+          "p99": 10924.400000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 4243.5,
+          "p75": 6095.25,
+          "p90": 9293.000000000011,
+          "p99": 22189.520000000004
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 2771,
+          "p75": 4467.25,
+          "p90": 7331.800000000001,
+          "p99": 18519.160000000003
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 5069,
+          "p75": 7033.25,
+          "p90": 8983.900000000001,
+          "p99": 12848.449999999997
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-mini:batch",
+    "family": "openai",
+    "priceIn": 0.125,
+    "priceOut": 1,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-nano",
+    "family": "openai",
+    "priceIn": 0.049999999999999996,
+    "priceOut": 0.39999999999999997,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1334.5,
+          "p75": 2439,
+          "p90": 3424.9000000000005,
+          "p99": 6135.360000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 1484,
+          "p75": 1787,
+          "p90": 2535.9000000000005,
+          "p99": 8537.18
+        },
+        "uptime": 100
+      },
+      {
+        "name": "OpenAI",
+        "latency": {
+          "p50": 1158.5,
+          "p75": 3476,
+          "p90": 6085,
+          "p99": 16317.48000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Azure",
+        "latency": {
+          "p50": 3202,
+          "p75": 3879.5,
+          "p90": 5352.800000000001,
+          "p99": 11482.870000000008
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "openai/gpt-5-nano:batch",
+    "family": "openai",
+    "priceIn": 0.024999999999999998,
+    "priceOut": 0.19999999999999998,
+    "context": 400000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "OpenAI"
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.1",
+    "family": "anthropic",
+    "priceIn": 15,
+    "priceOut": 75,
+    "context": 200000,
+    "structuredOutput": false,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 4203.5,
+          "p75": 5439,
+          "p90": 7296.9,
+          "p99": 14837.409999999938
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-opus-4.1:batch",
+    "family": "anthropic",
+    "priceIn": 7.5,
+    "priceOut": 37.5,
+    "context": 200000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Anthropic"
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.5",
+    "family": "z-ai",
+    "priceIn": 0.6,
+    "priceOut": 2.2,
+    "context": 131072,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 8730,
+          "p75": 9817,
+          "p90": 10402,
+          "p99": 15961.080000000002
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "z-ai/glm-4.5-air",
+    "family": "z-ai",
+    "priceIn": 0.13,
+    "priceOut": 0.85,
+    "context": 131072,
+    "structuredOutput": false,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 705,
+          "p75": 835,
+          "p90": 1031,
+          "p99": 3978.750000000011
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1198,
+          "p75": 1453,
+          "p90": 1679,
+          "p99": 2719.4999999999836
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Z.AI",
+        "latency": {
+          "p50": 1526,
+          "p75": 2062,
+          "p90": 2758.9999999999995,
+          "p99": 10303.039999999995
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3-235b-a22b-thinking-2507",
+    "family": "qwen",
+    "priceIn": 0.44999999999999996,
+    "priceOut": 3.5,
+    "context": 128000,
+    "structuredOutput": false,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 1222,
+          "p75": 1452.25,
+          "p90": 2319.5,
+          "p99": 3095.799999999998
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen3-235b-a22b-2507",
+    "family": "qwen",
+    "priceIn": 0.09,
+    "priceOut": 0.55,
+    "context": 262144,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "GMICloud"
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 548,
+          "p75": 890,
+          "p90": 1756.800000000001,
+          "p99": 6426.240000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Parasail",
+        "latency": {
+          "p50": 614,
+          "p75": 822,
+          "p90": 1127,
+          "p99": 2920.170000000002
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Venice",
+        "latency": {
+          "p50": 769,
+          "p75": 1006,
+          "p90": 1534.1000000000004,
+          "p99": 7031.190000000001
+        },
+        "uptime": 96.66666666666667
+      },
+      {
+        "name": "Nebius",
+        "latency": {
+          "p50": 527,
+          "p75": 732,
+          "p90": 1139,
+          "p99": 6041.590000000007
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 540,
+          "p75": 1100,
+          "p90": 1579,
+          "p99": 2970.5799999999936
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Google",
+        "latency": {
+          "p50": 576,
+          "p75": 1112,
+          "p90": 1546,
+          "p99": 2284.7000000000035
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "moonshotai/kimi-k2",
+    "family": "moonshotai",
+    "priceIn": 0.5700000000000001,
+    "priceOut": 2.3,
+    "context": 131072,
+    "structuredOutput": false,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1229,
+          "p75": 4506,
+          "p90": 11163.800000000003,
+          "p99": 86044.33999999985
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-r1-0528",
+    "family": "deepseek",
+    "priceIn": 0.5,
+    "priceOut": 2.1500000000000004,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 686,
+          "p75": 951.5,
+          "p90": 1366,
+          "p99": 3032.6600000000017
+        },
+        "uptime": 100
+      },
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1582,
+          "p75": 2272.25,
+          "p90": 5362.199999999999,
+          "p99": 11469.979999999992
+        },
+        "uptime": 100
+      },
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 3344,
+          "p75": 4201,
+          "p90": 4876.900000000001,
+          "p99": 11920.220000000052
+        },
+        "uptime": 92.85714285714286
+      },
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1159,
+          "p75": 1663.5,
+          "p90": 2594.800000000001,
+          "p99": 10358.479999999983
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "anthropic/claude-sonnet-4",
+    "family": "anthropic",
+    "priceIn": 3,
+    "priceOut": 15,
+    "context": 200000,
+    "structuredOutput": false,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1675,
+          "p75": 1807,
+          "p90": 2179.4000000000005,
+          "p99": 5988.600000000005
+        },
+        "uptime": 100
+      },
+      {
+        "name": "Amazon Bedrock",
+        "latency": {
+          "p50": 1035,
+          "p75": 1602.25,
+          "p90": 1998,
+          "p99": 4896.019999999979
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-chat-v3-0324",
+    "family": "deepseek",
+    "priceIn": 0.29,
+    "priceOut": 1.1400000000000001,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "SiliconFlow",
+        "latency": {
+          "p50": 1964,
+          "p75": 2285.25,
+          "p90": 2888.800000000001,
+          "p99": 8693.099999999997
+        },
+        "uptime": 100
+      },
+      {
+        "name": "GMICloud",
+        "latency": {
+          "p50": 1804,
+          "p75": 2176,
+          "p90": 2788.9000000000005,
+          "p99": 6383
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "qwen/qwen-plus",
+    "family": "qwen",
+    "priceIn": 0.26,
+    "priceOut": 0.78,
+    "context": 1000000,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "Alibaba",
+        "latency": {
+          "p50": 376.5,
+          "p75": 518.25,
+          "p90": 799.3,
+          "p99": 2921.560000000016
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-r1",
+    "family": "deepseek",
+    "priceIn": 0.7,
+    "priceOut": 2.5,
+    "context": 64000,
+    "structuredOutput": true,
+    "reasoning": true,
+    "free": false,
+    "providers": [
+      {
+        "name": "Novita",
+        "latency": {
+          "p50": 1234,
+          "p75": 1756.25,
+          "p90": 2677.8999999999996,
+          "p99": 10717.91000000001
+        },
+        "uptime": 100
+      }
+    ]
+  },
+  {
+    "id": "deepseek/deepseek-chat",
+    "family": "deepseek",
+    "priceIn": 0.32,
+    "priceOut": 0.8899999999999999,
+    "context": 163840,
+    "structuredOutput": true,
+    "reasoning": false,
+    "free": false,
+    "providers": [
+      {
+        "name": "StreamLake",
+        "latency": {
+          "p50": 1257,
+          "p75": 1521,
+          "p90": 2066.800000000001,
+          "p99": 5124.450000000001
+        },
+        "uptime": 100
+      },
+      {
+        "name": "DeepInfra",
+        "latency": {
+          "p50": 598,
+          "p75": 927,
+          "p90": 2004,
+          "p99": 9053.990000000002
+        },
+        "uptime": 100
+      }
+    ]
+  }
+]

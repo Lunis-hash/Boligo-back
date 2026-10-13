@@ -1,5 +1,13 @@
 import { PartnerTrackingService } from '../partners/partner-tracking.service';
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException, ForbiddenException, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -8,7 +16,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EmailService } from '../common/email.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { createHash, randomInt, timingSafeEqual } from 'crypto';
+import { createHash, randomInt, randomUUID, timingSafeEqual } from 'crypto';
+import { configuredInterviewVersion } from '../interview/questions.v82';
 import { meetingScopeAnswer } from '../interview/meeting-scope';
 import { AccountDeletionService } from '../account/account-deletion.service';
 
@@ -49,9 +58,16 @@ function parseBirthDate(value: string): Date | null {
   const raw = (value ?? '').trim();
   const dayOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
   if (dayOnly) {
-    const [y, m, d] = [Number(dayOnly[1]), Number(dayOnly[2]), Number(dayOnly[3])];
+    const [y, m, d] = [
+      Number(dayOnly[1]),
+      Number(dayOnly[2]),
+      Number(dayOnly[3]),
+    ];
     const date = new Date(Date.UTC(y, m - 1, d));
-    const exists = date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+    const exists =
+      date.getUTCFullYear() === y &&
+      date.getUTCMonth() === m - 1 &&
+      date.getUTCDate() === d;
     return exists ? date : null;
   }
   const date = new Date(raw);
@@ -62,7 +78,9 @@ function parseBirthDate(value: string): Date | null {
 function rethrowUniqueViolation(e: any): never {
   if (e?.code === 'P2002') {
     const target = String(e?.meta?.target ?? '');
-    throw new ConflictException(target.includes('telephone') ? PHONE_TAKEN_MESSAGE : EMAIL_TAKEN_MESSAGE);
+    throw new ConflictException(
+      target.includes('telephone') ? PHONE_TAKEN_MESSAGE : EMAIL_TAKEN_MESSAGE,
+    );
   }
   throw e;
 }
@@ -104,14 +122,20 @@ export class AuthService {
     }
     const now = new Date();
     if (birth.getTime() > now.getTime()) {
-      throw new BadRequestException('La date de naissance ne peut pas être dans le futur.');
+      throw new BadRequestException(
+        'La date de naissance ne peut pas être dans le futur.',
+      );
     }
     const age = ageInYears(birth, now);
     if (age < MIN_AGE) {
-      throw new BadRequestException('Vous devez avoir au moins 18 ans pour vous inscrire.');
+      throw new BadRequestException(
+        'Vous devez avoir au moins 18 ans pour vous inscrire.',
+      );
     }
     if (age > MAX_AGE) {
-      throw new BadRequestException('Date de naissance invalide : l’âge maximum accepté est de 99 ans.');
+      throw new BadRequestException(
+        'Date de naissance invalide : l’âge maximum accepté est de 99 ans.',
+      );
     }
 
     const email = normalizeEmail(dto.email);
@@ -127,7 +151,11 @@ export class AuthService {
     if (existingUser) {
       // Messages distincts : l'application propose la connexion pour un e-mail
       // déjà inscrit, et la correction du numéro pour un téléphone déjà utilisé.
-      if (dto.telephone && existingUser.telephone === dto.telephone && normalizeEmail(existingUser.email) !== email) {
+      if (
+        dto.telephone &&
+        existingUser.telephone === dto.telephone &&
+        normalizeEmail(existingUser.email) !== email
+      ) {
         throw new ConflictException(PHONE_TAKEN_MESSAGE);
       }
       throw new ConflictException(EMAIL_TAKEN_MESSAGE);
@@ -136,47 +164,56 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 12);
     const verificationCode = randomInt(1000, 10000).toString();
 
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        passwordHash: hashedPassword,
-        firstName: dto.firstName,
-        lastName: dto.lastName || '',
-        birthDate: birth,
-        gender: dto.gender,
-        city: dto.city,
-        telephone: dto.telephone,
-        isVerified: false,
-        verificationCode: verificationCode,
-        termsAcceptedAt: now,
-        termsVersion,
-        profile: {
-          create: {
-            displayedCity: dto.city || null,
-            profession: dto.profession || dto.job || null,
-          }, 
-        },
-        interviews: {
-          create: {
-            status: 'en_cours',
-            version: 1,
-            ...(dto.meetingScope
-              ? {
-                  responses: {
-                    create: {
-                      moduleNumber: 0,
-                      moduleName: 'Filtres non-négociables',
-                      rawResponses: {
-                        M0_Q02: meetingScopeAnswer(dto.meetingScope),
+    // Identifiant connu avant la création : la version du Grand Entretien
+    // (activation progressive par membre) est fixée dès l'inscription.
+    const userId = randomUUID();
+    const user = await this.prisma.user
+      .create({
+        data: {
+          id: userId,
+          email,
+          passwordHash: hashedPassword,
+          firstName: dto.firstName,
+          lastName: dto.lastName || '',
+          birthDate: birth,
+          gender: dto.gender,
+          city: dto.city,
+          telephone: dto.telephone,
+          isVerified: false,
+          verificationCode: verificationCode,
+          termsAcceptedAt: now,
+          termsVersion,
+          profile: {
+            create: {
+              displayedCity: dto.city || null,
+              profession: dto.profession || dto.job || null,
+            },
+          },
+          interviews: {
+            create: {
+              status: 'en_cours',
+              version: 1,
+              // Sans version, l'entretien serait lu en V7.1 quelle que soit la
+              // configuration (il ne contient que le périmètre de rencontre).
+              questionnaireVersion: configuredInterviewVersion(userId),
+              ...(dto.meetingScope
+                ? {
+                    responses: {
+                      create: {
+                        moduleNumber: 0,
+                        moduleName: 'Filtres non-négociables',
+                        rawResponses: {
+                          M0_Q02: meetingScopeAnswer(dto.meetingScope),
+                        },
                       },
                     },
-                  },
-                }
-              : {}),
+                  }
+                : {}),
+            },
           },
         },
-      },
-    }).catch(rethrowUniqueViolation);
+      })
+      .catch(rethrowUniqueViolation);
 
     // Arrivée par le lien d'un partenaire (?p=CODE) : jamais bloquant.
     if (dto.referralCode && this.partnerTracking) {
@@ -184,13 +221,16 @@ export class AuthService {
     }
 
     // Envoyer l'email OTP de validation de façon asynchrone (sans bloquer la réponse)
-    this.emailService.sendVerificationEmail(user.email, verificationCode).catch((e) => {
-      console.error('[AUTH] Erreur d\'envoi d\'email OTP:', e);
-    });
+    this.emailService
+      .sendVerificationEmail(user.email, verificationCode)
+      .catch((e) => {
+        console.error("[AUTH] Erreur d'envoi d'email OTP:", e);
+      });
 
     return {
       success: true,
-      message: 'Compte créé avec succès. Un code de vérification à 4 chiffres a été envoyé par e-mail.',
+      message:
+        'Compte créé avec succès. Un code de vérification à 4 chiffres a été envoyé par e-mail.',
       email: user.email,
       ...(OTP_DEBUG ? { otpDebugCode: verificationCode } : {}),
     };
@@ -248,7 +288,11 @@ export class AuthService {
 
     // Réponse identique que le compte existe ou non (pas d'énumération).
     if (!user || user.isVerified) {
-      return { success: true, message: 'Si un compte en attente existe, un nouveau code a été envoyé par e-mail.' };
+      return {
+        success: true,
+        message:
+          'Si un compte en attente existe, un nouveau code a été envoyé par e-mail.',
+      };
     }
 
     const verificationCode = randomInt(1000, 10000).toString();
@@ -259,45 +303,61 @@ export class AuthService {
     });
 
     try {
-      await this.emailService.sendVerificationEmail(user.email, verificationCode);
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        verificationCode,
+      );
     } catch (e) {
-      console.error('[AUTH] Erreur d\'envoi d\'email OTP:', e);
+      console.error("[AUTH] Erreur d'envoi d'email OTP:", e);
     }
 
-    return { success: true, message: 'Un nouveau code de vérification a été envoyé par e-mail.' };
+    return {
+      success: true,
+      message: 'Un nouveau code de vérification a été envoyé par e-mail.',
+    };
   }
 
   async login(dto: LoginDto) {
     const user = await this.findUserByEmail(dto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Adresse e-mail ou mot de passe incorrect.');
+      throw new UnauthorizedException(
+        'Adresse e-mail ou mot de passe incorrect.',
+      );
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash || '');
     if (!isMatch) {
-      throw new UnauthorizedException('Adresse e-mail ou mot de passe incorrect.');
+      throw new UnauthorizedException(
+        'Adresse e-mail ou mot de passe incorrect.',
+      );
     }
 
     if (user.accountStatus === 'suspendu') {
-      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
+      throw new ForbiddenException(
+        'Compte suspendu. Contactez le support BOLIGO.',
+      );
     }
 
     if (!user.isVerified) {
-      const verificationCode = user.verificationCode || randomInt(1000, 10000).toString();
+      const verificationCode =
+        user.verificationCode || randomInt(1000, 10000).toString();
       if (!user.verificationCode) {
         await this.prisma.user.update({
           where: { id: user.id },
           data: { verificationCode },
         });
       }
-      this.emailService.sendVerificationEmail(user.email, verificationCode).catch((e) => {
-        console.error('[AUTH] Erreur renvoi OTP lors du login:', e);
-      });
+      this.emailService
+        .sendVerificationEmail(user.email, verificationCode)
+        .catch((e) => {
+          console.error('[AUTH] Erreur renvoi OTP lors du login:', e);
+        });
 
       return {
         isVerified: false,
-        message: 'Votre compte doit être validé. Un code de vérification a été envoyé par e-mail.',
+        message:
+          'Votre compte doit être validé. Un code de vérification a été envoyé par e-mail.',
         email: user.email,
       };
     }
@@ -307,7 +367,7 @@ export class AuthService {
 
   async signToken(userId: string, email: string) {
     const payload = { sub: userId, email };
-    
+
     // Access token court (ex: 1 heure)
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
@@ -354,7 +414,9 @@ export class AuthService {
       throw new UnauthorizedException('Access Denied');
     }
     if (user.accountStatus === 'suspendu') {
-      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
+      throw new ForbiddenException(
+        'Compte suspendu. Contactez le support BOLIGO.',
+      );
     }
 
     // Les anciennes empreintes bcrypt ne sont plus acceptées : reconnexion requise.
@@ -370,19 +432,32 @@ export class AuthService {
     return this.accountDeletion.deleteUser(userId);
   }
 
-  async socialLogin(provider: 'google' | 'facebook', token: string, _profileDto?: unknown) {
+  async socialLogin(
+    provider: 'google' | 'facebook',
+    token: string,
+    _profileDto?: unknown,
+  ) {
     // Seule l'identité confirmée par Google / Facebook fait foi : le profil
     // envoyé par le client et les jetons « mock_ » sont ignorés.
-    if (!token || token.startsWith('mock_') || (provider !== 'google' && provider !== 'facebook')) {
+    if (
+      !token ||
+      token.startsWith('mock_') ||
+      (provider !== 'google' && provider !== 'facebook')
+    ) {
       throw new UnauthorizedException('Connexion sociale invalide.');
     }
-    const identity = provider === 'google' ? await this.verifyGoogleToken(token) : await this.verifyFacebookToken(token);
+    const identity =
+      provider === 'google'
+        ? await this.verifyGoogleToken(token)
+        : await this.verifyFacebookToken(token);
     const email = normalizeEmail(identity.email);
 
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [
-          provider === 'google' ? { googleId: identity.providerId } : { facebookId: identity.providerId },
+          provider === 'google'
+            ? { googleId: identity.providerId }
+            : { facebookId: identity.providerId },
           { email: { equals: email, mode: 'insensitive' } },
         ],
       },
@@ -396,12 +471,16 @@ export class AuthService {
       );
     }
     if (user.accountStatus === 'suspendu') {
-      throw new ForbiddenException('Compte suspendu. Contactez le support BOLIGO.');
+      throw new ForbiddenException(
+        'Compte suspendu. Contactez le support BOLIGO.',
+      );
     }
 
     const link: { googleId?: string; facebookId?: string } = {};
-    if (provider === 'google' && !user.googleId) link.googleId = identity.providerId;
-    if (provider === 'facebook' && !user.facebookId) link.facebookId = identity.providerId;
+    if (provider === 'google' && !user.googleId)
+      link.googleId = identity.providerId;
+    if (provider === 'facebook' && !user.facebookId)
+      link.facebookId = identity.providerId;
     if (Object.keys(link).length > 0) {
       await this.prisma.user.update({ where: { id: user.id }, data: link });
     }
@@ -415,24 +494,37 @@ export class AuthService {
    * permettrait de se connecter au compte de quelqu'un d'autre.
    */
   private async verifyGoogleToken(token: string) {
-    const allowed = (process.env.GOOGLE_CLIENT_IDS || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const allowed = (process.env.GOOGLE_CLIENT_IDS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (allowed.length === 0) {
-      throw new UnauthorizedException('La connexion avec Google n’est pas disponible.');
+      throw new UnauthorizedException(
+        'La connexion avec Google n’est pas disponible.',
+      );
     }
     try {
-      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(token)}`, {
-        signal: AbortSignal.timeout(8000),
-      });
+      const res = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(token)}`,
+        {
+          signal: AbortSignal.timeout(8000),
+        },
+      );
       const info: any = res.ok ? await res.json() : null;
-      const audienceOk = info && (allowed.includes(info.aud) || allowed.includes(info.azp));
-      const verified = info && (info.email_verified === true || info.email_verified === 'true');
+      const audienceOk =
+        info && (allowed.includes(info.aud) || allowed.includes(info.azp));
+      const verified =
+        info &&
+        (info.email_verified === true || info.email_verified === 'true');
       if (!audienceOk || !verified || !info.email || !info.sub) {
         throw new UnauthorizedException('Connexion sociale invalide.');
       }
       return { providerId: String(info.sub), email: String(info.email) };
     } catch (e) {
       if (e instanceof UnauthorizedException) throw e;
-      throw new UnauthorizedException('Vérification de la connexion sociale impossible.');
+      throw new UnauthorizedException(
+        'Vérification de la connexion sociale impossible.',
+      );
     }
   }
 
@@ -441,7 +533,9 @@ export class AuthService {
     const appId = process.env.FACEBOOK_APP_ID;
     const appSecret = process.env.FACEBOOK_APP_SECRET;
     if (!appId || !appSecret) {
-      throw new UnauthorizedException('La connexion avec Facebook n’est pas disponible.');
+      throw new UnauthorizedException(
+        'La connexion avec Facebook n’est pas disponible.',
+      );
     }
     try {
       const debug = await fetch(
@@ -449,20 +543,32 @@ export class AuthService {
         { signal: AbortSignal.timeout(8000) },
       );
       const check: any = debug.ok ? await debug.json() : null;
-      if (!check?.data?.is_valid || String(check.data.app_id) !== String(appId)) {
+      if (
+        !check?.data?.is_valid ||
+        String(check.data.app_id) !== String(appId)
+      ) {
         throw new UnauthorizedException('Connexion sociale invalide.');
       }
-      const me = await fetch(`https://graph.facebook.com/me?fields=id,email&access_token=${encodeURIComponent(token)}`, {
-        signal: AbortSignal.timeout(8000),
-      });
+      const me = await fetch(
+        `https://graph.facebook.com/me?fields=id,email&access_token=${encodeURIComponent(token)}`,
+        {
+          signal: AbortSignal.timeout(8000),
+        },
+      );
       const data: any = me.ok ? await me.json() : null;
-      if (!data?.id || !data?.email || String(data.id) !== String(check.data.user_id)) {
+      if (
+        !data?.id ||
+        !data?.email ||
+        String(data.id) !== String(check.data.user_id)
+      ) {
         throw new UnauthorizedException('Connexion sociale invalide.');
       }
       return { providerId: String(data.id), email: String(data.email) };
     } catch (e) {
       if (e instanceof UnauthorizedException) throw e;
-      throw new UnauthorizedException('Vérification de la connexion sociale impossible.');
+      throw new UnauthorizedException(
+        'Vérification de la connexion sociale impossible.',
+      );
     }
   }
 
@@ -470,7 +576,8 @@ export class AuthService {
     const user = await this.findUserByEmail(dto.email);
     const genericResponse = {
       success: true,
-      message: 'Si un compte est associé à cette adresse, un code de réinitialisation à 6 chiffres vient d’être envoyé.',
+      message:
+        'Si un compte est associé à cette adresse, un code de réinitialisation à 6 chiffres vient d’être envoyé.',
     };
 
     // Réponse identique que le compte existe ou non (pas d'énumération des membres).
@@ -500,7 +607,9 @@ export class AuthService {
     const user = await this.findUserByEmail(dto.email);
 
     if (!user || !user.resetCode || !user.resetCodeExpires) {
-      throw new BadRequestException('Demande de réinitialisation invalide ou expirée.');
+      throw new BadRequestException(
+        'Demande de réinitialisation invalide ou expirée.',
+      );
     }
 
     if (!safeEqual(user.resetCode, dto.code.trim())) {
@@ -508,7 +617,9 @@ export class AuthService {
     }
 
     if (new Date() > user.resetCodeExpires) {
-      throw new BadRequestException('Le code de réinitialisation a expiré. Veuillez refaire une demande.');
+      throw new BadRequestException(
+        'Le code de réinitialisation a expiré. Veuillez refaire une demande.',
+      );
     }
 
     // Hacher le nouveau mot de passe
@@ -527,7 +638,8 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
+      message:
+        'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
     };
   }
 }

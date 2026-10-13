@@ -1,3 +1,4 @@
+import { configuredInterviewVersion } from '../interview/questions.v82';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -192,6 +193,8 @@ export class ProfileService {
           userId,
           status: 'en_cours',
           version: 1,
+          // Version du Grand Entretien fixée dès la création (immuable).
+          questionnaireVersion: configuredInterviewVersion(userId),
           responses: { create: response },
         },
       });

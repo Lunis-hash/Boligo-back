@@ -77,10 +77,18 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         modelUsed: 'openrouter/free',
       });
 
-      const userContext = { firstName: 'Sarah', age: 28, gender: 'Femme', city: 'Paris' };
+      const userContext = {
+        firstName: 'Sarah',
+        age: 28,
+        gender: 'Femme',
+        city: 'Paris',
+      };
       const responses = [{ moduleNumber: 1, answers: { q1: 'La sincérité' } }];
 
-      const result = await service.generateProfileSynthesis(userContext, responses);
+      const result = await service.generateProfileSynthesis(
+        userContext,
+        responses,
+      );
 
       expect(result.synthesis).toBe(mockSynthesis.synthesis);
       expect(result.bio).toBe(mockSynthesis.bio);
@@ -99,24 +107,31 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         modelUsed: 'openrouter/free',
       });
 
-      const userContext = { firstName: 'Karim', age: 32, gender: 'Homme', city: 'Lyon' };
-      const responses = [{ moduleNumber: 1, answers: { q1: 'L\'engagement' } }];
+      const userContext = {
+        firstName: 'Karim',
+        age: 32,
+        gender: 'Homme',
+        city: 'Lyon',
+      };
+      const responses = [{ moduleNumber: 1, answers: { q1: "L'engagement" } }];
 
-      const result = await service.generateProfileSynthesis(userContext, responses);
+      const result = await service.generateProfileSynthesis(
+        userContext,
+        responses,
+      );
 
       expect(result.synthesis).toBe('Partielle');
       expect(result.bio).toBeDefined();
       expect(result.bio.length).toBeGreaterThan(5);
       expect(result.maturityScore).toBeGreaterThan(0);
     });
-
   });
 
   // =========================================================================
   // 💖 2. Cupidon IA — Score d'Affinité 6D & Matching
   // =========================================================================
   describe('💖 Cupidon IA', () => {
-    it('doit calculer les scores d\'affinité multi-dimensionnels', async () => {
+    it("doit calculer les scores d'affinité multi-dimensionnels", async () => {
       const mockScore = {
         globalScore: 89,
         summary: 'Excellente complémentarité sur les valeurs de vie.',
@@ -160,7 +175,11 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         suggestions: [
           { type: 'humor', label: 'Spontané', text: 'Une blague sympathique' },
           { type: 'deep', label: 'Profondeur', text: 'Quels sont tes rêves ?' },
-          { type: 'action', label: 'Rendez-vous', text: 'Un café cette semaine ?' },
+          {
+            type: 'action',
+            label: 'Rendez-vous',
+            text: 'Un café cette semaine ?',
+          },
         ],
         coachTip: 'Privilégie les questions ouvertes.',
       };
@@ -170,11 +189,9 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         modelUsed: 'openrouter/free',
       });
 
-      const result = await service.generateCoachSuggestions(
-        'Alex',
-        'Léa',
-        [{ sender: 'Léa', text: 'J\'adore voyager' }],
-      );
+      const result = await service.generateCoachSuggestions('Alex', 'Léa', [
+        { sender: 'Léa', text: "J'adore voyager" },
+      ]);
 
       expect(result.suggestions.length).toBe(3);
       expect(result.coachTip).toBe('Privilégie les questions ouvertes.');
@@ -190,13 +207,13 @@ describe('AiService (5 Intelligences Harmonie)', () => {
   // 🌱 4. Parcours Harmonie — Exercices Quotidiens
   // =========================================================================
   describe('🌱 Parcours Harmonie', () => {
-    it('doit générer l\'exercice relationnel du jour', async () => {
+    it("doit générer l'exercice relationnel du jour", async () => {
       const mockExercise = {
-        stepTitle: 'Les langages de l\'amour',
+        stepTitle: "Les langages de l'amour",
         theme: 'Connexion émotionnelle',
         durationMinutes: 5,
         reflectionPrompt: 'Quel est ton langage privilégié ?',
-        actionItem: 'Partage un moment d\'attention aujourd\'hui.',
+        actionItem: "Partage un moment d'attention aujourd'hui.",
       };
 
       (openRouterService.executeAgentPrompt as jest.Mock).mockResolvedValue({
@@ -204,9 +221,12 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         modelUsed: 'openrouter/free',
       });
 
-      const result = await service.generateParcoursExercise({ synthesis: 'Profil' }, 2);
+      const result = await service.generateParcoursExercise(
+        { synthesis: 'Profil' },
+        2,
+      );
 
-      expect(result.stepTitle).toBe('Les langages de l\'amour');
+      expect(result.stepTitle).toBe("Les langages de l'amour");
       expect(result.durationMinutes).toBe(5);
       expect(openRouterService.executeAgentPrompt).toHaveBeenCalledWith(
         'parcours',
@@ -226,7 +246,9 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         modelUsed: 'nvidia/nemotron-3.5-content-safety:free',
       });
 
-      const result = await service.moderateChatMessage('Bonjour, j\'ai adoré échanger avec toi !');
+      const result = await service.moderateChatMessage(
+        "Bonjour, j'ai adoré échanger avec toi !",
+      );
       expect(result.allowed).toBe(true);
     });
 
@@ -240,7 +262,9 @@ describe('AiService (5 Intelligences Harmonie)', () => {
         modelUsed: 'nvidia/nemotron-3.5-content-safety:free',
       });
 
-      const result = await service.moderateChatMessage('Tu es insupportable dégage');
+      const result = await service.moderateChatMessage(
+        'Tu es insupportable dégage',
+      );
       expect(result.allowed).toBe(false);
       expect(result.category).toBe('harassment');
     });

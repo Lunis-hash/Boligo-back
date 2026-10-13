@@ -7,7 +7,21 @@ import {
   OpenRouterAgent,
   OpenRouterRole,
 } from './openrouter.config';
-import { modelFamily, parseModelList } from './groq-model';
+import { parseModelList, sameFamily } from './groq-model';
+import {
+  SondeurRole,
+  modelsFor,
+  qualification,
+  restrictToQualified,
+  sondeurGenerationEnabled,
+} from './sondeur-router';
+
+/** Rôle du Sondeur porté par chaque rôle OpenRouter (hors usages courants). */
+const SONDEUR_ROLE: Partial<Record<OpenRouterRole, SondeurRole>> = {
+  quality: 'writer',
+  critic: 'critic',
+  escalation: 'escalation',
+};
 
 const OPENROUTER_TIMEOUT_MS = 20_000;
 /** La liste des modèles et leurs prix sont relus toutes les six heures. */
@@ -15,6 +29,49 @@ const CATALOG_TTL_MS = 6 * 60 * 60 * 1000;
 /** Adresse de l'API ; OPENROUTER_BASE_URL ne sert qu'aux essais locaux. */
 const api = () =>
   process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+
+/**
+ * Authentification OpenRouter : clé dans OPENROUTER_API_KEY, ou secret réseau
+ * (OPENROUTER_AUTH=proxy) ajouté par le proxy sortant. Dans ce second cas,
+ * aucun en-tête n'est envoyé : le proxy pose lui-même Authorization. Le fetch
+ * de Node n'emprunte HTTPS_PROXY qu'avec NODE_USE_ENV_PROXY=1 ; sans lui,
+ * l'appel part en direct et OpenRouter répond 401.
+ */
+export function openRouterAuthAvailable(): boolean {
+  return (
+    !!process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_AUTH === 'proxy'
+  );
+}
+
+/**
+ * Erreur de compte OpenRouter (401 authentification, 402 crédits épuisés) :
+ * elle touche tous les modèles, inutile d'essayer les suivants.
+ */
+export class OpenRouterAccountError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'OpenRouterAccountError';
+  }
+}
+
+let lastAccountError: OpenRouterAccountError | null = null;
+
+/** Dernière erreur de compte rencontrée (le banc d'essai s'arrête dessus). */
+export function openRouterAccountError(): OpenRouterAccountError | null {
+  return lastAccountError;
+}
+
+export function resetOpenRouterAccountError(): void {
+  lastAccountError = null;
+}
+
+export function openRouterAuthHeaders(): Record<string, string> {
+  const key = process.env.OPENROUTER_API_KEY;
+  return key ? { Authorization: `Bearer ${key}` } : {};
+}
 
 export interface OpenRouterChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -38,8 +95,10 @@ export interface OpenRouterCallOptions {
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
-  /** Rédacteur à écarter : le relecteur est d'une autre famille. */
-  avoidModel?: string;
+  /** Rédacteur (et premier relecteur) à écarter : autre famille. */
+  avoidModel?: string | readonly string[];
+  /** Rédaction du Sondeur : modèles qualifiés seulement (fail-closed). */
+  sondeurWriting?: boolean;
 }
 
 /** Prix d'un modèle en dollars par million de jetons. */
@@ -70,12 +129,16 @@ export function maxPrice(): ModelPrice {
 /**
  * Modèles « à raisonnement » : réflexion bornée pour ne pas tronquer le JSON ;
  * le relecteur réfléchit davantage (il juge chaque question sur 20 règles).
+ * Sans cette borne, certains modèles (Claude Sonnet 5.5, DeepSeek) consomment
+ * tout max_tokens en réflexion et rendent une réponse vide (fin : length).
  */
-function reasoningFor(
+export function reasoningFor(
   model: string,
   role: OpenRouterRole = 'default',
 ): Record<string, unknown> {
-  return /^openai\/(gpt-5|o\d|gpt-oss)/.test(model)
+  return /^(openai\/(gpt-5|gpt-6|o\d|gpt-oss)|anthropic\/|~?deepseek\/|qwen\/|z-ai\/|moonshotai\/)/.test(
+    model,
+  )
     ? {
         reasoning: {
           effort: role === 'critic' ? 'medium' : 'low',
@@ -91,10 +154,6 @@ export class OpenRouterService {
   private catalog: { at: number; prices: Map<string, ModelPrice> } | null =
     null;
 
-  private get apiKey(): string | undefined {
-    return process.env.OPENROUTER_API_KEY || undefined;
-  }
-
   /**
    * Modèles ouverts au compte et leur prix réel (dollars par million de
    * jetons). null si la liste est injoignable : le prix plafond reste alors
@@ -107,7 +166,7 @@ export class OpenRouterService {
     try {
       const res = await fetch(`${api()}/models`, {
         signal: AbortSignal.timeout(10_000),
-        headers: this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {},
+        headers: openRouterAuthHeaders(),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = (await res.json()) as {
@@ -142,17 +201,53 @@ export class OpenRouterService {
    * préférences ; jamais gratuits ; présents au catalogue et sous le prix
    * plafond quand le catalogue est connu.
    */
-  async candidates(role: OpenRouterRole, avoid?: string): Promise<string[]> {
-    const wanted = [
-      ...parseModelList(process.env[OPENROUTER_MODEL_ENV[role]]),
-      ...OPENROUTER_PREFERENCES[role],
-    ];
+  async candidates(
+    role: OpenRouterRole,
+    avoid?: string | readonly string[],
+    /** Rédaction du Sondeur : modèles qualifiés seulement (fail-closed). */
+    opts: { sondeurWriting?: boolean } = {},
+  ): Promise<string[]> {
+    // Rôles du Sondeur : modèles qualifiés par le banc d'essai (routeur) ;
+    // une variable d'environnement ne peut choisir qu'un modèle qualifié.
+    const sondeurRole = SONDEUR_ROLE[role];
+    const env = parseModelList(process.env[OPENROUTER_MODEL_ENV[role]]);
+    if (opts.sondeurWriting) {
+      // Rédaction du Sondeur : rôle du Sondeur obligatoire, IA activée par
+      // la qualification, aucun modèle historique ni provisoire.
+      if (!sondeurRole || !sondeurGenerationEnabled()) return [];
+      const strict = [
+        ...restrictToQualified(env, sondeurRole),
+        ...modelsFor(sondeurRole, { avoid, strict: true }).models,
+        ...(sondeurRole === 'writer'
+          ? modelsFor('fallback', { avoid, strict: true }).models
+          : []),
+      ];
+      return this.priced(strict, avoid);
+    }
+    const wanted = sondeurRole
+      ? [
+          ...restrictToQualified(env, sondeurRole),
+          ...modelsFor(sondeurRole, { avoid }).models,
+          // Rédacteur indisponible : secours qualifié (jamais un modèle non mesuré).
+          ...(sondeurRole === 'writer' && qualification()
+            ? modelsFor('fallback', { avoid }).models
+            : []),
+        ]
+      : [...env, ...OPENROUTER_PREFERENCES[role]];
+    return this.priced(wanted, avoid);
+  }
+
+  /** Sans doublon, jamais gratuit, au catalogue et sous le prix plafond. */
+  private async priced(
+    wanted: string[],
+    avoid?: string | readonly string[],
+  ): Promise<string[]> {
     const cap = maxPrice();
     const catalog = await this.catalogPrices();
     const out: string[] = [];
     for (const model of wanted) {
       if (out.includes(model) || /:free$/.test(model)) continue;
-      if (avoid && modelFamily(model) === modelFamily(avoid)) continue;
+      if (sameFamily(model, avoid)) continue;
       if (catalog) {
         const price = catalog.get(model);
         if (!price) continue;
@@ -179,12 +274,14 @@ export class OpenRouterService {
     messages: OpenRouterChatMessage[],
     options: OpenRouterCallOptions = {},
   ): Promise<OpenRouterResponse> {
-    if (!this.apiKey) {
+    if (!openRouterAuthAvailable()) {
       throw new Error(`[OpenRouter] Clé API absente pour l'agent ${agentName}`);
     }
     const defaults = AGENT_DEFAULTS[agentName];
     const role = options.role ?? 'default';
-    const models = await this.candidates(role, options.avoidModel);
+    const models = await this.candidates(role, options.avoidModel, {
+      sondeurWriting: options.sondeurWriting,
+    });
     if (models.length === 0) {
       throw new Error(
         `[OpenRouter] Aucun modèle disponible sous le prix plafond pour le rôle ${role}`,
@@ -206,7 +303,7 @@ export class OpenRouterService {
           // Un modèle qui ne répond pas ne doit pas bloquer la requête du membre.
           signal: AbortSignal.timeout(Math.min(perCall, left)),
           headers: {
-            Authorization: `Bearer ${this.apiKey}`,
+            ...openRouterAuthHeaders(),
             'HTTP-Referer':
               process.env.APP_URL || 'https://boligo-web.onrender.com',
             'X-Title': 'BOLIGO',
@@ -233,17 +330,28 @@ export class OpenRouterService {
 
         if (!response.ok) {
           const errorText = await response.text();
+          if (response.status === 401 || response.status === 402)
+            throw new OpenRouterAccountError(
+              response.status,
+              `HTTP ${response.status}: ${errorText.slice(0, 200)}`,
+            );
           throw new Error(
             `HTTP ${response.status}: ${errorText.slice(0, 200)}`,
           );
         }
 
         const data = (await response.json()) as {
-          choices?: Array<{ message?: { content?: string } }>;
+          choices?: Array<{
+            message?: { content?: string };
+            finish_reason?: string;
+          }>;
           usage?: OpenRouterResponse['usage'];
         };
         const content = data.choices?.[0]?.message?.content ?? '';
-        if (!content) throw new Error('Réponse vide retournée par le modèle');
+        if (!content)
+          throw new Error(
+            `Réponse vide retournée par le modèle (fin : ${data.choices?.[0]?.finish_reason ?? 'inconnue'}, jetons : ${data.usage?.completion_tokens ?? '?'})`,
+          );
 
         return { content, modelUsed: model, usage: data.usage };
       } catch (error) {
@@ -251,6 +359,13 @@ export class OpenRouterService {
         this.logger.warn(
           `⚠️ [OpenRouter] ${agentName} : échec du modèle ${model} (${lastError.message}).`,
         );
+        if (error instanceof OpenRouterAccountError) {
+          lastAccountError = error;
+          throw new OpenRouterAccountError(
+            error.status,
+            `[OpenRouter] Erreur de compte, aucun autre modèle essayé : ${error.message}`,
+          );
+        }
       }
     }
 

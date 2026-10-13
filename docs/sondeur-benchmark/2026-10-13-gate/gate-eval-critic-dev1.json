@@ -1,0 +1,422 @@
+{
+  "anthropic/claude-sonnet-5.5": {
+    "Q005": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q007": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q009": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q124": {
+      "ok": true,
+      "rule": null
+    },
+    "Q011": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q220": {
+      "ok": true,
+      "rule": null
+    },
+    "Q014": {
+      "ok": true,
+      "rule": null
+    },
+    "Q047": {
+      "ok": true,
+      "rule": null
+    },
+    "Q215": {
+      "ok": false,
+      "rule": 14
+    },
+    "Q333": {
+      "ok": true,
+      "rule": null
+    },
+    "Q024": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q241": {
+      "ok": true,
+      "rule": null
+    },
+    "Q323": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q030": {
+      "ok": false,
+      "rule": 4
+    },
+    "Q037": {
+      "ok": false,
+      "rule": 4
+    },
+    "Q170": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q330": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q048": {
+      "ok": true,
+      "rule": null
+    },
+    "Q050": {
+      "ok": true,
+      "rule": null
+    },
+    "Q127": {
+      "ok": true,
+      "rule": null
+    },
+    "Q204": {
+      "ok": true,
+      "rule": null
+    },
+    "Q055": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q271": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q329": {
+      "ok": true,
+      "rule": null
+    },
+    "Q077": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q164": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q100": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q102": {
+      "ok": false,
+      "rule": 5
+    },
+    "Q197": {
+      "ok": true,
+      "rule": null
+    },
+    "Q103": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q284": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q117": {
+      "ok": true,
+      "rule": null
+    },
+    "Q122": {
+      "ok": true,
+      "rule": null
+    },
+    "Q254": {
+      "ok": true,
+      "rule": null
+    },
+    "Q312": {
+      "ok": false,
+      "rule": 4
+    },
+    "Q129": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q138": {
+      "ok": true,
+      "rule": null
+    },
+    "Q224": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q145": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q301": {
+      "ok": true,
+      "rule": null
+    },
+    "Q165": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q176": {
+      "ok": true,
+      "rule": null
+    },
+    "Q283": {
+      "ok": true,
+      "rule": null
+    },
+    "Q212": {
+      "ok": false,
+      "rule": 13
+    },
+    "Q287": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q338": {
+      "ok": false,
+      "rule": 19
+    },
+    "Q221": {
+      "ok": false,
+      "rule": 1
+    },
+    "Q255": {
+      "ok": true,
+      "rule": null
+    },
+    "Q267": {
+      "ok": false,
+      "rule": 2
+    },
+    "Q266": {
+      "ok": false,
+      "rule": 8
+    },
+    "Q289": {
+      "ok": true,
+      "rule": null
+    },
+    "Q321": {
+      "ok": false,
+      "rule": 4
+    }
+  },
+  "z-ai/glm-5.3-flash": {
+    "Q005": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q007": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q009": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q124": {
+      "ok": true,
+      "rule": null
+    },
+    "Q011": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q220": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q014": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q047": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q215": {
+      "ok": true,
+      "rule": null
+    },
+    "Q333": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q024": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q241": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q323": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q030": {
+      "ok": true,
+      "rule": null
+    },
+    "Q037": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q170": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q330": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q048": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q050": {
+      "ok": true,
+      "rule": null
+    },
+    "Q127": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q204": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q055": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q271": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q329": {
+      "ok": false,
+      "rule": 8
+    },
+    "Q077": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q164": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q100": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q102": {
+      "ok": true,
+      "rule": null
+    },
+    "Q197": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q103": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q284": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q117": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q122": {
+      "ok": false,
+      "rule": 1
+    },
+    "Q254": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q312": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q129": {
+      "ok": false,
+      "rule": 5
+    },
+    "Q138": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q224": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q145": {
+      "ok": false,
+      "rule": 11
+    },
+    "Q301": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q165": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q176": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q283": {
+      "ok": false,
+      "rule": 8
+    },
+    "Q212": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q287": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q338": {
+      "ok": false,
+      "rule": 12
+    },
+    "Q221": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q255": {
+      "ok": false,
+      "rule": 17
+    },
+    "Q267": {
+      "ok": false,
+      "rule": 20
+    },
+    "Q266": {
+      "ok": false,
+      "rule": 8
+    },
+    "Q289": {
+      "ok": false,
+      "rule": 3
+    },
+    "Q321": {
+      "ok": false,
+      "rule": 3
+    }
+  }
+}

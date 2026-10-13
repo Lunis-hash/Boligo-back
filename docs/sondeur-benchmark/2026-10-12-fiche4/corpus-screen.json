@@ -1,0 +1,2848 @@
+[
+  {
+    "id": "T50125",
+    "seed": 50125,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "enfants",
+      "intimité"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Accueillir les enfants de l’autre",
+        "a": "Cela me convient, s'ils ne vivent pas avec nous à plein temps",
+        "b": "Avec moi, la plupart du temps"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Désir d'enfants",
+        "a": "Je ne suis pas certain(e)",
+        "b": "Oui, absolument"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "L'intimité avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "Les traditions dans le futur foyer",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Protéger l’autre face à un proche",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Choisir entre famille et couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50402",
+    "seed": 50402,
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "topics": [
+      "argent"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Épargne et dépenses",
+        "a": "J'en mets presque tout de côté",
+        "b": "Je la dépense surtout pour mes envies du moment"
+      },
+      {
+        "id": "E2",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "La place de la famille dans les décisions",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "L’éducation des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "La transparence sur les dettes",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "Le besoin de pause de l’autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "Le soutien quand l’autre perd son emploi",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Le niveau de vie face à un projet commun",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50395",
+    "seed": 50395,
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "topics": [
+      "religion",
+      "enfants",
+      "famille",
+      "communication",
+      "culture"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Religion des enfants",
+        "a": "Sans éducation religieuse",
+        "b": "Dans ma religion, c'est indispensable"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Disputes dans la famille d’origine",
+        "a": "Par des cris ou des disputes qui revenaient souvent",
+        "b": "Par des cris ou des disputes qui revenaient souvent"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "Le lieu de vie dans cinq ans",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "L'intimité avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Le soutien quand l’autre perd son emploi",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Protéger l’autre face à un proche",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "L’engagement dans une période difficile",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50602",
+    "seed": 50602,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "lieu de vie",
+      "mode de vie"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Déménager pour le couple",
+        "a": "Oui, si le projet de vie est solide",
+        "b": "Non, je reste où je suis"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Alcool",
+        "a": "Acceptable s'il reste occasionnel",
+        "b": "Chaque semaine"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "La présence d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "Les traditions dans le futur foyer",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Le soutien quand l’autre perd son emploi",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Le niveau de vie face à un projet commun",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "Choisir entre famille et couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E33",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50603",
+    "seed": 50603,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "carrière",
+      "mode de vie"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Le soutien quand l’autre perd son emploi",
+        "a": "Nous établirions ensemble un plan et des limites tenables",
+        "b": "Je ne pourrais pas envisager une dépendance financière prolongée"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Tabac",
+        "a": "Acceptable s'il reste occasionnel",
+        "b": "Oui, régulièrement"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "Le lieu de vie dans cinq ans",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "La place de la famille dans les décisions",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "L’éducation des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "Le délai d'engagement",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Le besoin de pause de l’autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E33",
+        "kind": "convergence",
+        "topic": "Protéger l’autre face à un proche",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E34",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E35",
+        "kind": "convergence",
+        "topic": "L’engagement dans une période difficile",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50643",
+    "seed": 50643,
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "topics": [
+      "temps de couple",
+      "enfants"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Accueillir les enfants de l’autre",
+        "a": "Je préférerais l'éviter",
+        "b": "En résidence alternée"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Le temps à soi dans le couple",
+        "a": "Pas du tout d’accord",
+        "b": "Plutôt d’accord"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "Le lieu de vie dans cinq ans",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "La place de la famille dans les décisions",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "L’éducation des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "Le partage des tâches de la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "La transparence sur les dettes",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "L'intimité avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "Le délai d'engagement",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E33",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E34",
+        "kind": "convergence",
+        "topic": "Le soutien quand l’autre perd son emploi",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E35",
+        "kind": "convergence",
+        "topic": "Le niveau de vie face à un projet commun",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E36",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E37",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50650",
+    "seed": 50650,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "famille",
+      "enfants"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Accueillir les enfants de l’autre",
+        "a": "Je ne pourrais pas l'accepter",
+        "b": "Avec moi, la plupart du temps"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Famille recomposée",
+        "a": "Un parent à part entière, sans distinction entre les enfants",
+        "b": "Une présence bienveillante, sans autorité parentale directe"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "Le lieu de vie dans cinq ans",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La place de la famille dans les décisions",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "L’éducation des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "La transparence sur les dettes",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "L'intimité avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Les traditions dans le futur foyer",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "Choisir entre famille et couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E33",
+        "kind": "convergence",
+        "topic": "L’engagement dans une période difficile",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50786",
+    "seed": 50786,
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "topics": [
+      "intimité",
+      "enfants",
+      "argent"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Jeux d’argent",
+        "a": "Je ne pourrais pas l'accepter, même rarement",
+        "b": "Chaque semaine"
+      },
+      {
+        "id": "E2",
+        "kind": "divergence",
+        "topic": "Désir d'enfants",
+        "a": "Oui, si les conditions sont réunies",
+        "b": "Non, c'est définitif"
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "Le lieu de vie dans cinq ans",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "L’éducation des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "L'intimité avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "La prise de décision",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Les traditions dans le futur foyer",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Le partage des tâches et des rôles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Le soutien quand l’autre perd son emploi",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "Choisir entre famille et couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E33",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T51094",
+    "seed": 51094,
+    "scenario": "aucun_ecart",
+    "lang": "fr",
+    "topics": [
+      "aucun_ecart"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E2",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E3",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "La limite face à la violence physique",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "Le besoin de pause de l’autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "Protéger l’autre face à un proche",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  },
+  {
+    "id": "T50000",
+    "seed": 50000,
+    "scenario": "securite",
+    "lang": "fr",
+    "topics": [
+      "securite",
+      "enfants",
+      "mode de vie"
+    ],
+    "gaps": [
+      {
+        "id": "E1",
+        "kind": "divergence",
+        "topic": "Tabac",
+        "a": "Je ne pourrais pas vivre avec",
+        "b": "Oui, régulièrement"
+      },
+      {
+        "id": "E2",
+        "kind": "safety",
+        "topic": "Limite face à la violence physique",
+        "a": "Je ne sais pas comment je réagirais",
+        "b": "Je ne sais pas comment je réagirais"
+      },
+      {
+        "id": "E3",
+        "kind": "divergence",
+        "topic": "Accueillir les enfants de l’autre",
+        "a": "Je ne pourrais pas l'accepter",
+        "b": "Ils sont majeurs ou autonomes"
+      },
+      {
+        "id": "E4",
+        "kind": "convergence",
+        "topic": "Déménager pour le couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E5",
+        "kind": "convergence",
+        "topic": "Le désir d'enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E6",
+        "kind": "convergence",
+        "topic": "La place du beau-parent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E7",
+        "kind": "convergence",
+        "topic": "La place de la famille dans les décisions",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E8",
+        "kind": "convergence",
+        "topic": "La fréquence des visites familiales",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E9",
+        "kind": "convergence",
+        "topic": "Les punitions corporelles",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E10",
+        "kind": "convergence",
+        "topic": "La dot",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E11",
+        "kind": "convergence",
+        "topic": "L'organisation de l'argent du couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E12",
+        "kind": "convergence",
+        "topic": "Le rapport à l’épargne",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E13",
+        "kind": "convergence",
+        "topic": "L'aide financière à la famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E14",
+        "kind": "convergence",
+        "topic": "La polygamie",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E15",
+        "kind": "convergence",
+        "topic": "La définition de l’infidélité",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E16",
+        "kind": "convergence",
+        "topic": "La tendresse au quotidien",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E17",
+        "kind": "convergence",
+        "topic": "L'accès au téléphone de l'autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E18",
+        "kind": "convergence",
+        "topic": "Le rythme de l’attirance",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E19",
+        "kind": "convergence",
+        "topic": "La limite face aux mots blessants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E20",
+        "kind": "convergence",
+        "topic": "L’objectif de la rencontre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E21",
+        "kind": "convergence",
+        "topic": "La vie commune avant le mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E22",
+        "kind": "convergence",
+        "topic": "La religion",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E23",
+        "kind": "convergence",
+        "topic": "La pratique religieuse",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E24",
+        "kind": "convergence",
+        "topic": "Les habitudes alimentaires",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E25",
+        "kind": "convergence",
+        "topic": "Les cérémonies du mariage",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E26",
+        "kind": "convergence",
+        "topic": "La religion des enfants",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E27",
+        "kind": "convergence",
+        "topic": "Le besoin de pause de l’autre",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E28",
+        "kind": "convergence",
+        "topic": "Décider face à une famille qui désapprouve",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E29",
+        "kind": "convergence",
+        "topic": "Accueillir un proche à la maison",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E30",
+        "kind": "convergence",
+        "topic": "Choisir entre famille et couple",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E31",
+        "kind": "convergence",
+        "topic": "Vivre un jour dans un autre pays",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "E32",
+        "kind": "convergence",
+        "topic": "L’engagement dans une période difficile",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-famille",
+        "kind": "neutral",
+        "topic": "famille",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-argent",
+        "kind": "neutral",
+        "topic": "argent",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-spiritualite",
+        "kind": "neutral",
+        "topic": "spiritualite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-intimite",
+        "kind": "neutral",
+        "topic": "intimite",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-communication",
+        "kind": "neutral",
+        "topic": "communication",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-projet",
+        "kind": "neutral",
+        "topic": "projet",
+        "a": null,
+        "b": null
+      },
+      {
+        "id": "N-lieu",
+        "kind": "neutral",
+        "topic": "lieu",
+        "a": null,
+        "b": null
+      }
+    ]
+  }
+]

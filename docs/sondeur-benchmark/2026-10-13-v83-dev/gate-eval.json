@@ -1,0 +1,209 @@
+[
+  {
+    "split": "dev3",
+    "chain": "contrôle seul",
+    "faulty": 159,
+    "valid": 92,
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0.9565217391304348,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "fake_gap": {
+        "n": 13,
+        "rejected": 13
+      },
+      "wrong_partner_position": {
+        "n": 11,
+        "rejected": 11
+      },
+      "presupposition": {
+        "n": 12,
+        "rejected": 12
+      },
+      "off_frame": {
+        "n": 10,
+        "rejected": 10
+      },
+      "invented_fact": {
+        "n": 11,
+        "rejected": 11
+      },
+      "safety_violence": {
+        "n": 11,
+        "rejected": 11
+      },
+      "en_mismatch": {
+        "n": 12,
+        "rejected": 12
+      },
+      "jargon_diagnosis": {
+        "n": 11,
+        "rejected": 11
+      },
+      "intrusive": {
+        "n": 11,
+        "rejected": 11
+      },
+      "two_ideas": {
+        "n": 11,
+        "rejected": 11
+      },
+      "one_sided_effort": {
+        "n": 11,
+        "rejected": 11
+      },
+      "answer_leak": {
+        "n": 12,
+        "rejected": 12
+      },
+      "unrelated_slot": {
+        "n": 12,
+        "rejected": 12
+      },
+      "moralizing": {
+        "n": 11,
+        "rejected": 11
+      }
+    },
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "D005",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D021",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur l'alcool ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D183",
+        "text": "Si vos positions sur le poids de l'avis familial ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "D246",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "dev3",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 159,
+    "valid": 92,
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0.9456521739130435,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "fake_gap": {
+        "n": 13,
+        "rejected": 13
+      },
+      "wrong_partner_position": {
+        "n": 11,
+        "rejected": 11
+      },
+      "presupposition": {
+        "n": 12,
+        "rejected": 12
+      },
+      "off_frame": {
+        "n": 10,
+        "rejected": 10
+      },
+      "invented_fact": {
+        "n": 11,
+        "rejected": 11
+      },
+      "safety_violence": {
+        "n": 11,
+        "rejected": 11
+      },
+      "en_mismatch": {
+        "n": 12,
+        "rejected": 12
+      },
+      "jargon_diagnosis": {
+        "n": 11,
+        "rejected": 11
+      },
+      "intrusive": {
+        "n": 11,
+        "rejected": 11
+      },
+      "two_ideas": {
+        "n": 11,
+        "rejected": 11
+      },
+      "one_sided_effort": {
+        "n": 11,
+        "rejected": 11
+      },
+      "answer_leak": {
+        "n": 12,
+        "rejected": 12
+      },
+      "unrelated_slot": {
+        "n": 12,
+        "rejected": 12
+      },
+      "moralizing": {
+        "n": 11,
+        "rejected": 11
+      }
+    },
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "D005",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D019",
+        "text": "Si la transmission d'une foi restait une question ouverte entre vous, combien d'années pourriez-vous l'accepter ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 12,
+          "reason": "Invite à tolérer un point non négociable (foi des enfants) sur la durée",
+          "excerpt": "combien d'années pourriez-vous l'accepter"
+        }
+      },
+      {
+        "id": "D021",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur l'alcool ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "D183",
+        "text": "Si vos positions sur le poids de l'avis familial ne bougeaient jamais, pourriez-vous vous engager quand même ?",
+        "gate": [
+          "P8 forme"
+        ]
+      },
+      {
+        "id": "D246",
+        "text": "Combien de mois pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      }
+    ]
+  }
+]

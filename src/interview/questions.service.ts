@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  QUESTIONS,
-  Question,
-  QuestionDependency,
-  dependencyMet,
-} from './questions.data';
+import { Question, QuestionDependency, dependencyMet } from './questions.data';
 import { InterviewLanguage, localizeQuestion } from './questions.en';
 import { languageChoices } from './country-languages';
 import { isSensitiveQuestion } from './sensitive-questions';
+import {
+  InterviewVersion,
+  configuredInterviewVersion,
+  interviewVersionOf,
+  localizeV82Question,
+  questionnaire,
+} from './questions.v82';
 
 /** Question applicable à ce membre, hors dépendances (âge, genre, accord). */
 function applicable(
@@ -42,8 +44,10 @@ export function pendingQuestions(
   gender: string | null | undefined,
   /** Le membre a refusé les questions sensibles : elles ne sont plus posées. */
   skipSensitive = false,
+  /** Version enregistrée de l'entretien (V8.2 : immuable). */
+  version: InterviewVersion = interviewVersionOf(answers),
 ): Question[] {
-  return QUESTIONS.filter(
+  return questionnaire(version).filter(
     (q) =>
       applicable(q, moduleNumber, answers, age, gender, skipSensitive) &&
       // Dépendances (dependsOn) : l'une au moins doit être remplie.
@@ -73,10 +77,11 @@ export function moduleQuestions(
   age: number,
   gender: string | null | undefined,
   skipSensitive = false,
+  version: InterviewVersion = interviewVersionOf(answers),
 ): ModuleQuestion[] {
   const out: ModuleQuestion[] = [];
   const askable = new Set<string>();
-  for (const q of QUESTIONS) {
+  for (const q of questionnaire(version)) {
     if (!applicable(q, moduleNumber, answers, age, gender, skipSensitive))
       continue;
     if (dependencyMet(q.rules, answers)) {
@@ -123,10 +128,18 @@ export class QuestionsService {
     if (!user) return [];
 
     // Récupérer toutes les réponses précédentes pour gérer les dépendances (dependsOn)
-    const interview = await this.prisma.interviewIA.findFirst({
-      where: { userId, status: 'en_cours' },
-      include: { responses: true },
-    });
+    // Entretien en cours, sinon le dernier terminé (même version, mêmes
+    // réponses : rien n'est resservi d'une autre version après la fin).
+    const interview =
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'en_cours' },
+        include: { responses: true },
+      })) ??
+      (await this.prisma.interviewIA.findFirst({
+        where: { userId, status: 'termine' },
+        orderBy: { startDate: 'desc' },
+        include: { responses: true },
+      }));
 
     const allRawResponses: Record<string, string> = {};
     if (interview) {
@@ -139,15 +152,27 @@ export class QuestionsService {
     // Filtrage dynamique, puis langue d'affichage (les clés de réponse ne changent pas).
     // Une question sensible est signalée : l'app demande l'accord avant de la poser.
     // Les questions de suite du même module arrivent avec leur condition (askIf).
+    // Version enregistrée de l'entretien ; sans entretien, celle qu'en
+    // recevrait un nouveau (aperçu, rien n'est créé ici).
+    const version = interview
+      ? interviewVersionOf(allRawResponses, interview.questionnaireVersion)
+      : configuredInterviewVersion(userId);
     return moduleQuestions(
       moduleNumber,
       allRawResponses,
       ageFromBirthDate(user.birthDate),
       user.gender,
       user.sensitiveConsent === false,
+      version,
     )
       .map((q) => ({
-        ...withSuggestion(localizeQuestion(q, lang), user.city, lang),
+        ...withSuggestion(
+          version === '8.2'
+            ? localizeV82Question(q, lang)
+            : localizeQuestion(q, lang),
+          user.city,
+          lang,
+        ),
         ...(q.askIf ? { askIf: q.askIf } : {}),
       }))
       .map((q) => (isSensitiveQuestion(q.id) ? { ...q, sensitive: true } : q));

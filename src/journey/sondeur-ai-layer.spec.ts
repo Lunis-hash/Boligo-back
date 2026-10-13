@@ -1,3 +1,14 @@
+import {
+  resetQualificationCache,
+  setQualificationForTests,
+} from '../ai/sondeur-router';
+import { ENABLED_QUALIFICATION } from '../../test/sondeur-qualification';
+import { buildDivergenceReport } from '../matching/divergence.engine';
+import { QUESTION_INDEX } from '../interview/questions.data';
+import { isSensitiveQuestion } from '../interview/sensitive-questions';
+import { describeReportForAi } from './sondeur.generator';
+import { renderFrame } from './sondeur-frames';
+import * as router from '../ai/sondeur-router';
 import { THEME_LIST } from '../matching/divergence.engine';
 import { JourneyService, describeCoupleContext } from './journey.service';
 
@@ -9,11 +20,24 @@ type Draft = {
   text: string;
   options: string[];
   method?: string;
+  evidence?: string[];
+  claim?: string;
 };
 
 /** Mot inventé propre à un créneau : les questions ne se ressemblent pas. */
 const word = (n: number) =>
   `zz${String.fromCharCode(97 + (n % 26))}${String.fromCharCode(97 + (Math.floor(n / 26) % 26))}q`;
+
+/** Proposition sur l'écart d'épargne, composée dans un cadre validé. */
+function framed(day: number, variant: string) {
+  const id = ({ 1: 'C12', 2: 'C14', 3: 'C22' } as Record<number, string>)[day];
+  const tag = [0, 1].map((k) => word(200 + day * 10 + k)).join(' ');
+  return renderFrame(
+    id,
+    { montant: '2 000', objet: `l'épargne ${tag} proposition ${variant}` },
+    { objet: `savings ${tag} option ${variant}` },
+  )!;
+}
 
 /** Deux propositions par créneau : la première « A », la seconde « B ». */
 function drafts(): Draft[] {
@@ -43,14 +67,32 @@ function setup(
     /** Questions refusées par le relecteur ; null : relecture impossible. */
     reject?: ((q: Draft) => boolean) | null;
     extra?: Draft[];
+    /**
+     * Écart réel sur l'épargne (M4_Q14 A/C) : seul cas où l'IA écrit. Les
+     * autres thèmes n'ont que des propositions neutres, écartées par le code.
+     */
+    gap?: boolean;
   } = {},
 ) {
-  const created: Array<{ day: number; questionText: string }> = [];
+  const created: Array<{
+    day: number;
+    questionText: string;
+    meta?: Record<string, unknown>;
+  }> = [];
   const prisma = {
+    $transaction: jest.fn((ops: Array<Promise<unknown>>) => Promise.all(ops)),
     harmonyQuestion: {
       count: jest.fn(() => Promise.resolve(0)),
       create: jest.fn(
-        ({ data }: { data: { day: number; questionText: string } }) => {
+        ({
+          data,
+        }: {
+          data: {
+            day: number;
+            questionText: string;
+            meta?: Record<string, unknown>;
+          };
+        }) => {
           created.push(data);
           return Promise.resolve(data);
         },
@@ -83,14 +125,20 @@ function setup(
     interviewIA: {
       findFirst: jest.fn(({ where }: { where: { userId: string } }) =>
         Promise.resolve(
-          options.interview
+          options.interview || options.gap
             ? {
                 responses: [
                   {
                     rawResponses:
                       where.userId === 'a'
-                        ? { M6_Q04: 'A' }
-                        : { M6_Q04: options.interview.M6_Q04 },
+                        ? {
+                            M6_Q04: 'A',
+                            ...(options.gap ? { M4_Q14: 'A' } : {}),
+                          }
+                        : {
+                            M6_Q04: options.interview?.M6_Q04 ?? 'A',
+                            ...(options.gap ? { M4_Q14: 'C' } : {}),
+                          },
                   },
                 ],
               }
@@ -101,15 +149,45 @@ function setup(
   };
   const all = [...drafts(), ...(options.extra ?? [])];
   const ai = {
-    generateTargetedHarmonyQuestions: jest.fn(() =>
-      Promise.resolve({
-        questions: all.map((q) => ({
-          ...q,
-          writer: 'anthropic/claude-opus-5',
-        })),
+    generateTargetedHarmonyQuestions: jest.fn((...args: unknown[]) => {
+      // Preuve de l'écart d'épargne dans l'index transmis (« E3 · argent · écart … »).
+      const gapId = /^(E\d+) · argent · écart/m.exec(String(args[6]))?.[1];
+      return Promise.resolve({
+        // V8.2 : chaque proposition cite sa preuve (neutre, du thème), sauf
+        // sur l'écart réel où elle confronte l'écart à la réalité.
+        // Sondeur bilingue : chaque proposition porte sa version anglaise.
+        questions: [
+          ...all.map((q) => ({
+            evidence: [`N-${q.themeKey}`],
+            claim: 'neutre',
+            textEn: `What does ${q.text.replace(/^Que veut dire | pour vous.*$/g, '')} mean to you?`,
+            optionsEn: ['Other...'],
+            ...q,
+            writer: 'anthropic/claude-opus-5',
+          })),
+          ...(gapId
+            ? [1, 2, 3].flatMap((day) =>
+                ['A', 'B'].map((variant) => ({
+                  day,
+                  theme: 'Lignes rouges',
+                  themeKey: 'argent',
+                  emoji: '💬',
+                  // V8.3 : question composée dans un cadre validé (un cadre
+                  // par jour) ; mots propres au jour : pas de doublon.
+                  ...framed(day, variant),
+                  options: ['Autre...'],
+                  method: 'chiffre',
+                  evidence: [gapId],
+                  claim: 'ecart',
+                  optionsEn: ['Other...'],
+                  writer: 'anthropic/claude-opus-5',
+                })),
+              )
+            : []),
+        ],
         model: 'anthropic/claude-opus-5',
-      }),
-    ),
+      });
+    }),
     reviewSondeurQuestions: jest.fn((_j: string, questions: Draft[]) =>
       Promise.resolve(
         options.reject === null
@@ -150,6 +228,9 @@ function setup(
 }
 
 describe('Sondeur — couche IA des parcours payés', () => {
+  // Rédaction IA du Sondeur activée explicitement (fail-closed sinon).
+  beforeAll(() => setQualificationForTests(ENABLED_QUALIFICATION));
+  afterAll(() => resetQualificationCache());
   const source = process.env.HARMONY_QUESTIONS_SOURCE;
   beforeAll(() => {
     process.env.HARMONY_QUESTIONS_SOURCE = 'ai';
@@ -163,18 +244,58 @@ describe('Sondeur — couche IA des parcours payés', () => {
     await run();
     const args = ai.generateTargetedHarmonyQuestions.mock
       .calls[0] as unknown as unknown[];
-    expect(args[4]).toEqual({ journeyId: 'j1', paidOnly: true });
-    expect(args[5]).toMatch(/- Inès : femme, \d+ ans, vit à Lyon/);
-    expect(args[5]).toMatch(/- Karim : homme, \d+ ans$/);
+    // Rédaction du Sondeur : fail-closed, modèles qualifiés seulement.
+    expect(args[4]).toEqual({
+      journeyId: 'j1',
+      paidOnly: true,
+      sondeurWriting: true,
+    });
+    // Minimisation : tranche d'âge, jamais la ville ni l'âge exact.
+    expect(args[5]).toMatch(/- Inès : femme, \d+-\d+ ans/);
+    expect(args[5]).toMatch(/- Karim : homme, \d+-\d+ ans/);
+    expect(args[5]).not.toMatch(/Lyon/);
   });
 
-  it('la meilleure proposition relue passe devant les gabarits', async () => {
+  it('repli déterministe (config generation.enabled = false) : aucun appel à l’IA, questions déterministes validées', async () => {
+    // Même décision que config/sondeur-models.json { generation: { enabled: false } }.
+    const spy = jest
+      .spyOn(router, 'aiGenerationEnabled')
+      .mockReturnValue(false);
+    try {
+      const { run, ai, created } = setup({ gap: true });
+      await run();
+      expect(ai.generateTargetedHarmonyQuestions).not.toHaveBeenCalled();
+      expect(created.length).toBeGreaterThanOrEqual(9);
+      expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
+        false,
+      );
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('sans écart réel : aucune proposition de l’IA servie, gabarits seuls', async () => {
     const { run, created } = setup();
     await run();
-    expect(created).toHaveLength(21);
-    expect(created.every((q) => q.questionText.includes('proposition B'))).toBe(
+    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
+    expect(created).toHaveLength(9);
+    expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
+      false,
+    );
+  });
+
+  it('écart réel : la meilleure proposition relue passe devant les gabarits', async () => {
+    const { run, created } = setup({ gap: true });
+    await run();
+    const fromAi = created.filter((q) =>
+      q.questionText.includes('proposition'),
+    );
+    expect(fromAi.length).toBeGreaterThan(0);
+    // Seules les questions sur l'écart d'épargne, et la proposition préférée.
+    expect(fromAi.every((q) => q.questionText.includes('proposition B'))).toBe(
       true,
     );
+    expect(fromAi.every((q) => q.questionText.includes('épargne'))).toBe(true);
   });
 
   it('contrôle de forme par le code : une question fermée n’est jamais envoyée au relecteur', async () => {
@@ -182,7 +303,7 @@ describe('Sondeur — couche IA des parcours payés', () => {
       ...drafts()[0],
       text: 'Accepteriez-vous de vivre loin de votre famille ?',
     };
-    const { run, ai } = setup({ extra: [closed] });
+    const { run, ai } = setup({ extra: [closed], gap: true });
     await run();
     const calls = ai.reviewSondeurQuestions.mock.calls as unknown as Array<
       [string, Draft[], string[], string]
@@ -195,15 +316,18 @@ describe('Sondeur — couche IA des parcours payés', () => {
     expect(
       calls.every(([, , , writer]) => writer === 'anthropic/claude-opus-5'),
     ).toBe(true);
+    // Seules les deux propositions sur l'écart réel, chaque jour, sont relues.
     const sent = calls.flatMap(([, qs]) => qs);
-    expect(sent).toHaveLength(42);
+    expect(sent).toHaveLength(6);
+    expect(sent.every((q) => q.themeKey === 'argent')).toBe(true);
     expect(sent.some((q) => q.text.startsWith('Accepteriez'))).toBe(false);
   });
 
   it('relecture impossible : aucune question de l’IA servie', async () => {
-    const { run, created } = setup({ reject: null });
+    const { run, created } = setup({ reject: null, gap: true });
     await run();
-    expect(created).toHaveLength(21);
+    // Sondeur adaptatif : couple sans écart → 3 questions par jour.
+    expect(created).toHaveLength(9);
     expect(created.some((q) => q.questionText.includes('proposition'))).toBe(
       false,
     );
@@ -213,18 +337,20 @@ describe('Sondeur — couche IA des parcours payés', () => {
     // Le relecteur refuse les deux propositions de 8 créneaux sur 21 : tout
     // le jour 1 et le premier thème du jour 2.
     const { run, created } = setup({
-      reject: (q) =>
-        q.day === 1 || (q.day === 2 && q.themeKey === THEME_LIST[0]),
+      reject: (q) => q.day === 1,
+      gap: true,
     });
     await run();
-    expect(created).toHaveLength(21);
-    expect(
-      created.filter((q) => q.questionText.includes('proposition')),
-    ).toHaveLength(13);
+    // Jour 1 refusé en entier : gabarits ; jours 2 et 3 : questions relues.
+    const fromAi = created.filter((q) =>
+      q.questionText.includes('proposition'),
+    );
+    expect(fromAi.some((q) => q.day === 1)).toBe(false);
+    expect(fromAi.length).toBeGreaterThan(0);
   });
 
   it('thème de sécurité (violence) : jamais une question de l’IA, toujours une question de limite', async () => {
-    const { run, ai } = setup({ interview: { M6_Q04: 'C' } });
+    const { run, ai } = setup({ interview: { M6_Q04: 'C' }, gap: true });
     await run();
     const sent = (
       ai.reviewSondeurQuestions.mock.calls[0] as unknown as [string, Draft[]]
@@ -233,8 +359,84 @@ describe('Sondeur — couche IA des parcours payés', () => {
   });
 });
 
+describe('Sondeur — contrat de preuves (V8.2)', () => {
+  // Rédaction IA du Sondeur activée explicitement (fail-closed sinon).
+  beforeAll(() => setQualificationForTests(ENABLED_QUALIFICATION));
+  afterAll(() => resetQualificationCache());
+  const source = process.env.HARMONY_QUESTIONS_SOURCE;
+  beforeAll(() => {
+    process.env.HARMONY_QUESTIONS_SOURCE = 'ai';
+  });
+  afterAll(() => {
+    process.env.HARMONY_QUESTIONS_SOURCE = source;
+  });
+
+  it('une proposition sans preuve, ou qui affirme un écart non établi, n’est jamais relue ni servie', async () => {
+    const noEvidence: Draft = {
+      ...drafts()[0],
+      text: 'Que signifie zzsans pour vous, au quotidien ?',
+      evidence: [],
+    };
+    const invented: Draft = {
+      ...drafts()[2],
+      text: 'Comment dépasser votre désaccord sur zzinvente au quotidien ?',
+      evidence: [`N-${drafts()[2].themeKey}`],
+      claim: 'ecart',
+    };
+    const fear: Draft = {
+      ...drafts()[4],
+      text: 'Qu’est-ce qui nourrit votre peur de zzpeur ?',
+    };
+    const { run, ai, created } = setup({ extra: [noEvidence, invented, fear] });
+    await run();
+    const sent = (
+      ai.reviewSondeurQuestions.mock.calls as unknown as Array<
+        [string, Draft[]]
+      >
+    ).flatMap(([, qs]) => qs);
+    for (const t of ['zzsans', 'zzinvente', 'zzpeur']) {
+      expect(sent.some((q) => q.text.includes(t))).toBe(false);
+      expect(created.some((q) => q.questionText.includes(t))).toBe(false);
+    }
+  });
+
+  it('l’IA reçoit l’index des preuves, jamais une réponse de membre', async () => {
+    const { run, ai } = setup({ interview: { M6_Q04: 'C' } });
+    await run();
+    const args = ai.generateTargetedHarmonyQuestions.mock
+      .calls[0] as unknown as unknown[];
+    const index = String(args[6]);
+    expect(index).toMatch(/^N-famille · famille · neutre$/m);
+    // Les écarts de sécurité ne figurent pas dans l'index transmis.
+    expect(index).not.toMatch(/communication · écart/);
+    // Aucun texte d'option du Grand Entretien (M6_Q04 C/A) dans l'index.
+    expect(index).not.toMatch(/dépend|limite absolue/i);
+  });
+
+  it('chaque question servie garde sa trace de preuves (identifiants et sujets, jamais une réponse)', async () => {
+    const { run, created } = setup({ gap: true });
+    await run();
+    for (const q of created) {
+      const ev = (q.meta as { evidence?: Record<string, unknown> } | undefined)
+        ?.evidence;
+      expect(ev).toBeDefined();
+      expect(Array.isArray(ev!.evidence)).toBe(true);
+      expect(['neutral', 'divergence', 'convergence', 'safety']).toContain(
+        ev!.claim,
+      );
+      expect(JSON.stringify(ev)).not.toMatch(/privateTexts/);
+    }
+    const ai = created.filter((q) => q.questionText.includes('proposition'));
+    expect(ai.length).toBeGreaterThan(0);
+    for (const q of ai)
+      expect(
+        (q.meta as { evidence: { evidence: string[] } }).evidence.evidence[0],
+      ).toMatch(/^E\d+$/);
+  });
+});
+
 describe('Contexte du couple transmis à l’IA', () => {
-  it('âge révolu, genre et ville ; rien quand rien n’est connu', () => {
+  it('tranche d’âge et genre, jamais la ville ; rien quand rien n’est connu', () => {
     const now = new Date('2026-10-06');
     expect(
       describeCoupleContext(
@@ -249,6 +451,54 @@ describe('Contexte du couple transmis à l’IA', () => {
         ],
         now,
       ),
-    ).toBe('- Inès : femme, 29 ans, vit à Lyon');
+    ).toBe('- Inès : femme, 25-29 ans');
+  });
+
+  it('lieux de vie : distance relative, jamais le nom d’une ville', () => {
+    const m = (city: string | null) => ({
+      firstName: 'X',
+      birthDate: null,
+      gender: 'F',
+      city,
+    });
+    expect(
+      describeCoupleContext([
+        m('Paris, Île-de-France, France'),
+        m('Paris, Île-de-France, France'),
+      ]),
+    ).toMatch(/Lieux de vie : même ville$/);
+    expect(
+      describeCoupleContext([m('Lyon, France'), m('Paris, France')]),
+    ).toMatch(/même pays, villes différentes$/);
+    expect(
+      describeCoupleContext([m('Dakar, Sénégal'), m('Paris, France')]),
+    ).toMatch(/pays différents$/);
+    expect(
+      describeCoupleContext([m('Dakar, Sénégal'), m('Paris, France')]),
+    ).not.toMatch(/Dakar|Paris|Sénégal|France/);
+  });
+});
+
+describe('Analyse du couple transmise à l’IA : minimisation', () => {
+  it('jamais le texte d’une réponse sensible (religion, vie intime), même en accord', () => {
+    const ids = ['M10_Q17', 'M1_Q16', 'M1_Q17'].filter((id) =>
+      QUESTION_INDEX.get(id),
+    );
+    expect(ids.every((id) => isSensitiveQuestion(id))).toBe(true);
+    for (const [ka, kb] of [
+      ['A', 'C'],
+      ['A', 'A'],
+    ]) {
+      const summary = describeReportForAi(
+        buildDivergenceReport(
+          Object.fromEntries(ids.map((id) => [id, ka])),
+          Object.fromEntries(ids.map((id) => [id, kb])),
+        ),
+        ['Inès', 'Karim'],
+      );
+      for (const id of ids)
+        for (const o of QUESTION_INDEX.get(id)!.options)
+          expect(summary).not.toContain(`« ${o.text}`);
+    }
   });
 });

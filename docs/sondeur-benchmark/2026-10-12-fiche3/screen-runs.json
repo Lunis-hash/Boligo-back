@@ -1,0 +1,292 @@
+[
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50125",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 4,
+    "passedGate": 0,
+    "formRejected": 1,
+    "evidenceRejected": 0,
+    "criticRejected": 3,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 27353,
+    "latencyMs": 10953,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50402",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "criticRejected": 0,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 1842,
+    "latencyMs": 4355,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50395",
+    "scenario": "ecart_important",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "criticRejected": 0,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 1783,
+    "latencyMs": 5934,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50602",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 0,
+    "formRejected": 5,
+    "evidenceRejected": 3,
+    "criticRejected": 4,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {
+      "P14": 1,
+      "P7": 1,
+      "P21": 1
+    },
+    "leaks": 0,
+    "costMicro": 51847,
+    "latencyMs": 11658,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50603",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 1,
+    "formRejected": 5,
+    "evidenceRejected": 5,
+    "criticRejected": 0,
+    "unreviewedDays": 0,
+    "duplicates": 1,
+    "reasons": {
+      "P17": 4,
+      "P21": 1,
+      "P7": 1
+    },
+    "leaks": 0,
+    "costMicro": 59159,
+    "latencyMs": 20355,
+    "questions": [
+      {
+        "day": 2,
+        "theme": "Valeurs profondes",
+        "emoji": "🚭",
+        "text": "Si le tabagisme de l'un de vous ne changeait jamais, pourriez-vous vivre avec pendant des années ?",
+        "options": [
+          "Oui, sans problème",
+          "Oui, à certaines conditions",
+          "Non, ce serait un renoncement",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Si chacun peut vivre durablement avec la position réelle de l'autre.",
+        "gap": "A accepte le tabac seulement occasionnel ; B fume régulièrement — point non négociable.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If one of you never changed their smoking, could you live with it for years?",
+        "optionsEn": [
+          "Yes, no problem",
+          "Yes, under some conditions",
+          "No, that would be a dealbreaker"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50643",
+    "scenario": "petit_ecart",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 2,
+    "formRejected": 3,
+    "evidenceRejected": 2,
+    "criticRejected": 5,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {
+      "P21": 1,
+      "P13": 1
+    },
+    "leaks": 0,
+    "costMicro": 74734,
+    "latencyMs": 14113,
+    "questions": [
+      {
+        "day": 1,
+        "theme": "Lignes rouges",
+        "emoji": "🎯",
+        "text": "Dans une semaine à deux, combien de soirées à soi par semaine vous semblent normales ?",
+        "options": [
+          "Aucune",
+          "Une ou deux",
+          "Plusieurs",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "chiffre",
+        "target": "Chiffrer le temps à soi que chacun juge acceptable dans le couple",
+        "gap": "A n'est pas du tout d'accord avec du temps à soi dans le couple, B y est plutôt favorable",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "In a shared week together, how many evenings to yourself each week feel normal to you?",
+        "optionsEn": [
+          "None",
+          "One or two",
+          "Several"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      },
+      {
+        "day": 3,
+        "theme": "Futur & intimité",
+        "emoji": "💫",
+        "text": "Si l'un de vous gardait chaque semaine un moment à soi, pourriez-vous vivre ainsi pendant des années ?",
+        "options": [
+          "Oui, sans difficulté",
+          "Oui, mais cela me coûterait",
+          "Non, je ne le supporterais pas",
+          "Autre..."
+        ],
+        "themeKey": "projet",
+        "method": "si cela ne changeait jamais",
+        "target": "Savoir si chacun peut vivre durablement le besoin d'espace personnel de l'autre.",
+        "gap": "A refuse le temps à soi dans le couple, B y est plutôt favorable.",
+        "evidence": [
+          "E2"
+        ],
+        "claim": "ecart",
+        "textEn": "If one of you kept some time to yourself every week, could you live that way for years?",
+        "optionsEn": [
+          "Yes, easily",
+          "Yes, but it would be hard",
+          "No, I couldn't handle it"
+        ],
+        "writer": "z-ai/glm-5.3-flash",
+        "reviewer": "anthropic/claude-sonnet-5.5"
+      }
+    ]
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50650",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 8,
+    "passedGate": 0,
+    "formRejected": 3,
+    "evidenceRejected": 2,
+    "criticRejected": 3,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {
+      "P7": 1,
+      "P13": 1
+    },
+    "leaks": 0,
+    "costMicro": 49648,
+    "latencyMs": 20065,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50786",
+    "scenario": "non_negociable",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 0,
+    "formRejected": 3,
+    "evidenceRejected": 7,
+    "criticRejected": 2,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {
+      "P14": 1,
+      "P7": 3,
+      "P21": 1,
+      "P19": 1,
+      "P17": 2
+    },
+    "leaks": 0,
+    "costMicro": 50990,
+    "latencyMs": 17913,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T51094",
+    "scenario": "aucun_ecart",
+    "lang": "fr",
+    "drafted": 0,
+    "passedGate": 0,
+    "formRejected": 0,
+    "evidenceRejected": 0,
+    "criticRejected": 0,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {},
+    "leaks": 0,
+    "costMicro": 1747,
+    "latencyMs": 3224,
+    "questions": []
+  },
+  {
+    "model": "z-ai/glm-5.3-flash",
+    "caseId": "T50000",
+    "scenario": "securite",
+    "lang": "fr",
+    "drafted": 12,
+    "passedGate": 0,
+    "formRejected": 3,
+    "evidenceRejected": 3,
+    "criticRejected": 6,
+    "unreviewedDays": 0,
+    "duplicates": 0,
+    "reasons": {
+      "P21": 1,
+      "P17": 2,
+      "P14": 1
+    },
+    "leaks": 0,
+    "costMicro": 52417,
+    "latencyMs": 16793,
+    "questions": []
+  }
+]

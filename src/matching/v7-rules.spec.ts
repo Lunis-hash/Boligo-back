@@ -44,9 +44,16 @@ const v6 = (o: RawAnswers = {}) =>
   complete(QUESTIONNAIRE_V6_ORDER, { M6_Q01: 'B', ...o });
 
 describe('Violence et mots blessants : limites de sécurité', () => {
-  it('« ça dépend des circonstances » face à « limite absolue » est une incompatibilité déclarée', () => {
+  it('V8.2 — « ça dépend des circonstances » face à « limite absolue » : alerte de sécurité, jamais une exclusion de compatibilité', () => {
     const r = report({ M6_Q04: 'A' }, { M6_Q04: 'C' });
-    expect(r.hardStop).toBe(true);
+    expect(r.hardStop).toBe(false);
+    expect(r.penalty).toBe(0);
+    expect(r.safetyAlerts!.map((d) => d.questionId)).toEqual(['M6_Q04']);
+    // Le libellé ne parle jamais d'« incompatibilité » pour une alerte de sécurité.
+    const sheet = buildCompatibilitySheet(r, 'Sam');
+    expect(sheet.hardStop).toBe(false);
+    expect(sheet.vigilance).toMatch(/^Point de sécurité/);
+    expect(sheet.vigilance).not.toMatch(/Incompatibilité/);
     expect(r.divergences[0]).toMatchObject({
       questionId: 'M6_Q04',
       severity: 'critique',

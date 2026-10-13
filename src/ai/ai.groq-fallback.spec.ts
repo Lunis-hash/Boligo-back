@@ -263,16 +263,19 @@ describe('AiService — modèle Groq retiré', () => {
         { journeyId: 'j5' },
       );
       expect(out?.model).toBe('openai/gpt-oss-120b');
-      // Deux propositions par thème et par jour, au plus.
-      expect(out?.questions).toHaveLength(2);
+      // Trois propositions par écart et par jour, au plus.
+      expect(out?.questions).toHaveLength(3);
       const create = (g.client.chat.completions.create as jest.Mock).mock
         .calls as Array<[{ messages: Array<{ content: string }> }]>;
       const [system, user] = create[0][0].messages;
-      expect(system.content).toContain('Gottman');
+      expect(system.content).toContain('ÉCART RÉEL');
       expect(system.content).toContain('aucun diagnostic');
-      expect(system.content).toContain('CHOIX DE LA TECHNIQUE SELON LE SIGNAL');
+      expect(system.content).toContain('si cela ne changeait jamais');
       expect(user.content).toContain('ÉTAPE 1');
-      expect(user.content).toContain('DEUX propositions');
+      expect(user.content).toContain('TROIS questions');
+      // V8.3 : cadres validés, jamais une question libre.
+      expect(user.content).toContain('CADRES VALIDÉS');
+      expect(user.content).toContain("tu n'écris PAS de question libre");
       expect(user.content).toContain('"methode"');
     });
 
@@ -328,87 +331,19 @@ describe('AiService — modèle Groq retiré', () => {
       );
     });
 
-    it('relecture par une autre famille de modèle que le rédacteur, à température 0', async () => {
-      const g = fakeGroq(
-        models.concat('llama-3.3-70b-versatile'),
-        () =>
-          'Verdict : {"verdicts": [{"n": 1, "ok": true}, {"n": 2, "ok": false, "regle": 1, "raison": "orientée"}, {"n": 3, "ok": true}, {"n": 9, "ok": false}]}',
-      );
-      const budget = budgetFor(true);
-      const review = await journeyService(
-        g.client,
-        budget,
-      ).reviewSondeurQuestions(
-        'j6',
-        draft(3),
-        ['Une question déjà posée ?'],
-        'openai/gpt-oss-120b',
-      );
-      expect([...(review?.rejected ?? [])]).toEqual([1]);
-      expect(g.calls).toEqual(['llama-3.3-70b-versatile']);
-      const create = (g.client.chat.completions.create as jest.Mock).mock
-        .calls as Array<
-        [{ temperature: number; messages: Array<{ content: string }> }]
-      >;
-      // Le relecteur voit la méthode et la cible de chaque question.
-      expect(create[0][0].messages[1].content).toContain(
-        'Méthode : — · Cible : —',
-      );
-      expect(create[0][0].temperature).toBe(0);
-      expect(create[0][0].messages[1].content).toContain(
-        'Une question déjà posée ?',
-      );
-      expect(budget.allowJourney).toHaveBeenCalledWith(
-        'j6',
-        expect.any(Number),
-      );
-    });
-
-    it('le relecteur départage deux propositions acceptées', async () => {
-      const g = fakeGroq(
-        models.concat('llama-3.3-70b-versatile'),
-        () =>
-          '{"verdicts": [{"n": 1, "ok": false, "regle": 8, "raison": "fermée"}, {"n": 2, "ok": true}, {"n": 3, "ok": true}], "meilleures": [1, 3, 7]}',
-      );
-      const review = await journeyService(
-        g.client,
-        budgetFor(true),
-      ).reviewSondeurQuestions('j6b', draft(3), [], 'openai/gpt-oss-120b');
-      // Une question refusée n'est jamais « meilleure » ; numéro hors liste ignoré.
-      expect([...(review?.rejected ?? [])]).toEqual([0]);
-      expect([
-        ...((review as { preferred?: Set<number> })?.preferred ?? []),
-      ]).toEqual([2]);
-    });
-
-    it('un refus l’emporte sur une acceptation du même numéro ; JSON entouré de texte lu', async () => {
-      const g = fakeGroq(
-        models.concat('llama-3.3-70b-versatile'),
-        () =>
-          'Mon avis {bref} : {"verdicts": [{"n": 1, "ok": false, "regle": 12, "raison": "réconciliation"}, {"n": 1, "ok": true}, {"n": 2, "ok": true},], "meilleures": [1, 2]} (fin)',
-      );
-      const review = await journeyService(
-        g.client,
-        budgetFor(true),
-      ).reviewSondeurQuestions('j6c', draft(2), [], 'openai/gpt-oss-120b');
-      expect([...(review?.rejected ?? [])]).toEqual([0]);
-      expect([
-        ...((review as { preferred?: Set<number> })?.preferred ?? []),
-      ]).toEqual([1]);
-    });
-
-    it('si le rédacteur est Llama, le relecteur en change', async () => {
+    it('relecture de rédaction du Sondeur : jamais via Groq (fail-closed, modèles qualifiés seulement)', async () => {
       const g = fakeGroq(
         models.concat('llama-3.3-70b-versatile'),
         () => '{"verdicts": [{"n": 1, "ok": true}]}',
       );
-      await journeyService(g.client, budgetFor(true)).reviewSondeurQuestions(
-        'j7',
-        draft(1),
-        [],
-        'llama-3.3-70b-versatile',
-      );
-      expect(g.calls).toEqual(['openai/gpt-oss-120b']);
+      const review = await journeyService(
+        g.client,
+        budgetFor(true),
+      ).reviewSondeurQuestions('j6', draft(1), [], 'openai/gpt-oss-120b');
+      // La logique de relecture est vérifiée avec des modèles qualifiés
+      // (ai.critic-vote.spec.ts) ; Groq n'est jamais appelé pour le Sondeur.
+      expect(review).toBeNull();
+      expect(g.calls).toEqual([]);
     });
 
     it('relecture impossible (parcours non payé, réponse illisible) : null', async () => {

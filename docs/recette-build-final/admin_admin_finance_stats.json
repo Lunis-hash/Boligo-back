@@ -1,0 +1,41 @@
+{
+  "revenue": {
+    "totalEur": 30,
+    "monthEur": 30,
+    "weekEur": 30,
+    "purchasesCount": 2,
+    "purchasesMonthCount": 2
+  },
+  "credits": {
+    "sold": 2,
+    "spent": 2,
+    "refunded": 0,
+    "inCirculation": 0,
+    "consumptionsCount": 2,
+    "refundsCount": 0
+  },
+  "transactionsTotal": 4,
+  "byType": [
+    {
+      "_count": {
+        "id": 2
+      },
+      "_sum": {
+        "euroAmount": null,
+        "creditAmount": -2
+      },
+      "type": "consommation"
+    },
+    {
+      "_count": {
+        "id": 2
+      },
+      "_sum": {
+        "euroAmount": 30,
+        "creditAmount": 2
+      },
+      "type": "achat"
+    }
+  ],
+  "note": "Les montants en euros sont ceux enregistrés à chaque achat (0 € pour un code promo gratuit). Stripe est en mode test : aucune carte n'est débitée."
+}

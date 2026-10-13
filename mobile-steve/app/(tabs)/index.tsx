@@ -24,7 +24,8 @@ import { useAuth } from '@/context/auth';
 import client, { getReadableError } from '@/services/api';
 import { GhostingBanner } from '@/components/GhostingBanner';
 import { GhostingView, isGhostingView } from '@/services/ghosting';
-import { clampDay, getSondeurDayState, getSondeurDayStatus, getSondeurLockedLabel } from '@/services/sondeur';
+import { SONDEUR_TEXT, SondeurLanguage, clampDay, getSondeurDayState, getSondeurDayStatus, getSondeurLockedLabel } from '@/services/sondeur';
+import { getInterviewLanguage } from '@/services/interview';
 import { EMPTY_INSIGHTS, SondeurInsights, parseSondeurInsights, readingForDay } from '@/services/sondeurInsights';
 import { SondeurReadingCard } from '@/components/SondeurReadingCard';
 import cacheService from '@/services/cacheService';
@@ -41,14 +42,6 @@ import {
 import { Brand } from '@/constants/brand';
 import { ThemeIcon } from '@/components/BrandIcons';
 
-// ─── Thèmes par défaut des 3 jours (affichage uniquement) ──────────
-// Les questions réelles sont générées par le backend (GET /journey/:id/questions).
-const SONDEUR_DAYS = [
-  { day: 1, theme: 'Lignes rouges' },
-  { day: 2, theme: 'Valeurs profondes' },
-  { day: 3, theme: 'Futur & Sacrifices' },
-];
-
 // ─── Composant étape jour ──────────────────────────────────────────
 function DayStep({
   day,
@@ -57,6 +50,8 @@ function DayStep({
   isLast,
   onPressActive,
   lockedLabel,
+  lang = 'fr',
+  count,
 }: {
   day: number;
   status: 'done' | 'active' | 'locked';
@@ -64,7 +59,11 @@ function DayStep({
   isLast: boolean;
   onPressActive?: () => void;
   lockedLabel?: string;
+  lang?: SondeurLanguage;
+  /** Nombre de questions du jour (Sondeur adaptatif). */
+  count?: number;
 }) {
+  const t = SONDEUR_TEXT[lang];
   const content = (
     <View style={styles.dayStepWrap}>
       <View style={styles.dayStepLeft}>
@@ -113,7 +112,7 @@ function DayStep({
             status === 'locked' && styles.dayStepLabelLocked,
           ]}
         >
-          Jour {day}
+          {t.day} {day}
         </Text>
         <View style={styles.dayThemePill}>
           <Text
@@ -125,9 +124,9 @@ function DayStep({
             {theme}
           </Text>
         </View>
-        {status === 'done' && <Text style={styles.dayDoneLabel}>Réponses comparées</Text>}
-        {status === 'active' && <Text style={styles.dayActiveLabel}>En cours · 7 questions</Text>}
-        {status === 'locked' && <Text style={styles.dayLockedLabel}>{lockedLabel ?? 'Disponible après le jour précédent'}</Text>}
+        {status === 'done' && <Text style={styles.dayDoneLabel}>{t.dayDone}</Text>}
+        {status === 'active' && <Text style={styles.dayActiveLabel}>{t.dayActive(count ?? 0)}</Text>}
+        {status === 'locked' && <Text style={styles.dayLockedLabel}>{lockedLabel ?? t.lockedAfterPrevious}</Text>}
       </View>
     </View>
   );
@@ -156,8 +155,6 @@ function pickActiveMatch(allMatches: any[]) {
   return matches.find((m) => m.phase !== 'attente') ?? matches[0];
 }
 
-/** Réponse qui garde un sujet pour la rencontre : jamais interprétée par l'IA. */
-const VIVE_VOIX = "J'aimerais en parler de vive voix.";
 
 export default function MatchesScreen() {
   const router = useRouter();
@@ -181,6 +178,13 @@ export default function MatchesScreen() {
   const [answeredDays, setAnsweredDays] = useState<number[]>([]);
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<'overview' | 'question'>('overview');
+  // Langue de l'interface : questions du Sondeur servies dans cette langue.
+  const [lang, setLang] = useState<SondeurLanguage>('fr');
+  const t = SONDEUR_TEXT[lang];
+  // Réciprocité : révélations déjà vues, et réponses données pendant cette visite
+  // (leur révélation s'affiche avant la question suivante).
+  const [ackReveal, setAckReveal] = useState<string[]>([]);
+  const [answeredNow, setAnsweredNow] = useState<string[]>([]);
   const [qIndex, setQIndex] = useState(0);
   const [customText, setCustomText] = useState('');
   const [revealedKeys, setRevealedKeys] = useState<string[]>([]);
@@ -353,9 +357,11 @@ export default function MatchesScreen() {
       if (!silent && dbQuestions.length === 0) setLoading(true);
       setJourneyId(jId);
 
+      const language = await getInterviewLanguage();
+      setLang(language);
       const [statusRes, questionsRes] = await Promise.all([
         client.get(`/journey/${jId}/status`),
-        client.get(`/journey/${jId}/questions`),
+        client.get(`/journey/${jId}/questions`, { params: { lang: language } }),
       ]);
 
       const status = statusRes.data;
@@ -392,13 +398,28 @@ export default function MatchesScreen() {
     if (dayQs.length > 0) {
       return { day, theme: dayQs[0].theme };
     }
-    const local = SONDEUR_DAYS.find(d => d.day === day);
-    return { day, theme: local?.theme ?? 'Question' };
+    return { day, theme: t.dayThemes[day - 1] ?? t.question };
   });
 
   const dayDbQuestions = dbQuestions.filter((q: any) => q.day === currentDay);
-  const currentDbQ = dayDbQuestions[qIndex];
-  const dayData = SONDEUR_DAYS[currentDay - 1];
+  // Tour de réponse (serveur) : une question à la fois. D'abord la révélation
+  // de la dernière question répondue pendant cette visite, puis l'attente de
+  // l'autre, puis la question en cours.
+  const revealPending = dbQuestions.find(
+    (q: any) => q.turn === 'revealed' && answeredNow.includes(q.id) && !ackReveal.includes(q.id),
+  );
+  const flowQ =
+    revealPending ??
+    dbQuestions.find((q: any) => q.turn === 'waiting') ??
+    dbQuestions.find((q: any) => q.turn === 'current' && q.day <= calendarDay);
+  const flowMode: 'reveal' | 'waiting' | 'answer' | null = !flowQ
+    ? null
+    : flowQ === revealPending
+      ? 'reveal'
+      : flowQ.turn === 'waiting'
+        ? 'waiting'
+        : 'answer';
+  const currentDbQ = flowQ;
   const dayThemeMeta = dayThemes.find((d) => d.day === currentDay);
 
   // Seules les questions du backend sont proposées : une réponse à une
@@ -436,9 +457,9 @@ export default function MatchesScreen() {
     const answer = customText.trim();
     if (!answer || submittingAnswer) return;
 
-    const dbQ = dayDbQuestions[qIndex];
-    if (!dbQ?.id || !journeyId) {
-      Alert.alert('Questions indisponibles', 'Les questions du Sondeur ne sont pas encore prêtes. Réessayez dans un instant.');
+    const dbQ = flowQ;
+    if (!dbQ?.id || !journeyId || flowMode !== 'answer') {
+      Alert.alert(t.unavailableTitle, t.unavailableBody);
       return;
     }
 
@@ -451,36 +472,35 @@ export default function MatchesScreen() {
       setSubmittingAnswer(false);
       // 400 = réponse refusée par la modération BOLIGO : on garde le texte
       // pour que l'utilisateur puisse le reformuler.
-      Alert.alert('Réponse non enregistrée', getReadableError(e, 'Vérifiez votre connexion et réessayez.'));
+      Alert.alert(t.notSavedTitle, getReadableError(e, t.notSavedBody));
       return;
     }
 
     setUserAnswers(prev => ({ ...prev, [dbQ.id]: answer }));
+    setAnsweredNow(prev => [...prev, dbQ.id]);
+    setCustomText('');
     setSubmittingAnswer(false);
-
-    const countToday = totalQuestionsToday;
-    if (countToday === 0) return;
-    // Question suivante encore sans réponse (reprise possible au milieu d'une journée).
-    const nextIndex = dayDbQuestions.findIndex(
-      (q: any, i: number) => i !== qIndex && q.id !== dbQ.id && !userAnswers[q.id],
-    );
-    if (nextIndex !== -1) {
-      setTimeout(() => { setQIndex(nextIndex); setCustomText(''); }, 300);
-    } else {
-      setTimeout(async () => {
-        soundService.playMatchCelebration();
-        setAnsweredDays(prev => [...prev, currentDay]);
-        setViewMode('overview');
-        setQIndex(0);
-        setCustomText('');
-        if (currentDay < 3) setCurrentDay(d => d + 1);
-
-        // Recharger le parcours et les matches pour mettre à jour la phase
-        if (journeyId) loadJourney(journeyId, true);
-        await loadMatches(true);
-      }, 400);
-    }
+    // Le serveur dit ce qui suit : attendre l'autre, ou révéler les deux réponses.
+    await loadJourney(journeyId, true);
+    await loadMatches(true);
   };
+
+  /** Révélation vue : place à la question suivante (ou retour à l'accueil). */
+  const nextAfterReveal = () => {
+    if (!revealPending) return;
+    soundService.playOptionSelect();
+    setAckReveal(prev => [...prev, revealPending.id]);
+    const next = dbQuestions.find((q: any) => q.turn === 'current' && q.day <= calendarDay);
+    if (!next) setViewMode('overview');
+  };
+
+  // Attente de l'autre : on recharge régulièrement pour révéler dès sa réponse.
+  useEffect(() => {
+    if (viewMode !== 'question' || flowMode !== 'waiting' || !journeyId) return;
+    const timer = setInterval(() => loadJourney(journeyId, true), 6000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, flowMode, journeyId]);
 
   const handleReveal = (key: string) =>
     setRevealedKeys(prev => [...prev, key]);
@@ -532,10 +552,8 @@ export default function MatchesScreen() {
   }
 
   const openQuestionFlow = () => {
-    if (!canAnswerToday) return;
-    // Reprendre à la première question du jour sans réponse.
-    const firstPending = dayDbQuestions.findIndex((q: any) => !userAnswers[q.id]);
-    setQIndex(firstPending === -1 ? 0 : firstPending);
+    if (!canAnswerToday && flowMode !== 'waiting') return;
+    // Reprise exacte : le serveur désigne la question en cours.
     setViewMode('question');
   };
 
@@ -544,7 +562,7 @@ export default function MatchesScreen() {
     if (!currentQ) {
       return (
         <View style={[styles.container, styles.loaderWrap]}>
-          <Text style={styles.emptyTitle}>Chargement des questions…</Text>
+          <Text style={styles.emptyTitle}>{t.loading}</Text>
           <TouchableOpacity
             onPress={() => {
               setViewMode('overview');
@@ -552,7 +570,7 @@ export default function MatchesScreen() {
             }}
             style={styles.emptyBtnWrap}
           >
-            <Text style={styles.emptyBtnText}>Réessayer</Text>
+            <Text style={styles.emptyBtnText}>{t.retry}</Text>
           </TouchableOpacity>
         </View>
       );
@@ -580,11 +598,11 @@ export default function MatchesScreen() {
               style={styles.questionDayBadge}
             >
               <Text style={styles.questionDayBadgeText}>
-                Jour {currentDay} · {dayThemeMeta?.theme ?? dayData.theme}
+                {t.day} {currentDay} · {dayThemeMeta?.theme ?? t.dayThemes[currentDay - 1]}
               </Text>
             </LinearGradient>
             <Text style={styles.questionCounter}>
-              Question {qIndex + 1} / {totalQuestionsToday}
+              {t.question} {Math.max(1, dayDbQuestions.findIndex((q: any) => q.id === flowQ?.id) + 1)} / {totalQuestionsToday}
             </Text>
           </View>
         </View>
@@ -606,38 +624,61 @@ export default function MatchesScreen() {
             </View>
             {currentDbQ?.followUp ? (
               <Text style={styles.followUpTag} testID="sondeur-follow-up">
-                Question ajoutée pour vous deux, après vos réponses d’hier
+                {t.followUp}
               </Text>
             ) : null}
             <Text style={styles.questionText}>{currentQ?.question}</Text>
-            <Text style={styles.questionHint}>
-              Répondez librement. {firstMatch.name} verra votre réponse après avoir répondu de son côté. Le résumé du jour pourra en reprendre quelques mots.
-            </Text>
+            {flowMode === 'answer' ? (
+              <Text style={styles.questionHint}>{t.hint(firstMatch.name)}</Text>
+            ) : null}
           </View>
 
-          {/* Champ de saisie libre */}
+          {/* Réciprocité : attente de l'autre, puis les deux réponses révélées. */}
+          {flowMode === 'waiting' || flowMode === 'reveal' ? (
+            <View style={styles.optionsWrap} testID={flowMode === 'waiting' ? 'sondeur-waiting' : 'sondeur-reveal'}>
+              <Text style={styles.questionHint}>{t.yourAnswer}</Text>
+              <Text style={styles.questionText} testID="sondeur-my-answer">{userAnswers[flowQ?.id] ?? ''}</Text>
+              {flowMode === 'waiting' ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: Spacing.md }}>
+                  <ActivityIndicator size="small" color={Colors.primary.purple} />
+                  <Text style={[styles.questionHint, { marginLeft: 8 }]}>{t.waitingFor(firstMatch.name)}</Text>
+                </View>
+              ) : (
+                <>
+                  <Text style={[styles.questionHint, { marginTop: Spacing.md }]}>{t.partnerAnswer(firstMatch.name)}</Text>
+                  <Text style={styles.questionText} testID="sondeur-partner-answer">{partnerAnswers[flowQ?.id] ?? ''}</Text>
+                  <TouchableOpacity
+                    onPress={nextAfterReveal}
+                    activeOpacity={0.8}
+                    testID="sondeur-next"
+                    style={[styles.optionBtn, styles.optionBtnSelected, { marginTop: Spacing.md, borderWidth: 0 }]}
+                  >
+                    <LinearGradient
+                      colors={[Colors.primary.red, Colors.primary.purple]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[styles.optionBtnGrad, { paddingVertical: Spacing.md, justifyContent: 'center' }]}
+                    >
+                      <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>{t.next}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          ) : null}
+
+          {/* Champ de saisie libre : la question ne se passe pas. */}
+          {flowMode === 'answer' ? (
           <View style={styles.optionsWrap}>
             <TextInput
               style={[styles.customInput, { fontFamily: Typography.fontFamily.regular, minHeight: 120, textAlignVertical: 'top', fontSize: 16 }]}
-              placeholder="Écrivez votre réponse ici..."
+              placeholder={t.placeholder}
               placeholderTextColor={Colors.text.primary40}
               value={customText}
               onChangeText={setCustomText}
               multiline
               maxLength={500}
             />
-            {/* Pudeur : chacun peut garder un sujet pour la rencontre. */}
-            <TouchableOpacity
-              onPress={() => setCustomText(VIVE_VOIX)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              testID="sondeur-vive-voix"
-              style={{ marginTop: Spacing.sm }}
-            >
-              <Text style={styles.questionHint}>
-                Sujet trop personnel ? Touchez ici pour répondre : « {VIVE_VOIX} ».
-              </Text>
-            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleAnswer}
               activeOpacity={0.8}
@@ -652,18 +693,19 @@ export default function MatchesScreen() {
               >
                 {submittingAnswer ? (
                   <>
-                    <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>Analyse en cours…</Text>
+                    <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>{t.sending}</Text>
                     <ActivityIndicator size="small" color="#fff" style={{ marginLeft: 8 }} />
                   </>
                 ) : (
                   <>
-                    <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>Valider la réponse</Text>
+                    <Text style={[styles.optionTextSelected, { fontFamily: Typography.fontFamily.semiBold, fontSize: 16, textAlign: 'center', flex: 0, flexGrow: 0, flexShrink: 0, flexBasis: 'auto' }]}>{t.submit}</Text>
                     <Check size={18} color="#fff" strokeWidth={3} style={{ marginLeft: 8 }} />
                   </>
                 )}
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
     );
@@ -803,13 +845,8 @@ export default function MatchesScreen() {
 
               {/* ── Timeline 3 jours ────────────────────────────────── */}
               <View style={styles.timelineCard}>
-                <Text style={styles.sectionTitle}>Parcours Harmonie — 3 jours</Text>
-                <Text style={styles.privacyNote}>
-                  Chaque jour : des questions sur ce qui vous rapproche, et quelques-unes sur les points dont il
-                  vaut mieux parler tôt. Quand une question part d’un point où vous avez répondu pareil, l’autre
-                  saura que vous êtes d’accord là-dessus. Vos réponses personnelles ne sont jamais montrées, et
-                  aucun sujet sensible n’est abordé sans votre accord.
-                </Text>
+                <Text style={styles.sectionTitle}>{t.journeyTitle}</Text>
+                <Text style={styles.privacyNote}>{t.journeyIntro}</Text>
                 <View style={styles.timeline}>
                   {dayThemes.map((d, i) => (
                     <DayStep
@@ -819,15 +856,16 @@ export default function MatchesScreen() {
                       theme={d.theme}
                       isLast={i === dayThemes.length - 1}
                       onPressActive={openQuestionFlow}
-                      lockedLabel={getSondeurLockedLabel(d.day, dayState)}
+                      lockedLabel={getSondeurLockedLabel(d.day, dayState, lang)}
+                      lang={lang}
+                      count={dbQuestions.filter((q: any) => q.day === d.day).length}
                     />
                   ))}
                 </View>
                 {waitingForNextDay && (
                   <View style={styles.nextDayNotice} testID="sondeur-next-day">
                     <Text style={styles.nextDayNoticeText}>
-                      Vos 7 questions du jour sont faites. La prochaine série s'ouvre{' '}
-                      {dayState.daysUntilUnlock <= 1 ? 'demain' : `dans ${dayState.daysUntilUnlock} jours`}.
+                      {t.nextDay(dayState.daysUntilUnlock)}
                     </Text>
                   </View>
                 )}
@@ -847,11 +885,11 @@ export default function MatchesScreen() {
                     style={styles.questionDayCardGrad}
                   >
                     <View style={styles.questionDayCardLeft}>
-                      <View style={styles.questionDayEmoji}><ThemeIcon theme={dayThemeMeta?.theme ?? dayData.theme} size={22} color="#FFFFFF" /></View>
+                      <View style={styles.questionDayEmoji}><ThemeIcon theme={dayThemeMeta?.theme ?? t.dayThemes[currentDay - 1]} size={22} color="#FFFFFF" /></View>
                       <View>
-                        <Text style={styles.questionDayTitle}>Question du jour</Text>
+                        <Text style={styles.questionDayTitle}>{t.todayTitle}</Text>
                         <Text style={styles.questionDaySub}>
-                          Jour {currentDay} · {dayThemeMeta?.theme ?? dayData.theme} · {totalQuestionsToday} question{totalQuestionsToday > 1 ? 's' : ''}
+                          {t.day} {currentDay} · {dayThemeMeta?.theme ?? t.dayThemes[currentDay - 1]} · {t.questionCount(totalQuestionsToday)}
                         </Text>
                       </View>
                     </View>

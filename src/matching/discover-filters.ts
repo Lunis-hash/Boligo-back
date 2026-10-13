@@ -4,6 +4,7 @@
  * s'appliquent dans LES DEUX SENS : un profil n'est proposé (ou invitable)
  * que si chacun entre dans les critères de l'autre.
  */
+import { parseAgeRange } from '../interview/questions.v82';
 import { answerKeys } from '../interview/questions.data';
 import { RawAnswers, ReportContext } from './divergence.engine';
 
@@ -109,7 +110,16 @@ export function acceptsCandidate(
   candidate: FilterSubject,
 ): boolean {
   const agePref = viewer.answers.M0_Q01;
-  if (viewer.age && candidate.age) {
+  // V8.2 : seule la plage réellement acceptée (V82_M0_02) filtre, dans les
+  // deux sens ; la tranche idéale (V82_M0_01) ne sert qu'au classement.
+  const accepted = parseAgeRange(viewer.answers.V82_M0_02);
+  if (accepted) {
+    if (
+      candidate.age &&
+      (candidate.age < accepted[0] || candidate.age > accepted[1])
+    )
+      return false;
+  } else if (viewer.age && candidate.age) {
     const gap = candidate.age - viewer.age;
     if (Math.abs(gap) > maxAgeGap(agePref)) return false;
     if (agePref === 'B' && gap >= 0) return false;
@@ -228,13 +238,19 @@ export function birthDateBounds(
   viewerAge: number | null,
   agePref: string | undefined,
   now = new Date(),
+  /** V8.2 : plage d'âges acceptée (« 25-40 »), prioritaire sur M0_Q01. */
+  acceptedRange?: string,
 ): { gte?: Date; lte?: Date } | undefined {
-  if (!viewerAge) return undefined;
   const yearsAgo = (n: number) => {
     const d = new Date(now);
     d.setFullYear(d.getFullYear() - n);
     return d;
   };
+  const accepted = parseAgeRange(acceptedRange);
+  // Un an de marge de chaque côté : le filtre exact (acceptsCandidate) tranche.
+  if (accepted)
+    return { gte: yearsAgo(accepted[1] + 2), lte: yearsAgo(accepted[0] - 1) };
+  if (!viewerAge) return undefined;
   // Toujours dans la limite d'écart du membre (un an de marge de chaque côté).
   const gap = maxAgeGap(agePref);
   const oldest = yearsAgo(viewerAge + gap + 2);
