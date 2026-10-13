@@ -40,13 +40,15 @@ function stripe(args, { json = true } = {}) {
   const r = spawnSync(STRIPE_BIN, ['--color', 'off', ...args], {
     encoding: 'utf8',
     timeout: 60000,
-    env: { ...process.env, STRIPE_API_KEY: KEY, STRIPE_TEST_SECRET_KEY: '' },
+    env: { ...process.env, STRIPE_API_KEY: KEY, STRIPE_TEST_SECRET_KEY: '', STRIPE_CLI_TELEMETRY_OPTOUT: '1' },
   });
-  const text = `${r.stdout || ''}${r.stderr || ''}`;
+  // JSON sur la sortie standard seulement (le CLI écrit ses messages annexes sur stderr).
+  const out = r.stdout || '';
+  const text = `${out}${r.stderr || ''}`;
   if (!json) return { status: r.status, text };
-  const start = text.indexOf('{');
+  const start = out.indexOf('{');
   let data = null;
-  try { data = start >= 0 ? JSON.parse(text.slice(start)) : null; } catch { data = null; }
+  try { data = start >= 0 ? JSON.parse(out.slice(start)) : null; } catch { data = null; }
   return { status: r.status, text, data };
 }
 const sget = (p, query = {}) => stripe(['get', p, ...Object.entries(query).flatMap(([k, v]) => ['-d', `${k}=${v}`])]).data;
@@ -74,13 +76,17 @@ function preflight() {
   ];
   for (const [p, extra] of probes) {
     const d = stripe(['post', p, ...extra]).data;
-    const paramError = !!d?.error && !isPermissionError(d) && /parameter|param|required/i.test(`${d.error.code} ${d.error.message}`);
+    const paramError = d?.error?.type === 'invalid_request_error' && !isPermissionError(d);
     ok = record(`Permission écriture ${p} (sonde sans création)`, paramError, d?.error ? `${d.error.code || ''} ${String(d.error.message).slice(0, 100)}` : 'réponse inattendue (objet créé ?)') && ok;
   }
 
   // Webhooks existants : instantané et décision.
   const list = sget('/v1/webhook_endpoints', { limit: 100 });
-  const eps = (list?.data || []).map((e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode }));
+  if (!Array.isArray(list?.data)) {
+    record('Webhooks du compte lisibles', false, list?.error?.message || 'lecture impossible');
+    return false;
+  }
+  const eps = list.data.map((e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode }));
   fs.writeFileSync(SNAPSHOT, JSON.stringify(eps, null, 2));
   if (OUT) { fs.mkdirSync(OUT, { recursive: true }); fs.writeFileSync(path.join(OUT, 'webhooks-avant.json'), JSON.stringify(eps, null, 2)); }
   for (const e of eps) console.log(`   webhook ${e.id} ${e.status} ${e.url} [${e.enabled_events.join(', ')}]`);
@@ -96,7 +102,8 @@ function preflight() {
 function webhooksAfter() {
   const before = JSON.parse(fs.readFileSync(SNAPSHOT, 'utf8'));
   const list = sget('/v1/webhook_endpoints', { limit: 100 });
-  const after = (list?.data || []).map((e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode }));
+  if (!Array.isArray(list?.data)) { console.log('⚠️ Webhooks illisibles après la recette : comparaison impossible'); return; }
+  const after = list.data.map((e) => ({ id: e.id, url: e.url, status: e.status, enabled_events: [...e.enabled_events].sort(), api_version: e.api_version, description: e.description, livemode: e.livemode }));
   if (OUT) fs.writeFileSync(path.join(OUT, 'webhooks-apres.json'), JSON.stringify(after, null, 2));
   const same = JSON.stringify(before) === JSON.stringify(after);
   console.log(`${same ? '✅' : '⚠️'} Configuration des webhooks Stripe ${same ? 'identique avant et après la recette' : 'MODIFIÉE pendant la recette (voir webhooks-avant/apres.json)'}`);

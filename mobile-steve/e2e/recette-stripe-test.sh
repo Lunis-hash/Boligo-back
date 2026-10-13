@@ -46,7 +46,9 @@ case "${STRIPE_TEST_SECRET_KEY:-}" in
 esac
 command -v "$STRIPE_BIN" >/dev/null || die "Stripe CLI introuvable (STRIPE_BIN)."
 # Stripe CLI lit la clé dans STRIPE_API_KEY : jamais d'option --api-key (visible dans ps).
-echo "Stripe CLI : $("$STRIPE_BIN" version 2>&1 | head -1)"
+export STRIPE_CLI_TELEMETRY_OPTOUT=1
+CLI_VERSION=$("$STRIPE_BIN" version 2>/dev/null || true)
+echo "Stripe CLI : $(printf '%s\n' "$CLI_VERSION" | grep -i 'stripe version' | head -1)"
 "$STRIPE_BIN" events resend --help 2>&1 | grep -q -- '--webhook-endpoint' \
   || die "« stripe events resend » absent ou syntaxe inattendue dans cette version de Stripe CLI."
 
