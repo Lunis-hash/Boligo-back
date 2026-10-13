@@ -328,13 +328,25 @@ export function gateSondeurQuestion(
       stage: 'theme',
       reasons: ['thème hors grille ou de sécurité'],
     };
-  if (ctx.strict.has(theme) && COMPROMISE.test(q.text))
+  // Compromis : interdit près de la violence et du contrôle (communication) ;
+  // hors cadre validé, interdit sur tout point non négociable.
+  if (
+    ctx.strict.has(theme) &&
+    COMPROMISE.test(q.text) &&
+    (theme === 'communication' || !matchFrame(q.text, 'fr'))
+  )
     return {
       ok: false,
       stage: 'form',
       reasons: ['compromis sur un non-négociable'],
     };
-  if (!isWellFormedQuestion(q.text))
+  // Cadre validé hors violence et contrôle : chercher un terrain d'entente
+  // sur un mode de vie est admis (la tolérance n'est pas une concession).
+  const formText =
+    matchFrame(q.text, 'fr') && theme !== 'communication'
+      ? q.text.replace(/terrain (?:d['’]entente|commun)/giu, 'accord')
+      : q.text;
+  if (!isWellFormedQuestion(formText))
     return { ok: false, stage: 'form', reasons: ['P8 forme'] };
   // Contrat de preuves : preuves connues, du thème, de la bonne nature ;
   // aucun écart ou accord non établi, aucune émotion, intention, habitude

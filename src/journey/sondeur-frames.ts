@@ -114,7 +114,7 @@ export const FRAMES: Frame[] = [
   },
   {
     id: 'C04',
-    fr: "Qu'est-ce que vous ne pourriez pas accepter [dans|au sujet de|concernant] {objet} ?",
+    fr: "Qu'est-ce que vous ne pourriez pas accepter [dans|au sujet de|au sujet du|au sujet des|concernant] {objet} ?",
     en: 'What could you not accept [about|in|regarding] {objet}?',
     use: 'limite personnelle',
   },
@@ -253,8 +253,15 @@ function frameRegex(template: string, lang: 'fr' | 'en'): RegExp {
   let src = '';
   let last = 0;
   for (const m of canon(template).matchAll(/\{(\w+)\}/g)) {
-    src += literal(canon(template).slice(last, m.index));
+    let lit = literal(canon(template).slice(last, m.index));
     const kind = m[1] as SlotKind;
+    // Français : « à » et « de » devant une case libre se contractent
+    // (« aux paris sportifs », « au sujet du soutien »).
+    if (lang === 'fr' && FREE.includes(kind))
+      lit = lit
+        .replace(/(^|[^\p{L}])à $/u, '$1(?:à |au |aux )')
+        .replace(/(^|[^\p{L}])de $/u, "$1(?:de |du |des |d')");
+    src += lit;
     if (kind in CLOSED) {
       const values = CLOSED[kind as keyof typeof CLOSED].map(([fr, en]) =>
         lang === 'fr' ? fr : en,
@@ -330,7 +337,12 @@ export function renderFrame(
     if (!ok) return null;
     const t = canon(out).replace(/\?$/, lang === 'fr' ? ' ?' : '?');
     return lang === 'fr'
-      ? t.replace(/(?<!\p{L})de (années|heures)(?!\p{L})/giu, "d'$1")
+      ? t
+          .replace(/(?<!\p{L})de (années|heures)(?!\p{L})/giu, "d'$1")
+          .replace(/(?<!\p{L})à les(?!\p{L})/giu, 'aux')
+          .replace(/(?<!\p{L})à le(?!\p{L})/giu, 'au')
+          .replace(/(?<!\p{L})de les(?!\p{L})/giu, 'des')
+          .replace(/(?<!\p{L})de le(?!\p{L})/giu, 'du')
       : t;
   };
   const text = fill(f.fr, 'fr');
@@ -342,10 +354,150 @@ export function renderFrame(
 
 /** Mots interdits dans une case libre (français) : attribution, présupposé. */
 const SLOT_BANNED_FR =
-  /(?<!\p{L})(?:votre|vos|partenaire|conjointe?|l['’]autre|l['’]un|l['’]une|chacun|il|elle|ils|elles|lui|leur|tant|toujours|encore|enfin|déjà|trop|vraiment|habitude\p{L}*|problème\p{L}*|peur\p{L}*|angoiss\p{L}*|souffr\p{L}*|addict\p{L}*|dépendance)(?!\p{L})/iu;
+  /(?<!\p{L})(?:votre|vos|partenaire|conjointe?|l['’]autre|l['’]un|l['’]une|il|elle|ils|elles|lui|leur|tant|toujours|encore|enfin|déjà|trop|vraiment|habitude\p{L}*|problème\p{L}*|peur\p{L}*|angoiss\p{L}*|souffr\p{L}*|addict\p{L}*|dépendance)(?!\p{L})/iu;
 /** Même chose en anglais. */
 const SLOT_BANNED_EN =
   /\b(?:your|partner|spouse|the other|one of you|each of you|he|she|him|her|his|hers|still|always|again|finally|already|too|really|habit\w*|problem\w*|fear\w*|anxi\w*|suffer\w*|addict\w*|dependen\w*)\b/i;
+
+/**
+ * Familles de contenus refusés dans une case libre, avec leur motif : deux
+ * idées, effort à sens unique, jugement, jargon, intrusion, sécurité, fait
+ * inventé, difficulté présupposée. [français, anglais].
+ */
+const SLOT_RULES: Array<[string, RegExp, RegExp]> = [
+  [
+    'F4 deux idées dans la case (« et »)',
+    /\p{L}{3,}\s+et\s+(?:le|la|les|l['’]|un|une|des|du|de la|aux?|son|sa|ses)(?!\p{L})/iu,
+    /\b\w{3,} and \w+/i,
+  ],
+  [
+    'F10 effort à sens unique (ne vaut que pour l’un des deux)',
+    /(?<!\p{L})(?:renon\p{L}*|sacrifi\p{L}*|effort\p{L}*|moins (?:acheter|dépenser|boire|fumer|jouer|sortir)|celui qui|celle qui|ceux qui|suivre quelqu['’]un|céder)(?!\p{L})|^(?:accepter|supporter|tolérer|(?:se|vous) résoudre|(?:se|vous) résigner)(?!\p{L})/iu,
+    /\b(?:give up|gave up|giving up|sacrific\w*|effort\w*|whoever|the one who|follow someone|(?:buy|spend|drink|smoke|gamble) less)\b|^(?:accept|put up with|tolerate|resign)\b/i,
+  ],
+  [
+    'F11 jugement moral dans la case',
+    /(?<!\p{L})(?:excès|vice\p{L}*|corvée\p{L}*|laiss\p{L}* aller|respecte rien|abus\p{L}*|dérive\p{L}*|laxis\p{L}*|irrespons\p{L}*|égoïs\p{L}*|paress\p{L}*|capric\p{L}*|immatur\p{L}*|mauvais\p{L}*|honte\p{L}*|gâchis)(?!\p{L})/iu,
+    /\b(?:excess\w*|vice\w*|chore\w*|let (?:themselves|oneself|himself|herself) go|respects nothing|abus\w*|irresponsib\w*|selfish\w*|lazy|laziness|immatur\w*|shame\w*|bad habits?|waste\w*)\b/i,
+  ],
+  [
+    'F7 jargon ou diagnostic dans la case',
+    /(?<!\p{L})(?:compulsi\p{L}*|à risque|loyauté|trouble\p{L}*|syndrome|dysfonction\p{L}*|emprise|narciss\p{L}*|toxique\p{L}*|parentification|codépendan\p{L}*|pathologi\p{L}*|déni)(?!\p{L})/iu,
+    /\b(?:compulsiv\w*|at-risk|loyalty conflict|disorder|syndrome|dysfunction\w*|narciss\w*|toxic|codependen\w*|patholog\w*|denial)\b/i,
+  ],
+  [
+    'F7 case intrusive (revenu, banque, patrimoine)',
+    /(?<!\p{L})(?:bancaire\p{L}*|comptes? en banque|patrimoine|héritage|fortune|salaire\p{L}*|revenus?|propriét\p{L}*)(?!\p{L})/iu,
+    /\b(?:bank\w*|wealth|inheritance|fortune|salar\w*|income|property|assets)\b/i,
+  ],
+  [
+    'F7 case sur la sécurité (cris, coups, menace, contrôle)',
+    /(?<!\p{L})(?:hauss\p{L}* le ton|lev\p{L}* le ton|cri\p{L}*|hurl\p{L}*|gifl\p{L}*|frapp\p{L}*|menac\p{L}*|insult\p{L}*|contrôl\p{L}*|surveill\p{L}*)(?!\p{L})/iu,
+    /\b(?:shout\w*|yell\w*|scream\w*|hit|hits|hitting|slap\w*|threat\w*|insult\w*|control\w*|monitor\w*)\b/i,
+  ],
+  [
+    'F12 fait supposé (nombre, événement ou personne absents des données)',
+    /(?<!\p{L})(?:trois|quatre|cinq|six|sept|huit|neuf|dix|dettes?|récent\p{L}*|dernier|dernière|arrêté\p{L}*|prévu\p{L}*|actuel\p{L}*|ex-\p{L}+|brouille\p{L}*|belle-mère|beau-père)(?!\p{L})|\d/iu,
+    /\b(?:three|four|five|six|seven|eight|nine|ten|debts?|recent\w*|last year|given up|quit|planned|current|former|ex-\w+|falling-out|mother-in-law|father-in-law)\b|\d/i,
+  ],
+  [
+    'F5 difficulté présupposée',
+    /(?<!\p{L})(?:difficult\p{L}*|mal à|manque de|incapacit\p{L}*|faiblesse\p{L}*|échec\p{L}*)(?!\p{L})/iu,
+    /\b(?:difficult\w*|struggl\w*|inabilit\w*|failure\w*|lack of|weakness\w*)\b/i,
+  ],
+];
+
+/**
+ * Sujet de l'écart → mots qui s'y rattachent (français, anglais) : une case
+ * qui nomme le sujet par un synonyme (« fumait », « poker ») lui est liée.
+ */
+const TOPIC_LINKS: Array<[RegExp, RegExp, RegExp]> = [
+  [/tabac/i, /fum|cigarett|tabac|clope/iu, /smok|cigarette|tobacco/i],
+  [
+    /alcool/i,
+    /alcool|boire|buv|verres?(?!\p{L})|apéri|apéro|bière|vin(?!\p{L})/iu,
+    /drink|alcohol|beer|wine|booze/i,
+  ],
+  [
+    /jeux? d.argent/i,
+    /pari|jeu|jeux|mise|casino|poker|loterie|grattage|turf/iu,
+    /bet|gambl|casino|poker|lotter|wager|scratch/i,
+  ],
+  [
+    /temps à soi/i,
+    /solo|seul|soi(?!\p{L})|personnel|espace|indépendan|autonom/iu,
+    /alone|solo|own time|personal|space|independen/i,
+  ],
+  [
+    /déménager|lieu de vie/i,
+    /déménag|ville|lieu|installer|région|pays|distance|quartier|logement/iu,
+    /mov|city|town|place|settl|region|country|distance|relocat|home/i,
+  ],
+  [
+    /emploi/i,
+    /emploi|travail|chômage|licenci|poste(?!\p{L})/iu,
+    /job|work|unemploy|laid off|redundan|income/i,
+  ],
+  [/désir d.enfants/i, /enfant|parent|bébé/iu, /child|kid|parent|baby|babies/i],
+  [
+    /relig|foi/i,
+    /foi(?!\p{L})|relig|culte|prière|baptême|spirit|croyan|église|mosquée|messe/iu,
+    /faith|relig|worship|pray|baptism|spiritual|belief|church|mosque/i,
+  ],
+  [
+    /recomposée|beau-parent|enfants de l.autre/i,
+    /enfant|beau-parent|belle-famille|recompos|union|parent|autorité|éduc/iu,
+    /child|kid|step|blended|parent|authority/i,
+  ],
+  [
+    /famille/i,
+    /famill|avis|approb|désappro|proches|parents/iu,
+    /famil|approv|opinion|relatives|parents/i,
+  ],
+  [
+    /épargne|dépense/i,
+    /épargn|dépens|économ|budget|argent|achat|réserve|côté|plaisir|sortie/iu,
+    /sav|spen[dt]|budget|money|purchase|reserve|treat|outing/i,
+  ],
+];
+
+/**
+ * Concepts qui doivent figurer à la fois dans la case française et dans la
+ * case anglaise (ou dans aucune) : l'anglais dit la même chose.
+ */
+const CONCEPTS: Array<[RegExp, RegExp]> = [
+  [/enfant|bébé/iu, /\b(?:child\w*|kids?|bab(?:y|ies))\b/i],
+  [/fum|cigarett|tabac/iu, /\b(?:smok\w*|cigarettes?|tobacco)\b/i],
+  [
+    /alcool|boire|buv|bière|apéri|apéro|verres?(?!\p{L})/iu,
+    /\b(?:drink\w*|alcohol|beers?)\b/i,
+  ],
+  [
+    /pari|casino|poker|loterie|jeux? d.argent/iu,
+    /\b(?:bet|bets|betting|casinos?|poker|lotter\w*|gambl\w*)\b/i,
+  ],
+  [
+    /épargn|économ|de côté/iu,
+    /\b(?:sav(?:e|es|ed|ing|ings))\b|(?:put|set) aside/i,
+  ],
+  [/achat|achet/iu, /\b(?:purchas\w*|buy\w*|bought|shopping)\b/i],
+  [
+    /déménag|changer de ville|(?:s['’]|vous )?install/iu,
+    /\b(?:mov\w*|relocat\w*)\b|\bsettl\w* (?:in|down|somewhere|elsewhere)\b/i,
+  ],
+  [
+    /chômage|sans (?:emploi|travail)|perd\p{L}* (?:son|un) (?:emploi|travail)/iu,
+    /\b(?:unemploy\w*|jobless)\b|out of work|without (?:a )?(?:job|work)|los[et]\w* (?:their|a|the) job/i,
+  ],
+  [/famil/iu, /\bfamil\w*/i],
+  [/désappro/iu, /\bdisapprov\w*/i],
+  [/(?<!\p{L})foi(?!\p{L})|relig/iu, /\b(?:faith|relig\w*)\b/i],
+  [
+    /union|recompos/iu,
+    /\b(?:union|blended|(?:previous|first|another|other|earlier|former) (?:relationship|marriage|union))\b/i,
+  ],
+  [/ville/iu, /\b(?:city|cities|town\w*)\b/i],
+];
 
 /** Verbe à l'imparfait, 3e personne (« perdait », « ne voulait »). */
 const IMPARFAIT = /^(?:ne |n['’])?(?:se |s['’])?\p{L}+(?:ait|aient)(?!\p{L})/iu;
@@ -410,6 +562,16 @@ export function leakedAnswer(
   const boiler = ` ${words(frameText.replace(/\{\w+\}/g, ' | ')).join(' ')} `;
   for (const a of answers) {
     const aw = words(a);
+    // Adverbe distinctif d'une réponse (« absolument », « régulièrement »,
+    // « regularly ») : il suffit à reconnaître la réponse.
+    for (const w of aw)
+      if (
+        w.length >= 7 &&
+        /(?:ment|ly)$/.test(w) &&
+        qs.includes(` ${w} `) &&
+        !boiler.includes(` ${w} `)
+      )
+        return a;
     const full = aw.filter((w) => !STOP.has(w) && w.length > 2);
     if (full.length >= 2 && aw.length <= 3 && qs.includes(` ${aw.join(' ')} `))
       return a;
@@ -493,6 +655,8 @@ export function frameIssues(
       r.push('F6 case « action » : verbe à l’imparfait attendu');
     if (kind === 'infinitif' && !INFINITIF.test(v))
       r.push('F6 case « infinitif » : verbe à l’infinitif attendu');
+    for (const [why, reFr, reEn] of SLOT_RULES)
+      if (reFr.test(v) || reEn.test(e)) r.push(`${why} — « ${kind} »`);
     if (kind !== 'infinitif' && /(?<!\p{L})vous(?!\p{L})/iu.test(v))
       r.push(`F5 case « ${kind} » : « vous » réservé au cadre`);
     if (
@@ -500,16 +664,30 @@ export function frameIssues(
       hasInterpretation(v) ||
       MORALE.test(v) ||
       ORIGIN_DETOUR.test(v) ||
-      BODY_HEALTH.test(v) ||
+      BODY_HEALTH.test(v.replace(/(?<!\p{L})poids d/giu, 'place d')) ||
       SEXUAL_DETAIL.test(v) ||
       SAFETY_TOPIC.test(v) ||
       STAGED_HARM.test(v) ||
-      COMPROMISE.test(v) ||
-      isIntrusiveQuestion(v)
+      // Compromis : refusé seulement près de la violence et du contrôle ;
+      // la tolérance sur un mode de vie est admise.
+      (COMPROMISE.test(v) &&
+        ctx.gaps.some((g) => g.theme === 'communication')) ||
+      isIntrusiveQuestion(
+        ctx.gaps.some((g) => g.theme === 'communication')
+          ? v
+          : v
+              .replace(COMPROMISE, ' ')
+              .replace(/terrain (?:d['’]entente|commun)/giu, ' '),
+      )
     )
       r.push(
         `F7 case « ${kind} » : contenu interdit (jargon, morale, sécurité, intime ou intrusif)`,
       );
+    for (const [cFr, cEn] of CONCEPTS)
+      if (cFr.test(v) !== cEn.test(e))
+        r.push(
+          `F3 case « ${kind} » : l'anglais ne dit pas la même chose que le français`,
+        );
     // Nombres : identiques dans les deux langues.
     const nums = (s: string) => (s.match(/\d+/g) ?? []).sort().join(',');
     if (nums(v) !== nums(e))
@@ -526,11 +704,22 @@ export function frameIssues(
   );
   if (!ctx.gaps.length) r.push('F8 aucun écart cité');
   else {
-    if (!unitLinked && !ctx.relatesToGap(freeFr, ctx.gaps))
+    const linked = (lang: 1 | 2, t: string) =>
+      ctx.gaps.some((g) =>
+        TOPIC_LINKS.some(
+          ([topic, ...re]) => topic.test(g.topic) && re[lang - 1].test(t),
+        ),
+      );
+    if (
+      !unitLinked &&
+      !ctx.relatesToGap(freeFr, ctx.gaps) &&
+      !linked(1, freeFr)
+    )
       r.push('F8 cases sans lien avec l’écart cité');
     if (
       !unitLinked &&
-      !ctx.gaps.some((g) => THEME_WORDS_EN[g.theme]?.test(freeEn))
+      !ctx.gaps.some((g) => THEME_WORDS_EN[g.theme]?.test(freeEn)) &&
+      !linked(2, freeEn)
     )
       r.push('F8 cases anglaises sans lien avec l’écart cité');
   }

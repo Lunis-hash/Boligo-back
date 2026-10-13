@@ -1583,7 +1583,16 @@ async function gateEval() {
     .filter(Boolean);
   const critic: Record<
     string,
-    Record<string, { ok: boolean; rule?: number | null }>
+    Record<
+      string,
+      {
+        ok: boolean;
+        rule?: number | null;
+        reason?: string;
+        excerpt?: string;
+        overturned?: boolean;
+      }
+    >
   > = {};
   for (const writer of writers) {
     critic[writer] = {};
@@ -1627,12 +1636,16 @@ async function gateEval() {
       );
       void before;
       qs.forEach((q, i) => {
+        const refusal = review?.refusals.find((r) => r.n === i);
         critic[writer][q.id] = review
           ? {
               ok: !review.rejected.has(i),
-              rule: review.refusals.find((r) => r.n === i)?.rule ?? null,
+              rule: refusal?.rule ?? null,
+              ...(refusal?.reason ? { reason: refusal.reason } : {}),
+              ...(refusal?.excerpt ? { excerpt: refusal.excerpt } : {}),
+              ...(review.overturned?.includes(i) ? { overturned: true } : {}),
             }
-          : { ok: false, rule: null };
+          : { ok: false, rule: null, reason: 'relecture indisponible' };
       });
       save('gate-eval-critic.json', critic);
     }

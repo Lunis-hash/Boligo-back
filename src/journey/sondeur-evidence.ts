@@ -625,6 +625,9 @@ export function validate(
     if (q.claim !== 'divergence' || !kinds.has('divergence'))
       reasons.push('P16 question de l’IA hors écart (accord ou neutre)');
     else if (
+      // Cadre validé : le lien des cases à l'écart est contrôlé par le cadre
+      // (synonymes du sujet compris).
+      !opts.framedSlots &&
       !relatesToGap(
         q.text,
         known.filter((e) => e.kind === 'divergence'),

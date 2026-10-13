@@ -1310,7 +1310,7 @@ export function describeReportForAi(
   const lines: string[] = [];
   // Points non négociables et signaux de contrôle : nommés au rédacteur.
   const marks = (d: Divergence) =>
-    `${isNonNegotiable(d) ? ' — POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d’entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.' : ''}${CONTROL_TOPICS.has(d.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance ; jamais l’accès au téléphone ou à la localisation présenté comme une preuve d’amour.' : ''}`;
+    `${isNonNegotiable(d) ? (opts.abstract ? ' — POINT NON NÉGOCIABLE : ne pousse pas au compromis ; mesurer la tolérance de chacun (« pourriez-vous vivre avec… », « combien… », « pendant combien de temps… ») est admis ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.' : ' — POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d’entente ; au jour 3, ce que chacun aurait besoin de savoir avant de s’engager.') : ''}${CONTROL_TOPICS.has(d.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance ; jamais l’accès au téléphone ou à la localisation présenté comme une preuve d’amour.' : ''}`;
   lines.push(
     `Questions comparées : ${report.comparedQuestions}. Incompatibilité déclarée : ${report.hardStop ? 'oui' : 'non'}.`,
   );
