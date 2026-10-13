@@ -57,7 +57,7 @@ export class InterviewController {
   @ApiOperation({ summary: 'Questions et réponses enregistrées d’un module' })
   @ApiQuery({ name: 'lang', required: false, description: 'fr (défaut) ou en' })
   async getModule(
-    @Req() req: any,
+    @Req() req: { user: { id: string } },
     @Param('moduleNumber') moduleNumber: string,
     @Query('lang') lang?: string,
   ) {
@@ -74,7 +74,10 @@ export class InterviewController {
     summary:
       'Enregistre ou remplace une réponse (les réponses de suite devenues sans objet sont effacées)',
   })
-  async saveAnswer(@Req() req: any, @Body() dto: SaveAnswerDto) {
+  async saveAnswer(
+    @Req() req: { user: { id: string } },
+    @Body() dto: SaveAnswerDto,
+  ) {
     return this.interviewService.saveAnswer(req.user.id, dto);
   }
 

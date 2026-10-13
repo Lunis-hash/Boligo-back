@@ -9,13 +9,19 @@ export class SaveAnswerDto {
   @MaxLength(40)
   questionId: string;
 
-  @ApiProperty({ example: 'B,C', description: 'Clé(s) de réponse, ou « 25-40 »' })
+  @ApiProperty({
+    example: 'B,C',
+    description: 'Clé(s) de réponse, ou « 25-40 »',
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(60)
   value: string;
 
-  @ApiProperty({ required: false, description: 'Précision écrite (« une autre langue »)' })
+  @ApiProperty({
+    required: false,
+    description: 'Précision écrite (« une autre langue »)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(80)

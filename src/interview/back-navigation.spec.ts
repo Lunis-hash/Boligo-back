@@ -1,9 +1,6 @@
 import { InterviewService } from './interview.service';
 import { moduleQuestions } from './questions.service';
-import {
-  unmetConditionalAnswers,
-  widenAcceptedAges,
-} from './questions.v82';
+import { unmetConditionalAnswers, widenAcceptedAges } from './questions.v82';
 
 /**
  * Retour à une question précédente du Grand Entretien : une réponse modifiée
@@ -61,7 +58,9 @@ function memoryDb(opts: { status?: 'en_cours' | 'termine' } = {}) {
           responses.find((r) => r.moduleNumber === where.moduleNumber) ?? null,
         ),
       ),
-      findMany: jest.fn(() => Promise.resolve(responses.map((r) => ({ ...r })))),
+      findMany: jest.fn(() =>
+        Promise.resolve(responses.map((r) => ({ ...r }))),
+      ),
       update: jest.fn(
         ({
           where,

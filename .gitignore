@@ -11,3 +11,7 @@ dist/
 *.dump.gpg
 *.dump.gpg.sha256
 boligo-sauvegardes/
+
+# Recette locale (recette.sh) : secrets factices et journaux
+.env.recette
+.recette/

@@ -1,0 +1,8 @@
+Paiement Stripe en mode TEST — 13/10/2026, API locale (build de la branche), base locale
+Commande : STRIPE_TEST_SECRET_KEY=sk_test_… API_URL=http://localhost:3102/api node mobile-steve/e2e/paiement-test-simple.js
+plans 200 : parcours_harmonie, 15,00 € TTC
+create-payment-intent 201
+Stripe confirm (pm_card_visa) : succeeded, livemode=false
+POST /payment/confirm 200 : credited=true, credits=1
+GET /payment/purchases 200 : 1500 centimes, « Parcours Harmonie », délai de rétractation 27/10/2026
+Aucun paiement réel ; aucune clé dans ce fichier.

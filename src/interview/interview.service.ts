@@ -3,7 +3,6 @@ import { profileReadyEmail } from '../common/email-templates';
 import {
   Injectable,
   Optional,
-  NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -347,10 +346,7 @@ export class InterviewService {
       where: { interviewId },
       select: { id: true, rawResponses: true },
     });
-    const removed = unmetConditionalAnswers(
-      collectRawAnswers(rows),
-      version,
-    );
+    const removed = unmetConditionalAnswers(collectRawAnswers(rows), version);
     if (!removed.length) return [];
     const drop = new Set(
       removed.flatMap((id) => [id, `${id}${FREE_TEXT_SUFFIX}`]),

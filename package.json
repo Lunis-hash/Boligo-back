@@ -26,7 +26,8 @@
     "seed:admin": "ts-node prisma/seed-admin.ts",
     "seed:demo": "ts-node prisma/seed-demo-profiles.ts",
     "seed:promo": "ts-node prisma/seed-promo-codes.ts",
-    "test:int:deterministe": "ts-node -P tsconfig.json --transpile-only test/sondeur-deterministe.int.ts"
+    "test:int:deterministe": "ts-node -P tsconfig.json --transpile-only test/sondeur-deterministe.int.ts",
+    "seed:recette": "ts-node -P tsconfig.json --transpile-only prisma/seed-recette.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
