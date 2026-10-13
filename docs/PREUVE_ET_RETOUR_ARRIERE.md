@@ -34,7 +34,7 @@ Les fonctions IA hors Sondeur ne changent pas : bio, modération, lectures du jo
 
 Elle est livrée avec `generation.enabled: false`. Le repli déterministe est décrit dans `docs/SONDEUR_REPLI.md`.
 
-Commits : `d69a299` (correction et tests), suivi du commit de recette qui ajoute ce document.
+Commits : `d69a299` (correction et tests), puis `25e9dc9` (recette du build final et ce document).
 
 ## 2. Résultats
 
@@ -118,7 +118,7 @@ Aucune clé `sk_test_` n'est disponible. Le backend a donc tourné avec un secre
 1. **Code** : sur `main`, `git revert -m 1 <commit de merge de la PR #42>`, puis push. Ce revert déclenche le redéploiement Render.
 2. **Rétablissement immédiat** : sur Render, dans le service backend, ouvrir *Deploys*, choisir le déploiement du commit précédent, puis *Redeploy* (ou *Rollback*). Faire de même pour le web si besoin.
 3. **Base de données** : les migrations sont **additives** (nouvelles colonnes ou tables, `prisma/sql/*.sql` idempotents). Elles restent en place : l'ancien code les ignore. Aucune suppression de colonne et aucune restauration de base ne sont nécessaires.
-4. **Coupure du Sondeur IA sans redéploiement de code** : la rédaction IA est déjà désactivée par défaut (`generation.enabled: false`). Pour la couper après l'avoir activée, remettre `false`, ou supprimer le fichier : la rédaction se met alors en fail-closed et les gabarits déterministes prennent le relais.
+4. **Coupure du Sondeur IA** : la rédaction IA est déjà désactivée par défaut (`generation.enabled: false`). Si elle a été activée, deux moyens de la couper : remettre `false` dans le fichier (commit puis redéploiement), ou, sans changer le code, faire pointer la variable Render `SONDEUR_MODELS_FILE` vers un chemin inexistant (simple redémarrage). Dans les deux cas, la rédaction passe en fail-closed et les gabarits déterministes prennent le relais.
 5. **Vérification après retour arrière** :
    - `GET /api/health` ;
    - un parcours fictif en préproduction (inscription → première question du Sondeur) ;
