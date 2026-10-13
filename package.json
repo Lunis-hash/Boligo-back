@@ -25,7 +25,8 @@
     "test:int:safety": "ts-node -P tsconfig.json --transpile-only test/safety-circuit.int.ts",
     "seed:admin": "ts-node prisma/seed-admin.ts",
     "seed:demo": "ts-node prisma/seed-demo-profiles.ts",
-    "seed:promo": "ts-node prisma/seed-promo-codes.ts"
+    "seed:promo": "ts-node prisma/seed-promo-codes.ts",
+    "test:int:deterministe": "ts-node -P tsconfig.json --transpile-only test/sondeur-deterministe.int.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

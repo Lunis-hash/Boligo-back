@@ -86,19 +86,22 @@ describe('repli déterministe (generation)', () => {
     fallback: [],
     escalateAboveRejectRate: 0.5,
   };
-  it('sans réglage : IA active partout', () => {
-    expect(aiGenerationEnabled(base)).toBe(true);
-    expect(aiGenerationBlocked('argent', 'C12', base)).toBe(false);
+  it('sans réglage : rédaction IA désactivée (fail-closed)', () => {
+    expect(aiGenerationEnabled(base)).toBe(false);
+    expect(aiGenerationEnabled(null)).toBe(false);
   });
   it('enabled: false : repli complet', () => {
     const q = { ...base, generation: { enabled: false } };
     expect(aiGenerationEnabled(q)).toBe(false);
-    expect(aiGenerationBlocked('argent', 'C12', q)).toBe(true);
   });
-  it('thème ou cadre désactivé : repli pour eux seuls', () => {
+  it('enabled: true + thème ou cadre désactivé : repli pour eux seuls', () => {
     const q = {
       ...base,
-      generation: { disabledThemes: ['famille'], disabledFrames: ['C03'] },
+      generation: {
+        enabled: true,
+        disabledThemes: ['famille'],
+        disabledFrames: ['C03'],
+      },
     };
     expect(aiGenerationEnabled(q)).toBe(true);
     expect(aiGenerationBlocked('famille', 'C14', q)).toBe(true);

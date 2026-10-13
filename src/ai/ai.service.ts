@@ -1,4 +1,8 @@
-import { qualification, recordTrace } from './sondeur-router';
+import {
+  qualification,
+  recordTrace,
+  sondeurGenerationEnabled,
+} from './sondeur-router';
 import { createHash } from 'crypto';
 import { firstJsonArray, firstJsonObject } from './json-extract';
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
@@ -160,6 +164,12 @@ export interface AiJourneyScope {
   role?: 'critic' | 'escalation';
   /** Plusieurs modèles : second avis, d'une famille encore différente. */
   avoidModel?: string | readonly string[];
+  /**
+   * Rédaction du Sondeur (questions, relances, escalade, relecture de
+   * rédaction) : FAIL-CLOSED. Sans activation explicite dans la
+   * qualification, aucun appel ; jamais de Groq ni de modèle non qualifié.
+   */
+  sondeurWriting?: boolean;
   /** Laboratoire (administrateur) : mêmes modèles qu'un parcours payé, budget propre. */
   lab?: AiLabBudget;
 }
@@ -337,6 +347,13 @@ export class AiService implements OnModuleInit {
     temperature = 0.7,
     scope?: AiJourneyScope,
   ): Promise<{ content: string; model: string }> {
+    // Rédaction du Sondeur désactivée (config absente, illisible, invalide ou
+    // sans generation.enabled === true) : aucun appel, gabarits déterministes.
+    if (scope?.sondeurWriting && !sondeurGenerationEnabled()) {
+      throw new Error(
+        'Rédaction IA du Sondeur désactivée (fail-closed) : gabarits déterministes.',
+      );
+    }
     const inputTokens = estimateTokens(`${systemPrompt ?? ''}${prompt}`);
     const lab = scope?.lab;
     const journeyId =
@@ -395,7 +412,10 @@ export class AiService implements OnModuleInit {
         const candidates = await this.openRouterService.candidates(
           tier,
           scope?.avoidModel,
+          { sondeurWriting: scope?.sondeurWriting },
         );
+        // Rédaction du Sondeur : aucun modèle qualifié autorisé, aucun appel.
+        if (scope?.sondeurWriting && candidates.length === 0) return null;
         const known = candidates
           .map((m) => this.openRouterService!.priceOf(m))
           .filter((p): p is ModelPrice => !!p);
@@ -422,6 +442,7 @@ export class AiService implements OnModuleInit {
             temperature,
             timeoutMs,
             avoidModel: scope?.avoidModel,
+            sondeurWriting: scope?.sondeurWriting,
           },
         );
         const usage = res.usage ?? {};
@@ -511,6 +532,15 @@ export class AiService implements OnModuleInit {
       return null;
     };
 
+    if (scope?.sondeurWriting) {
+      // Rédaction du Sondeur : modèles qualifiés d'OpenRouter seulement,
+      // jamais Groq ni un modèle historique.
+      const only = paid ? await viaOpenRouter() : null;
+      if (only !== null) return only;
+      throw new Error(
+        'Aucun modèle qualifié autorisé pour la rédaction du Sondeur : gabarits déterministes.',
+      );
+    }
     if (paid) {
       // Parcours payé : le meilleur rédacteur (OpenRouter) d'abord, Groq en secours.
       const first = await viaOpenRouter();
@@ -933,6 +963,7 @@ Retourne UNIQUEMENT ce JSON :
           role: 'critic',
           avoidModel: avoid,
           lab,
+          sondeurWriting: true,
         },
       );
       const parsed = firstJsonObject(content) as {
@@ -1025,6 +1056,8 @@ Retourne UNIQUEMENT ce JSON :
     /** Basse pour une lecture fidèle aux réponses ; plus haute pour une question. */
     temperature = 0.3,
     lab?: AiLabBudget,
+    /** Rédaction d'une question (relance) : fail-closed, modèles qualifiés. */
+    sondeurWriting = false,
   ): Promise<{ content: string; model: string } | null> {
     try {
       return await this.queryAiAgentDetailed(
@@ -1033,7 +1066,12 @@ Retourne UNIQUEMENT ce JSON :
         systemPrompt,
         maxTokens,
         temperature,
-        { journeyId, paidOnly: true, lab },
+        {
+          journeyId,
+          paidOnly: true,
+          lab,
+          ...(sondeurWriting ? { sondeurWriting } : {}),
+        },
       );
     } catch (error) {
       this.logger.warn(

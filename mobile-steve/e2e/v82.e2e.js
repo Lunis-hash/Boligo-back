@@ -46,6 +46,22 @@ const record = (step, ok, detail = '') => {
   results.push({ step, ok: !!ok, detail });
   console.log(`${ok ? '✅' : '❌'} ${step}${detail ? ' — ' + detail : ''}`);
 };
+/** Contrôle sans objet dans cette configuration : affiché, jamais compté. */
+const notApplicable = (step, detail = '') => {
+  results.push({ step, ok: null, na: true, detail });
+  console.log(`➖ N/A ${step}${detail ? ' — ' + detail : ''}`);
+};
+/**
+ * Rédaction IA du Sondeur désactivée (production en repli, fail-closed) :
+ * E2E_SONDEUR_AI=off, ou aucune demande de rédaction reçue par le faux
+ * OpenRouter.
+ */
+async function sondeurAiOff() {
+  if (process.env.E2E_SONDEUR_AI === 'off') return true;
+  if (process.env.E2E_SONDEUR_AI === 'on') return false;
+  const stats = await fetch(`${FAKE_URL}/__stats`).then((r) => r.json()).catch(() => null);
+  return !!stats && !(stats.byKind?.sondeur_writer > 0);
+}
 const sql = (q) =>
   execSync(`${E2E_PSQL} -tA`, { input: q, encoding: 'utf8', stdio: ['pipe', 'pipe', 'inherit'] }).trim();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -358,6 +374,14 @@ function watchAppDialogs(pg, sink) {
       });
       const ok = !!fake && traps.size > 0 && ia.length > 0 && servedTraps.length === 0 && badIa.length === 0;
       const ids = [...new Set(ia.flatMap((q) => q.meta.evidence?.evidence || []))];
+      if (await sondeurAiOff()) {
+        // Repli déterministe : aucune question de l'IA, donc aucun faux écart
+        // possible ; un échec (question IA servie) reste un échec.
+        if (ia.length === 0 && servedTraps.length === 0)
+          notApplicable('NO_FAKE_GAP : questions IA sur un écart réel', `IA désactivée (repli déterministe) : 0 question IA servie sur ${rowsQ.length}`);
+        else
+          record('NO_FAKE_GAP : IA désactivée, aucune question IA ne doit être servie', false, `${ia.length} question(s) IA, ${servedTraps.length} piège(s) servis`);
+      } else
       record('NO_FAKE_GAP : aucune question piège servie, chaque question IA porte une preuve d’écart réel', ok,
         !fake ? `faux OpenRouter injoignable (${FAKE_URL}/__traps)`
           : traps.size === 0 ? 'aucun piège rédigé par le faux OpenRouter : le contrôle ne prouve rien'
@@ -447,7 +471,12 @@ function watchAppDialogs(pg, sink) {
         const follow = sql(`SELECT json_build_object('emoji', emoji, 'text', "questionText", 'meta', meta) FROM "HarmonyQuestion" WHERE "journeyId"='${journeyId}' AND day=${day + 1} AND "followUp"`)
           .split('\n').filter(Boolean).map((l) => JSON.parse(l));
         const gaps = insight?.toDiscuss || [];
-        if (day === 1) {
+        if (day === 1 && (await sondeurAiOff())) {
+          // Repli déterministe : la relance est une question rédigée par l'IA,
+          // donc jamais placée ; la lecture du jour reste faite.
+          record('ADAPTIVE_FOLLOWUP (repli) : jour 1 lu, aucune relance IA placée au jour 2', !!insight && follow.length === 0,
+            `lecture ${insight ? insight.source : 'absente'}, ${gaps.length} écart(s) à explorer, ${follow.length} relance(s) au jour 2`);
+        } else if (day === 1) {
           const gapEmoji = THEME_EMOJI[gaps[0]?.theme];
           const ok = insight?.source === 'ia' && gaps.length > 0 && follow.length === 1 && follow[0].emoji === gapEmoji && follow[0].meta?.source === 'suivi';
           record('ADAPTIVE_FOLLOWUP : jour 1 (écart non compris) → une relance au jour 2, sur le thème de l’écart', ok,
@@ -529,9 +558,11 @@ function watchAppDialogs(pg, sink) {
     await page.screenshot({ path: path.join(SHOTS, 'zz-erreur.png') }).catch(() => {});
   } finally {
     await browser.close();
-    const ok = results.filter((r) => r.ok).length;
-    console.log(`\n${ok}/${results.length} vérifications réussies`);
+    const applicable = results.filter((r) => !r.na);
+    const ok = applicable.filter((r) => r.ok).length;
+    const na = results.length - applicable.length;
+    console.log(`\n${ok}/${applicable.length} vérifications réussies${na ? ` (${na} N/A)` : ''}`);
     fs.writeFileSync(path.join(SHOTS, 'resultats.json'), JSON.stringify(results, null, 2));
-    process.exit(ok === results.length ? 0 : 1);
+    process.exit(ok === applicable.length ? 0 : 1);
   }
 })();

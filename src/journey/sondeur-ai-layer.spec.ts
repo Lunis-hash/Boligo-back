@@ -1,3 +1,8 @@
+import {
+  resetQualificationCache,
+  setQualificationForTests,
+} from '../ai/sondeur-router';
+import { ENABLED_QUALIFICATION } from '../../test/sondeur-qualification';
 import { buildDivergenceReport } from '../matching/divergence.engine';
 import { QUESTION_INDEX } from '../interview/questions.data';
 import { isSensitiveQuestion } from '../interview/sensitive-questions';
@@ -223,6 +228,9 @@ function setup(
 }
 
 describe('Sondeur — couche IA des parcours payés', () => {
+  // Rédaction IA du Sondeur activée explicitement (fail-closed sinon).
+  beforeAll(() => setQualificationForTests(ENABLED_QUALIFICATION));
+  afterAll(() => resetQualificationCache());
   const source = process.env.HARMONY_QUESTIONS_SOURCE;
   beforeAll(() => {
     process.env.HARMONY_QUESTIONS_SOURCE = 'ai';
@@ -236,7 +244,12 @@ describe('Sondeur — couche IA des parcours payés', () => {
     await run();
     const args = ai.generateTargetedHarmonyQuestions.mock
       .calls[0] as unknown as unknown[];
-    expect(args[4]).toEqual({ journeyId: 'j1', paidOnly: true });
+    // Rédaction du Sondeur : fail-closed, modèles qualifiés seulement.
+    expect(args[4]).toEqual({
+      journeyId: 'j1',
+      paidOnly: true,
+      sondeurWriting: true,
+    });
     // Minimisation : tranche d'âge, jamais la ville ni l'âge exact.
     expect(args[5]).toMatch(/- Inès : femme, \d+-\d+ ans/);
     expect(args[5]).toMatch(/- Karim : homme, \d+-\d+ ans/);
@@ -347,6 +360,9 @@ describe('Sondeur — couche IA des parcours payés', () => {
 });
 
 describe('Sondeur — contrat de preuves (V8.2)', () => {
+  // Rédaction IA du Sondeur activée explicitement (fail-closed sinon).
+  beforeAll(() => setQualificationForTests(ENABLED_QUALIFICATION));
+  afterAll(() => resetQualificationCache());
   const source = process.env.HARMONY_QUESTIONS_SOURCE;
   beforeAll(() => {
     process.env.HARMONY_QUESTIONS_SOURCE = 'ai';

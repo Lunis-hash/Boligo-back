@@ -1,3 +1,4 @@
+import { sondeurGenerationEnabled } from '../ai/sondeur-router';
 import { OTHER_EN, OTHER_FR } from './sondeur.i18n';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { createHash } from 'crypto';
@@ -1115,6 +1116,8 @@ export class JourneyInsightsService {
     asked: Array<{ day: number; questionText: string; responses: unknown[] }>,
     members: [string, string],
   ): Promise<string | null> {
+    // Rédaction IA du Sondeur désactivée (fail-closed) : aucune relance IA.
+    if (!sondeurGenerationEnabled()) return null;
     // Journée suivante déjà commencée : la question ne pourrait plus changer.
     if (asked.some((q) => q.day === day + 1 && q.responses.length > 0))
       return null;
@@ -1139,6 +1142,8 @@ export class JourneyInsightsService {
       prompt,
       1200,
       0.6,
+      undefined,
+      true,
     );
     if (!written) return null;
     // Un thème qui porte un écart de sécurité garde sa question de limite.

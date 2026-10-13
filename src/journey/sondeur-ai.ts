@@ -80,7 +80,10 @@ export async function draftReviewedSondeur(
     scope: AiJourneyScope;
   },
 ): Promise<SondeurAiResult> {
-  const { report, firstNames, history, couple, scope } = input;
+  const { report, firstNames, history, couple } = input;
+  // Rédaction du Sondeur : fail-closed (qualification avec
+  // generation.enabled === true), modèles qualifiés seulement.
+  const scope: AiJourneyScope = { ...input.scope, sondeurWriting: true };
   // Données minimales : le rédacteur et le relecteur voient les écarts, jamais
   // les réponses des membres (libellés d'option remplacés par leur code).
   const analysis = describeReportForAi(report, firstNames, { abstract: true });

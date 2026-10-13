@@ -80,12 +80,29 @@ export function qualification(now = Date.now()): Qualification | null {
   return value;
 }
 
-/** L'IA rédige-t-elle les questions du Sondeur ? (repli déterministe sinon) */
-export function aiGenerationEnabled(q = qualification()): boolean {
-  return q?.generation?.enabled !== false;
+/**
+ * FAIL-CLOSED : la rédaction IA du Sondeur (questions, relances, escalade,
+ * relecture de rédaction) n'est active que si le fichier de qualification
+ * existe, se lit, est valide ET porte `generation.enabled === true` (le
+ * booléen, rien d'autre). Fichier absent, JSON invalide, `enabled` absent,
+ * `"true"` en chaîne, `false` : désactivée, aucun appel, gabarits
+ * déterministes. Rien ne la réactive tout seul.
+ */
+export function sondeurGenerationEnabled(q = qualification()): boolean {
+  return !!q && q.generation?.enabled === true;
 }
 
-/** Thème ou cadre désactivé : la question de l'IA est écartée (repli). */
+/** L'IA rédige-t-elle les questions du Sondeur ? (repli déterministe sinon) */
+export function aiGenerationEnabled(q = qualification()): boolean {
+  return sondeurGenerationEnabled(q);
+}
+
+/**
+ * Thème ou cadre désactivé dans la qualification : la question de l'IA est
+ * écartée (repli). Le verrou global (fail-closed) est appliqué à l'appel de
+ * l'IA (aucune question n'est alors rédigée) ; ce contrôle porte sur une
+ * question déjà rédigée.
+ */
 export function aiGenerationBlocked(
   theme: string,
   frameId: string | null,
@@ -93,11 +110,15 @@ export function aiGenerationBlocked(
 ): boolean {
   const g = q?.generation;
   if (!g) return false;
-  if (g.enabled === false) return true;
   return (
     !!g.disabledThemes?.includes(theme) ||
     (!!frameId && !!g.disabledFrames?.includes(frameId))
   );
+}
+
+/** Pour les tests : qualification imposée (null : aucune). */
+export function setQualificationForTests(q: Qualification | null) {
+  cached = { at: Number.MAX_SAFE_INTEGER / 2, value: q };
 }
 
 /** Pour les tests. */
@@ -136,6 +157,11 @@ export function modelsFor(
     avoid?: string | readonly string[];
     lang?: 'fr' | 'en';
     q?: Qualification | null;
+    /**
+     * Rédaction du Sondeur (fail-closed) : seulement les modèles qualifiés,
+     * jamais les préférences historiques ou provisoires.
+     */
+    strict?: boolean;
   } = {},
 ): { models: string[]; qualified: boolean } {
   const q = options.q === undefined ? qualification() : options.q;
@@ -143,6 +169,7 @@ export function modelsFor(
     [...new Set(list)].filter(
       (m) => !/:free$/.test(m) && !sameFamily(m, options.avoid),
     );
+  if (!q && options.strict) return { models: [], qualified: false };
   if (!q) {
     // Mode provisoire : préférences historiques (rédacteur Claude, relecteur GPT).
     const legacy: Record<SondeurRole, string[]> = {

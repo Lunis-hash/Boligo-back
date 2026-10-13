@@ -13,6 +13,7 @@ import {
   modelsFor,
   qualification,
   restrictToQualified,
+  sondeurGenerationEnabled,
 } from './sondeur-router';
 
 /** Rôle du Sondeur porté par chaque rôle OpenRouter (hors usages courants). */
@@ -96,6 +97,8 @@ export interface OpenRouterCallOptions {
   timeoutMs?: number;
   /** Rédacteur (et premier relecteur) à écarter : autre famille. */
   avoidModel?: string | readonly string[];
+  /** Rédaction du Sondeur : modèles qualifiés seulement (fail-closed). */
+  sondeurWriting?: boolean;
 }
 
 /** Prix d'un modèle en dollars par million de jetons. */
@@ -201,11 +204,26 @@ export class OpenRouterService {
   async candidates(
     role: OpenRouterRole,
     avoid?: string | readonly string[],
+    /** Rédaction du Sondeur : modèles qualifiés seulement (fail-closed). */
+    opts: { sondeurWriting?: boolean } = {},
   ): Promise<string[]> {
     // Rôles du Sondeur : modèles qualifiés par le banc d'essai (routeur) ;
     // une variable d'environnement ne peut choisir qu'un modèle qualifié.
     const sondeurRole = SONDEUR_ROLE[role];
     const env = parseModelList(process.env[OPENROUTER_MODEL_ENV[role]]);
+    if (opts.sondeurWriting) {
+      // Rédaction du Sondeur : rôle du Sondeur obligatoire, IA activée par
+      // la qualification, aucun modèle historique ni provisoire.
+      if (!sondeurRole || !sondeurGenerationEnabled()) return [];
+      const strict = [
+        ...restrictToQualified(env, sondeurRole),
+        ...modelsFor(sondeurRole, { avoid, strict: true }).models,
+        ...(sondeurRole === 'writer'
+          ? modelsFor('fallback', { avoid, strict: true }).models
+          : []),
+      ];
+      return this.priced(strict, avoid);
+    }
     const wanted = sondeurRole
       ? [
           ...restrictToQualified(env, sondeurRole),
@@ -216,6 +234,14 @@ export class OpenRouterService {
             : []),
         ]
       : [...env, ...OPENROUTER_PREFERENCES[role]];
+    return this.priced(wanted, avoid);
+  }
+
+  /** Sans doublon, jamais gratuit, au catalogue et sous le prix plafond. */
+  private async priced(
+    wanted: string[],
+    avoid?: string | readonly string[],
+  ): Promise<string[]> {
     const cap = maxPrice();
     const catalog = await this.catalogPrices();
     const out: string[] = [];
@@ -253,7 +279,9 @@ export class OpenRouterService {
     }
     const defaults = AGENT_DEFAULTS[agentName];
     const role = options.role ?? 'default';
-    const models = await this.candidates(role, options.avoidModel);
+    const models = await this.candidates(role, options.avoidModel, {
+      sondeurWriting: options.sondeurWriting,
+    });
     if (models.length === 0) {
       throw new Error(
         `[OpenRouter] Aucun modèle disponible sous le prix plafond pour le rôle ${role}`,

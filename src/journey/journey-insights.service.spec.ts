@@ -1,3 +1,8 @@
+import {
+  resetQualificationCache,
+  setQualificationForTests,
+} from '../ai/sondeur-router';
+import { ENABLED_QUALIFICATION } from '../../test/sondeur-qualification';
 import { THEMES } from '../matching/divergence.engine';
 import {
   JourneyInsightsService,
@@ -260,6 +265,9 @@ const reviewer = (verdict: 'ok' | 'refus' | 'absent' = 'ok') =>
   );
 
 describe('JourneyInsightsService — lectures du Sondeur', () => {
+  // Rédaction IA du Sondeur activée explicitement (fail-closed sinon).
+  beforeAll(() => setQualificationForTests(ENABLED_QUALIFICATION));
+  afterAll(() => resetQualificationCache());
   let seq = 0;
   const newJourneyId = () => `journey-${++seq}`;
 
