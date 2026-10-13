@@ -195,3 +195,26 @@ Déclencheurs : santé KO, erreurs 5xx répétées, paiement ou parcours cassé.
 3. **Base de données** : ne rien supprimer. Les colonnes ajoutées sont nullables et ignorées par l'ancien code. Le déclencheur ne s'active que lors d'une modification d'une version déjà fixée. Restaurer la sauvegarde du §2.1 **uniquement** en cas de corruption de données, ce qui n'est pas attendu : ces migrations ne modifient aucune donnée.
 4. **Sondeur IA seul** : il est déjà coupé par défaut. S'il a été activé, remettre `generation.enabled: false`, ou faire pointer `SONDEUR_MODELS_FILE` vers un chemin inexistant puis redémarrer.
 5. Vérifier de nouveau le §4.
+
+## 6. État constaté en production et conditions avant l'ouverture aux paiements
+
+Ces constats viennent de lectures seules, faites le 13/10/2026 : journaux de démarrage du déploiement en ligne `5853aa6` (Render) et liste des projets Supabase. Aucune modification n'a été faite.
+
+| Point | Constat | Action |
+|---|---|---|
+| Stripe | Connecté au compte « environnement de test BOLIGO », **mode test** ; secret du webhook présent (aucun avertissement) | Rester en test jusqu'à la décision de passage en réel (`docs/STRIPE_PASSAGE_EN_LIVE.md`) |
+| **Mentions de facturation** | Avertissement au démarrage : **« Factures incomplètes, à renseigner : `BILLING_SELLER_NAME`, `BILLING_SELLER_LEGAL_FORM`, `BILLING_SELLER_ADDRESS`, `BILLING_SELLER_SIREN`, `BILLING_MEDIATOR`, `BILLING_SELLER_VAT_NUMBER` »** | **Bloquant avant tout utilisateur payant** : raison sociale, forme juridique, adresse, SIREN, médiateur de la consommation, n° de TVA (ou `BILLING_VAT_FRANCHISE=true` si franchise en base, à confirmer avec l'expert-comptable). Pour le réel, ajouter aussi `BILLING_ENABLED=true` et `BILLING_EARLY_START_CONSENT_REQUIRED=true`. L'avertissement disparaît du journal une fois tout renseigné |
+| Notifications e-mail | « Mode d'envoi : resend » : envoi réel configuré | Vérifier que le domaine d'envoi (`EMAIL_FROM`) est vérifié dans Resend, puis faire un envoi test vers une adresse de l'équipe |
+| Notifications push | Service Expo (`exp.host`) ; jetons enregistrés par l'app native (build EAS). Rien sur le web | Tester sur un téléphone avec une build de l'app ; vérifier le `projectId` EAS. Remarque : le jeton push complet est écrit dans les journaux (`notification.service.ts`) ; à masquer |
+| Variables non visibles dans les journaux | `OTP_DEBUG`, `VIDEO_TEST_UNLOCK`, `INSIGHTS_RETRY_AFTER_MS`, `SONDEUR_MODELS_FILE`, `INTERVIEW_VERSION` | À vérifier par Steve dans Render → `Boligo-back` → *Environment* (§2.4) |
+| Sauvegarde Supabase | Projet BOLIGO : « Lunis-hash's Project » (`hhnnsevawhhtzdffnomv`). Ne pas confondre avec `oweke-staging`. Le connecteur ne permet pas de lire les sauvegardes | À vérifier par Steve : Supabase → *Database* → *Backups*. Sans sauvegarde quotidienne (offre gratuite), faire un `pg_dump` depuis un poste de confiance avant la fusion (§2.1) |
+| Contrôle de santé Render | `healthCheckPath` vide | À régler sur `/api/health` au moment du déploiement, avec accord (§2.5) |
+| Stripe Checkout | Devise convertie automatiquement selon la localisation (17,46 $US vu pendant la recette, encaissement en EUR) | Désactiver *Adaptive Pricing* dans Stripe avant le réel, si l'on veut afficher toujours 15 € |
+
+**Ordre conseillé :**
+1. sauvegarde Supabase vérifiée ;
+2. variables Render vérifiées ;
+3. déploiement contrôlé (§3 à §5), encore en Stripe **test**, sans utilisateurs payants ;
+4. mentions de facturation renseignées et contrôlées (facture test) ;
+5. notifications e-mail et push testées ;
+6. seulement ensuite, ouverture aux paiements, puis passage en réel.
