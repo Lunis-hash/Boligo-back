@@ -24,6 +24,27 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    headers:
+      # En-têtes de sécurité HTTP (envoyés par Render : une balise <meta http-equiv> serait ignorée par les navigateurs).
+      # nosniff est déjà ajouté par Render ; il est déclaré ici pour ne plus en dépendre.
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # Caméra et micro : appels vidéo Daily.co (iframe) ; géolocalisation : recherche de ville (Nominatim).
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(self "https://*.daily.co"), microphone=(self "https://*.daily.co"), geolocation=(self), payment=(), usb=(), magnetometer=(), gyroscope=()
+      # CSP en mode Report-Only d'abord : le navigateur signale les écarts sans rien bloquer. À passer en
+      # Content-Security-Policy une fois l'application vérifiée (Expo web, Daily.co, sons, géocodage).
+      - path: /*
+        name: Content-Security-Policy-Report-Only
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' blob: https://assets.mixkit.co; connect-src 'self' https://boligo-back.onrender.com https://nominatim.openstreetmap.org https://*.daily.co wss://*.daily.co; frame-src https://*.daily.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
   - type: web
     name: boligo-admin
