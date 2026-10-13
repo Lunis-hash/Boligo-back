@@ -14,7 +14,7 @@ import { formatDate, formatEuro } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type PartnerType = "ANNONCEUR" | "AMBASSADEUR" | "CREATEUR";
-type PartnerStatus = "NOUVEAU" | "EN_COURS" | "ACCEPTE" | "REFUSE";
+type PartnerStatus = "NOUVEAU" | "EN_COURS" | "ACCEPTE" | "REFUSE" | "SUSPENDU";
 
 interface Partner {
   id: string;
@@ -88,6 +88,15 @@ interface Summary {
   purchases: number;
   revenue: number;
   commission: number;
+  offers?: {
+    total: number;
+    byState: Partial<Record<OfferState, number>>;
+    impressions: number;
+    clicks: number;
+    confirmedSales: number;
+    confirmedRevenue: number;
+    conversionRate: number;
+  };
 }
 
 const TYPE_LABELS: Record<PartnerType, string> = {
@@ -105,12 +114,14 @@ const STATUS_LABELS: Record<PartnerStatus, string> = {
   EN_COURS: "En discussion",
   ACCEPTE: "Accepté",
   REFUSE: "Refusé",
+  SUSPENDU: "Suspendu",
 };
 const STATUS_VARIANT: Record<PartnerStatus, "secondary" | "warning" | "success" | "outline"> = {
   NOUVEAU: "secondary",
   EN_COURS: "warning",
   ACCEPTE: "success",
   REFUSE: "outline",
+  SUSPENDU: "warning",
 };
 
 export default function PartnersPage() {
@@ -171,6 +182,34 @@ export default function PartnersPage() {
             icon={Megaphone}
           />
           <StatCard title="Commissions dues" value={formatEuro(summary.commission)} icon={Wallet} />
+        </div>
+      )}
+      {summary?.offers && (
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="offers-summary">
+          <StatCard
+            title="Offres des marques"
+            value={`${summary.offers.byState.en_ligne ?? 0} en ligne`}
+            hint={`${summary.offers.total} au total · ${summary.offers.byState.programmee ?? 0} programmée(s) · ${summary.offers.byState.expiree ?? 0} expirée(s) · ${(summary.offers.byState.retiree ?? 0) + (summary.offers.byState.brouillon ?? 0)} hors ligne`}
+            icon={Megaphone}
+          />
+          <StatCard
+            title="Clics mesurés (pas des ventes)"
+            value={summary.offers.clicks}
+            hint={`${summary.offers.impressions} affichage(s)`}
+            icon={Megaphone}
+          />
+          <StatCard
+            title="Ventes confirmées par les marques"
+            value={summary.offers.confirmedSales}
+            hint={`${summary.offers.conversionRate} % des clics, d’après les relevés reçus`}
+            icon={Ticket}
+          />
+          <StatCard
+            title="Revenu BOLIGO confirmé (affiliation)"
+            value={formatEuro(summary.offers.confirmedRevenue)}
+            hint="Seules les ventes confirmées comptent"
+            icon={Wallet}
+          />
         </div>
       )}
 
@@ -562,7 +601,7 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
             </div>
           )}
         </div>
-        {p.promoCode && (
+        {(p.promoCode || (p.type === "ANNONCEUR" && p.status === "ACCEPTE")) && (
           <div className="space-y-3 rounded-xl border border-lilas bg-white p-4" data-testid="partner-portal">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -654,7 +693,37 @@ interface Offer {
   isActive: boolean;
   startsAt: string | null;
   endsAt: string | null;
-  stats?: { impressions: number; clicks: number; clickRate: number; live: boolean };
+  stats?: {
+    impressions: number;
+    clicks: number;
+    clickRate: number;
+    live: boolean;
+    state: OfferState;
+    confirmedSales: number;
+    confirmedRevenue: number;
+  };
+}
+
+type OfferState = "brouillon" | "programmee" | "en_ligne" | "expiree" | "retiree";
+
+const STATE_LABELS: Record<OfferState, string> = {
+  brouillon: "Brouillon",
+  programmee: "Programmée",
+  en_ligne: "En ligne",
+  expiree: "Expirée",
+  retiree: "Retirée",
+};
+const STATE_VARIANT: Record<OfferState, "secondary" | "warning" | "success" | "outline"> = {
+  brouillon: "secondary",
+  programmee: "warning",
+  en_ligne: "success",
+  expiree: "outline",
+  retiree: "outline",
+};
+
+/** ISO → AAAA-MM-JJ pour un champ date. */
+function isoToDay(iso: string | null): string {
+  return iso ? iso.slice(0, 10) : "";
 }
 
 const PLACEMENT_LABELS: Record<Placement, string> = {
@@ -689,6 +758,7 @@ function PartnerOffers({ partner: p }: { partner: Partner }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -852,9 +922,23 @@ function PartnerOffers({ partner: p }: { partner: Partner }) {
                 </p>
                 <p className="text-xs text-neutral-600">
                   {o.stats?.impressions ?? 0} affichage(s) · {o.stats?.clicks ?? 0} clic(s) · {o.stats?.clickRate ?? 0} %
+                  {" · "}
+                  <span className="font-semibold text-encre">
+                    {o.stats?.confirmedSales ?? 0} vente(s) confirmée(s) · {formatEuro(o.stats?.confirmedRevenue ?? 0)}
+                  </span>
                 </p>
               </div>
-              <Badge variant={o.stats?.live ? "success" : "outline"}>{o.stats?.live ? "En ligne" : "Hors ligne"}</Badge>
+              <Badge variant={STATE_VARIANT[o.stats?.state ?? "brouillon"]} data-testid={`offer-state-${o.id}`}>
+                {STATE_LABELS[o.stats?.state ?? "brouillon"]}
+              </Badge>
+              <Button
+                variant="outline"
+                onClick={() => setEditId(editId === o.id ? null : o.id)}
+                className="rounded-xl"
+                data-testid={`offer-edit-${o.id}`}
+              >
+                {editId === o.id ? "Fermer" : "Modifier"}
+              </Button>
               <Button
                 variant="outline"
                 disabled={busy || (!o.isActive && p.status !== "ACCEPTE")}
@@ -866,6 +950,9 @@ function PartnerOffers({ partner: p }: { partner: Partner }) {
               >
                 {o.isActive ? "Retirer" : "Publier"}
               </Button>
+              {editId === o.id && (
+                <OfferEditor partnerId={p.id} offer={o} onDone={(m) => { setMsg(m); setEditId(null); void load(); }} />
+              )}
             </div>
           ))}
         </div>
@@ -878,6 +965,188 @@ function PartnerOffers({ partner: p }: { partner: Partner }) {
           {msg}
         </p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Modifier une offre (textes, emplacement, dates) et saisir les ventes
+ * CONFIRMÉES par la marque : ce sont les seules qui comptent comme revenu,
+ * jamais les clics.
+ */
+function OfferEditor({
+  partnerId,
+  offer: o,
+  onDone,
+}: {
+  partnerId: string;
+  offer: Offer;
+  onDone: (msg: string) => void;
+}) {
+  const [form, setForm] = useState({
+    title: o.title,
+    perk: o.perk,
+    placement: o.placement,
+    startsAt: isoToDay(o.startsAt),
+    endsAt: isoToDay(o.endsAt),
+  });
+  const [conv, setConv] = useState<
+    { id: string; month: string; conversions: number; revenue: number; reference: string | null }[]
+  >([]);
+  const [entry, setEntry] = useState({ month: new Date().toISOString().slice(0, 7), conversions: "", revenue: "", reference: "" });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const base = `/admin/partners/${partnerId}/offers/${o.id}`;
+
+  useEffect(() => {
+    apiFetch<typeof conv>(`${base}/conversions`, { token: getToken() })
+      .then(setConv)
+      .catch(() => setConv([]));
+  }, [base]);
+
+  async function save() {
+    setBusy(true);
+    setErr("");
+    try {
+      await apiFetch(base, {
+        method: "PATCH",
+        token: getToken(),
+        body: JSON.stringify({
+          title: form.title,
+          perk: form.perk,
+          placement: form.placement,
+          startsAt: dayToIso(form.startsAt, false),
+          endsAt: dayToIso(form.endsAt, true),
+        }),
+      });
+      onDone("Offre modifiée.");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Modification refusée.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addConversion() {
+    setBusy(true);
+    setErr("");
+    try {
+      setConv(
+        await apiFetch<typeof conv>(`${base}/conversions`, {
+          method: "POST",
+          token: getToken(),
+          body: JSON.stringify({
+            month: entry.month,
+            conversions: Number(entry.conversions),
+            revenue: Number(entry.revenue.replace(",", ".")),
+            reference: entry.reference || undefined,
+          }),
+        }),
+      );
+      setEntry((e) => ({ ...e, conversions: "", revenue: "", reference: "" }));
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Saisie refusée.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeConversion(id: string) {
+    setBusy(true);
+    try {
+      setConv(await apiFetch<typeof conv>(`${base}/conversions/${id}`, { method: "DELETE", token: getToken() }));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const set = (key: keyof typeof form) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  return (
+    <div className="w-full space-y-3 rounded-xl bg-fond p-3" data-testid={`offer-editor-${o.id}`}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="text-sm">
+          <span className="mb-1 block text-neutral-500">Titre</span>
+          <Input className="h-10 rounded-xl bg-white" maxLength={80} value={form.title} onChange={set("title")} />
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block text-neutral-500">Avantage</span>
+          <Input className="h-10 rounded-xl bg-white" maxLength={60} value={form.perk} onChange={set("perk")} />
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block text-neutral-500">Emplacement</span>
+          <select
+            className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm"
+            value={form.placement}
+            onChange={set("placement")}
+          >
+            {(Object.keys(PLACEMENT_LABELS) as Placement[]).map((k) => (
+              <option key={k} value={k}>
+                {PLACEMENT_LABELS[k]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex gap-3">
+          <label className="flex-1 text-sm">
+            <span className="mb-1 block text-neutral-500">Début</span>
+            <Input type="date" className="h-10 rounded-xl bg-white" value={form.startsAt} onChange={set("startsAt")} data-testid="offer-edit-start" />
+          </label>
+          <label className="flex-1 text-sm">
+            <span className="mb-1 block text-neutral-500">Fin (expiration)</span>
+            <Input type="date" className="h-10 rounded-xl bg-white" value={form.endsAt} onChange={set("endsAt")} data-testid="offer-edit-end" />
+          </label>
+        </div>
+      </div>
+      <Button onClick={save} disabled={busy} className="rounded-xl" data-testid="offer-edit-save">
+        Enregistrer les modifications
+      </Button>
+
+      <div className="space-y-2 border-t border-lilas pt-3" data-testid={`offer-conversions-${o.id}`}>
+        <p className="text-sm font-semibold text-encre">Ventes confirmées par la marque</p>
+        <p className="text-xs text-neutral-500">
+          À saisir d’après le relevé de la marque ou de son réseau d’affiliation. Les clics ne sont jamais comptés comme
+          des ventes.
+        </p>
+        {conv.length > 0 && (
+          <ul className="space-y-1 text-xs">
+            {conv.map((c) => (
+              <li key={c.id} className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
+                <span>
+                  {c.month} · {c.conversions} vente(s) · {formatEuro(c.revenue)} pour BOLIGO
+                  {c.reference ? ` · réf. ${c.reference}` : ""}
+                </span>
+                <button className="text-framboise" onClick={() => void removeConversion(c.id)} disabled={busy}>
+                  Supprimer
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="text-xs">
+            <span className="mb-1 block text-neutral-500">Mois</span>
+            <Input type="month" className="h-9 w-36 rounded-xl bg-white" value={entry.month} onChange={(e) => setEntry({ ...entry, month: e.target.value })} data-testid="conv-month" />
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-neutral-500">Ventes</span>
+            <Input className="h-9 w-20 rounded-xl bg-white" inputMode="numeric" value={entry.conversions} onChange={(e) => setEntry({ ...entry, conversions: e.target.value.replace(/[^0-9]/g, "") })} data-testid="conv-count" />
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-neutral-500">Dû à BOLIGO (€)</span>
+            <Input className="h-9 w-28 rounded-xl bg-white" inputMode="decimal" value={entry.revenue} onChange={(e) => setEntry({ ...entry, revenue: e.target.value })} data-testid="conv-revenue" />
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-neutral-500">Référence du relevé</span>
+            <Input className="h-9 w-40 rounded-xl bg-white" maxLength={80} value={entry.reference} onChange={(e) => setEntry({ ...entry, reference: e.target.value })} />
+          </label>
+          <Button onClick={addConversion} disabled={busy || entry.conversions === "" || entry.revenue === ""} className="h-9 rounded-xl" data-testid="conv-add">
+            Ajouter
+          </Button>
+        </div>
+      </div>
+      {err && <p className="text-sm text-framboise">{err}</p>}
     </div>
   );
 }

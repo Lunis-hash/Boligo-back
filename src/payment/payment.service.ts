@@ -230,12 +230,16 @@ export class PaymentService implements OnModuleInit {
     // 1. Chercher en BDD
     const dbPromo = await this.prisma.promoCode.findUnique({
       where: { code: normalizedCode },
-      include: { usages: { where: { userId } } },
+      include: {
+        usages: { where: { userId } },
+        partner: { select: { status: true } },
+      },
     });
 
     if (dbPromo) {
-      // Vérifications
-      if (!dbPromo.isActive) {
+      // Vérifications. Un code de partenaire n'est valable que tant que le
+      // partenaire est accepté (refusé ou suspendu : code sans effet).
+      if (!dbPromo.isActive || (dbPromo.partner && dbPromo.partner.status !== 'ACCEPTE')) {
         return {
           isValid: false,
           finalAmount: planAmount,

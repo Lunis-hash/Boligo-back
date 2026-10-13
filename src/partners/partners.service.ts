@@ -323,6 +323,21 @@ export class PartnersService {
         verifiedBy: null,
       };
     }
+    const verified =
+      current.verificationStatus === PartnerVerification.VERIFIE &&
+      !registration.registrationNumber;
+    if (
+      dto.status === PartnerStatus.ACCEPTE &&
+      current.status !== PartnerStatus.ACCEPTE &&
+      !verified
+    ) {
+      throw new BadRequestException(
+        'Entreprise non vérifiée : contrôlez son numéro (SIREN, TVA…) avant d’accepter le partenaire.',
+      );
+    }
+    const stopping =
+      dto.status === PartnerStatus.REFUSE ||
+      dto.status === PartnerStatus.SUSPENDU;
     const row = await this.prisma.partnerApplication.update({
       where: { id },
       data: {
@@ -330,12 +345,37 @@ export class PartnersService {
         status: dto.status,
         notes: dto.notes,
         commissionRate: dto.commissionRate,
-        // Une candidature refusée perd aussi son Espace partenaire.
+        // Une candidature refusée perd aussi son Espace partenaire (un
+        // partenaire suspendu le garde, en lecture seule).
         ...(dto.status === PartnerStatus.REFUSE
           ? { portalTokenHash: null, portalLinkSentAt: null }
           : {}),
       },
     });
+    if (dto.status && dto.status !== current.status && current.promoCodeId) {
+      if (stopping) {
+        // Refus ou suspension : le code cesse de donner sa réduction.
+        await this.prisma.promoCode.update({
+          where: { id: current.promoCodeId },
+          data: { isActive: false },
+        });
+      } else if (
+        dto.status === PartnerStatus.ACCEPTE &&
+        current.status === PartnerStatus.SUSPENDU
+      ) {
+        // Fin de suspension : le code reprend ; les offres restent à republier.
+        await this.prisma.promoCode.update({
+          where: { id: current.promoCodeId },
+          data: { isActive: true },
+        });
+      }
+    }
+    if (stopping && dto.status !== current.status) {
+      await this.prisma.partnerOffer.updateMany({
+        where: { partnerId: id, isActive: true },
+        data: { isActive: false },
+      });
+    }
     if (registration.registrationNumber) {
       return this.verify(id);
     }
@@ -409,7 +449,12 @@ export class PartnersService {
       include: { promoCode: true },
     });
     if (!partner) throw new NotFoundException('Candidature introuvable');
-    if (!partner.promoCode) {
+    // Une marque acceptée suit ses offres sans code ; les autres profils
+    // ont besoin de leur code (l'Espace montre l'activité de ce code).
+    const brandOnly =
+      partner.type === PartnerType.ANNONCEUR &&
+      partner.status === PartnerStatus.ACCEPTE;
+    if (!partner.promoCode && !brandOnly) {
       throw new BadRequestException(
         'Créez d’abord le code du partenaire : l’Espace partenaire montre son activité.',
       );
@@ -421,7 +466,7 @@ export class PartnersService {
     });
     const link = portalLink(token, partner.language);
     const fr = partner.language !== 'en';
-    const code = partner.promoCode.code;
+    const code = partner.promoCode?.code;
     try {
       await this.email.sendSimpleEmail(
         partner.email,
@@ -441,14 +486,22 @@ export class PartnersService {
             : `Hello ${partner.name}, here is your new link`,
         fr
           ? [
-              `Votre code personnel : ${code}.`,
-              'Votre Espace partenaire montre en temps réel les Parcours payés avec votre code, le montant encaissé et votre commission, mois par mois.',
+              code
+                ? `Votre code personnel : ${code}.`
+                : 'Vos offres apparaissent aux membres BOLIGO dès leur publication.',
+              code
+                ? 'Votre Espace partenaire montre en temps réel les Parcours payés avec votre code, le montant encaissé et votre commission, mois par mois.'
+                : 'Votre Espace partenaire montre les affichages et les clics de vos offres, et les ventes que vous nous avez confirmées.',
               'Ce lien est personnel : ne le partagez pas. Si vous le perdez, écrivez-nous et nous vous en enverrons un nouveau.',
               'Rappel : chaque publication doit porter la mention « Collaboration commerciale » ou « Publicité ».',
             ]
           : [
-              `Your personal code: ${code}.`,
-              'Your Partner space shows, in real time, the Journeys paid with your code, the amount collected and your commission, month by month.',
+              code
+                ? `Your personal code: ${code}.`
+                : 'Your offers are shown to BOLIGO members once published.',
+              code
+                ? 'Your Partner space shows, in real time, the Journeys paid with your code, the amount collected and your commission, month by month.'
+                : 'Your Partner space shows the views and clicks of your offers, and the sales you confirmed to us.',
               'This link is personal: do not share it. If you lose it, write to us and we will send you a new one.',
               'Reminder: every post must be clearly labelled as an ad or a paid partnership.',
             ],
@@ -492,24 +545,31 @@ export class PartnersService {
       where: { portalTokenHash: hashPortalToken(token) },
       include: { promoCode: true },
     });
+    const brandOnly = partner?.type === PartnerType.ANNONCEUR;
     if (
       !partner ||
-      !partner.promoCode ||
-      partner.status === PartnerStatus.REFUSE
+      (!partner.promoCode && !brandOnly) ||
+      (partner.status !== PartnerStatus.ACCEPTE &&
+        partner.status !== PartnerStatus.SUSPENDU)
     ) {
       throw invalid;
     }
     const promo = partner.promoCode;
     // Achats et remboursements : le chiffre d'affaires est net.
-    const sales = await this.prisma.creditTransaction.findMany({
-      where: {
-        promoCodeId: promo.id,
-        type: {
-          in: [TransactionType.achat, TransactionType.remboursement_paiement],
-        },
-      },
-      select: { date: true, euroAmount: true, type: true },
-    });
+    const sales = promo
+      ? await this.prisma.creditTransaction.findMany({
+          where: {
+            promoCodeId: promo.id,
+            type: {
+              in: [
+                TransactionType.achat,
+                TransactionType.remboursement_paiement,
+              ],
+            },
+          },
+          select: { date: true, euroAmount: true, type: true },
+        })
+      : [];
     const revenue =
       Math.round(sales.reduce((sum, s) => sum + (s.euroAmount ?? 0), 0) * 100) /
       100;
@@ -520,7 +580,9 @@ export class PartnersService {
       (s) => s.type === TransactionType.achat && (s.euroAmount ?? 0) === 0,
     ).length;
     const [link, offers] = await Promise.all([
-      this.tracking.linkFunnel(promo.id),
+      promo
+        ? this.tracking.linkFunnel(promo.id)
+        : Promise.resolve({ visits: 0, signups: 0, months: [] }),
       this.tracking.offerStats(partner.id),
     ]);
     return {
@@ -530,8 +592,9 @@ export class PartnersService {
         type: partner.type,
         language: partner.language,
         commissionRate: partner.commissionRate,
+        status: partner.status,
       },
-      shareLink: partnerShareLink(portalBaseUrl(), promo.code),
+      shareLink: promo ? partnerShareLink(portalBaseUrl(), promo.code) : null,
       funnel: {
         visits: link.visits,
         signups: link.signups,
@@ -542,14 +605,16 @@ export class PartnersService {
         months: link.months,
       },
       offers,
-      code: {
-        code: promo.code,
-        discountType: promo.discountType,
-        discountValue: promo.discountValue,
-        isActive: promo.isActive,
-        expiresAt: promo.expiresAt,
-        uses: promo.usedCount,
-      },
+      code: promo
+        ? {
+            code: promo.code,
+            discountType: promo.discountType,
+            discountValue: promo.discountValue,
+            isActive: promo.isActive,
+            expiresAt: promo.expiresAt,
+            uses: promo.usedCount,
+          }
+        : null,
       totals: {
         purchases: paid,
         revenue,
@@ -598,6 +663,8 @@ export class PartnersService {
       purchases,
       revenue: Math.round(revenue * 100) / 100,
       commission: Math.round(commission * 100) / 100,
+      // Offres des marques : clics mesurés et ventes confirmées, séparés.
+      offers: await this.tracking.offersSummary(),
     };
   }
 

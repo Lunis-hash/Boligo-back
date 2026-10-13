@@ -8,7 +8,10 @@ export interface PartnerSpaceData {
     type: 'ANNONCEUR' | 'AMBASSADEUR' | 'CREATEUR';
     language: string;
     commissionRate: number | null;
+    /** SUSPENDU : espace consultable, code et offres coupés. */
+    status?: 'ACCEPTE' | 'SUSPENDU';
   };
+  /** Absent (null) pour une marque sans code personnel. */
   code: {
     code: string;
     discountType: 'percent' | 'fixed' | 'free';
@@ -16,9 +19,9 @@ export interface PartnerSpaceData {
     isActive: boolean;
     expiresAt: string | null;
     uses: number;
-  };
+  } | null;
   /** Lien à partager (?p=CODE) : la réduction est appliquée d'office. */
-  shareLink?: string;
+  shareLink?: string | null;
   /** Tunnel : visites du lien → inscriptions → Parcours payés. */
   funnel?: {
     visits: number;
@@ -40,11 +43,16 @@ export interface PartnerSpaceData {
     impressions: number;
     clicks: number;
     clickRate: number;
+    state?: OfferState;
+    /** Ventes confirmées par la marque (relevé), jamais déduites des clics. */
+    confirmedSales?: number;
   }[];
   totals: { purchases: number; revenue: number; commission: number };
   months: { month: string; purchases: number; revenue: number; commission: number }[];
   updatedAt: string;
 }
+
+export type OfferState = 'brouillon' | 'programmee' | 'en_ligne' | 'expiree' | 'retiree';
 
 export interface SpaceText {
   langSwitch: string;
@@ -89,6 +97,12 @@ export interface SpaceText {
   offerImpressions: string;
   offerClicks: string;
   offerRate: string;
+  offerState: (s: OfferState) => string;
+  offerConfirmed: string;
+  offersClicksNote: string;
+  suspendedTitle: string;
+  suspendedText: string;
+  brandIntro: string;
   rulesTitle: string;
   rules: string[];
   privacy: string;
@@ -152,6 +166,16 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     offerImpressions: 'Affichages',
     offerClicks: 'Clics',
     offerRate: 'Taux de clic',
+    offerState: (s) =>
+      ({ brouillon: 'Brouillon', programmee: 'Programmée', en_ligne: 'En ligne', expiree: 'Expirée', retiree: 'Retirée' })[s],
+    offerConfirmed: 'Ventes confirmées',
+    offersClicksNote:
+      'Un clic n’est pas une vente : seules les ventes que vous nous confirmez (relevé mensuel) figurent dans « Ventes confirmées ».',
+    suspendedTitle: 'Partenariat suspendu',
+    suspendedText:
+      'Votre code et vos offres sont en pause : ils ne sont plus proposés aux membres. Vos chiffres restent consultables. Écrivez-nous à contact@boligo.fr pour reprendre.',
+    brandIntro:
+      'Retrouvez ici les affichages, les clics et les ventes confirmées de vos offres dans BOLIGO, sans aucune donnée sur les membres.',
     rulesTitle: 'Rappels pour vos publications',
     rules: [
       'Indiquez clairement « Collaboration commerciale » ou « Publicité » sur chaque contenu, pendant toute sa durée.',
@@ -220,6 +244,16 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     offerImpressions: 'Views',
     offerClicks: 'Clicks',
     offerRate: 'Click rate',
+    offerState: (s) =>
+      ({ brouillon: 'Draft', programmee: 'Scheduled', en_ligne: 'Live', expiree: 'Expired', retiree: 'Withdrawn' })[s],
+    offerConfirmed: 'Confirmed sales',
+    offersClicksNote:
+      'A click is not a sale: only the sales you confirm to us (monthly statement) appear under “Confirmed sales”.',
+    suspendedTitle: 'Partnership suspended',
+    suspendedText:
+      'Your code and offers are paused: members no longer see them. Your figures remain available. Write to contact@boligo.fr to resume.',
+    brandIntro:
+      'Follow the views, clicks and confirmed sales of your offers in BOLIGO here, with no data about members.',
     rulesTitle: 'Reminders for your posts',
     rules: [
       'Clearly label every piece of content as an ad or a paid partnership (for example #ad), for as long as it is online.',
@@ -267,7 +301,7 @@ export function formatDay(iso: string, lang: PartnerLang): string {
 }
 
 /** Réduction offerte par le code, lisible : « -10 % », « -5,00 € », « Parcours offert ». */
-export function discountLabel(code: PartnerSpaceData['code'], lang: PartnerLang): string {
+export function discountLabel(code: NonNullable<PartnerSpaceData['code']>, lang: PartnerLang): string {
   if (code.discountType === 'free') return lang === 'fr' ? 'Parcours offert' : 'Free Journey';
   if (code.discountType === 'fixed') return `-${formatEuro(code.discountValue / 100, lang)}`;
   return lang === 'fr' ? `-${code.discountValue} %` : `-${code.discountValue}%`;

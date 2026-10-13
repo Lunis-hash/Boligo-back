@@ -76,6 +76,14 @@ function setup() {
         codes.push(row);
         return Promise.resolve(row);
       }),
+      update: jest.fn(({ where, data }: { where: Where; data: Row }) => {
+        const c = codes.find((x) => x.id === where.id)!;
+        Object.assign(c, data);
+        return Promise.resolve(c);
+      }),
+    },
+    partnerOffer: {
+      updateMany: jest.fn(() => Promise.resolve({ count: 0 })),
     },
     creditTransaction: {
       groupBy: jest.fn((args: { where?: { euroAmount?: number } } = {}) =>
@@ -370,5 +378,47 @@ describe('Programme Partenaires : service', () => {
     await expect(
       service.update(apps[0].id, { registrationNumber: 'US1' }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('refuse d’accepter à la main un partenaire dont l’entreprise n’est pas vérifiée', async () => {
+    const { service, apps, registry } = setup();
+    registry.verify.mockResolvedValueOnce({
+      status: PartnerVerification.A_VERIFIER,
+      method: 'Contrôle manuel',
+      officialName: null as unknown as string,
+      note: 'À contrôler.',
+    });
+    await service.apply({
+      ...base,
+      registrationType: PartnerRegistrationType.AUTRE,
+      registrationNumber: 'DEMO-2026-0001',
+    });
+    await flush();
+    await expect(
+      service.update(apps[0].id, { status: PartnerStatus.ACCEPTE }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(apps[0].status).toBe('NOUVEAU');
+  });
+
+  it('suspendre coupe le code et retire les offres ; reprendre réactive le code', async () => {
+    const { service, apps, codes, prisma } = setup();
+    await service.apply(base);
+    await flush();
+    const id = apps[0].id;
+    await service.createCode(id, {});
+    await service.update(id, { status: PartnerStatus.SUSPENDU });
+    expect(codes[0].isActive).toBe(false);
+    expect(prisma.partnerOffer.updateMany).toHaveBeenCalledWith({
+      where: { partnerId: id, isActive: true },
+      data: { isActive: false },
+    });
+    // Lecture seule : un partenaire suspendu garde son Espace.
+    expect(apps[0].portalTokenHash).toBeTruthy();
+    await service.update(id, { status: PartnerStatus.ACCEPTE });
+    expect(codes[0].isActive).toBe(true);
+    // Refus : code coupé et Espace fermé.
+    await service.update(id, { status: PartnerStatus.REFUSE });
+    expect(codes[0].isActive).toBe(false);
+    expect(apps[0].portalTokenHash).toBeNull();
   });
 });

@@ -22,7 +22,11 @@ import { PartnersService } from './partners.service';
 import { PortalRateLimitGuard } from './portal-rate-limit.guard';
 import { TrackingRateLimitGuard } from './tracking-rate-limit.guard';
 import { PartnerTrackingService } from './partner-tracking.service';
-import { OfferImpressionsDto, OfferInputDto } from './dto/offer.dto';
+import {
+  OfferConversionDto,
+  OfferImpressionsDto,
+  OfferInputDto,
+} from './dto/offer.dto';
 import { PartnerPortalDto } from './dto/portal.dto';
 import { ApplyPartnerDto } from './dto/apply-partner.dto';
 import {
@@ -108,6 +112,47 @@ export class PartnersController {
     @Body() dto: OfferInputDto,
   ) {
     return this.tracking.updateOffer(id, offerId, dto);
+  }
+
+  /** Ventes confirmées par la marque (relevé), distinctes des clics mesurés. */
+  @Get('admin/partners/:id/offers/:offerId/conversions')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  conversions(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('offerId', ParseUUIDPipe) offerId: string,
+  ) {
+    return this.tracking.listConversions(id, offerId);
+  }
+
+  @Post('admin/partners/:id/offers/:offerId/conversions')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  addConversion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('offerId', ParseUUIDPipe) offerId: string,
+    @Body() dto: OfferConversionDto,
+    @Req() req: { user: { email: string } },
+  ) {
+    return this.tracking.addConversion(id, offerId, dto, req.user.email);
+  }
+
+  @Delete('admin/partners/:id/offers/:offerId/conversions/:conversionId')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  deleteConversion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('offerId', ParseUUIDPipe) offerId: string,
+    @Param('conversionId', ParseUUIDPipe) conversionId: string,
+  ) {
+    return this.tracking.deleteConversion(id, offerId, conversionId);
+  }
+
+  @Get('admin/partners/offers/summary')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  offersSummary() {
+    return this.tracking.offersSummary();
   }
 
   /** Formulaire public du Programme Partenaires (site et application). */
