@@ -1292,6 +1292,11 @@ const CONTROL_TOPICS = new Set(['M5_Q08', 'M9_Q11', 'M8_Q10']);
 export function describeReportForAi(
   report: DivergenceReport,
   firstNames: [string, string],
+  /**
+   * Données minimales (rédacteur et relecteur du Sondeur) : l'écart sans les
+   * réponses, chaque libellé d'option remplacé par son code.
+   */
+  opts: { abstract?: boolean } = {},
 ): string {
   // Prénoms sur une ligne, sans citation : rien ne peut s'y glisser.
   const [a, b] = firstNames.map(
@@ -1337,7 +1342,9 @@ export function describeReportForAi(
         );
       } else {
         lines.push(
-          `${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »${marks(d)}`,
+          opts.abstract
+            ? `${head} : écart entre deux options (codes ${d.a.key} / ${d.b.key} ; réponses non transmises)${marks(d)}`
+            : `${head} : ${a} « ${d.a.text} » / ${b} « ${d.b.text} »${marks(d)}`,
         );
       }
     }
@@ -1350,7 +1357,7 @@ export function describeReportForAi(
       const head = `- ${THEMES[c.theme].label} — ${c.topic ?? c.label}`;
       if (SAFETY_QUESTIONS.has(c.questionId)) {
         lines.push(
-          `${head} : même réponse « ${c.answer} » — LIMITE DE SÉCURITÉ : uniquement des questions de limite, jamais de compromis.`,
+          `${head} : même réponse${opts.abstract ? '' : ` « ${c.answer} »`} — LIMITE DE SÉCURITÉ : uniquement des questions de limite, jamais de compromis.`,
         );
       } else if (SELF_DISCLOSURE_QUESTIONS.has(c.questionId)) {
         lines.push(
@@ -1366,7 +1373,7 @@ export function describeReportForAi(
         );
       } else {
         lines.push(
-          `${head} : même réponse des deux, « ${c.answer} »${CONTROL_TOPICS.has(c.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance.' : ''}`,
+          `${head} : même réponse des deux${opts.abstract ? ' (non transmise)' : `, « ${c.answer} »`}${CONTROL_TOPICS.has(c.questionId) ? ' — CONTRÔLE POSSIBLE : demande où chacun place la frontière entre confiance et surveillance.' : ''}`,
         );
       }
     }

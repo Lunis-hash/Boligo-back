@@ -28,10 +28,13 @@ import {
   EvidenceItem,
   buildEvidence,
   describeEvidenceForAi,
+  memberAnswerTexts,
   parseClaim,
+  relatesToGap,
   validate,
   validateEn,
 } from './sondeur-evidence';
+import { frameIssues, matchFrame } from './sondeur-frames';
 
 export interface SondeurAiResult {
   /** Questions acceptées par le relecteur, la meilleure de chaque créneau d'abord. */
@@ -78,7 +81,9 @@ export async function draftReviewedSondeur(
   },
 ): Promise<SondeurAiResult> {
   const { report, firstNames, history, couple, scope } = input;
-  const analysis = describeReportForAi(report, firstNames);
+  // Données minimales : le rédacteur et le relecteur voient les écarts, jamais
+  // les réponses des membres (libellés d'option remplacés par leur code).
+  const analysis = describeReportForAi(report, firstNames, { abstract: true });
   // Thème qui porte un écart de sécurité : toujours une question de limite
   // écrite et vérifiée à l'avance, jamais une question de l'IA.
   const safetyThemes = safetyThemesOf(report);
@@ -113,8 +118,14 @@ export async function draftReviewedSondeur(
     report.divergences.filter((d) => isNonNegotiable(d)).map((d) => d.theme),
   );
   // Contrôle de forme par le code avant la relecture.
+  const answers = memberAnswerTexts(report);
   const gate = (q: HarmonyQuestionPayload) => {
-    const v = gateSondeurQuestion(q, { evidenceIndex, safetyThemes, strict });
+    const v = gateSondeurQuestion(q, {
+      evidenceIndex,
+      safetyThemes,
+      strict,
+      answers,
+    });
     if (v.stage === 'form') formRejected.push(q);
     if (v.stage === 'evidence')
       evidenceRejected.push({ question: q, reasons: v.reasons });
@@ -286,6 +297,8 @@ export function gateSondeurQuestion(
     evidenceIndex: EvidenceItem[];
     safetyThemes: Theme[];
     strict: Set<Theme>;
+    /** Réponses des deux membres (filtre anti-fuite) ; par défaut, celles de l'index. */
+    answers?: string[];
   },
 ): {
   ok: boolean;
@@ -293,6 +306,22 @@ export function gateSondeurQuestion(
   reasons: string[];
 } {
   const theme = q.themeKey as Theme;
+  // V8.3 — cadre validé exact (FR et EN), cases liées à l'écart, aucune fuite.
+  const cited = (q.evidence ?? [])
+    .map((id) => ctx.evidenceIndex.find((e) => e.id === id))
+    .filter(
+      (e): e is EvidenceItem => !!e && e.kind === 'divergence' && !e.shared,
+    );
+  const framed = frameIssues(q.text, q.textEn, {
+    gaps: cited,
+    answers:
+      ctx.answers ??
+      ctx.evidenceIndex
+        .filter((e) => e.kind === 'divergence')
+        .flatMap((e) => e.privateTexts),
+    relatesToGap,
+  });
+  if (framed.length) return { ok: false, stage: 'form', reasons: framed };
   if (!THEME_LIST.includes(theme) || ctx.safetyThemes.includes(theme))
     return {
       ok: false,
@@ -328,12 +357,17 @@ export function gateSondeurQuestion(
   const verdict = validate(contract, ctx.evidenceIndex, {
     safetyThemes: ctx.safetyThemes,
     gapOnly: true,
+    framedSlots: Object.values(matchFrame(q.text, 'fr')?.slots ?? {}),
   });
   // Sondeur bilingue : la version anglaise passe les mêmes contrôles.
   if (verdict.ok) {
     const en = validateEn(q.textEn, contract, ctx.evidenceIndex);
     if (!en.ok) return { ok: false, stage: 'evidence', reasons: en.reasons };
-    const enGap = gapQuestionIssuesEn(q.textEn);
+    // Cadre validé : règles du rédacteur sur les cases anglaises seulement.
+    const enSlots = matchFrame(q.textEn ?? '', 'en')?.slots;
+    const enGap = enSlots
+      ? Object.values(enSlots).flatMap((s) => gapQuestionIssuesEn(`${s}?`))
+      : gapQuestionIssuesEn(q.textEn);
     if (enGap.length) return { ok: false, stage: 'form', reasons: enGap };
   }
   return verdict.ok

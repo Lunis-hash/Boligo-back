@@ -2,6 +2,7 @@ import { buildDivergenceReport } from '../matching/divergence.engine';
 import { QUESTION_INDEX } from '../interview/questions.data';
 import { isSensitiveQuestion } from '../interview/sensitive-questions';
 import { describeReportForAi } from './sondeur.generator';
+import { renderFrame } from './sondeur-frames';
 import { THEME_LIST } from '../matching/divergence.engine';
 import { JourneyService, describeCoupleContext } from './journey.service';
 
@@ -20,6 +21,17 @@ type Draft = {
 /** Mot inventé propre à un créneau : les questions ne se ressemblent pas. */
 const word = (n: number) =>
   `zz${String.fromCharCode(97 + (n % 26))}${String.fromCharCode(97 + (Math.floor(n / 26) % 26))}q`;
+
+/** Proposition sur l'écart d'épargne, composée dans un cadre validé. */
+function framed(day: number, variant: string) {
+  const id = ({ 1: 'C12', 2: 'C14', 3: 'C09' } as Record<number, string>)[day];
+  const tag = [0, 1].map((k) => word(200 + day * 10 + k)).join(' ');
+  return renderFrame(
+    id,
+    { montant: '2 000', objet: `l'épargne ${tag} proposition ${variant}` },
+    { objet: `savings ${tag} option ${variant}` },
+  )!;
+}
 
 /** Deux propositions par créneau : la première « A », la seconde « B ». */
 function drafts(): Draft[] {
@@ -154,13 +166,13 @@ function setup(
                   theme: 'Lignes rouges',
                   themeKey: 'argent',
                   emoji: '💬',
-                  // Mots propres au jour : pas de doublon d'un jour à l'autre.
-                  text: `Pour ${[0, 1, 2, 3].map((k) => word(200 + day * 10 + k)).join(' ')}, combien d'épargne mettriez-vous, proposition ${variant} ?`,
+                  // V8.3 : question composée dans un cadre validé (un cadre
+                  // par jour) ; mots propres au jour : pas de doublon.
+                  ...framed(day, variant),
                   options: ['Autre...'],
                   method: 'chiffre',
                   evidence: [gapId],
                   claim: 'ecart',
-                  textEn: `For ${[0, 1, 2, 3].map((k) => word(200 + day * 10 + k)).join(' ')}, how much would you put into savings, option ${variant}?`,
                   optionsEn: ['Other...'],
                   writer: 'anthropic/claude-opus-5',
                 })),

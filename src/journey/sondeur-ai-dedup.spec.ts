@@ -1,6 +1,7 @@
 import { buildDivergenceReport } from '../matching/divergence.engine';
 import { draftReviewedSondeur, sameGapSameAngle } from './sondeur-ai';
 import { buildEvidence } from './sondeur-evidence';
+import { renderFrame } from './sondeur-frames';
 
 /** Couple avec un écart réel sur l'épargne (M4_Q14 A/C). */
 const report = buildDivergenceReport({ M4_Q14: 'A' }, { M4_Q14: 'C' });
@@ -8,36 +9,53 @@ const gapId = buildEvidence(report).find(
   (e) => e.kind === 'divergence' && e.theme === 'argent',
 )!.id;
 
-const draft = (day: number, text: string) => ({
+/** Question composée dans un cadre validé (V8.3). */
+const framed = (
+  id: string,
+  cases: Record<string, string>,
+  casesEn: Record<string, string>,
+) => renderFrame(id, cases, casesEn)!;
+
+const draft = (day: number, q: { text: string; textEn: string }) => ({
   day,
   theme: 'Lignes rouges',
   themeKey: 'argent',
   emoji: '💬',
-  text,
+  text: q.text,
   options: ['Autre...'],
   evidence: [gapId],
   claim: 'ecart',
-  textEn: 'Out of 3,000 earned together, how much would you put into savings?',
+  textEn: q.textEn,
   optionsEn: ['Other...'],
   writer: 'z-ai/glm-5.3-flash',
 });
 
 describe('Sondeur — doublons dans un même parcours', () => {
   it('questions identiques ou quasi identiques : une seule gardée, les autres tracées', async () => {
-    const same =
-      "Sur 3 000 € gagnés à deux, combien mettriez-vous dans l'épargne ?";
-    const close =
-      "Sur 3 000 € gagnés à deux, combien mettriez-vous dans l'épargne commune ?";
-    const other =
-      "Si l'un de vous dépensait presque tout en loisirs chaque mois, pourriez-vous l'accepter ?";
+    const sameQ = framed(
+      'C12',
+      { montant: '3 000', objet: "l'épargne" },
+      { objet: 'savings' },
+    );
+    const closeQ = framed(
+      'C12',
+      { montant: '3 000', objet: "l'épargne commune" },
+      { objet: 'shared savings' },
+    );
+    const otherQ = framed(
+      'C06',
+      { action: 'dépensait presque tout en loisirs' },
+      { action: 'spent nearly everything on leisure' },
+    );
+    const [same, close, other] = [sameQ, closeQ, otherQ].map((q) => q.text);
     const ai = {
       generateTargetedHarmonyQuestions: jest.fn(() =>
         Promise.resolve({
           questions: [
-            draft(1, same),
-            draft(2, same),
-            draft(3, close),
-            draft(3, other),
+            draft(1, sameQ),
+            draft(2, sameQ),
+            draft(3, closeQ),
+            draft(3, otherQ),
           ],
           model: 'z-ai/glm-5.3-flash',
         }),

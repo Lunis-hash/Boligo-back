@@ -28,6 +28,10 @@ import {
   CRITIC_RULES,
   CRITIC_STANCE,
 } from '../journey/clinical-lens';
+import {
+  composeFramedQuestions,
+  framesForPrompt,
+} from '../journey/sondeur-frames';
 import type { DangerCategory } from '../journey/sondeur-insights';
 import { interviewDigest } from '../journey/interview-digest';
 import { decodeUserResponses } from '../interview/questions.data';
@@ -707,17 +711,21 @@ ${label}:
 Tu prépares les questions du JOUR ${angle.day} du Sondeur de ce couple : ${angle.label}, c'est-à-dire ${angle.intent}.
 Les trois jours (${days}) sont préparés séparément : reste à la profondeur de ce jour.
 
-ÉTAPE 1 — ANALYSE (jamais montrée aux membres) : pour chaque écart réel de l'analyse, en une ligne, les deux positions et ce qu'il faudrait confronter à la réalité.
+ÉTAPE 1 — ANALYSE (jamais montrée aux membres) : pour chaque écart réel de l'analyse, en une ligne, le sujet de l'écart et ce qu'il faudrait confronter à la réalité. Tu ne connais pas les réponses des membres : seulement qu'elles diffèrent.
 
-ÉTAPE 2 — QUESTIONS : uniquement pour les thèmes qui portent un ÉCART RÉEL (preuve de nature « écart »), TROIS propositions par écart, chacune sous un angle différent (chiffre, jusqu'où, si cela ne changeait jamais). Un relecteur indépendant gardera la meilleure.
+ÉTAPE 2 — QUESTIONS DANS DES CADRES VALIDÉS : tu n'écris PAS de question libre. Pour chaque thème qui porte un ÉCART RÉEL (preuve de nature « écart »), propose TROIS questions, chacune dans un CADRE différent de la liste ci-dessous, en remplissant ses cases avec le sujet concret de l'écart (en français ET en anglais). Le code compose la question ; toute question hors cadre, ou dont une case est sans lien avec l'écart, est écartée. Un relecteur indépendant gardera la meilleure.
+
+CADRES VALIDÉS :
+${framesForPrompt()}
+
 Thèmes (clé → libellé) : ${themeGrid.map((t) => `${t.key} → ${t.label}`).join(' ; ')}.
 - Thème sans écart réel (accord, sujet neutre) : n'écris AUCUNE question ; BOLIGO y pose ses propres questions.
 - Thème marqué LIMITE DE SÉCURITÉ : n'écris aucune question.
 - Thème marqué POINT NON NÉGOCIABLE : jamais de compromis ni de terrain d'entente ; confronte chacun à « si cela ne changeait jamais ».
 - Ligne « à explorer sans jamais citer » ou sujet sensible : n'en reprends ni les réponses ni le niveau.
-- "ecart" : l'écart détecté en une ligne (DETECTED_GAP), tel que l'analyse le donne (« A veut 2 enfants, B en veut 4 ») ; jamais montré aux membres.
-- La question confronte cet écart à la réalité (combien, jusqu'où, pourriez-vous réellement, si cela ne changeait jamais, avec quoi pourriez-vous vivre, qu'est-ce que vous ne pourriez pas accepter).
-- Une idée par question, aussi courte que naturelle, des mots de tous les jours, vouvoiement, 20 mots au plus.
+- "ecart" : le sujet de l'écart en une ligne (DETECTED_GAP), sans réponse de membre ; jamais montré aux membres.
+- "cadre" : l'identifiant du cadre (« C01 »…) ; "cases" : les cases en français ; "cases_en" : les cases libres en anglais (les cases fermées se déduisent).
+- Point de mode de vie non négociable (tabac, alcool, jeu, enfants, lieu de vie) : préfère les cadres de tolérance (C01, C02, C05, C08, C15, C19) ; ils mesurent la marge de chacun sans pousser au compromis.
 - Jamais de souvenir d'enfance, de famille d'origine, de « proche qui vous connaît », d'« angle mort » ni de « sacré ».
 - Ne redemande jamais un fait déjà connu ; ne dis jamais qui a répondu quoi.
 - "methode" : « confrontation », « chiffre », « jusqu'où » ou « si cela ne changeait jamais » ; "cible" : ce que la réponse permettra de savoir. Jamais montrés aux membres.
@@ -739,13 +747,10 @@ ${evidenceIndex}
 `
     : ''
 }
-VERSION ANGLAISE (obligatoire) : chaque question est aussi posée à des membres anglophones.
-- "text_en" : la même question écrite directement en anglais naturel et chaleureux, comme l'écrirait un coach anglophone (jamais une traduction mot à mot) ; même sens, même technique, mêmes règles (aucun présupposé, une seule idée, 180 caractères au plus, se termine par « ? »).
-- "options_en" : les mêmes pistes de lecture, courtes, en anglais.
-- Une question sans version anglaise fidèle est écartée par le code.
+VERSION ANGLAISE (obligatoire) : "cases_en" donne les cases libres en anglais naturel, même sens que le français ; "options_en" : les mêmes pistes de lecture, courtes, en anglais.
 
 Retourne UNIQUEMENT ce JSON (trois questions par écart réel ; aucune pour les autres) :
-{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "famille", "theme": "${angle.label}", "emoji": "👨‍👩‍👧", "text": "...", "ecart": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''}, "options": ["...", "...", "..."], "text_en": "...", "options_en": ["...", "...", "..."] }]}
+{"analyse": ["..."], "questions": [{ "day": ${angle.day}, "themeKey": "projet", "theme": "${angle.label}", "emoji": "💬", "cadre": "C01", "cases": {"unite": "verres", "periode": "semaine", "objet": "l'alcool à la maison"}, "cases_en": {"objet": "alcohol at home"}, "ecart": "...", "methode": "...", "cible": "..."${evidenceIndex ? ', "preuves": ["E1"], "nature": "ecart"' : ''}, "options": ["...", "...", "..."], "options_en": ["...", "...", "..."] }]}
 `;
       const { content, model } = await this.queryAiAgentDetailed(
         'sondeur',
@@ -760,7 +765,7 @@ Retourne UNIQUEMENT ce JSON (trois questions par écart réel ; aucune pour les 
       );
       const questions = (
         normalizeAiQuestions(
-          extractQuestionList(content),
+          composeFramedQuestions(extractQuestionList(content)),
           themeGrid.length * 3,
           // Écarts seuls : un jour peut n'en porter qu'un (deux propositions).
           1,

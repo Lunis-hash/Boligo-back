@@ -272,7 +272,10 @@ describe('AiService — modèle Groq retiré', () => {
       expect(system.content).toContain('aucun diagnostic');
       expect(system.content).toContain('si cela ne changeait jamais');
       expect(user.content).toContain('ÉTAPE 1');
-      expect(user.content).toContain('TROIS propositions par écart');
+      expect(user.content).toContain('TROIS questions');
+      // V8.3 : cadres validés, jamais une question libre.
+      expect(user.content).toContain('CADRES VALIDÉS');
+      expect(user.content).toContain("tu n'écris PAS de question libre");
       expect(user.content).toContain('"methode"');
     });
 

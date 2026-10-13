@@ -478,7 +478,7 @@ const THEME_WORDS: Record<string, RegExp> = {
   famille:
     /(?<!\p{L})(?:enfant|garde|beau|belle|parent|famil|visite|aîné|dot|mariage|foyer|chez vous|vivaient|habit)/iu,
   argent:
-    /(?<!\p{L})(?:argent|jeu|mise|pari|casino|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ|achat|achet|économ|emploi|chômage|professionn|revenu|soutenu)/iu,
+    /(?<!\p{L})(?:argent|jeu|mise|pari|casino|€|euro|épargn|dépens|budget|payer|pai|compte|fin de mois|salaire|somme|dette|envoy|aide financ|achat|achet|économ|emploi|chômage|professionn|revenu|soutenu|de côté)/iu,
   spiritualite:
     /(?<!\p{L})(?:foi|relig|pri|croy|culte|église|mosquée|spiritu|convers|enfant)/iu,
   intimite:
@@ -487,7 +487,7 @@ const THEME_WORDS: Record<string, RegExp> = {
     /(?<!\p{L})(?:disput|désaccord|tension|pause|parler|silence|calm|colère|écout|réconcil)/iu,
   projet:
     /(?<!\p{L})(?:travail|carrière|emploi|profession|soir|heure|semaine|temps|week|rentr|ambition|tâche|rôle|enfant|projet|année)/iu,
-  lieu: /(?<!\p{L})(?:pays|ville|déménag|vivre|habiter|lieu|rester|partir|loin|kilomètre|km|emploi|mutation)/iu,
+  lieu: /(?<!\p{L})(?:pays|ville|déménag|vivre|habiter|lieu|rester|partir|loin|kilomètre|km|emploi|mutation|distance)/iu,
 };
 
 const deaccent = (x: string) =>
@@ -540,6 +540,11 @@ export function validate(
      * écart réel, sans détour par l'enfance, la famille d'origine ou un proche.
      */
     gapOnly?: boolean;
+    /**
+     * V8.3 — question composée dans un cadre validé : les règles du rédacteur
+     * s'appliquent aux cases remplies par l'IA, pas au texte fixe du cadre.
+     */
+    framedSlots?: string[];
   } = {},
 ): Verdict {
   const reasons: string[] = [];
@@ -608,7 +613,11 @@ export function validate(
       reasons.push(
         'P15 détour par l’enfance, la famille d’origine ou un proche',
       );
-    reasons.push(...gapQuestionIssues(q.text));
+    reasons.push(
+      ...(opts.framedSlots
+        ? opts.framedSlots.flatMap((s) => gapQuestionIssues(s))
+        : gapQuestionIssues(q.text)),
+    );
     // Accords et sujets neutres restent aux gabarits écrits par l'équipe.
     const gaps = known.filter((e) => e.kind === 'divergence');
     if (gaps.length && gaps.every((e) => e.shared))
@@ -736,6 +745,22 @@ export function servedTrace(
     // Question de limite : sujet de sécurité, aucune réponse citée.
     return { claim: 'safety', evidence: [], subjects: [subject], topics: [] };
   return traceOf([`N-${theme}`], index, 'neutral');
+}
+
+/**
+ * Réponses d'entretien des deux membres sur leurs écarts (libellés d'option,
+ * en français et en anglais), y compris celles qui ne sont jamais citées
+ * (sujet sensible, tendance) : servent au filtre anti-fuite, jamais à l'IA.
+ */
+export function memberAnswerTexts(report: DivergenceReport): string[] {
+  const out = new Set<string>();
+  for (const d of report.divergences)
+    for (const v of [d.a, d.b]) {
+      if (!v?.text) continue;
+      out.add(v.text);
+      for (const en of answerTextsEn(d.questionId, [v.key])) out.add(en);
+    }
+  return [...out];
 }
 
 // ─── Version anglaise (Sondeur bilingue) ───────────────────────────────────

@@ -85,7 +85,7 @@ export const CRITIC_RULES = `Refuse une question si :
 9. elle demande un revenu, une épargne personnelle, un employeur, un lieu précis, des papiers, l'ethnie, la tribu ou la caste (une somme ronde posée en hypothèse est admise) ;
 10. elle porte sur le corps, l'apparence, la santé, ou demande le récit d'un événement douloureux ou un détail de la vie sexuelle ;
 11. elle met en scène la violence, les insultes, les menaces ou le contrôle, ou traite une dépendance avérée comme un comportement à aménager (réservés aux questions de limite de BOLIGO) ; une question sur l'alcool, le tabac ou le jeu comme habitude de vie (fréquence acceptable, ce que l'on pourrait vivre) est admise ;
-12. elle invite à un compromis ou à un terrain d'entente sur un point non négociable ;
+12. elle invite à un compromis ou à un terrain d'entente sur un point non négociable ; mesurer la TOLÉRANCE de chacun (« pourriez-vous vivre avec… », « combien… pourriez-vous réellement vivre », « pendant combien de temps… », « quelle limite fixeriez-vous ») sur un point de mode de vie (tabac, alcool, jeu, enfants, lieu de vie) n'est PAS un compromis et est accepté ; sécurité, violence et contrôle : jamais ;
 13. elle aborde l'intimité ou la sexualité avant le jour 3, ou revient sur un sujet qu'un membre a gardé pour la rencontre ;
 14. elle mentionne l'âge, le genre, la ville, ou un écart entre eux ;
 15. elle dépasse 180 caractères ;
@@ -99,7 +99,7 @@ export const CRITIC_RULES = `Refuse une question si :
  * Relecture : un refus doit être une faute nette, citée mot pour mot. Le style
  * (une question claire, concrète et valable pour les deux) n'est jamais un motif.
  */
-export const CRITIC_STANCE = `Tu refuses une question seulement pour une FAUTE NETTE d'une règle ci-dessous, et tu cites dans "extrait" les mots exacts de la question (ou de sa version EN) qui la constituent. Sans extrait précis, tu acceptes.
+export const CRITIC_STANCE = `Les questions sont composées par le code dans des CADRES VALIDÉS, réciproques par construction : juge le contenu des cases (lien avec l'écart, fuite, présupposé, fait inventé, attribution), jamais la forme du cadre. Tu refuses une question seulement pour une FAUTE NETTE d'une règle ci-dessous, et tu cites dans "extrait" les mots exacts de la question (ou de sa version EN) qui la constituent. Sans extrait précis, tu acceptes.
 Ne sont PAS des fautes : une question concrète sur ce que chacun ferait, accepterait, vivrait ou garderait ; « si l'un de vous… », « si l'autre… , comment le vivriez-vous ? », « si vos positions ne bougeaient jamais… » (chacun répond depuis sa propre position) ; une durée, une fréquence ou une somme ronde posée en hypothèse ; l'alcool, le tabac ou le jeu comme habitude de vie ; ce que l'autre aurait besoin de savoir ou de comprendre ; une limite personnelle (« qu'est-ce que vous ne pourriez pas accepter au sujet de… ») qui ne prête rien à l'autre.
 Sont des fautes : citer ou laisser deviner la réponse d'un membre (« l'un de vous a répondu… », « comme l'alcool est quotidien pour l'un de vous… ») ; prêter une position à « votre partenaire » ; une hypothèse sur l'autre suivie de « qu'est-ce que vous ne supporteriez pas » ; une question qui n'a de sens que pour l'un des deux (« vous retenir de parier », « arrêter de fumer pour le couple ») ; un fait inventé ; un diagnostic ou une étiquette ; un arrangement sur un point non négociable ; la violence.`;
 
@@ -548,7 +548,7 @@ export const LENS_EXAMPLES = [
  * « …s'il lisait vos messages par amour ? ») : jamais posée. Les gabarits de
  * limite de l'équipe, relus par des humains, ne passent pas par ce filtre.
  */
-const STAGED_HARM =
+export const STAGED_HARM =
   /(?<!\p{L})(?:gifl\p{L}*|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|battr\p{L}*|bat(?:tu|tue|tait)|coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance))|violen\p{L}*|étrangl\p{L}*|(?:le plus |la plus )bless\p{L}*|bless\p{L}* (?:dans|pendant|durant) (?:votre|ton) enfance|humili\p{L}*|lis\p{L}* vos messages|fouill\p{L}* (?:votre|vos)|à l['’]abri|(?<![-\p{L}])vous protéger|vous réfugier|(?<!jusqu['’])où iriez|(?:le )?code de (?:votre|son) téléphone|accès à (?:votre|son|leur) téléphone|bouscul\p{L}*|l[eè]v\p{L}* la main|petite tape|cri\p{L}* dessus|contrôl\p{L}* (?:vos|ses|son|sa|le|les|votre) (?:dépenses|téléphone|messages|sorties|fréquentations)|par amour)(?!\p{L})/iu;
 
 /** Arrangement ou concession sur un sujet non négociable, dans une question de l'IA. */
@@ -560,7 +560,7 @@ const NN_ARRANGEMENT =
  * BOLIGO. Une question de l'IA qui les nomme, même sans les mettre en scène,
  * est écartée.
  */
-const SAFETY_TOPIC =
+export const SAFETY_TOPIC =
   /(?<!\p{L})(?:gifl\p{L}*|claques?|(?<!(?:qui|qu['’]est-ce qui) vous (?:a )?)frapp\p{L}*|cogn\p{L}*|(?<!(?:tout |à ))coups?(?! de (?:cœur|coeur|foudre|main|fil|pouce|tête|chance|génie))|violen\p{L}*|empoign\p{L}*|serr\p{L}* le cou|étrangl\p{L}*|bouscul\p{L}*|cris|crier|hurl\p{L}*|insult\p{L}*|trait\p{L}* de (?!vos|votre|famille)\p{L}+|humili\p{L}*|rabaiss\p{L}*|menac\p{L}*|contrôl\p{L}*|(?<!entre (?:la )?confiance et (?:la )?)surveill\p{L}*|espionn\p{L}*|fouill\p{L}*|mots? de passe|en cachette|rendre compte de chaque|partir avec les enfants|dormir ce soir|chez qui pourriez|dégénér\p{L}*|invivable|lever la main|ne plus voir vos|(?:connaître )?votre code|vérifi\p{L}* où vous|où vous êtes|décid\p{L}* seul\p{L}* de vos|vos sorties|votre passeport|jet\p{L}* vos affaires|punitions?|punir|hausser la voix|lever le ton|(?:permission|autorisation) (?:de|pour|avant de) (?:sortir|travailler|voir|dépenser|partir)|demander (?:la permission|l['’]autorisation))(?!\p{L})/iu;
 /**
  * Prémisse affirmée avant la question (« Puisque l'un de vous a déjà deux
