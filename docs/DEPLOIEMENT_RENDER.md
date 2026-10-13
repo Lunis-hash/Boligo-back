@@ -218,3 +218,32 @@ Ces constats viennent de lectures seules, faites le 13/10/2026 : journaux de dé
 4. mentions de facturation renseignées et contrôlées (facture test) ;
 5. notifications e-mail et push testées ;
 6. seulement ensuite, ouverture aux paiements, puis passage en réel.
+
+## 7. Prérequis au GO déploiement (13/10/2026)
+
+Toutes les vérifications ont été faites en lecture seule. Aucune configuration de production n'a été modifiée.
+
+### A. Bloquant pour le déploiement
+
+| Prérequis | État | Preuve / action |
+|---|---|---|
+| Sauvegarde Supabase BOLIGO | ⏳ **À faire par Steve** | Offre **gratuite** (organisation « Lunis-hash's Org ») : pas de sauvegarde automatique récupérable. Script prêt : `scripts/sauvegarde-supabase.sh`, à lancer sur un poste de confiance. Il fait un export en lecture seule, chiffré AES-256, avec empreinte SHA-256, contrôle des tables clés et refus d'écrire dans un dépôt git. Les fichiers `*.dump*` sont exclus du dépôt (`.gitignore`). Testé sur la base locale de recette : restauration identique (32 tables, mêmes nombres de lignes) |
+| Variables du backend Render | ⏳ **À vérifier par Steve** (le connecteur Render ne lit pas les variables) | `OTP_DEBUG` absente ou `false` ; `VIDEO_TEST_UNLOCK=false` ; `INSIGHTS_RETRY_AFTER_MS` absente ; `SONDEUR_MODELS_FILE` absente ; `NODE_ENV=production` ; `DATABASE_URL` / `DIRECT_URL` du projet BOLIGO ; `JWT_SECRET` défini |
+| Stripe TEST | ✅ | Journal de démarrage en production : « Stripe connecté : compte « environnement de test BOLIGO », mode test », sans avertissement de clés ni de webhook ; webhook TEST actif et identique (relu chez Stripe) |
+| Migrations Supabase | ✅ | Déjà présentes (confirmé par Steve) ; rien à réappliquer |
+| Entretien V8.2 | ✅ prêt, non appliqué | Ajouter `INTERVIEW_VERSION=8.2` sur Render (*Save only*, sans redéploiement), juste avant la fusion. La version en ligne `5853aa6` ignore cette variable ; c'est la nouvelle qui la lira. Les entretiens déjà commencés gardent leur version : un entretien sans version est lu en 7.1, et un déclencheur en base rend la version immuable. Retour en arrière : retirer la variable |
+
+### B. Non bloquant, au moment du déploiement
+
+| Point | État | Action |
+|---|---|---|
+| `/api/health` | ✅ dans la PR #42 (réponse 200 et `db ok` vérifiée pendant la recette sur le build final). ⚠️ **Absent de la version en ligne** `5853aa6` | Activer *Health Check Path* = `/api/health` **après** la mise en ligne de la nouvelle version, après avoir vérifié qu'elle répond 200. L'activer avant ferait échouer le contrôle sur l'ancienne version. Réglage dans le tableau de bord Render (le connecteur ne le permet pas) |
+
+### C. Bloquant pour l'ouverture des paiements réels (pas pour le déploiement)
+
+| Point | État | Action |
+|---|---|---|
+| Mentions légales de facturation | ❌ | 6 variables manquantes : `BILLING_SELLER_NAME`, `_LEGAL_FORM`, `_ADDRESS`, `_SIREN`, `BILLING_MEDIATOR`, `BILLING_SELLER_VAT_NUMBER` (ou `BILLING_VAT_FRANCHISE=true`, à valider avec l'expert-comptable). Ensuite `BILLING_ENABLED=true` et `BILLING_EARLY_START_CONSENT_REQUIRED=true`, puis une facture test |
+| E-mails transactionnels | ⚠️ partiel | Envoi via Resend actif en production ; domaine `boligo.fr` **vérifié**, envoi activé. Reste un envoi test réel (inscription ou facture) vers une adresse de l'équipe |
+| Notifications push | ⚠️ à tester | Test sur téléphone (build EAS). Masquer le jeton push dans les journaux |
+| Passage en réel Stripe | ⏳ | Clés et webhook live, désactiver *Adaptive Pricing* (`docs/STRIPE_PASSAGE_EN_LIVE.md`) |
