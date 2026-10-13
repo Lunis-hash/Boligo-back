@@ -114,8 +114,8 @@ export const FRAMES: Frame[] = [
   },
   {
     id: 'C04',
-    fr: "Qu'est-ce que vous ne pourriez pas accepter dans {objet} ?",
-    en: 'What could you not accept in {objet}?',
+    fr: "Qu'est-ce que vous ne pourriez pas accepter [dans|au sujet de|concernant] {objet} ?",
+    en: 'What could you not accept [about|in|regarding] {objet}?',
     use: 'limite personnelle',
   },
   {
@@ -236,11 +236,24 @@ export function canon(text: string): string {
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/** Variantes admises dans le texte fixe : « [a|b] » (la première au rendu). */
+const literal = (s: string) =>
+  s
+    .split(/(\[[^\]]+\])/)
+    .map((part) =>
+      /^\[.*\]$/.test(part)
+        ? `(?:${part.slice(1, -1).split('|').map(esc).join('|')})`
+        : esc(part),
+    )
+    .join('');
+const firstVariant = (s: string) =>
+  s.replace(/\[([^\]|]+)(?:\|[^\]]*)?\]/g, '$1');
+
 function frameRegex(template: string, lang: 'fr' | 'en'): RegExp {
   let src = '';
   let last = 0;
   for (const m of canon(template).matchAll(/\{(\w+)\}/g)) {
-    src += esc(canon(template).slice(last, m.index));
+    src += literal(canon(template).slice(last, m.index));
     const kind = m[1] as SlotKind;
     if (kind in CLOSED) {
       const values = CLOSED[kind as keyof typeof CLOSED].map(([fr, en]) =>
@@ -250,7 +263,7 @@ function frameRegex(template: string, lang: 'fr' | 'en'): RegExp {
     } else src += `(?<${kind}>[^?]{3,100}?)`;
     last = (m.index ?? 0) + m[0].length;
   }
-  src += esc(canon(template).slice(last));
+  src += literal(canon(template).slice(last));
   return new RegExp(`^${src}$`, 'iu');
 }
 
@@ -296,7 +309,7 @@ export function renderFrame(
   if (!f) return null;
   const fill = (template: string, lang: 'fr' | 'en') => {
     let ok = true;
-    const out = template.replace(/\{(\w+)\}/g, (_, k: string) => {
+    const out = firstVariant(template).replace(/\{(\w+)\}/g, (_, k: string) => {
       const kind = k as SlotKind;
       if (kind in CLOSED) {
         // Case fermée : la valeur française décide, l'anglais suit.
@@ -455,19 +468,26 @@ export function frameIssues(
     if (!FREE.includes(kind)) continue;
     const n = v.split(/\s+/).length;
     const nEn = e.split(/\s+/).length;
-    if (n < (kind === 'objet' ? 1 : 2) || n > 10 || nEn < 1 || nEn > 12)
+    if (n < (kind === 'objet' ? 1 : 2) || n > 12 || nEn < 1 || nEn > 14)
       r.push(`F4 case « ${kind} » trop courte ou trop longue`);
     if (/[«»"“”:;!,()]/.test(v) || /[«»"“”:;!,()]/.test(e))
       r.push(`F4 ponctuation dans la case « ${kind} »`);
     if (/(?<!\p{L})ou(?!\p{L})/iu.test(v) || /\bor\b/i.test(e))
       r.push(`F4 deux idées dans la case « ${kind} » (« ou »)`);
-    if (SLOT_BANNED_FR.test(v))
+    // « votre », « vos » : admis dans un infinitif (« accueillir sous votre
+    // toit ») où ils désignent celui qui répond, jamais ailleurs.
+    const bannedFr =
+      kind === 'infinitif'
+        ? v.replace(/(?<!\p{L})(?:votre|vos)(?!\p{L})/giu, 'son')
+        : v;
+    const bannedEn = kind === 'infinitif' ? e.replace(/\byour\b/gi, 'own') : e;
+    if (SLOT_BANNED_FR.test(bannedFr))
       r.push(
-        `F5 case « ${kind} » : attribution ou présupposé (« ${v.match(SLOT_BANNED_FR)![0]} »)`,
+        `F5 case « ${kind} » : attribution ou présupposé (« ${bannedFr.match(SLOT_BANNED_FR)![0]} »)`,
       );
-    if (SLOT_BANNED_EN.test(e))
+    if (SLOT_BANNED_EN.test(bannedEn))
       r.push(
-        `F5 case anglaise « ${kind} » : attribution ou présupposé (« ${e.match(SLOT_BANNED_EN)![0]} »)`,
+        `F5 case anglaise « ${kind} » : attribution ou présupposé (« ${bannedEn.match(SLOT_BANNED_EN)![0]} »)`,
       );
     if (kind === 'action' && !IMPARFAIT.test(v))
       r.push('F6 case « action » : verbe à l’imparfait attendu');
@@ -557,7 +577,7 @@ export function framesForPrompt(): string {
     ...FRAMES.map((f) => `${f.id} (${f.use}) : ${f.fr}  ‖  EN : ${f.en}`),
     '',
     `Cases fermées (valeur française exacte ; l'anglais est déduit) : {unite} = ${closed('unite')} ; {periode} = ${closed('periode')} ; {duree} = ${closed('duree')} ; {montant} = ${closed('montant')}.`,
-    "Cases libres (en français ET en anglais) : {objet} = groupe nominal de 2 à 10 mots (« le tabac à la maison ») ; {action} = verbe à l'imparfait, 3e personne (« perdait son emploi ») ; {infinitif} = verbe à l'infinitif (« accueillir des enfants d'une autre union »).",
-    "Dans une case : jamais « votre », « vos », « partenaire », « l'autre », « il », « elle », « toujours », « encore », « déjà », « trop » ; jamais un mot d'une réponse d'un membre ; seulement le sujet concret de l'écart.",
+    "Cases libres (en français ET en anglais) : {objet} = groupe nominal de 1 à 12 mots (« le tabac à la maison ») ; {action} = verbe à l'imparfait, 3e personne (« perdait son emploi ») ; {infinitif} = verbe à l'infinitif (« accueillir des enfants d'une autre union »).",
+    "Dans une case : jamais « votre », « vos » (sauf dans {infinitif}, pour celui qui répond), « partenaire », « l'autre », « il », « elle », « toujours », « encore », « déjà », « trop » ; jamais un mot d'une réponse d'un membre ; seulement le sujet concret de l'écart.",
   ].join('\n');
 }

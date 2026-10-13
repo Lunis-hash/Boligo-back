@@ -50,96 +50,86 @@ const keyOfLabel = (label) =>
   Object.keys(THEME_LABELS).find((k) => THEME_LABELS[k] === String(label).trim()) || null;
 
 /**
- * Questions VALIDES par thème d'écart et par jour (vérifiées contre
- * isWellFormedQuestion, validate(..., {gapOnly: true}) et validateEn).
- * Une tournure différente par question (si, combien, jusqu'où, quel…) : le
- * backend écarte deux questions du même écart avec la même tournure.
+ * V8.3 — le rédacteur choisit un CADRE validé et en remplit les cases ; le
+ * backend compose la question (texte français et anglais). Copie des cadres
+ * utilisés ici (mêmes textes que src/journey/sondeur-frames.ts), pour
+ * connaître le texte composé des pièges.
+ */
+const FRAMES = {
+  C02: ["Si {objet} ne changeait jamais chez l'un de vous, pourriez-vous le vivre pendant des années ?", 'If {objet} never changed for one of you, could you live with it for years?'],
+  C03: ["Jusqu'où iriez-vous pour {infinitif} ?", 'How far would you go to {infinitif}?'],
+  C04: ["Qu'est-ce que vous ne pourriez pas accepter dans {objet} ?", 'What could you not accept about {objet}?'],
+  C07: ['Combien de {duree} pourriez-vous attendre avant de trancher {objet} ?', 'How many {duree} could you wait before settling {objet}?'],
+  C08: ['Pour {objet}, à partir de combien de {unite} par {periode} ce serait trop pour vous ?', 'For {objet}, how many {unite} a {periode} would be too much for you?'],
+  C09: ["Qu'auriez-vous besoin de savoir sur {objet} avant de vous engager ?", 'What would you need to know about {objet} before committing?'],
+  C10: ['Si vos positions sur {objet} ne bougeaient jamais, pourriez-vous vous engager quand même ?', 'If your positions on {objet} never moved, could you still commit?'],
+  C11: ['Quelle place laisseriez-vous à {objet} dans une semaine ordinaire à deux ?', 'How much room would you leave for {objet} in an ordinary week together?'],
+  C12: ['Sur {montant} € par mois à deux, quelle part consacreriez-vous à {objet} ?', 'Out of €{montant} a month for the two of you, what share would you put toward {objet}?'],
+  C14: ['Quelle limite fixeriez-vous pour {objet} dans une vie à deux ?', 'What limit would you set for {objet} in a life together?'],
+  C15: ['Pendant combien de {duree} pourriez-vous vivre sereinement avec {objet} ?', 'For how many {duree} could you live calmly with {objet}?'],
+  C18: ['Concrètement, comment organiseriez-vous {objet} au quotidien ?', 'In practical terms, how would you organise {objet} day to day?'],
+  C20: ['Si {objet} ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?', 'If {objet} never changed, what life together would you picture in five years?'],
+};
+const CLOSED_EN = { mois: 'months', années: 'years', semaines: 'weeks', sorties: 'outings', '2 000': '2,000' };
+/** Texte composé par le backend (français), pour reconnaître un piège servi. */
+function composeFr(cadre, cases) {
+  return FRAMES[cadre][0]
+    .replace(/\{(\w+)\}/g, (_, k) => cases[k])
+    .replace(/(^|[^\p{L}])de (années|heures)(?!\p{L})/gu, "$1d'$2");
+}
+
+/**
+ * Propositions VALIDES par thème d'écart et par jour : [cadre, cases FR,
+ * cases EN, méthode]. Un cadre différent par question : le backend écarte
+ * deux questions du même écart avec la même tournure.
  */
 const GAP_BANK = {
   argent: {
     1: [
-      ['Si la moitié de chaque fin de mois partait en épargne, pourriez-vous vivre ainsi longtemps ?',
-        'If half of every month went into savings, could you live like that for a long time?', 'chiffre'],
-      ['Combien de sorties par mois vous sembleraient raisonnables avec un budget tourné vers l’épargne ?',
-        'How many outings a month would feel reasonable on a budget focused on saving?', 'chiffre'],
+      ['C12', { montant: '2 000', objet: "l'épargne" }, { objet: 'savings' }, 'chiffre'],
+      ['C08', { objet: 'les achats plaisir', unite: 'sorties', periode: 'mois' }, { objet: 'treat purchases' }, 'chiffre'],
     ],
     2: [
-      ['Jusqu’où seriez-vous prêt à réduire les dépenses plaisir pour épargner davantage ?',
-        'How far would you be ready to cut treats to save more?', "jusqu'où"],
-      ['Quelle dépense plaisir mensuelle vous semblerait encore raisonnable dans un foyer qui épargne ?',
-        'What monthly treat would still feel reasonable in a home that saves?', 'chiffre'],
+      ['C03', { infinitif: 'épargner pour un projet commun' }, { infinitif: 'save for a shared project' }, "jusqu'où"],
+      ['C14', { objet: 'les dépenses plaisir' }, { objet: 'treat spending' }, 'confrontation'],
     ],
     3: [
-      ['Comment vivriez-vous dix années où l’épargne passerait toujours avant les envies ?',
-        'How would you live ten years where saving always came before wishes?', 'si cela ne changeait jamais'],
-      ['Qu’est-ce qui vous rendrait l’épargne commune plus facile à tenir chaque mois ?',
-        'What would make shared saving easier to keep up every month?', 'confrontation'],
+      ['C02', { objet: "la façon d'épargner" }, { objet: 'the way of saving' }, 'si cela ne changeait jamais'],
+      ['C18', { objet: 'le budget commun' }, { objet: 'the shared budget' }, 'confrontation'],
     ],
   },
   lieu: {
     1: [
-      ['Si la vie à deux exigeait un déménagement loin d’ici, pourriez-vous le faire sans regret ?',
-        'If life together required moving far from here, could you do it without regret?', 'confrontation'],
-      ['Quelle distance de votre ville actuelle vous semblerait encore possible pour vivre à deux ?',
-        'What distance from your current city would still feel possible for life together?', 'chiffre'],
+      ['C03', { infinitif: 'vivre dans une autre ville' }, { infinitif: 'live in another city' }, "jusqu'où"],
+      ['C15', { duree: 'années', objet: 'une relation à distance' }, { objet: 'a long-distance relationship' }, 'chiffre'],
     ],
     2: [
-      ['Combien d’années pourriez-vous vivre loin de votre ville sans vouloir y revenir ?',
-        'How many years could you live away from your city without wanting to go back?', 'chiffre'],
-      ['Jusqu’où pourriez-vous déménager pour commencer une vie à deux ?',
-        'How far could you move to start a life together?', "jusqu'où"],
+      ['C07', { duree: 'mois', objet: 'la question du déménagement' }, { objet: 'the question of moving' }, 'chiffre'],
+      ['C12', { montant: '2 000', objet: 'un déménagement' }, { objet: 'a move' }, 'chiffre'],
     ],
     3: [
-      ['Comment vivriez-vous le fait de rester pour toujours dans la ville de l’autre ?',
-        "How would you feel about staying for good in the other person's city?", 'si cela ne changeait jamais'],
-      ['Qu’est-ce qui vous aiderait à quitter votre ville pour vivre à deux ?',
-        'What would help you leave your city to live together?', 'confrontation'],
+      ['C10', { objet: 'le déménagement' }, { objet: 'moving' }, 'si cela ne changeait jamais'],
+      ['C20', { objet: 'le choix de la ville' }, { objet: 'the choice of city' }, 'confrontation'],
     ],
   },
 };
 
 /**
- * Questions PIÈGES : bien formées, mais posées sur un ACCORD ou sur un
- * RISQUE PARTAGÉ. Le contrat de preuves du backend (P4/P16/P18) doit les
- * rejeter ; aucune ne doit être servie. Une par thème et par jour.
+ * Questions PIÈGES : bien composées dans un cadre, mais posées sur un ACCORD
+ * ou sur un RISQUE PARTAGÉ. Le contrôle du backend (aucun écart réel cité :
+ * F8, P16, P18) doit les rejeter ; aucune ne doit être servie.
  */
 const ACCORD_TRAPS = {
-  famille: {
-    1: 'Si la famille venait souvent à la maison, pourriez-vous garder ce rythme au quotidien ensemble ?',
-    2: 'Combien de visites familiales par mois vous sembleraient agréables au quotidien ensemble ?',
-    3: 'Qu’est-ce qui vous aiderait à recevoir la famille au quotidien ensemble ?',
-  },
-  argent: {
-    1: 'Si tout l’argent du foyer allait dans un seul compte, seriez-vous à l’aise au quotidien ensemble ?',
-    2: 'Quelle règle simple aimeriez-vous pour le compte commun au quotidien ensemble ?',
-    3: 'Combien de fois par mois aimeriez-vous faire le point sur le budget au quotidien ensemble ?',
-  },
-  projet: {
-    1: 'Si l’engagement arrivait dans l’année, pourriez-vous préparer ce projet au quotidien ensemble ?',
-    2: 'Quel premier projet aimeriez-vous mener au quotidien ensemble ?',
-    3: 'Combien de temps aimeriez-vous consacrer chaque semaine à vos projets au quotidien ensemble ?',
-  },
-  lieu: {
-    1: 'Si le lieu de vie restait le même cinq ans, pourriez-vous y bâtir un foyer au quotidien ensemble ?',
-    2: 'Quel type de logement aimeriez-vous choisir au quotidien ensemble ?',
-    3: 'Combien de temps aimeriez-vous rester dans la même ville au quotidien ensemble ?',
-  },
+  famille: { 1: ['C11', { objet: 'les visites familiales' }, { objet: 'family visits' }], 2: ['C09', { objet: 'les visites familiales' }, { objet: 'family visits' }], 3: ['C18', { objet: 'les visites familiales' }, { objet: 'family visits' }] },
+  argent: { 1: ['C18', { objet: "l'argent du foyer" }, { objet: 'household money' }], 2: ['C14', { objet: "l'argent du foyer" }, { objet: 'household money' }], 3: ['C09', { objet: "l'argent du foyer" }, { objet: 'household money' }] },
+  projet: { 1: ['C11', { objet: 'les projets communs' }, { objet: 'shared projects' }], 2: ['C09', { objet: 'les projets communs' }, { objet: 'shared projects' }], 3: ['C18', { objet: 'les projets communs' }, { objet: 'shared projects' }] },
+  lieu: { 1: ['C14', { objet: 'le lieu de vie' }, { objet: 'where to live' }], 2: ['C09', { objet: 'le lieu de vie' }, { objet: 'where to live' }], 3: ['C18', { objet: 'le lieu de vie' }, { objet: 'where to live' }] },
 };
 const SHARED_RISK_TRAPS = {
-  communication: {
-    1: 'Si un désaccord laissait place au silence, pourriez-vous en parler le lendemain au quotidien ensemble ?',
-    2: 'Combien de temps de silence après un désaccord vous semblerait trop long au quotidien ensemble ?',
-    3: 'Qu’est-ce qui vous aiderait à reprendre la parole après un désaccord au quotidien ensemble ?',
-  },
-  famille: {
-    1: 'Si vos proches donnaient leur avis sur chaque décision, pourriez-vous trancher au quotidien ensemble ?',
-    2: 'Quelle décision aimeriez-vous garder pour vous au quotidien ensemble ?',
-    3: 'Qu’est-ce qui vous aiderait à décider sans vos proches au quotidien ensemble ?',
-  },
+  communication: { 1: ['C04', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }], 2: ['C09', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }], 3: ['C14', { objet: 'le silence après un désaccord' }, { objet: 'silence after a disagreement' }] },
+  famille: { 1: ['C09', { objet: 'les décisions de famille' }, { objet: 'family decisions' }], 2: ['C14', { objet: 'les décisions de famille' }, { objet: 'family decisions' }], 3: ['C18', { objet: 'les décisions de famille' }, { objet: 'family decisions' }] },
 };
-const TRAP_EN = {
-  default: 'What would make this easier for you in daily life?',
-};
+void CLOSED_EN;
 
 /** Relances (question d'approfondissement), par thème de l'écart du jour 1. */
 const FOLLOW_UP_BANK = {
@@ -242,44 +232,45 @@ function writerAnswer(prompt) {
     const ids = gaps.filter((g) => g.theme === theme).map((g) => g.id);
     const bank = GAP_BANK[theme]?.[day] ?? [];
     analyse.push(`${theme} : écart ${ids.join(', ')} à confronter à la réalité.`);
-    for (const [text, textEn, methode] of bank) {
+    for (const [cadre, cases, casesEn, methode] of bank) {
       questions.push({
         day, themeKey: theme, theme: THEME_LABELS[theme], emoji: THEME_EMOJI[theme],
-        text, ecart: `Écart ${ids.join(', ')} (${theme})`, methode, cible: 'ce que chacun accepterait vraiment',
+        cadre, cases, cases_en: casesEn,
+        ecart: `Écart ${ids.join(', ')} (${theme})`, methode, cible: 'ce que chacun accepterait vraiment',
         preuves: ids.slice(0, 1), nature: 'ecart',
         options: ['Oui, sans difficulté', 'Avec du temps', 'Difficilement'],
-        text_en: textEn, options_en: ['Yes, easily', 'With time', 'With difficulty'],
+        options_en: ['Yes, easily', 'With time', 'With difficulty'],
       });
-      served.valid.push(text);
+      served.valid.push(composeFr(cadre, cases));
     }
   }
   // Piège 1 : une preuve d'ACCORD, présentée comme un écart (jour impair)
   // ou comme un accord (jour pair). Les deux doivent être rejetées (P4/P16).
   const accord = evidence.find((e) => e.kind === 'accord' && ACCORD_TRAPS[e.theme]);
   if (accord) {
-    const text = ACCORD_TRAPS[accord.theme][day];
+    const [cadre, cases, casesEn] = ACCORD_TRAPS[accord.theme][day];
+    const text = composeFr(cadre, cases);
     traps.add(text);
     served.traps.push(text);
     questions.push({
       day, themeKey: accord.theme, theme: THEME_LABELS[accord.theme], emoji: THEME_EMOJI[accord.theme],
-      text, ecart: 'aucun', methode: 'confrontation', cible: 'organisation',
+      cadre, cases, cases_en: casesEn, ecart: 'aucun', methode: 'confrontation', cible: 'organisation',
       preuves: [accord.id], nature: day % 2 ? 'ecart' : 'accord',
-      options: ['Oui', 'Peut-être', 'Non'],
-      text_en: TRAP_EN.default, options_en: ['Yes', 'Maybe', 'No'],
+      options: ['Oui', 'Peut-être', 'Non'], options_en: ['Yes', 'Maybe', 'No'],
     });
   }
   // Piège 2 : un RISQUE PARTAGÉ (mêmes réponses), présenté comme un écart (P18).
   const shared = evidence.find((e) => e.kind === 'shared' && SHARED_RISK_TRAPS[e.theme]);
   if (shared) {
-    const text = SHARED_RISK_TRAPS[shared.theme][day];
+    const [cadre, cases, casesEn] = SHARED_RISK_TRAPS[shared.theme][day];
+    const text = composeFr(cadre, cases);
     traps.add(text);
     served.traps.push(text);
     questions.push({
       day, themeKey: shared.theme, theme: THEME_LABELS[shared.theme], emoji: THEME_EMOJI[shared.theme],
-      text, ecart: 'mêmes réponses', methode: 'confrontation', cible: 'réaction',
+      cadre, cases, cases_en: casesEn, ecart: 'mêmes réponses', methode: 'confrontation', cible: 'réaction',
       preuves: [shared.id], nature: 'ecart',
-      options: ['Oui', 'Peut-être', 'Non'],
-      text_en: TRAP_EN.default, options_en: ['Yes', 'Maybe', 'No'],
+      options: ['Oui', 'Peut-être', 'Non'], options_en: ['Yes', 'Maybe', 'No'],
     });
   }
   return { analyse, questions };

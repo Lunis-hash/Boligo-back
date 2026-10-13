@@ -43,6 +43,7 @@ import { isNonNegotiable } from '../src/journey/sondeur.pool';
 import {
   EvidencedQuestion,
   buildEvidence,
+  memberAnswerTexts,
   describeEvidenceForAi,
   validate,
 } from '../src/journey/sondeur-evidence';
@@ -1497,7 +1498,7 @@ if (require.main === module)
 // ─── Corpus étiqueté : contrôle seul, puis contrôle + relecteur réel ─────────
 interface LabeledItem {
   id: string;
-  split: 'dev' | 'final' | 'final2';
+  split: 'dev' | 'final' | 'final2' | 'dev3' | 'final3';
   lang: 'fr' | 'en';
   caseId: string;
   day: number;
@@ -1520,11 +1521,16 @@ async function gateEval() {
   const heldout2 = (process.env.BENCH_HELDOUT2_TOPICS ?? '')
     .split(',')
     .filter(Boolean);
+  // BENCH_HELDOUT3_TOPICS : troisième lot tenu à l'écart (graines 110 000).
+  const heldout3 = (process.env.BENCH_HELDOUT3_TOPICS ?? '')
+    .split(',')
+    .filter(Boolean);
   const cases = new Map(
     [
       ...topicCorpus(TOPICS),
       ...topicCorpus(HELDOUT, 70_000),
       ...topicCorpus(heldout2, 90_000),
+      ...topicCorpus(heldout3, 110_000),
     ].map((c) => [c.id, c]),
   );
   const missing = [...new Set(items.map((i) => i.caseId))].filter(
@@ -1541,6 +1547,7 @@ async function gateEval() {
           report,
           couple,
           evidenceIndex: buildEvidence(report),
+          answers: memberAnswerTexts(report),
           safetyThemes: safetyThemesOf(report),
           strict: new Set(
             report.divergences
@@ -1607,7 +1614,9 @@ async function gateEval() {
         [],
         writer,
         {
-          analysis: describeReportForAi(ctx.report, ['Membre A', 'Membre B']),
+          analysis: describeReportForAi(ctx.report, ['Membre A', 'Membre B'], {
+            abstract: true,
+          }),
           couple: ctx.couple,
           days: `jour ${qs[0].day}`,
           evidence: describeEvidenceForAi(ctx.evidenceIndex),
@@ -1668,7 +1677,9 @@ async function gateEval() {
         })),
     };
   };
-  const splits = (['dev', 'final', 'final2'] as const).filter((sp) =>
+  const splits = (
+    ['dev', 'final', 'final2', 'dev3', 'final3'] as const
+  ).filter((sp) =>
     gate.some((g) => g.split === sp),
   );
   const results = splits.flatMap((sp) => [
