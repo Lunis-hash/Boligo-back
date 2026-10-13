@@ -152,12 +152,13 @@ WH=$(grep -o 'whsec_[A-Za-z0-9]*' "$WORK/listen.log" | head -1)
   export DATABASE_URL=$U DIRECT_URL=$U PORT=3000 NODE_ENV=development JWT_SECRET=recette-stripe-locale \
     JWT_EXPIRES_IN=7d OTP_DEBUG=true INTERVIEW_VERSION=8.2 WEB_APP_URL=http://127.0.0.1:8081 \
     BILLING_ENABLED=true NODE_USE_ENV_PROXY=1 STRIPE_WEBHOOK_SECRET="$WH" STRIPE_SECRET_KEY="$K"
-  exec node dist/main.js
+  # Cale proxy de la recette (stripe-node ignore HTTPS_PROXY) ; le build reste inchangé.
+  exec node -r "$ROOT/mobile-steve/e2e/recette-proxy-shim.js" dist/main.js
 ) > "$WORK/backend.log" 2>&1 &
 BACK=$!; PIDS+=("$BACK")
 health() { [ "$(curl -s -o "$WORK/health.json" -w '%{http_code}' http://127.0.0.1:3000/api/health)" = 200 ] && grep -q '"db":"ok"' "$WORK/health.json"; }
 wait_until 90 health || { tail -20 "$WORK/backend.log" | mask >&2; die "backend non sain après 90 s (HTTP 200 + db ok attendus)."; }
-stripe_ok() { grep -q "Stripe connecté : .*($ACCOUNT), mode test" "$WORK/backend.log"; }
+stripe_ok() { sed -E 's/\x1b\[[0-9;]*m//g' "$WORK/backend.log" | grep -q "Stripe connecté : .*($ACCOUNT), mode test"; }
 wait_until 30 stripe_ok || { grep -i stripe "$WORK/backend.log" | mask >&2; die "le backend n'est pas connecté au compte Stripe de test BOLIGO."; }
 
 # Page de retour de Checkout (success_url), locale.
