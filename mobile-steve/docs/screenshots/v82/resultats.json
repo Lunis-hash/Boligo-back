@@ -57,7 +57,7 @@
   {
     "step": "Accord enregistré côté serveur",
     "ok": true,
-    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-13T11:10:09.695Z\"}"
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-13T11:42:19.672Z\"}"
   },
   {
     "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
@@ -107,12 +107,13 @@
   {
     "step": "Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres",
     "ok": true,
-    "detail": "11/11"
+    "detail": "9/9"
   },
   {
-    "step": "NO_FAKE_GAP : aucune question piège servie, chaque question IA porte une preuve d’écart réel",
-    "ok": true,
-    "detail": "6 question(s) IA servies (preuves E3=gap, E2=gap), 6 piège(s) rédigé(s), 0 servi(s)"
+    "step": "NO_FAKE_GAP : questions IA sur un écart réel",
+    "ok": null,
+    "na": true,
+    "detail": "IA désactivée (repli déterministe) : 0 question IA servie sur 9"
   },
   {
     "step": "Sondeur : B lit chaque question en anglais",
@@ -125,9 +126,9 @@
     "detail": "0 signalement(s)"
   },
   {
-    "step": "ADAPTIVE_FOLLOWUP : jour 1 (écart non compris) → une relance au jour 2, sur le thème de l’écart",
+    "step": "ADAPTIVE_FOLLOWUP (repli) : jour 1 lu, aucune relance IA placée au jour 2",
     "ok": true,
-    "detail": "lecture ia, 1 écart(s) à explorer (Argent & dettes), 1 relance(s) au jour 2 : 💶 « Quelle part d’une prime inattendue aimeriez-vous garder pour un plaisir ? »"
+    "detail": "lecture ia, 1 écart(s) à explorer, 0 relance(s) au jour 2"
   },
   {
     "step": "Jour 1 terminé → jour 2 fermé jusqu’au lendemain",
@@ -175,14 +176,14 @@
     "detail": ""
   },
   {
-    "step": "Sondeur : 11 réponses envoyées depuis le navigateur (toutes les questions)",
+    "step": "Sondeur : 9 réponses envoyées depuis le navigateur (toutes les questions)",
     "ok": true,
     "detail": ""
   },
   {
-    "step": "Progression côté serveur = 11/11",
+    "step": "Progression côté serveur = 9/9",
     "ok": true,
-    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":11,\"totalQuestions\":11,\"partnerName\":\"Nadia\",\"journeyId\":\"6dfc8556-d6b1-43ab-9819-680f5f068f7b\"}"
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":9,\"totalQuestions\":9,\"partnerName\":\"Nadia\",\"journeyId\":\"cc8d0ee0-6c5c-4714-ae8a-52e727b11c1c\"}"
   },
   {
     "step": "Parcours ouvert au dialogue après les 3 jours",

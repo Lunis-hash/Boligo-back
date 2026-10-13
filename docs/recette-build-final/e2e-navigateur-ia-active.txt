@@ -1,0 +1,42 @@
+✅ Comptes de recette créés (OTP de test)
+✅ Connexion → Grand Entretien module 0 (entretien vierge)
+✅ Entretien créé et verrouillé en V8.2 — 8.2
+✅ Questions V8.2 servies à A — 110 questions, 3 conditionnelles
+✅ Plage d’âge : 45-30 refusée, 28-38 acceptée
+✅ Plage d’âge : 45-30 refusée, 28-38 acceptée
+✅ Grand Entretien : bascule en anglais au milieu d’un module
+✅ Reprise après interruption : retour au module en cours — http://localhost:8081/interview/3?moduleNumber=3
+✅ Grand Entretien terminé dans le navigateur (115 réponses) — http://localhost:8081/interview/generation
+✅ Plage d’âge saisie dans le navigateur
+✅ Accord pour les questions sensibles demandé avant la première
+✅ Accord enregistré côté serveur — {"consent":true,"decidedAt":"2026-10-13T11:55:56.062Z"}
+✅ Questions conditionnelles : posées si et seulement si la condition est remplie — 2 posées, 1 écartées
+✅ Réponse scriptée de A enregistrée (M3_Q12 = C, risque partagé avec B) — C
+✅ Plage d’âge enregistrée « 28-38 » — ["V82_M0_01","28-38"]
+✅ Bilan affiché sans « undefined » ni texte vide
+✅ B : entretien V8.2 terminé en anglais, sans questions sensibles — {"done":true}
+✅ Découverte : B proposée à A — 69 %
+✅ Découverte : aucune donnée interne exposée (safetyHold, réponses brutes, consentement)
+✅ Invitation envoyée depuis le navigateur, reçue par B
+✅ B accepte → parcours Harmonie créé — Match accepté avec succès
+✅ Sondeur adaptatif : entre 9 et 21 questions, mêmes questions pour les deux membres — 11/11
+✅ NO_FAKE_GAP : aucune question piège servie, chaque question IA porte une preuve d’écart réel — 6 question(s) IA servies (preuves E3=gap, E2=gap), 6 piège(s) rédigé(s), 0 servi(s)
+✅ Sondeur : B lit chaque question en anglais
+✅ Jour 1 : réponses anodines, aucun signalement de modération — 0 signalement(s)
+✅ ADAPTIVE_FOLLOWUP : jour 1 (écart non compris) → une relance au jour 2, sur le thème de l’écart — lecture ia, 1 écart(s) à explorer (Argent & dettes), 1 relance(s) au jour 2 : 💶 « Quelle part d’une prime inattendue aimeriez-vous garder pour un plaisir ? »
+✅ Jour 1 terminé → jour 2 fermé jusqu’au lendemain
+✅ ADAPTIVE_FOLLOWUP : jour 2 (écart compris) → aucune relance au jour 3 — lecture ia, 0 écart(s) à explorer, 0 relance(s) au jour 3
+✅ Jour 2 terminé → jour 3 fermé jusqu’au lendemain
+✅ CANNOT_SKIP : aucune option pour passer, refus du serveur
+✅ CANNOT_ADVANCE_WITHOUT_ANSWER : pas d’avance sans la réponse de l’autre
+✅ CANNOT_SEE_PARTNER_BEFORE_OWN_ANSWER
+✅ BOTH_ANSWERS_REVEALED_BEFORE_NEXT : attente puis révélation à chaque question
+✅ CAN_EXIT : retour à l’accueil au milieu de la journée
+✅ RESUME_SAME_QUESTION : reprise exacte après rechargement
+✅ Sondeur : 11 réponses envoyées depuis le navigateur (toutes les questions)
+✅ Progression côté serveur = 11/11 — {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":11,"totalQuestions":11,"partnerName":"Nadia","journeyId":"0ee0bd38-cc60-4b3b-87ce-9c4221b92284"}
+✅ Parcours ouvert au dialogue après les 3 jours — chat_libre ; lectures 0:ia,1:ia,2:ia,3:ia
+✅ B (interface anglaise) : libellés du Sondeur en anglais — Day 1
+✅ Aucune erreur JavaScript pendant le parcours
+✅ Dialogues d’erreur inattendus
+41/41 vérifications réussies

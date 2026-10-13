@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "id": "501e398f-2e09-4d1d-977f-f43f6f0f0f4d",
+      "proposalId": "2fbd8da4-2aba-4e58-9038-a569d93586d8",
+      "userAId": "d2fd0002-03d4-4275-8cba-70b626537921",
+      "userBId": "8d9dd2bd-1cd3-41d0-b761-5b8ccc0c1923",
+      "createdAt": "2026-10-13T11:54:40.724Z",
+      "currentStep": "phase_harmonie",
+      "stepStartDate": "2026-10-13T11:54:40.724Z",
+      "endDate": null,
+      "result": "en_cours",
+      "closingReason": null,
+      "aiCostMicroEur": 0,
+      "userA": {
+        "id": "d2fd0002-03d4-4275-8cba-70b626537921",
+        "firstName": "Payeur",
+        "lastName": "Recette",
+        "email": "recette-payeur-1791892479047@example.test"
+      },
+      "userB": {
+        "id": "8d9dd2bd-1cd3-41d0-b761-5b8ccc0c1923",
+        "firstName": "Payeuse",
+        "lastName": "Recette",
+        "email": "recette-payeuse-1791892479434@example.test"
+      },
+      "proposal": {
+        "compatibilityScore": 0.98,
+        "status": "acceptee"
+      },
+      "videoSession": null,
+      "_count": {
+        "messages": 0,
+        "harmonyQuestions": 9
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}

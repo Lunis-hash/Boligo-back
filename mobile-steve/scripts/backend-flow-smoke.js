@@ -15,6 +15,7 @@ const SOCKET_URL = API.replace(/\/api\/?$/, '');
 const { io } = require('socket.io-client');
 const { execSync } = require('child_process');
 // Commande psql vers la base de TEST (jamais la production) pour simuler le passage des jours du Sondeur.
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const E2E_PSQL = process.env.E2E_PSQL || '';
 
 const results = [];
@@ -60,7 +61,7 @@ async function completeInterview(user) {
   for (let m = 0; m <= 10; m++) {
     const q = await call('GET', `/interview/questions/${m}`, { token: user.token });
     const answers = {};
-    (q.data || []).forEach((question) => { answers[question.id] = question.options[0]?.key || 'A'; });
+    (q.data || []).forEach((question) => { answers[question.id] = question.input === 'ageRange' ? '24-45' : question.options[0]?.key || 'A'; });
     const save = await call('POST', '/interview/save-module', { token: user.token, body: { moduleNumber: m, moduleName: `Module ${m}`, answers } });
     if (save.status !== 201 || !save.data?.success) record(`save-module ${m}`, false, `status ${save.status} ${JSON.stringify(save.data)}`);
     if (m === 10) record('interview terminé (allModulesCompleted)', save.data?.allModulesCompleted === true, JSON.stringify(save.data));
@@ -155,35 +156,42 @@ function waitFor(socket, event, ms = 4000) {
 
   // ── Sondeur (phase harmonie)
   const qs = await call('GET', `/journey/${journeyId}/questions`, { token: A.token });
-  record('journey questions (21 attendues)', qs.status === 200 && qs.data.length === 21, `questions=${qs.data?.length} jours=${[...new Set((qs.data || []).map((q) => q.day))].join(',')}`);
+  // Sondeur adaptatif (9 à 21 questions, 3 jours), réponses à tour de rôle.
+  const total = qs.data?.length || 0;
+  record('journey questions (Sondeur adaptatif : 9 à 21)', qs.status === 200 && total >= 9 && total <= 21, `questions=${total} jours=${[...new Set((qs.data || []).map((q) => q.day))].join(',')}`);
   const progress = await call('GET', '/journey/sondeur-progress', { token: A.token });
-  record('sondeur-progress', progress.status === 200 && progress.data?.totalQuestions === 21, JSON.stringify(progress.data));
+  record('sondeur-progress', progress.status === 200 && progress.data?.totalQuestions === total, JSON.stringify(progress.data));
   const moderated = await call('POST', '/journey/respond', { token: A.token, body: { questionId: qs.data[0].id, text: 'putain de question' } });
   record('respond avec grossièreté → 400 (modération locale)', moderated.status === 400, `status ${moderated.status}`);
   const byDay = (d) => (qs.data || []).filter((q) => q.day === d);
-  record(
-    'Sondeur : 3 jours × 7 questions, 7 thèmes fondamentaux chaque jour',
-    [1, 2, 3].every((d) => byDay(d).length === 7 && new Set(byDay(d).map((q) => q.emoji)).size === 7),
-    `jours=${[1, 2, 3].map((d) => byDay(d).length).join('/')} emojis=${[...new Set((qs.data || []).map((q) => q.emoji))].join('')}`,
-  );
-  const early = await call('POST', '/journey/respond', { token: A.token, body: { questionId: byDay(2)[0]?.id, text: 'Réponse trop tôt' } });
-  record('respond à une question du jour 2 pendant le jour 1 → 400 (règle 7/jour côté serveur)', early.status === 400, `status ${early.status}`);
-  for (let day = 1; day <= 3; day++) {
-    for (const user of [A, B]) {
-      for (const q of byDay(day)) {
-        const r = await call('POST', '/journey/respond', { token: user.token, body: { questionId: q.id, text: `Réponse sincère de ${user.email.split('-')[2]}` } });
-        if (r.status !== 201) record(`respond jour ${day} ${q.id}`, false, `status ${r.status}`);
-      }
-    }
-    if (day < 3) {
+  record('Sondeur : 3 journées servies', [1, 2, 3].every((d) => byDay(d).length > 0), `jours=${[1, 2, 3].map((d) => byDay(d).length).join('/')}`);
+  const early = await call('POST', '/journey/respond', { token: A.token, body: { questionId: byDay(2)[0]?.id, text: 'Réponse trop tôt, avant la journée suivante.' } });
+  record('respond à une question du jour 2 pendant le jour 1 → 400', early.status === 400, `status ${early.status}`);
+  let day = 1;
+  let failures = 0;
+  for (const q of qs.data || []) {
+    if (q.day > day) {
       if (!E2E_PSQL) { record('Voyage dans le temps impossible (E2E_PSQL non défini) : jours 2 et 3 non rejoués', false); break; }
       execSync(E2E_PSQL, { input: `UPDATE "Journey" SET "stepStartDate" = "stepStartDate" - interval '1 day' WHERE id = '${journeyId}';`, stdio: ['pipe', 'ignore', 'inherit'] });
+      day = q.day;
+    }
+    for (const user of [A, B]) {
+      const r = await call('POST', '/journey/respond', { token: user.token, body: { questionId: q.id, text: `Réponse sincère de ${user.email.split('-')[2]}, jour ${q.day}, avec un peu de détail.` } });
+      if (r.status !== 201) { failures += 1; record(`respond jour ${q.day} ${q.id}`, false, `status ${r.status} ${JSON.stringify(r.data?.message)}`); }
     }
   }
-  const dupAnswer = await call('POST', '/journey/respond', { token: A.token, body: { questionId: byDay(1)[0]?.id, text: 'Deuxième réponse' } });
+  record(`Sondeur : ${total} questions × 2 réponses à tour de rôle`, failures === 0, `${failures} échec(s)`);
+  const dupAnswer = await call('POST', '/journey/respond', { token: A.token, body: { questionId: byDay(1)[0]?.id, text: 'Deuxième réponse à la même question.' } });
   record('respond deux fois à la même question → 400', dupAnswer.status === 400, `status ${dupAnswer.status}`);
-  const status = await call('GET', `/journey/${journeyId}/status`, { token: A.token });
-  record('journey passe en chat_libre après 21 réponses × 2', status.data?.currentStep === 'chat_libre', JSON.stringify(status.data));
+  // La messagerie s'ouvre une fois les lectures du jour écrites (relancées à chaque visite).
+  let status;
+  for (let i = 0; i < 20; i++) {
+    await call('GET', '/matching/my-matches', { token: A.token });
+    status = await call('GET', `/journey/${journeyId}/status`, { token: A.token });
+    if (status.data?.currentStep === 'chat_libre') break;
+    await sleep(3000);
+  }
+  record('journey passe en chat_libre après le Sondeur', status.data?.currentStep === 'chat_libre', JSON.stringify(status.data).slice(0, 200));
   const access = await call('GET', '/journey/chat-access', { token: A.token });
   record('chat-access A → canAccess', access.data?.canAccess === true, JSON.stringify(access.data));
 

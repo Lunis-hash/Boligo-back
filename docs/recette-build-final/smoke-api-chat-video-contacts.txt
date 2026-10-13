@@ -1,0 +1,82 @@
+✅ register alice — status 201, otpDebugCode présent=true
+✅ verify-email alice (code passe-partout 1234) — status 200
+✅ register bob — status 201, otpDebugCode présent=true
+✅ verify-email bob (code passe-partout 1234) — status 200
+✅ login mauvais mot de passe → 401 — status 401
+✅ login utilisateur inexistant → 401 — status 401
+✅ route protégée sans token → 401 — status 401
+✅ route protégée token invalide → 401 — status 401
+✅ refresh token invalide → 401 — status 401
+✅ refresh token valide → nouveaux tokens — status 200
+✅ register email déjà utilisé → 409 — status 409
+✅ register sans acceptation des CGU → 400 — status 400
+✅ register mineur → 400 — status 400
+✅ login valide → 200 + tokens — status 200
+✅ profile/me — creditBalance=0
+✅ PATCH profile/me — status 200
+✅ PATCH profile/me champ inconnu / profession trop courte → 400 — status 400 "property unknownField should not exist\nprofession must be longer than or equal
+✅ interview/status alice — {"interviewId":"39931b69-2e83-4f52-8881-911298f510d1","status":"en_cours","completedModules":[],"currentModule":0,"isCompleted":false}
+✅ interview terminé (allModulesCompleted) — {"success":true,"allModulesCompleted":true}
+✅ interview/summary — maturity=19 pillars=8
+✅ interview/status après complétion — {"interviewId":"39931b69-2e83-4f52-8881-911298f510d1","status":"termine","completedModules":[0,1,2,3,4,5,6,7,8,9,10],"currentModule":11,"isCompleted":true}
+✅ interview/status bob — {"interviewId":"b39b2f59-5783-4144-ac0d-637ad21d1846","status":"en_cours","completedModules":[],"currentModule":0,"isCompleted":false}
+✅ interview terminé (allModulesCompleted) — {"success":true,"allModulesCompleted":true}
+✅ interview/summary — maturity=19 pillars=8
+✅ interview/status après complétion — {"interviewId":"b39b2f59-5783-4144-ac0d-637ad21d1846","status":"termine","completedModules":[0,1,2,3,4,5,6,7,8,9,10],"currentModule":11,"isCompleted":true}
+✅ discover (A voit B) — profils=1
+✅ connect sans crédit → refus NO_CREDIT — "Il vous faut 1 crédit pour envoyer une invitation."
+✅ code promo gratuit → 1 crédit (alice) — status 201
+✅ code promo gratuit → 1 crédit (bob) — status 201
+✅ même code promo une 2e fois → 400 — status 400
+✅ ancien code « en dur » absent de la base → 400 — status 400
+✅ connect A→B (like) — "Invitation envoyée"
+✅ connect débite 1 crédit côté serveur — avant=1 après=0
+✅ discover bloqué pendant invitation en attente — profils=0
+✅ received-likes B — likes=1
+✅ accept B — "Match accepté avec succès"
+✅ accept débite 1 crédit à B côté serveur — solde=0
+✅ my-matches A → phase sondeur + journeyId — {"phase":"sondeur","videoEnabled":false}
+✅ journey questions (Sondeur adaptatif : 9 à 21) — questions=9 jours=1,2,3
+✅ sondeur-progress — {"hasJourney":true,"currentStep":"phase_harmonie","sondeurCompleted":false,"answeredCount":0,"totalQuestions":9,"partnerName":"bob","journeyId":"06042cb5-a501-4cc5-8d2b-0a85973cedcb"}
+✅ respond avec grossièreté → 400 (modération locale) — status 400
+✅ Sondeur : 3 journées servies — jours=3/3/3
+✅ respond à une question du jour 2 pendant le jour 1 → 400 — status 400
+✅ Sondeur : 9 questions × 2 réponses à tour de rôle — 0 échec(s)
+✅ respond deux fois à la même question → 400 — status 400
+✅ journey passe en chat_libre après le Sondeur — {"id":"06042cb5-a501-4cc5-8d2b-0a85973cedcb","currentStep":"chat_libre","result":"en_cours","currentDay":1,"partnerName":"bob","isCompleted":true,"ghosting":{"waitingOn":null,"since":null,"closeAt":nu
+✅ chat-access A → canAccess — {"canAccess":true,"message":"Accès débloqué"}
+✅ socket sans JWT → déconnecté par le serveur
+✅ socket avec JWT (B) → connecté — giZvc86lcrGwXnfRAAAD
+✅ joinJourney → messageHistory reçu — messages=0
+✅ POST journey/message (A) — status 201
+✅ B reçoit newMessage en temps réel — "Bonjour Bob, ravie de te parler !"
+✅ message insultant → 400 — status 400
+✅ GET journey messages (B) — messages=1
+✅ chat/unread-count A après un message de B (attendu 1) — reçu=1
+✅ chat/journeys/:id/read → compteur à 0 — status 201, reçu=0
+✅ video/end pendant le chat (aucun appel) → étape inchangée — {"success":true,"advanced":false,"currentStep":"chat_libre"}
+✅ avancement forcé vers « termine » → 400 — status 400
+✅ échange de coordonnées avant la vidéo → 400 — status 400
+✅ video/session canJoin (étape vidéo) — {"step":"video","canJoin":true,"max":420}
+✅ video/call-token → meetingUrl — provider=jitsi
+✅ video/end avec un seul membre connecté → étape inchangée — {"success":true,"advanced":false,"currentStep":"video"}
+✅ video/call-token B → meetingUrl — provider=jitsi
+✅ video/end sans journeyId → échec attendu — status 500
+✅ video/end {journeyId,durationSec} → avance vers echange_contacts — {"success":true,"advanced":true,"currentStep":"echange_contacts"}
+✅ contact-exchange avant consentement ne révèle ni téléphone ni e-mail — {"myConsent":false,"partnerTel":null}
+✅ exchange-contact A — {"consentA":true,"consentB":false,"phoneShared":true,"emailShared":true,"exchangedAt":null,"bothAccepted":false}
+✅ exchange-contact B (e-mail seulement) → bothAccepted, téléphone non partagé — {"consentA":true,"consentB":true,"phoneShared":false,"emailShared":true,"exchangedAt":"2026-10-13T11:54:48.293Z","bothAccepted":true}
+✅ A voit l'e-mail de B mais pas son téléphone
+✅ journey terminé — {"id":"06042cb5-a501-4cc5-8d2b-0a85973cedcb","currentStep":"termine","result":"reussi","currentDay":1,"partnerName":"bob","isCompleted":true,"ghosting":{"waitingOn":null,"since":null,"closeAt":null,"refundOnClose":false}}
+✅ payment/plans (1 seul plan côté backend) — parcours_harmonie=15,00 € TTC/1cr
+✅ create-payment-intent optionId inconnu (harmonie_premium) → retombe sur 15€/1 crédit (constat) — {"status":201,"originalAmount":1500,"isMock":true}
+✅ POST payment/confirm référence mal formée → 400 — status 400
+✅ credit/add n'existe plus → 404 — status 404
+✅ credit/spend ne débite plus rien (débit serveur) — {"success":true,"charged":0,"newBalance":0}
+✅ credit/history (code promo + invitation) — transactions=2
+✅ report utilisateur — status 201
+✅ notifications/push-token — status 201
+✅ register carol — status 201, otpDebugCode présent=true
+✅ verify-email carol (code passe-partout 1234) — status 200
+✅ IDOR : un tiers ne lit pas les messages d'un parcours (403) — status 403 messages=-
+81/81 étapes OK

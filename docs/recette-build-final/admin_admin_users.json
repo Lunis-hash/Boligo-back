@@ -1,0 +1,64 @@
+{
+  "data": [
+    {
+      "id": "8d9dd2bd-1cd3-41d0-b761-5b8ccc0c1923",
+      "email": "recette-payeuse-1791892479434@example.test",
+      "firstName": "Payeuse",
+      "lastName": "Recette",
+      "city": "Paris, France",
+      "gender": "F",
+      "role": "USER",
+      "accountStatus": "actif",
+      "creditBalance": 0,
+      "isVerified": true,
+      "createdAt": "2026-10-13T11:54:39.690Z",
+      "lastLogin": null,
+      "profile": {
+        "profileStatus": "complet",
+        "mainPhoto": null,
+        "profession": "Architecte"
+      },
+      "_count": {
+        "receivedProposals": 0,
+        "targetedProposals": 1,
+        "journeysA": 0,
+        "journeysB": 1,
+        "sentReports": 0,
+        "receivedReports": 0
+      }
+    },
+    {
+      "id": "d2fd0002-03d4-4275-8cba-70b626537921",
+      "email": "recette-payeur-1791892479047@example.test",
+      "firstName": "Payeur",
+      "lastName": "Recette",
+      "city": "Paris, France",
+      "gender": "H",
+      "role": "USER",
+      "accountStatus": "actif",
+      "creditBalance": 0,
+      "isVerified": true,
+      "createdAt": "2026-10-13T11:54:39.391Z",
+      "lastLogin": null,
+      "profile": {
+        "profileStatus": "complet",
+        "mainPhoto": null,
+        "profession": "Architecte"
+      },
+      "_count": {
+        "receivedProposals": 1,
+        "targetedProposals": 0,
+        "journeysA": 1,
+        "journeysB": 0,
+        "sentReports": 0,
+        "receivedReports": 0
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 2,
+    "totalPages": 1
+  }
+}
