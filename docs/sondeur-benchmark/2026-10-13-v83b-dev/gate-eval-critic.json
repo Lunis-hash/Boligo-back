@@ -1,0 +1,215 @@
+{
+  "anthropic/claude-sonnet-5.5": {
+    "D003": {
+      "ok": true,
+      "rule": null
+    },
+    "D006": {
+      "ok": true,
+      "rule": null
+    },
+    "D082": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "D190": {
+      "ok": true,
+      "rule": null
+    },
+    "D012": {
+      "ok": true,
+      "rule": null
+    },
+    "D024": {
+      "ok": true,
+      "rule": null
+    },
+    "D121": {
+      "ok": true,
+      "rule": null
+    },
+    "D172": {
+      "ok": true,
+      "rule": null
+    },
+    "D221": {
+      "ok": true,
+      "rule": null
+    },
+    "D019": {
+      "ok": true,
+      "rule": null
+    },
+    "D028": {
+      "ok": true,
+      "rule": null
+    },
+    "D168": {
+      "ok": true,
+      "rule": null
+    },
+    "D030": {
+      "ok": true,
+      "rule": null
+    },
+    "D188": {
+      "ok": true,
+      "rule": null
+    },
+    "D034": {
+      "ok": true,
+      "rule": null
+    },
+    "D040": {
+      "ok": true,
+      "rule": null
+    },
+    "D125": {
+      "ok": true,
+      "rule": null
+    },
+    "D148": {
+      "ok": true,
+      "rule": null
+    },
+    "D182": {
+      "ok": true,
+      "rule": null
+    },
+    "D209": {
+      "ok": true,
+      "rule": null
+    },
+    "D044": {
+      "ok": true,
+      "rule": null
+    },
+    "D052": {
+      "ok": true,
+      "rule": null
+    },
+    "D142": {
+      "ok": true,
+      "rule": null
+    },
+    "D056": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "D061": {
+      "ok": true,
+      "rule": null
+    },
+    "D135": {
+      "ok": true,
+      "rule": null
+    },
+    "D189": {
+      "ok": true,
+      "rule": null
+    },
+    "D066": {
+      "ok": true,
+      "rule": null
+    },
+    "D126": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "D068": {
+      "ok": true,
+      "rule": null
+    },
+    "D090": {
+      "ok": true,
+      "rule": null
+    },
+    "D122": {
+      "ok": true,
+      "rule": null
+    },
+    "D233": {
+      "ok": true,
+      "rule": null
+    },
+    "D073": {
+      "ok": true,
+      "rule": null
+    },
+    "D092": {
+      "ok": true,
+      "rule": null
+    },
+    "D094": {
+      "ok": true,
+      "rule": null
+    },
+    "D160": {
+      "ok": true,
+      "rule": null
+    },
+    "D247": {
+      "ok": true,
+      "rule": null
+    },
+    "D095": {
+      "ok": true,
+      "rule": null
+    },
+    "D100": {
+      "ok": true,
+      "rule": null
+    },
+    "D104": {
+      "ok": true,
+      "rule": null
+    },
+    "D129": {
+      "ok": true,
+      "rule": null
+    },
+    "D140": {
+      "ok": true,
+      "rule": null
+    },
+    "D184": {
+      "ok": true,
+      "rule": null
+    },
+    "D117": {
+      "ok": true,
+      "rule": null
+    },
+    "D170": {
+      "ok": true,
+      "rule": null
+    },
+    "D134": {
+      "ok": true,
+      "rule": null
+    },
+    "D150": {
+      "ok": true,
+      "rule": null
+    },
+    "D219": {
+      "ok": true,
+      "rule": null
+    },
+    "D195": {
+      "ok": true,
+      "rule": null
+    },
+    "D243": {
+      "ok": true,
+      "rule": null
+    },
+    "D250": {
+      "ok": true,
+      "rule": null
+    }
+  }
+}

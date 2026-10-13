@@ -1,0 +1,418 @@
+{
+  "D250": {
+    "n": 1,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D221": {
+    "n": 2,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D068": {
+    "n": 3,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D125": {
+    "n": 4,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D184": {
+    "n": 5,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D024": {
+    "n": 6,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D150": {
+    "n": 7,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D003": {
+    "n": 8,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D006": {
+    "n": 9,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D094": {
+    "n": 10,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D209": {
+    "n": 1,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D135": {
+    "n": 2,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D122": {
+    "n": 3,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D140": {
+    "n": 4,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 2,
+    "relevance": 5
+  },
+  "D195": {
+    "n": 5,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D090": {
+    "n": 6,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D170": {
+    "n": 7,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D034": {
+    "n": 8,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D142": {
+    "n": 9,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 2,
+    "relevance": 5
+  },
+  "D012": {
+    "n": 10,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 2,
+    "relevance": 5
+  },
+  "D247": {
+    "n": 1,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 4
+  },
+  "D121": {
+    "n": 2,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D129": {
+    "n": 3,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 4
+  },
+  "D019": {
+    "n": 4,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D233": {
+    "n": 5,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 4
+  },
+  "D243": {
+    "n": 6,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 4
+  },
+  "D082": {
+    "n": 7,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D182": {
+    "n": 8,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 4
+  },
+  "D219": {
+    "n": 9,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D190": {
+    "n": 10,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D104": {
+    "n": 1,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D092": {
+    "n": 2,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D188": {
+    "n": 3,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D066": {
+    "n": 4,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 4
+  },
+  "D148": {
+    "n": 5,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D134": {
+    "n": 6,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D040": {
+    "n": 7,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D028": {
+    "n": 8,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D172": {
+    "n": 9,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D117": {
+    "n": 10,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 5,
+    "relevance": 5
+  },
+  "D061": {
+    "n": 1,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 2,
+    "relevance": 5
+  },
+  "D095": {
+    "n": 2,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D044": {
+    "n": 3,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D160": {
+    "n": 4,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D189": {
+    "n": 5,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D100": {
+    "n": 6,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D030": {
+    "n": 7,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  },
+  "D168": {
+    "n": 8,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D056": {
+    "n": 9,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D052": {
+    "n": 10,
+    "presuppose": false,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D073": {
+    "n": 1,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 4,
+    "relevance": 5
+  },
+  "D126": {
+    "n": 2,
+    "presuppose": true,
+    "reciprocal": true,
+    "same_meaning": true,
+    "depth": 3,
+    "relevance": 5
+  }
+}
