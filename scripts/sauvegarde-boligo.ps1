@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Sauvegarde chiffrée et vérifiée des données BOLIGO (Supabase), pour Windows.
 
@@ -61,7 +61,13 @@ $SurWindows = ($PSVersionTable.PSEdition -eq 'Desktop') -or $IsWindows
 # Exécute une chaîne de commandes reliées par « | » via l'interpréteur natif,
 # pour que les flux binaires (pg_dump → gpg) ne passent jamais par PowerShell.
 function Invoke-Chaine([string]$ligne) {
-  if ($SurWindows) { & cmd.exe /d /c $ligne } else { & /bin/sh -c $ligne }
+  if ($SurWindows) {
+    # Fichier .cmd temporaire (commande seulement, aucun secret) : évite les
+    # pièges de guillemets de « cmd /c » avec des chemins contenant des espaces.
+    $bat = Join-Path $env:TEMP ('boligo-' + [guid]::NewGuid().ToString('N') + '.cmd')
+    [IO.File]::WriteAllText($bat, "@chcp 65001 >nul`r`n@$ligne`r`n@exit /b %ERRORLEVEL%`r`n", (New-Object Text.UTF8Encoding $false))
+    try { & cmd.exe /d /c $bat } finally { Remove-Item -Force -ErrorAction SilentlyContinue $bat }
+  } else { & /bin/sh -c $ligne }
   if ($LASTEXITCODE -ne 0) { Stop-Sauvegarde "commande en échec (code $LASTEXITCODE)." }
 }
 function Get-Outil([string]$nom) {
