@@ -84,6 +84,39 @@ function setup() {
     },
     partnerOffer: {
       updateMany: jest.fn(() => Promise.resolve({ count: 0 })),
+      findMany: jest.fn(() => Promise.resolve([])),
+    },
+    partnerDailyStat: {
+      groupBy: jest.fn(() => Promise.resolve([])),
+    },
+    // Registre : 3 ventes à 13,50 € au taux figé de 15 % (2,03 € chacune).
+    partnerCommission: {
+      findMany: jest.fn(
+        ({ where }: { where: { partnerId: string | { in: string[] } } }) => {
+          const id =
+            typeof where.partnerId === 'string'
+              ? where.partnerId
+              : where.partnerId.in[0];
+          const sale = (n: number, createdAt: Date) => ({
+            id: `v${n}`,
+            partnerId: id,
+            kind: 'VENTE',
+            amountCents: 1350,
+            commissionCents: 203,
+            saleId: null,
+            createdAt,
+          });
+          return Promise.resolve(
+            apps.some((a) => a.id === id && a.promoCodeId)
+              ? [
+                  sale(1, new Date()),
+                  sale(2, new Date()),
+                  sale(3, new Date('2020-01-01T00:00:00Z')),
+                ]
+              : [],
+          );
+        },
+      ),
     },
     creditTransaction: {
       groupBy: jest.fn((args: { where?: { euroAmount?: number } } = {}) =>
@@ -158,6 +191,43 @@ const base = {
 const flush = () => new Promise((r) => setImmediate(r));
 
 describe('Programme Partenaires : service', () => {
+  it('l’équipe ajoute un partenaire : « En discussion », sans e-mail, doublon refusé', async () => {
+    const { service, apps, email } = setup();
+    const team = { ...base } as Partial<typeof base>;
+    delete team.consent;
+    delete team.message;
+    const res = await service.createByTeam(
+      {
+        ...(team as typeof base),
+        type: PartnerType.AMBASSADEUR,
+        commissionRate: 18,
+      },
+      'admin@boligo.app',
+    );
+    await flush();
+    expect(res.status).toBe('EN_COURS');
+    expect(apps[0]).toMatchObject({
+      commissionRate: 18,
+      message: 'Partenaire ajouté par l’équipe BOLIGO.',
+    });
+    expect(String(apps[0].notes)).toContain('admin@boligo.app');
+    expect(email.sendSimpleEmail).not.toHaveBeenCalled();
+    await expect(
+      service.createByTeam({
+        ...(team as typeof base),
+        type: PartnerType.AMBASSADEUR,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    // Une marque n'a jamais de commission.
+    const brand = await service.createByTeam({
+      ...(team as typeof base),
+      email: 'marque@exemple.com',
+      type: PartnerType.ANNONCEUR,
+      commissionRate: 10,
+    });
+    expect(brand.commissionRate).toBeNull();
+  });
+
   it('enregistre la candidature avec la commission du profil et prévient l’équipe et le candidat', async () => {
     const { service, apps, email } = setup();
     const res = await service.apply(base);
@@ -223,7 +293,12 @@ describe('Programme Partenaires : service', () => {
       purchases: 3,
       freeActivations: 0,
       revenue: 40.5,
-      commission: 6.08,
+      gross: 40.5,
+      refunded: 0,
+      refundedSales: 0,
+      commission: 6.09,
+      commissionGross: 6.09,
+      commissionReversed: 0,
     });
   });
 
@@ -262,10 +337,11 @@ describe('Programme Partenaires : service', () => {
     const data = await service.portal(portalLink.split('#')[1]);
     expect(data.code.code).toMatch(/^AWADIOP/);
     expect(data.code.isActive).toBe(true);
-    expect(data.totals).toEqual({
+    expect(data.totals).toMatchObject({
       purchases: 3,
       revenue: 40.5,
-      commission: 6.08,
+      refunded: 0,
+      commission: 6.09,
     });
     expect(data.funnel).toMatchObject({
       visits: 40,

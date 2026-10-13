@@ -10,12 +10,11 @@ import {
   PartnerType,
   PartnerVerification,
   Prisma,
-  TransactionType,
 } from '@prisma/client';
 import { randomInt } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService, emailDeliveryMode } from '../common/email.service';
-import { ApplyPartnerDto } from './dto/apply-partner.dto';
+import { ApplyPartnerDto, TeamCreatePartnerDto } from './dto/apply-partner.dto';
 import {
   CreatePartnerCodeDto,
   ManualVerificationDto,
@@ -25,7 +24,6 @@ import { checkRegistration, REGISTRATION_LABELS } from './registration';
 import { RegistryService } from './registry.service';
 import {
   codeStem,
-  commissionDue,
   defaultCommission,
   normalizeCode,
   partnerTypeLabel,
@@ -33,12 +31,16 @@ import {
 import {
   hashPortalToken,
   isPortalToken,
-  monthlyHistory,
   newPortalToken,
   portalBaseUrl,
   portalLink,
 } from './partner-portal.logic';
 import { revenueByCode } from './partner-sales';
+import {
+  EMPTY_FIGURES,
+  monthlyCommissions,
+  partnerFigures,
+} from './partner-commissions';
 import { PartnerTrackingService } from './partner-tracking.service';
 import { partnerShareLink, rate } from './partner-tracking.logic';
 
@@ -105,6 +107,53 @@ export class PartnersService {
       this.logger.warn(`Vérification d'entreprise différée : ${err.message}`),
     );
     return { ok: true, id: created.id };
+  }
+
+  /**
+   * Partenaire ajouté par l'équipe : statut « En discussion », vérification
+   * d'entreprise lancée comme pour une candidature. Aucun e-mail n'est envoyé :
+   * l'équipe lui transmettra son lien privé une fois le code créé.
+   */
+  async createByTeam(dto: TeamCreatePartnerDto, createdBy?: string) {
+    const registration = checkRegistration(
+      dto.registrationType,
+      dto.registrationNumber,
+    );
+    if (!registration.ok) throw new BadRequestException(registration.error);
+    const existing = await this.prisma.partnerApplication.findFirst({
+      where: { email: dto.email, type: dto.type },
+      select: { id: true },
+    });
+    if (existing)
+      throw new BadRequestException(
+        'Un partenaire de ce profil existe déjà avec cette adresse e-mail.',
+      );
+    const created = await this.prisma.partnerApplication.create({
+      data: {
+        type: dto.type,
+        status: PartnerStatus.EN_COURS,
+        name: dto.name,
+        email: dto.email,
+        company: dto.company || null,
+        country: dto.country,
+        city: dto.city || null,
+        website: dto.website || null,
+        audience: dto.audience || null,
+        message: dto.message || 'Partenaire ajouté par l’équipe BOLIGO.',
+        language: dto.language === 'en' ? 'en' : 'fr',
+        notes: `Ajouté depuis l’administration${createdBy ? ` par ${createdBy}` : ''}.`,
+        commissionRate:
+          dto.type === PartnerType.ANNONCEUR
+            ? null
+            : (dto.commissionRate ?? defaultCommission(dto.type)),
+        registrationType: dto.registrationType,
+        registrationNumber: registration.number,
+      },
+    });
+    void this.runVerification(created.id).catch((err: Error) =>
+      this.logger.warn(`Vérification d'entreprise différée : ${err.message}`),
+    );
+    return this.get(created.id);
   }
 
   /** Interroge le registre public correspondant au numéro déclaré. */
@@ -260,19 +309,11 @@ export class PartnersService {
       }),
       this.prisma.partnerApplication.count({ where }),
     ]);
-    const stats = await this.revenueByCode(
-      rows.map((r) => r.promoCodeId).filter(Boolean) as string[],
-    );
-    const data = rows.map((r) => {
-      const s = (r.promoCodeId && stats.get(r.promoCodeId)) || {
-        purchases: 0,
-        revenue: 0,
-      };
-      return {
-        ...withoutSecret(r),
-        sales: { ...s, commission: commissionDue(s.revenue, r.commissionRate) },
-      };
-    });
+    const blocks = await this.salesBlocks(rows);
+    const data = rows.map((r) => ({
+      ...withoutSecret(r),
+      ...blocks.get(r.id)!,
+    }));
     return {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -285,15 +326,8 @@ export class PartnersService {
       include: { promoCode: true },
     });
     if (!row) throw new NotFoundException('Candidature introuvable');
-    const s = (row.promoCodeId &&
-      (await this.revenueByCode([row.promoCodeId])).get(row.promoCodeId)) || {
-      purchases: 0,
-      revenue: 0,
-    };
-    return {
-      ...withoutSecret(row),
-      sales: { ...s, commission: commissionDue(s.revenue, row.commissionRate) },
-    };
+    const blocks = await this.salesBlocks([row]);
+    return { ...withoutSecret(row), ...blocks.get(row.id)! };
   }
 
   async update(id: string, dto: UpdatePartnerDto) {
@@ -555,30 +589,21 @@ export class PartnersService {
       throw invalid;
     }
     const promo = partner.promoCode;
-    // Achats et remboursements : le chiffre d'affaires est net.
-    const sales = promo
-      ? await this.prisma.creditTransaction.findMany({
-          where: {
-            promoCodeId: promo.id,
-            type: {
-              in: [
-                TransactionType.achat,
-                TransactionType.remboursement_paiement,
-              ],
-            },
-          },
-          select: { date: true, euroAmount: true, type: true },
-        })
-      : [];
-    const revenue =
-      Math.round(sales.reduce((sum, s) => sum + (s.euroAmount ?? 0), 0) * 100) /
-      100;
-    const paid = sales.filter(
-      (s) => s.type === TransactionType.achat && (s.euroAmount ?? 0) > 0,
-    ).length;
-    const free = sales.filter(
-      (s) => s.type === TransactionType.achat && (s.euroAmount ?? 0) === 0,
-    ).length;
+    // Mêmes chiffres que l'administration : registre des commissions.
+    const [block, ledger] = await Promise.all([
+      this.salesBlocks([partner]).then((m) => m.get(partner.id)!),
+      this.prisma.partnerCommission.findMany({
+        where: { partnerId: partner.id },
+        select: {
+          kind: true,
+          amountCents: true,
+          commissionCents: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+    const paid = block.sales.purchases;
+    const free = block.sales.freeActivations;
     const [link, offers] = await Promise.all([
       promo
         ? this.tracking.linkFunnel(promo.id)
@@ -617,17 +642,22 @@ export class PartnersService {
         : null,
       totals: {
         purchases: paid,
-        revenue,
-        commission: commissionDue(revenue, partner.commissionRate),
+        revenue: block.sales.revenue,
+        refunded: block.sales.refunded,
+        refundedSales: block.sales.refundedSales,
+        commission: block.sales.commission,
+        commissionGross: block.sales.commissionGross,
+        commissionReversed: block.sales.commissionReversed,
       },
-      months: monthlyHistory(sales, partner.commissionRate),
+      metrics: block.metrics,
+      months: monthlyCommissions(ledger),
       updatedAt: new Date().toISOString(),
     };
   }
 
   /** Synthèse : candidatures par profil et statut, ventes et commissions dues. */
   async summary() {
-    const [byType, byStatus, withCode] = await Promise.all([
+    const [byType, byStatus, all] = await Promise.all([
       this.prisma.partnerApplication.groupBy({
         by: ['type'],
         _count: { _all: true },
@@ -637,26 +667,39 @@ export class PartnersService {
         _count: { _all: true },
       }),
       this.prisma.partnerApplication.findMany({
-        where: { promoCodeId: { not: null } },
         select: {
+          id: true,
           promoCodeId: true,
-          commissionRate: true,
           promoCode: { select: { isActive: true } },
         },
       }),
     ]);
-    const stats = await this.revenueByCode(
-      withCode.map((p) => p.promoCodeId as string),
-    );
-    let revenue = 0;
-    let commission = 0;
-    let purchases = 0;
-    for (const p of withCode) {
-      const s = stats.get(p.promoCodeId as string);
-      if (!s) continue;
-      revenue += s.revenue;
-      purchases += s.purchases;
-      commission += commissionDue(s.revenue, p.commissionRate);
+    // Somme des blocs de chaque partenaire : les totaux concordent par
+    // construction avec la liste et avec chaque Espace partenaire.
+    const blocks = await this.salesBlocks(all);
+    const t = {
+      purchases: 0,
+      revenueCents: 0,
+      refundedCents: 0,
+      refundedSales: 0,
+      commissionCents: 0,
+      commissionReversedCents: 0,
+      freeActivations: 0,
+      clicks: 0,
+      signups: 0,
+      verifiedConversions: 0,
+    };
+    for (const b of blocks.values()) {
+      t.purchases += b.sales.purchases;
+      t.revenueCents += Math.round(b.sales.revenue * 100);
+      t.refundedCents += Math.round(b.sales.refunded * 100);
+      t.refundedSales += b.sales.refundedSales;
+      t.commissionCents += Math.round(b.sales.commission * 100);
+      t.commissionReversedCents += Math.round(b.sales.commissionReversed * 100);
+      t.freeActivations += b.sales.freeActivations;
+      t.clicks += b.metrics.clicks;
+      t.signups += b.metrics.signups;
+      t.verifiedConversions += b.metrics.verifiedConversions;
     }
     return {
       byType: Object.fromEntries(byType.map((r) => [r.type, r._count._all])),
@@ -664,13 +707,124 @@ export class PartnersService {
         byStatus.map((r) => [r.status, r._count._all]),
       ),
       // Codes encore utilisables (hors partenaires refusés ou suspendus).
-      activeCodes: withCode.filter((p) => p.promoCode?.isActive).length,
-      purchases,
-      revenue: Math.round(revenue * 100) / 100,
-      commission: Math.round(commission * 100) / 100,
+      activeCodes: all.filter((p) => p.promoCode?.isActive).length,
+      purchases: t.purchases,
+      revenue: t.revenueCents / 100,
+      refunded: t.refundedCents / 100,
+      refundedSales: t.refundedSales,
+      commission: t.commissionCents / 100,
+      commissionReversed: t.commissionReversedCents / 100,
+      freeActivations: t.freeActivations,
+      metrics: {
+        clicks: t.clicks,
+        signups: t.signups,
+        verifiedConversions: t.verifiedConversions,
+        confirmedRevenue: t.revenueCents / 100,
+      },
       // Offres des marques : clics mesurés et ventes confirmées, séparés.
       offers: await this.tracking.offersSummary(),
     };
+  }
+
+  /**
+   * Chiffres commerciaux de chaque partenaire, calculés une seule fois ici
+   * pour la liste, la fiche, la synthèse et l'Espace partenaire :
+   * - clics : visites du lien + clics sur ses offres (mesurés, pas des ventes) ;
+   * - conversions vérifiées : Parcours payés (paiement confirmé) + ventes
+   *   confirmées par relevé de la marque ;
+   * - revenu confirmé : payé et non remboursé ; commission due au taux figé
+   *   sur chaque vente, reprises de remboursement déduites.
+   */
+  private async salesBlocks(
+    partners: { id: string; promoCodeId?: string | null }[],
+  ) {
+    const ids = partners.map((p) => p.id);
+    const codeIds = partners
+      .map((p) => p.promoCodeId)
+      .filter(Boolean) as string[];
+    const [figures, free, visits, offerRows] = await Promise.all([
+      partnerFigures(this.prisma, ids),
+      this.revenueByCode(codeIds),
+      this.prisma.partnerDailyStat.groupBy({
+        by: ['promoCodeId'],
+        where: { promoCodeId: { in: codeIds } },
+        _sum: { visits: true, signups: true },
+      }),
+      this.prisma.partnerOffer.findMany({
+        where: { partnerId: { in: ids } },
+        select: {
+          partnerId: true,
+          stats: { select: { clicks: true } },
+          conversions: { select: { conversions: true } },
+        },
+      }),
+    ]);
+    const visitsBy = new Map(visits.map((v) => [v.promoCodeId, v._sum]));
+    const offerClicks = new Map<string, number>();
+    const brandSales = new Map<string, number>();
+    for (const o of offerRows) {
+      offerClicks.set(
+        o.partnerId,
+        (offerClicks.get(o.partnerId) ?? 0) +
+          o.stats.reduce((n, s) => n + s.clicks, 0),
+      );
+      brandSales.set(
+        o.partnerId,
+        (brandSales.get(o.partnerId) ?? 0) +
+          o.conversions.reduce((n, c) => n + c.conversions, 0),
+      );
+    }
+    const out = new Map<
+      string,
+      {
+        sales: {
+          purchases: number;
+          freeActivations: number;
+          revenue: number;
+          gross: number;
+          refunded: number;
+          refundedSales: number;
+          commission: number;
+          commissionGross: number;
+          commissionReversed: number;
+        };
+        metrics: {
+          clicks: number;
+          signups: number;
+          verifiedConversions: number;
+          confirmedRevenue: number;
+        };
+      }
+    >();
+    for (const p of partners) {
+      const f = figures.get(p.id) ?? EMPTY_FIGURES;
+      const v = (p.promoCodeId && visitsBy.get(p.promoCodeId)) || {
+        visits: 0,
+        signups: 0,
+      };
+      const freeActivations =
+        (p.promoCodeId && free.get(p.promoCodeId)?.freeActivations) || 0;
+      out.set(p.id, {
+        sales: {
+          purchases: f.sales,
+          freeActivations,
+          revenue: f.confirmedCents / 100,
+          gross: f.grossCents / 100,
+          refunded: f.refundedCents / 100,
+          refundedSales: f.refundedSales,
+          commission: f.commissionDueCents / 100,
+          commissionGross: f.commissionGrossCents / 100,
+          commissionReversed: f.commissionReversedCents / 100,
+        },
+        metrics: {
+          clicks: (v.visits ?? 0) + (offerClicks.get(p.id) ?? 0),
+          signups: v.signups ?? 0,
+          verifiedConversions: f.sales + (brandSales.get(p.id) ?? 0),
+          confirmedRevenue: f.confirmedCents / 100,
+        },
+      });
+    }
+    return out;
   }
 
   private revenueByCode(codeIds: string[]) {

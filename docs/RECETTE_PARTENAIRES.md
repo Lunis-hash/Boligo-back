@@ -1,8 +1,48 @@
 # Recette du programme partenaires : 20 partenaires fictifs
 
 **Date** : 13/10/2026
-**Branche** : `claude/magical-keller-kw9t2c` (aucune fusion, aucun déploiement)
+**Branche** : `claude/partenaires-recette` (reprise de `claude/magical-keller-kw9t2c`, aucune fusion, aucun déploiement)
 **Résultat** : **88/88 contrôles réussis**. Le détail est dans `docs/recette-partenaires/resultats.json` et les 23 captures dans `docs/recette-partenaires/captures/`.
+
+## 0. Finalisation du 14/10/2026 (branche `claude/partenaires-recette`)
+
+### Recette en une commande (base LOCALE)
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boligo_recette_partenaires \
+DIRECT_URL=$DATABASE_URL npx prisma db push
+DATABASE_URL=… npm run seed:recette:partenaires      # idempotent, ~5 s
+```
+
+- `prisma/seed-recette-partenaires.ts` **refuse** toute base qui n'est pas sur `localhost`/`127.0.0.1` (Supabase, Render, IP distante…) : `prisma/recette-guard.ts`, testé.
+- Il efface puis recrée à l'identique : 20 partenaires « [DÉMO] » (12 acceptés, 2 suspendus, 2 en discussion, 2 nouveaux, 2 refusés), 18 offres (6 en ligne, 1 programmée, 2 expirées, 5 brouillons, 4 retirées), 13 codes `DEMO…`, visites, inscriptions, 14 ventes, 3 remboursements (Clara total, Yanis partiel 50 %, Lumen total), ventes confirmées des marques, taux changés après coup (Clara 15 → 20 %, Jade 10 → 15 %).
+- Les ventes passent par les mêmes fonctions que le webhook Stripe : aucun appel Stripe.
+
+**Accès fictifs (base locale uniquement)** — imprimés par le seed :
+
+| Interface | Adresse | Identifiants |
+|---|---|---|
+| Administration | http://localhost:8082/login | `admin@boligo-demo.example` / `Demo-Admin-2026!` (équipe marketing : `marketing@…` / `Demo-Marketing-2026!`) |
+| Membre (webapp) | http://localhost:8081 | `membre@boligo-demo.example` / `Demo-Membre-2026!` (Grand Entretien terminé) |
+| Espace partenaire | `http://localhost:8081/espace-partenaire#<jeton>` | liens privés de démonstration, déterministes, imprimés par le seed |
+
+### Corrections
+
+1. **Registre des commissions** (`PartnerCommission`) : une ligne VENTE par Parcours payé avec un code partenaire, au **taux en vigueur le jour du paiement** (figé ; modifier le taux ne vaut que pour les ventes suivantes).
+2. **Remboursements** : chaque `charge.refunded` ajoute une ligne REPRISE rattachée à la vente, au **prorata** du montant rendu (total : commission annulée), avec ou sans `BILLING_ENABLED`. Idempotent (événement rejoué sans effet), jamais au-delà de la commission.
+3. **Clics ≠ conversions vérifiées ≠ revenus confirmés** : calculés à un seul endroit (`salesBlocks`) pour la liste, la fiche, la synthèse admin et l'Espace partenaire — mêmes chiffres partout ; la synthèse est la somme des fiches.
+   - clics : visites du lien + clics sur les offres ;
+   - conversions vérifiées : Parcours payés (paiement confirmé) + ventes confirmées par relevé de marque ;
+   - revenu confirmé : payé et non remboursé.
+4. **Administration** : création d'un partenaire par l'équipe (« Ajouter un partenaire », statut « En discussion », vérification d'entreprise lancée), fiche « Chiffres commerciaux » avec remboursements et commission reprise, cartes de synthèse séparées.
+5. **Espace partenaire** : clics, conversions vérifiées, revenu confirmé, remboursements et reprise, mention du taux figé ; l'historique mensuel compte la reprise dans le mois du remboursement.
+6. Migration additive `prisma/sql/2026-10-15_partenaires_registre_commissions.sql` (reprend l'historique au taux actuel). Vérifiée sur une base neuve au schéma de `main` : aucun écart avec `schema.prisma`. **Non appliquée en production.**
+
+### Tests
+
+- Jest : 1449/1449 (dont registre, prorata, garde-fou, création par l'équipe).
+- Intégration sur PostgreSQL local : `npm run test:int:partenaires` — 9/9 (taux figé, reprise partielle puis totale, rejeu, admin = Espace, suspension, statuts d'offre).
+- E2E navigateur sur le seed : `node mobile-steve/e2e/recette-partenaires-seed.e2e.js` — 24/24 (membre, partenaire, admin), captures `captures/40-…` à `49-…`, détail `resultats-seed-e2e.json`. Le script relance le seed au début et à la fin.
 
 ## 1. Environnement isolé
 
@@ -214,10 +254,8 @@ Tests automatiques : backend 1431/1431, app 131/131 ; TypeScript sans erreur sur
 
 ## 4. Limites restantes (non corrigées)
 
-- Un remboursement ne réduit la commission que si `BILLING_ENABLED=true`.
 - Le taux d'achat du tunnel rapporte les ventes (tous acheteurs du code) aux inscriptions via le lien : ce ne sont pas les mêmes populations.
 - Aucun e-mail automatique n'est envoyé au partenaire lors d'un refus, d'une suspension ou d'une reprise.
-- Le taux de commission n'est pas figé au moment de la vente : modifier le taux recalcule l'historique.
 - Les limites anti-abus sont en mémoire et remises à zéro à chaque redémarrage du serveur.
 - La liste « Codes promo » de l'administration n'affiche pas les activations gratuites des codes partenaires.
 

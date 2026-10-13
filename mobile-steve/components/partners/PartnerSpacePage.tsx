@@ -245,6 +245,21 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                 </View>
               ) : null}
 
+              {data.metrics ? (
+                <View testID="space-metrics">
+                  <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 14 }}>
+                    <Kpi label={t.kpiClicks} value={String(data.metrics.clicks)} ff={ff} testID="space-kpi-clicks" />
+                    <Kpi
+                      label={t.kpiConversions}
+                      value={String(data.metrics.verifiedConversions)}
+                      ff={ff}
+                      testID="space-kpi-conversions"
+                    />
+                  </View>
+                  <Text style={[styles.muted, ff.text, { marginTop: 8 }]}>{t.metricsNote}</Text>
+                </View>
+              ) : null}
+
               {code ? (
               <>
               {/* Chiffres clés */}
@@ -264,6 +279,16 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                 )}
               </View>
               {rate == null && <Text style={[styles.muted, ff.text]}>{t.noCommission}</Text>}
+              {rate != null && <Text style={[styles.muted, ff.text]}>{t.frozenRate}</Text>}
+              {(data.totals.refunded ?? 0) > 0 ? (
+                <Text style={[styles.muted, ff.text]} testID="space-refunds">
+                  {t.refundNote(
+                    data.totals.refundedSales ?? 0,
+                    formatEuro(data.totals.refunded ?? 0, lang),
+                    formatEuro(data.totals.commissionReversed ?? 0, lang),
+                  )}
+                </Text>
+              ) : null}
 
 
               {/* Historique */}
@@ -279,22 +304,25 @@ export function PartnerSpacePage({ lang: forcedLang }: { lang: PartnerLang }) {
                       <Text style={[styles.cell, styles.head, ff.semi]}>{t.colRevenue}</Text>
                       {rate != null && <Text style={[styles.cell, styles.head, ff.semi]}>{t.colCommission}</Text>}
                     </View>
-                    {data.months.map((m) => (
+                    {data.months.map((m) => {
+                      const idle = m.purchases === 0 && !m.refunded;
+                      return (
                       <View key={m.month} style={styles.row} testID={`space-month-${m.month}`}>
-                        <Text style={[styles.cellMonth, ff.medium, m.purchases === 0 && styles.zero]}>
+                        <Text style={[styles.cellMonth, ff.medium, idle && styles.zero]}>
                           {formatMonth(m.month, lang)}
                         </Text>
-                        <Text style={[styles.cell, ff.text, m.purchases === 0 && styles.zero]}>{m.purchases}</Text>
-                        <Text style={[styles.cell, ff.text, m.purchases === 0 && styles.zero]}>
+                        <Text style={[styles.cell, ff.text, idle && styles.zero]}>{m.purchases}</Text>
+                        <Text style={[styles.cell, ff.text, idle && styles.zero]}>
                           {formatEuro(m.revenue, lang)}
                         </Text>
                         {rate != null && (
-                          <Text style={[styles.cell, ff.semi, { color: m.purchases ? Brand.framboise : Brand.encrePale }]}>
+                          <Text style={[styles.cell, ff.semi, { color: idle ? Brand.encrePale : Brand.framboise }]}>
                             {formatEuro(m.commission, lang)}
                           </Text>
                         )}
                       </View>
-                    ))}
+                      );
+                    })}
                   </View>
                 )}
               </View>

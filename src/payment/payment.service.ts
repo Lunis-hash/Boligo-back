@@ -17,6 +17,7 @@ import {
   EARLY_START_CONSENT_TEXT,
   EARLY_START_CONSENT_VERSION,
 } from './billing';
+import { recordPartnerSale } from '../partners/partner-commissions';
 
 /**
  * Cohérence de la configuration Stripe (jamais de valeur de clé dans les
@@ -48,7 +49,9 @@ export function stripeConfigIssues(
       'STRIPE_WEBHOOK_SECRET absent : webhook Stripe désactivé (les paiements restent crédités par POST /payment/confirm).',
     );
   } else if (!webhookSecret.startsWith('whsec_')) {
-    issues.push('STRIPE_WEBHOOK_SECRET ne ressemble pas à un secret de webhook Stripe (whsec_…).');
+    issues.push(
+      'STRIPE_WEBHOOK_SECRET ne ressemble pas à un secret de webhook Stripe (whsec_…).',
+    );
   }
   return issues;
 }
@@ -239,7 +242,10 @@ export class PaymentService implements OnModuleInit {
     if (dbPromo) {
       // Vérifications. Un code de partenaire n'est valable que tant que le
       // partenaire est accepté (refusé ou suspendu : code sans effet).
-      if (!dbPromo.isActive || (dbPromo.partner && dbPromo.partner.status !== 'ACCEPTE')) {
+      if (
+        !dbPromo.isActive ||
+        (dbPromo.partner && dbPromo.partner.status !== 'ACCEPTE')
+      ) {
         return {
           isValid: false,
           finalAmount: planAmount,
@@ -682,7 +688,9 @@ export class PaymentService implements OnModuleInit {
     } catch (err: any) {
       // P2002 : usage déjà enregistré (webhook et confirmation simultanés).
       if (err?.code !== 'P2002') {
-        this.logger.warn(`Usage du code promo non enregistré : ${err?.message}`);
+        this.logger.warn(
+          `Usage du code promo non enregistré : ${err?.message}`,
+        );
       }
     }
   }
@@ -737,6 +745,17 @@ export class PaymentService implements OnModuleInit {
     if (metadata.promoCode) {
       await this.recordPaidPromoUsage(metadata.promoCode, userId);
     }
+    // Commission du partenaire, au taux en vigueur aujourd'hui (figé).
+    if (promoCodeId)
+      await recordPartnerSale(this.prisma, {
+        paymentRef,
+        promoCodeId,
+        amountCents: paymentIntent.amount,
+      }).catch((err: Error) =>
+        this.logger.error(
+          `Commission partenaire non enregistrée pour ${paymentRef} : ${err.message}`,
+        ),
+      );
 
     // 2. Récupérer l'utilisateur pour l'email
     const user = await this.prisma.user.findUnique({

@@ -19,7 +19,9 @@ describe('PaymentService — code d’un partenaire', () => {
     const prisma = {
       promoCode: { findUnique: jest.fn().mockResolvedValue(promo) },
     };
-    const config = { get: jest.fn(() => undefined) } as unknown as ConfigService;
+    const config = {
+      get: jest.fn(() => undefined),
+    } as unknown as ConfigService;
     return new PaymentService(
       config,
       prisma as never,

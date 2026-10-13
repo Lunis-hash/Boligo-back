@@ -47,8 +47,19 @@ export interface PartnerSpaceData {
     /** Ventes confirmées par la marque (relevé), jamais déduites des clics. */
     confirmedSales?: number;
   }[];
-  totals: { purchases: number; revenue: number; commission: number };
-  months: { month: string; purchases: number; revenue: number; commission: number }[];
+  totals: {
+    purchases: number;
+    /** Payé et non remboursé. */
+    revenue: number;
+    refunded?: number;
+    refundedSales?: number;
+    commission: number;
+    commissionGross?: number;
+    commissionReversed?: number;
+  };
+  /** Mêmes chiffres que l'administration. */
+  metrics?: { clicks: number; signups: number; verifiedConversions: number; confirmedRevenue: number };
+  months: { month: string; purchases: number; revenue: number; refunded?: number; commission: number }[];
   updatedAt: string;
 }
 
@@ -70,6 +81,11 @@ export interface SpaceText {
   kpiRevenue: string;
   kpiCommission: (rate: number) => string;
   kpiUses: string;
+  kpiClicks: string;
+  kpiConversions: string;
+  metricsNote: string;
+  refundNote: (count: number, amount: string, reversed: string) => string;
+  frozenRate: string;
   noCommission: string;
   historyTitle: string;
   historyEmpty: string;
@@ -131,9 +147,17 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     discount: (label) => `${label} pour votre audience`,
     expires: (date) => `Valable jusqu’au ${date}`,
     kpiPurchases: 'Parcours payés avec votre code',
-    kpiRevenue: 'Montant encaissé',
+    kpiRevenue: 'Revenu confirmé',
     kpiCommission: (rate) => `Votre commission (${rate} %)`,
     kpiUses: 'Utilisations du code',
+    kpiClicks: 'Clics (visites et offres)',
+    kpiConversions: 'Conversions vérifiées',
+    metricsNote:
+      'Un clic n’est pas une vente. Conversions vérifiées : Parcours payés (paiement confirmé) et ventes confirmées par relevé. Revenu confirmé : payé et non remboursé.',
+    refundNote: (count, amount, reversed) =>
+      `Remboursements : ${amount} rendu(s)${count ? `, dont ${count} Parcours intégralement remboursé(s)` : ''}. Commission reprise au prorata : ${reversed}.`,
+    frozenRate:
+      'Chaque vente garde le taux en vigueur le jour du paiement ; un nouveau taux ne vaut que pour les ventes suivantes.',
     noCommission: 'Partenariat sous contrat : pas de commission sur les ventes.',
     historyTitle: 'Mois par mois',
     historyEmpty: 'Aucun Parcours payé avec votre code pour le moment.',
@@ -209,9 +233,17 @@ export const SPACE_CONTENT: Record<PartnerLang, SpaceText> = {
     discount: (label) => `${label} for your audience`,
     expires: (date) => `Valid until ${date}`,
     kpiPurchases: 'Journeys paid with your code',
-    kpiRevenue: 'Amount collected',
+    kpiRevenue: 'Confirmed revenue',
     kpiCommission: (rate) => `Your commission (${rate}%)`,
     kpiUses: 'Code uses',
+    kpiClicks: 'Clicks (visits and offers)',
+    kpiConversions: 'Verified conversions',
+    metricsNote:
+      'A click is not a sale. Verified conversions: Journeys paid (payment confirmed) and sales confirmed by statement. Confirmed revenue: paid and not refunded.',
+    refundNote: (count, amount, reversed) =>
+      `Refunds: ${amount} returned${count ? `, including ${count} fully refunded Journey(s)` : ''}. Commission reversed pro rata: ${reversed}.`,
+    frozenRate:
+      'Each sale keeps the rate in force on the day of payment; a new rate only applies to later sales.',
     noCommission: 'Contract-based partnership: no commission on sales.',
     historyTitle: 'Month by month',
     historyEmpty: 'No Journey has been paid with your code yet.',

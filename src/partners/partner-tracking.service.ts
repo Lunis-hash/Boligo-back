@@ -366,7 +366,9 @@ export class PartnerTrackingService {
         ? dto.startsAt && new Date(dto.startsAt)
         : offer.startsAt;
     const endsAt =
-      dto.endsAt !== undefined ? dto.endsAt && new Date(dto.endsAt) : offer.endsAt;
+      dto.endsAt !== undefined
+        ? dto.endsAt && new Date(dto.endsAt)
+        : offer.endsAt;
     if (startsAt && endsAt && endsAt <= startsAt) {
       throw new BadRequestException('La fin doit être après le début.');
     }

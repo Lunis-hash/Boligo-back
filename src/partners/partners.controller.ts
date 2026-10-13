@@ -28,7 +28,7 @@ import {
   OfferInputDto,
 } from './dto/offer.dto';
 import { PartnerPortalDto } from './dto/portal.dto';
-import { ApplyPartnerDto } from './dto/apply-partner.dto';
+import { ApplyPartnerDto, TeamCreatePartnerDto } from './dto/apply-partner.dto';
 import {
   CreatePartnerCodeDto,
   ManualVerificationDto,
@@ -187,6 +187,17 @@ export class PartnersController {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     });
+  }
+
+  /** Partenaire ajouté directement par l'équipe (sans formulaire public). */
+  @Post('admin/partners')
+  @UseGuards(AdminGuard)
+  @AllowRoles(UserRole.MARKETING)
+  create(
+    @Body() dto: TeamCreatePartnerDto,
+    @Req() req: { user: { email: string } },
+  ) {
+    return this.partners.createByTeam(dto, req.user.email);
   }
 
   @Get('admin/partners/summary')
