@@ -205,9 +205,8 @@ Ces constats viennent de lectures seules, faites le 13/10/2026 : journaux de dé
 | Stripe | Connecté au compte « environnement de test BOLIGO », **mode test** ; secret du webhook présent (aucun avertissement) | Rester en test jusqu'à la décision de passage en réel (`docs/STRIPE_PASSAGE_EN_LIVE.md`) |
 | **Mentions de facturation** | Avertissement au démarrage : **« Factures incomplètes, à renseigner : `BILLING_SELLER_NAME`, `BILLING_SELLER_LEGAL_FORM`, `BILLING_SELLER_ADDRESS`, `BILLING_SELLER_SIREN`, `BILLING_MEDIATOR`, `BILLING_SELLER_VAT_NUMBER` »** | **Bloquant avant tout utilisateur payant** : raison sociale, forme juridique, adresse, SIREN, médiateur de la consommation, n° de TVA (ou `BILLING_VAT_FRANCHISE=true` si franchise en base, à confirmer avec l'expert-comptable). Pour le réel, ajouter aussi `BILLING_ENABLED=true` et `BILLING_EARLY_START_CONSENT_REQUIRED=true`. L'avertissement disparaît du journal une fois tout renseigné |
 | Notifications e-mail | « Mode d'envoi : resend » : envoi réel configuré | Vérifier que le domaine d'envoi (`EMAIL_FROM`) est vérifié dans Resend, puis faire un envoi test vers une adresse de l'équipe |
-| Notifications push | Service Expo (`exp.host`) ; jetons enregistrés par l'app native (build EAS). Rien sur le web | Tester sur un téléphone avec une build de l'app ; vérifier le `projectId` EAS. Remarque : le jeton push complet est écrit dans les journaux (`notification.service.ts`) ; à masquer |
 | Variables non visibles dans les journaux | `OTP_DEBUG`, `VIDEO_TEST_UNLOCK`, `INSIGHTS_RETRY_AFTER_MS`, `SONDEUR_MODELS_FILE`, `INTERVIEW_VERSION` | À vérifier par Steve dans Render → `Boligo-back` → *Environment* (§2.4) |
-| Sauvegarde Supabase | Projet BOLIGO : « Lunis-hash's Project » (`hhnnsevawhhtzdffnomv`). Ne pas confondre avec `oweke-staging`. Le connecteur ne permet pas de lire les sauvegardes | À vérifier par Steve : Supabase → *Database* → *Backups*. Sans sauvegarde quotidienne (offre gratuite), faire un `pg_dump` depuis un poste de confiance avant la fusion (§2.1) |
+| Sauvegarde Supabase | Projet BOLIGO : « Lunis-hash's Project » (`hhnnsevawhhtzdffnomv`), partagé avec OWEKE (schémas `oweke`, `oweke_test` et table `public.documents`). Ne pas confondre avec `oweke-staging` | Voir §7 et §8 : `scripts/sauvegarde-boligo.ps1` (Windows) |
 | Contrôle de santé Render | `healthCheckPath` vide | À régler sur `/api/health` au moment du déploiement, avec accord (§2.5) |
 | Stripe Checkout | Devise convertie automatiquement selon la localisation (17,46 $US vu pendant la recette, encaissement en EUR) | Désactiver *Adaptive Pricing* dans Stripe avant le réel, si l'on veut afficher toujours 15 € |
 
@@ -216,7 +215,7 @@ Ces constats viennent de lectures seules, faites le 13/10/2026 : journaux de dé
 2. variables Render vérifiées ;
 3. déploiement contrôlé (§3 à §5), encore en Stripe **test**, sans utilisateurs payants ;
 4. mentions de facturation renseignées et contrôlées (facture test) ;
-5. notifications e-mail et push testées ;
+5. e-mails transactionnels testés ;
 6. seulement ensuite, ouverture aux paiements, puis passage en réel.
 
 ## 7. Prérequis au GO déploiement (13/10/2026)
@@ -227,7 +226,7 @@ Toutes les vérifications ont été faites en lecture seule. Aucune configuratio
 
 | Prérequis | État | Preuve / action |
 |---|---|---|
-| Sauvegarde Supabase BOLIGO | ⏳ **À faire par Steve** | Offre **gratuite** (organisation « Lunis-hash's Org ») : pas de sauvegarde automatique récupérable. Script prêt : `scripts/sauvegarde-supabase.sh`, à lancer sur un poste de confiance. Il fait un export en lecture seule, chiffré AES-256, avec empreinte SHA-256, contrôle des tables clés et refus d'écrire dans un dépôt git. Les fichiers `*.dump*` sont exclus du dépôt (`.gitignore`). Testé sur la base locale de recette : restauration identique (32 tables, mêmes nombres de lignes) |
+| Sauvegarde Supabase BOLIGO | ⏳ **À lancer par Steve** | Offre **gratuite** : pas de sauvegarde automatique récupérable. Script Windows prêt et testé : `scripts/sauvegarde-boligo.ps1` (voir §8) |
 | Variables du backend Render | ⏳ **À vérifier par Steve** (le connecteur Render ne lit pas les variables) | `OTP_DEBUG` absente ou `false` ; `VIDEO_TEST_UNLOCK=false` ; `INSIGHTS_RETRY_AFTER_MS` absente ; `SONDEUR_MODELS_FILE` absente ; `NODE_ENV=production` ; `DATABASE_URL` / `DIRECT_URL` du projet BOLIGO ; `JWT_SECRET` défini |
 | Stripe TEST | ✅ | Journal de démarrage en production : « Stripe connecté : compte « environnement de test BOLIGO », mode test », sans avertissement de clés ni de webhook ; webhook TEST actif et identique (relu chez Stripe) |
 | Migrations Supabase | ✅ | Déjà présentes (confirmé par Steve) ; rien à réappliquer |
@@ -245,5 +244,91 @@ Toutes les vérifications ont été faites en lecture seule. Aucune configuratio
 |---|---|---|
 | Mentions légales de facturation | ❌ | 6 variables manquantes : `BILLING_SELLER_NAME`, `_LEGAL_FORM`, `_ADDRESS`, `_SIREN`, `BILLING_MEDIATOR`, `BILLING_SELLER_VAT_NUMBER` (ou `BILLING_VAT_FRANCHISE=true`, à valider avec l'expert-comptable). Ensuite `BILLING_ENABLED=true` et `BILLING_EARLY_START_CONSENT_REQUIRED=true`, puis une facture test |
 | E-mails transactionnels | ⚠️ partiel | Envoi via Resend actif en production ; domaine `boligo.fr` **vérifié**, envoi activé. Reste un envoi test réel (inscription ou facture) vers une adresse de l'équipe |
-| Notifications push | ⚠️ à tester | Test sur téléphone (build EAS). Masquer le jeton push dans les journaux |
 | Passage en réel Stripe | ⏳ | Clés et webhook live, désactiver *Adaptive Pricing* (`docs/STRIPE_PASSAGE_EN_LIVE.md`) |
+
+## 8. Prérequis finaux (webapp uniquement)
+
+BOLIGO est livré en **webapp** (export web Expo sur `boligo-web`). Les tests et travaux propres à Android, iOS et aux notifications push natives (Expo Push, builds EAS) ne font pas partie de cette livraison.
+
+### 8.1 Sauvegarde des données BOLIGO (Supabase, depuis Windows)
+
+**Périmètre**, relevé en lecture seule sur le catalogue du projet `hhnnsevawhhtzdffnomv` :
+
+| Élément du projet | Appartient à | Dans la sauvegarde |
+|---|---|---|
+| `public` : 32 tables Prisma (`User` … `GeoRegion`), 25 types énumérés, fonction et déclencheur `boligo_interview_version_immutable` | **BOLIGO** | ✅ |
+| `public.documents` (255 lignes), fonctions `app_doc_merge`, `app_lock_acquire`, `documents_set_collection` | OWEKE (absent du code BOLIGO) | ❌ table exclue. Les 3 fonctions n'ont pas de données et restent dans l'archive comme simple code |
+| Schémas `oweke`, `oweke_test` | OWEKE | ❌ |
+| Schémas Supabase `auth`, `storage`, `realtime`, `vault`… | Supabase (BOLIGO n'utilise ni Supabase Auth ni Storage) | ❌ |
+
+Ce n'est **pas** une sauvegarde complète du projet Supabase : elle couvre uniquement les données BOLIGO.
+
+**Prérequis Windows** :
+- PostgreSQL 17 « Command Line Tools » (installateur EDB, composant *Command Line Tools* seul) ;
+- Gpg4win.
+
+**Lancement** (PowerShell, depuis le dossier du dépôt) :
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\sauvegarde-boligo.ps1 -Hote <hôte du Session pooler>
+```
+
+L'hôte du Session pooler se trouve dans Supabase → *Connect* → *Session pooler*.
+
+Ce que fait le script :
+1. Il demande le mot de passe de la base (saisie masquée, jamais en argument), puis une phrase de passe gpg. Conserver la phrase de passe hors de l'ordinateur.
+2. Il se connecte en lecture seule, imposée côté serveur (`default_transaction_read_only`).
+3. Il vérifie que les 32 tables BOLIGO sont présentes et exclut toute autre table du schéma `public`.
+4. Il exporte avec `pg_dump`, avec un chiffrement AES-256 **à la volée** par gpg : aucun fichier en clair n'est écrit.
+5. Il vérifie l'archive en trois étapes :
+   - empreinte SHA-256 ;
+   - contenu : les 32 tables BOLIGO et aucune autre ;
+   - relecture complète des données en mémoire, puis comparaison du nombre de lignes de chaque table avec la base.
+6. Il refuse d'écrire dans un dépôt git ou dans un dossier OneDrive, Dropbox, Google Drive ou iCloud. Une archive non vérifiée est supprimée.
+7. Il affiche un résumé : nom des tables et nombre de lignes, sans aucune donnée personnelle. C'est ce résumé qu'il faut transmettre pour confirmer le prérequis.
+
+**Restauration** (en cas de besoin, dans une base **vide**) :
+
+```
+cmd /c "gpg -d <archive> | pg_restore --no-owner --dbname=<URL de la base cible>"
+```
+
+**Essais réalisés le 13/10/2026** (PowerShell 7.5 et PostgreSQL locaux, base simulant le projet partagé, données fictives) :
+- export et vérification réussis ;
+- restauration depuis l'archive chiffrée identique (32 tables, mêmes nombres de lignes, sans `documents` ni `oweke`) ;
+- échec de gpg simulé : archive supprimée ;
+- hôte étranger et dossier dans un dépôt git : refusés ;
+- aucun fichier `.dump` en clair sur le disque.
+
+Le script n'a pas pu être lancé sous Windows lui-même. L'enchaînement des commandes (`pg_dump | gpg`) passe par `cmd.exe`, qui transmet les données binaires sans les altérer.
+
+### 8.2 Fiche de vérification des variables Render (`Boligo-back` → *Environment*)
+
+Ne copier aucune valeur secrète. Pour les secrets, vérifier seulement leur **présence** et le **début** de la valeur.
+
+| Variable | Attendu | Secret |
+|---|---|---|
+| `NODE_ENV` | `production` | non |
+| `OTP_DEBUG` | absente, ou `false` | non |
+| `VIDEO_TEST_UNLOCK` | `false`, ou absente | non |
+| `INSIGHTS_RETRY_AFTER_MS` | **absente** | non |
+| `SONDEUR_MODELS_FILE` | **absente** (fichier livré, rédaction IA désactivée) | non |
+| `INTERVIEW_VERSION` | absente aujourd'hui ; `8.2` **au GO** (*Save only*, sans redéploiement, juste avant la fusion) | non |
+| `INTERVIEW_V82_PERCENT` | absente | non |
+| `STRIPE_SECRET_KEY` | présente, commence par `sk_test_` | **oui** |
+| `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | présente, commence par `pk_test_` | non (publique) |
+| `STRIPE_WEBHOOK_SECRET` | présente, commence par `whsec_` | **oui** |
+| `DATABASE_URL`, `DIRECT_URL` | présentes ; hôte contenant `hhnnsevawhhtzdffnomv` (jamais `qlfwuqmhghfaytnridvd`, OWEKE) | **oui** |
+| `JWT_SECRET` | présente, longue et aléatoire | **oui** |
+| `RESEND_API_KEY` | présente (journal : « Mode d'envoi : resend ») | **oui** |
+| `EMAIL_FROM` | adresse en `@boligo.fr` (domaine vérifié chez Resend) | non |
+| `WEB_APP_URL` | `https://boligo-web.onrender.com`, ou absente (valeur par défaut) | non |
+| `OPENROUTER_API_KEY` / `GROQ_API_KEY` | présentes (lectures du jour, bilan, modération) | **oui** |
+
+V8.2 : les entretiens déjà commencés gardent leur version (7.1 pour tous les entretiens existants, sans version enregistrée), grâce au code et au déclencheur d'immutabilité en base. Seuls les **nouveaux** entretiens passent en V8.2.
+
+**Contrôle après la mise en ligne** (journal de démarrage, sans secret) :
+- « Stripe connecté : … environnement de test BOLIGO … mode test » ;
+- « Mode d'envoi : resend » ;
+- aucune erreur Prisma ;
+- `GET /api/health` → 200 et `db ok`.
