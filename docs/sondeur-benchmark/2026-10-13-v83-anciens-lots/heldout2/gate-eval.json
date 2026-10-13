@@ -1,0 +1,1057 @@
+[
+  {
+    "split": "final2",
+    "chain": "contrôle seul",
+    "faulty": 150,
+    "valid": 140,
+    "faultyRejectionRate": 1,
+    "validAcceptanceRate": 0,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "answer_leak": {
+        "n": 10,
+        "rejected": 10
+      },
+      "wrong_partner_position": {
+        "n": 10,
+        "rejected": 10
+      },
+      "non_reciprocal": {
+        "n": 10,
+        "rejected": 10
+      },
+      "reversed_hypothesis": {
+        "n": 10,
+        "rejected": 10
+      },
+      "unsupported_assumption": {
+        "n": 10,
+        "rejected": 10
+      },
+      "invented_fact": {
+        "n": 10,
+        "rejected": 10
+      },
+      "known_fact_repetition": {
+        "n": 10,
+        "rejected": 10
+      },
+      "childhood_family_detour": {
+        "n": 10,
+        "rejected": 10
+      },
+      "two_ideas": {
+        "n": 10,
+        "rejected": 10
+      },
+      "jargon": {
+        "n": 10,
+        "rejected": 10
+      },
+      "diagnosis": {
+        "n": 10,
+        "rejected": 10
+      },
+      "forced_conclusion": {
+        "n": 10,
+        "rejected": 10
+      },
+      "violence_or_compromise": {
+        "n": 10,
+        "rejected": 10
+      },
+      "fake_gap": {
+        "n": 10,
+        "rejected": 10
+      },
+      "moralizing": {
+        "n": 10,
+        "rejected": 10
+      }
+    },
+    "faultyAccepted": [],
+    "validRejected": [
+      {
+        "id": "H001",
+        "text": "Dans un logement partagé, quelles règles sur le tabac vous sembleraient tenables au quotidien ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H003",
+        "text": "Si votre rapport au tabac restait exactement le même pendant dix ans, qu'est-ce que cela impliquerait pour une vie à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H005",
+        "text": "Sur le tabac, qu'est-ce que vous seriez prêt(e) à ajuster concrètement pour une vie à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H007",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le tabac est vivable pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H009",
+        "text": "Dans une voiture ou une chambre partagée, quelle règle sur le tabac vous paraîtrait juste ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H011",
+        "text": "À quelles conditions le tabac pourrait-il faire partie d'un quotidien partagé, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H013",
+        "text": "Pendant des vacances passées ensemble, quelle place le tabac pourrait-il prendre, de votre point de vue ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H015",
+        "text": "Qu'est-ce qui vous permettrait de considérer la question du tabac comme réglée dans un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H017",
+        "text": "Si un logement commun n'avait ni balcon ni jardin, comment envisageriez-vous la question du tabac ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H019",
+        "text": "Jusqu'où une différence sur le tabac pourrait-elle aller avant de remettre en cause une vie commune pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H021",
+        "text": "D'ici combien d'années aimeriez-vous que la question des enfants soit tranchée pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H023",
+        "text": "Qu'est-ce qui devrait être réuni, concrètement, pour que vous vous sentiez prêt(e) à accueillir un enfant ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H025",
+        "text": "Si la question d'avoir un enfant restait ouverte pendant trois ans, comment le vivriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H027",
+        "text": "Combien d'enfants imagineriez-vous, si un projet d'enfant voyait le jour ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H029",
+        "text": "Si une vie sans enfant s'imposait finalement, que deviendrait pour vous un projet de couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H031",
+        "text": "À quel âge, au plus tard, aimeriez-vous qu'un éventuel premier enfant arrive ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H033",
+        "text": "Qu'est-ce qui pourrait faire évoluer votre position sur le désir d'enfant dans les prochaines années ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H035",
+        "text": "Pour vous, une décision d'avoir un enfant se prend-elle plutôt en quelques mois ou en plusieurs années ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H037",
+        "text": "Quelles conditions matérielles vous sembleraient nécessaires avant un premier enfant ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H039",
+        "text": "Si vos positions sur les enfants ne bougeaient pas d'ici cinq ans, que feriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H041",
+        "text": "Quel montant mensuel consacré aux jeux d'argent vous paraîtrait acceptable dans un foyer ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H043",
+        "text": "Si votre position sur les jeux d'argent ne changeait jamais, qu'est-ce que cela impliquerait pour une vie commune ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H045",
+        "text": "À quelles conditions les jeux d'argent pourraient-ils coexister avec un budget commun, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H047",
+        "text": "Dans un couple, quelle transparence sur l'argent dépensé en jeux vous semblerait indispensable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H049",
+        "text": "Si 100 € par mois partaient en paris, comment le vivriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H051",
+        "text": "Quelle règle sur les jeux d'argent aimeriez-vous fixer avant de partager un compte commun ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H053",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur les jeux d'argent est vivable pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H055",
+        "text": "Dans un budget commun, quelle part laisseriez-vous aux loisirs de chacun, jeux d'argent compris ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H057",
+        "text": "Jusqu'où seriez-vous prêt(e) à aller pour qu'une différence sur les jeux d'argent ne fragilise pas le couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H059",
+        "text": "À partir de quelle fréquence le jeu d'argent poserait-il un problème dans une vie à deux, pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H061",
+        "text": "Si une soirée à deux tombait un jour de grand match, quelle place les paris pourraient-ils y avoir pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H063",
+        "text": "Quel plafond de dépense en jeux d'argent, s'il en fallait un, vous semblerait juste dans un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H065",
+        "text": "Si un gain de 500 € arrivait grâce à un pari, qu'en feriez-vous dans un foyer commun ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H067",
+        "text": "À quel moment d'une relation la question des jeux d'argent devrait-elle être tranchée, pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H069",
+        "text": "Si l'un de vous avait des enfants d'une précédente union, combien de jours par mois vous paraîtraient tenables à la maison ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H071",
+        "text": "Quel rôle seriez-vous prêt(e) à prendre auprès d'enfants qui ne seraient pas les vôtres ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H073",
+        "text": "Si des enfants d'une précédente union vivaient chez vous une semaine sur deux, qu'est-ce qui devrait être organisé pour que ce soit vivable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H075",
+        "text": "Pendant les vacances scolaires, quelle présence d'enfants d'une autre union vous semblerait acceptable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H077",
+        "text": "Si la garde d'enfants d'une précédente union changeait du jour au lendemain, jusqu'où pourriez-vous vous adapter ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H079",
+        "text": "Quelles règles de vie aimeriez-vous fixer avec des enfants qui ne seraient pas les vôtres ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H081",
+        "text": "Si la question de l'accueil d'enfants d'une autre union ne bougeait jamais, qu'est-ce que cela changerait pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H083",
+        "text": "Combien de temps vous faudrait-il pour trouver votre place auprès d'enfants qui ne sont pas les vôtres ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H085",
+        "text": "Dans un logement commun, quel espace imagineriez-vous pour des enfants d'une précédente union ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H087",
+        "text": "À quelles conditions accepteriez-vous que des enfants d'une autre union passent plus de temps chez vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H089",
+        "text": "Si un enfant vous demandait d'aller dans un lieu de culte, que lui répondriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H091",
+        "text": "À quel âge un enfant pourrait-il, selon vous, choisir lui-même une religion ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H093",
+        "text": "Quelles fêtes religieuses aimeriez-vous, ou non, célébrer à la maison avec des enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H095",
+        "text": "Comment une décision sur l'éducation religieuse d'un enfant devrait-elle se prendre entre vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H097",
+        "text": "Jusqu'où accepteriez-vous qu'un enfant reçoive un enseignement religieux que vous ne partagez pas ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H099",
+        "text": "Si la question de la religion des enfants restait sans accord, comment l'envisageriez-vous concrètement ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H101",
+        "text": "Quelle place une cérémonie religieuse aurait-elle pour vous à la naissance d'un enfant ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H103",
+        "text": "Si un enfant choisissait plus tard une voie spirituelle que vous ne partagez pas, comment l'accompagneriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H105",
+        "text": "À quelles conditions accepteriez-vous qu'un enfant suive un cours de religion chaque semaine ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H107",
+        "text": "Combien de temps par semaine la religion pourrait-elle occuper dans l'éducation d'un enfant, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H109",
+        "text": "Si aucun de vous ne déménageait, combien d'heures de trajet par semaine accepteriez-vous pour vous voir ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H111",
+        "text": "Si vivre ensemble imposait que l'un de vous change de ville, combien de temps vous faudrait-il pour vous décider ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H113",
+        "text": "Qu'est-ce qui compterait le plus pour vous dans une décision de changer de région pour une relation ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H115",
+        "text": "Pendant combien de temps une relation à distance vous paraîtrait-elle vivable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H117",
+        "text": "Si le lieu de vie restait un point de désaccord, quelle solution concrète envisageriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H119",
+        "text": "À quelles conditions un déménagement pour le couple vous semblerait-il juste pour les deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H121",
+        "text": "Quel délai vous paraîtrait raisonnable entre une rencontre et un emménagement dans la même ville ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H123",
+        "text": "Si l'un de vous devait changer d'emploi pour se rapprocher, qu'est-ce qui vous semblerait acceptable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H125",
+        "text": "Si la question du lieu de vie ne bougeait jamais, comment imagineriez-vous la suite ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H127",
+        "text": "Quelle distance entre deux domiciles vous semblerait encore compatible avec une relation sérieuse ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H129",
+        "text": "Si un déménagement pour le couple impliquait de recommencer à zéro professionnellement, jusqu'où iriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H131",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur le lieu de vie est vivable pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H133",
+        "text": "Si s'installer ensemble passait par une ville nouvelle pour les deux, comment l'envisageriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H135",
+        "text": "Sur le tabac, qu'est-ce qui, pour vous, ne pourrait pas bouger dans une vie commune ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H137",
+        "text": "Si votre position sur le tabac restait exactement la même dans dix ans, que cela signifierait-il pour un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H139",
+        "text": "Comment sauriez-vous qu'une différence sur le tabac est, pour vous, rédhibitoire ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H141",
+        "text": "Quelle place le tabac aurait-il dans un logement que vous partageriez, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H143",
+        "text": "Si le tabac restait un point sans accord, sur quoi fonderiez-vous votre décision de continuer ou non ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H145",
+        "text": "À quel moment d'une rencontre faut-il, pour vous, trancher la question du tabac ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H147",
+        "text": "Qu'est-ce que vous auriez besoin de savoir de l'autre sur le tabac avant d'aller plus loin ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H149",
+        "text": "Si un enfant vivait un jour sous votre toit, la place du tabac à la maison changerait-elle pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H151",
+        "text": "Dans les moments passés ensemble, quelle présence du tabac vous paraîtrait compatible avec votre façon de vivre ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H153",
+        "text": "Quelle règle sur le tabac poseriez-vous d'emblée en cas d'emménagement commun ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H155",
+        "text": "Si l'un de vous perdait son emploi, pendant combien de mois accepteriez-vous de porter seul(e) les dépenses communes ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H157",
+        "text": "Si l'un de vous était sans emploi pendant un an, qu'est-ce qui vous semblerait juste dans le partage des dépenses ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H159",
+        "text": "Quelle durée de dépendance financière entre conjoints vous paraîtrait acceptable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H161",
+        "text": "Si vous étiez celui ou celle qui perd son emploi, qu'attendriez-vous de l'autre ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H163",
+        "text": "Quelles conditions poseriez-vous pour soutenir financièrement l'autre après une perte d'emploi ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H165",
+        "text": "Si une perte d'emploi durait deux ans, comment imagineriez-vous l'organisation financière du foyer ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H167",
+        "text": "S'il fallait couvrir 1 000 € par mois pour l'autre, combien de temps cela vous semblerait-il tenable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H169",
+        "text": "Qu'est-ce qui vous aiderait à accepter de dépendre financièrement de l'autre pendant un temps ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H171",
+        "text": "Si la question du soutien après une perte d'emploi restait sans accord, que feriez-vous concrètement ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H173",
+        "text": "Quelles dépenses communes réduiriez-vous en premier si l'un des revenus du foyer disparaissait ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H175",
+        "text": "Combien de soirées par semaine aimeriez-vous passer chacun de votre côté dans une vie commune ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H177",
+        "text": "Un week-end par mois passé chacun de son côté vous semblerait-il trop, assez ou pas assez ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H179",
+        "text": "Quelles activités aimeriez-vous garder pour vous seul(e) dans une vie à deux ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H181",
+        "text": "Si l'un de vous partait une semaine en vacances sans l'autre, qu'est-ce que cela changerait pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H183",
+        "text": "À quelle fréquence aimeriez-vous partager vos loisirs avec l'autre ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H185",
+        "text": "Si votre besoin de temps seul(e) ou à deux ne changeait jamais, qu'est-ce que cela impliquerait pour le couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H187",
+        "text": "Dans un logement commun, auriez-vous besoin d'un espace rien qu'à vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H189",
+        "text": "Combien d'heures par semaine passées chacun de son côté vous paraîtraient idéales ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H191",
+        "text": "À quelles conditions un temps passé séparément vous conviendrait-il dans une relation ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H193",
+        "text": "Si l'un de vous avait besoin d'une soirée seul(e), comment aimeriez-vous que cela soit dit ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H195",
+        "text": "Quelle place laisseriez-vous aux convictions de l'autre dans la vie de tous les jours, qu'elles soient proches ou non des vôtres ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H197",
+        "text": "Si la place de la foi restait un sujet sans accord, qu'est-ce que cela changerait pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H199",
+        "text": "Quelles pratiques liées à la foi, ou à son absence, aimeriez-vous préserver dans un quotidien partagé ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H201",
+        "text": "Jusqu'où seriez-vous à l'aise pour participer à un rituel qui n'a pas le même sens pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H203",
+        "text": "Comment aimeriez-vous que les fêtes religieuses soient vécues dans un foyer commun ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H205",
+        "text": "Combien de temps par semaine la spiritualité pourrait-elle occuper dans une vie à deux, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H207",
+        "text": "Qu'est-ce qui vous permettrait de respecter une conviction sur la foi différente de la vôtre ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H209",
+        "text": "À quelles conditions la foi pourrait-elle être un sujet de conversation serein pour vous dans un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H211",
+        "text": "Quelle limite poseriez-vous pour que la question de la foi ne pèse pas sur la vie commune ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H213",
+        "text": "Combien de temps vous faudrait-il pour savoir si une différence sur la foi est vivable pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H215",
+        "text": "Si une famille désapprouvait votre union, combien de temps seriez-vous prêt(e) à attendre avant de décider ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H217",
+        "text": "Face à un refus familial de votre union, quelle place donneriez-vous à une médiation ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H219",
+        "text": "Si une désapprobation familiale durait plusieurs années, qu'est-ce qui vous ferait trancher ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H221",
+        "text": "Jusqu'où iriez-vous pour obtenir l'accord d'une famille qui désapprouve votre choix ?",
+        "gate": [
+          "F5 case « infinitif » : attribution ou présupposé (« votre »)",
+          "F5 case anglaise « infinitif » : attribution ou présupposé (« your »)"
+        ]
+      },
+      {
+        "id": "H223",
+        "text": "À quelles conditions accepteriez-vous de vous unir sans l'accord d'une famille ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H225",
+        "text": "Si une famille posait une condition à votre union, comment décideriez-vous de la suivre ou non ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H227",
+        "text": "Qui devrait avoir le dernier mot, selon vous, si une famille s'opposait à votre couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H229",
+        "text": "Si la question de l'avis familial restait sans accord entre vous, comment l'envisageriez-vous concrètement ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H231",
+        "text": "Combien de tentatives de rapprochement feriez-vous avant d'avancer sans l'accord d'une famille ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H233",
+        "text": "Si une désapprobation familiale vous obligeait à choisir, qu'est-ce qui pèserait le plus pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H235",
+        "text": "Si une famille acceptait votre union seulement après un délai, quelle durée vous paraîtrait acceptable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H237",
+        "text": "Quel rôle laisseriez-vous à une tierce personne neutre si une famille désapprouvait votre union ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H239",
+        "text": "Si l'avis d'une famille restait négatif pendant dix ans, qu'est-ce que cela changerait pour vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H241",
+        "text": "Quelle fréquence de jeux d'argent vous paraîtrait compatible avec une vie commune ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H243",
+        "text": "Si votre position sur les jeux d'argent restait la même dans dix ans, qu'est-ce que cela impliquerait pour un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H245",
+        "text": "Dans un budget commun, quelle somme mensuelle pour les paris vous semblerait acceptable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H247",
+        "text": "À quelles conditions un loto ou un pari occasionnel pourrait-il avoir sa place dans un foyer, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H249",
+        "text": "Si 80 € par mois partaient en jeux d'argent, comment le vivriez-vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H251",
+        "text": "Quelle transparence sur les jeux d'argent attendriez-vous dans un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H253",
+        "text": "À quel moment d'une relation faudrait-il, selon vous, régler la question des jeux d'argent ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H255",
+        "text": "Quelle règle sur les jeux d'argent poseriez-vous avant d'ouvrir un compte commun ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H257",
+        "text": "Qu'est-ce que vous seriez prêt(e) à changer concrètement pour qu'une différence sur les jeux d'argent reste vivable ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H259",
+        "text": "Si les jeux d'argent restaient un point sans accord, sur quoi fonderiez-vous votre décision d'avancer ou non ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H261",
+        "text": "Si votre position sur les enfants ne changeait jamais, que cela signifierait-il pour la suite d'une relation ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H263",
+        "text": "Sur le désir d'enfant, qu'est-ce qui, pour vous, ne pourrait pas bouger ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H265",
+        "text": "À quel moment d'une rencontre faut-il, selon vous, savoir si l'on veut des enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H267",
+        "text": "Qu'est-ce que vous auriez besoin d'entendre de l'autre sur les enfants avant d'aller plus loin ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H269",
+        "text": "Dans quinze ans, à quoi ressemblerait votre vie, côté enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H271",
+        "text": "Si vous restiez sur des positions différentes au sujet des enfants, sur quoi fonderiez-vous la décision de continuer ou non ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H273",
+        "text": "Quel serait, pour vous, le prix d'une différence durable sur le désir d'enfant dans un couple ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H275",
+        "text": "Qu'est-ce qui, dans votre projet de vie, dépend directement de la question des enfants ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H277",
+        "text": "Si un couple ne s'accordait pas sur les enfants, combien de temps faudrait-il pour en tirer une conclusion, selon vous ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H279",
+        "text": "Dans dix ans, à quoi ressemblerait une journée ordinaire chez vous, côté vie de famille ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      }
+    ]
+  }
+]
