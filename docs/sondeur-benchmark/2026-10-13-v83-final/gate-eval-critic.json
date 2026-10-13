@@ -1,0 +1,722 @@
+{
+  "anthropic/claude-sonnet-5.5": {
+    "H001": {
+      "ok": true,
+      "rule": null
+    },
+    "H054": {
+      "ok": true,
+      "rule": null
+    },
+    "H141": {
+      "ok": true,
+      "rule": null
+    },
+    "H187": {
+      "ok": true,
+      "rule": null
+    },
+    "H280": {
+      "ok": true,
+      "rule": null
+    },
+    "H002": {
+      "ok": true,
+      "rule": null
+    },
+    "H029": {
+      "ok": true,
+      "rule": null
+    },
+    "H091": {
+      "ok": true,
+      "rule": null
+    },
+    "H151": {
+      "ok": true,
+      "rule": null
+    },
+    "H226": {
+      "ok": true,
+      "rule": null
+    },
+    "H003": {
+      "ok": true,
+      "rule": null
+    },
+    "H038": {
+      "ok": true,
+      "rule": null
+    },
+    "H055": {
+      "ok": true,
+      "rule": null
+    },
+    "H071": {
+      "ok": false,
+      "rule": 6,
+      "reason": "présuppose une attitude fautive, oriente et juge la réponse",
+      "excerpt": "profitait du soutien sans chercher d'emploi"
+    },
+    "H127": {
+      "ok": true,
+      "rule": null
+    },
+    "H134": {
+      "ok": true,
+      "rule": null
+    },
+    "H188": {
+      "ok": true,
+      "rule": null
+    },
+    "H251": {
+      "ok": true,
+      "rule": null
+    },
+    "H279": {
+      "ok": true,
+      "rule": null
+    },
+    "H314": {
+      "ok": true,
+      "rule": null
+    },
+    "H325": {
+      "ok": true,
+      "rule": null
+    },
+    "H339": {
+      "ok": true,
+      "rule": null
+    },
+    "H004": {
+      "ok": true,
+      "rule": null
+    },
+    "H016": {
+      "ok": true,
+      "rule": null
+    },
+    "H066": {
+      "ok": true,
+      "rule": null
+    },
+    "H189": {
+      "ok": true,
+      "rule": null
+    },
+    "H219": {
+      "ok": true,
+      "rule": null
+    },
+    "H238": {
+      "ok": true,
+      "rule": null
+    },
+    "H008": {
+      "ok": false,
+      "rule": 8,
+      "reason": "fait inventé : aucun jugement de garde dans l'analyse",
+      "excerpt": "le jugement de garde"
+    },
+    "H045": {
+      "ok": true,
+      "rule": null
+    },
+    "H090": {
+      "ok": true,
+      "rule": null
+    },
+    "H109": {
+      "ok": false,
+      "rule": 8,
+      "reason": "présuppose une organisation de garde absente de l'analyse",
+      "excerpt": "l'organisation de la garde"
+    },
+    "H136": {
+      "ok": true,
+      "rule": null
+    },
+    "H149": {
+      "ok": false,
+      "rule": 6,
+      "reason": "qualifie les enfants de fardeau, oriente et juge",
+      "excerpt": "le fardeau des enfants"
+    },
+    "H168": {
+      "ok": true,
+      "rule": null
+    },
+    "H194": {
+      "ok": true,
+      "rule": null
+    },
+    "H276": {
+      "ok": true,
+      "rule": null
+    },
+    "H319": {
+      "ok": true,
+      "rule": null
+    },
+    "H349": {
+      "ok": true,
+      "rule": null
+    },
+    "H009": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "H344": {
+      "ok": true,
+      "rule": null
+    },
+    "H010": {
+      "ok": true,
+      "rule": null
+    },
+    "H074": {
+      "ok": true,
+      "rule": null
+    },
+    "H097": {
+      "ok": true,
+      "rule": null
+    },
+    "H132": {
+      "ok": true,
+      "rule": null
+    },
+    "H137": {
+      "ok": true,
+      "rule": null
+    },
+    "H207": {
+      "ok": true,
+      "rule": null
+    },
+    "H260": {
+      "ok": true,
+      "rule": null
+    },
+    "H264": {
+      "ok": true,
+      "rule": null
+    },
+    "H281": {
+      "ok": true,
+      "rule": null
+    },
+    "H326": {
+      "ok": true,
+      "rule": null
+    },
+    "H014": {
+      "ok": true,
+      "rule": null
+    },
+    "H032": {
+      "ok": true,
+      "rule": null
+    },
+    "H179": {
+      "ok": true,
+      "rule": null
+    },
+    "H192": {
+      "ok": true,
+      "rule": null
+    },
+    "H214": {
+      "ok": true,
+      "rule": null
+    },
+    "H283": {
+      "ok": true,
+      "rule": null
+    },
+    "H308": {
+      "ok": true,
+      "rule": null
+    },
+    "H330": {
+      "ok": false,
+      "rule": 11,
+      "reason": "Met en scène la violence et le contrôle, réservé aux questions de limite.",
+      "excerpt": "imposer votre foi aux enfants par la force"
+    },
+    "H018": {
+      "ok": true,
+      "rule": null
+    },
+    "H056": {
+      "ok": true,
+      "rule": null
+    },
+    "H084": {
+      "ok": true,
+      "rule": null
+    },
+    "H122": {
+      "ok": true,
+      "rule": null
+    },
+    "H140": {
+      "ok": true,
+      "rule": null
+    },
+    "H173": {
+      "ok": true,
+      "rule": null
+    },
+    "H197": {
+      "ok": true,
+      "rule": null
+    },
+    "H213": {
+      "ok": true,
+      "rule": null
+    },
+    "H247": {
+      "ok": true,
+      "rule": null
+    },
+    "H290": {
+      "ok": true,
+      "rule": null
+    },
+    "H305": {
+      "ok": true,
+      "rule": null
+    },
+    "H328": {
+      "ok": true,
+      "rule": null
+    },
+    "H020": {
+      "ok": true,
+      "rule": null
+    },
+    "H094": {
+      "ok": true,
+      "rule": null
+    },
+    "H117": {
+      "ok": true,
+      "rule": null
+    },
+    "H128": {
+      "ok": true,
+      "rule": null
+    },
+    "H255": {
+      "ok": true,
+      "rule": null
+    },
+    "H295": {
+      "ok": true,
+      "rule": null
+    },
+    "H307": {
+      "ok": true,
+      "rule": null
+    },
+    "H028": {
+      "ok": true,
+      "rule": null
+    },
+    "H116": {
+      "ok": true,
+      "rule": null
+    },
+    "H158": {
+      "ok": true,
+      "rule": null
+    },
+    "H208": {
+      "ok": true,
+      "rule": null
+    },
+    "H254": {
+      "ok": true,
+      "rule": null
+    },
+    "H352": {
+      "ok": true,
+      "rule": null
+    },
+    "H031": {
+      "ok": true,
+      "rule": null
+    },
+    "H037": {
+      "ok": true,
+      "rule": null
+    },
+    "H047": {
+      "ok": true,
+      "rule": null
+    },
+    "H089": {
+      "ok": true,
+      "rule": null
+    },
+    "H099": {
+      "ok": true,
+      "rule": null
+    },
+    "H183": {
+      "ok": true,
+      "rule": null
+    },
+    "H201": {
+      "ok": true,
+      "rule": null
+    },
+    "H211": {
+      "ok": true,
+      "rule": null
+    },
+    "H266": {
+      "ok": true,
+      "rule": null
+    },
+    "H278": {
+      "ok": true,
+      "rule": null
+    },
+    "H294": {
+      "ok": true,
+      "rule": null
+    },
+    "H313": {
+      "ok": true,
+      "rule": null
+    },
+    "H327": {
+      "ok": true,
+      "rule": null
+    },
+    "H336": {
+      "ok": true,
+      "rule": null
+    },
+    "H040": {
+      "ok": true,
+      "rule": null
+    },
+    "H150": {
+      "ok": true,
+      "rule": null
+    },
+    "H164": {
+      "ok": true,
+      "rule": null
+    },
+    "H230": {
+      "ok": true,
+      "rule": null
+    },
+    "H041": {
+      "ok": true,
+      "rule": null
+    },
+    "H069": {
+      "ok": true,
+      "rule": null
+    },
+    "H082": {
+      "ok": true,
+      "rule": null
+    },
+    "H110": {
+      "ok": true,
+      "rule": null
+    },
+    "H121": {
+      "ok": true,
+      "rule": null
+    },
+    "H190": {
+      "ok": true,
+      "rule": null
+    },
+    "H203": {
+      "ok": true,
+      "rule": null
+    },
+    "H268": {
+      "ok": true,
+      "rule": null
+    },
+    "H286": {
+      "ok": true,
+      "rule": null
+    },
+    "H303": {
+      "ok": true,
+      "rule": null
+    },
+    "H322": {
+      "ok": true,
+      "rule": null
+    },
+    "H341": {
+      "ok": true,
+      "rule": null
+    },
+    "H042": {
+      "ok": false,
+      "rule": 5,
+      "reason": "Tournure alambiquée qui présuppose une foi mal vécue.",
+      "excerpt": "une foi mal vécue"
+    },
+    "H077": {
+      "ok": true,
+      "rule": null
+    },
+    "H119": {
+      "ok": true,
+      "rule": null
+    },
+    "H148": {
+      "ok": true,
+      "rule": null
+    },
+    "H167": {
+      "ok": true,
+      "rule": null
+    },
+    "H210": {
+      "ok": true,
+      "rule": null
+    },
+    "H215": {
+      "ok": true,
+      "rule": null
+    },
+    "H233": {
+      "ok": true,
+      "rule": null,
+      "overturned": true
+    },
+    "H248": {
+      "ok": true,
+      "rule": null
+    },
+    "H291": {
+      "ok": true,
+      "rule": null
+    },
+    "H310": {
+      "ok": true,
+      "rule": null
+    },
+    "H335": {
+      "ok": true,
+      "rule": null
+    },
+    "H051": {
+      "ok": true,
+      "rule": null
+    },
+    "H146": {
+      "ok": true,
+      "rule": null
+    },
+    "H154": {
+      "ok": true,
+      "rule": null
+    },
+    "H169": {
+      "ok": true,
+      "rule": null
+    },
+    "H223": {
+      "ok": true,
+      "rule": null
+    },
+    "H274": {
+      "ok": true,
+      "rule": null
+    },
+    "H333": {
+      "ok": true,
+      "rule": null
+    },
+    "H059": {
+      "ok": true,
+      "rule": null
+    },
+    "H088": {
+      "ok": true,
+      "rule": null
+    },
+    "H101": {
+      "ok": true,
+      "rule": null
+    },
+    "H174": {
+      "ok": true,
+      "rule": null
+    },
+    "H250": {
+      "ok": true,
+      "rule": null
+    },
+    "H306": {
+      "ok": true,
+      "rule": null
+    },
+    "H060": {
+      "ok": true,
+      "rule": null
+    },
+    "H086": {
+      "ok": false,
+      "rule": 8,
+      "reason": "fait inventé : deux adolescents absents de l'analyse",
+      "excerpt": "la garde des deux adolescents"
+    },
+    "H111": {
+      "ok": true,
+      "rule": null
+    },
+    "H131": {
+      "ok": true,
+      "rule": null
+    },
+    "H145": {
+      "ok": true,
+      "rule": null
+    },
+    "H191": {
+      "ok": true,
+      "rule": null
+    },
+    "H273": {
+      "ok": true,
+      "rule": null
+    },
+    "H292": {
+      "ok": true,
+      "rule": null
+    },
+    "H309": {
+      "ok": true,
+      "rule": null
+    },
+    "H342": {
+      "ok": true,
+      "rule": null
+    },
+    "H062": {
+      "ok": true,
+      "rule": null
+    },
+    "H166": {
+      "ok": true,
+      "rule": null
+    },
+    "H265": {
+      "ok": true,
+      "rule": null
+    },
+    "H329": {
+      "ok": true,
+      "rule": null
+    },
+    "H075": {
+      "ok": true,
+      "rule": null
+    },
+    "H104": {
+      "ok": true,
+      "rule": null
+    },
+    "H184": {
+      "ok": true,
+      "rule": null
+    },
+    "H229": {
+      "ok": true,
+      "rule": null
+    },
+    "H347": {
+      "ok": true,
+      "rule": null
+    },
+    "H093": {
+      "ok": true,
+      "rule": null
+    },
+    "H106": {
+      "ok": true,
+      "rule": null
+    },
+    "H220": {
+      "ok": true,
+      "rule": null
+    },
+    "H243": {
+      "ok": false,
+      "rule": 8,
+      "reason": "Fait inventé : aucune offre d'étranger dans l'analyse",
+      "excerpt": "Si l'offre d'emploi à l'étranger restait une question ouverte entre vous"
+    },
+    "H253": {
+      "ok": true,
+      "rule": null
+    },
+    "H102": {
+      "ok": true,
+      "rule": null
+    },
+    "H118": {
+      "ok": true,
+      "rule": null
+    },
+    "H120": {
+      "ok": true,
+      "rule": null
+    },
+    "H133": {
+      "ok": true,
+      "rule": null
+    },
+    "H170": {
+      "ok": true,
+      "rule": null
+    },
+    "H182": {
+      "ok": true,
+      "rule": null
+    },
+    "H222": {
+      "ok": true,
+      "rule": null
+    },
+    "H261": {
+      "ok": true,
+      "rule": null
+    },
+    "H316": {
+      "ok": true,
+      "rule": null
+    },
+    "H338": {
+      "ok": true,
+      "rule": null
+    },
+    "H351": {
+      "ok": true,
+      "rule": null
+    },
+    "H212": {
+      "ok": true,
+      "rule": null
+    }
+  }
+}

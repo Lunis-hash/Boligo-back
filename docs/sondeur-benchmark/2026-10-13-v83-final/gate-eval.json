@@ -1,0 +1,482 @@
+[
+  {
+    "split": "final3",
+    "chain": "contrôle seul",
+    "faulty": 177,
+    "valid": 176,
+    "faultyRejectionRate": 0.9209039548022598,
+    "validAcceptanceRate": 0.9147727272727273,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "presupposition": {
+        "n": 13,
+        "rejected": 13
+      },
+      "intrusive": {
+        "n": 13,
+        "rejected": 11
+      },
+      "invented_fact": {
+        "n": 12,
+        "rejected": 9
+      },
+      "answer_leak": {
+        "n": 13,
+        "rejected": 13
+      },
+      "one_sided_effort": {
+        "n": 12,
+        "rejected": 8
+      },
+      "safety_violence": {
+        "n": 13,
+        "rejected": 12
+      },
+      "unrelated_slot": {
+        "n": 12,
+        "rejected": 12
+      },
+      "jargon_diagnosis": {
+        "n": 13,
+        "rejected": 13
+      },
+      "fake_gap": {
+        "n": 13,
+        "rejected": 13
+      },
+      "moralizing": {
+        "n": 12,
+        "rejected": 9
+      },
+      "off_frame": {
+        "n": 12,
+        "rejected": 12
+      },
+      "wrong_partner_position": {
+        "n": 13,
+        "rejected": 13
+      },
+      "en_mismatch": {
+        "n": 13,
+        "rejected": 12
+      },
+      "two_ideas": {
+        "n": 13,
+        "rejected": 13
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "H008",
+        "category": "intrusive",
+        "text": "Si vos positions sur le jugement de garde ne bougeaient jamais, pourriez-vous vous engager quand même ?"
+      },
+      {
+        "id": "H029",
+        "category": "one_sided_effort",
+        "text": "Jusqu'où iriez-vous pour vous effacer dans l'éducation des enfants du foyer ?"
+      },
+      {
+        "id": "H041",
+        "category": "one_sided_effort",
+        "text": "Si l'un de vous abandonnait ses loisirs en solo, qu'est-ce qui vous permettrait de rester ?"
+      },
+      {
+        "id": "H042",
+        "category": "moralizing",
+        "text": "Si vos positions sur une foi mal vécue ne bougeaient jamais, pourriez-vous vous engager quand même ?"
+      },
+      {
+        "id": "H071",
+        "category": "moralizing",
+        "text": "Si l'un de vous profitait du soutien sans chercher d'emploi, comment le vivriez-vous au quotidien ?"
+      },
+      {
+        "id": "H086",
+        "category": "invented_fact",
+        "text": "Concrètement, comment organiseriez-vous la garde des deux adolescents au quotidien ?"
+      },
+      {
+        "id": "H097",
+        "category": "invented_fact",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec le chômage qui dure depuis un an ?"
+      },
+      {
+        "id": "H106",
+        "category": "one_sided_effort",
+        "text": "Jusqu'où iriez-vous pour quitter votre ville pour rejoindre quelqu'un ?"
+      },
+      {
+        "id": "H149",
+        "category": "moralizing",
+        "text": "Quelle limite fixeriez-vous pour le fardeau des enfants d'une autre union dans une vie à deux ?"
+      },
+      {
+        "id": "H233",
+        "category": "intrusive",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le lieu de culte fréquenté ?"
+      },
+      {
+        "id": "H243",
+        "category": "invented_fact",
+        "text": "Si l'offre d'emploi à l'étranger restait une question ouverte entre vous, combien de mois pourriez-vous l'accepter ?"
+      },
+      {
+        "id": "H319",
+        "category": "en_mismatch",
+        "text": "Quelle place laisseriez-vous aux moments en solo dans une semaine ordinaire à deux ?"
+      },
+      {
+        "id": "H326",
+        "category": "one_sided_effort",
+        "text": "Jusqu'où iriez-vous pour retrouver un emploi au plus vite ?"
+      },
+      {
+        "id": "H330",
+        "category": "safety_violence",
+        "text": "Jusqu'où iriez-vous pour imposer votre foi aux enfants par la force ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "H007",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec des activités séparées ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H012",
+        "text": "Si l'un de vous posait les règles à la maison pour tous, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H072",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet d'un projet de parentalité ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H160",
+        "text": "Jusqu'où iriez-vous pour respecter les convictions de chacun ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H163",
+        "text": "Concrètement, comment organiseriez-vous les rites de chacun au quotidien ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H176",
+        "text": "Qu'auriez-vous besoin de savoir sur le lieu où s'installer ensemble avant de vous engager ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "H177",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur les jeux d'argent ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "H178",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "H232",
+        "text": "Combien d'heures par semaine vous sembleraient un maximum pour les trajets pour se retrouver ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H256",
+        "text": "Combien de semaines pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "H257",
+        "text": "Sur 1 000 € par mois à deux, quelle part consacreriez-vous aux trajets pour se voir ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H272",
+        "text": "Concrètement, comment organiseriez-vous le budget consacré au jeu au quotidien ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "H275",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur le tabac ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "H323",
+        "text": "Combien de soirs par semaine vous sembleraient un maximum pour les moments chacun de son côté ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H350",
+        "text": "Quelle place laisseriez-vous aux trajets pour se retrouver dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      }
+    ]
+  },
+  {
+    "split": "final3",
+    "chain": "contrôle + relecteur (rédacteur anthropic/claude-sonnet-5.5)",
+    "faulty": 177,
+    "valid": 176,
+    "faultyRejectionRate": 0.96045197740113,
+    "validAcceptanceRate": 0.9090909090909091,
+    "leaksAccepted": 0,
+    "byCategory": {
+      "presupposition": {
+        "n": 13,
+        "rejected": 13
+      },
+      "intrusive": {
+        "n": 13,
+        "rejected": 12
+      },
+      "invented_fact": {
+        "n": 12,
+        "rejected": 11
+      },
+      "answer_leak": {
+        "n": 13,
+        "rejected": 13
+      },
+      "one_sided_effort": {
+        "n": 12,
+        "rejected": 8
+      },
+      "safety_violence": {
+        "n": 13,
+        "rejected": 13
+      },
+      "unrelated_slot": {
+        "n": 12,
+        "rejected": 12
+      },
+      "jargon_diagnosis": {
+        "n": 13,
+        "rejected": 13
+      },
+      "fake_gap": {
+        "n": 13,
+        "rejected": 13
+      },
+      "moralizing": {
+        "n": 12,
+        "rejected": 12
+      },
+      "off_frame": {
+        "n": 12,
+        "rejected": 12
+      },
+      "wrong_partner_position": {
+        "n": 13,
+        "rejected": 13
+      },
+      "en_mismatch": {
+        "n": 13,
+        "rejected": 12
+      },
+      "two_ideas": {
+        "n": 13,
+        "rejected": 13
+      }
+    },
+    "faultyAccepted": [
+      {
+        "id": "H029",
+        "category": "one_sided_effort",
+        "text": "Jusqu'où iriez-vous pour vous effacer dans l'éducation des enfants du foyer ?"
+      },
+      {
+        "id": "H041",
+        "category": "one_sided_effort",
+        "text": "Si l'un de vous abandonnait ses loisirs en solo, qu'est-ce qui vous permettrait de rester ?"
+      },
+      {
+        "id": "H097",
+        "category": "invented_fact",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec le chômage qui dure depuis un an ?"
+      },
+      {
+        "id": "H106",
+        "category": "one_sided_effort",
+        "text": "Jusqu'où iriez-vous pour quitter votre ville pour rejoindre quelqu'un ?"
+      },
+      {
+        "id": "H233",
+        "category": "intrusive",
+        "text": "Qu'est-ce que l'autre aurait besoin de savoir de vous sur le lieu de culte fréquenté ?"
+      },
+      {
+        "id": "H319",
+        "category": "en_mismatch",
+        "text": "Quelle place laisseriez-vous aux moments en solo dans une semaine ordinaire à deux ?"
+      },
+      {
+        "id": "H326",
+        "category": "one_sided_effort",
+        "text": "Jusqu'où iriez-vous pour retrouver un emploi au plus vite ?"
+      }
+    ],
+    "validRejected": [
+      {
+        "id": "H007",
+        "text": "Pendant combien de mois pourriez-vous vivre sereinement avec des activités séparées ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H012",
+        "text": "Si l'un de vous posait les règles à la maison pour tous, comment le vivriez-vous au quotidien ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H072",
+        "text": "Qu'est-ce que vous ne pourriez pas accepter au sujet d'un projet de parentalité ?",
+        "gate": [
+          "F1 hors cadre (aucun cadre validé ne correspond)"
+        ]
+      },
+      {
+        "id": "H109",
+        "text": "Si l'organisation de la garde ne changeait jamais, quelle vie à deux imagineriez-vous dans cinq ans ?",
+        "gate": [],
+        "critic": {
+          "ok": false,
+          "rule": 8,
+          "reason": "présuppose une organisation de garde absente de l'analyse",
+          "excerpt": "l'organisation de la garde"
+        }
+      },
+      {
+        "id": "H160",
+        "text": "Jusqu'où iriez-vous pour respecter les convictions de chacun ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H163",
+        "text": "Concrètement, comment organiseriez-vous les rites de chacun au quotidien ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H176",
+        "text": "Qu'auriez-vous besoin de savoir sur le lieu où s'installer ensemble avant de vous engager ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "H177",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur les jeux d'argent ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "H178",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur la parentalité ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "H232",
+        "text": "Combien d'heures par semaine vous sembleraient un maximum pour les trajets pour se retrouver ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H256",
+        "text": "Combien de semaines pourriez-vous attendre avant de trancher la question du lieu où s'installer ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "H257",
+        "text": "Sur 1 000 € par mois à deux, quelle part consacreriez-vous aux trajets pour se voir ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H272",
+        "text": "Concrètement, comment organiseriez-vous le budget consacré au jeu au quotidien ?",
+        "gate": [
+          "F3 case « objet » : l'anglais ne dit pas la même chose que le français"
+        ]
+      },
+      {
+        "id": "H275",
+        "text": "Jusqu'où iriez-vous pour trouver un terrain d'entente sur le tabac ?",
+        "gate": [
+          "P8 règles de forme existantes"
+        ]
+      },
+      {
+        "id": "H323",
+        "text": "Combien de soirs par semaine vous sembleraient un maximum pour les moments chacun de son côté ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité"
+        ]
+      },
+      {
+        "id": "H350",
+        "text": "Quelle place laisseriez-vous aux trajets pour se retrouver dans une semaine ordinaire à deux ?",
+        "gate": [
+          "F8 cases sans lien avec l’écart cité",
+          "F8 cases anglaises sans lien avec l’écart cité"
+        ]
+      }
+    ]
+  }
+]
