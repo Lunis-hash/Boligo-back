@@ -177,7 +177,7 @@ fi
 
 # ── 7. Recette (une seule exécution) ────────────────────────────────────────
 set +e
-API_URL=http://127.0.0.1:3000/api DB_URL=$U LISTEN_LOG="$WORK/listen.log" BACKEND_LOG="$WORK/backend.log" \
+WEBHOOK_RENDER=$WEBHOOK_RENDER API_URL=http://127.0.0.1:3000/api DB_URL=$U LISTEN_LOG="$WORK/listen.log" BACKEND_LOG="$WORK/backend.log" \
   LISTEN_PID=$LISTEN node "$JS" run 2>&1 | mask | tee -a "$OUT/recette.txt"
 STATUS=${PIPESTATUS[0]}
 set -e

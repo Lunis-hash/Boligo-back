@@ -250,6 +250,11 @@ async function payCheckout(url, email) {
 
 async function run() {
   const must = (ok, why) => { if (!ok) throw new Error(why); };
+  // Webhook coupé par ce script : si le chien de garde l'a déjà réactivé, plus aucun paiement.
+  const webhookGuard = () => {
+    if (process.env.WEBHOOK_RENDER === 'couper' && !fs.existsSync(CUT))
+      throw new Error('webhook Render réactivé par le chien de garde : opérations de paiement arrêtées');
+  };
   must(listenerAlive(), 'listener Stripe arrêté');
   const A = await register('Payeur');
   const admin = await register('Admin');
@@ -257,12 +262,14 @@ async function run() {
   const adminTok = (await call('POST', '/auth/login', { body: { email: admin.email, password: 'Password12!' } })).data?.access_token;
   must(record('Comptes fictifs créés sur la base locale dédiée', !!A.token && !!adminTok && (await balance(A)) === 0), 'comptes');
 
+  webhookGuard();
   // 1. Création du paiement : session Checkout par l'API, relue chez Stripe.
   const cs = await call('POST', '/payment/checkout-session', { token: A.token, body: { optionId: 'parcours_harmonie', earlyStartConsent: true } });
   must(record('1. Création du paiement : session Checkout créée par l’API', cs.status < 300 && /^https:\/\/checkout\.stripe\.com\//.test(cs.data?.url || ''), `HTTP ${cs.status}, ${cs.data?.finalAmount} centimes`), JSON.stringify(cs.data));
   const s0 = sget(`/v1/checkout/sessions/${cs.data.sessionId}`);
   must(record('   Session relue chez Stripe : mode test, montant, membre rattaché, non payée', s0?.livemode === false && s0.amount_total === cs.data.finalAmount && s0.metadata?.userId === A.userId && s0.payment_status === 'unpaid', `livemode=${s0?.livemode} montant=${s0?.amount_total} statut=${s0?.payment_status}`), 'session');
 
+  webhookGuard();
   // 2. Page Checkout réelle, carte de test 4242.
   const sessionId = await payCheckout(cs.data.url, A.email);
   const s1 = sget(`/v1/checkout/sessions/${cs.data.sessionId}`);
@@ -274,6 +281,7 @@ async function run() {
   const got = await waitFor(async () => (evt && deliveries(evt.id) >= 1 && (await balance(A)) === 1) || null, 90000);
   must(record('3. Webhook payment_intent.succeeded livré par Stripe et accepté localement (HTTP 200)', !!got, `événement ${evt?.id} livraisons=${evt ? deliveries(evt.id) : 0} crédits=${await balance(A)}`), 'webhook');
 
+  webhookGuard();
   // 4. Crédit unique : confirmation de l'app + nouvelle livraison réelle de l'événement.
   const conf = await call('POST', '/payment/confirm-checkout', { token: A.token, body: { sessionId: cs.data.sessionId } });
   must(listenerAlive(), 'listener Stripe arrêté');
@@ -297,6 +305,7 @@ async function run() {
   record('5. Facture : émise, payée chez Stripe, PDF disponible', !!inv?.data?.url && invRow.startsWith('emise|') && stripeInv?.status === 'paid' && stripeInv?.livemode === false,
     `registre=${invRow || 'absent'} Stripe=${stripeInv?.status || '—'} PDF=${inv ? 'oui' : 'non'}`);
 
+  webhookGuard();
   // 6. Remboursement : rétractation, décision admin, remboursement Stripe, webhook réel.
   const wr = await call('POST', '/payment/withdrawals', { token: A.token, body: { paymentRef: pi } });
   const wid = sql(`SELECT w.id FROM "WithdrawalRequest" w JOIN "Payment" p ON p.id = w."paymentId" WHERE p."stripePaymentIntentId"='${pi}'`);
