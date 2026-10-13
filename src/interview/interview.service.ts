@@ -30,12 +30,25 @@ import {
 
 import {
   InterviewVersion,
-  ageRangesConsistent,
+  widenAcceptedAges,
+  unmetConditionalAnswers,
   configuredInterviewVersion,
   interviewVersionOf,
   isValidRangeAnswer,
   questionOf,
 } from './questions.v82';
+
+/** Résultat d'un enregistrement (module entier ou réponse seule). */
+export interface SaveModuleResult {
+  success: boolean;
+  allModulesCompleted: boolean;
+  /** Entretien déjà terminé : rien n'a été écrit. */
+  alreadyCompleted?: boolean;
+  /** Réponses de suite effacées (la réponse qui les ouvrait a changé). */
+  removed?: string[];
+  /** Réponses ajustées (plage d'âges acceptée élargie). */
+  adjusted?: Record<string, string>;
+}
 
 @Injectable()
 export class InterviewService {
@@ -150,7 +163,10 @@ export class InterviewService {
     });
   }
 
-  async saveModule(userId: string, dto: SaveModuleDto) {
+  async saveModule(
+    userId: string,
+    dto: SaveModuleDto,
+  ): Promise<SaveModuleResult> {
     // Seules les réponses prévues par ce module sont acceptées : une question
     // d'un autre module ou une option inexistante fausserait le matching.
     const answers: Record<string, string> = {};
@@ -189,11 +205,14 @@ export class InterviewService {
         ? (value as string).trim()
         : normalizeAnswer(q, value as string);
     }
-    // V8.2 : la plage d'âges acceptée englobe la tranche idéale.
-    if (!ageRangesConsistent({ ...previous, ...answers })) {
-      throw new BadRequestException(
-        'Les âges acceptés doivent englober votre tranche d’âge idéale.',
-      );
+    // V8.2 : la plage d'âges acceptée englobe la tranche idéale. Jamais
+    // bloquant : si la tranche idéale déborde (par exemple après un retour en
+    // arrière), la plage acceptée est élargie juste ce qu'il faut.
+    const adjusted: Record<string, string> = {};
+    const widened = widenAcceptedAges({ ...previous, ...answers });
+    if (widened && dto.moduleNumber === 0) {
+      answers.V82_M0_02 = widened;
+      adjusted.V82_M0_02 = widened;
     }
     // Précision écrite (« une autre langue : bambara ») : gardée seulement si
     // l'option à préciser est cochée dans la même réponse.
@@ -262,9 +281,11 @@ export class InterviewService {
       interview = await this.startInterview(userId, version);
     }
 
-    // Save or update module response
+    // Une seule ligne par module (mise à jour, jamais de doublon) : une
+    // réponse modifiée remplace l'ancienne.
     const existingResponse = await this.prisma.moduleResponse.findFirst({
       where: { interviewId: interview.id, moduleNumber: dto.moduleNumber },
+      orderBy: { completedAt: 'asc' },
     });
 
     if (existingResponse) {
@@ -290,6 +311,10 @@ export class InterviewService {
       });
     }
 
+    // Réponses conditionnelles devenues sans objet (la réponse qui ouvrait la
+    // question a changé) : effacées, dans tous les modules de l'entretien.
+    const removed = await this.purgeUnmetAnswers(interview.id, version);
+
     // Entretien terminé quand les 11 modules (0-10) n'ont plus de question applicable.
     const responses = await this.prisma.moduleResponse.findMany({
       where: { interviewId: interview.id },
@@ -302,7 +327,109 @@ export class InterviewService {
       await this.completeInterview(interview.id, userId);
     }
 
-    return { success: true, allModulesCompleted };
+    return {
+      success: true,
+      allModulesCompleted,
+      ...(removed.length ? { removed } : {}),
+      ...(Object.keys(adjusted).length ? { adjusted } : {}),
+    };
+  }
+
+  /**
+   * Efface les réponses dont la condition d'affichage n'est plus remplie
+   * (et leur précision écrite). Renvoie les identifiants effacés.
+   */
+  private async purgeUnmetAnswers(
+    interviewId: string,
+    version: InterviewVersion,
+  ): Promise<string[]> {
+    const rows = await this.prisma.moduleResponse.findMany({
+      where: { interviewId },
+      select: { id: true, rawResponses: true },
+    });
+    const removed = unmetConditionalAnswers(
+      collectRawAnswers(rows),
+      version,
+    );
+    if (!removed.length) return [];
+    const drop = new Set(
+      removed.flatMap((id) => [id, `${id}${FREE_TEXT_SUFFIX}`]),
+    );
+    for (const r of rows) {
+      const raw = (r.rawResponses ?? {}) as Record<string, unknown>;
+      if (!Object.keys(raw).some((k) => drop.has(k))) continue;
+      const kept = Object.fromEntries(
+        Object.entries(raw).filter(([k]) => !drop.has(k)),
+      );
+      await this.prisma.moduleResponse.update({
+        where: { id: r.id },
+        data: { rawResponses: kept as Prisma.InputJsonObject },
+      });
+    }
+    return removed;
+  }
+
+  /**
+   * Retour en arrière : enregistre (ou remplace) UNE réponse, aussitôt. Même
+   * validation que l'enregistrement d'un module ; un entretien terminé n'est
+   * jamais rouvert.
+   */
+  async saveAnswer(
+    userId: string,
+    dto: {
+      questionId: string;
+      value: string;
+      freeText?: string;
+      moduleName?: string;
+    },
+  ) {
+    const current = await this.currentInterview(userId);
+    const version = current
+      ? interviewVersionOf(current.answers, current.questionnaireVersion)
+      : configuredInterviewVersion(userId);
+    const q = questionOf(version, dto.questionId);
+    if (!q) {
+      throw new BadRequestException(
+        `Question inconnue : ${String(dto.questionId).slice(0, 20)}.`,
+      );
+    }
+    const answers: Record<string, string> = { [q.id]: dto.value };
+    if (dto.freeText !== undefined)
+      answers[`${q.id}${FREE_TEXT_SUFFIX}`] = dto.freeText;
+    return this.saveModule(userId, {
+      moduleNumber: q.moduleNumber,
+      moduleName: dto.moduleName || `Module ${q.moduleNumber}`,
+      answers,
+    });
+  }
+
+  /**
+   * Réponses déjà enregistrées d'un module de l'entretien en cours (relecture,
+   * reprise après interruption). Un entretien terminé n'est plus relu ici.
+   */
+  async moduleAnswers(
+    userId: string,
+    moduleNumber: number,
+  ): Promise<{ answers: Record<string, string>; editable: boolean }> {
+    const interview = await this.prisma.interviewIA.findFirst({
+      where: { userId, status: 'en_cours' },
+      select: {
+        questionnaireVersion: true,
+        responses: { select: { rawResponses: true } },
+      },
+    });
+    if (!interview) return { answers: {}, editable: false };
+    const all = collectRawAnswers(interview.responses);
+    const version = interviewVersionOf(all, interview.questionnaireVersion);
+    const answers: Record<string, string> = {};
+    for (const [id, value] of Object.entries(all)) {
+      const base = id.endsWith(FREE_TEXT_SUFFIX)
+        ? id.slice(0, -FREE_TEXT_SUFFIX.length)
+        : id;
+      if (questionOf(version, base)?.moduleNumber === moduleNumber)
+        answers[id] = value;
+    }
+    return { answers, editable: true };
   }
 
   /** Entretien en cours (ou dernier terminé) : ses réponses et sa version enregistrée (null s'il n'y en a pas). */

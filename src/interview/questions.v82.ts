@@ -23,9 +23,11 @@ import {
   QUESTIONS,
   Question,
   answerKeys,
+  dependencyMet,
 } from './questions.data';
 import { QUESTIONS_EN } from './questions.en';
 import { V82_BASE, V82_BASE_EN } from './questions.v82.generated';
+import { withClarityEn, withClarityFr } from './questions.v82.clarity';
 
 export type InterviewVersion = '7.1' | '8.2';
 
@@ -130,7 +132,8 @@ function assemble(): V82QuestionData[] {
     });
     out.splice(at + 1, 0, q);
   }
-  return out;
+  // Relecture éditoriale (questions.v82.clarity.ts) : libellés seulement.
+  return out.map(withClarityFr);
 }
 
 export const V82_QUESTIONS: V82QuestionData[] = assemble();
@@ -140,7 +143,7 @@ export const V82_INDEX: Map<string, V82QuestionData> = new Map(
 );
 
 /** Traductions anglaises (mêmes clés que les questions françaises). */
-export const V82_EN: Record<string, V82Translation> = {
+export const V82_EN: Record<string, V82Translation> = withEnClarity({
   ...Object.fromEntries(
     Object.entries(V82_BASE_EN).map(([id, t]) => {
       // Aide reprise de la V7.1 : sa traduction aussi.
@@ -166,7 +169,16 @@ export const V82_EN: Record<string, V82Translation> = {
     }),
   ),
   V82_M8_06: V82_M8_06_EN,
-};
+});
+
+/** Relecture éditoriale anglaise (questions.v82.clarity.ts) : libellés seulement. */
+function withEnClarity(
+  all: Record<string, V82Translation>,
+): Record<string, V82Translation> {
+  return Object.fromEntries(
+    Object.entries(all).map(([id, t]) => [id, withClarityEn(id, t)]),
+  );
+}
 
 /** Identifiants propres à la V8.2 (absents de la V7.1). */
 export const V82_ONLY_IDS: ReadonlySet<string> = new Set(
@@ -264,6 +276,44 @@ export function ageRangesConsistent(answers: Record<string, string>): boolean {
   const accepted = parseAgeRange(answers.V82_M0_02);
   if (!ideal || !accepted) return true;
   return accepted[0] <= ideal[0] && accepted[1] >= ideal[1];
+}
+
+/**
+ * Plage acceptée élargie pour englober la tranche idéale (« 25-40 »), ou null
+ * si elle l'englobe déjà (ou si l'une des deux manque). Jamais bloquant : un
+ * membre qui élargit sa tranche idéale après coup n'est pas arrêté.
+ */
+export function widenAcceptedAges(
+  answers: Record<string, string>,
+): string | null {
+  const ideal = parseAgeRange(answers.V82_M0_01);
+  const accepted = parseAgeRange(answers.V82_M0_02);
+  if (!ideal || !accepted || ageRangesConsistent(answers)) return null;
+  return `${Math.min(ideal[0], accepted[0])}-${Math.max(ideal[1], accepted[1])}`;
+}
+
+/**
+ * Réponses enregistrées dont la condition d'affichage (dependsOn) n'est plus
+ * remplie, en cascade : une question de suite n'a plus lieu d'être quand la
+ * réponse qui l'ouvrait a changé. Les autres réponses ne sont jamais visées.
+ */
+export function unmetConditionalAnswers(
+  answers: Record<string, string>,
+  version: InterviewVersion,
+): string[] {
+  const current = { ...answers };
+  const removed: string[] = [];
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const q of questionnaire(version)) {
+      if (!current[q.id] || !q.rules?.dependsOn) continue;
+      if (dependencyMet(q.rules, current)) continue;
+      delete current[q.id];
+      removed.push(q.id);
+      changed = true;
+    }
+  }
+  return removed;
 }
 
 /** Traduction d'une question V8.2 (les clés de réponse ne changent pas). */

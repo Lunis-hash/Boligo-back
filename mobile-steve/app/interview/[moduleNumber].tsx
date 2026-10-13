@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert, StatusBar, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator, Alert, StatusBar, TextInput, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -16,14 +16,25 @@ import {
   togglePick,
   isValidFreeText,
   FREE_TEXT_SUFFIX,
-  askIfMet,
   questionDisplayText,
   ageRangeAnswer,
 } from '@/services/interview';
+import {
+  Answers,
+  ageInputIssue,
+  answerLabel,
+  lastAnswered,
+  nextUnanswered,
+  previousAnswered,
+  progressOf,
+  visibleIndices,
+  widenToIdeal,
+  withoutUnmet,
+} from '@/services/interviewNavigation';
 import { getReadableError } from '@/services/api';
 import { useAuth } from '@/context/auth';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles, Brain, CheckCircle2, LogOut, Check } from 'lucide-react-native';
+import { Sparkles, Brain, CheckCircle2, LogOut, Check, ChevronLeft } from 'lucide-react-native';
 import { ModuleIcon } from '@/components/BrandIcons';
 
 const MODULE_INFO: Record<InterviewLanguage, Record<number, { title: string; subtitle: string }>> = {
@@ -68,8 +79,17 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     validate: 'Valider',
     ageMin: 'Âge minimum',
     ageMax: 'Âge maximum',
-    ageHint: 'De 18 à 99 ans.',
+    ageBetween: 'Entre',
+    ageAnd: 'et',
+    ageHint: 'Deux âges, de 18 à 99 ans.',
+    ageBounds: 'Les âges vont de 18 à 99 ans.',
+    ageOrder: 'Le premier âge doit être inférieur ou égal au second.',
+    ageWiden: 'Ces âges doivent inclure votre tranche idéale ({ideal} ans) : nous enregistrerons {range} ans.',
     ageUnit: 'ans',
+    back: 'Question précédente',
+    edit: 'Modifier',
+    editingHint: 'Votre réponse actuelle est cochée : gardez-la ou choisissez-en une autre.',
+    saveAgain: 'Touchez de nouveau votre réponse pour réessayer.',
     severalAnswers: 'Plusieurs réponses possibles',
     maxAnswers: '{n} réponses au plus',
     suggested: 'Pré-coché selon votre pays : modifiez librement.',
@@ -102,8 +122,17 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
     validate: 'Confirm',
     ageMin: 'Minimum age',
     ageMax: 'Maximum age',
-    ageHint: 'From 18 to 99.',
+    ageBetween: 'Between',
+    ageAnd: 'and',
+    ageHint: 'Two ages, from 18 to 99.',
+    ageBounds: 'Ages range from 18 to 99.',
+    ageOrder: 'The first age must be lower than or equal to the second.',
+    ageWiden: 'These ages must include your ideal range ({ideal}): we will save {range}.',
     ageUnit: 'years old',
+    back: 'Previous question',
+    edit: 'Edit',
+    editingHint: 'Your current answer is selected: keep it or choose another one.',
+    saveAgain: 'Tap your answer again to retry.',
     severalAnswers: 'Several answers possible',
     maxAnswers: '{n} answers at most',
     suggested: 'Pre-selected for your country: change it freely.',
@@ -127,27 +156,11 @@ const UI: Record<InterviewLanguage, Record<string, string>> = {
   },
 };
 
-interface Message {
-  id: string;
-  text: string;
-  type: 'ai' | 'user';
-  options?: { key: string; text: string; freeText?: boolean }[];
-  questionId?: string;
-  multiple?: boolean;
-  maxChoices?: number;
-  /** Réponses pré-cochées selon le pays (langues). */
-  suggested?: boolean;
-  /** Demande d'accord avant les questions sensibles. */
-  consent?: boolean;
-  /** V8.2 — plage d'âges à saisir (curseurs). */
-  ageRange?: boolean;
-}
-
 export default function DynamicInterviewScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signOut } = useAuth();
-  const { moduleNumber } = useLocalSearchParams<{ moduleNumber: string }>();
+  const { moduleNumber, at } = useLocalSearchParams<{ moduleNumber: string; at?: string }>();
   const parsed = parseInt((moduleNumber || '0').replace(/^module-?/i, ''), 10);
   const modNum = isNaN(parsed) ? 0 : parsed;
 
@@ -156,18 +169,23 @@ export default function DynamicInterviewScreen() {
   const currentModuleInfo = MODULE_INFO[lang ?? 'fr'][modNum] || { title: `Module ${modNum}`, subtitle: 'Grand Entretien BOLIGO' };
 
   const [isLoading, setIsLoading] = useState(true);
+  /** Questions du module (répondues comprises), dans l'ordre. */
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  /** Réponses enregistrées du module (et précisions écrites). */
+  const [answers, setAnswers] = useState<Answers>({});
+  /** Index de la question affichée ; -1 quand le module est terminé. */
+  const [current, setCurrent] = useState(-1);
+  // Accord pour les questions sensibles : undefined tant qu'il n'est pas lu.
+  const [consent, setConsent] = useState<boolean | null | undefined>(undefined);
   const [ageMin, setAgeMin] = useState('');
   const [ageMax, setAgeMax] = useState('');
   const [isAnswering, setIsAnswering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [moduleDone, setModuleDone] = useState(false);
+  /** Erreur d'enregistrement, affichée sous la question (on peut réessayer). */
+  const [saveError, setSaveError] = useState<string | null>(null);
   // Choix multiple en cours (langues, signaux d'alerte) : clés cochées avant « Valider ».
   const [picked, setPicked] = useState<string[]>([]);
-  // Accord pour les questions sensibles : undefined tant qu'il n'est pas lu.
-  const consentRef = useRef<boolean | null | undefined>(undefined);
   /** Relectures du module après enregistrement (questions de suite débloquées). */
   const followUpRounds = useRef(0);
   // Précision écrite de l'option « une autre langue ».
@@ -181,11 +199,29 @@ export default function DynamicInterviewScreen() {
     getInterviewLanguage().then(setLang);
   }, []);
 
+  // Page web déclarée dans la langue affichée : le navigateur ne propose plus
+  // de « traduire » le français (source des libellés « Validateur », « Annuleur »).
   useEffect(() => {
-    if (lang) loadQuestions(lang);
+    if (Platform.OS === 'web' && lang && typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
+  useEffect(() => {
+    if (lang) loadModule(lang, at === 'last' ? 'last' : 'resume');
     // La bascule de langue est gérée par switchLanguage (réponses conservées).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleNumber, lang === null]);
+  }, [moduleNumber, at, lang === null]);
+
+  useEffect(() => {
+    const p = progressOf(questions, answers, consent, current);
+    Animated.timing(progressAnim, {
+      toValue: p.total ? p.answered / p.total : 0,
+      duration: 400,
+      useNativeDriver: false,
+    }).start();
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
+  }, [questions, answers, consent, current, progressAnim]);
 
   const goToNextStep = () => {
     if (modNum < LAST_MODULE) {
@@ -195,35 +231,68 @@ export default function DynamicInterviewScreen() {
     }
   };
 
-  const loadQuestions = async (language: InterviewLanguage) => {
-    setIsLoading(true);
-    try {
-      const data = await InterviewService.getQuestions(modNum, language);
-      setQuestions(data);
-      setMessages([]);
-      setCurrentQuestionIndex(0);
-      setAnswers({});
-      setPicked([]);
-      followUpRounds.current = 0;
+  /** Affiche la question `index`, avec la réponse déjà enregistrée pré-sélectionnée. */
+  const show = (index: number, list: Question[], ans: Answers) => {
+    const q = list[index];
+    setCurrent(index);
+    setSaveError(null);
+    if (!q) return;
+    const saved = ans[q.id];
+    setPicked(saved && q.multiple ? saved.split(',').map((k) => k.trim()) : initialPicked(q));
+    setOtherText(ans[`${q.id}${FREE_TEXT_SUFFIX}`] ?? q.suggestedOther ?? '');
+    // Plage acceptée : préremplie avec la tranche idéale, qu'elle doit englober.
+    const range = saved ?? (q.id === 'V82_M0_02' ? ans.V82_M0_01 : undefined);
+    const [lo, hi] = (range ?? '').split('-');
+    setAgeMin(lo ?? '');
+    setAgeMax(hi ?? '');
+  };
 
-      if (data.length > 0) {
-        if (consentRef.current === undefined && data.some((q) => q.sensitive)) {
-          consentRef.current = await InterviewService.getSensitiveConsent()
-            .then((r) => r.consent)
-            .catch(() => null);
-        }
-        presentQuestion(0, {}, data);
-      } else {
-        // Aucune question applicable (déjà répondues, filtres d'âge/genre…) :
-        // on enregistre le module tel quel et on passe au suivant.
-        await InterviewService.saveModule(modNum, {});
-        goToNextStep();
+  /**
+   * Charge le module complet. `resume` : première question sans réponse
+   * (reprise après interruption) ; `last` : dernière question répondue (retour
+   * depuis le module suivant).
+   */
+  const loadModule = async (language: InterviewLanguage, mode: 'resume' | 'last') => {
+    setIsLoading(true);
+    setModuleDone(false);
+    followUpRounds.current = 0;
+    try {
+      const review = await InterviewService.getModule(modNum, language);
+      if (!review.editable && Object.keys(review.answers).length === 0 && review.questions.length > 0) {
+        // Entretien terminé : rien ne se modifie plus.
+        router.replace('/interview/generation');
         return;
       }
+      let cons = consent;
+      if (cons === undefined && review.questions.some((q) => q.sensitive)) {
+        cons = await InterviewService.getSensitiveConsent()
+          .then((r) => r.consent)
+          .catch(() => null);
+        setConsent(cons);
+      }
+      const list = review.questions;
+      const ans = withoutUnmet(list, review.answers);
+      setQuestions(list);
+      setAnswers(ans);
+      let start = mode === 'last' ? lastAnswered(list, ans, cons) : nextUnanswered(list, ans, cons);
+      if (start < 0 && mode === 'last') {
+        // Rien à relire ici (questions passées) : on remonte encore d'un module.
+        if (modNum > 0) {
+          router.replace(`/interview/${modNum - 1}?at=last` as any);
+          return;
+        }
+        start = nextUnanswered(list, ans, cons);
+      }
+      if (start < 0) {
+        // Aucune question restante : le module est enregistré tel quel.
+        await completeModule(ans, list, cons);
+        return;
+      }
+      show(start, list, ans);
     } catch (error) {
       const ui = UI[language];
       Alert.alert(ui.errorTitle, getReadableError(error, ui.errorLoad), [
-        { text: ui.retry, onPress: () => loadQuestions(language) },
+        { text: ui.retry, onPress: () => loadModule(language, mode) },
         { text: ui.cancel, style: 'cancel' },
       ]);
     } finally {
@@ -232,253 +301,123 @@ export default function DynamicInterviewScreen() {
   };
 
   /**
-   * Change la langue en cours de module sans perdre les réponses déjà
-   * données : mêmes questions dans le même ordre, seuls les textes changent.
+   * Change la langue en cours de module sans perdre les réponses : mêmes
+   * questions dans le même ordre, seuls les textes changent.
    */
   const switchLanguage = async (next: InterviewLanguage) => {
     if (next === lang || isAnswering || isSaving) return;
     setLang(next);
     await setInterviewLanguage(next);
     try {
-      const data = await InterviewService.getQuestions(modNum, next);
-      if (data.length !== questions.length) {
-        loadQuestions(next);
+      const review = await InterviewService.getModule(modNum, next);
+      const sameList =
+        review.questions.length === questions.length &&
+        review.questions.every((q, i) => q.id === questions[i]?.id);
+      if (!sameList) {
+        loadModule(next, 'resume');
         return;
       }
-      setQuestions(data);
-      const current = data[currentQuestionIndex];
-      if (!current) return;
-      // Demande d'accord en attente : la question n'est pas encore affichée,
-      // mais la demande elle-même passe dans la nouvelle langue.
-      if (current.sensitive && consentRef.current !== true) {
-        const ui = UI[next];
-        setMessages((prev) =>
-          prev.map((m, i) =>
-            i === prev.length - 1 && m.consent
-              ? {
-                  ...m,
-                  text: ui.consentText,
-                  options: [
-                    { key: 'yes', text: ui.consentYes },
-                    { key: 'no', text: ui.consentNo },
-                  ],
-                }
-              : m,
-          ),
-        );
-        return;
-      }
-      setPicked(initialPicked(current));
-      setOtherText(current.suggestedOther ?? '');
-      // La question en attente est réécrite dans la nouvelle langue (pas de doublon).
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        const translated: Message = {
-          id: Math.random().toString(36).substring(7),
-          text: questionDisplayText(current),
-          type: 'ai',
-          options: current.options,
-          questionId: current.id,
-          multiple: current.multiple,
-          maxChoices: current.maxChoices,
-          suggested: !!current.suggested?.length,
-        };
-        return last?.type === 'ai' && last.questionId === current.id
-          ? [...prev.slice(0, -1), translated]
-          : [...prev, translated];
-      });
+      setQuestions(review.questions);
     } catch {
       /* la langue précédente reste affichée */
     }
   };
 
-  /**
-   * Affiche la question `index`. Questions sensibles : elles sont sautées si le
-   * membre les a refusées, et précédées d'une demande d'accord sinon.
-   */
-  const presentQuestion = (
-    index: number,
-    answersSoFar: Record<string, string>,
-    list: Question[] = questions,
-  ) => {
-    let i = index;
-    // Sautées : questions sensibles refusées, et questions de suite que la
-    // réponse donnée plus tôt n'ouvre pas.
-    const skip = (q: Question) =>
-      (consentRef.current === false && !!q.sensitive) || !askIfMet(q, answersSoFar);
-    while (i < list.length && skip(list[i])) i++;
-    if (i >= list.length) {
-      handleModuleComplete(answersSoFar);
-      return;
-    }
-    setCurrentQuestionIndex(i);
-    if (list[i].sensitive && consentRef.current !== true) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Math.random().toString(36).substring(7),
-          text: t.consentText,
-          type: 'ai',
-          consent: true,
-          options: [
-            { key: 'yes', text: t.consentYes },
-            { key: 'no', text: t.consentNo },
-          ],
-        },
-      ]);
-      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
-      return;
-    }
-    addQuestionMessage(list[i]);
-  };
-
-  const handleConsent = async (accepted: boolean, label: string) => {
+  const handleConsent = async (accepted: boolean) => {
     if (isAnswering) return;
     setIsAnswering(true);
     try {
       await InterviewService.setSensitiveConsent(accepted);
+      setConsent(accepted);
+      if (!accepted) {
+        const n = nextUnanswered(questions, answers, false, current);
+        if (n < 0) await completeModule(answers, questions, false);
+        else show(n, questions, answers);
+      }
     } catch (error) {
       Alert.alert(t.errorTitle, getReadableError(error, t.saveFail));
+    } finally {
       setIsAnswering(false);
-      return;
     }
-    consentRef.current = accepted;
-    addUserMessage(label);
-    setTimeout(() => {
-      presentQuestion(currentQuestionIndex, answers);
-      setIsAnswering(false);
-    }, 500);
   };
 
-  const addQuestionMessage = (q: Question) => {
-    // Langues : celles du pays de résidence sont cochées d'office.
-    setPicked(initialPicked(q));
-    setOtherText(q.suggestedOther ?? '');
-    setAgeMin('');
-    setAgeMax('');
-    addAIMessage(questionDisplayText(q), q.options, q.id, q.multiple, q.maxChoices, !!q.suggested?.length, q.input === 'ageRange');
-  };
-
-  const addAIMessage = (
-    text: string,
-    options?: { key: string; text: string; freeText?: boolean }[],
-    questionId?: string,
-    multiple?: boolean,
-    maxChoices?: number,
-    suggested?: boolean,
-    ageRange?: boolean,
-  ) => {
-    const newMessage: Message = {
-      id: Math.random().toString(36).substring(7),
-      text,
-      type: 'ai',
-      options,
-      questionId,
-      multiple,
-      maxChoices,
-      suggested,
-      ageRange,
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
-  };
-
-  const addUserMessage = (text: string) => {
-    const newMessage: Message = {
-      id: Math.random().toString(36).substring(7),
-      text,
-      type: 'user',
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
-  };
-
-  const handleAnswer = async (
-    optionKey: string,
-    optionText: string,
-    extra: Record<string, string> = {},
-  ) => {
-    if (isAnswering) return;
+  /** Enregistre la réponse à la question affichée, aussitôt, puis passe à la suivante sans réponse. */
+  const submit = async (value: string, freeText?: string) => {
+    const q = questions[current];
+    if (!q || isAnswering) return;
     setIsAnswering(true);
-    const currentQ = questions[currentQuestionIndex];
-    addUserMessage(optionText);
-    const newAnswers = { ...answers, [currentQ.id]: optionKey, ...extra };
-    setAnswers(newAnswers);
-    setPicked([]);
-    setOtherText('');
-
-    const nextIndex = currentQuestionIndex + 1;
-    const progress = questions.length > 0 ? (nextIndex / questions.length) : 1;
-    Animated.timing(progressAnim, {
-      toValue: progress,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-    if (nextIndex < questions.length) {
-      setTimeout(() => {
-        presentQuestion(nextIndex, newAnswers);
-        setIsAnswering(false);
-      }, 700);
-    } else {
-      handleModuleComplete(newAnswers);
+    setSaveError(null);
+    try {
+      const res = await InterviewService.saveAnswer(modNum, q.id, value, freeText);
+      let next: Answers = { ...answers, [q.id]: value };
+      const otherKey = `${q.id}${FREE_TEXT_SUFFIX}`;
+      if (freeText !== undefined) next[otherKey] = freeText;
+      else delete next[otherKey];
+      for (const id of res?.removed ?? []) {
+        delete next[id];
+        delete next[`${id}${FREE_TEXT_SUFFIX}`];
+      }
+      next = withoutUnmet(questions, { ...next, ...(res?.adjusted ?? {}) });
+      setAnswers(next);
+      if (res?.allModulesCompleted || res?.alreadyCompleted) {
+        router.replace('/interview/generation');
+        return;
+      }
+      const n = nextUnanswered(questions, next, consent, current);
+      if (n < 0) await completeModule(next, questions, consent);
+      else show(n, questions, next);
+    } catch (error) {
+      setSaveError(`${getReadableError(error, t.saveFail)} ${t.saveAgain}`);
+    } finally {
+      setIsAnswering(false);
     }
   };
 
-  /** Coche ou décoche une réponse (choix multiple, dans la limite du maximum). */
-  const togglePicked = (key: string) => {
-    const currentQ = questions[currentQuestionIndex];
-    if (currentQ) setPicked((prev) => togglePick(currentQ, prev, key));
+  /** Retour à la question précédente, y compris dans le module précédent. */
+  const goBack = () => {
+    if (isAnswering || isSaving) return;
+    const p = previousAnswered(questions, answers, consent, current);
+    if (p >= 0) {
+      setModuleDone(false);
+      show(p, questions, answers);
+    } else if (modNum > 0) {
+      router.replace(`/interview/${modNum - 1}?at=last` as any);
+    }
   };
 
-  const currentFree = questions[currentQuestionIndex]
-    ? freeTextOption(questions[currentQuestionIndex])
-    : undefined;
-  // « Une autre langue » cochée : la langue doit être écrite avant de valider.
-  const needsOtherText = !!currentFree && picked.includes(currentFree.key);
-  const canConfirm = picked.length > 0 && (!needsOtherText || isValidFreeText(otherText));
-
-  const ageAnswer = ageRangeAnswer(ageMin, ageMax);
-  const confirmAge = () => {
-    if (!ageAnswer) return;
-    const [lo, hi] = ageAnswer.split('-');
-    handleAnswer(ageAnswer, `${lo} – ${hi} ${t.ageUnit}`);
-  };
-
-  const confirmPicked = () => {
-    const currentQ = questions[currentQuestionIndex];
-    if (!currentQ || !canConfirm) return;
-    const other = needsOtherText ? otherText.replace(/\s+/g, ' ').trim() : undefined;
-    const { key, text } = joinMultipleAnswer(currentQ, picked, other);
-    handleAnswer(key, text, other ? { [`${currentQ.id}${FREE_TEXT_SUFFIX}`]: other } : {});
-  };
-
-  const handleModuleComplete = async (finalAnswers: Record<string, string>) => {
+  /** Module entièrement répondu : enregistrement final, puis module suivant. */
+  const completeModule = async (
+    finalAnswers: Answers,
+    list: Question[],
+    cons: boolean | null | undefined,
+  ): Promise<void> => {
     setIsSaving(true);
+    setCurrent(-1);
     try {
-      await InterviewService.saveModule(modNum, finalAnswers);
-
+      const res = await InterviewService.saveModule(modNum, {});
+      if (res?.allModulesCompleted || res?.alreadyCompleted) {
+        router.replace('/interview/generation');
+        return;
+      }
       // Filet de sécurité : une question de suite débloquée par ces réponses
       // (et pas encore posée) est posée tout de suite, sans quitter le module.
       if (followUpRounds.current < 2) {
         followUpRounds.current += 1;
-        const more = (await InterviewService.getQuestions(modNum, lang ?? 'fr').catch(
-          () => [] as Question[],
-        )).filter((q) => !(q.id in finalAnswers));
-        if (more.length) {
-          setAnswers(finalAnswers);
-          setQuestions(more);
-          setCurrentQuestionIndex(0);
-          setIsAnswering(false);
-          presentQuestion(0, finalAnswers, more);
-          return;
+        const review = await InterviewService.getModule(modNum, lang ?? 'fr').catch(() => null);
+        if (review) {
+          const ans = withoutUnmet(review.questions, { ...review.answers, ...finalAnswers });
+          const n = nextUnanswered(review.questions, ans, cons);
+          if (n >= 0) {
+            setQuestions(review.questions);
+            setAnswers(ans);
+            show(n, review.questions, ans);
+            return;
+          }
         }
       }
-
+      setModuleDone(true);
       if (modNum < LAST_MODULE) {
-        setTimeout(() => {
-          addAIMessage(t.saved);
-          setTimeout(() => goToNextStep(), 1400);
-        }, 800);
+        setTimeout(() => goToNextStep(), 1600);
       } else {
         goToNextStep();
       }
@@ -487,9 +426,9 @@ export default function DynamicInterviewScreen() {
         t.saveFailTitle,
         `${getReadableError(error, t.saveFail)}\n${t.saveRetry}`,
         [
-          { text: t.cancel, style: 'cancel', onPress: () => setIsAnswering(false) },
-          { text: t.retry, onPress: () => handleModuleComplete(finalAnswers) },
-        ]
+          { text: t.cancel, style: 'cancel', onPress: () => show(lastAnswered(list, finalAnswers, cons), list, finalAnswers) },
+          { text: t.retry, onPress: () => completeModule(finalAnswers, list, cons) },
+        ],
       );
     } finally {
       setIsSaving(false);
@@ -512,6 +451,56 @@ export default function DynamicInterviewScreen() {
       ]
     );
   };
+
+  const currentQ = current >= 0 ? questions[current] : undefined;
+  const awaitingConsent = !!currentQ?.sensitive && consent !== true;
+  const currentFree = currentQ ? freeTextOption(currentQ) : undefined;
+  // « Une autre langue » cochée : la langue doit être écrite avant de valider.
+  const needsOtherText = !!currentFree && picked.includes(currentFree.key);
+  const canConfirm = picked.length > 0 && (!needsOtherText || isValidFreeText(otherText));
+
+  // Plage d'âges : erreurs dans le champ, et plage acceptée élargie si besoin.
+  const ageIssue = ageInputIssue(ageMin, ageMax);
+  const ageAnswer = ageIssue ? null : ageRangeAnswer(ageMin, ageMax);
+  const ideal = answers.V82_M0_01;
+  const widened =
+    currentQ?.id === 'V82_M0_02' && ageAnswer ? widenToIdeal(ageAnswer, ideal) : null;
+  const ageMessage =
+    ageIssue === 'bounds'
+      ? t.ageBounds
+      : ageIssue === 'order'
+        ? t.ageOrder
+        : widened
+          ? t.ageWiden
+              .replace('{ideal}', (ideal ?? '').replace('-', ' – '))
+              .replace('{range}', widened.replace('-', ' – '))
+          : null;
+
+  const confirmAge = () => {
+    if (!ageAnswer) return;
+    submit(widened ?? ageAnswer);
+  };
+
+  /** Coche ou décoche une réponse (choix multiple, dans la limite du maximum). */
+  const togglePicked = (key: string) => {
+    if (currentQ) setPicked((prev) => togglePick(currentQ, prev, key));
+  };
+
+  const confirmPicked = () => {
+    if (!currentQ || !canConfirm) return;
+    const other = needsOtherText ? otherText.replace(/\s+/g, ' ').trim() : undefined;
+    const { key } = joinMultipleAnswer(currentQ, picked, other);
+    submit(key, other);
+  };
+
+  const progress = progressOf(questions, answers, consent, current);
+  const canGoBack =
+    !isSaving && (previousAnswered(questions, answers, consent, current) >= 0 || modNum > 0);
+  // Fil de discussion : questions visibles déjà répondues avant la question affichée.
+  const history = visibleIndices(questions, answers, consent).filter(
+    (i) => (current < 0 || i < current) && !!answers[questions[i].id],
+  );
+  const editing = !!currentQ && !!answers[currentQ.id];
 
   if (isLoading || !lang) {
     return (
@@ -589,7 +578,7 @@ export default function DynamicInterviewScreen() {
             <Text style={styles.headerModuleSub}>{currentModuleInfo.subtitle}</Text>
           </View>
           <Text style={styles.questionCounterText}>
-            {t.question} {currentQuestionIndex + 1}/{questions.length || 4}
+            {t.question} {progress.position}/{progress.total || 1}
           </Text>
         </View>
 
@@ -601,7 +590,7 @@ export default function DynamicInterviewScreen() {
               {
                 width: progressAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: ['15%', '100%'],
+                  outputRange: ['4%', '100%'],
                 }),
               },
             ]}
@@ -619,105 +608,166 @@ export default function DynamicInterviewScreen() {
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        {messages.map((message, index) => (
-          <View key={message.id} style={styles.messageWrapper}>
-            {message.type === 'ai' ? (
+        {/* Fil de discussion : chaque réponse donnée se touche pour être modifiée. */}
+        {history.map((i) => {
+          const q = questions[i];
+          return (
+            <View key={q.id} style={styles.messageWrapper}>
               <View style={styles.aiBubbleContainer}>
-                <LinearGradient
-                  colors={[Colors.primary.red, Colors.primary.purple]}
-                  style={styles.aiAvatarCircle}
-                >
+                <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} style={styles.aiAvatarCircle}>
                   <Sparkles size={14} color="#FFF" />
                 </LinearGradient>
                 <View style={styles.aiBubble}>
-                  <Text style={styles.aiText}>{message.text}</Text>
+                  <Text style={styles.aiText}>{q.text}</Text>
                 </View>
               </View>
-            ) : (
-              <View style={styles.userBubble}>
-                <Text style={styles.userText}>{message.text}</Text>
-              </View>
-            )}
+              <TouchableOpacity
+                testID={`answer-${q.id}`}
+                style={styles.userBubble}
+                onPress={() => {
+                  if (isAnswering || isSaving) return;
+                  setModuleDone(false);
+                  show(i, questions, answers);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`${t.edit} : ${answerLabel(q, answers, t.ageUnit)}`}
+                activeOpacity={0.8}>
+                <Text style={styles.userText}>{answerLabel(q, answers, t.ageUnit)}</Text>
+                <Text style={styles.userEditHint}>{t.edit}</Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
 
-            {message.options && index === messages.length - 1 && !isSaving && (
-              <View style={styles.optionsContainer}>
-                {message.multiple && (
-                  <Text style={styles.multipleHint}>
-                    {message.maxChoices ? t.maxAnswers.replace('{n}', String(message.maxChoices)) : t.severalAnswers}
-                  </Text>
-                )}
-                {message.suggested && <Text style={styles.multipleHint}>{t.suggested}</Text>}
-                {message.options.map((option, optionIndex) => {
-                  const checked = message.multiple && picked.includes(option.key);
-                  // Lettre affichée selon la position : les langues ne proposent que
-                  // quatre des options (clés A, B, H, I), lues « A, B, C, D ».
-                  const letter = String.fromCharCode(65 + optionIndex);
-                  return (
-                    <TouchableOpacity
-                      key={option.key}
-                      testID={`option-${option.key}`}
-                      style={[styles.optionButton, checked && styles.optionButtonChecked]}
-                      onPress={() =>
-                        message.consent
-                          ? handleConsent(option.key === 'yes', option.text)
-                          : message.multiple
-                            ? togglePicked(option.key)
-                            : handleAnswer(option.key, option.text)
-                      }
-                      accessibilityRole={message.multiple ? 'checkbox' : 'button'}
-                      accessibilityState={message.multiple ? { checked: !!checked } : undefined}
-                      activeOpacity={0.75}
-                      disabled={isAnswering}>
-                      <View style={[styles.optionLetterCircle, checked && styles.optionLetterCircleChecked]}>
-                        {checked ? (
-                          <Check size={14} color="#FFF" strokeWidth={3} />
-                        ) : (
-                          <Text style={styles.optionLetterText}>{letter}</Text>
-                        )}
-                      </View>
-                      <Text style={styles.optionText}>{option.text}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-                {message.multiple && needsOtherText && (
-                  <TextInput
-                    testID="interview-other"
-                    value={otherText}
-                    onChangeText={setOtherText}
-                    placeholder={t.otherPlaceholder}
-                    placeholderTextColor={Colors.text.inactive}
-                    maxLength={60}
-                    style={styles.otherInput}
-                  />
-                )}
-                {message.ageRange && (
-                  <View style={styles.ageRow}>
+        {currentQ && awaitingConsent && (
+          <View style={styles.messageWrapper}>
+            <View style={styles.aiBubbleContainer}>
+              <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} style={styles.aiAvatarCircle}>
+                <Sparkles size={14} color="#FFF" />
+              </LinearGradient>
+              <View style={styles.aiBubble}>
+                <Text style={styles.aiText}>{t.consentText}</Text>
+              </View>
+            </View>
+            <View style={styles.optionsContainer}>
+              {[
+                { key: 'yes', text: t.consentYes },
+                { key: 'no', text: t.consentNo },
+              ].map((option, optionIndex) => (
+                <TouchableOpacity
+                  key={option.key}
+                  testID={`option-${option.key}`}
+                  style={styles.optionButton}
+                  onPress={() => handleConsent(option.key === 'yes')}
+                  accessibilityRole="button"
+                  activeOpacity={0.75}
+                  disabled={isAnswering}>
+                  <View style={styles.optionLetterCircle}>
+                    <Text style={styles.optionLetterText}>{String.fromCharCode(65 + optionIndex)}</Text>
+                  </View>
+                  <Text style={styles.optionText}>{option.text}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {currentQ && !awaitingConsent && !isSaving && (
+          <View style={styles.messageWrapper}>
+            <View style={styles.aiBubbleContainer}>
+              <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} style={styles.aiAvatarCircle}>
+                <Sparkles size={14} color="#FFF" />
+              </LinearGradient>
+              <View style={styles.aiBubble}>
+                <Text style={styles.aiText} testID="interview-question">{questionDisplayText(currentQ)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.optionsContainer}>
+              {editing && <Text style={styles.editingHint}>{t.editingHint}</Text>}
+              {currentQ.multiple && (
+                <Text style={styles.multipleHint}>
+                  {currentQ.maxChoices ? t.maxAnswers.replace('{n}', String(currentQ.maxChoices)) : t.severalAnswers}
+                </Text>
+              )}
+              {!!currentQ.suggested?.length && !editing && <Text style={styles.multipleHint}>{t.suggested}</Text>}
+              {currentQ.options.map((option, optionIndex) => {
+                const checked = currentQ.multiple
+                  ? picked.includes(option.key)
+                  : answers[currentQ.id] === option.key;
+                // Lettre affichée selon la position : les langues ne proposent que
+                // quatre des options (clés A, B, H, I), lues « A, B, C, D ».
+                const letter = String.fromCharCode(65 + optionIndex);
+                return (
+                  <TouchableOpacity
+                    key={option.key}
+                    testID={`option-${option.key}`}
+                    style={[styles.optionButton, checked && styles.optionButtonChecked]}
+                    onPress={() => (currentQ.multiple ? togglePicked(option.key) : submit(option.key))}
+                    accessibilityRole={currentQ.multiple ? 'checkbox' : 'button'}
+                    accessibilityState={currentQ.multiple ? { checked } : { selected: checked }}
+                    activeOpacity={0.75}
+                    disabled={isAnswering}>
+                    <View style={[styles.optionLetterCircle, checked && styles.optionLetterCircleChecked]}>
+                      {checked ? (
+                        <Check size={14} color="#FFF" strokeWidth={3} />
+                      ) : (
+                        <Text style={styles.optionLetterText}>{letter}</Text>
+                      )}
+                    </View>
+                    <Text style={styles.optionText}>{option.text}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {currentQ.multiple && needsOtherText && (
+                <TextInput
+                  testID="interview-other"
+                  value={otherText}
+                  onChangeText={setOtherText}
+                  placeholder={t.otherPlaceholder}
+                  placeholderTextColor={Colors.text.inactive}
+                  maxLength={60}
+                  style={styles.otherInput}
+                />
+              )}
+              {currentQ.input === 'ageRange' && (
+                <>
+                  <View style={styles.ageRow} accessibilityRole="none">
+                    <Text style={styles.ageWord}>{t.ageBetween}</Text>
                     <TextInput
                       testID="interview-age-min"
                       value={ageMin}
                       onChangeText={(v) => setAgeMin(v.replace(/\D/g, '').slice(0, 2))}
-                      placeholder={t.ageMin}
+                      placeholder="25"
+                      accessibilityLabel={t.ageMin}
                       placeholderTextColor={Colors.text.inactive}
                       keyboardType="number-pad"
+                      inputMode="numeric"
                       maxLength={2}
-                      style={[styles.otherInput, styles.ageInput]}
+                      style={[styles.otherInput, styles.ageInput, ageIssue && ageIssue !== 'incomplete' && styles.ageInputError]}
                     />
-                    <Text style={styles.ageDash}>–</Text>
+                    <Text style={styles.ageWord}>{t.ageAnd}</Text>
                     <TextInput
                       testID="interview-age-max"
                       value={ageMax}
                       onChangeText={(v) => setAgeMax(v.replace(/\D/g, '').slice(0, 2))}
-                      placeholder={t.ageMax}
+                      placeholder="35"
+                      accessibilityLabel={t.ageMax}
                       placeholderTextColor={Colors.text.inactive}
                       keyboardType="number-pad"
+                      inputMode="numeric"
                       maxLength={2}
-                      style={[styles.otherInput, styles.ageInput]}
+                      style={[styles.otherInput, styles.ageInput, ageIssue && ageIssue !== 'incomplete' && styles.ageInputError]}
                     />
+                    <Text style={styles.ageWord}>{t.ageUnit}</Text>
                   </View>
-                )}
-                {message.ageRange && <Text style={styles.multipleHint}>{t.ageHint}</Text>}
-                {message.ageRange && (
+                  <Text
+                    testID="interview-age-message"
+                    style={[styles.multipleHint, ageIssue && ageIssue !== 'incomplete' ? styles.ageErrorText : null]}>
+                    {ageMessage ?? t.ageHint}
+                  </Text>
                   <TouchableOpacity
                     testID="interview-age-validate"
                     onPress={confirmAge}
@@ -728,23 +778,53 @@ export default function DynamicInterviewScreen() {
                   >
                     <Text style={styles.validateBtnText}>{t.validate}</Text>
                   </TouchableOpacity>
-                )}
-                {message.multiple && (
-                  <TouchableOpacity
-                    testID="interview-validate"
-                    onPress={confirmPicked}
-                    disabled={!canConfirm || isAnswering}
-                    accessibilityRole="button"
-                    style={[styles.validateBtn, (!canConfirm || isAnswering) && styles.validateBtnDisabled]}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={styles.validateBtnText}>{t.validate}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+                </>
+              )}
+              {currentQ.multiple && (
+                <TouchableOpacity
+                  testID="interview-validate"
+                  onPress={confirmPicked}
+                  disabled={!canConfirm || isAnswering}
+                  accessibilityRole="button"
+                  style={[styles.validateBtn, (!canConfirm || isAnswering) && styles.validateBtnDisabled]}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.validateBtnText}>{t.validate}</Text>
+                </TouchableOpacity>
+              )}
+              {saveError && (
+                <Text testID="interview-save-error" style={styles.ageErrorText} accessibilityLiveRegion="polite">
+                  {saveError}
+                </Text>
+              )}
+              {isAnswering && <ActivityIndicator size="small" color={Colors.primary.red} />}
+            </View>
           </View>
-        ))}
+        )}
+
+        {canGoBack && !moduleDone && (
+          <TouchableOpacity
+            testID="interview-back"
+            onPress={goBack}
+            disabled={isAnswering}
+            accessibilityRole="button"
+            style={styles.backBtn}
+            activeOpacity={0.7}>
+            <ChevronLeft size={16} color={Colors.text.primary70} />
+            <Text style={styles.backBtnText}>{t.back}</Text>
+          </TouchableOpacity>
+        )}
+
+        {moduleDone && (
+          <View style={styles.aiBubbleContainer}>
+            <LinearGradient colors={[Colors.primary.red, Colors.primary.purple]} style={styles.aiAvatarCircle}>
+              <Sparkles size={14} color="#FFF" />
+            </LinearGradient>
+            <View style={styles.aiBubble}>
+              <Text style={styles.aiText}>{t.saved}</Text>
+            </View>
+          </View>
+        )}
 
         {isSaving && (
           <View style={styles.savingCard}>
@@ -764,18 +844,61 @@ export default function DynamicInterviewScreen() {
 }
 
 const styles = StyleSheet.create({
+  // « Entre [25] et [35] ans » : champs étroits à largeur fixe, retour à la
+  // ligne permis, aucun débordement à 360 px.
   ageRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
   },
-  ageInput: {
-    flex: 1,
-    textAlign: 'center',
+  ageWord: {
+    fontSize: 15,
+    fontFamily: Typography.fontFamily.medium,
+    color: Colors.text.primary100,
   },
-  ageDash: {
-    fontSize: 18,
-    color: '#6B7280',
+  ageInput: {
+    width: 64,
+    minWidth: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    textAlign: 'center',
+    paddingHorizontal: 6,
+  },
+  ageInputError: {
+    borderColor: '#C62828',
+  },
+  ageErrorText: {
+    fontSize: 13,
+    fontFamily: Typography.fontFamily.medium,
+    color: '#C62828',
+  },
+  editingHint: {
+    fontSize: 12,
+    fontFamily: Typography.fontFamily.medium,
+    color: Colors.primary.purple,
+  },
+  userEditHint: {
+    marginTop: 2,
+    fontSize: 11,
+    fontFamily: Typography.fontFamily.medium,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'right',
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    marginTop: 4,
+  },
+  backBtnText: {
+    fontSize: 14,
+    fontFamily: Typography.fontFamily.medium,
+    color: Colors.text.primary70,
+    textDecorationLine: 'underline',
   },
   container: {
     flex: 1,

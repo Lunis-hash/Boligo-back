@@ -163,6 +163,24 @@ export interface InterviewStatus {
 
 export const LAST_MODULE = 10;
 
+/** Module servi pour la relecture : questions (répondues comprises) et réponses enregistrées. */
+export interface ModuleReview {
+  questions: Question[];
+  answers: Record<string, string>;
+  /** false : entretien terminé, plus rien ne se modifie. */
+  editable: boolean;
+}
+
+export interface SaveAnswerResult {
+  success: boolean;
+  allModulesCompleted?: boolean;
+  alreadyCompleted?: boolean;
+  /** Réponses de suite effacées, la réponse qui les ouvrait ayant changé. */
+  removed?: string[];
+  /** Réponses ajustées par le serveur (plage d'âges acceptée élargie). */
+  adjusted?: Record<string, string>;
+}
+
 /**
  * Module à afficher pour reprendre l'entretien : le premier module non
  * terminé. Le backend ne compte un module comme terminé que s'il ne reste
@@ -198,6 +216,61 @@ export const InterviewService = {
       if (retries > 0) {
         await new Promise((res) => setTimeout(res, 1000));
         return InterviewService.getQuestions(moduleNumber, lang, retries - 1);
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Module complet pour la relecture et la reprise : toutes ses questions
+   * applicables (répondues comprises) et les réponses déjà enregistrées.
+   * Serveur plus ancien (route absente) : questions restantes seulement.
+   */
+  getModule: async (moduleNumber: number, lang: InterviewLanguage = 'fr'): Promise<ModuleReview> => {
+    try {
+      const response = await client.get<ModuleReview>(`/interview/module/${moduleNumber}`, {
+        params: { lang },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error?.response?.status !== 404) throw error;
+      const questions = await InterviewService.getQuestions(moduleNumber, lang);
+      return { questions, answers: {}, editable: true };
+    }
+  },
+
+  /**
+   * Enregistre (ou remplace) une réponse aussitôt. Le serveur efface les
+   * réponses de suite devenues sans objet (`removed`) et peut élargir la plage
+   * d'âges acceptée (`adjusted`).
+   */
+  saveAnswer: async (
+    moduleNumber: number,
+    questionId: string,
+    value: string,
+    freeText?: string,
+    retries = 2,
+  ): Promise<SaveAnswerResult> => {
+    try {
+      const response = await client.post<SaveAnswerResult>('/interview/answer', {
+        questionId,
+        value,
+        ...(freeText !== undefined ? { freeText } : {}),
+      });
+      return response.data;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 404) {
+        // Serveur plus ancien : même fusion, par l'enregistrement du module.
+        return InterviewService.saveModule(moduleNumber, {
+          [questionId]: value,
+          ...(freeText !== undefined ? { [`${questionId}${FREE_TEXT_SUFFIX}`]: freeText } : {}),
+        });
+      }
+      // Erreur de validation (400) : inutile de réessayer.
+      if (retries > 0 && (!status || status >= 500)) {
+        await new Promise((res) => setTimeout(res, 1000));
+        return InterviewService.saveAnswer(moduleNumber, questionId, value, freeText, retries - 1);
       }
       throw error;
     }

@@ -20,11 +20,13 @@ function applicable(
   age: number,
   gender: string | null | undefined,
   skipSensitive: boolean,
+  includeAnswered = false,
 ): boolean {
   if (q.moduleNumber !== moduleNumber) return false;
   if (skipSensitive && isSensitiveQuestion(q.id)) return false;
-  // Déjà répondue (ex. pré-remplie lors de l'onboarding) : jamais reposée.
-  if (answers[q.id]) return false;
+  // Déjà répondue (ex. pré-remplie lors de l'onboarding) : jamais reposée,
+  // sauf pour la relecture (retour à une question précédente).
+  if (answers[q.id] && !includeAnswered) return false;
   // Périmètre géographique : déjà défini à l'inscription (onboarding étape 3).
   if (q.id === 'M0_Q02') return false;
   if (q.rules?.maxAge && age >= q.rules.maxAge) return false;
@@ -78,21 +80,42 @@ export function moduleQuestions(
   gender: string | null | undefined,
   skipSensitive = false,
   version: InterviewVersion = interviewVersionOf(answers),
+  /**
+   * Relecture : les questions déjà répondues sont aussi renvoyées, et toute
+   * question qui dépend d'une question du même module garde sa condition
+   * (`askIf`), pour que l'app la masque si la réponse qui l'ouvrait change.
+   */
+  includeAnswered = false,
 ): ModuleQuestion[] {
   const out: ModuleQuestion[] = [];
   const askable = new Set<string>();
   for (const q of questionnaire(version)) {
-    if (!applicable(q, moduleNumber, answers, age, gender, skipSensitive))
+    if (
+      !applicable(
+        q,
+        moduleNumber,
+        answers,
+        age,
+        gender,
+        skipSensitive,
+        includeAnswered,
+      )
+    )
       continue;
-    if (dependencyMet(q.rules, answers)) {
+    const deps = q.rules?.dependsOn;
+    const depList = Array.isArray(deps) ? deps : deps ? [deps] : [];
+    // Relecture : une dépendance remplie hors du module ouvre la question
+    // pour de bon ; sinon la condition interne au module reste jointe.
+    const outside = depList.filter((d) => !askable.has(d.questionId));
+    const met = includeAnswered
+      ? !depList.length || dependencyMet({ dependsOn: outside }, answers)
+      : dependencyMet(q.rules, answers);
+    if (met) {
       out.push(q);
       askable.add(q.id);
       continue;
     }
-    const deps = q.rules?.dependsOn;
-    const askIf = (Array.isArray(deps) ? deps : deps ? [deps] : []).filter(
-      (d) => askable.has(d.questionId),
-    );
+    const askIf = depList.filter((d) => askable.has(d.questionId));
     if (askIf.length) {
       out.push({ ...q, askIf });
       askable.add(q.id);
@@ -120,6 +143,7 @@ export class QuestionsService {
     userId: string,
     moduleNumber: number,
     lang: InterviewLanguage = 'fr',
+    includeAnswered = false,
   ): Promise<Array<ModuleQuestion & { sensitive?: boolean }>> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -164,6 +188,7 @@ export class QuestionsService {
       user.gender,
       user.sensitiveConsent === false,
       version,
+      includeAnswered,
     )
       .map((q) => ({
         ...withSuggestion(
