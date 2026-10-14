@@ -11,7 +11,8 @@
  *    en JavaScript (dist-seed). Par défaut une seule fois : relancés seulement
  *    si les comptes de recette sont absents, ou si RECETTE_RESEED=1 (remise à
  *    zéro des comptes fictifs ; les comptes créés à la main sont conservés).
- * 4. Lancement de l'API (qui sert aussi la webapp et l'admin).
+ * 4. IA simulée (faux OpenRouter local), sauf RECETTE_FAUX_IA=0.
+ * 5. Lancement de l'API (qui sert aussi la webapp et l'admin).
  */
 const { spawnSync, spawn } = require('child_process');
 const path = require('path');
@@ -81,12 +82,37 @@ async function alreadySeeded() {
     }
   }
 
-  // 4. API (sert aussi / et /admin).
+  // 4. IA SIMULÉE (par défaut en prévisualisation, RECETTE_FAUX_IA=0 pour la
+  // couper) : faux OpenRouter local et déterministe, sans réseau ni clé. Sans
+  // IA, la règle fail-closed cache chaque réponse du Sondeur jusqu'à la
+  // décision de l'équipe et retient la messagerie : le parcours ne pourrait
+  // pas être joué de bout en bout. Une vraie clé OpenRouter n'est jamais
+  // utilisée ici (l'adresse est forcée sur le faux local).
+  let apiEnv = env;
+  if (env.RECETTE_FAUX_IA !== '0') {
+    const fake = spawn(process.execPath, [path.join('deploy', 'fake-openrouter.js'), '8799'], {
+      cwd: ROOT,
+      stdio: 'inherit',
+      env: { PATH: env.PATH },
+    });
+    fake.on('exit', (code) => console.error(`⚠️  Faux OpenRouter arrêté (code ${code}).`));
+    apiEnv = {
+      ...env,
+      OPENROUTER_BASE_URL: 'http://127.0.0.1:8799/api/v1',
+      OPENROUTER_API_KEY: 'faux-openrouter-local-recette',
+      OPENROUTER_AUTH: '',
+      GROQ_API_KEY: '',
+      INSIGHTS_RETRY_AFTER_MS: env.INSIGHTS_RETRY_AFTER_MS || '5000',
+    };
+    console.log('\nℹ️  IA SIMULÉE : faux OpenRouter local (modération, lectures du Sondeur). RECETTE_FAUX_IA=0 pour tester le repli fail-closed sans IA.');
+  }
+
+  // 5. API (sert aussi / et /admin).
   console.log('\n▶ Démarrage de l’API');
   const api = spawn(process.execPath, ['--max-old-space-size=400', path.join('dist', 'main.js')], {
     cwd: ROOT,
     stdio: 'inherit',
-    env,
+    env: apiEnv,
   });
   const stop = (sig) => api.kill(sig);
   process.on('SIGTERM', () => stop('SIGTERM'));

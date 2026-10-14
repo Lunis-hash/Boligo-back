@@ -1,9 +1,9 @@
 {
-  "date": "2026-10-14T11:31:58.374Z",
+  "date": "2026-10-14T11:48:34.467Z",
   "base": "http://localhost:10000",
-  "alex": "c-alex-1791977518237@recette.boligo.test",
-  "sarah": "c-sarah-1791977518237@recette.boligo.test",
-  "journeyId": "07cbc844-4c0a-4f30-a10f-396daf6400d5",
+  "alex": "c-alex-1791978514311@recette.boligo.test",
+  "sarah": "c-sarah-1791978514311@recette.boligo.test",
+  "journeyId": "9559062f-43ab-4d17-bf76-7f3b03ef2f7e",
   "results": [
     {
       "etape": "3",
@@ -38,7 +38,7 @@
       "step": "Alex : étapes 4 → 6, compte créé → écran de vérification",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "http://localhost:10000/verify?email=c-alex-1791977518237%40recette.boligo.test"
+      "detail": "http://localhost:10000/verify?email=c-alex-1791978514311%40recette.boligo.test"
     },
     {
       "etape": "1",
@@ -170,8 +170,8 @@
       "etape": "2",
       "step": "Mot de passe oublié : le code apparaît dans le journal docker",
       "status": "TESTÉ",
-      "ok": false,
-      "detail": "✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: •••••• est votre code de réinitialisation BOLIGO"
+      "ok": true,
+      "detail": "✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: 479516 est votre code de réinitialisation BOLIGO"
     },
     {
       "etape": "2",
@@ -241,7 +241,7 @@
       "step": "Sarah accepte dans l’interface → Parcours Harmonie créé ; crédit de Sarah débité (1 → 0)",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "journey=07cbc844-4c0a-4f30-a10f-396daf6400d5, crédits Sarah=0 (22-sarah-invitation-recue.png, 23-sarah-acceptation.png)"
+      "detail": "journey=9559062f-43ab-4d17-bf76-7f3b03ef2f7e, crédits Sarah=0 (22-sarah-invitation-recue.png, 23-sarah-acceptation.png)"
     },
     {
       "etape": "5",
@@ -255,7 +255,7 @@
       "step": "Chat refusé pendant le Sondeur (avant la bonne étape)",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "400 {\"statusCode\":400,\"timestamp\":\"2026-10-14T11:36:06.486Z\",\"path\":\"/api/journey/message\",\"message\":\"Les messages sont disponibles après la phase Harmoni"
+      "detail": "400 {\"statusCode\":400,\"timestamp\":\"2026-10-14T11:52:46.388Z\",\"path\":\"/api/journey/message\",\"message\":\"Les messages sont disponibles après la phase Harmoni"
     },
     {
       "etape": "6",
@@ -303,7 +303,7 @@
       "etape": "6",
       "step": "Réponse de l’autre RÉVÉLÉE seulement quand les deux ont répondu",
       "status": "TESTÉ",
-      "ok": false,
+      "ok": true,
       "detail": ""
     },
     {
@@ -317,29 +317,106 @@
       "etape": "6",
       "step": "Sondeur terminé → étape chat_libre",
       "status": "TESTÉ",
-      "ok": false,
-      "detail": "phase_harmonie (31-sondeur-termine.png)"
+      "ok": true,
+      "detail": "chat_libre (31-sondeur-termine.png)"
     },
     {
       "etape": "7",
-      "step": "Chat / vidéo / coordonnées : scénario interrompu",
+      "step": "Chat ouvert à l’étape chat_libre : message envoyé (interface) et reçu",
       "status": "TESTÉ",
-      "ok": false,
-      "detail": "locator.click: Timeout 15000ms exceeded. Call log:"
+      "ok": true,
+      "detail": "1 message(s)"
+    },
+    {
+      "etape": "7",
+      "step": "Message de Sarah reçu en temps réel dans l’interface",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "8",
+      "step": "Modération : message interdit bloqué (interface + serveur), jamais stocké",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "dialogue « Message non envoyé — Votre message contient des termes inappropriés non autorisés. » ; serveur 400 {\"statusCode\":400,\"timestamp\":\"2026-10-14T11:54:45.017Z\",\"path\":\"/api/journey/message\",\"message\":\"Formulation incompatib"
+    },
+    {
+      "etape": "8",
+      "step": "Signalement de Sarah contre Alex visible par l’API admin",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "report 201, admin login 201, reports 200"
+    },
+    {
+      "etape": "7",
+      "step": "Vidéo refusée avant le moment autorisé (chat_libre)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "400 {\"statusCode\":400,\"timestamp\":\"2026-10-14T11:54:45.281Z\",\"path\":\"/api/journey/9559062f-43ab-4d17-bf76-7f3b03ef2f7e/video/join\",\"message\":\"L'appel vidé"
+    },
+    {
+      "etape": "7",
+      "step": "Étape vidéo : jointure (fournisseur Daily réel injoignable, pas de clé)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "étape=video ; join A 201 {\"meetingUrl\":\"https://meet.jit.si/boligo-9559062f43ab4d17bf767f3b03ef2f7e#config.deepLinking.enabled=false&config.disableDeepLinking=true&config.prejoinPageEna ; join S 201"
+    },
+    {
+      "etape": "7",
+      "step": "Écran vidéo : état de l’interface (sans appel réel)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "Appel indisponible sur le web L'appel vidéo est disponible dans l'application mobile BOLIGO. Retour (34-video-etat-interface.png)"
+    },
+    {
+      "etape": "7",
+      "step": "Appel vidéo réel Daily",
+      "status": "NON TESTÉ",
+      "ok": null,
+      "detail": "aucune clé Daily ; fournisseur non joignable depuis ce conteneur"
+    },
+    {
+      "etape": "7",
+      "step": "Fin d’appel (API, session vidéo vieillie par SQL) → échange de coordonnées",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"success\":true,\"advanced\":true,\"currentStep\":\"echange_contacts\"}"
+    },
+    {
+      "etape": "7",
+      "step": "Après le seul consentement d’Alex : coordonnées NON révélées",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "36-echange-attente-consentement.png ; vue Sarah {\"myConsent\":false,\"partnerConsent\":true,\"bothAccepted\":false,\"phoneShared\":true,\"emailShared\":true,\"partner\":{\"firstName\":\"Alex\",\"telephone\":null,\"em"
+    },
+    {
+      "etape": "7",
+      "step": "Consentement des DEUX → coordonnées révélées",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "37-coordonnees-revelees.png"
+    },
+    {
+      "etape": "7",
+      "step": "Fin du parcours (statut final)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"id\":\"9559062f-43ab-4d17-bf76-7f3b03ef2f7e\",\"currentStep\":\"termine\",\"result\":\"reussi\",\"currentDay\":1,\"partnerName\":\"Sarah\",\"isCompleted\":true,\"ghosting\":{\"waitingOn\":null,\"since\":null,\"closeAt\":null,"
     },
     {
       "etape": "8",
       "step": "Abandon (Dan quitte, API) : parcours clos, crédit de la partenaire rendu, notification",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "connect 201; leave 201 {\"success\":true} ; statut= ; crédits Eva 0→1, Dan 1→0 ; notifications en base 2→3 ; journal : ✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: •••• est votre code de confirmation BOLIGO / ✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: Bienvenue chez BOLIGO, Eva / ✉️ [EMAIL SIMULATE"
+      "detail": "connect 201; leave 201 {\"success\":true} ; statut= ; crédits Eva 0→1, Dan 1→0 ; notifications en base 2→3 ; journal : ✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: 1480 est votre code de confirmation BOLIGO / ✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: Bienvenue chez BOLIGO, Eva / ✉️ [EMAIL SIMULATE"
     },
     {
       "etape": "8",
       "step": "Eva voit l’abandon dans l’interface (onglet Matchs)",
       "status": "TESTÉ",
-      "ok": false,
-      "detail": "Découverte Profils compatibles pour vous 1 crédits Tout est à jour ! Nos algorithmes préparent de nouveaux profils compatibles pour vous. Actualiser Mes matchs Parcours de découverte mutuelle Aucun match actif Connecte-t (33-abandon-vu-par-eva.png)"
+      "ok": true,
+      "detail": "Découverte Profils compatibles pour vous 1 crédits Très forte compatibilité 98 % compatibles Dan 37 ans Paris Architecte « J’aime autant les soirées entre amis que les moments au calme. » ANALYSE BOLIGO Dan, 37 ans, arch (38-abandon-vu-par-eva.png)"
     },
     {
       "etape": "8",
@@ -360,28 +437,28 @@
       "step": "360 px : decouverte sans débordement horizontal",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "0 px (34-360-decouverte.png)"
+      "detail": "0 px (39-360-decouverte.png)"
     },
     {
       "etape": "360",
       "step": "360 px : messages sans débordement horizontal",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "0 px (35-360-messages.png)"
+      "detail": "0 px (40-360-messages.png)"
     },
     {
       "etape": "360",
       "step": "360 px : profil sans débordement horizontal",
       "status": "TESTÉ",
       "ok": true,
-      "detail": "0 px (36-360-profil.png)"
+      "detail": "0 px (41-360-profil.png)"
     },
     {
       "etape": "*",
       "step": "Aucune erreur JavaScript non gérée (Alex, Sarah)",
       "status": "TESTÉ",
-      "ok": true,
-      "detail": ""
+      "ok": false,
+      "detail": "NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://cdn.jsdelivr.net/npm/jsqr@1.2.0/dist/jsQR.min.js' failed to load."
     }
   ]
 }

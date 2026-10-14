@@ -63,7 +63,7 @@ export class EmailService implements OnModuleInit {
     // test) ; tout le reste est seulement écrit dans le journal.
     if (process.env.RECETTE_PREVIEW === '1' && !isRecetteAddress(to)) {
       console.log(
-        `✉️ [EMAIL PRÉVISUALISATION — non envoyé] To: ${maskEmail(to)} · Subject: ${subject.replace(/\d/g, '•')}`,
+        `✉️ [EMAIL PRÉVISUALISATION — non envoyé] To: ${maskEmail(to)} · Subject: ${subject}`,
       );
       return;
     }
@@ -260,7 +260,9 @@ export class EmailService implements OnModuleInit {
     console.log(`✉️ [EMAIL SIMULATED] To: ${maskEmail(to)}`);
     // Le sujet contient le code de vérification : jamais dans les journaux de production.
     console.log(
-      `[EMAIL SIMULATED] Subject: ${process.env.NODE_ENV === 'production' ? subject.replace(/\d/g, '•') : subject}`,
+      // Prévisualisation de recette : codes lisibles dans le journal (aucun
+      // e-mail n'y part), pour vérifier un compte ou un mot de passe oublié.
+      `[EMAIL SIMULATED] Subject: ${process.env.NODE_ENV === 'production' && process.env.RECETTE_PREVIEW !== '1' ? subject.replace(/\d/g, '•') : subject}`,
     );
     console.log('==================================================\n');
   }

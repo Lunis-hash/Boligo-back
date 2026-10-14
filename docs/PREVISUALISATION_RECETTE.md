@@ -22,7 +22,8 @@ Expo, export admin, puis image d'exécution `node:22-bookworm-slim`). Démarrage
 - Clés Stripe **LIVE refusées** (`sk_live_`, `rk_live_`, `pk_live_`), y compris au build de la webapp.
 - `RECETTE_BASIC_AUTH` obligatoire (`utilisateur:motdepasse`, 8 caractères au moins) ; tout le site est protégé sauf `/api/health` et `/api/payment/webhook` (signé par Stripe). En-tête `X-Robots-Tag: noindex` partout.
 - **E-mails** : aucun envoi vers une vraie adresse. Seuls `@recette.boligo.test` et `@boligo-demo.example` peuvent partir (et seulement si un fournisseur est configuré) ; tout le reste est écrit dans le journal.
-- **Code de vérification 1234** accepté uniquement dans ce mode (inscription sans e-mail).
+- **Code de vérification 1234** accepté uniquement dans ce mode (inscription sans e-mail). Les e-mails retenus sont écrits **en clair** dans le journal Render (code de réinitialisation du mot de passe compris).
+- **IA SIMULÉE par défaut** (`RECETTE_FAUX_IA`, absent = activé) : un faux OpenRouter local et déterministe tourne dans le conteneur (modération « aucun danger », lectures du Sondeur). Sans IA, la règle fail-closed cache chaque réponse du Sondeur jusqu'à une décision de l'équipe (page Signalements de l'admin : « rejeter ») et retient la messagerie : le parcours ne peut pas aller jusqu'au chat. Une vraie clé OpenRouter n'est jamais utilisée en prévisualisation. `RECETTE_FAUX_IA=0` pour tester le repli sans IA.
 - Seeds fictifs : refusés sur Supabase, même en prévisualisation.
 
 ## Démarrage (automatique)

@@ -99,6 +99,8 @@ COPY --from=api --chown=node:node /app/config ./config
 COPY --from=web --chown=node:node /web/dist ./public-web
 COPY --from=admin --chown=node:node /admin/out ./public-admin
 COPY --chown=node:node deploy/preview-start.js ./deploy/preview-start.js
+# IA SIMULÉE de la recette (faux OpenRouter déterministe, aucun réseau).
+COPY --chown=node:node mobile-steve/e2e/fake-openrouter.js ./deploy/fake-openrouter.js
 USER node
 EXPOSE 10000
 CMD ["node", "deploy/preview-start.js"]
