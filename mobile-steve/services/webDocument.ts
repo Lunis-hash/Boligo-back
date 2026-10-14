@@ -6,10 +6,10 @@ import { Platform } from 'react-native';
  * une description, et un titre propre à chaque écran.
  */
 const DESCRIPTION =
-  'Boligo : rencontres sérieuses pour la diaspora francophone. Un entretien guidé pour vous connaître, des profils compatibles, des échanges respectueux.';
+  'Boligo : rencontres sérieuses, ouvertes à toutes les origines. Un entretien guidé pour vous connaître, des profils compatibles, des échanges respectueux.';
 
 const TITLES: [RegExp, string][] = [
-  [/^\/$/, 'Rencontres sérieuses pour la diaspora francophone'],
+  [/^\/$/, 'Rencontres sérieuses, toutes origines'],
   [/^\/login/, 'Connexion'],
   [/^\/verify/, 'Vérification de votre adresse e-mail'],
   [/^\/forgot-password/, 'Mot de passe oublié'],

@@ -68,7 +68,7 @@ export const CONTENT: Record<PartnerLang, PartnerContent> = {
     title: 'Grandissons ensemble,',
     titleAccent: 'partout dans le monde.',
     intro:
-      'BOLIGO réunit des célibataires qui cherchent une relation sérieuse, fondée sur des valeurs partagées. Marques, ambassadeurs, créateurs : rejoignez-nous pour faire connaître une autre façon de se rencontrer, en France, en Afrique, en Europe, aux Amériques et dans toute la diaspora.',
+      'BOLIGO réunit des célibataires qui cherchent une relation sérieuse, fondée sur des valeurs partagées. Marques, ambassadeurs, créateurs : rejoignez-nous pour faire connaître une autre façon de se rencontrer, en France, en Europe, en Afrique, aux Amériques, en Asie, quelles que soient vos origines.',
     cta: 'Devenir partenaire',
     cardsTitle: 'Trois façons de travailler avec nous',
     cards: [
@@ -96,7 +96,7 @@ export const CONTENT: Record<PartnerLang, PartnerContent> = {
           'Visites, inscriptions et ventes suivies dans votre Espace partenaire ; ouvert dans tous les pays',
         ],
         audienceLabel: 'Ville, communauté ou réseau couvert',
-        audienceHint: 'Ex. : associations de la diaspora congolaise à Bruxelles',
+        audienceHint: 'Ex. : association culturelle, club sportif ou communauté locale à Bruxelles',
       },
       {
         type: 'CREATEUR',
@@ -191,7 +191,7 @@ export const CONTENT: Record<PartnerLang, PartnerContent> = {
     title: 'Let’s grow together,',
     titleAccent: 'all around the world.',
     intro:
-      'BOLIGO brings together singles looking for a serious relationship built on shared values. Brands, ambassadors, creators: join us to promote a different way of meeting people, in Europe, Africa, the Americas and across the diaspora.',
+      'BOLIGO brings together singles looking for a serious relationship built on shared values. Brands, ambassadors, creators: join us to promote a different way of meeting people, in Europe, Africa, the Americas, Asia and beyond, whatever your background.',
     cta: 'Become a partner',
     cardsTitle: 'Three ways to work with us',
     cards: [
@@ -219,7 +219,7 @@ export const CONTENT: Record<PartnerLang, PartnerContent> = {
           'Visits, sign-ups and sales tracked in your Partner space; open in every country',
         ],
         audienceLabel: 'City, community or network covered',
-        audienceHint: 'E.g. Ghanaian diaspora associations in London',
+        audienceHint: 'E.g. cultural associations, sports clubs or local communities in London',
       },
       {
         type: 'CREATEUR',
