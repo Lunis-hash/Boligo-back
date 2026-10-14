@@ -16,6 +16,10 @@ export function maskEmail(address: string): string {
   return `${user.slice(0, 1)}•••@${domain}`;
 }
 
+/** Adresses fictives de recette (seules autorisées en prévisualisation). */
+export const isRecetteAddress = (to: string) =>
+  /@(recette\.boligo\.test|boligo-demo\.example)$/i.test(to.trim());
+
 const isRealKey = (key?: string) =>
   Boolean(key && !key.includes('placeholder'));
 
@@ -54,6 +58,15 @@ export class EmailService implements OnModuleInit {
   }
 
   private async dispatchEmail(to: string, subject: string, html: string) {
+    // Prévisualisation de recette : jamais d'e-mail vers une vraie adresse.
+    // Seuls les domaines fictifs de recette peuvent partir (Resend en mode
+    // test) ; tout le reste est seulement écrit dans le journal.
+    if (process.env.RECETTE_PREVIEW === '1' && !isRecetteAddress(to)) {
+      console.log(
+        `✉️ [EMAIL PRÉVISUALISATION — non envoyé] To: ${maskEmail(to)} · Subject: ${subject.replace(/\d/g, '•')}`,
+      );
+      return;
+    }
     const smtpHost = process.env.SMTP_HOST;
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;

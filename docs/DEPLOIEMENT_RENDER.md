@@ -342,3 +342,10 @@ Exécutée par Steve sur son poste Windows, avec `scripts/sauvegarde-boligo.ps1`
 - **Vérification** : 32 tables BOLIGO, 76 lignes, identiques à la base. Les nombres de lignes concordent avec un relevé indépendant fait par le connecteur Supabase.
 - **Exclus** : `public.documents`, schémas `oweke`, `oweke_test` et Supabase. Aucune modification de Supabase.
 - **Tables non vides** : `User` 3, `Profile` 2, `InterviewIA` 2, `ModuleResponse` 22, `MentalMap` 2, `MatchProposal` 1, `Journey` 1, `HarmonyQuestion` 21, `HarmonyResponse` 3, `CreditTransaction` 6, `PromoCode` 6, `Notification` 4, `AiSpend` 1, `GeoRegion` 2. Les 18 autres tables sont vides.
+
+## 9. Prochain déploiement : programme partenaires (branche `claude/magical-keller-kw9t2c`)
+
+Avant de déployer le code de la recette partenaires, appliquer **sur la base BOLIGO uniquement** (jamais OWEKE) la migration additive `prisma/sql/2026-10-14_partenaires_suspension_conversions.sql` :
+valeur `SUSPENDU` du statut partenaire, colonne `PartnerOffer.publishedAt`, table `PartnerOfferConversion`.
+Rejouable sans effet ; aucune donnée existante supprimée. Sans elle, le nouveau code échoue sur les écrans partenaires.
+Détail et résultats : `docs/RECETTE_PARTENAIRES.md`. Rien n'est appliqué ni déployé sans l'autorisation de Steve.

@@ -1,0 +1,104 @@
+# syntax=docker/dockerfile:1.7
+# ─────────────────────────────────────────────────────────────────────────────
+# PRÉVISUALISATION DE RECETTE BOLIGO : UN seul service (Render, offre gratuite)
+# qui sert, sur la même origine et derrière un mot de passe HTTP :
+#   /api                 API NestJS
+#   /                    webapp (export web Expo), dont /espace-partenaire
+#   /admin               admin (export Next, basePath /admin)
+# Démarrage : node deploy/preview-start.js (schéma, seeds fictifs, API).
+# Garde-fous : RECETTE_PREVIEW=1, jamais Supabase, jamais de clé Stripe LIVE,
+# e-mails jamais envoyés à de vraies adresses. Voir docs/PREVISUALISATION_RECETTE.md.
+#
+#   docker build -f Dockerfile.preview -t boligo-preview .
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── 1. API + seeds compilés ─────────────────────────────────────────────────
+FROM node:22-bookworm AS api
+WORKDIR /app
+ENV CI=1
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+RUN --mount=type=secret,id=ca,required=false \
+    --mount=type=cache,target=/root/.npm \
+    if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca npm_config_cafile=/run/secrets/ca; fi; \
+    npm ci --no-audit --no-fund \
+      --registry=https://registry.npmjs.org/ \
+      --replace-registry-host=registry.npmmirror.com
+COPY tsconfig.json tsconfig.build.json tsconfig.seed.json nest-cli.json ./
+COPY src ./src
+COPY config ./config
+COPY mobile-steve/e2e/recette-partenaires-data.js ./mobile-steve/e2e/recette-partenaires-data.js
+RUN --mount=type=secret,id=ca,required=false \
+    if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca; fi; \
+    npx prisma generate \
+ && npx nest build \
+ && npx tsc -p tsconfig.seed.json \
+ && test -f dist/main.js && test -f dist/common/preview.js \
+ && test -f dist-seed/prisma/seed-recette.js && test -f dist-seed/prisma/seed-recette-partenaires.js \
+ && mkdir -p dist-seed/mobile-steve/e2e \
+ && cp mobile-steve/e2e/recette-partenaires-data.js dist-seed/mobile-steve/e2e/ \
+ && cp -r config dist-seed/config
+RUN npm prune --omit=dev --no-audit --no-fund
+RUN mkdir -p /opt/ssl \
+ && cp -L /usr/lib/*-linux-gnu/libssl.so.3 /usr/lib/*-linux-gnu/libcrypto.so.3 /opt/ssl/
+
+# ── 2. Webapp (export web Expo, API sur la même origine) ────────────────────
+FROM node:22-bookworm AS web
+WORKDIR /web
+ARG STRIPE_PUBLISHABLE_KEY=""
+ENV CI=1 EXPO_NO_TELEMETRY=1 \
+    EXPO_PUBLIC_API_URL=/api \
+    EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+COPY mobile-steve/package.json mobile-steve/package-lock.json ./
+RUN --mount=type=secret,id=ca,required=false \
+    --mount=type=cache,target=/root/.npm \
+    if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca npm_config_cafile=/run/secrets/ca; fi; \
+    npm ci --no-audit --no-fund \
+      --registry=https://registry.npmjs.org/ \
+      --replace-registry-host=registry.npmmirror.com
+COPY mobile-steve ./
+RUN case "$EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY" in pk_live_*) echo "Clé Stripe LIVE refusée" >&2; exit 1;; esac \
+ && npx expo export --platform web --output-dir dist \
+ && test -f dist/index.html
+
+# ── 3. Admin (export Next sous /admin) ──────────────────────────────────────
+FROM node:22-bookworm AS admin
+WORKDIR /admin
+ENV CI=1 NEXT_TELEMETRY_DISABLED=1 \
+    ADMIN_BASE_PATH=/admin \
+    NEXT_PUBLIC_API_URL=/api \
+    NEXT_PUBLIC_WEB_URL=same-origin
+COPY admin/package.json admin/package-lock.json ./
+RUN --mount=type=secret,id=ca,required=false \
+    --mount=type=cache,target=/root/.npm \
+    if [ -s /run/secrets/ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca npm_config_cafile=/run/secrets/ca; fi; \
+    npm ci --no-audit --no-fund \
+      --registry=https://registry.npmjs.org/ \
+      --replace-registry-host=registry.npmmirror.com
+COPY admin ./
+RUN npm run build && test -f out/index.html
+
+# ── 4. Exécution (image légère) ─────────────────────────────────────────────
+FROM node:22-bookworm-slim AS runtime
+ENV NODE_ENV=production \
+    RECETTE_PREVIEW=1 \
+    INTERVIEW_VERSION=8.2 \
+    HARMONY_QUESTIONS_SOURCE=bank \
+    PREVIEW_WEB_DIR=/app/public-web \
+    PREVIEW_ADMIN_DIR=/app/public-admin \
+    PORT=10000
+COPY --from=api /opt/ssl/ /usr/local/lib/
+RUN ldconfig
+WORKDIR /app
+COPY --from=api --chown=node:node /app/package.json /app/package-lock.json ./
+COPY --from=api --chown=node:node /app/node_modules ./node_modules
+COPY --from=api --chown=node:node /app/prisma ./prisma
+COPY --from=api --chown=node:node /app/dist ./dist
+COPY --from=api --chown=node:node /app/dist-seed ./dist-seed
+COPY --from=api --chown=node:node /app/config ./config
+COPY --from=web --chown=node:node /web/dist ./public-web
+COPY --from=admin --chown=node:node /admin/out ./public-admin
+COPY --chown=node:node deploy/preview-start.js ./deploy/preview-start.js
+USER node
+EXPOSE 10000
+CMD ["node", "deploy/preview-start.js"]

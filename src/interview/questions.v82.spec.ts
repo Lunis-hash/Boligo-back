@@ -21,6 +21,7 @@ import {
   parseAgeRange,
   questionnaire,
 } from './questions.v82';
+import { V82_CLARITY_FR } from './questions.v82.clarity';
 import { moduleQuestions, pendingQuestions } from './questions.service';
 import { isSensitiveQuestion } from './sensitive-questions';
 
@@ -51,21 +52,26 @@ describe('Grand Entretien V8.2 — contenu', () => {
     expect(ids.has('M8_Q13')).toBe(false);
   });
 
-  it('options du modèle reprises à l’identique (codes et textes)', () => {
+  it('options du modèle reprises à l’identique (codes et textes, relecture éditoriale comprise)', () => {
     for (const [id, m] of Object.entries(MODEL)) {
       const q = V82_INDEX.get(id)!;
       expect(Object.fromEntries(q.options.map((o) => [o.key, o.text]))).toEqual(
-        m.options,
+        { ...m.options, ...V82_CLARITY_FR[id]?.options },
       );
     }
   });
 
-  it('les quatre questions B sont celles de la V7 (identifiant, texte, codes inchangés)', () => {
+  it('les quatre questions B sont celles de la V7 (identifiant, texte, codes inchangés ; libellés relus en V8.2 seulement)', () => {
     for (const id of V82_REINTEGRATED) {
       const v7 = QUESTION_INDEX.get(id)!;
       const v82 = V82_INDEX.get(id)!;
-      expect(v82.text).toBe(v7.text);
-      expect(v82.options).toEqual(v7.options);
+      const fix = V82_CLARITY_FR[id];
+      expect(v82.text).toBe(fix?.text ?? v7.text);
+      expect(v82.options).toEqual(
+        v7.options.map((o) =>
+          fix?.options?.[o.key] ? { ...o, text: fix.options[o.key] } : o,
+        ),
+      );
       expect(v82.moduleNumber).toBe(v7.moduleNumber);
     }
   });

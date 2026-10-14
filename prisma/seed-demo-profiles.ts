@@ -1,5 +1,10 @@
 import { PrismaClient, Gender, UserRole, AccountStatus, ProfileStatus, InterviewStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { assertLocalDatabase } from './recette-guard';
+
+// Ce script VIDE toute la base avant de créer des profils de démonstration :
+// jamais ailleurs que sur une base locale (Supabase et bases distantes refusés).
+assertLocalDatabase(process.env.DATABASE_URL);
 
 const prisma = new PrismaClient();
 

@@ -61,7 +61,8 @@ export function monthlyHistory(
   for (const s of sales) {
     const line = lines.get(key(s.date));
     if (!line) continue;
-    if ((s.euroAmount ?? 0) >= 0) line.purchases += 1;
+    // Un parcours offert (0 €) n'est pas une vente : il n'est pas compté.
+    if ((s.euroAmount ?? 0) > 0) line.purchases += 1;
     line.revenue += s.euroAmount ?? 0;
   }
   return [...lines.entries()].map(([month, l]) => {

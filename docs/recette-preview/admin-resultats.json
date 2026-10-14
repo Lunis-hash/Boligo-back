@@ -1,0 +1,1108 @@
+{
+  "base": "http://localhost:10000",
+  "startedAt": "2026-10-14T11:31:56.250Z",
+  "checks": [
+    {
+      "step": "API : mauvais mot de passe refusé",
+      "ok": true,
+      "detail": "HTTP 401 « Identifiants invalides »"
+    },
+    {
+      "step": "API : membre ordinaire refusé au tableau de bord",
+      "ok": true,
+      "detail": "HTTP 401 « Identifiants invalides »"
+    },
+    {
+      "step": "API : connexion administrateur",
+      "ok": true,
+      "detail": "rôle ADMIN"
+    },
+    {
+      "step": "API : connexion marketing",
+      "ok": true,
+      "detail": "rôle MARKETING"
+    },
+    {
+      "step": "API : sans jeton → 401",
+      "ok": true,
+      "detail": "HTTP 401"
+    },
+    {
+      "step": "API : jeton expiré/invalide → 401",
+      "ok": true,
+      "detail": "HTTP 401"
+    },
+    {
+      "step": "API : MARKETING refusé (403) sur 26 routes d'administrateur",
+      "ok": true,
+      "detail": "toutes en 403"
+    },
+    {
+      "step": "API : MARKETING autorisé sur partenaires, offres, codes promo, vue d'ensemble",
+      "ok": true,
+      "detail": "7 routes en 2xx"
+    },
+    {
+      "step": "API : /admin/stats vu par MARKETING (compteurs agrégés seulement, sans liste de membres)",
+      "ok": true,
+      "detail": "clés : users, interviews, matching, journeys, moderation, credits, video, promoCodes"
+    },
+    {
+      "step": "Données fictives : membre créé",
+      "ok": true,
+      "detail": "recette-admin-f-1791977517058@recette.boligo.test"
+    },
+    {
+      "step": "UI : sans jeton → /admin/login/",
+      "ok": true,
+      "detail": "/admin/login/"
+    },
+    {
+      "step": "UI : mauvaise connexion → message clair",
+      "ok": true,
+      "detail": "« Identifiants invalides »"
+    },
+    {
+      "step": "UI : membre ordinaire refusé",
+      "ok": true,
+      "detail": "« Identifiants invalides »"
+    },
+    {
+      "step": "UI : bonne connexion → tableau de bord",
+      "ok": true,
+      "detail": "/admin/dashboard/"
+    },
+    {
+      "step": "UI : jeton expiré → redirection vers /admin/login/",
+      "ok": false,
+      "detail": "/admin/dashboard/users/ — BOLIGO TABLEAU DE BORD · ADMINISTRATEUR NAVIGATION Vue d'ensemble Finances Facturation Utilisateurs Matchs & likes Parco"
+    },
+    {
+      "step": "UI : jeton expiré sur la vue d'ensemble → message ou redirection",
+      "ok": true,
+      "detail": "Unauthorized Réessayer"
+    },
+    {
+      "step": "Page 10-vue-ensemble",
+      "ok": true,
+      "detail": "Tableau de bord En direct Dernière mise à jour : 11:32 Rafraîchir Finances Chiffre d'affai"
+    },
+    {
+      "step": "Page 11-finances",
+      "ok": true,
+      "detail": "Finances & abonnements Revenus, crédits vendus, consommations et remboursements — tout l'a"
+    },
+    {
+      "step": "Page 12-facturation",
+      "ok": true,
+      "detail": "Facturation Factures, avoirs, demandes de rétractation et journal des ventes pour l'expert"
+    },
+    {
+      "step": "Page 13-utilisateurs",
+      "ok": true,
+      "detail": "Utilisateurs Gestion des comptes membres et de la modération. Exporter CSV Tous les statut"
+    },
+    {
+      "step": "Page 14-matchs",
+      "ok": true,
+      "detail": "Matchs & Likes Historique des propositions (likes) et compatibilité calculée par l'IA. Com"
+    },
+    {
+      "step": "Page 15-parcours",
+      "ok": true,
+      "detail": "Parcours Guidés Suivi des rencontres étape par étape (Sondeur → Chat → Vidéo → Contacts). "
+    },
+    {
+      "step": "Page 16-signalements",
+      "ok": true,
+      "detail": "Signalements Modération communautaire. Pour un signal du Sondeur : « Confirmer » clôt le p"
+    },
+    {
+      "step": "Page 17-moderation",
+      "ok": true,
+      "detail": "Messages bloqués Contenu refusé par la modération automatique Auteur Parcours Contenu Date"
+    },
+    {
+      "step": "Page 18-partenaires",
+      "ok": true,
+      "detail": "Partenaires Programme Partenaires : marques et annonceurs, ambassadeurs commerciaux, créat"
+    },
+    {
+      "step": "Page 19-codes-promo",
+      "ok": true,
+      "detail": "Codes promo Tous les codes de réduction : promotions de lancement, offres ponctuelles et c"
+    },
+    {
+      "step": "Page 20-equipe",
+      "ok": true,
+      "detail": "Équipe Qui peut ouvrir ce tableau de bord, et pour quoi faire. La personne crée d’abord un"
+    },
+    {
+      "step": "Page 21-labo-ia",
+      "ok": true,
+      "detail": "Laboratoire IA Testez le Sondeur avec les vrais modèles sur des couples types fictifs : qu"
+    },
+    {
+      "step": "Menu : liens sous /admin",
+      "ok": true,
+      "detail": "Vue d'ensemble=/admin/dashboard/ ; Finances=/admin/dashboard/finance/ ; Facturation=/admin/dashboard/billing/ ; Utilisateurs=/admin/dashboard/users/ ; Matchs & likes=/admin/dashboard/matches/ ; Parcours=/admin/dashboard/journeys/ ; Signalements=/admin/dashboard/reports/ ; Modération=/admin/dashboard/moderation/ ; Partenaires=/admin/dashboard/partners/ ; Codes promo=/admin/dashboard/promo/ ; Équipe=/admin/dashboard/team/ ; Laboratoire IA=/admin/dashboard/ai-lab/"
+    },
+    {
+      "step": "Utilisateurs : recherche du membre fictif",
+      "ok": true,
+      "detail": "recette-admin-f-1791977517058@recette.boligo.test"
+    },
+    {
+      "step": "Utilisateurs : export CSV",
+      "ok": true,
+      "detail": "boligo_membres_2026-10-14.csv"
+    },
+    {
+      "step": "Fiche : Suspendre (membre fictif)",
+      "ok": true,
+      "detail": "base : suspendu"
+    },
+    {
+      "step": "Fiche : Réactiver",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Fiche : Certifier / Révoquer la certification",
+      "ok": true,
+      "detail": "t → f"
+    },
+    {
+      "step": "Fiche : +10 crédits",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Fiche utilisateur inconnue → message clair",
+      "ok": false,
+      "detail": "Chargement de l'utilisateur…"
+    },
+    {
+      "step": "Parcours inconnu → message clair",
+      "ok": false,
+      "detail": "Chargement du parcours…"
+    },
+    {
+      "step": "Parcours : détail",
+      "ok": true,
+      "detail": "Retour aux parcours Cyril & Diane PHASE HARMONIE EN COURS Parcours initié le 14/10/2026 11:04 Score "
+    },
+    {
+      "step": "Remboursement : demande fictive visible",
+      "ok": false,
+      "detail": "Facturation Factures, avoirs, demandes de rétractation et journal des ventes pour l'expert-comptable. Actualiser Réglages (Stripe en mode test) ✗ Registre des f"
+    },
+    {
+      "step": "API : remboursement sans clé Stripe → erreur explicite",
+      "ok": true,
+      "detail": "HTTP 400 « \"Registre de facturation désactivé (BILLING_ENABLED).\" »"
+    },
+    {
+      "step": "Finances : export CSV",
+      "ok": true,
+      "detail": "harmonie_transactions_2026-10-14.csv"
+    },
+    {
+      "step": "Facturation : export du journal des ventes",
+      "ok": true,
+      "detail": "boligo_journal_des_ventes_debut_aujourdhui.csv"
+    },
+    {
+      "step": "Codes promo : création",
+      "ok": true,
+      "detail": "RECETTEF743173 est créé."
+    },
+    {
+      "step": "Codes promo : modification",
+      "ok": true,
+      "detail": "valeur 20"
+    },
+    {
+      "step": "Codes promo : désactivation",
+      "ok": true,
+      "detail": "t → f"
+    },
+    {
+      "step": "Codes promo : suppression du code fictif",
+      "ok": true,
+      "detail": "RECETTEF743173 est supprimé."
+    },
+    {
+      "step": "Partenaires : lien de partage = http://localhost:10000/?p=CODE",
+      "ok": true,
+      "detail": "http://localhost:10000/?p=DEMOMAELLE"
+    },
+    {
+      "step": "Fiche : suppression définitive du membre fictif",
+      "ok": true,
+      "detail": "/admin/dashboard/users/?deleted=1"
+    },
+    {
+      "step": "UI : déconnexion → /admin/login/ et jeton effacé",
+      "ok": true,
+      "detail": "/admin/login/"
+    },
+    {
+      "step": "UI : après déconnexion, /dashboard renvoie vers la connexion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Mobile 390 : 50-mobile-vue-ensemble sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "Mobile 390 : 51-mobile-utilisateurs sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "Mobile 390 : 52-mobile-codes-promo sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "Mobile 390 : 53-mobile-finances sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "MARKETING : menu limité (pas de fonctions d'administrateur)",
+      "ok": true,
+      "detail": "menu : Vue d'ensemble, Partenaires, Codes promo"
+    },
+    {
+      "step": "MARKETING : vue d'ensemble lisible, sans erreur",
+      "ok": true,
+      "detail": "Tableau de bord En direct Dernière mise à jour : 11:36 Rafraîchir Utilisateurs 46 43 actifs Nouveaux (7j) 46 ↑ +46 46 au"
+    },
+    {
+      "step": "MARKETING : /dashboard/finance → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/billing → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/users → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/users/detail/?id=x → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/matches → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/journeys → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/journeys/detail/?id=x → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/reports → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/moderation → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/team → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/ai-lab → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : partners accessible et chargé",
+      "ok": true,
+      "detail": "Partenaires Programme Partenaires : marques et annonceurs, ambassadeurs commerciaux, créat"
+    },
+    {
+      "step": "MARKETING : promo accessible et chargé",
+      "ok": true,
+      "detail": "Codes promo Tous les codes de réduction : promotions de lancement, offres ponctuelles et c"
+    },
+    {
+      "step": "Garde-fou : rôles d'équipe inchangés par la recette",
+      "ok": true,
+      "detail": "admin@boligo-demo.example:ADMIN ; admin@recette.boligo.test:ADMIN ; marketing@boligo-demo.example:MARKETING"
+    }
+  ],
+  "pages": {
+    "10-vue-ensemble": {
+      "ok": true,
+      "links": 13,
+      "jsErrors": 0,
+      "extrait": "Tableau de bord En direct Dernière mise à jour : 11:32 Rafraîchir Finances Chiffre d'affaires 184,50 € ↑ 5 achats/mois 0,00 € ce mois Crédits en circulat",
+      "buttons": [
+        {
+          "text": "Rafraîchir",
+          "tag": "button",
+          "effect": "requête API (3)"
+        },
+        {
+          "text": "Finances",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/finance/"
+        }
+      ]
+    },
+    "11-finances": {
+      "ok": true,
+      "links": 37,
+      "jsErrors": 0,
+      "extrait": "Finances & abonnements Revenus, crédits vendus, consommations et remboursements — tout l'argent qui transite sur BOLIGO. Exporter CSV Actualiser Chiffre d'af",
+      "buttons": [
+        {
+          "text": "Exporter CSV",
+          "tag": "button",
+          "effect": "téléchargement"
+        },
+        {
+          "text": "Actualiser",
+          "tag": "button",
+          "effect": "requête API (2)"
+        },
+        {
+          "text": "select(5)",
+          "tag": "select",
+          "effect": "requête API (2)"
+        },
+        {
+          "text": "Eva Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=143a6c71-7ee0-4359-bf08-dc1893bcf010"
+        },
+        {
+          "text": "Sarah Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f65f3616-7632-436b-86c4-56bd994e2441"
+        },
+        {
+          "text": "Alex Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=30e04b74-fc86-432f-84dd-4bad6694352c"
+        },
+        {
+          "text": "Alex Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=30e04b74-fc86-432f-84dd-4bad6694352c"
+        },
+        {
+          "text": "Membre26 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=36b44e03-2d11-488b-bbc2-34b5b8587eb6"
+        },
+        {
+          "text": "Membre25 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=a34dd839-e086-4672-82a7-38925f9cb99d"
+        },
+        {
+          "text": "Diane Fictif",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=d4714c4b-f5ae-4d92-bd17-c9f9af5a0e9c"
+        },
+        {
+          "text": "Cyril Fictif",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=89a9f1a3-7447-4e84-ab8e-1e00555afbf6"
+        },
+        {
+          "text": "Adam Fictif",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=9dbaf0a8-b590-4cc0-9540-ddff373aca0f"
+        },
+        {
+          "text": "Membre4 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c7e5a5bc-3a4d-400d-87bf-165cf8a26d95"
+        },
+        {
+          "text": "Membre1 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=ced84aa6-8f8a-4db0-9e98-cb968364efea"
+        },
+        {
+          "text": "Membre11 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=7edd285e-16de-4e2c-b841-2ec4a29c6abc"
+        },
+        {
+          "text": "Membre6 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f76b2ee4-f72b-4a97-8a21-d39a16294ca5"
+        },
+        {
+          "text": "Membre21 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=801a3c65-eb81-4e01-b3e2-71b18d696ff7"
+        },
+        {
+          "text": "Membre11 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=7edd285e-16de-4e2c-b841-2ec4a29c6abc"
+        },
+        {
+          "text": "Membre18 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f0ee1e99-838b-421c-9216-4350b4c3d566"
+        },
+        {
+          "text": "Membre5 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=adbc8588-771b-4d5f-8c62-747a812124f9"
+        },
+        {
+          "text": "Membre17 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=68328273-0d76-493e-9409-4ba7f8125410"
+        },
+        {
+          "text": "Membre14 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=611106bd-9085-4f4c-8ad7-4ad8d3165ad6"
+        },
+        {
+          "text": "Membre1 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=ced84aa6-8f8a-4db0-9e98-cb968364efea"
+        },
+        {
+          "text": "Membre28 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=194a444d-db94-4b94-b2ba-f785de13de3a"
+        },
+        {
+          "text": "Membre30 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=68201067-4de5-419e-8bf2-33e4e4365aad"
+        },
+        {
+          "text": "Membre4 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c7e5a5bc-3a4d-400d-87bf-165cf8a26d95"
+        },
+        {
+          "text": "Membre3 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c55f7cd0-08b3-4be9-b770-79756bb990fd"
+        },
+        {
+          "text": "Membre10 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=2dd7dd44-a192-4bbc-8344-314fb49994ce"
+        },
+        {
+          "text": "Précédent",
+          "tag": "button",
+          "effect": "désactivé (normal)"
+        },
+        {
+          "text": "Suivant",
+          "tag": "button",
+          "effect": "requête API (2)"
+        }
+      ]
+    },
+    "12-facturation": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Facturation Factures, avoirs, demandes de rétractation et journal des ventes pour l'expert-comptable. Actualiser Réglages (Stripe en mode test) ✗ Registre des",
+      "buttons": [
+        {
+          "text": "Actualiser",
+          "tag": "button",
+          "effect": "requête API (1)"
+        },
+        {
+          "text": "Exporter le journal",
+          "tag": "button",
+          "effect": "téléchargement"
+        }
+      ]
+    },
+    "13-utilisateurs": {
+      "ok": true,
+      "links": 42,
+      "jsErrors": 0,
+      "extrait": "Utilisateurs Gestion des comptes membres et de la modération. Exporter CSV Tous les statuts Nouveau En entretien Actif En parcours Suspendu Actualiser Membre",
+      "buttons": [
+        {
+          "text": "Exporter CSV",
+          "tag": "button",
+          "effect": "téléchargement"
+        },
+        {
+          "text": "Tous les statuts Nouveau En entretien Actif En par",
+          "tag": "select",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Actualiser",
+          "tag": "button",
+          "effect": "requête API (1)"
+        },
+        {
+          "text": "Sarah Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=fb1100ab-6113-402c-beb9-131d5215c4f8"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=fb1100ab-6113-402c-beb9-131d5215c4f8"
+        },
+        {
+          "text": "Alex Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f8fe6753-a980-44d4-9039-56d2fa16cdc9"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f8fe6753-a980-44d4-9039-56d2fa16cdc9"
+        },
+        {
+          "text": "Fictif RecetteF",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=19fc5602-987f-4f12-a105-7f20a432b10f"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=19fc5602-987f-4f12-a105-7f20a432b10f"
+        },
+        {
+          "text": "Eva Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=143a6c71-7ee0-4359-bf08-dc1893bcf010"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=143a6c71-7ee0-4359-bf08-dc1893bcf010"
+        },
+        {
+          "text": "Sarah Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f65f3616-7632-436b-86c4-56bd994e2441"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f65f3616-7632-436b-86c4-56bd994e2441"
+        },
+        {
+          "text": "Alex Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=30e04b74-fc86-432f-84dd-4bad6694352c"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=30e04b74-fc86-432f-84dd-4bad6694352c"
+        },
+        {
+          "text": "Test",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=57b5ab37-654b-4466-97b4-59fa455a5258"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=57b5ab37-654b-4466-97b4-59fa455a5258"
+        },
+        {
+          "text": "Camille [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c4d3c1e5-2c8c-4e16-b324-c5906ba3ad0a"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c4d3c1e5-2c8c-4e16-b324-c5906ba3ad0a"
+        },
+        {
+          "text": "Membre31 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=6ba3c497-4d14-4954-9ec3-94af29522243"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=6ba3c497-4d14-4954-9ec3-94af29522243"
+        },
+        {
+          "text": "Membre30 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=68201067-4de5-419e-8bf2-33e4e4365aad"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=68201067-4de5-419e-8bf2-33e4e4365aad"
+        },
+        {
+          "text": "Membre29 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f61ea5fd-0104-46a7-9401-8989b0362f2f"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f61ea5fd-0104-46a7-9401-8989b0362f2f"
+        },
+        {
+          "text": "Membre28 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=194a444d-db94-4b94-b2ba-f785de13de3a"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=194a444d-db94-4b94-b2ba-f785de13de3a"
+        },
+        {
+          "text": "Membre27 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=58fda484-fbe1-429a-8562-3ba992e9f9ca"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=58fda484-fbe1-429a-8562-3ba992e9f9ca"
+        },
+        {
+          "text": "Membre26 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=36b44e03-2d11-488b-bbc2-34b5b8587eb6"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=36b44e03-2d11-488b-bbc2-34b5b8587eb6"
+        },
+        {
+          "text": "Membre25 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=a34dd839-e086-4672-82a7-38925f9cb99d"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=a34dd839-e086-4672-82a7-38925f9cb99d"
+        },
+        {
+          "text": "",
+          "tag": "button",
+          "effect": "désactivé (normal)"
+        },
+        {
+          "text": "",
+          "tag": "button",
+          "effect": "requête API (1)"
+        }
+      ]
+    },
+    "14-matchs": {
+      "ok": true,
+      "links": 19,
+      "jsErrors": 0,
+      "extrait": "Matchs & Likes Historique des propositions (likes) et compatibilité calculée par l'IA. Comment ça fonctionne ? Lorsqu'un utilisateur (Expéditeur) envoie un \"",
+      "buttons": [
+        {
+          "text": "select(5)",
+          "tag": "select",
+          "effect": "requête API (1)"
+        },
+        {
+          "text": "→ Voir Parcours (phase harmonie)",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/journeys/detail/?id=a4e63a31-3103-41bd-a317-932223daefb8"
+        },
+        {
+          "text": "Adam Fictif",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=9dbaf0a8-b590-4cc0-9540-ddff373aca0f"
+        },
+        {
+          "text": "Bella Fictif",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=d903cd4f-a1c3-4c69-b5cb-b43d76b1642a"
+        }
+      ]
+    },
+    "15-parcours": {
+      "ok": true,
+      "links": 14,
+      "jsErrors": 0,
+      "extrait": "Parcours Guidés Suivi des rencontres étape par étape (Sondeur → Chat → Vidéo → Contacts). Rappel des étapes : Phase Harmonie (Sondeur) : 3 jours d'échange av",
+      "buttons": [
+        {
+          "text": "select(5)",
+          "tag": "select",
+          "effect": "requête API (1)"
+        }
+      ]
+    },
+    "16-signalements": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Signalements Modération communautaire. Pour un signal du Sondeur : « Confirmer » clôt le parcours, « Fausse alerte » rouvre la lecture et, si rien d’autre n’es",
+      "buttons": [
+        {
+          "text": "select(4)",
+          "tag": "select",
+          "effect": "aucune requête"
+        }
+      ]
+    },
+    "17-moderation": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Messages bloqués Contenu refusé par la modération automatique Auteur Parcours Contenu Date Aucun message bloqué",
+      "buttons": []
+    },
+    "18-partenaires": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Partenaires Programme Partenaires : marques et annonceurs, ambassadeurs commerciaux, créateurs et influenceurs. Les candidatures arrivent depuis la page publiq",
+      "buttons": "lecture seule"
+    },
+    "19-codes-promo": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Codes promo Tous les codes de réduction : promotions de lancement, offres ponctuelles et codes des partenaires. Les membres les saisissent sur l’écran de paiem",
+      "buttons": [
+        {
+          "text": "select(3)",
+          "tag": "select",
+          "effect": "aucune requête"
+        },
+        {
+          "text": "Créer le code",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Tous les codes Actifs En pause",
+          "tag": "select",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Supprimer",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Supprimer",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Réactiver",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Réactiver",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Réactiver",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Modifier",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Pause",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        }
+      ]
+    },
+    "20-equipe": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Équipe Qui peut ouvrir ce tableau de bord, et pour quoi faire. La personne crée d’abord un compte BOLIGO depuis l’application, avec son adresse e-mail ; vous l",
+      "buttons": [
+        {
+          "text": "select",
+          "tag": "select",
+          "effect": "non modifié (change des données)"
+        },
+        {
+          "text": "Donner l’accès",
+          "tag": "button",
+          "effect": "désactivé (normal)"
+        },
+        {
+          "text": "select",
+          "tag": "select",
+          "effect": "non modifié (change des données)"
+        },
+        {
+          "text": "Retirer l’accès",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "select",
+          "tag": "select",
+          "effect": "non modifié (change des données)"
+        },
+        {
+          "text": "Retirer l’accès",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        }
+      ]
+    },
+    "21-labo-ia": {
+      "ok": true,
+      "links": 12,
+      "jsErrors": 0,
+      "extrait": "Laboratoire IA Testez le Sondeur avec les vrais modèles sur des couples types fictifs : questions servies, questions refusées et pourquoi, lecture du jour, coû",
+      "buttons": "lecture seule"
+    },
+    "31-fiche-utilisateur": {
+      "ok": true,
+      "buttons": [
+        {
+          "text": "Retour aux utilisateurs",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/"
+        },
+        {
+          "text": "Suspendre",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Révoquer certif",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "+10 Crédits",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        },
+        {
+          "text": "Supprimer le compte…",
+          "tag": "button",
+          "effect": "non cliqué (action testée à part ou modifiant des données)"
+        }
+      ]
+    },
+    "34-parcours-detail": {
+      "ok": true,
+      "buttons": [
+        {
+          "text": "Retour aux parcours",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/journeys/"
+        }
+      ]
+    },
+    "60-mk-vue-ensemble": {
+      "ok": true,
+      "buttons": [
+        {
+          "text": "Rafraîchir",
+          "tag": "button",
+          "effect": "requête API (1)"
+        }
+      ]
+    }
+  },
+  "deadButtons": [],
+  "emptyPages": [
+    {
+      "page": "32-fiche-inconnue",
+      "url": "/admin/dashboard/users/detail/?id=<inconnu>",
+      "extrait": "Chargement de l'utilisateur…"
+    },
+    {
+      "page": "33-parcours-inconnu",
+      "url": "/admin/dashboard/journeys/detail/?id=<inconnu>",
+      "extrait": "Chargement du parcours…"
+    }
+  ],
+  "badLinks": [],
+  "jsErrors": [],
+  "failedRequests": [],
+  "finishedAt": "2026-10-14T11:37:14.128Z",
+  "summary": {
+    "total": 70,
+    "ok": 66,
+    "ko": [
+      "UI : jeton expiré → redirection vers /admin/login/",
+      "Fiche utilisateur inconnue → message clair",
+      "Parcours inconnu → message clair",
+      "Remboursement : demande fictive visible"
+    ]
+  }
+}

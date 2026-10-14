@@ -1,4 +1,5 @@
 import { PartnerRegistrationType, PartnerType } from '@prisma/client';
+import { OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   Equals,
@@ -6,10 +7,13 @@ import {
   IsEmail,
   IsEnum,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   Length,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) =>
@@ -85,4 +89,26 @@ export class ApplyPartnerDto {
     message: 'Le consentement est nécessaire pour traiter la candidature.',
   })
   consent: boolean;
+}
+
+/**
+ * Partenaire ajouté par l'équipe depuis l'administration (marque démarchée,
+ * ambassadeur recruté…) : mêmes champs que la candidature, sans consentement
+ * du formulaire public ; le message et la commission sont facultatifs.
+ */
+export class TeamCreatePartnerDto extends OmitType(ApplyPartnerDto, [
+  'consent',
+  'message',
+] as const) {
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  commissionRate?: number;
 }

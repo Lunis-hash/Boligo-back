@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-14T11:24:17.626Z",
+  "base": "http://localhost:10000",
+  "alex": "c-alex-1791977057474@recette.boligo.test",
+  "sarah": "c-sarah-1791977057474@recette.boligo.test",
+  "journeyId": null,
+  "results": [
+    {
+      "etape": "3",
+      "step": "Géocodeurs injoignables depuis ce conteneur (curl)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "bloqués : geo.api.gouv.fr, photon.komoot.io, nominatim.openstreetmap.org"
+    },
+    {
+      "etape": "3",
+      "step": "Géolocalisation refusée : message clair, saisie manuelle proposée",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "« Localisation refusée : saisissez votre ville ci-dessous (ou activez la localisation dans les réglages). » (01-ville-geoloc-refusee.png)"
+    },
+    {
+      "etape": "3",
+      "step": "Recherche de ville en ligne (geo.api.gouv.fr) : suggestion affichée",
+      "status": "SIMULÉ",
+      "ok": true,
+      "detail": "Bezons / Dép. 95 · 95870 (02-ville-recherche-simulee.png)"
+    },
+    {
+      "etape": "1",
+      "step": "Alex : étapes 1 → 3 de l’inscription",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "1",
+      "step": "Inscription : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "page.waitForURL: Timeout 20000ms exceeded. =========================== logs ==========================="
+    },
+    {
+      "etape": "4",
+      "step": "Alex : Grand Entretien V8.2 complet dans l’interface (0 réponses)",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "http://localhost:10000/onboarding/profile-details"
+    },
+    {
+      "etape": "4",
+      "step": "Retour arrière (module 0) : question précédente, réponse cochée",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "etape": "4",
+      "step": "Modification d’une réponse d’un module précédent (depuis le module 1 vers le module 0)",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "undefined undefined"
+    },
+    {
+      "etape": "4",
+      "step": "Reprise après interruption (rechargement au milieu du module 3)",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "undefined undefined"
+    },
+    {
+      "etape": "4",
+      "step": "Bilan affiché sans « undefined »",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "05-ge-bilan.png"
+    },
+    {
+      "etape": "4",
+      "step": "Entretien verrouillé en V8.2",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "etape": "4",
+      "step": "Grand Entretien : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "TypeError: fetch failed     at node:internal/deps/undici/undici:14902:13"
+    },
+    {
+      "etape": "2",
+      "step": "Connexion / profil : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:10000/ Call log:"
+    },
+    {
+      "etape": "5",
+      "step": "Découverte / invitation : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "TypeError: fetch failed     at node:internal/deps/undici/undici:14902:13"
+    },
+    {
+      "etape": "6",
+      "step": "Sondeur : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "Error: aucun parcours     at /home/user/Boligo-back/mobile-steve/e2e/parcours-complet.e2e.js:596:27"
+    },
+    {
+      "etape": "7",
+      "step": "Chat / vidéo / coordonnées : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "Error: aucun parcours     at /home/user/Boligo-back/mobile-steve/e2e/parcours-complet.e2e.js:660:27"
+    },
+    {
+      "etape": "8",
+      "step": "Abandon : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "TypeError: fetch failed     at node:internal/deps/undici/undici:14902:13"
+    },
+    {
+      "etape": "360",
+      "step": "Écrans 360 : interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:10000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:10000/login\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "etape": "*",
+      "step": "Aucune erreur JavaScript non gérée (Alex, Sarah)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

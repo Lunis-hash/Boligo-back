@@ -21,6 +21,7 @@ import {
   vatRuleFor,
   VatRule,
 } from './billing';
+import { recordPartnerRefund } from '../partners/partner-commissions';
 
 /** Code de taxe Stripe : service fourni par voie électronique. */
 const DEFAULT_TAX_CODE = 'txcd_10000000';
@@ -503,12 +504,21 @@ export class InvoiceService implements OnModuleInit, OnModuleDestroy {
    * que le remboursement est total. Rejouer le même état ne fait rien.
    */
   async handleRefund(charge: Stripe.Charge): Promise<void> {
-    if (!billingFlags().enabled) return;
     const piId =
       typeof charge.payment_intent === 'string'
         ? charge.payment_intent
         : charge.payment_intent?.id;
     if (!piId) return;
+    // Commission du partenaire : reprise au prorata, avec ou sans facturation.
+    await recordPartnerRefund(this.prisma, {
+      paymentRef: piId,
+      refundedTotalCents: charge.amount_refunded,
+    }).catch((err: Error) =>
+      this.logger.error(
+        `Reprise de commission non enregistrée pour ${piId} : ${err.message}`,
+      ),
+    );
+    if (!billingFlags().enabled) return;
     const payment = await this.prisma.payment.findUnique({
       where: { stripePaymentIntentId: piId },
       include: {

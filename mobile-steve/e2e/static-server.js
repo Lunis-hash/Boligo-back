@@ -32,6 +32,10 @@ http
       res.writeHead(403);
       return res.end();
     }
+    // Dossier avec son propre index.html (export Next.js « trailingSlash »).
+    if (fs.existsSync(file) && fs.statSync(file).isDirectory() && fs.existsSync(path.join(file, 'index.html'))) {
+      file = path.join(file, 'index.html');
+    }
     if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       file = path.join(dir, 'index.html');
     }

@@ -19,6 +19,7 @@ import { InterviewService } from './interview.service';
 import { QuestionsService } from './questions.service';
 import { SaveModuleDto } from './dto/save-module.dto';
 import { SensitiveConsentDto } from './dto/sensitive-consent.dto';
+import { SaveAnswerDto } from './dto/save-answer.dto';
 import { InterviewLanguage, parseLanguage } from './questions.en';
 import { presentOptions } from './questions.data';
 import { AuthGuard } from '@nestjs/passport';
@@ -49,6 +50,38 @@ export class InterviewController {
   }
 
   /**
+   * Relecture d'un module (retour en arrière, reprise) : toutes ses questions
+   * applicables, déjà répondues comprises, et les réponses enregistrées.
+   */
+  @Get('module/:moduleNumber')
+  @ApiOperation({ summary: 'Questions et réponses enregistrées d’un module' })
+  @ApiQuery({ name: 'lang', required: false, description: 'fr (défaut) ou en' })
+  async getModule(
+    @Req() req: { user: { id: string } },
+    @Param('moduleNumber') moduleNumber: string,
+    @Query('lang') lang?: string,
+  ) {
+    const n = parseInt(moduleNumber, 10);
+    const [questions, saved] = await Promise.all([
+      this.servedQuestions(req.user.id, n, parseLanguage(lang), true),
+      this.interviewService.moduleAnswers(req.user.id, n),
+    ]);
+    return { questions, ...saved };
+  }
+
+  @Post('answer')
+  @ApiOperation({
+    summary:
+      'Enregistre ou remplace une réponse (les réponses de suite devenues sans objet sont effacées)',
+  })
+  async saveAnswer(
+    @Req() req: { user: { id: string } },
+    @Body() dto: SaveAnswerDto,
+  ) {
+    return this.interviewService.saveAnswer(req.user.id, dto);
+  }
+
+  /**
    * V7.1 : options « aucun » signalées ; sans accord explicite, les options
    * sensibles d'une question ordinaire ne sont pas proposées.
    */
@@ -56,9 +89,15 @@ export class InterviewController {
     userId: string,
     moduleNumber: number,
     lang: InterviewLanguage,
+    includeAnswered = false,
   ) {
     const [questions, { consent }] = await Promise.all([
-      this.questionsService.getQuestionsForUser(userId, moduleNumber, lang),
+      this.questionsService.getQuestionsForUser(
+        userId,
+        moduleNumber,
+        lang,
+        includeAnswered,
+      ),
       this.interviewService.getSensitiveConsent(userId),
     ]);
     return questions.map((q) => presentOptions(q, consent === true));

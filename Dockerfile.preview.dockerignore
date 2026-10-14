@@ -1,0 +1,20 @@
+# Contexte de build de Dockerfile.preview : API, webapp et admin (sources seulement).
+.git
+**/node_modules/
+dist/
+dist-seed/
+**/.next/
+**/.expo/
+admin/out/
+mobile-steve/dist/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+scratch/
+coverage/
+docs/
+test/
+scripts/
+**/*.log
+mobile-steve/docs/

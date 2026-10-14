@@ -1,0 +1,16 @@
+# Contexte de build de deploy/recette-outils.Dockerfile (racine du dépôt) :
+# uniquement ce qu'il faut pour le schéma et le seed de recette.
+.git
+**/node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+scratch/
+coverage/
+mobile-steve/**
+!mobile-steve/e2e/recette-partenaires-data.js
+admin/
+docs/
+test/
+scripts/

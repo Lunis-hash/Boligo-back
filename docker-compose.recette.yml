@@ -1,0 +1,133 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# RECETTE LOCALE de BOLIGO : surcouche de docker-compose.yml (ne change rien
+# à l'usage normal de ce dernier). Lancée par ./recette.sh ou .\recette.ps1 :
+#
+#   docker compose -p boligo-recette --env-file .env.recette \
+#     -f docker-compose.yml -f docker-compose.recette.yml --profile admin up -d --build
+#
+# - Projet Compose séparé (« boligo-recette ») : volume de base distinct.
+# - .env.recette (secrets FACTICES, généré par le script) remplace .env, qui
+#   n'est jamais lu (--env-file).
+# - Base, URL et clés sensibles FORCÉES ici : même si .env.recette était
+#   modifié, l'API vise la base du conteneur « db », sans e-mail, sans IA
+#   réelle, sans vidéo, sans transfert de base.
+# - « recette-init » crée le schéma (base vide seulement) et les membres
+#   fictifs avant le démarrage de l'API.
+# - Ports publiés sur 127.0.0.1 SEULEMENT (jamais 0.0.0.0) : la recette n'est
+#   joignable que depuis ce poste. « !override » remplace la liste de
+#   docker-compose.yml au lieu de la fusionner (Compose 2.24+). Ports
+#   modifiables dans .env.recette : DB_PORT, API_PORT, WEB_PORT, ADMIN_PORT,
+#   FAUX_IA_PORT.
+# Voir docs/RECETTE_LOCALE.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+x-recette-db-url: &recette_db_url postgresql://${POSTGRES_USER:-boligo}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-boligo_recette}?schema=public
+
+services:
+  db:
+    restart: "no"
+    volumes: !override
+      - recette_pgdata:/var/lib/postgresql/data
+    ports: !override
+      - "127.0.0.1:${DB_PORT:-55432}:5432"
+
+  recette-init:
+    build:
+      context: .
+      dockerfile: deploy/recette-outils.Dockerfile
+    image: boligo-recette-outils:local
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: *recette_db_url
+      DIRECT_URL: *recette_db_url
+      INTERVIEW_VERSION: "8.2"
+      HARMONY_QUESTIONS_SOURCE: bank
+      # Garde-fou des seeds (prisma/recette-guard.ts) : l'hôte « db » n'est
+      # accepté que dans ce conteneur de recette.
+      BOLIGO_RECETTE_DOCKER: "1"
+      # Liens imprimés par le seed des partenaires (espaces privés, admin).
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
+      ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:8081}
+    restart: "no"
+
+  api:
+    image: boligo-recette-api:local
+    restart: "no"
+    depends_on:
+      recette-init:
+        condition: service_completed_successfully
+    env_file: !override
+      - path: .env.recette
+        required: true
+    ports: !override
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: *recette_db_url
+      DIRECT_URL: *recette_db_url
+      NODE_ENV: production
+      INTERVIEW_VERSION: "8.2"
+      # Liens des espaces partenaires envoyés par l'admin : la webapp locale.
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
+      # Aucune copie de la base vers un autre serveur.
+      DB_TRANSFER_TARGET_URL: ""
+      # Aucun e-mail réel : sans fournisseur, les envois sont simulés (journal).
+      RESEND_API_KEY: ""
+      SENDGRID_API_KEY: ""
+      BREVO_API_KEY: ""
+      SENDINBLUE_API_KEY: ""
+      SMTP_HOST: ""
+      SAFETY_ALERT_EMAILS: ""
+      BILLING_ALERT_EMAILS: ""
+      # Aucune IA réelle : vide, sauf faux OpenRouter local (./recette.sh --faux-ia).
+      GROQ_API_KEY: ""
+      OPENROUTER_AUTH: ""
+      NODE_USE_ENV_PROXY: ""
+      OPENROUTER_API_KEY: ${RECETTE_OPENROUTER_API_KEY:-}
+      OPENROUTER_BASE_URL: ${RECETTE_OPENROUTER_BASE_URL:-}
+      HARMONY_QUESTIONS_SOURCE: ${RECETTE_HARMONY_QUESTIONS_SOURCE:-bank}
+      # Pas d'appel vidéo réel (Daily.co) ni de vérification Companies House.
+      DAILY_API_KEY: ""
+      COMPANIES_HOUSE_API_KEY: ""
+      # Connexions Google / Facebook désactivées.
+      GOOGLE_CLIENT_IDS: ""
+      FACEBOOK_APP_ID: ""
+      FACEBOOK_APP_SECRET: ""
+
+  web:
+    image: boligo-recette-web:local
+    restart: "no"
+    ports: !override
+      - "127.0.0.1:${WEB_PORT:-8080}:8080"
+    build:
+      args:
+        API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
+        STRIPE_PUBLISHABLE_KEY: ${EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+
+  admin:
+    restart: "no"
+    image: boligo-recette-admin:local
+    ports: !override
+      - "127.0.0.1:${ADMIN_PORT:-8081}:8080"
+    build:
+      args:
+        API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
+        WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
+        NGINX_CONF: admin-recette.conf
+
+  # Faux OpenRouter LOCAL et déterministe (mobile-steve/e2e/fake-openrouter.js) :
+  # aucun appel réseau, aucune clé. Seulement avec ./recette.sh --faux-ia.
+  faux-openrouter:
+    profiles: ["faux-ia"]
+    image: node:22-bookworm-slim
+    restart: "no"
+    volumes:
+      - ./mobile-steve/e2e/fake-openrouter.js:/srv/fake-openrouter.js:ro
+    command: ["node", "/srv/fake-openrouter.js", "8799"]
+    # Publié pour l'observer depuis le poste (l'API le joint par le réseau Docker).
+    ports:
+      - "127.0.0.1:${FAUX_IA_PORT:-8799}:8799"
+
+volumes:
+  recette_pgdata:

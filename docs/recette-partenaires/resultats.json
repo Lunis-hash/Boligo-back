@@ -1,0 +1,535 @@
+{
+  "date": "2026-10-14T11:26:26.417Z",
+  "total": 88,
+  "echecs": 0,
+  "results": [
+    {
+      "phase": "0. Environnement",
+      "step": "Base de recette isolée",
+      "ok": true,
+      "detail": "boligo_recette_partenaires"
+    },
+    {
+      "phase": "0. Environnement",
+      "step": "Aucune donnée de démonstration avant la recette",
+      "ok": true,
+      "detail": "0 partenaire(s) de démo présents"
+    },
+    {
+      "phase": "0. Environnement",
+      "step": "Compte administrateur fictif (rôle ADMIN)",
+      "ok": true,
+      "detail": "admin.recette-001@boligo-demo.example"
+    },
+    {
+      "phase": "0. Environnement",
+      "step": "Un membre ne peut pas ouvrir l’administration des partenaires",
+      "ok": true,
+      "detail": "status 403"
+    },
+    {
+      "phase": "1. Candidatures",
+      "step": "Candidature via le formulaire public : Studio Galet (fictif)",
+      "ok": true,
+      "detail": "ANNONCEUR"
+    },
+    {
+      "phase": "1. Candidatures",
+      "step": "Candidature via le formulaire public : Commercial indépendant (fictif)",
+      "ok": true,
+      "detail": "AMBASSADEUR"
+    },
+    {
+      "phase": "1. Candidatures",
+      "step": "Candidature via le formulaire public : Créatrice de contenu (fictif)",
+      "ok": true,
+      "detail": "CREATEUR"
+    },
+    {
+      "phase": "1. Candidatures",
+      "step": "20 candidatures enregistrées (8 entreprises, 6 ambassadeurs, 6 créateurs)",
+      "ok": true,
+      "detail": "20 en base, 20 listées dans l’administration"
+    },
+    {
+      "phase": "1. Candidatures",
+      "step": "Doublon de candidature (même e-mail, même profil, < 24 h) non recréé",
+      "ok": true,
+      "detail": "status 201"
+    },
+    {
+      "phase": "1. Candidatures",
+      "step": "Nouvelles candidatures : statut Nouveau, entreprise « à vérifier » (aucun registre interrogé)",
+      "ok": true,
+      "detail": "A_VERIFIER/NOUVEAU"
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Acceptation refusée tant que l’entreprise n’est pas vérifiée",
+      "ok": true,
+      "detail": "Entreprise non vérifiée : contrôlez son numéro (SIREN, TVA…) avant d’accepter le partenaire."
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Création de code refusée tant que l’entreprise n’est pas vérifiée",
+      "ok": true,
+      "detail": "Entreprise non vérifiée : contrôlez son numéro (SIREN, TVA…) avant de créer son code."
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Vérification manuelle par l’administrateur (16 partenaires)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Marques acceptées sans code : lien d’espace partenaire délivré",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Code DEMONORA passé en « Parcours offert » (jeu concours, 3 utilisations)",
+      "ok": true,
+      "detail": "status 200"
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Codes personnalisés attribués (sauf DEMOLINA, créé depuis l’écran d’administration)",
+      "ok": true,
+      "detail": "DEMOCERFEUIL:15 DEMOCLARA:10 DEMOJADE:10 DEMOKARIM:20 DEMOLUMEN:10 DEMOMAELLE:10 DEMOMATHIS:10 DEMONACRE:10 DEMONORA:0 DEMOSOPHIE:10 DEMOTHEO:20 DEMOYANIS:15"
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Lien privé d’espace partenaire délivré une seule fois à la création du code (e-mail en simulation)",
+      "ok": true,
+      "detail": "15 liens"
+    },
+    {
+      "phase": "2. Validation et codes",
+      "step": "Commissions : ambassadeurs 20 % (Yanis 25 %), créateurs 15 % (Nora 12 %), marques sans commission",
+      "ok": true,
+      "detail": "ANNONCEUR=— AMBASSADEUR=20 AMBASSADEUR=25 CREATEUR=12 CREATEUR=15"
+    },
+    {
+      "phase": "3. Offres",
+      "step": "Publication refusée pour un partenaire non accepté (Cave Ardoise, en cours)",
+      "ok": true,
+      "detail": "Acceptez d’abord le partenaire avant de publier son offre."
+    },
+    {
+      "phase": "3. Offres",
+      "step": "Lien d’offre non https refusé",
+      "ok": true,
+      "detail": "Le lien de l’offre doit commencer par https:// (site de la marque)."
+    },
+    {
+      "phase": "3. Offres",
+      "step": "16 offres créées par l’API d’administration (2 autres : écran d’administration et expiration en direct)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOLUMEN : 10 visites, 1 inscriptions, 1 Parcours payés",
+      "ok": true,
+      "detail": "CA 13,50 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOCERFEUIL : 8 visites, 1 inscriptions, 0 Parcours payés",
+      "ok": true,
+      "detail": "CA 0,00 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMONACRE : 6 visites, 1 inscriptions, 1 Parcours payés",
+      "ok": true,
+      "detail": "CA 13,50 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOCLARA : 42 visites, 6 inscriptions, 3 Parcours payés",
+      "ok": true,
+      "detail": "CA 40,50 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOYANIS : 30 visites, 4 inscriptions, 2 Parcours payés",
+      "ok": true,
+      "detail": "CA 25,50 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOSOPHIE : 18 visites, 2 inscriptions, 1 Parcours payés",
+      "ok": true,
+      "detail": "CA 13,50 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOKARIM : 12 visites, 1 inscriptions, 0 Parcours payés",
+      "ok": true,
+      "detail": "CA 0,00 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOMATHIS : 5 visites, 0 inscriptions, 0 Parcours payés",
+      "ok": true,
+      "detail": "CA 0,00 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOJADE : 36 visites, 5 inscriptions, 2 Parcours payés",
+      "ok": true,
+      "detail": "CA 27,00 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMONORA : 20 visites, 3 inscriptions, 0 Parcours payés, 2 offerts",
+      "ok": true,
+      "detail": "CA 0,00 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOTHEO : 15 visites, 2 inscriptions, 1 Parcours payés",
+      "ok": true,
+      "detail": "CA 12,00 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "DEMOMAELLE : 14 visites, 2 inscriptions, 1 Parcours payés",
+      "ok": true,
+      "detail": "CA 13,50 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "Chaque inscription via un lien est rattachée au bon partenaire",
+      "ok": true,
+      "detail": "28/28 membres rattachés"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "Activations gratuites tracées à 0 € (jamais comptées comme ventes)",
+      "ok": true,
+      "detail": "2 activation(s) à 0 €"
+    },
+    {
+      "phase": "4. Visites, inscriptions, ventes",
+      "step": "Code « offert » limité à 3 utilisations : la 4e est refusée",
+      "ok": true,
+      "detail": "3e 201, 4e 400"
+    },
+    {
+      "phase": "5. Visibilité des offres (avant changements de statut)",
+      "step": "Offres visibles des membres = offres en ligne de partenaires acceptés",
+      "ok": true,
+      "detail": "visibles : ABDGHIJKLMQ (attendu ABDGHIJKLMQ ; C expirée, E programmée, brouillons cachés)"
+    },
+    {
+      "phase": "5. Visibilité des offres (avant changements de statut)",
+      "step": "« Partenaire du mois » : seule l’offre A (Atelier Lumen)",
+      "ok": true,
+      "detail": "Bouquet du premier rendez-vous"
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Offre I retirée par l’équipe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Republication d’une offre expirée refusée",
+      "ok": true,
+      "detail": "Offre expirée : prolongez sa date de fin avant de la republier."
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Clic sur une offre expirée : non redirigé, non compté",
+      "ok": true,
+      "detail": "status 404"
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Suspension : code valide avant, refusé après (paiement)",
+      "ok": true,
+      "detail": "Code promotionnel inactif."
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Suspension : visites et inscriptions via le lien ne sont plus comptées",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Suspension : espace partenaire toujours consultable (lecture seule)",
+      "ok": true,
+      "detail": "ventes 1"
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Refus : le code du partenaire refusé est rejeté au paiement (corrigé)",
+      "ok": true,
+      "detail": "Code promotionnel inactif."
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Refus : le lien d’espace partenaire ne fonctionne plus",
+      "ok": true,
+      "detail": "status 404"
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Reprise après suspension : le code redevient valable",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Après retrait, suspension et refus : I, L, M, Q ne sont plus visibles",
+      "ok": true,
+      "detail": "visibles : ABDGHJK"
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Affichages d’offres retirées ou expirées ignorés",
+      "ok": true,
+      "detail": "0 affichage(s) enregistrés"
+    },
+    {
+      "phase": "6. Publication, suspension, refus, expiration",
+      "step": "Expiration en direct : l’offre K disparaît à sa date de fin, sans action",
+      "ok": true,
+      "detail": "visibles : ABDGHJ"
+    },
+    {
+      "phase": "7. Webapp membre (navigateur)",
+      "step": "Visiteur arrivé par ?p=DEMOCLARA : bandeau de réduction affiché",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "7. Webapp membre (navigateur)",
+      "step": "Accueil : « Partenaire du mois » Atelier Lumen affiché",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "7. Webapp membre (navigateur)",
+      "step": "Membre connecté : page « Offres partenaires » = 6 offres en ligne",
+      "ok": true,
+      "detail": "affichées : ABDGHJ"
+    },
+    {
+      "phase": "7. Webapp membre (navigateur)",
+      "step": "Clic membre : compté puis redirigé vers le site de la marque avec utm_source=boligo",
+      "ok": true,
+      "detail": "https://maison-cerfeuil.example/di-ner-de-couverte?utm_source=boligo&utm_medium=offre_partenaire&utm_campaign=be8082bc (clics D : 0 → 1)"
+    },
+    {
+      "phase": "7. Webapp membre (navigateur)",
+      "step": "Clic sur une offre retirée : refusé",
+      "ok": true,
+      "detail": "status 404"
+    },
+    {
+      "phase": "8. Ventes confirmées des liens affiliés (relevés des marques)",
+      "step": "Relevé d’un mois futur refusé",
+      "ok": true,
+      "detail": "Mois à venir : aucune vente à confirmer."
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "Écran d’administration : code bloqué avant vérification, puis vérification et code DEMOLINA créés",
+      "ok": true,
+      "detail": "http://localhost:8081/espace-partenaire#…"
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "DEMOLINA : 26 visites (dont 1 navigateur), 3 inscriptions, 2 Parcours payés",
+      "ok": true,
+      "detail": "CA 25,50 €"
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "Écran d’administration : offre F créée en brouillon",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "Écran d’administration : vente confirmée de l’offre G enregistrée (1 vente, 4,50 €)",
+      "ok": true,
+      "detail": "1/450"
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "Écran d’administration : Maëlle suspendue, code coupé",
+      "ok": true,
+      "detail": "SUSPENDU/false"
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "Administration : les 20 partenaires fictifs listés",
+      "ok": true,
+      "detail": "20 lignes"
+    },
+    {
+      "phase": "9. Administration (navigateur)",
+      "step": "Administration : synthèse « clics mesurés » distincte des « ventes confirmées »",
+      "ok": true,
+      "detail": "Offres des marques 6 en ligne 18 au total · 1 programmée(s) · 2 expirée(s) · 9 hors ligne Clics mesurés (pas des ventes) 31 254 affichage(s) Ventes confirmées par les marques 7 22.6 % des clics, d’après les relevés reçus"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOLUMEN : chiffres exacts",
+      "ok": true,
+      "detail": "visites 10/10, inscriptions 1/1, ventes 1/1, CA 13.5/13.5, commission 0/0"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOCERFEUIL : chiffres exacts",
+      "ok": true,
+      "detail": "visites 8/8, inscriptions 1/1, ventes 0/0, CA 0/0, commission 0/0"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMONACRE : chiffres exacts",
+      "ok": true,
+      "detail": "visites 6/6, inscriptions 1/1, ventes 1/1, CA 13.5/13.5, commission 0/0"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOCLARA : chiffres exacts",
+      "ok": true,
+      "detail": "visites 43/43, inscriptions 6/6, ventes 3/3, CA 40.5/40.5, commission 8.1/8.1"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOYANIS : chiffres exacts",
+      "ok": true,
+      "detail": "visites 30/30, inscriptions 4/4, ventes 2/2, CA 25.5/25.5, commission 6.38/6.38"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOSOPHIE : chiffres exacts",
+      "ok": true,
+      "detail": "visites 18/18, inscriptions 2/2, ventes 1/1, CA 13.5/13.5, commission 2.7/2.7"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOKARIM : chiffres exacts",
+      "ok": true,
+      "detail": "visites 12/12, inscriptions 1/1, ventes 0/0, CA 0/0, commission 0/0"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOJADE : chiffres exacts",
+      "ok": true,
+      "detail": "visites 36/36, inscriptions 5/5, ventes 2/2, CA 27/27, commission 4.06/4.05"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMONORA : chiffres exacts",
+      "ok": true,
+      "detail": "visites 20/20, inscriptions 3/3, ventes 0/0, CA 0/0, commission 0/0, offerts 3/3"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOTHEO : chiffres exacts",
+      "ok": true,
+      "detail": "visites 15/15, inscriptions 2/2, ventes 1/1, CA 12/12, commission 1.8/1.8"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOMAELLE : chiffres exacts",
+      "ok": true,
+      "detail": "visites 14/14, inscriptions 2/2, ventes 1/1, CA 13.5/13.5, commission 2.03/2.03"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace DEMOLINA : chiffres exacts",
+      "ok": true,
+      "detail": "visites 26/26, inscriptions 3/3, ventes 2/2, CA 25.5/25.5, commission 3.82/3.83"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Espace marque sans code (Vélo Brume) : offres, clics et ventes confirmées séparés",
+      "ok": true,
+      "detail": "G : 4 clics, 1 vente confirmée, état en_ligne"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Marque refusée (Voyages Tilleul) : espace fermé",
+      "ok": true,
+      "detail": "status 404"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Navigateur : espace de Clara (visites, commission)",
+      "ok": true,
+      "detail": "Visites via votre lien 43 · Votre commission (20 %) 8,10 €"
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Navigateur : marque sans code — pas de code, offres avec « clic ≠ vente »",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Navigateur : bandeau « Partenariat suspendu » (nacre)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Navigateur : bandeau « Partenariat suspendu » (maelle)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "10. Espace partenaire (API + navigateur)",
+      "step": "Navigateur : lien d’un partenaire refusé → « Ce lien ne fonctionne plus »",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "phase": "11. Synthèse finale",
+      "step": "Statuts finaux : 12 acceptés, 2 suspendus, 2 en cours, 2 nouveaux, 2 refusés",
+      "ok": true,
+      "detail": "ACCEPTE=12 EN_COURS=2 NOUVEAU=2 REFUSE=2 SUSPENDU=2"
+    },
+    {
+      "phase": "11. Synthèse finale",
+      "step": "18 offres : 6 en ligne, 1 programmée, 2 expirées, 5 brouillons, 4 retirées",
+      "ok": true,
+      "detail": "{\"en_ligne\":6,\"expiree\":2,\"programmee\":1,\"brouillon\":5,\"retiree\":4}"
+    },
+    {
+      "phase": "11. Synthèse finale",
+      "step": "Affiliation : clics mesurés ≠ ventes confirmées ; revenu BOLIGO = relevés seulement",
+      "ok": true,
+      "detail": "254 affichages, 31 clics, 7 ventes confirmées, 26,10 € pour BOLIGO (taux 22.6 %)"
+    },
+    {
+      "phase": "11. Synthèse finale",
+      "step": "Chaque offre dans l’état attendu",
+      "ok": true,
+      "detail": "A:ok B:ok C:ok D:ok E:ok F:ok G:ok H:ok I:ok J:ok K:ok L:ok M:ok N:ok O:ok P:ok Q:ok R:ok"
+    },
+    {
+      "phase": "11. Synthèse finale",
+      "step": "Synthèse administration : Parcours payés, CA et commissions dues (codes partenaires)",
+      "ok": true,
+      "detail": "14/14 Parcours, CA 184.5/184.50, commissions 28.89/28.89"
+    },
+    {
+      "phase": "11. Synthèse finale",
+      "step": "Aucune erreur JavaScript dans les pages",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

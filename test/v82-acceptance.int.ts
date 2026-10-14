@@ -402,7 +402,7 @@ async function main() {
   );
 
   await check(
-    'saisies refusées : plage invalide, plages incohérentes, question V7.1 dans un entretien V8.2',
+    'saisies refusées : plage invalide, question V7.1 dans un entretien V8.2 ; plages incohérentes élargies',
     async () => {
       const E = await member('F', 31);
       await interview.getStatus(E.id);
@@ -413,7 +413,10 @@ async function main() {
           answers,
         } as any);
       await assert.rejects(save({ V82_M0_01: '40-30' }));
-      await assert.rejects(save({ V82_M0_01: '28-34', V82_M0_02: '30-40' }));
+      // Plages incohérentes : jamais bloquant, la plage acceptée est élargie
+      // pour englober la tranche idéale.
+      const widened = await save({ V82_M0_01: '28-34', V82_M0_02: '30-40' });
+      assert.deepStrictEqual(widened.adjusted, { V82_M0_02: '28-40' });
       await save({ V82_M0_03: 'A' }); // l'entretien est désormais V8.2
       await assert.rejects(save({ M0_Q01: 'A' }));
       await assert.rejects(save({ V82_M0_03: 'A,B' })); // « pas d'enfant » + « avec moi »

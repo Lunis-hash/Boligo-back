@@ -49,9 +49,10 @@ describe('Espace partenaire : lien privé et historique', () => {
       revenue: 27,
       commission: 4.05,
     });
+    // Une ligne sans montant (parcours offert) n'est pas une vente.
     expect(lines[1]).toMatchObject({
       month: '2026-09',
-      purchases: 1,
+      purchases: 0,
       revenue: 0,
     });
     expect(lines[2]).toMatchObject({
@@ -60,7 +61,7 @@ describe('Espace partenaire : lien privé et historique', () => {
       commission: 2.25,
     });
     expect(lines[11].month).toBe('2025-11');
-    expect(lines.reduce((n, l) => n + l.purchases, 0)).toBe(4);
+    expect(lines.reduce((n, l) => n + l.purchases, 0)).toBe(3);
   });
 
   it('ne calcule pas de commission sans taux (marques et annonceurs)', () => {

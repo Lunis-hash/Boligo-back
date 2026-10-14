@@ -120,19 +120,19 @@ enum InterviewStatus {
 }
 
 model InterviewIA {
-  id        String           @id @default(uuid())
-  userId    String
-  user      User             @relation(fields: [userId], references: [id])
-  startDate DateTime         @default(now())
-  endDate   DateTime?
-  status    InterviewStatus  @default(en_cours)
-  version   Int              @default(1)
+  id                   String           @id @default(uuid())
+  userId               String
+  user                 User             @relation(fields: [userId], references: [id])
+  startDate            DateTime         @default(now())
+  endDate              DateTime?
+  status               InterviewStatus  @default(en_cours)
+  version              Int              @default(1)
   /// Version du Grand Entretien (« 7.1 », « 8.2 »), fixée à la création et
   /// jamais modifiée (déclencheur SQL). Absente : entretien antérieur au
   /// versionnement, lu en V7.1.
   questionnaireVersion String?
-  responses ModuleResponse[]
-  mentalMap MentalMap?
+  responses            ModuleResponse[]
+  mentalMap            MentalMap?
 
   @@index([userId, status])
 }
@@ -250,25 +250,25 @@ model Journey {
 // ---------------------------------------------------------
 
 model HarmonyQuestion {
-  id           String            @id @default(uuid())
-  journeyId    String
-  journey      Journey           @relation(fields: [journeyId], references: [id])
-  day          Int // 1, 2, 3
-  theme        String
-  emoji        String?
-  questionText String            @db.Text
-  options      Json? // QCM options (dont "Autre...")
+  id             String            @id @default(uuid())
+  journeyId      String
+  journey        Journey           @relation(fields: [journeyId], references: [id])
+  day            Int // 1, 2, 3
+  theme          String
+  emoji          String?
+  questionText   String            @db.Text
+  options        Json? // QCM options (dont "Autre...")
   /// Version anglaise de la question et de ses options (Sondeur bilingue) ;
   /// absente pour une question antérieure : le français est servi.
-  questionTextEn String?         @db.Text
+  questionTextEn String?           @db.Text
   optionsEn      Json?
-  sentAt       DateTime          @default(now())
+  sentAt         DateTime          @default(now())
   /// Question d'approfondissement écrite par l'IA après la lecture de la journée précédente.
-  followUp     Boolean           @default(false)
+  followUp       Boolean           @default(false)
   /// Origine de la question (gabarit, divergence, IA, suivi), méthode, cible,
   /// rédacteur et relecteur : jamais montrés aux membres, pour suivre la qualité.
-  meta         Json?
-  responses    HarmonyResponse[]
+  meta           Json?
+  responses      HarmonyResponse[]
 
   @@index([journeyId])
 }
@@ -744,6 +744,8 @@ enum PartnerStatus {
   EN_COURS
   ACCEPTE
   REFUSE
+  /// Partenariat suspendu : code sans effet, offres retirées, Espace en lecture seule.
+  SUSPENDU
 }
 
 model PartnerApplication {
@@ -785,6 +787,7 @@ model PartnerApplication {
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
   offers             PartnerOffer[]
+  commissions        PartnerCommission[]
 
   @@index([type, status])
   @@index([email])
@@ -800,10 +803,10 @@ enum OfferPlacement {
 /// Offre d'une marque montrée aux membres. Affichages et clics sont comptés
 /// par jour, sans savoir qui a vu ou cliqué.
 model PartnerOffer {
-  id          String             @id @default(uuid())
+  id          String                   @id @default(uuid())
   partnerId   String
-  partner     PartnerApplication @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  placement   OfferPlacement     @default(OFFRES)
+  partner     PartnerApplication       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  placement   OfferPlacement           @default(OFFRES)
   title       String
   /// Avantage en quelques mots, ex. « -20 % sur le premier dîner ».
   perk        String
@@ -812,12 +815,15 @@ model PartnerOffer {
   url         String
   /// Code ou mot à donner à la marque pour profiter de l'avantage.
   perkCode    String?
-  isActive    Boolean            @default(false)
+  isActive    Boolean                  @default(false)
   startsAt    DateTime?
   endsAt      DateTime?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  /// Première mise en ligne : distingue une offre retirée d'un brouillon.
+  publishedAt DateTime?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
   stats       PartnerOfferStat[]
+  conversions PartnerOfferConversion[]
 
   @@index([isActive, placement])
 }
@@ -831,6 +837,61 @@ model PartnerOfferStat {
   clicks      Int          @default(0)
 
   @@unique([offerId, day])
+}
+
+/// Ventes CONFIRMÉES par la marque (ou son réseau d'affiliation) pour une
+/// offre, saisies par l'équipe d'après le relevé reçu : jamais déduites des
+/// clics. Le revenu est la rémunération due à BOLIGO, en centimes.
+model PartnerOfferConversion {
+  id           String       @id @default(uuid())
+  offerId      String
+  offer        PartnerOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  /// Premier jour du mois concerné.
+  month        DateTime     @db.Date
+  conversions  Int
+  revenueCents Int
+  /// Référence du relevé de la marque (n° de rapport, facture…).
+  reference    String?
+  createdBy    String?
+  createdAt    DateTime     @default(now())
+
+  @@index([offerId])
+}
+
+enum PartnerCommissionKind {
+  /// Parcours payé avec le code : commission au taux en vigueur ce jour-là.
+  VENTE
+  /// Remboursement (total ou partiel) : reprise proportionnelle, montant négatif.
+  REPRISE
+}
+
+/// Registre des commissions partenaires, ligne par ligne et jamais réécrit.
+/// Le taux est FIGÉ sur la ligne de vente : modifier le taux du partenaire ne
+/// change que les ventes suivantes. Un remboursement ajoute une ligne REPRISE
+/// rattachée à la vente (traçable), au prorata du montant rendu.
+model PartnerCommission {
+  id                String                @id @default(uuid())
+  partnerId         String
+  partner           PartnerApplication    @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  promoCodeId       String?
+  kind              PartnerCommissionKind
+  /// Référence du paiement (PaymentIntent Stripe ou paiement simulé).
+  paymentRef        String
+  /// Clé d'idempotence : « paymentRef:vente » ou « paymentRef:reprise:<cumul remboursé> ».
+  idempotencyKey    String                @unique
+  /// VENTE : montant encaissé ; REPRISE : montant remboursé par cette ligne (centimes, positif).
+  amountCents       Int
+  /// Taux appliqué, en % (copie du taux de la vente sur une reprise).
+  ratePercent       Int
+  /// Commission : positive pour une vente, négative pour une reprise.
+  commissionCents   Int
+  /// REPRISE : vente concernée.
+  saleId            String?
+  reason            String?
+  createdAt         DateTime              @default(now())
+
+  @@index([partnerId, kind])
+  @@index([paymentRef])
 }
 
 /// Dépense IA du mois : garde-fou budgétaire (AI_MONTHLY_BUDGET_EUR), en millionièmes d'euro.
