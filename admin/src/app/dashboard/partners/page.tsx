@@ -780,11 +780,17 @@ function PartnerDetail({ partner: p, onSaved }: { partner: Partner; onSaved: () 
   );
 }
 
-const WEB_URL = (process.env.NEXT_PUBLIC_WEB_URL || "https://boligo-web.onrender.com").replace(/\/+$/, "");
+// « same-origin » : webapp servie par le même site que l'admin (prévisualisation de recette).
+const WEB_URL_SETTING = process.env.NEXT_PUBLIC_WEB_URL || "https://boligo-web.onrender.com";
+const webUrl = () =>
+  (WEB_URL_SETTING === "same-origin" && typeof window !== "undefined"
+    ? window.location.origin
+    : WEB_URL_SETTING
+  ).replace(/\/+$/, "");
 
 /** Lien du partenaire : le site lit ?p=CODE et garde le code jusqu'à l'inscription. */
 function shareLink(code: string) {
-  return `${WEB_URL}/?p=${encodeURIComponent(code)}`;
+  return `${webUrl()}/?p=${encodeURIComponent(code)}`;
 }
 
 type Placement = "OFFRES" | "PARTENAIRE_DU_MOIS";

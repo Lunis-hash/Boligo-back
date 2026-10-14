@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist-seed",
+    "incremental": false,
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "prisma/seed-recette.ts",
+    "prisma/seed-recette-partenaires.ts",
+    "prisma/recette-guard.ts"
+  ],
+  "exclude": ["node_modules", "dist", "dist-seed", "**/*spec.ts"]
+}

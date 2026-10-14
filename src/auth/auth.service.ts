@@ -26,7 +26,8 @@ import { AccountDeletionService } from '../account/account-deletion.service';
  * renvoyé dans la réponse d'inscription. Désactivé tant que OTP_DEBUG n'est
  * pas explicitement à « true » (jamais en production).
  */
-const OTP_DEBUG = process.env.OTP_DEBUG === 'true';
+const OTP_DEBUG =
+  process.env.OTP_DEBUG === 'true' || process.env.RECETTE_PREVIEW === '1';
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');

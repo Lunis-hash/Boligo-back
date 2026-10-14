@@ -41,4 +41,25 @@ describe('Garde-fou du seed de recette : base locale uniquement', () => {
       else process.env.BOLIGO_RECETTE_DOCKER = before;
     }
   });
+
+  it('prévisualisation (RECETTE_PREVIEW=1) : base de l’hébergeur acceptée, Supabase refusé', () => {
+    const before = process.env.RECETTE_PREVIEW;
+    try {
+      process.env.RECETTE_PREVIEW = '1';
+      expect(
+        localDatabaseProblem('postgresql://u:p@dpg-abc123-a/boligo_recette'),
+      ).toBeNull();
+      expect(
+        localDatabaseProblem(
+          'postgresql://postgres.ref:pw@aws-0-eu-west-3.pooler.supabase.com:6543/postgres',
+        ),
+      ).not.toBeNull();
+      expect(
+        localDatabaseProblem('postgresql://u:p@db.abcd.supabase.co:5432/x'),
+      ).not.toBeNull();
+    } finally {
+      if (before === undefined) delete process.env.RECETTE_PREVIEW;
+      else process.env.RECETTE_PREVIEW = before;
+    }
+  });
 });

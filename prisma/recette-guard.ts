@@ -7,6 +7,13 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
 export function localDatabaseProblem(url: string | undefined): string | null {
   if (!url) return 'DATABASE_URL est vide.';
+  // Prévisualisation de recette (service Render dédié, RECETTE_PREVIEW=1) :
+  // base jetable de l'hébergeur acceptée, Supabase (production) toujours refusé.
+  if (process.env.RECETTE_PREVIEW === '1') {
+    return /supabase/i.test(url)
+      ? 'DATABASE_URL vise Supabase (base de production) : refusé, même en prévisualisation.'
+      : null;
+  }
   if (/supabase|pooler\.|\.co\b|render\.com|neon\.tech|amazonaws/i.test(url))
     return 'DATABASE_URL pointe vers un hébergeur distant (Supabase ou autre).';
   let parsed: URL;

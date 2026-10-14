@@ -25,7 +25,11 @@ function dbHost(raw: string): string {
     return '';
   }
 }
-if (!ALLOWED_HOSTS.has(dbHost(RAW_URL))) {
+// Prévisualisation de recette (RECETTE_PREVIEW=1, service dédié) : base de
+// l'hébergeur acceptée, Supabase (production) toujours refusé.
+const PREVIEW_OK =
+  process.env.RECETTE_PREVIEW === '1' && !!RAW_URL && !/supabase/i.test(RAW_URL);
+if (!PREVIEW_OK && !ALLOWED_HOSTS.has(dbHost(RAW_URL))) {
   console.error(
     `❌ seed:recette refusé : DATABASE_URL doit viser localhost, 127.0.0.1 ou l'hôte Docker « db » (reçu : « ${dbHost(RAW_URL) || 'absent'} »).`,
   );
