@@ -236,7 +236,7 @@ const STEP_FIELDS: Record<number, FieldName[]> = {
 
 export default function ProfileDetailsScreen() {
   const router = useRouter();
-  const { signIn, signOut, token } = useAuth();
+  const { signIn, token } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -329,10 +329,14 @@ export default function ProfileDetailsScreen() {
   // ─── Brouillon : restauré à l'ouverture, enregistré à chaque changement ─
   const [draftReady, setDraftReady] = useState(false);
 
+  // Compte déjà créé et validé (retour arrière du navigateur depuis le
+  // Grand Entretien) : pas de retour à l'inscription ; « / » renvoie à
+  // l'étape en cours. Les informations se modifient ensuite dans le profil.
   useEffect(() => {
-    if (token) {
-      signOut().catch(() => {});
-    }
+    if (token) router.replace('/');
+  }, [token, router]);
+
+  useEffect(() => {
     let alive = true;
     (async () => {
       let draft: SignupDraft | null = null;
@@ -373,7 +377,6 @@ export default function ProfileDetailsScreen() {
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

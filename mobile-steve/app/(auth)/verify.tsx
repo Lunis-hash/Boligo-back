@@ -27,7 +27,7 @@ export default function VerifyScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email?: string }>();
   const userEmail = email || '';
-  const { signIn } = useAuth();
+  const { signIn, token } = useAuth();
 
   const [code, setCode] = useState('');
   const [timer, setTimer] = useState(60);
@@ -36,6 +36,11 @@ export default function VerifyScreen() {
   const inputRef = useRef<TextInput | null>(null);
   // Évite une double validation (saisie complète + bouton).
   const verifying = useRef(false);
+  // Compte déjà validé et connecté : l'écran de validation n'a plus lieu
+  // d'être (retour arrière du navigateur) ; « / » renvoie à l'étape en cours.
+  useEffect(() => {
+    if (token && !verifying.current) router.replace('/');
+  }, [token, router]);
 
   useEffect(() => {
     if (timer > 0) {

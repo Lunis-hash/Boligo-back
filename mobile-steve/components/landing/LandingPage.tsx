@@ -30,10 +30,11 @@ const NAV: { key: SectionKey; label: string }[] = [
   { key: 'questions', label: 'Questions' },
 ];
 
+// Témoignages d'exemple : prénoms variés, à l'image d'une communauté cosmopolite.
 const PEOPLE = [
   {
-    initial: 'I',
-    name: 'Inès, 23 ans',
+    initial: 'C',
+    name: 'Camille, 23 ans',
     role: 'Étudiante · Lille',
     quote: 'Je veux du sérieux, pas un jeu.',
     text: 'Quitter les applis où l’on swipe sans fin, et rencontrer quelqu’un qui partage ses ambitions.',
@@ -41,8 +42,8 @@ const PEOPLE = [
     color: Brand.framboise,
   },
   {
-    initial: 'Y',
-    name: 'Yanis, 38 ans',
+    initial: 'M',
+    name: 'Matteo, 38 ans',
     role: 'Infirmier · Nantes',
     quote: 'Je veux fonder une famille.',
     text: 'Enfants, lieu de vie, foi : savoir tout de suite si les projets vont dans le même sens.',
@@ -50,8 +51,8 @@ const PEOPLE = [
     color: Brand.lavande,
   },
   {
-    initial: 'N',
-    name: 'Nadia, 58 ans',
+    initial: 'H',
+    name: 'Hélène, 58 ans',
     role: 'Comptable · Bordeaux',
     quote: 'J’ai le droit de recommencer.',
     text: 'Après une séparation, prendre son temps, sans exposer ses photos, à son rythme.',
