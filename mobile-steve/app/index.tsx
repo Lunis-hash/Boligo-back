@@ -12,6 +12,7 @@ import { Typography } from '@/constants/theme';
 export default function WelcomeScreen() {
   const router = useRouter();
   const { font } = useBrandFonts();
+  // Micro-copy optimisée pour le Grand Entretien
 
   const { token, isLoading: authLoading, signOut } = useAuth();
   const [resumeError, setResumeError] = useState<string | null>(null);
