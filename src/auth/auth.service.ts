@@ -44,6 +44,33 @@ function normalizeEmail(email: string): string {
   return (email ?? '').trim().toLowerCase();
 }
 
+/**
+ * E-mails de code de vérification : au plus un par adresse et par minute,
+ * quel que soit le chemin (inscription, connexion d'un compte non validé,
+ * « renvoyer le code »). Sans ce délai, plusieurs clics envoyaient autant
+ * d'e-mails en quelques secondes.
+ */
+export const OTP_EMAIL_COOLDOWN_MS = 60_000;
+const lastOtpEmailAt = new Map<string, number>();
+
+export function otpEmailAllowed(email: string, now = Date.now()): boolean {
+  const key = email.trim().toLowerCase();
+  const last = lastOtpEmailAt.get(key);
+  if (last !== undefined && now - last < OTP_EMAIL_COOLDOWN_MS) return false;
+  if (lastOtpEmailAt.size > 5000) {
+    for (const [k, t] of lastOtpEmailAt) {
+      if (now - t >= OTP_EMAIL_COOLDOWN_MS) lastOtpEmailAt.delete(k);
+    }
+  }
+  lastOtpEmailAt.set(key, now);
+  return true;
+}
+
+/** Tests uniquement. */
+export function resetOtpEmailCooldown(): void {
+  lastOtpEmailAt.clear();
+}
+
 const MIN_AGE = 18;
 const MAX_AGE = 99;
 const EMAIL_TAKEN_MESSAGE = 'Un compte existe déjà avec cet e-mail.';
@@ -222,6 +249,7 @@ export class AuthService {
     }
 
     // Envoyer l'email OTP de validation de façon asynchrone (sans bloquer la réponse)
+    otpEmailAllowed(user.email);
     this.emailService
       .sendVerificationEmail(user.email, verificationCode)
       .catch((e) => {
@@ -296,6 +324,15 @@ export class AuthService {
       };
     }
 
+    // Un code vient d'être envoyé : on garde le même (toujours valable).
+    if (!otpEmailAllowed(user.email)) {
+      return {
+        success: true,
+        message:
+          'Un code vient déjà de vous être envoyé. Vérifiez votre boîte de réception (et les indésirables) ; vous pourrez en redemander un dans une minute.',
+      };
+    }
+
     const verificationCode = randomInt(1000, 10000).toString();
 
     await this.prisma.user.update({
@@ -349,11 +386,14 @@ export class AuthService {
           data: { verificationCode },
         });
       }
-      this.emailService
-        .sendVerificationEmail(user.email, verificationCode)
-        .catch((e) => {
-          console.error('[AUTH] Erreur renvoi OTP lors du login:', e);
-        });
+      // Même code renvoyé, au plus une fois par minute.
+      if (otpEmailAllowed(user.email)) {
+        this.emailService
+          .sendVerificationEmail(user.email, verificationCode)
+          .catch((e) => {
+            console.error('[AUTH] Erreur renvoi OTP lors du login:', e);
+          });
+      }
 
       return {
         isVerified: false,

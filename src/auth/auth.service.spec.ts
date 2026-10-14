@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
+import { AuthService, resetOtpEmailCooldown } from './auth.service';
 import { AccountDeletionService } from '../account/account-deletion.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -84,6 +84,7 @@ describe('AuthService', () => {
   };
 
   beforeEach(async () => {
+    resetOtpEmailCooldown();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,

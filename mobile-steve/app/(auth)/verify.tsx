@@ -29,11 +29,13 @@ export default function VerifyScreen() {
   const userEmail = email || '';
   const { signIn } = useAuth();
 
-  const [code, setCode] = useState(['', '', '', '']);
+  const [code, setCode] = useState('');
   const [timer, setTimer] = useState(60);
   const [loading, setLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const inputRef = useRef<TextInput | null>(null);
+  // Évite une double validation (saisie complète + bouton).
+  const verifying = useRef(false);
 
   useEffect(() => {
     if (timer > 0) {
@@ -50,41 +52,18 @@ export default function VerifyScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleCodeChange = (value: string, index: number) => {
-    // Si l'utilisateur colle un code à 4 chiffres d'un coup
-    if (value.length > 1) {
-      const cleaned = value.replace(/[^0-9]/g, '').slice(0, 4);
-      if (cleaned.length === 4) {
-        const newCode = cleaned.split('');
-        setCode(newCode);
-        handleVerify(cleaned);
-        return;
-      }
-    }
-
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-
-    // Auto-focus next input
-    if (value && index < 3) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-submit si 4 chiffres remplis
-    if (newCode.every((digit) => digit !== '') && newCode.join('').length === 4) {
-      handleVerify(newCode.join(''));
-    }
-  };
-
-  const handleKeyPress = (key: string, index: number) => {
-    if (key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  /**
+   * Un seul champ : le code se tape au clavier ou se colle (même avec des
+   * espaces) ; seuls les chiffres sont gardés. Validation dès 4 chiffres.
+   */
+  const handleCodeChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 4);
+    setCode(cleaned);
+    if (cleaned.length === 4) handleVerify(cleaned);
   };
 
   const handleVerify = async (verificationCode?: string) => {
-    const codeToVerify = verificationCode || code.join('');
+    const codeToVerify = verificationCode || code;
     if (!userEmail) {
       Alert.alert('Erreur', 'Adresse e-mail introuvable.');
       return;
@@ -94,6 +73,8 @@ export default function VerifyScreen() {
       return;
     }
 
+    if (verifying.current) return;
+    verifying.current = true;
     setLoading(true);
     try {
       const res = await AuthService.verifyEmail(userEmail, codeToVerify);
@@ -106,6 +87,7 @@ export default function VerifyScreen() {
       const msg = error?.response?.data?.message || error?.message || 'Code de vérification invalide ou expiré.';
       Alert.alert('Vérification impossible', Array.isArray(msg) ? msg.join('\n') : msg);
     } finally {
+      verifying.current = false;
       setLoading(false);
     }
   };
@@ -119,8 +101,8 @@ export default function VerifyScreen() {
     try {
       await AuthService.resendVerification(userEmail);
       setTimer(60);
-      setCode(['', '', '', '']);
-      inputRefs.current[0]?.focus();
+      setCode('');
+      inputRef.current?.focus();
       Alert.alert('Nouveau code envoyé', `Un nouveau code à 4 chiffres a été envoyé à ${userEmail}.`);
     } catch (error: any) {
       const msg = error?.response?.data?.message || 'Impossible de renvoyer le code pour le moment.';
@@ -130,10 +112,15 @@ export default function VerifyScreen() {
     }
   };
 
-  const isCodeComplete = code.every((d) => d !== '');
+  const isCodeComplete = code.length === 4;
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    // Sur le web, fermer le « clavier » à chaque clic retirait le curseur du
+    // champ du code : on ne pouvait que coller. Réservé au mobile.
+    <TouchableWithoutFeedback
+      onPress={Platform.OS === 'web' ? undefined : Keyboard.dismiss}
+      accessible={false}
+    >
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -186,31 +173,25 @@ export default function VerifyScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* 4-digit Input Boxes */}
+          {/* Code à 4 chiffres : un seul champ (frappe au clavier ou collage) */}
           <View style={styles.codeContainer}>
-            {code.map((digit, index) => {
-              const isFocused = index === code.findIndex((d) => d === '');
-              return (
-                <TextInput
-                  key={index}
-                  ref={(ref) => {
-                    inputRefs.current[index] = ref;
-                  }}
-                  style={[
-                    styles.codeInput,
-                    digit ? styles.codeInputFilled : null,
-                    isFocused ? styles.codeInputActive : null,
-                  ]}
-                  value={digit}
-                  onChangeText={(value) => handleCodeChange(value, index)}
-                  onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
-                  keyboardType="number-pad"
-                  maxLength={4}
-                  selectTextOnFocus
-                  editable={!loading}
-                />
-              );
-            })}
+            <TextInput
+              ref={inputRef}
+              style={[styles.codeInput, code ? styles.codeInputFilled : null]}
+              value={code}
+              onChangeText={handleCodeChange}
+              placeholder="• • • •"
+              placeholderTextColor="rgba(20, 16, 14, 0.25)"
+              keyboardType="number-pad"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              textContentType="oneTimeCode"
+              maxLength={12}
+              autoFocus
+              editable={!loading}
+              accessibilityLabel="Code de validation à 4 chiffres"
+              testID="verify-code"
+            />
           </View>
 
           {/* Action Confirm Button */}
@@ -392,30 +373,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   codeInput: {
-    width: 62,
+    width: 240,
+    maxWidth: '100%',
     height: 68,
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: 'rgba(20, 16, 14, 0.1)',
     textAlign: 'center',
-    fontSize: 28,
+    fontSize: 30,
+    letterSpacing: 14,
     fontFamily: Typography.fontFamily.bold,
     color: Colors.text.primary100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  codeInputActive: {
-    borderColor: Colors.primary.red,
-    backgroundColor: '#FFFDFD',
-    shadowColor: Colors.primary.red,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
   },
   codeInputFilled: {
     borderColor: 'rgba(198, 42, 110, 0.4)',
