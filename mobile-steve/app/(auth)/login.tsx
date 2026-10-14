@@ -111,6 +111,7 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
+      // Validation de la session et sécurisation du parcours
       const result = await AuthService.login(email.trim(), password);
 
       // Si le compte n'est pas encore vérifié par OTP
