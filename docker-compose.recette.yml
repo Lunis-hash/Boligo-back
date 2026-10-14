@@ -13,6 +13,11 @@
 #   réelle, sans vidéo, sans transfert de base.
 # - « recette-init » crée le schéma (base vide seulement) et les membres
 #   fictifs avant le démarrage de l'API.
+# - Ports publiés sur 127.0.0.1 SEULEMENT (jamais 0.0.0.0) : la recette n'est
+#   joignable que depuis ce poste. « !override » remplace la liste de
+#   docker-compose.yml au lieu de la fusionner (Compose 2.24+). Ports
+#   modifiables dans .env.recette : DB_PORT, API_PORT, WEB_PORT, ADMIN_PORT,
+#   FAUX_IA_PORT.
 # Voir docs/RECETTE_LOCALE.md.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -23,6 +28,8 @@ services:
     restart: "no"
     volumes: !override
       - recette_pgdata:/var/lib/postgresql/data
+    ports: !override
+      - "127.0.0.1:${DB_PORT:-55432}:5432"
 
   recette-init:
     build:
@@ -54,6 +61,8 @@ services:
     env_file: !override
       - path: .env.recette
         required: true
+    ports: !override
+      - "127.0.0.1:${API_PORT:-3000}:3000"
     environment:
       DATABASE_URL: *recette_db_url
       DIRECT_URL: *recette_db_url
@@ -89,6 +98,8 @@ services:
   web:
     image: boligo-recette-web:local
     restart: "no"
+    ports: !override
+      - "127.0.0.1:${WEB_PORT:-8080}:8080"
     build:
       args:
         API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
@@ -97,6 +108,8 @@ services:
   admin:
     restart: "no"
     image: boligo-recette-admin:local
+    ports: !override
+      - "127.0.0.1:${ADMIN_PORT:-8081}:8080"
     build:
       args:
         API_URL: ${PUBLIC_API_URL:-http://localhost:3000/api}
@@ -112,6 +125,9 @@ services:
     volumes:
       - ./mobile-steve/e2e/fake-openrouter.js:/srv/fake-openrouter.js:ro
     command: ["node", "/srv/fake-openrouter.js", "8799"]
+    # Publié pour l'observer depuis le poste (l'API le joint par le réseau Docker).
+    ports:
+      - "127.0.0.1:${FAUX_IA_PORT:-8799}:8799"
 
 volumes:
   recette_pgdata:

@@ -1,10 +1,6 @@
 import { NotificationService } from '../notifications/notification.service';
 import { profileReadyEmail } from '../common/email-templates';
-import {
-  Injectable,
-  Optional,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Optional, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaveModuleDto } from './dto/save-module.dto';

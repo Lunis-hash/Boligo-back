@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-13T22:58:58.165Z",
+  "date": "2026-10-14T11:26:26.417Z",
   "total": 88,
   "echecs": 0,
   "results": [
@@ -325,7 +325,7 @@
       "phase": "7. Webapp membre (navigateur)",
       "step": "Clic membre : compté puis redirigé vers le site de la marque avec utm_source=boligo",
       "ok": true,
-      "detail": "https://maison-cerfeuil.example/di-ner-de-couverte?utm_source=boligo&utm_medium=offre_partenaire&utm_campaign=ed41c0bc (clics D : 0 → 1)"
+      "detail": "https://maison-cerfeuil.example/di-ner-de-couverte?utm_source=boligo&utm_medium=offre_partenaire&utm_campaign=be8082bc (clics D : 0 → 1)"
     },
     {
       "phase": "7. Webapp membre (navigateur)",

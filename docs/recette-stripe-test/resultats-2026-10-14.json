@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-14",
+  "api": "locale (127.0.0.1)",
+  "base": "boligo_stripe (127.0.0.1:5433)",
+  "stripe": "compte de TEST (livemode=false vérifié sur chaque objet relu)",
+  "webhookSecret": "secret LOCAL (aucun webhook du compte Stripe créé ou modifié)",
+  "remboursements": "simulés par événement signé : aucun remboursement réel (le webhook TEST du compte pointe vers Render)",
+  "reussis": 21,
+  "total": 21,
+  "resultats": [
+    {
+      "cas": "0. Comptes fictifs sur la base locale",
+      "nature": "LOCAL",
+      "ok": true,
+      "preuve": "base boligo_stripe (127.0.0.1:5433), 6 comptes"
+    },
+    {
+      "cas": "1. Prix TTC affiché par /payment/plans",
+      "nature": "LOCAL",
+      "ok": true,
+      "preuve": "HTTP 200, 15,00 € TTC — TVA comprise · paiement unique · sans abonnement"
+    },
+    {
+      "cas": "3. Paiement réussi (pm_card_visa) puis /payment/confirm",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "pi_3UQQ9GL…lEUK statut=succeeded livemode=false montant=1500 ; confirm HTTP 200 credited=true solde=1"
+    },
+    {
+      "cas": "1bis. TVA de la facture (facturation active, client France)",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "registre emise, taux 20.000 %, HT 1250 c, TVA 250 c ; facture Stripe in_1UQQ9IL…DZ9S statut=paid total=1500 livemode=false"
+    },
+    {
+      "cas": "2a. RECETTE50 : montant réduit envoyé à Stripe",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "check-promo Code appliqué : réduction de 7,50 €. ; pi_3UQQ9PL…rvNZ amount=750 livemode=false statut=requires_payment_method"
+    },
+    {
+      "cas": "2b. RECETTE100 : offert, sans Stripe",
+      "nature": "LOCAL (aucun appel Stripe)",
+      "ok": true,
+      "preuve": "apply-promo HTTP 201 isFree=true solde 0→1 ; 2e usage HTTP 400 « Vous avez déjà utilisé ce code. » ; create-intent HTTP 400"
+    },
+    {
+      "cas": "2c. Code invalide",
+      "nature": "LOCAL",
+      "ok": true,
+      "preuve": "check-promo « Code promotionnel invalide ou expiré. » ; create-intent HTTP 400 « Code promotionnel invalide ou expiré. »"
+    },
+    {
+      "cas": "2d. Code expiré / épuisé",
+      "nature": "LOCAL",
+      "ok": true,
+      "preuve": "expiré « Code promotionnel expiré. » ; épuisé « Code promotionnel épuisé. » ; create-intent HTTP 400"
+    },
+    {
+      "cas": "4. Paiement refusé (pm_card_vi…ined) : aucun crédit",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "pi_3UQQ9PL…FtUj erreur=card_declined/generic_decline statut=requires_payment_method livemode=false ; confirm HTTP 200 {\"credited\":false,\"status\":\"requires_payment_method\"} ; solde 1→1"
+    },
+    {
+      "cas": "5. Paiement interrompu : /payment/confirm sur un PaymentIntent jamais confirmé",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "pi_3UQQ9PL…rvNZ ; HTTP 200 {\"credited\":false,\"status\":\"requires_payment_method\"} (aucun champ message) ; solde B=0"
+    },
+    {
+      "cas": "7. Confirmation d’un PaymentIntent d’un autre membre / non payé / invalide",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "autre membre HTTP 403 « Ce paiement ne vous appartient pas. » ; non payé credited=false (cas 5) ; référence invalide HTTP 400"
+    },
+    {
+      "cas": "8. Crédit attribué une seule fois (confirm ×3 + webhook succeeded)",
+      "nature": "RÉEL Stripe test + webhook SIMULÉ",
+      "ok": true,
+      "preuve": "confirm 2 et 3 : alreadyCredited=true/true ; webhook evt_local_…c874 HTTP 200 ; solde=1 ; transactions=1"
+    },
+    {
+      "cas": "11. Webhook rejoué (même evt_) et signature invalide",
+      "nature": "SIMULÉ (signé localement)",
+      "ok": true,
+      "preuve": "rejeu HTTP 200 {\"received\":true,\"duplicate\":true} ; solde=1 ; signature invalide HTTP 400 ; sans signature HTTP 400 ; StripeEvent=1"
+    },
+    {
+      "cas": "9. Historique /payment/purchases et facture /payment/invoices/:ref",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "achats=1 montant=1500 facture n°7OM1D724-0005 canWithdraw=true ; PDF pay.stripe.com/… ; autre membre HTTP 404"
+    },
+    {
+      "cas": "12. Rétractation : demande, liste admin, refus motivé",
+      "nature": "LOCAL (aucun appel Stripe)",
+      "ok": true,
+      "preuve": "demande HTTP 201 recue ; doublon alreadyRequested=true ; autre membre HTTP 404 ; admin : remboursement suggéré 1500 c ; refus sans motif HTTP 400 ; refus refusee ; membre sur route admin HTTP 403"
+    },
+    {
+      "cas": "10a. Paiement avec code partenaire (base du remboursement)",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "pi_3UQQ9TL…uk1C statut=succeeded montant=1200 livemode=false ; commission vente 1200|360 (montant|commission, taux 30 %)"
+    },
+    {
+      "cas": "10b. Remboursement partiel (600/1200) : charge.refunded signé localement",
+      "nature": "SIMULÉ (événement signé ; aucun re_ réel) + avoir RÉEL Stripe test",
+      "ok": true,
+      "preuve": "evt_local_…6a84 HTTP 200, rejeu duplicate=true ; Payment rembourse_partiel|600 ; crédit conservé (solde=1) ; avoir emise|600|cn_1UQQ9aL…BSfn ; reprise commission -180 c (prorata 50 %)"
+    },
+    {
+      "cas": "10c. Remboursement total (reste 600) : crédit retiré, 2e avoir, commission reprise en totalité",
+      "nature": "SIMULÉ (événement signé ; aucun re_ réel) + avoirs RÉELS Stripe test",
+      "ok": true,
+      "preuve": "evt_local_…a257 HTTP 200 ; Payment rembourse|1200 ; solde 1→0 ; avoirs emise|600 / emise|600 (1er avoir Stripe cn_1UQQ9aL…BSfn statut=issued livemode=false) ; reprise totale -360 c ; écritures 2|-1"
+    },
+    {
+      "cas": "10d. Même état de remboursement renvoyé sous un autre evt_ : aucun effet",
+      "nature": "SIMULÉ",
+      "ok": true,
+      "preuve": "HTTP 200 ; solde=0 ; écritures inchangées"
+    },
+    {
+      "cas": "6a. /payment/checkout-session : session de TEST",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "cs_test_a1…vr8o livemode=false montant=1500 statut=unpaid ; confirm-checkout avant paiement {\"credited\":false,\"status\":\"unpaid\"} ; autre membre HTTP 403"
+    },
+    {
+      "cas": "6b. Page checkout.stripe.com payée dans Chromium (carte de test 4242), retour /payment/confirm-checkout",
+      "nature": "RÉEL Stripe test",
+      "ok": true,
+      "preuve": "session payée statut=paid pi_3UQQ9uL…AQL2 ; confirm-checkout credited=true, 2e appel alreadyCredited=true ; solde=1"
+    }
+  ]
+}

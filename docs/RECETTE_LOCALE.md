@@ -8,14 +8,24 @@ Le paiement par carte n'est possible qu'en **mode test Stripe**.
 
 ## 1. Prérequis
 
-- **Docker Desktop** (Mac, Windows) ou Docker Engine + Compose (Linux),
-  **Compose 2.24 ou plus récent** (Docker Desktop 4.27+). Le lancer avant la commande.
+- **Docker Desktop** (Mac, Windows 10 22H2 / Windows 11) ou Docker Engine + Compose
+  (Linux), **Compose 2.24 ou plus récent** (Docker Desktop 4.27+). Le lancer avant
+  la commande. Sous Windows : moteur **WSL 2** (voir « Windows » ci-dessous).
 - Environ 6 Go de disque libre et 4 Go de mémoire pour Docker.
 - Internet au **premier** lancement (téléchargement des images et des paquets npm).
-- Les ports **3000** (API), **8080** (web), **8081** (admin) et **55432** (base)
-  libres. Sinon, les changer dans `.env.recette` (`API_PORT`, `WEB_PORT`,
-  `ADMIN_PORT`, `DB_PORT`, puis `PUBLIC_API_URL`, `PUBLIC_WEB_URL`,
-  `WEB_APP_URL`, `ADMIN_ALLOWED_ORIGINS` en conséquence).
+- Ports libres sur le poste :
+
+  | Service | Port | Variable de `.env.recette` |
+  |---|---|---|
+  | API | **3000** | `API_PORT` (puis `PUBLIC_API_URL`) |
+  | Application web | **8080** | `WEB_PORT` (puis `PUBLIC_WEB_URL`, `WEB_APP_URL`, `APP_URL`) |
+  | Admin | **8081** | `ADMIN_PORT` (puis `ADMIN_ALLOWED_ORIGINS`) |
+  | Base Postgres | **55432** | `DB_PORT` |
+  | Faux OpenRouter (`--faux-ia`) | 8799 | `FAUX_IA_PORT` |
+
+  Avant le démarrage, `recette.ps1` vérifie ces ports ; s'il en trouve un occupé,
+  il s'arrête et indique la variable à changer. Tous les ports sont publiés
+  sur **127.0.0.1 seulement** : la recette n'est pas joignable depuis le réseau.
 
 ## 2. La commande
 
@@ -53,6 +63,44 @@ docker-compose.yml -f docker-compose.recette.yml --profile admin up -d --build`.
 La surcouche `docker-compose.recette.yml` ne change rien à l'usage normal de
 `docker-compose.yml` ; le fichier `.env` n'est jamais lu, et l'adresse de la base
 de l'API est **forcée** sur le conteneur `db`.
+
+### Windows (PowerShell 5.1 ou 7)
+
+1. **Windows 10 (22H2) ou 11**, 64 bits, virtualisation activée dans le BIOS.
+2. **WSL 2** : dans un PowerShell administrateur, `wsl --install`, puis redémarrer.
+3. **Docker Desktop** : installer, cocher « Use the WSL 2 based engine »
+   (Settings > General), démarrer, attendre « Engine running ». Vérifier :
+   `docker compose version` (2.24 ou plus).
+4. Ouvrir PowerShell **à la racine du dépôt** (le chemin peut contenir des espaces)
+   et lancer `.\recette.ps1`. Si Windows refuse le script (stratégie
+   d'exécution), lancer `powershell -ExecutionPolicy Bypass -File .\recette.ps1`
+   (même chose avec `pwsh` pour PowerShell 7). La stratégie n'est levée que pour cette
+   commande ; un fichier téléchargé en ZIP peut aussi être débloqué par
+   `Unblock-File .\recette.ps1`.
+5. Aide : `.\recette.ps1 -Aide`. Arrêt : `.\recette.ps1 -Arreter` (données
+   gardées), ou `.\recette.ps1 -Reinitialiser` pour repartir de zéro (voir § 6).
+   Docker Desktop peut ensuite être quitté.
+
+À savoir :
+
+- `recette.ps1` est en UTF-8 **avec BOM** et en fins de ligne CRLF, `recette.sh`
+  et les fichiers lus par les conteneurs en LF (règles de `.gitattributes`). Si
+  un éditeur enregistre `recette.ps1` sans BOM, Windows PowerShell 5.1 affiche
+  mal les accents.
+- **Port occupé** : le script le signale avec la variable à changer dans
+  `.env.recette`. Pour trouver le programme :
+  `Get-NetTCPConnection -State Listen -LocalPort 3000 | Select-Object OwningProcess`,
+  puis `Get-Process -Id <numéro>`. Si Docker répond « ports are not available »
+  alors que rien n'écoute, Windows a réservé le port (Hyper-V / WSL) : voir
+  `netsh interface ipv4 show excludedportrange protocol=tcp` et choisir un port
+  hors de ces plages.
+- Les ports n'étant publiés qu'en IPv4 (127.0.0.1), une adresse `localhost` lente
+  à répondre peut être remplacée par `http://127.0.0.1:8080` dans le navigateur.
+  L'admin, lui, doit rester sur `http://localhost:8081` (origine autorisée par l'API).
+- Les variables d'environnement modifiées par le script sont rétablies à la fin :
+  la fenêtre PowerShell reste propre.
+- Sans Docker (`.\recette.ps1 -SansDocker`, § 7) : Node.js 22 et Postgres pour
+  Windows ; `psql` dans le `PATH` pour créer ou réinitialiser la base.
 
 ## 3. Adresses
 

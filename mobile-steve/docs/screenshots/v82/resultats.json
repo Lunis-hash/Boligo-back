@@ -57,7 +57,7 @@
   {
     "step": "Accord enregistré côté serveur",
     "ok": true,
-    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-13T23:00:39.863Z\"}"
+    "detail": "{\"consent\":true,\"decidedAt\":\"2026-10-14T11:18:56.525Z\"}"
   },
   {
     "step": "Questions conditionnelles : posées si et seulement si la condition est remplie",
@@ -182,7 +182,7 @@
   {
     "step": "Progression côté serveur = 11/11",
     "ok": true,
-    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":11,\"totalQuestions\":11,\"partnerName\":\"Nadia\",\"journeyId\":\"678a0f53-7521-4754-8236-e9ed7ac013db\"}"
+    "detail": "{\"hasJourney\":true,\"currentStep\":\"phase_harmonie\",\"sondeurCompleted\":false,\"answeredCount\":11,\"totalQuestions\":11,\"partnerName\":\"Nadia\",\"journeyId\":\"982245c9-5472-4c94-b0d3-d2bfe893af43\"}"
   },
   {
     "step": "Parcours ouvert au dialogue après les 3 jours",

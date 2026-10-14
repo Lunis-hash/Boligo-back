@@ -1,1 +1,50 @@
+# Fins de ligne : Git stocke le texte en LF ; ces règles fixent ce qui est
+# extrait sur le poste, quel que soit core.autocrlf.
+
+# Défaut : détection automatique, normalisé en LF dans le dépôt.
+* text=auto
+
+# Scripts Windows : CRLF (Windows PowerShell 5.1). Encodage UTF-8 avec BOM,
+# à conserver à chaque modification.
 *.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Scripts shell : toujours LF (sinon « bad interpreter » sous Linux / WSL).
+*.sh text eol=lf
+
+# Fichiers lus dans les conteneurs Linux : toujours LF, même extraits sous Windows.
+Dockerfile* text eol=lf
+*.dockerignore text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+deploy/** text eol=lf
+prisma/**/*.sql text eol=lf
+prisma/*.sql text eol=lf
+prisma/schema.prisma text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+.env.example text eol=lf
+
+# Binaires : aucune conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.gpg binary
+*.dump binary
