@@ -626,6 +626,12 @@ export class AuthService {
       return genericResponse;
     }
 
+    // Un e-mail de réinitialisation au plus par minute et par adresse : le
+    // code déjà envoyé reste valable (plusieurs clics = un seul e-mail).
+    if (!otpEmailAllowed(`reset:${user.email}`)) {
+      return genericResponse;
+    }
+
     // Code à 6 chiffres issu d'un générateur cryptographique
     const code = randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes

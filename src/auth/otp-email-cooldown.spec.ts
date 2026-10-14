@@ -35,3 +35,14 @@ describe('Délai entre deux e-mails de code de vérification', () => {
     expect(otpEmailAllowed('b@example.com', t)).toBe(true);
   });
 });
+
+describe('Mot de passe oublié : un seul e-mail par minute', () => {
+  beforeEach(() => resetOtpEmailCooldown());
+
+  it('clé distincte du code de validation (les deux restent possibles)', () => {
+    const t = 5_000_000;
+    expect(otpEmailAllowed('a@example.com', t)).toBe(true);
+    expect(otpEmailAllowed('reset:a@example.com', t)).toBe(true);
+    expect(otpEmailAllowed('reset:a@example.com', t + 1000)).toBe(false);
+  });
+});
