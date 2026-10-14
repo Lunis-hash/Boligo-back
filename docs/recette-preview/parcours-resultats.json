@@ -1,0 +1,296 @@
+{
+  "date": "2026-10-14T11:16:34.205Z",
+  "base": "http://localhost:10000",
+  "alex": "c-alex-1791976594007@recette.boligo.test",
+  "sarah": "c-sarah-1791976594007@recette.boligo.test",
+  "journeyId": null,
+  "results": [
+    {
+      "etape": "3",
+      "step": "Géocodeurs injoignables depuis ce conteneur (curl)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "bloqués : geo.api.gouv.fr, photon.komoot.io, nominatim.openstreetmap.org"
+    },
+    {
+      "etape": "3",
+      "step": "Géolocalisation refusée : message clair, saisie manuelle proposée",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "« Localisation refusée : saisissez votre ville ci-dessous (ou activez la localisation dans les réglages). » (01-ville-geoloc-refusee.png)"
+    },
+    {
+      "etape": "3",
+      "step": "Recherche de ville en ligne (geo.api.gouv.fr) : suggestion affichée",
+      "status": "SIMULÉ",
+      "ok": true,
+      "detail": "Bezons / Dép. 95 · 95870 (02-ville-recherche-simulee.png)"
+    },
+    {
+      "etape": "1",
+      "step": "Alex : étapes 1 → 3 de l’inscription",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "1",
+      "step": "Alex : étapes 4 → 6, compte créé → écran de vérification",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "http://localhost:10000/verify?email=c-alex-1791976594007%40recette.boligo.test"
+    },
+    {
+      "etape": "1",
+      "step": "Alex : code 1234 accepté → Grand Entretien module 0",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "1",
+      "step": "Alex : e-mail vérifié en base",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "3",
+      "step": "Repli : fournisseur en 503 / coupé → liste locale du pays (Lyon)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "Lyon / Hors ligne : suggestions de la liste BOLIGO. (04-ville-repli-liste-locale.png)"
+    },
+    {
+      "etape": "1",
+      "step": "Sarah : étapes 1 → 3 de l’inscription",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "1",
+      "step": "Sarah : étapes 4 → 6, compte créé → vérification",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "1",
+      "step": "Sarah : code 1234 accepté → module 0",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "etape": "3",
+      "step": "Villes enregistrées avec leur pays",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "Lyon, France | Bezons, France"
+    },
+    {
+      "etape": "3",
+      "step": "Géolocalisation accordée mais géocodeurs injoignables : message, saisie manuelle",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "« Position introuvable : saisissez votre ville ci-dessous. » (05-ville-geoloc-accordee-reseau-bloque.png)"
+    },
+    {
+      "etape": "3",
+      "step": "Géocodage inverse réel (position → commune)",
+      "status": "NON TESTÉ",
+      "ok": null,
+      "detail": "réseau bloqué : geo.api.gouv.fr / Nominatim / Photon injoignables"
+    },
+    {
+      "etape": "4",
+      "step": "Alex : Grand Entretien V8.2 complet dans l’interface (114 réponses)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "http://localhost:10000/interview/summary"
+    },
+    {
+      "etape": "4",
+      "step": "Retour arrière (module 0) : question précédente, réponse cochée",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "07-ge-retour-arriere.png"
+    },
+    {
+      "etape": "4",
+      "step": "Modification d’une réponse d’un module précédent (depuis le module 1 vers le module 0)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"changed\":[\"M0_Q16\"],\"backTo1\":true,\"rowsM0\":\"1\"} 08-ge-modif-module-precedent.png"
+    },
+    {
+      "etape": "4",
+      "step": "Reprise après interruption (rechargement au milieu du module 3)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"url\":\"http://localhost:10000/interview/3?moduleNumber=3\",\"mod\":3,\"kept\":true,\"nBefore\":42} 09-ge-reprise-apres-rechargement.png"
+    },
+    {
+      "etape": "4",
+      "step": "Bilan affiché sans « undefined »",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "10-ge-bilan.png"
+    },
+    {
+      "etape": "4",
+      "step": "Entretien verrouillé en V8.2",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "8.2"
+    },
+    {
+      "etape": "4",
+      "step": "Sarah : 3 réponses dans l’interface, puis entretien complété PAR L’API",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"isCompleted\":true}"
+    },
+    {
+      "etape": "4",
+      "step": "Sarah : bilan affiché dans l’interface",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "11-ge-bilan-sarah.png"
+    },
+    {
+      "etape": "2",
+      "step": "Déconnexion → écran de connexion",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "http://localhost:10000/login"
+    },
+    {
+      "etape": "2",
+      "step": "Mot de passe oublié : le code apparaît dans le journal docker",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "✉️ [EMAIL SIMULATED] To: c•••@recette.boligo.test / [EMAIL SIMULATED] Subject: •••••• est votre code de réinitialisation BOLIGO"
+    },
+    {
+      "etape": "2",
+      "step": "API : aucun code de débogage renvoyé pour la réinitialisation",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"success\":true,\"message\":\"Si un compte est associé à cette adresse, un code de réinitialisation à 6 chiffres vient d’être envoyé.\"}"
+    },
+    {
+      "etape": "2",
+      "step": "Réinitialisation par l’écran (code lu en BASE locale, faute de journal) → nouveau mot de passe actif",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "code base présent"
+    },
+    {
+      "etape": "2",
+      "step": "Connexion avec le nouveau mot de passe",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "http://localhost:10000/discover"
+    },
+    {
+      "etape": "2",
+      "step": "Profil modifié persistant après reconnexion (interface + API)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "profession API = Ébéniste de recette (16-profil-apres-reconnexion.png)"
+    },
+    {
+      "etape": "5",
+      "step": "Découverte : Alex voit Sarah",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "17-decouverte-alex-voit-sarah.png"
+    },
+    {
+      "etape": "5",
+      "step": "Invitation sans crédit (0) → « Plus de crédits disponibles »",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "etape": "5",
+      "step": "RECETTE100 sur l’écran de paiement → 1 crédit, sans carte",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "etape": "5",
+      "step": "Invitation envoyée depuis l’interface ; crédit débité (1 → 0)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "0 (21-invitation-envoyee.png)"
+    },
+    {
+      "etape": "5",
+      "step": "Sarah : RECETTE100 (API) → 1 crédit",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "{\"success\":true,\"isFree\":true,\"newAmount\":0,\"newAmountDisplay\":\"0,00 €\",\"message\":\"Code appliqué : offre gratuite activé"
+    },
+    {
+      "etape": "5",
+      "step": "Découverte / invitation : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "locator.click: Timeout 15000ms exceeded. Call log:"
+    },
+    {
+      "etape": "6",
+      "step": "Sondeur : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "Error: aucun parcours     at /home/user/Boligo-back/mobile-steve/e2e/parcours-complet.e2e.js:596:27"
+    },
+    {
+      "etape": "7",
+      "step": "Chat / vidéo / coordonnées : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "Error: aucun parcours     at /home/user/Boligo-back/mobile-steve/e2e/parcours-complet.e2e.js:660:27"
+    },
+    {
+      "etape": "8",
+      "step": "Abandon : scénario interrompu",
+      "status": "TESTÉ",
+      "ok": false,
+      "detail": "TypeError: Cannot read properties of undefined (reading 'token')     at /home/user/Boligo-back/mobile-steve/e2e/parcours-complet.e2e.js:742:68"
+    },
+    {
+      "etape": "360",
+      "step": "360 px : decouverte sans débordement horizontal",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "0 px (26-360-decouverte.png)"
+    },
+    {
+      "etape": "360",
+      "step": "360 px : messages sans débordement horizontal",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "0 px (27-360-messages.png)"
+    },
+    {
+      "etape": "360",
+      "step": "360 px : profil sans débordement horizontal",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": "0 px (28-360-profil.png)"
+    },
+    {
+      "etape": "*",
+      "step": "Aucune erreur JavaScript non gérée (Alex, Sarah)",
+      "status": "TESTÉ",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
