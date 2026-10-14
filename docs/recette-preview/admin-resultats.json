@@ -1,6 +1,6 @@
 {
   "base": "http://localhost:10000",
-  "startedAt": "2026-10-14T11:20:26.310Z",
+  "startedAt": "2026-10-14T11:31:56.250Z",
   "checks": [
     {
       "step": "API : mauvais mot de passe refusé",
@@ -50,7 +50,7 @@
     {
       "step": "Données fictives : membre créé",
       "ok": true,
-      "detail": "recette-admin-f-1791976827235@recette.boligo.test"
+      "detail": "recette-admin-f-1791977517058@recette.boligo.test"
     },
     {
       "step": "UI : sans jeton → /admin/login/",
@@ -85,7 +85,7 @@
     {
       "step": "Page 10-vue-ensemble",
       "ok": true,
-      "detail": "Tableau de bord En direct Dernière mise à jour : 11:20 Rafraîchir Finances Chiffre d'affai"
+      "detail": "Tableau de bord En direct Dernière mise à jour : 11:32 Rafraîchir Finances Chiffre d'affai"
     },
     {
       "step": "Page 11-finances",
@@ -150,7 +150,7 @@
     {
       "step": "Utilisateurs : recherche du membre fictif",
       "ok": true,
-      "detail": "recette-admin-f-1791976827235@recette.boligo.test"
+      "detail": "recette-admin-f-1791977517058@recette.boligo.test"
     },
     {
       "step": "Utilisateurs : export CSV",
@@ -215,7 +215,7 @@
     {
       "step": "Codes promo : création",
       "ok": true,
-      "detail": "RECETTEF058052 est créé."
+      "detail": "RECETTEF743173 est créé."
     },
     {
       "step": "Codes promo : modification",
@@ -230,7 +230,7 @@
     {
       "step": "Codes promo : suppression du code fictif",
       "ok": true,
-      "detail": "RECETTEF058052 est supprimé."
+      "detail": "RECETTEF743173 est supprimé."
     },
     {
       "step": "Partenaires : lien de partage = http://localhost:10000/?p=CODE",
@@ -238,14 +238,114 @@
       "detail": "http://localhost:10000/?p=DEMOMAELLE"
     },
     {
-      "step": "Exécution du script",
-      "ok": false,
-      "detail": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:10000/admin/dashboard/users/detail/?id=eadaf25c-62c3-4034-98c5-756666d13e3e\nCall log:\n\u001b[2m  - navigating to \"http://localhost:10000/admin/dashboard/users/detail/?id=eadaf25c-62c3-4034-98c5-756666d13e3e\", waiting until \"load\"\u001b[22m\n\n    at adminTour (/home/user/Boligo-back/mobile-steve/e2e/admin-recette.e2e.js:480:14)\n    at async /home/user/Boligo-back/mobile-steve/e2e/admin-recette.e2e.js:563:5"
+      "step": "Fiche : suppression définitive du membre fictif",
+      "ok": true,
+      "detail": "/admin/dashboard/users/?deleted=1"
     },
     {
-      "step": "Nettoyage",
-      "ok": false,
-      "detail": "fetch failed"
+      "step": "UI : déconnexion → /admin/login/ et jeton effacé",
+      "ok": true,
+      "detail": "/admin/login/"
+    },
+    {
+      "step": "UI : après déconnexion, /dashboard renvoie vers la connexion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Mobile 390 : 50-mobile-vue-ensemble sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "Mobile 390 : 51-mobile-utilisateurs sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "Mobile 390 : 52-mobile-codes-promo sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "Mobile 390 : 53-mobile-finances sans défilement horizontal",
+      "ok": true,
+      "detail": "largeur 390px pour 390px"
+    },
+    {
+      "step": "MARKETING : menu limité (pas de fonctions d'administrateur)",
+      "ok": true,
+      "detail": "menu : Vue d'ensemble, Partenaires, Codes promo"
+    },
+    {
+      "step": "MARKETING : vue d'ensemble lisible, sans erreur",
+      "ok": true,
+      "detail": "Tableau de bord En direct Dernière mise à jour : 11:36 Rafraîchir Utilisateurs 46 43 actifs Nouveaux (7j) 46 ↑ +46 46 au"
+    },
+    {
+      "step": "MARKETING : /dashboard/finance → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/billing → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/users → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/users/detail/?id=x → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/matches → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/journeys → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/journeys/detail/?id=x → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/reports → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/moderation → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/team → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : /dashboard/ai-lab → refus clair",
+      "ok": true,
+      "detail": "Accès non autorisé Votre rôle ne donne pas accès à cette page. Demandez à un administrateu"
+    },
+    {
+      "step": "MARKETING : partners accessible et chargé",
+      "ok": true,
+      "detail": "Partenaires Programme Partenaires : marques et annonceurs, ambassadeurs commerciaux, créat"
+    },
+    {
+      "step": "MARKETING : promo accessible et chargé",
+      "ok": true,
+      "detail": "Codes promo Tous les codes de réduction : promotions de lancement, offres ponctuelles et c"
     },
     {
       "step": "Garde-fou : rôles d'équipe inchangés par la recette",
@@ -258,7 +358,7 @@
       "ok": true,
       "links": 13,
       "jsErrors": 0,
-      "extrait": "Tableau de bord En direct Dernière mise à jour : 11:20 Rafraîchir Finances Chiffre d'affaires 184,50 € ↑ 4 achats/mois 0,00 € ce mois Crédits en circulat",
+      "extrait": "Tableau de bord En direct Dernière mise à jour : 11:32 Rafraîchir Finances Chiffre d'affaires 184,50 € ↑ 5 achats/mois 0,00 € ce mois Crédits en circulat",
       "buttons": [
         {
           "text": "Rafraîchir",
@@ -292,6 +392,11 @@
           "text": "select(5)",
           "tag": "select",
           "effect": "requête API (2)"
+        },
+        {
+          "text": "Eva Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=143a6c71-7ee0-4359-bf08-dc1893bcf010"
         },
         {
           "text": "Sarah Recette",
@@ -339,19 +444,29 @@
           "effect": "navigation → /admin/dashboard/users/detail/?id=c7e5a5bc-3a4d-400d-87bf-165cf8a26d95"
         },
         {
-          "text": "Membre11 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=7edd285e-16de-4e2c-b841-2ec4a29c6abc"
-        },
-        {
           "text": "Membre1 [DÉMO]",
           "tag": "a",
           "effect": "navigation → /admin/dashboard/users/detail/?id=ced84aa6-8f8a-4db0-9e98-cb968364efea"
         },
         {
+          "text": "Membre11 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=7edd285e-16de-4e2c-b841-2ec4a29c6abc"
+        },
+        {
           "text": "Membre6 [DÉMO]",
           "tag": "a",
           "effect": "navigation → /admin/dashboard/users/detail/?id=f76b2ee4-f72b-4a97-8a21-d39a16294ca5"
+        },
+        {
+          "text": "Membre21 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=801a3c65-eb81-4e01-b3e2-71b18d696ff7"
+        },
+        {
+          "text": "Membre11 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=7edd285e-16de-4e2c-b841-2ec4a29c6abc"
         },
         {
           "text": "Membre18 [DÉMO]",
@@ -364,29 +479,9 @@
           "effect": "navigation → /admin/dashboard/users/detail/?id=adbc8588-771b-4d5f-8c62-747a812124f9"
         },
         {
-          "text": "Membre11 [DÉMO]",
+          "text": "Membre17 [DÉMO]",
           "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=7edd285e-16de-4e2c-b841-2ec4a29c6abc"
-        },
-        {
-          "text": "Membre21 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=801a3c65-eb81-4e01-b3e2-71b18d696ff7"
-        },
-        {
-          "text": "Membre3 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=c55f7cd0-08b3-4be9-b770-79756bb990fd"
-        },
-        {
-          "text": "Membre1 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=ced84aa6-8f8a-4db0-9e98-cb968364efea"
-        },
-        {
-          "text": "Membre10 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=2dd7dd44-a192-4bbc-8344-314fb49994ce"
+          "effect": "navigation → /admin/dashboard/users/detail/?id=68328273-0d76-493e-9409-4ba7f8125410"
         },
         {
           "text": "Membre14 [DÉMO]",
@@ -394,19 +489,9 @@
           "effect": "navigation → /admin/dashboard/users/detail/?id=611106bd-9085-4f4c-8ad7-4ad8d3165ad6"
         },
         {
-          "text": "Membre17 [DÉMO]",
+          "text": "Membre1 [DÉMO]",
           "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=68328273-0d76-493e-9409-4ba7f8125410"
-        },
-        {
-          "text": "Membre20 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=4bc74ff2-c1f3-422f-8dc6-51156a247487"
-        },
-        {
-          "text": "Membre4 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=c7e5a5bc-3a4d-400d-87bf-165cf8a26d95"
+          "effect": "navigation → /admin/dashboard/users/detail/?id=ced84aa6-8f8a-4db0-9e98-cb968364efea"
         },
         {
           "text": "Membre28 [DÉMO]",
@@ -417,6 +502,31 @@
           "text": "Membre30 [DÉMO]",
           "tag": "a",
           "effect": "navigation → /admin/dashboard/users/detail/?id=68201067-4de5-419e-8bf2-33e4e4365aad"
+        },
+        {
+          "text": "Membre4 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c7e5a5bc-3a4d-400d-87bf-165cf8a26d95"
+        },
+        {
+          "text": "Membre3 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=c55f7cd0-08b3-4be9-b770-79756bb990fd"
+        },
+        {
+          "text": "Membre10 [DÉMO]",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=2dd7dd44-a192-4bbc-8344-314fb49994ce"
+        },
+        {
+          "text": "Précédent",
+          "tag": "button",
+          "effect": "désactivé (normal)"
+        },
+        {
+          "text": "Suivant",
+          "tag": "button",
+          "effect": "requête API (2)"
         }
       ]
     },
@@ -460,14 +570,44 @@
           "effect": "requête API (1)"
         },
         {
-          "text": "Fictif RecetteF",
+          "text": "Sarah Recette",
           "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=eadaf25c-62c3-4034-98c5-756666d13e3e"
+          "effect": "navigation → /admin/dashboard/users/detail/?id=fb1100ab-6113-402c-beb9-131d5215c4f8"
         },
         {
           "text": "Détails",
           "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=eadaf25c-62c3-4034-98c5-756666d13e3e"
+          "effect": "navigation → /admin/dashboard/users/detail/?id=fb1100ab-6113-402c-beb9-131d5215c4f8"
+        },
+        {
+          "text": "Alex Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f8fe6753-a980-44d4-9039-56d2fa16cdc9"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=f8fe6753-a980-44d4-9039-56d2fa16cdc9"
+        },
+        {
+          "text": "Fictif RecetteF",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=19fc5602-987f-4f12-a105-7f20a432b10f"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=19fc5602-987f-4f12-a105-7f20a432b10f"
+        },
+        {
+          "text": "Eva Recette",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=143a6c71-7ee0-4359-bf08-dc1893bcf010"
+        },
+        {
+          "text": "Détails",
+          "tag": "a",
+          "effect": "navigation → /admin/dashboard/users/detail/?id=143a6c71-7ee0-4359-bf08-dc1893bcf010"
         },
         {
           "text": "Sarah Recette",
@@ -580,36 +720,6 @@
           "effect": "navigation → /admin/dashboard/users/detail/?id=a34dd839-e086-4672-82a7-38925f9cb99d"
         },
         {
-          "text": "Membre24 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=a909b84a-2802-40b8-8e39-2f0f96239ce1"
-        },
-        {
-          "text": "Détails",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=a909b84a-2802-40b8-8e39-2f0f96239ce1"
-        },
-        {
-          "text": "Membre23 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=ceca99c9-25a0-41e5-b78f-e38af353f277"
-        },
-        {
-          "text": "Détails",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=ceca99c9-25a0-41e5-b78f-e38af353f277"
-        },
-        {
-          "text": "Membre22 [DÉMO]",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=3cdb7971-3f3a-40eb-a379-4a3b571a9280"
-        },
-        {
-          "text": "Détails",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=3cdb7971-3f3a-40eb-a379-4a3b571a9280"
-        },
-        {
           "text": "",
           "tag": "button",
           "effect": "désactivé (normal)"
@@ -631,11 +741,6 @@
           "text": "select(5)",
           "tag": "select",
           "effect": "requête API (1)"
-        },
-        {
-          "text": "Diane Fictif",
-          "tag": "a",
-          "effect": "navigation → /admin/dashboard/users/detail/?id=d4714c4b-f5ae-4d92-bd17-c9f9af5a0e9c"
         },
         {
           "text": "→ Voir Parcours (phase harmonie)",
@@ -961,6 +1066,16 @@
           "effect": "navigation → /admin/dashboard/journeys/"
         }
       ]
+    },
+    "60-mk-vue-ensemble": {
+      "ok": true,
+      "buttons": [
+        {
+          "text": "Rafraîchir",
+          "tag": "button",
+          "effect": "requête API (1)"
+        }
+      ]
     }
   },
   "deadButtons": [],
@@ -978,34 +1093,16 @@
   ],
   "badLinks": [],
   "jsErrors": [],
-  "failedRequests": [
-    {
-      "page": "38-partenaires-lien",
-      "url": "http://localhost:10000/api/admin/partners/7ed01550-3a05-4581-94ed-dd1530b7f2c8/offers",
-      "error": "net::ERR_CONNECTION_REFUSED"
-    },
-    {
-      "page": "38-partenaires-lien",
-      "url": "http://localhost:10000/api/admin/partners/dbffe4a4-3ad3-4429-ae75-b3747dbf3557/offers",
-      "error": "net::ERR_CONNECTION_REFUSED"
-    },
-    {
-      "page": "39-suppression",
-      "url": "http://localhost:10000/admin/dashboard/users/detail/?id=eadaf25c-62c3-4034-98c5-756666d13e3e",
-      "error": "net::ERR_CONNECTION_REFUSED"
-    }
-  ],
-  "finishedAt": "2026-10-14T11:25:02.233Z",
+  "failedRequests": [],
+  "finishedAt": "2026-10-14T11:37:14.128Z",
   "summary": {
-    "total": 50,
-    "ok": 44,
+    "total": 70,
+    "ok": 66,
     "ko": [
       "UI : jeton expiré → redirection vers /admin/login/",
       "Fiche utilisateur inconnue → message clair",
       "Parcours inconnu → message clair",
-      "Remboursement : demande fictive visible",
-      "Exécution du script",
-      "Nettoyage"
+      "Remboursement : demande fictive visible"
     ]
   }
 }
