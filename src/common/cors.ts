@@ -91,3 +91,79 @@ export function corsDelegate(allowedAdmin: string[], allowedApp?: string[]) {
     callback: (err: Error | null, options: CorsOptions) => void,
   ) => callback(null, corsOptionsFor(req.url, allowedAdmin, app));
 }
+
+/* ------------------------------------------------------------------------ */
+/* WebSocket (socket.io) : même liste d'origines que les routes HTTP.        */
+/* ------------------------------------------------------------------------ */
+
+/** Hôte (nom[:port], en minuscules) d'une origine, ou undefined si illisible. */
+function originHost(origin: string): string | undefined {
+  try {
+    return new URL(origin).host.toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Origine acceptée pour une connexion WebSocket de la messagerie :
+ * - sans en-tête Origin (client natif, serveur à serveur) : acceptée ;
+ * - origine de la liste de l'application (site BOLIGO, dev local, CORS_ORIGINS) ;
+ * - origine égale à l'hôte de l'API elle-même : les WebSocket React Native
+ *   (iOS et Android) envoient « Origin: https://<serveur appelé> », ce n'est
+ *   pas un site tiers ;
+ * - toute autre origine de navigateur (site tiers) : refusée.
+ */
+export function isAllowedSocketOrigin(
+  origin: string | undefined,
+  host: string | undefined,
+  allowedApp: string[],
+): boolean {
+  if (!origin) return true;
+  if (isAllowedAppOrigin(origin, allowedApp)) return true;
+  const fromHost = originHost(origin);
+  return !!fromHost && !!host && fromHost === host.trim().toLowerCase();
+}
+
+/** Liste des origines de l'application, relue dans l'environnement (comme main.ts). */
+export function socketAllowedOrigins(
+  env: NodeJS.ProcessEnv = process.env,
+): string[] {
+  return appOrigins(env.CORS_ORIGINS, adminOrigins(env.ADMIN_ALLOWED_ORIGINS));
+}
+
+type SocketRequest = {
+  headers: { origin?: string; host?: string };
+};
+
+/**
+ * Contrôle socket.io « allowRequest » : appliqué à la poignée de main, y compris
+ * en transport WebSocket pur (où le navigateur n'applique aucun CORS). Une
+ * origine refusée reçoit 403.
+ */
+export function socketAllowRequest(
+  getAllowed: () => string[] = () => socketAllowedOrigins(),
+) {
+  return (
+    req: SocketRequest,
+    callback: (err: string | null | undefined, success: boolean) => void,
+  ) => {
+    const ok = isAllowedSocketOrigin(
+      req.headers.origin,
+      req.headers.host,
+      getAllowed(),
+    );
+    callback(ok ? null : 'Origine non autorisée', ok);
+  };
+}
+
+/** Réglage CORS socket.io (transport polling) : même liste, sans credentials. */
+export function socketCorsOptions(
+  getAllowed: () => string[] = () => socketAllowedOrigins(),
+): CorsOptions {
+  return {
+    origin: (origin, callback) =>
+      callback(null, isAllowedAppOrigin(origin, getAllowed())),
+    credentials: false,
+  };
+}

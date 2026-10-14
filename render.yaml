@@ -24,6 +24,32 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    headers:
+      # En-têtes de sécurité du site web (A17). Le cadre est interdit dès
+      # maintenant (X-Frame-Options) ; la CSP est d'abord en mode « Report-Only »
+      # (le navigateur signale les écarts dans la console sans rien bloquer),
+      # à passer en « Content-Security-Policy » une fois la console propre.
+      # Origines relevées dans le bundle web en ligne : API + WebSocket BOLIGO,
+      # adresses (api-adresse / geo.api.gouv.fr, photon.komoot.io, nominatim),
+      # jetons de notification Expo (exp.host), sons (assets.mixkit.co).
+      # Caméra et micro coupés : l'appel vidéo (Daily) n'existe que dans
+      # l'application mobile, pas sur le web ; la géolocalisation reste permise
+      # à la page elle-même (choix de la ville).
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=(self), payment=(), usb=(), browsing-topics=()
+      - path: /*
+        name: Content-Security-Policy-Report-Only
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' data: blob: https://assets.mixkit.co; connect-src 'self' https://boligo-back.onrender.com wss://boligo-back.onrender.com https://api-adresse.data.gouv.fr https://geo.api.gouv.fr https://photon.komoot.io https://nominatim.openstreetmap.org https://exp.host; worker-src 'self' blob:; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
   - type: web
     name: boligo-admin

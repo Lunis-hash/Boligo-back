@@ -14,11 +14,14 @@ import { JwtService } from '@nestjs/jwt';
 import { NotificationService } from '../notifications/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { chatOpen } from '../journey/chat-access';
+import { socketAllowRequest, socketCorsOptions } from '../common/cors';
 
+// Origines : même liste que le CORS HTTP (plus de « * »). Les clients natifs
+// (sans Origin, ou Origin = l'API elle-même) restent acceptés ; un site tiers
+// est refusé dès la poignée de main (403), WebSocket pur compris.
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
+  cors: socketCorsOptions(),
+  allowRequest: socketAllowRequest(),
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
