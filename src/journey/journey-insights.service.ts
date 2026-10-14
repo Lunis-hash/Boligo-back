@@ -362,6 +362,19 @@ export class JourneyInsightsService {
   /** Dernière relance des réponses « en attente de classement », par parcours. */
   private static retries = new Map<string, number>();
 
+  /**
+   * Accélérateur de test : les délais de relance de l'IA (en mémoire) de ce
+   * parcours avancent comme si `ms` s'étaient écoulées. Le nombre d'essais
+   * (trois avant d'ouvrir le dialogue) ne change pas.
+   */
+  static advanceClock(journeyId: string, ms: number) {
+    for (const [key, f] of JourneyInsightsService.failures)
+      if (key.startsWith(`${journeyId}:`)) f.at -= ms;
+    const last = JourneyInsightsService.retries.get(journeyId);
+    if (last !== undefined)
+      JourneyInsightsService.retries.set(journeyId, last - ms);
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly ai: AiService,

@@ -28,6 +28,7 @@ export function configReport(env: NodeJS.ProcessEnv = process.env): string {
     `NODE_ENV=${env.NODE_ENV ?? 'absent'}`,
     `OTP_DEBUG=${on(env.OTP_DEBUG)}`,
     `VIDEO_TEST_UNLOCK=${on(env.VIDEO_TEST_UNLOCK)}`,
+    `JOURNEY_TEST_ADVANCE=${on(env.JOURNEY_TEST_ADVANCE)}`,
     `INSIGHTS_RETRY_AFTER_MS=${set(env.INSIGHTS_RETRY_AFTER_MS)}`,
     `SONDEUR_MODELS_FILE=${set(env.SONDEUR_MODELS_FILE)}`,
     `INTERVIEW_VERSION=${env.INTERVIEW_VERSION?.trim() || 'absent (7.1)'}`,

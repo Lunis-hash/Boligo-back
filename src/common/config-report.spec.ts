@@ -16,6 +16,7 @@ describe('Résumé de configuration au démarrage', () => {
     expect(r).toContain('NODE_ENV=production');
     expect(r).toContain('OTP_DEBUG=désactivé');
     expect(r).toContain('VIDEO_TEST_UNLOCK=désactivé');
+    expect(r).toContain('JOURNEY_TEST_ADVANCE=désactivé');
     expect(r).toContain('INSIGHTS_RETRY_AFTER_MS=absent');
     expect(r).toContain('SONDEUR_MODELS_FILE=absent');
     expect(r).toContain('INTERVIEW_VERSION=absent (7.1)');
@@ -37,6 +38,7 @@ describe('Résumé de configuration au démarrage', () => {
     const r = configReport({
       OTP_DEBUG: 'true',
       VIDEO_TEST_UNLOCK: 'true',
+      JOURNEY_TEST_ADVANCE: 'true',
       INSIGHTS_RETRY_AFTER_MS: '2000',
       SONDEUR_MODELS_FILE: '/x.json',
       INTERVIEW_VERSION: '8.2',
@@ -46,6 +48,7 @@ describe('Résumé de configuration au démarrage', () => {
     } as NodeJS.ProcessEnv);
     expect(r).toContain('OTP_DEBUG=ACTIVÉ');
     expect(r).toContain('VIDEO_TEST_UNLOCK=ACTIVÉ');
+    expect(r).toContain('JOURNEY_TEST_ADVANCE=ACTIVÉ');
     expect(r).toContain('INSIGHTS_RETRY_AFTER_MS=DÉFINI');
     expect(r).toContain('SONDEUR_MODELS_FILE=DÉFINI');
     expect(r).toContain('INTERVIEW_VERSION=8.2');
