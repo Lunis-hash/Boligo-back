@@ -510,10 +510,13 @@ export class InterviewService {
   }
 
   private async completeInterview(interviewId: string, userId: string) {
-    await this.prisma.interviewIA.update({
-      where: { id: interviewId },
+    // Une seule clôture, même si deux enregistrements arrivent en même temps
+    // (sinon : deux e-mails « profil prêt » et deux générations du portrait).
+    const closed = await this.prisma.interviewIA.updateMany({
+      where: { id: interviewId, status: 'en_cours' },
       data: { status: 'termine', endDate: new Date() },
     });
+    if (closed.count === 0) return;
 
     // Update User Status
     await this.prisma.user.update({
