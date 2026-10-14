@@ -211,7 +211,7 @@ export default function DynamicInterviewScreen() {
     if (lang) loadModule(lang, at === 'last' ? 'last' : 'resume');
     // La bascule de langue est gérée par switchLanguage (réponses conservées).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleNumber, at, lang === null]);
+  }, [moduleNumber, at, lang]);
 
   useEffect(() => {
     const p = progressOf(questions, answers, consent, current);
