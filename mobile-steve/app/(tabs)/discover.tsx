@@ -64,6 +64,8 @@ interface MatchProfile {
   compatibility: number;
   /** Lecture qualitative du score (« Belle compatibilité »). */
   compatibilityLabel?: string;
+  /** Micro-texte affiché dans la page Stripe */
+  stripeTooltip?: string;
   /** « il » ou « elle », pour accorder les titres de section. */
   pronoun?: 'il' | 'elle';
   slogan: string;
