@@ -16,6 +16,29 @@ export interface DetectedPlace {
 }
 
 export class LocationPermissionError extends Error {}
+/** Aucune réponse du navigateur ou du téléphone dans le délai (demande ignorée, GPS muet). */
+export class LocationTimeoutError extends Error {}
+
+/** Délais maximaux : demande d'autorisation (le membre lit la fenêtre), puis position. */
+export const PERMISSION_TIMEOUT_MS = 45000;
+export const POSITION_TIMEOUT_MS = 25000;
+
+/** Rejette la promesse si elle ne se termine pas dans le délai (jamais d'attente sans fin). */
+export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new LocationTimeoutError(`Délai dépassé (${ms} ms)`)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
 
 export interface GeocodedAddress {
   isoCountryCode?: string | null;
@@ -208,14 +231,22 @@ export async function reverseGeocode(lat: number, lon: number): Promise<Detected
  * Expo réutilise sinon une ancienne position, parfois approximative (IP).
  */
 export async function detectPlace(): Promise<DetectedPlace> {
-  const { status } = await Location.requestForegroundPermissionsAsync();
+  // Sur le web, une demande ignorée ou un GPS muet ne répondent jamais :
+  // délai maximal, puis « Position introuvable » et saisie manuelle.
+  const { status } = await withTimeout(
+    Location.requestForegroundPermissionsAsync(),
+    PERMISSION_TIMEOUT_MS,
+  );
   if (status !== 'granted') throw new LocationPermissionError();
-  const { coords } = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.Highest,
-    // Options du navigateur (ignorées sur iOS / Android).
-    maximumAge: 0,
-    timeout: 20000,
-  } as Location.LocationOptions);
+  const { coords } = await withTimeout(
+    Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Highest,
+      // Options du navigateur (ignorées sur iOS / Android).
+      maximumAge: 0,
+      timeout: 20000,
+    } as Location.LocationOptions),
+    POSITION_TIMEOUT_MS,
+  );
   const place = await reverseGeocode(coords.latitude, coords.longitude);
   return { ...place, accuracy: coords.accuracy ?? null };
 }

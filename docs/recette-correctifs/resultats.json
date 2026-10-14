@@ -1,0 +1,42 @@
+[
+  {
+    "s": "Cyril met fin au parcours",
+    "ok": true,
+    "d": "status 201"
+  },
+  {
+    "s": "API last-ended : parcours de Diane avec Cyril, crédit rendu",
+    "ok": true,
+    "d": "{\"ended\":{\"journeyId\":\"322c3f3a-5236-41bc-bba0-7cbafa04778a\",\"partnerName\":\"Cyril\",\"result\":\"abandonne\",\"endedAt\":\"2026-10-14T12:06:44.669Z\",\"creditReturned\":1}}"
+  },
+  {
+    "s": "Onglet Matchs : « Votre parcours avec Cyril est terminé » et crédit rendu",
+    "ok": true,
+    "d": "Votre parcours avec Cyril est terminé Le parcours a été arrêté. Votre crédit vous a été rendu : vous pouvez lancer un nouveau parcours depuis Découverte. J’ai c"
+  },
+  {
+    "s": "« J’ai compris » : la carte disparaît et ne revient pas",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "s": "Admin : jeton expiré → page de connexion avec « session expirée »",
+    "ok": true,
+    "d": "http://localhost:8082/login?expiree=1"
+  },
+  {
+    "s": "Admin : jeton refusé par l’API (401) → retour à la connexion",
+    "ok": true,
+    "d": "http://localhost:8082/login/?expiree=1"
+  },
+  {
+    "s": "Fiche utilisateur inconnue → message clair (plus de « Chargement… » sans fin)",
+    "ok": true,
+    "d": "Utilisateur introuvable"
+  },
+  {
+    "s": "Parcours inconnu → message clair (plus de « Chargement… » sans fin)",
+    "ok": true,
+    "d": "Parcours introuvable"
+  }
+]

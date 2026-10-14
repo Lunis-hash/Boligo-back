@@ -1,3 +1,4 @@
+import { clearSession, loginUrlAfterExpiry } from "@/lib/auth";
 // En production, l'API BOLIGO sur Render ; en local, l'API lancée sur le port 3000.
 // Une variable vide est ignorée (sinon les appels partiraient vers le site lui-même).
 const API_URL =
@@ -25,6 +26,13 @@ export async function apiFetch<T>(
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(`${API_URL}${path}`, { ...init, headers });
+  // Session expirée ou révoquée : retour à la connexion (jamais d'écran figé
+  // sur « Chargement… » ni de message « Unauthorized » en anglais).
+  if (res.status === 401 && token && typeof window !== "undefined") {
+    clearSession();
+    window.location.replace(loginUrlAfterExpiry());
+    throw new ApiError("Votre session a expiré. Reconnectez-vous.", 401);
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new ApiError(

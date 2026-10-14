@@ -2,15 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth";
+import { clearSession, getToken, tokenExpired } from "@/lib/auth";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!getToken()) {
+    const token = getToken();
+    if (!token) {
       router.replace("/login");
+      return;
+    }
+    if (tokenExpired(token)) {
+      clearSession();
+      router.replace("/login/?expiree=1");
       return;
     }
     setReady(true);
