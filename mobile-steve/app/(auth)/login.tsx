@@ -241,9 +241,15 @@ export default function LoginScreen() {
 
             {/* Formulaire */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label} nativeID="login-email-label">Email</Text>
               <TextInput
                 style={[styles.input, focusedInput === 'email' && styles.inputFocused]}
+                accessibilityLabel="Email"
+                accessibilityLabelledBy="login-email-label"
+                autoComplete="email"
+                textContentType="emailAddress"
+                inputMode="email"
+                testID="login-email"
                 placeholder="votre@email.com"
                 placeholderTextColor={Colors.text.primary40}
                 value={email}
@@ -257,10 +263,15 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Mot de passe</Text>
+              <Text style={styles.label} nativeID="login-password-label">Mot de passe</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <TextInput
-                  style={[styles.input, { flex: 1, paddingRight: 40 }, focusedInput === 'password' && styles.inputFocused]}
+                  style={[styles.input, { flex: 1, paddingRight: 52 }, focusedInput === 'password' && styles.inputFocused]}
+                  accessibilityLabel="Mot de passe"
+                  accessibilityLabelledBy="login-password-label"
+                  autoComplete="current-password"
+                  textContentType="password"
+                  testID="login-password"
                   placeholder="••••••••"
                   placeholderTextColor={Colors.text.primary40}
                   value={password}
@@ -273,7 +284,10 @@ export default function LoginScreen() {
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   activeOpacity={0.7}
-                  style={{ position: 'absolute', right: 12, padding: 4 }}
+                  style={styles.eyeBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  testID="login-toggle-password"
                 >
                   {showPassword ? (
                     <EyeOff size={20} color={Colors.text.primary70} />
@@ -289,6 +303,8 @@ export default function LoginScreen() {
               onPress={() => router.push({ pathname: '/(auth)/forgot-password', params: email.trim() ? { email: email.trim() } : {} })}
               style={styles.forgotPasswordContainer}
               activeOpacity={0.7}
+              accessibilityRole="link"
+              testID="login-forgot-password"
             >
               <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
             </TouchableOpacity>
@@ -326,6 +342,9 @@ export default function LoginScreen() {
               <TouchableOpacity
                 onPress={() => router.push('/onboarding/profile-details')}
                 activeOpacity={0.7}
+                style={styles.signupLinkHit}
+                accessibilityRole="link"
+                testID="login-signup"
               >
                 <Text style={styles.signupLink}>Créer un compte</Text>
               </TouchableOpacity>
@@ -507,8 +526,8 @@ const styles = StyleSheet.create({
   },
   sepText: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: 11,
-    color: Colors.text.primary40,
+    fontSize: Typography.label.fontSize,
+    color: Colors.text.primary70,
   },
 
 
@@ -521,7 +540,13 @@ const styles = StyleSheet.create({
   signupText: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: Typography.label.fontSize,
-    color: Colors.text.primary40,
+    color: Colors.text.primary70,
+  },
+  // Zone tactile ≥ 44 px autour du lien texte
+  signupLinkHit: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
   signupLink: {
     fontFamily: Typography.fontFamily.bold,
@@ -534,8 +559,20 @@ const styles = StyleSheet.create({
   // Mot de passe oublié
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
-    marginBottom: Spacing.md,
-    marginTop: -Spacing.xs,
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    marginBottom: Spacing.xs,
+    marginTop: -Spacing.sm,
+  },
+  // Bouton œil : 44 × 44 px
+  eyeBtn: {
+    position: 'absolute',
+    right: 2,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   forgotPasswordText: {
     fontFamily: Typography.fontFamily.medium,

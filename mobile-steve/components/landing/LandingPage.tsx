@@ -395,7 +395,7 @@ export function LandingPage() {
             <View style={[styles.priceCard, { flex: tablet ? 1 : undefined }]}>
               <Text style={[styles.priceLabel, ff.bold]}>Pour commencer</Text>
               <Text style={[styles.price, ff.title, { fontSize: wide ? 58 : 44 }]}>0 €</Text>
-              <Text style={[styles.body, ff.text]}>Inscription, entretien et profils compatibles.</Text>
+              <Text style={[styles.body, ff.text]}>Inscription, Grand Entretien et profils compatibles.</Text>
             </View>
             <LinearGradient
               colors={[Brand.framboise, Brand.lavande]}
@@ -405,7 +405,8 @@ export function LandingPage() {
             >
               <View style={styles.priceInner}>
                 <Text style={[styles.priceLabel, ff.bold, { color: Brand.framboise }]}>Parcours Harmonie</Text>
-                <Text style={[styles.price, ff.title, { fontSize: wide ? 58 : 44 }]}>15 €</Text>
+                <Text style={[styles.price, ff.title, { fontSize: wide ? 58 : 44 }]} testID="price-harmonie">15 € TTC</Text>
+                <Text style={[styles.priceLabel, ff.medium]}>Par parcours et par membre, sans abonnement.</Text>
                 <Text style={[styles.body, ff.text]}>Un parcours complet avec une personne. Crédit rendu si elle ne donne plus de nouvelles.</Text>
               </View>
             </LinearGradient>
@@ -460,16 +461,16 @@ export function LandingPage() {
           <View style={[container, { flexDirection: tablet ? 'row' : 'column', justifyContent: 'space-between', alignItems: tablet ? 'center' : 'flex-start', gap: 14 }]}>
             <Logo ff={ff} size={20} />
             <View style={styles.footerLinks}>
-              <Pressable onPress={() => router.push('/legal/cgu' as never)} accessibilityRole="link">
+              <Pressable onPress={() => router.push('/legal/cgu' as never)} accessibilityRole="link" style={styles.footerHit}>
                 <Text style={[styles.footerLink, ff.medium]}>Conditions d’utilisation</Text>
               </Pressable>
-              <Pressable onPress={() => router.push('/legal/confidentialite' as never)} accessibilityRole="link">
+              <Pressable onPress={() => router.push('/legal/confidentialite' as never)} accessibilityRole="link" style={styles.footerHit}>
                 <Text style={[styles.footerLink, ff.medium]}>Confidentialité</Text>
               </Pressable>
-              <Pressable onPress={() => router.push('/partenaires' as never)} accessibilityRole="link" testID="footer-partners">
+              <Pressable onPress={() => router.push('/partenaires' as never)} accessibilityRole="link" testID="footer-partners" style={styles.footerHit}>
                 <Text style={[styles.footerLink, ff.medium]}>Devenir partenaire</Text>
               </Pressable>
-              <Pressable onPress={login} accessibilityRole="link">
+              <Pressable onPress={login} accessibilityRole="link" style={styles.footerHit}>
                 <Text style={[styles.footerLink, ff.medium]}>J’ai déjà un compte</Text>
               </Pressable>
             </View>
@@ -673,7 +674,7 @@ const styles = StyleSheet.create({
   lead: { color: Brand.encreDouce, maxWidth: 560 },
   body: { fontSize: 16, lineHeight: 25, color: Brand.encreDouce },
   small: { fontSize: 14, color: Brand.encreDouce },
-  note: { fontSize: 13, color: Brand.encrePale },
+  note: { fontSize: 13, color: Brand.encreDouce },
   overline: { fontSize: 12, letterSpacing: 2 },
   primary: {
     flexDirection: 'row',
@@ -744,6 +745,8 @@ const styles = StyleSheet.create({
   ctaButton: { backgroundColor: Brand.blanc, paddingVertical: 17, paddingHorizontal: 34, borderRadius: 999, alignItems: 'center' },
   ctaButtonText: { color: Brand.framboise, fontSize: 17 },
   footer: { backgroundColor: Brand.lilas, paddingVertical: 30 },
-  footerLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: 22 },
+  footerLinks: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 22, rowGap: 4 },
+  // Zone tactile ≥ 44 px pour chaque lien du pied de page
+  footerHit: { minHeight: 44, justifyContent: 'center' },
   footerLink: { fontSize: 14, color: Brand.encreDouce },
 });

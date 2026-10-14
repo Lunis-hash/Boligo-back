@@ -62,7 +62,7 @@ function ProfileCard({ ff }: { ff: LandingFonts }) {
   return (
     <View style={styles.card}>
       <View style={styles.rowBetween}>
-        <Text style={[styles.overline, ff.bold, { color: Brand.encrePale }]}>EXEMPLE DE FICHE</Text>
+        <Text style={[styles.overline, ff.bold, { color: Brand.encreDouce }]}>EXEMPLE DE FICHE</Text>
         <Text style={[styles.chip, ff.bold, { color: Brand.framboise, backgroundColor: Brand.rose }]}>Sans photo</Text>
       </View>
       <View style={styles.identity}>

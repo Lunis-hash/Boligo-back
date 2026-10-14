@@ -627,9 +627,11 @@ export default function ProfileDetailsScreen() {
       {stepHeader('Commençons par\nvous connaître.', "Seuls votre prénom, votre âge, votre ville et votre métier apparaissent sur votre fiche ; votre nom reste privé.")}
 
       <View style={[styles.inputGroup, shown('firstName', 1) && styles.inputGroupError]}>
-        <Text style={styles.inputLabel}>Prénom *</Text>
+        <Text style={styles.inputLabel} nativeID="first-name-label">Prénom *</Text>
         <TextInput
           style={styles.input}
+          accessibilityLabel="Prénom (obligatoire)"
+          accessibilityLabelledBy="first-name-label"
           value={firstName}
           onChangeText={setFirstName}
           onBlur={() => touch('firstName')}
@@ -646,9 +648,11 @@ export default function ProfileDetailsScreen() {
       <FieldError message={shown('firstName', 1)} testID="first-name-error" />
 
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Nom (privé)</Text>
+        <Text style={styles.inputLabel} nativeID="last-name-label">Nom (privé)</Text>
         <TextInput
           style={styles.input}
+          accessibilityLabel="Nom (privé, n'apparaît pas sur votre fiche)"
+          accessibilityLabelledBy="last-name-label"
           value={lastName}
           onChangeText={setLastName}
           placeholder="Votre nom"
@@ -662,8 +666,8 @@ export default function ProfileDetailsScreen() {
       </View>
 
       <View style={[styles.inputGroup, { borderBottomWidth: 0 }]}>
-        <Text style={styles.inputLabel}>Je suis *</Text>
-        <View style={styles.genderRow} accessibilityRole="radiogroup">
+        <Text style={styles.inputLabel} nativeID="gender-label">Je suis *</Text>
+        <View style={styles.genderRow} accessibilityRole="radiogroup" accessibilityLabelledBy="gender-label">
           {([['H', 'Homme'], ['F', 'Femme']] as const).map(([value, label]) => (
             <TouchableOpacity
               key={value}
@@ -1227,7 +1231,9 @@ export default function ProfileDetailsScreen() {
           <TouchableOpacity
             onPress={() => router.replace('/(auth)/login')}
             activeOpacity={0.7}
-            style={{ marginTop: 14, alignItems: 'center' }}
+            style={{ marginTop: 14, alignItems: 'center', justifyContent: 'center', minHeight: 44 }}
+            accessibilityRole="link"
+            testID="signup-login-link"
           >
             <Text style={{ fontSize: 13, color: Colors.primary.red, fontFamily: Typography.fontFamily.medium }}>
               Vous avez déjà un compte ? <Text style={{ textDecorationLine: 'underline', fontFamily: Typography.fontFamily.bold }}>Se connecter</Text>
@@ -1514,8 +1520,8 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontFamily: Typography.fontFamily.medium,
-    fontSize: 11,
-    color: Colors.text.primary40,
+    fontSize: Typography.label.fontSize,
+    color: Colors.text.primary70,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 4,
@@ -1525,6 +1531,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: Colors.text.primary100,
     paddingVertical: Spacing.xs,
+    minHeight: 44,
   },
   passwordRow: {
     flexDirection: 'row',
