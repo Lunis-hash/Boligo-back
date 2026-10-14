@@ -50,15 +50,30 @@ function StatusPill({ status, type = "neutral" }: { status: string; type?: "succ
 
 function JourneyDetailPage() {
   const id = useSearchParams().get("id") ?? "";
+  const [loadError, setLoadError] = useState("");
   const [journey, setJourney] = useState<JourneyDetail | null>(null);
 
   useEffect(() => {
-    apiFetch<JourneyDetail>(`/admin/journeys/${id}`, { token: getToken() }).then(setJourney).catch(console.error);
+    apiFetch<JourneyDetail>(`/admin/journeys/${id}`, { token: getToken() }).then((v) => {
+        setLoadError("");
+        setJourney(v);
+      })
+      .catch((e: unknown) =>
+        setLoadError(
+          e instanceof Error && e.message ? e.message : "Parcours introuvable.",
+        ),
+      );
   }, [id]);
 
   if (!journey) return (
     <div className="flex h-64 items-center justify-center">
-      <p className="text-sm text-neutral-400">Chargement du parcours…</p>
+      {loadError ? (
+        <p role="alert" data-testid="detail-erreur" className="text-sm text-framboise">
+          {loadError}
+        </p>
+      ) : (
+        <p className="text-sm text-neutral-400">Chargement du parcours…</p>
+      )}
     </div>
   );
 

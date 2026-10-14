@@ -26,7 +26,6 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { VideoService } from '@/services/video';
-import { Camera } from 'expo-camera';
 
 const WARNING_SEC = 30;
 
@@ -112,6 +111,11 @@ export default function VideoCallScreen() {
       }
 
       try {
+        // expo-camera chargé seulement sur mobile : sur le web, son import
+        // lance un worker qui télécharge jsQR depuis un CDN tiers à chaque page.
+        const { Camera } =
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          require('expo-camera') as typeof import('expo-camera');
         const cameraPerm = await Camera.requestCameraPermissionsAsync();
         const microPerm = await Camera.requestMicrophonePermissionsAsync();
 

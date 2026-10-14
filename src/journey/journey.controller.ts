@@ -79,6 +79,12 @@ export class JourneyController {
     return this.journeyService.getMessages(id, req.user.id);
   }
 
+  /** Dernier parcours clos sans succès (moins de 14 jours), pour l'onglet Matchs. */
+  @Get('last-ended')
+  async lastEnded(@Request() req: { user: { id: string } }) {
+    return this.journeyService.lastEndedJourney(req.user.id);
+  }
+
   @Get('chat-access')
   async checkChatAccess(@Request() req) {
     return this.journeyService.canAccessMessages(req.user.id);
