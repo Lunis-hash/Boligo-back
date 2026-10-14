@@ -8,7 +8,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { runDbTransfer } from './maintenance/db-transfer';
-import { adminOrigins, corsDelegate } from './common/cors';
+import { adminOrigins, appOrigins, corsDelegate } from './common/cors';
+import { swaggerEnabled } from './common/swagger';
 import { configReport } from './common/config-report';
 import {
   assertPreviewSafe,
@@ -66,9 +67,12 @@ async function bootstrap() {
     }),
   );
 
-  // CORS : application et site ouverts ; tableau de bord admin limité à ses adresses BOLIGO.
+  // CORS : origines de navigateur sur liste (site BOLIGO, dev local, CORS_ORIGINS) ;
+  // tableau de bord admin limité à ses adresses BOLIGO. Requêtes sans Origin
+  // (application mobile native, serveur à serveur) non concernées.
   const allowedAdmin = adminOrigins(process.env.ADMIN_ALLOWED_ORIGINS);
-  app.enableCors(corsDelegate(allowedAdmin));
+  const allowedApp = appOrigins(process.env.CORS_ORIGINS, allowedAdmin);
+  app.enableCors(corsDelegate(allowedAdmin, allowedApp));
   if (isPreview()) {
     // Un seul service : mot de passe HTTP partout (sauf santé et webhook),
     // puis webapp à la racine et admin sous /admin, l'API restant sous /api.
@@ -84,16 +88,20 @@ async function bootstrap() {
     );
   }
 
-  // Swagger Documentation
-  const config = new DocumentBuilder()
-    .setTitle('BOLIGO API')
-    .setDescription('API BOLIGO')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  // Documentation Swagger : hors production, ou si SWAGGER_PUBLIC=true.
+  if (swaggerEnabled()) {
+    const config = new DocumentBuilder()
+      .setTitle('BOLIGO API')
+      .setDescription('API BOLIGO')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  } else {
+    console.log('[SÉCURITÉ] Swagger /docs désactivé (NODE_ENV=production).');
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
