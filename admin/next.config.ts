@@ -8,6 +8,8 @@ const basePath = (process.env.ADMIN_BASE_PATH || "").replace(/\/+$/, "");
 const nextConfig: NextConfig = {
   output: "export",
   ...(basePath ? { basePath } : {}),
+  // Retour à la connexion après une session expirée (lib/api.ts).
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,

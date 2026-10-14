@@ -1210,6 +1210,48 @@ export class JourneyService {
   }
 
   /**
+   * Dernier parcours clos sans succès (abandon par un membre, ou clôture
+   * anti-ghosting) depuis moins de 14 jours : l'onglet Matchs l'explique au
+   * membre au lieu d'afficher seulement « Aucun match actif ». null sinon.
+   */
+  async lastEndedJourney(userId: string) {
+    const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const journey = await this.prisma.journey.findFirst({
+      where: {
+        OR: [{ userAId: userId }, { userBId: userId }],
+        result: { in: ['abandonne', 'echoue'] },
+        endDate: { gte: since },
+      },
+      orderBy: { endDate: 'desc' },
+      select: {
+        id: true,
+        userAId: true,
+        result: true,
+        endDate: true,
+        userA: { select: { firstName: true } },
+        userB: { select: { firstName: true } },
+      },
+    });
+    if (!journey?.endDate) return { ended: null };
+    const refund = await this.prisma.creditTransaction.findFirst({
+      where: { journeyId: journey.id, userId, type: 'remboursement_justice' },
+      select: { creditAmount: true },
+    });
+    return {
+      ended: {
+        journeyId: journey.id,
+        partnerName:
+          journey.userAId === userId
+            ? journey.userB.firstName
+            : journey.userA.firstName,
+        result: journey.result,
+        endedAt: journey.endDate.toISOString(),
+        creditReturned: refund ? Math.abs(refund.creditAmount) : 0,
+      },
+    };
+  }
+
+  /**
    * Un membre met fin au parcours (malaise, signalement, ou simplement pas
    * d'envie de continuer). Le parcours se clôt pour les deux ; l'autre membre
    * reçoit le message de courtoisie choisi et récupère son crédit, une fois.

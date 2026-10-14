@@ -34,3 +34,24 @@ export function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 }
+
+/**
+ * Jeton expiré (champ « exp » du JWT, en secondes) ou illisible. L'API reste
+ * seule juge : ce contrôle évite seulement d'afficher des pages vides.
+ */
+export function tokenExpired(token: string, now = Date.now()): boolean {
+  try {
+    const payload = token.split(".")[1] ?? "";
+    const json = JSON.parse(
+      atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+    ) as { exp?: number };
+    return typeof json.exp === "number" && json.exp * 1000 <= now;
+  } catch {
+    return true;
+  }
+}
+
+/** Page de connexion, avec le motif « session expirée ». */
+export function loginUrlAfterExpiry(): string {
+  return `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/login/?expiree=1`;
+}

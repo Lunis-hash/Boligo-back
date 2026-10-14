@@ -28,6 +28,7 @@ import { SONDEUR_TEXT, SondeurLanguage, clampDay, getSondeurDayState, getSondeur
 import { getInterviewLanguage } from '@/services/interview';
 import { EMPTY_INSIGHTS, SondeurInsights, parseSondeurInsights, readingForDay } from '@/services/sondeurInsights';
 import { SondeurReadingCard } from '@/components/SondeurReadingCard';
+import { EndedJourney, endedJourneyMessage, fetchUnseenEndedJourney, markEndedJourneySeen } from '@/services/journeyEnded';
 import cacheService from '@/services/cacheService';
 import soundService from '@/services/soundService';
 import {
@@ -165,6 +166,21 @@ export default function MatchesScreen() {
 
   const { credits, matches, loadMatches } = useAppContext();
   const firstMatch = useMemo(() => pickActiveMatch(matches), [matches]);
+  // Parcours clos récemment (abandon, anti-ghosting) : expliqué au membre au
+  // lieu d'un simple « Aucun match actif ».
+  const [endedJourney, setEndedJourney] = useState<EndedJourney | null>(null);
+  const hasActiveMatch = !!firstMatch;
+  useFocusEffect(
+    useCallback(() => {
+      if (hasActiveMatch) {
+        setEndedJourney(null);
+        return;
+      }
+      fetchUnseenEndedJourney()
+        .then(setEndedJourney)
+        .catch(() => setEndedJourney(null));
+    }, [hasActiveMatch]),
+  );
   const { userId } = useAuth();
 
   // State lié au journey backend
@@ -522,6 +538,23 @@ export default function MatchesScreen() {
           </View>
         </View>
         <View style={styles.emptyWrap}>
+          {endedJourney && (
+            <View style={styles.endedCard} testID="ended-journey">
+              <Text style={styles.endedTitle}>{endedJourneyMessage(endedJourney).title}</Text>
+              <Text style={styles.endedBody}>{endedJourneyMessage(endedJourney).body}</Text>
+              <TouchableOpacity
+                testID="ended-journey-ok"
+                accessibilityRole="button"
+                onPress={() => {
+                  markEndedJourneySeen(endedJourney.journeyId).catch(() => {});
+                  setEndedJourney(null);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.endedOk}>J’ai compris</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <LinearGradient
             colors={[Colors.primary.red + '12', Colors.primary.purple + '10']}
             style={styles.emptyCircle}
@@ -1490,6 +1523,19 @@ const styles = StyleSheet.create({
   },
 
   // État vide
+  endedCard: {
+    alignSelf: 'stretch',
+    backgroundColor: Colors.neutral.white,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.primary.purple + '30',
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+    gap: 8,
+  },
+  endedTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 16, color: Colors.text.primary100 },
+  endedBody: { fontFamily: Typography.fontFamily.regular, fontSize: 14, color: Colors.text.primary70, lineHeight: 20 },
+  endedOk: { fontFamily: Typography.fontFamily.medium, fontSize: 14, color: Colors.primary.purple, alignSelf: 'flex-end', paddingVertical: 4 },
   emptyWrap: {
     flex: 1,
     alignItems: 'center',

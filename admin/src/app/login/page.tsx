@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, Sparkles, Shield } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -16,6 +16,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [expired, setExpired] = useState(false);
+
+  useEffect(() => {
+    setExpired(new URLSearchParams(window.location.search).has("expiree"));
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -145,6 +150,16 @@ export default function LoginPage() {
                 className="h-12 rounded-xl border-neutral-200 bg-white/80 px-4 shadow-sm transition-all placeholder:text-neutral-400 focus-visible:border-lavande focus-visible:ring-lavande/30"
               />
             </div>
+
+            {expired && !error && (
+              <div
+                role="status"
+                data-testid="session-expiree"
+                className="rounded-xl border border-lavande/40 bg-white/80 px-4 py-3 text-sm text-neutral-700"
+              >
+                Votre session a expiré. Reconnectez-vous.
+              </div>
+            )}
 
             {error && (
               <div

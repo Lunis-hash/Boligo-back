@@ -7,6 +7,10 @@ import {
   formatResidence,
   reverseGeocode,
   LocationPermissionError,
+  LocationTimeoutError,
+  PERMISSION_TIMEOUT_MS,
+  POSITION_TIMEOUT_MS,
+  withTimeout,
   pickCity,
   placeFromAddress,
   splitResidence,
@@ -132,5 +136,35 @@ describe('Localisation', () => {
     } finally {
       Object.defineProperty(Platform, 'OS', { value: os, configurable: true });
     }
+  });
+});
+
+describe('Localisation : jamais d’attente sans fin', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllMocks();
+  });
+
+  it('demande d’autorisation ignorée : erreur de délai, saisie manuelle possible', async () => {
+    mocked.requestForegroundPermissionsAsync.mockReturnValue(new Promise(() => {}) as never);
+    const p = detectPlace();
+    jest.advanceTimersByTime(PERMISSION_TIMEOUT_MS + 1);
+    await expect(p).rejects.toBeInstanceOf(LocationTimeoutError);
+  });
+
+  it('autorisation donnée mais aucune position : erreur de délai', async () => {
+    mocked.requestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' } as never);
+    mocked.getCurrentPositionAsync.mockReturnValue(new Promise(() => {}) as never);
+    const p = detectPlace();
+    await Promise.resolve();
+    await Promise.resolve();
+    jest.advanceTimersByTime(POSITION_TIMEOUT_MS + 1);
+    await expect(p).rejects.toBeInstanceOf(LocationTimeoutError);
+  });
+
+  it('withTimeout : résultat rendu avant le délai, sans erreur tardive', async () => {
+    await expect(withTimeout(Promise.resolve(42), 1000)).resolves.toBe(42);
+    jest.advanceTimersByTime(2000);
   });
 });

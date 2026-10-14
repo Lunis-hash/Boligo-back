@@ -87,11 +87,20 @@ function MapValue({ value }: { value: unknown }) {
 
 function UserDetailPage() {
   const id = useSearchParams().get("id") ?? "";
+  const [loadError, setLoadError] = useState("");
   const [user, setUser] = useState<UserDetail | null>(null);
   const [saving, setSaving] = useState(false);
 
   function reload() {
-    apiFetch<UserDetail>(`/admin/users/${id}`, { token: getToken() }).then(setUser).catch(console.error);
+    apiFetch<UserDetail>(`/admin/users/${id}`, { token: getToken() }).then((v) => {
+        setLoadError("");
+        setUser(v);
+      })
+      .catch((e: unknown) =>
+        setLoadError(
+          e instanceof Error && e.message ? e.message : "Utilisateur introuvable.",
+        ),
+      );
   }
 
   useEffect(() => {
@@ -107,6 +116,11 @@ function UserDetailPage() {
         body: JSON.stringify(body),
       });
       reload();
+    } catch (e) {
+      // Jamais d'échec silencieux : l'action n'a pas été appliquée.
+      window.alert(
+        e instanceof Error && e.message ? e.message : "Action impossible.",
+      );
     } finally {
       setSaving(false);
     }
@@ -114,7 +128,13 @@ function UserDetailPage() {
 
   if (!user) return (
     <div className="flex h-64 items-center justify-center">
-      <p className="text-sm text-neutral-400">Chargement de l'utilisateur…</p>
+      {loadError ? (
+        <p role="alert" data-testid="detail-erreur" className="text-sm text-framboise">
+          {loadError}
+        </p>
+      ) : (
+        <p className="text-sm text-neutral-400">Chargement de l'utilisateur…</p>
+      )}
     </div>
   );
 
