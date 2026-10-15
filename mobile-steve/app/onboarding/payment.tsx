@@ -880,6 +880,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 7,
     marginTop: 6,
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   reassureItem: {
