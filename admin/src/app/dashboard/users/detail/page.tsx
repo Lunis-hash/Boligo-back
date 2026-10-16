@@ -246,18 +246,8 @@ function UserDetailPage() {
           <CardContent className="pt-4 space-y-4">
             {map ? (
               <dl className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <dt className="text-neutral-500">Maturité</dt>
-                  <dd className="font-medium text-neutral-900 text-lg">
-                    {map.maturityScore != null ? Math.round(map.maturityScore * 100) + "%" : "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-neutral-500">Alchimie</dt>
-                  <dd className="font-medium text-neutral-900 text-lg">
-                    {map.alchemyScore != null ? Math.round(map.alchemyScore * 100) + "%" : "—"}
-                  </dd>
-                </div>
+                {/* Maturité et Alchimie masquées : sans rédaction IA, ce sont des
+                    valeurs par défaut (50 % plancher, 80 % constant), pas une mesure. */}
                 <div className="col-span-2">
                   <dt className="text-neutral-500 mb-1">Synthèse psychologique</dt>
                   <dd className="rounded-lg bg-neutral-50 p-3 text-[13px] text-neutral-700 leading-relaxed">
