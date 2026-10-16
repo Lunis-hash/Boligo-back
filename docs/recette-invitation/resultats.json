@@ -1,0 +1,47 @@
+[
+  {
+    "s": "Départ : Bella a 0 crédit et une invitation d’Adam",
+    "ok": true,
+    "d": "crédits=0"
+  },
+  {
+    "s": "La fiche d’Adam s’affiche sous l’invitation (sans autre profil en Découverte)",
+    "ok": true,
+    "d": "Belle compatibilité · 79 % · compatibles · Adam · 34 ans · Lyon · Architecte (fictif) · « · J’aime autant les soirées entre amis que les"
+  },
+  {
+    "s": "Lien « Voir le profil » sur l’invitation",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "s": "« Voir le profil » amène à la fiche",
+    "ok": true,
+    "d": "haut de la fiche à 76 px"
+  },
+  {
+    "s": "Pas de flèches « profil suivant » sur une invitation",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "s": "« Accepter » sans crédit : « Plus de crédits disponibles », sans passer par le pacte",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "s": "Message : l’invitation reste en attente pendant la recharge",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "s": "Paiement TEST payé sur Stripe Checkout, retour confirmé dans l’app : 1 crédit",
+    "ok": true,
+    "d": "crédits=1"
+  },
+  {
+    "s": "Invitation acceptée : parcours avec Adam commencé, crédit utilisé",
+    "ok": true,
+    "d": "parcours=1 crédits=0"
+  }
+]

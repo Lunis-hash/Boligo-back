@@ -466,6 +466,8 @@ function DiscoverScreen() {
   const [answeringProposal, setAnsweringProposal] = useState<string | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
+  // Position de la fiche détaillée, pour « Voir le profil » depuis une invitation.
+  const profileCardY = useRef(0);
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -585,7 +587,7 @@ function DiscoverScreen() {
       Animated.timing(cardFade, { toValue: 1, duration: 220, useNativeDriver: true }),
       Animated.spring(cardSlide, { toValue: 0, friction: 8, tension: 80, useNativeDriver: true }),
     ]).start();
-  }, [profileIndex, profiles.length, activeMatch]);
+  }, [profileIndex, profiles.length, activeMatch, receivedLikes.length]);
 
   const openOverlay = (mode: 'connect' | 'no_credit' | 'success') => {
     if (mode === 'connect') setPactAccepted(false);
@@ -650,6 +652,12 @@ function DiscoverScreen() {
   };
 
   const handleAcceptLike = (proposalId: string, likeName: string) => {
+    // Sans crédit, inutile de passer par le pacte : on propose de recharger.
+    if (credits < 1) {
+      setAcceptingProposal(null);
+      openOverlay('no_credit');
+      return;
+    }
     setAcceptingProposal({ id: proposalId, name: likeName });
     openOverlay('connect');
   };
@@ -842,22 +850,40 @@ function DiscoverScreen() {
                   </LinearGradient>
                 </LinearGradient>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleDeclineLike(like.id, like.name)}
-                disabled={answeringProposal === like.id}
-                activeOpacity={0.7}
-                style={styles.declineLink}
-                testID="discover-decline-like"
-              >
-                <Text style={styles.declineLinkText}>Décliner</Text>
-              </TouchableOpacity>
+              <View style={styles.likeLinks}>
+                {currentMatch?.id === like.userId ? (
+                  <TouchableOpacity
+                    onPress={() => scrollRef.current?.scrollTo({ y: profileCardY.current, animated: true })}
+                    activeOpacity={0.7}
+                    style={styles.declineLink}
+                    accessibilityRole="button"
+                    testID="discover-view-like-profile"
+                  >
+                    <Text style={styles.viewProfileLinkText}>Voir le profil</Text>
+                  </TouchableOpacity>
+                ) : null}
+                <TouchableOpacity
+                  onPress={() => handleDeclineLike(like.id, like.name)}
+                  disabled={answeringProposal === like.id}
+                  activeOpacity={0.7}
+                  style={styles.declineLink}
+                  testID="discover-decline-like"
+                >
+                  <Text style={styles.declineLinkText}>Décliner</Text>
+                </TouchableOpacity>
+              </View>
               </View>
             ))}
           </View>
         )}
 
-        {!loading && (activeMatch || profiles.length > 0) && currentMatch && (
+        {/* Une invitation reçue suffit : sa fiche s'affiche même sans profil en Découverte. */}
+        {!loading && (activeMatch || profiles.length > 0 || receivedLikes.length > 0) && currentMatch && (
           <Animated.View
+            onLayout={(e) => {
+              profileCardY.current = e.nativeEvent.layout.y;
+            }}
+            testID="discover-profile-card"
             style={[
               styles.profileCard,
               { opacity: cardFade, transform: [{ translateY: cardSlide }] },
@@ -882,7 +908,7 @@ function DiscoverScreen() {
 
               {/* Cercle de score : le vrai pourcentage global */}
               <View style={[styles.avatarWrapper, styles.ringRow]}>
-                {!activeMatch ? (
+                {!activeMatch && !hasLikedMe ? (
                   <TouchableOpacity
                     onPress={handlePrev}
                     style={styles.ringArrow}
@@ -896,7 +922,7 @@ function DiscoverScreen() {
                   <View style={styles.ringArrowSpacer} />
                 )}
                 <ScoreRing percent={currentMatch.compatibility} color={scoreColor(currentMatch.compatibility)} />
-                {!activeMatch ? (
+                {!activeMatch && !hasLikedMe ? (
                   <TouchableOpacity
                     onPress={handleNext}
                     style={styles.ringArrow}
@@ -1290,7 +1316,7 @@ function DiscoverScreen() {
               <>
                 <View style={styles.noCreditCircle}><Heart size={30} color={Colors.primary.red} /></View>
                 <Text style={styles.sheetTitle}>Plus de crédits disponibles</Text>
-                <Text style={styles.sheetDesc}>Rechargez vos crédits pour vous connecter avec de nouveaux profils.</Text>
+                <Text style={styles.sheetDesc}>Il vous faut 1 crédit pour commencer un parcours. Les invitations reçues restent en attente pendant que vous rechargez.</Text>
                 <View style={styles.sheetBtns}>
                   <TouchableOpacity onPress={closeOverlay} style={styles.btnSec}><Text style={styles.btnSecText}>Plus tard</Text></TouchableOpacity>
                   <TouchableOpacity onPress={() => { closeOverlay(); router.push('/onboarding/payment'); }} activeOpacity={0.85} style={styles.btnPriWrap}>
@@ -1419,6 +1445,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: -4,
     marginBottom: 6,
+  },
+  likeLinks: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  viewProfileLinkText: {
+    fontSize: 13,
+    fontFamily: Typography.fontFamily.semiBold,
+    color: Colors.primary.purple,
   },
   declineLinkText: {
     fontSize: 13,
