@@ -10,6 +10,7 @@ import { LandingPage } from '@/components/landing/LandingPage';
 
 import { Typography } from '@/constants/theme';
 export default function WelcomeScreen() {
+  // Accueil Boligo - Sans photo, compatibilité réelle
   const router = useRouter();
   const { font } = useBrandFonts();
 

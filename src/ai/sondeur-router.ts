@@ -35,7 +35,7 @@ export interface Qualification {
   escalateAboveRejectRate: number;
   /**
    * Second avis : un relecteur d'une troisième famille (liste `critic`)
-   * tranche chaque refus du premier.
+   * tranche chaque refus du premier (Pacte anti-ghosting).
    */
   criticVote?: boolean;
   /**
